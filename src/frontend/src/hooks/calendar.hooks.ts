@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Shop, Machinery } from 'shared';
+import { Shop, Machinery, Calendar } from 'shared';
 import {
   getAllShops,
   postCreateShop,
@@ -7,10 +7,49 @@ import {
   postCreateMachinery,
   postEditMachinery,
   postAddMachineryToShop,
-  editShop
+  editShop,
+  getAllCalendars,
+  postEditCalendar,
+  postCreateCalendar
 } from '../apis/calendar.api';
 
 export const MACHINERY_KEY = ['machinery'] as const;
+
+export const useAllCalendars = () =>
+  useQuery<Calendar[], Error>(['calendars'], async () => {
+    const res = await getAllCalendars();
+    return res.data;
+  });
+
+export const useCreateCalendar = () => {
+  const qc = useQueryClient();
+  return useMutation<Calendar, Error, { name: string; description: string; color: string }>(
+    async (payload) => {
+      const { data } = await postCreateCalendar(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(['calendars']);
+      }
+    }
+  );
+};
+
+export const useEditCalendar = (calendarId: string) => {
+  const qc = useQueryClient();
+  return useMutation<Calendar, Error, { name: string; description: string; color: string }>(
+    async (payload) => {
+      const { data } = await postEditCalendar(calendarId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(['calendars']);
+      }
+    }
+  );
+};
 
 export const useAllShops = () =>
   useQuery<Shop[], Error>(['shops'], async () => {

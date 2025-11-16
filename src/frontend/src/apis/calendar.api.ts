@@ -1,6 +1,24 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop, Machinery } from 'shared';
+import { Shop, Machinery, Calendar } from 'shared';
+
+export const getAllCalendars = () => {
+  return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
+    transformResponse: (data) => JSON.parse(data) as Calendar[]
+  });
+};
+
+export const postCreateCalendar = (payload: { name: string; description: string; color: string }) => {
+  return axios.post<Calendar>(apiUrls.calendarCreateCalendar(), payload, {
+    transformResponse: (data) => JSON.parse(data) as Calendar
+  });
+};
+
+export const postEditCalendar = (calendarId: string, payload: { name: string; description: string; color: string }) => {
+  return axios.post<Calendar>(apiUrls.calendarEditCalendar(calendarId), payload, {
+    transformResponse: (data) => JSON.parse(data) as Calendar
+  });
+};
 
 export const getAllShops = () => {
   return axios.get<Shop[]>(apiUrls.calendarShops(), {

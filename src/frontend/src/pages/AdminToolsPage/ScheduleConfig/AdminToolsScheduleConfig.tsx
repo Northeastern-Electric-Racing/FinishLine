@@ -1,11 +1,32 @@
 import React, { useState } from 'react';
-import { Box, Grid, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
+import {
+  Box,
+  Grid,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Button,
+  IconButton,
+  Tooltip
+} from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
-import { IconButton, Tooltip } from '@mui/material';
-import { useAllShops, useCreateShop, useEditShop, useAllMachines } from '../../../hooks/calendar.hooks';
+import {
+  useAllShops,
+  useCreateShop,
+  useEditShop,
+  useAllMachines,
+  useAllCalendars,
+  useCreateCalendar,
+  useEditCalendar
+} from '../../../hooks/calendar.hooks';
 import ShopModal from './Shop/ShopModal';
+import CalendarModal, { CalendarFormValues } from './Calendar/CalendarModal';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
@@ -25,9 +46,25 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [openEdit, setOpenEdit] = useState(false);
   const [editingShop, setEditingShop] = useState<any>(null);
 
-  if (shopsLoading || machinesLoading) return <LoadingIndicator />;
+  const {
+    data: calendars,
+    isLoading: calendarsLoading,
+    isError: calendarsError,
+    error: calendarsErrorMsg
+  } = useAllCalendars();
+
+  const { mutateAsync: createCalendarMutate } = useCreateCalendar();
+
+  const [editingCalendarId, setEditingCalendarId] = useState<string | undefined>();
+  const editCalendarMutation = useEditCalendar(editingCalendarId ?? '');
+
+  const [openCalendarModal, setOpenCalendarModal] = useState(false);
+  const [editingCalendar, setEditingCalendar] = useState<any>(null);
+
+  if (shopsLoading || machinesLoading || calendarsLoading) return <LoadingIndicator />;
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
   if (machinesError) return <ErrorPage message={(machinesErrorMsg as Error).message} />;
+  if (calendarsError) return <ErrorPage message={(calendarsErrorMsg as Error).message} />;
 
   return (
     <Box padding="5px">
@@ -38,12 +75,89 @@ const AdminToolsScheduleConfig: React.FC = () => {
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
-            <Typography variant="h6" gutterBottom>
-              Calendars
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              ...
-            </Typography>
+            <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+              <Typography variant="h6">Calendars</Typography>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setEditingCalendar(null);
+                  setEditingCalendarId(undefined);
+                  setOpenCalendarModal(true);
+                }}
+              >
+                Add Calendar
+              </Button>
+            </Box>
+
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="center">
+                    Color
+                  </TableCell>
+                  <TableCell sx={{ width: 100 }} />
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
+                {!calendars || calendars.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center">
+                      No calendars yet.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  calendars.map((calendar: any) => (
+                    <TableRow key={calendar.calendarId} hover>
+                      <TableCell>{calendar.name}</TableCell>
+                      <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{calendar.description ?? '—'}</TableCell>
+
+                      <TableCell align="center">
+                        <Box
+                          sx={{
+                            display: 'inline-block',
+                            width: 28,
+                            height: 28,
+                            borderRadius: 2,
+                            border: '1px solid #ccc',
+                            backgroundColor: calendar.color ?? '#EF4345'
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box display="flex" gap={1} justifyContent="center">
+                          <Tooltip title="Edit" arrow>
+                            <span>
+                              <IconButton
+                                size="small"
+                                aria-label="edit calendar"
+                                onClick={() => {
+                                  setEditingCalendar(calendar);
+                                  setEditingCalendarId(calendar.calendarId);
+                                  setOpenCalendarModal(true);
+                                }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+
+                          <Tooltip title="Delete" arrow>
+                            <span>
+                              <IconButton size="small" color="error" disabled aria-label="delete calendar">
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </Paper>
         </Grid>
 
@@ -78,6 +192,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
                   </TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {!shops || shops.length === 0 ? (
                   <TableRow>
@@ -125,15 +240,16 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/*Machinery Table */}
+        {/* Machinery Table */}
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
-            <Box display="flex" alignItems="center" flexDirection="row" justifyContent="space-between" mb={1}>
+            <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
               <Typography variant="h6">Machinery</Typography>
               <Button variant="contained" onClick={() => setOpenCreateMachinery(true)}>
                 Add Machine
               </Button>
             </Box>
+
             <Table size="small">
               <TableHead>
                 <TableRow>
@@ -147,6 +263,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
                   </TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {!machines || !Array.isArray(machines) || machines.length === 0 ? (
                   <TableRow>
@@ -215,6 +332,43 @@ const AdminToolsScheduleConfig: React.FC = () => {
           const result = await createShopMutate({ name, description });
           setOpenCreate(false);
           return result;
+        }}
+      />
+
+      {/* Calendar Modal */}
+      <CalendarModal
+        open={openCalendarModal}
+        onClose={() => {
+          setOpenCalendarModal(false);
+          setEditingCalendar(null);
+          setEditingCalendarId(undefined);
+        }}
+        initialValues={
+          editingCalendar
+            ? {
+                name: editingCalendar.name ?? '',
+                description: editingCalendar.description ?? '',
+                color: editingCalendar.color ?? '#F97316'
+              }
+            : undefined
+        }
+        onSubmit={async ({ name, description, color }: CalendarFormValues) => {
+          const payload = {
+            name,
+            description,
+            color,
+            colorHexCode: color
+          } as any;
+
+          if (editingCalendarId) {
+            await editCalendarMutation.mutateAsync(payload);
+          } else {
+            await createCalendarMutate(payload);
+          }
+
+          setOpenCalendarModal(false);
+          setEditingCalendar(null);
+          setEditingCalendarId(undefined);
         }}
       />
 
