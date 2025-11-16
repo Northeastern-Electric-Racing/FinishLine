@@ -15,7 +15,7 @@ export interface WbsNumber {
   workPackageNumber: number;
 }
 
-export interface WbsElement {
+export interface WbsElementPreview {
   wbsElementId: string; // wbs element id
   id: string; // project/ work package id
   wbsNum: WbsNumber;
@@ -23,14 +23,17 @@ export interface WbsElement {
   deleted: boolean;
   name: string;
   status: WbsElementStatus;
-  lead?: User;
-  manager?: User;
+  lead?: UserPreview;
+  manager?: UserPreview;
+}
+
+export interface WbsElement extends WbsElementPreview {
   links: Link[];
   changes: ImplementedChange[];
   descriptionBullets: DescriptionBullet[];
+  lead?: User;
+  manager?: User;
 }
-
-export type WbsElementPreview = Omit<WbsElement, 'changes' | 'materials' | 'assemblies' | 'descriptionBullets'>;
 
 export enum WbsElementStatus {
   Inactive = 'INACTIVE',
@@ -47,25 +50,42 @@ export interface Project extends WbsElement {
   workPackages: WorkPackage[];
   teams: TeamPreview[];
   tasks: Task[];
-  favoritedBy: UserPreview[];
+  favoritedBy: User[];
   abbreviation?: string;
 }
 
-export type RetrospectiveProjectPreview = Omit<ProjectPreview, 'workPackages'> & {
+export type RetrospectiveProjectPreview = Omit<ProjectGantt, 'workPackages'> & {
   workPackages: RetrospectiveWorkPackage[];
   originalStartDate?: Date;
   originalEndDate?: Date;
 };
 
-export interface ProjectPreview extends WbsElementPreview {
+export interface ProjectGantt extends WbsElementPreview {
   startDate?: Date;
   endDate?: Date;
   budget: number;
-  teams: TeamPreview[];
+  teams: { teamId: string; teamName: string }[];
   workPackages: WorkPackage[];
   tasks: Task[];
   duration: number;
   abbreviation?: string;
+  lead?: User;
+  manager?: User;
+}
+
+export interface ProjectPreview extends WbsElementPreview {
+  startDate?: Date;
+  endDate?: Date;
+  budget: number;
+  duration: number;
+  abbreviation?: string;
+  workPackages: WorkPackagePreview[];
+  teams: { teamName: string; teamId: string }[];
+}
+
+export interface ProjectOverview extends ProjectPreview {
+  links: Link[];
+  tasks: Task[];
 }
 
 export interface RetrospectiveWorkPackage extends WorkPackage {
@@ -94,6 +114,7 @@ export interface WorkPackagePreview extends WbsElementPreview {
   duration: number;
   endDate: Date;
   stage?: WorkPackageStage;
+  blockedBy: WbsNumber[];
 }
 
 export interface DescriptionBullet {
@@ -102,14 +123,12 @@ export interface DescriptionBullet {
   dateAdded: Date;
   type: string;
   dateDeleted?: Date;
-  userChecked?: User;
+  userChecked?: UserPreview;
   dateChecked?: Date;
 }
 
 export interface LinkType {
   name: string;
-  dateCreated: Date;
-  creator: UserPreview;
   required: boolean;
   iconName: string;
 }
@@ -117,8 +136,6 @@ export interface LinkType {
 export interface Link {
   linkId: string;
   linkType: LinkType;
-  dateCreated: Date;
-  creator: User;
   url: string;
 }
 
@@ -134,8 +151,8 @@ export interface WbsProposedChanges {
   status: WbsElementStatus;
   links: Link[];
   descriptionBullets: DescriptionBullet[];
-  lead?: UserPreview;
-  manager?: UserPreview;
+  lead?: User;
+  manager?: User;
 }
 
 export interface ProjectProposedChanges extends WbsProposedChanges {

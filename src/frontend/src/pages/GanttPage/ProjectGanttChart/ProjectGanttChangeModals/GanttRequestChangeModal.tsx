@@ -1,10 +1,10 @@
-import { WbsElementPreview } from 'shared';
+import { Task, WbsElementPreview } from 'shared';
 import { RequestEventChange } from '../../../../utils/gantt.utils';
 import { GanttProjectCreateModal } from './GanttProjectCreateModal';
 import { GanttTimeLineChangeModal } from './GanttTimeLineChangeModal';
 
 export interface GanttRequestChangeModalProps {
-  change: RequestEventChange<WbsElementPreview>;
+  change: RequestEventChange<WbsElementPreview | Task>;
   handleClose: (didCancel: boolean) => void;
   open: boolean;
 }

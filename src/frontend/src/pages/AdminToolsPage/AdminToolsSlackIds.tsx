@@ -4,7 +4,7 @@
  */
 
 import { NERButton } from '../../components/NERButton';
-import { Box, Link, TextField, Typography } from '@mui/material';
+import { Box, Grid, Link, TableCell, TableRow, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useToast } from '../../hooks/toasts.hooks';
 import {
@@ -14,8 +14,11 @@ import {
 } from '../../hooks/organizations.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { Organization } from 'shared';
+import { Organization, TeamPreview } from 'shared';
 import HelpIcon from '@mui/icons-material/Help';
+import { useAllTeams } from '../../hooks/teams.hooks';
+import NERTable from '../../components/NERTable';
+import EditTeamSlackIdFormModal from './TeamConfig/EditTeamSlackIdFormModal';
 
 interface AdminToolsWorkspaceIdViewProps {
   organization: Organization;
@@ -37,8 +40,28 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
   const [sponsorshipChannelId, setSponsorshipChannelId] = useState(
     organization.sponsorshipNotificationsSlackChannelId ?? ''
   );
+  const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
+  const [clickedTeam, setClickedTeam] = useState<TeamPreview>();
+
+  if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
+
+  if (allTeamsIsError) {
+    return <ErrorPage message={allTeamsError.message} />;
+  }
 
   if (isLoading) return <LoadingIndicator />;
+
+  const teamTableRows = allTeams.map((team, index) => (
+    <TableRow
+      onClick={() => {
+        setClickedTeam(team);
+      }}
+      sx={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none' }}
+    >
+      <TableCell sx={{ borderBottom: index === allTeams.length - 1 ? 'none' : 'default' }}>{team.teamName}</TableCell>
+      <TableCell sx={{ borderBottom: index === allTeams.length - 1 ? 'none' : 'default' }}>{team.slackId}</TableCell>
+    </TableRow>
+  ));
 
   const handleSubmitWorkspaceId = async () => {
     try {
@@ -63,7 +86,7 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
   };
 
   return (
-    <Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h5" gutterBottom color={'#ef4345'} borderBottom={1} borderColor={'white'}>
         {organization.name} Slack Workspace & Channel Ids
       </Typography>
@@ -112,6 +135,25 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
             Update
           </NERButton>
         </Box>
+      </Box>
+      <Box>
+        <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+          Team Slack IDs
+        </Typography>
+        <Grid container columnSpacing={2}>
+          <Grid item xs={12} md={6} sx={{ marginTop: '24px' }}>
+            <NERTable columns={[{ name: 'Team Name' }, { name: 'Slack Channel ID' }]} rows={teamTableRows} />
+          </Grid>
+        </Grid>
+        {clickedTeam && (
+          <EditTeamSlackIdFormModal
+            open={!!clickedTeam}
+            handleClose={() => {
+              setClickedTeam(undefined);
+            }}
+            team={clickedTeam}
+          />
+        )}
       </Box>
     </Box>
   );

@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
-import { Team, TeamPreview, WorkPackage } from 'shared';
+import { Team, TeamPreview } from 'shared';
 import {
   getAllTeams,
   getSingleTeam,
@@ -16,8 +16,9 @@ import {
   setTeamLeads,
   archiveTeam,
   getAllArchivedTeams,
-  getMyTeamsWorkpackages,
-  getUsersTeams
+  getUsersTeams,
+  setTeamSlackId,
+  getMyTeamAsHead
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {
@@ -120,6 +121,22 @@ export const useEditTeamDescription = (teamId: string) => {
   );
 };
 
+export const useEditTeamSlackId = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<TeamPreview, Error, string>(
+    ['teams', 'edit'],
+    async (slackId: string) => {
+      const { data } = await setTeamSlackId(teamId, slackId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
 export const useDeleteTeam = () => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, string>(
@@ -168,9 +185,9 @@ export const useSetTeamLeads = (teamId: string) => {
   );
 };
 
-export const useMyTeamsWorkpackages = () => {
-  return useQuery<WorkPackage[], Error>(['teams', 'work-packages'], async () => {
-    const { data } = await getMyTeamsWorkpackages();
+export const useMyTeamAsHead = () => {
+  return useQuery<string | undefined, Error>(['teams', 'as-head'], async () => {
+    const { data } = await getMyTeamAsHead();
     return data;
   });
 };

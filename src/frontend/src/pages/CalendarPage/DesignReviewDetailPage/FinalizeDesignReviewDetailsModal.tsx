@@ -1,6 +1,6 @@
 import { Box, Grid, Link, ToggleButton, ToggleButtonGroup, Typography, Tooltip } from '@mui/material';
 import HelpIcon from '@mui/icons-material/Help';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DesignReview, wbsPipe } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
 import NERFormModal from '../../../components/NERFormModal';
@@ -9,15 +9,7 @@ import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FinalizeReviewInformation } from './DesignReviewDetailPage';
-
-const schema = yup.object().shape({
-  zoomLink: yup
-    .string()
-    .optional()
-    .test('zoom-link', 'Must be a valid zoom link', (value) => (value ? value.includes('zoom.us/') : true)),
-  location: yup.string().optional(),
-  docTemplateLink: yup.string().required('Question Doc is Required')
-});
+import { useCurrentUser, useUserScheduleSettings } from '../../../hooks/users.hooks';
 
 interface FinalizeDesignReviewProps {
   open: boolean;
@@ -39,6 +31,17 @@ const FinalizeDesignReviewDetailsModal = ({
   selectedDate
 }: FinalizeDesignReviewProps) => {
   const [meetingType, setMeetingType] = useState<string[]>([]);
+  const currentUser = useCurrentUser();
+  const { data: userScheduleSettings } = useUserScheduleSettings(currentUser.userId);
+
+  const createValidationSchema = () =>
+    yup.object().shape({
+      zoomLink: meetingType.includes('virtual')
+        ? yup.string().required('Meeting link is required for virtual meetings').url('Please enter a valid URL')
+        : yup.string().optional(),
+      location: yup.string().optional(),
+      docTemplateLink: yup.string().required('Question Doc is Required')
+    });
 
   const title = `Finalize Design Review for ${designReview.wbsName}`;
 
@@ -46,18 +49,9 @@ const FinalizeDesignReviewDetailsModal = ({
     (designReview) => `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName} at ${meetingStartTimePipe([startTime])}`
   );
 
-  const handleMeetingTypeChange = (_event: any, newMeetingType: string[]) => {
-    setMeetingType(newMeetingType);
-  };
-
-  const onSubmit = async (data: { docTemplateLink: string; zoomLink?: string; location?: string }) => {
-    finalizeDesignReview({ ...data, meetingType });
-    setOpen(false);
-  };
-
   const defaultValues = {
     docTemplateLink: designReview.docTemplateLink ?? '',
-    zoomLink: designReview.zoomLink ?? undefined,
+    zoomLink: designReview.zoomLink ?? userScheduleSettings?.personalZoomLink ?? '',
     location: designReview.location ?? undefined
   };
 
@@ -67,9 +61,35 @@ const FinalizeDesignReviewDetailsModal = ({
     reset,
     formState: { errors }
   } = useForm({
-    resolver: yupResolver(schema),
-    defaultValues
+    resolver: yupResolver(createValidationSchema()),
+    defaultValues,
+    mode: 'onChange'
   });
+
+  const handleMeetingTypeChange = (_event: any, newMeetingType: string[]) => {
+    setMeetingType(newMeetingType);
+    reset(defaultValues);
+  };
+
+  const onSubmit = async (data: { docTemplateLink: string; zoomLink?: string; location?: string }) => {
+    finalizeDesignReview({ ...data, zoomLink: data.zoomLink ? data.zoomLink : undefined, meetingType });
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    if (userScheduleSettings && designReview.isOnline && !designReview.zoomLink) {
+      reset({
+        docTemplateLink: designReview.docTemplateLink ?? '',
+        zoomLink: userScheduleSettings.personalZoomLink ?? '',
+        location: designReview.location ?? undefined
+      });
+    }
+    if (designReview.zoomLink === '' && !designReview.isOnline) {
+      reset({
+        zoomLink: undefined
+      });
+    }
+  }, [userScheduleSettings, designReview, reset]);
 
   return (
     <NERFormModal
@@ -116,10 +136,15 @@ const FinalizeDesignReviewDetailsModal = ({
       </Box>
       {meetingType.includes('virtual') && (
         <Box style={{ display: 'flex', marginBottom: 20, alignItems: 'center' }}>
-          <Typography style={{ fontSize: '1.2em', marginRight: 5 }}>Zoom Link:</Typography>
-          <Tooltip title="Ensure your Zoom Link is Publicly Accessible and Does Not Require a Password." placement="right">
-            <HelpIcon style={{ fontSize: 'medium', marginRight: 96 }} />
-          </Tooltip>
+          <Box style={{ marginRight: 90 }}>
+            <Typography style={{ fontSize: '1.2em', marginLeft: -10, display: 'inline' }}>Meeting Link:</Typography>
+            <Tooltip
+              title="Ensure your Meeting Link is Publicly Accessible and Does Not Require a Password."
+              placement="right"
+            >
+              <HelpIcon style={{ fontSize: 'medium', verticalAlign: 'middle' }} />
+            </Tooltip>
+          </Box>
           <ReactHookTextField name="zoomLink" control={control} sx={{ width: 0.48 }} errorMessage={errors.zoomLink} />
         </Box>
       )}
@@ -158,5 +183,4 @@ const FinalizeDesignReviewDetailsModal = ({
     </NERFormModal>
   );
 };
-
 export default FinalizeDesignReviewDetailsModal;

@@ -12,24 +12,18 @@ import { exampleResearchWorkPackage, exampleDesignWorkPackage, exampleManufactur
 
 const exampleConfluenceLinkType: LinkType = {
   name: 'Confluence',
-  dateCreated: new Date('05/26/21'),
-  creator: exampleAdminUser,
   iconName: 'confluence',
   required: true
 };
 
 const exampleBomLinkType: LinkType = {
   name: 'BOM',
-  dateCreated: new Date('05/26/21'),
-  creator: exampleAdminUser,
   iconName: 'bom',
   required: true
 };
 
 const exampleGDriveLinkType: LinkType = {
   name: 'Google Drive',
-  dateCreated: new Date('05/26/21'),
-  creator: exampleAdminUser,
   iconName: 'google-drive',
   required: true
 };
@@ -38,23 +32,17 @@ const exampleLinks: Link[] = [
   {
     linkId: '1',
     linkType: exampleConfluenceLinkType,
-    url: 'https://www.google.com',
-    dateCreated: new Date('05/26/21'),
-    creator: exampleAdminUser
+    url: 'https://www.google.com'
   },
   {
     linkId: '2',
     linkType: exampleBomLinkType,
-    url: 'https://www.google.com',
-    dateCreated: new Date('05/26/21'),
-    creator: exampleAdminUser
+    url: 'https://www.google.com'
   },
   {
     linkId: '3',
     linkType: exampleGDriveLinkType,
-    url: 'https://www.google.com',
-    dateCreated: new Date('05/26/21'),
-    creator: exampleAdminUser
+    url: 'https://www.google.com'
   }
 ];
 export const exampleProject1: Project = {

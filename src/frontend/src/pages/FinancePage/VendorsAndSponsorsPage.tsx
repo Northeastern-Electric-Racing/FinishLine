@@ -30,7 +30,7 @@ const VendorsAndSponsorsPage = () => {
           </Box>
         }
       >
-        {tabIndex === 0 ? <VendorsTable isHeadAndAbove={true} /> : <SponsorsTable />}
+        {tabIndex === 0 ? <VendorsTable /> : <SponsorsTable />}
       </PageLayout>
     </Box>
   );

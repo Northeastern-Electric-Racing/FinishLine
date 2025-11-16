@@ -6,7 +6,7 @@
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography, Box, IconButton, Divider, useTheme } from '@mui/material';
+import { Typography, Box, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -15,16 +15,13 @@ import GroupIcon from '@mui/icons-material/Group';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import ArticleIcon from '@mui/icons-material/Article';
 import NavPageLink from './NavPageLink';
 import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
 import { Cached, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
-import SidebarButton from './SidebarButton';
-import { isGuest, Organization } from 'shared';
-import { useHistory } from 'react-router-dom';
+import { isGuest } from 'shared';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
@@ -37,14 +34,11 @@ interface SidebarProps {
   setDrawerOpen: (open: boolean) => void;
   moveContent: boolean;
   setMoveContent: (move: boolean) => void;
-  organization?: Organization;
 }
 
-const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organization }: SidebarProps) => {
+const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
-  const theme = useTheme();
-  const history = useHistory();
   const user = useCurrentUser();
 
   const memberLinkItems: LinkItem[] = [
@@ -179,17 +173,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
               onSubmenuCollapse={() => handleCloseSubmenu()}
             />
           ))}
-          {onPNMHomePage && (
-            // Apply button
-            <SidebarButton
-              onClick={() => {
-                history.push(routes.HOME_SELECT_SUBTEAM);
-                window.open(organization?.applicationLink);
-              }}
-              label={'Apply'}
-              icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
-            />
-          )}
           <NavUserMenu open={drawerOpen} />
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>

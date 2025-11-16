@@ -32,7 +32,14 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
   };
 
   return (
-    <NERModal open={open} onHide={onCancel} title={header} onSubmit={onSubmit} submitText="Save">
+    <NERModal
+      open={open}
+      onHide={onCancel}
+      title={header}
+      onSubmit={onSubmit}
+      submitText="Save"
+      paperProps={{ maxWidth: '900px', maxHeight: '680px' }}
+    >
       <EditAvailability
         editedAvailabilities={confirmedAvailabilities}
         setEditedAvailabilities={setConfirmedAvailabilities}

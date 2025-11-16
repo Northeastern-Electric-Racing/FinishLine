@@ -3,13 +3,15 @@ import TeamsController from '../controllers/teams.controllers';
 import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
 import multer, { memoryStorage } from 'multer';
+import { MAX_FILE_SIZE } from 'shared';
 
 const teamsRouter = express.Router();
-const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
+const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/archive', TeamsController.getAllArchivedTeams);
 teamsRouter.get('/users-teams', TeamsController.getUsersTeams);
+teamsRouter.get('/my-team-as-head', TeamsController.getMyTeamAsHead);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 
 teamsRouter.post(
@@ -32,6 +34,8 @@ teamsRouter.post(
   validateInputs,
   TeamsController.editDescription
 );
+
+teamsRouter.post('/:teamId/edit-slackid', nonEmptyString(body('slackId')), validateInputs, TeamsController.editSlackId);
 
 teamsRouter.post('/:teamId/set-head', nonEmptyString(body('userId')), validateInputs, TeamsController.setTeamHead);
 teamsRouter.post('/:teamId/delete', TeamsController.deleteTeam);
@@ -85,7 +89,5 @@ teamsRouter.post(
 );
 
 teamsRouter.delete('teamType/:teamTypeId/delete', TeamsController.deleteTeamType);
-
-teamsRouter.get('/my-teams-work-packages', TeamsController.getMyTeamsWorkpackages);
 
 export default teamsRouter;

@@ -51,7 +51,7 @@ const sponsorSchema = yup.object().shape({
     .of(yup.number().typeError('Active year must be a number').required('Active year is required'))
     .required('Active years are required'),
   sponsorTierId: yup.string().required('Sponsor tier is required'),
-  vendorContact: yup.string().required('Vendor contact is required'),
+  sponsorContact: yup.string().required('Sponsor contact is required'),
   taxExempt: yup.boolean().required('Tax exempt is required'),
   discountCode: yup.string().trim().optional(),
   sponsorTasks: yup
@@ -89,13 +89,9 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
     name: 'sponsorTasks'
   });
 
-  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
-
   if (membersIsError) return <ErrorPage message={membersError?.message}></ErrorPage>;
   if (sponsorTierIsError) return <ErrorPage message={sponsorTierError?.message}></ErrorPage>;
-  if (membersLoading || !members || !allSponsorTiers || sponsorTierIsLoading || !users || allUsersIsLoading)
-    return <LoadingIndicator />;
-  if (allUsersIsError) return <ErrorPage message={allUsersError?.message}></ErrorPage>;
+  if (membersLoading || !members || !allSponsorTiers || sponsorTierIsLoading) return <LoadingIndicator />;
 
   return (
     <Grid container justifyContent="space-between" alignItems="flex-start" spacing={3}>
@@ -263,7 +259,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
             sx={{ width: 1 }}
             placeholder="Enter Sponsor Contact"
           />
-          <FormHelperText error> {errors.vendorContact?.message}</FormHelperText>
+          <FormHelperText error> {errors.sponsorContact?.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={6}>

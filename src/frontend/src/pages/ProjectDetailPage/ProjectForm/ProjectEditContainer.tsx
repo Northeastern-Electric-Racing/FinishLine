@@ -2,24 +2,26 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import { Project, ProjectProposedChangesCreateArgs } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, Project, ProjectProposedChangesCreateArgs } from 'shared';
 import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.hooks';
-import { bulletsToObject } from '../../../utils/form';
+import { bulletsToObject, wbsTester } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
-import ProjectFormContainer from './ProjectForm';
 import { ProjectFormInput } from './ProjectForm';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import { useQuery } from '../../../hooks/utils.hooks';
 import * as yup from 'yup';
-import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
+import { StandardChangeRequestType } from '../../CreateChangeRequestPage/CreateChangeRequestView';
+import { FormInput, FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 import { routes } from '../../../utils/routes';
 import { useHistory } from 'react-router-dom';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useForm } from 'react-hook-form';
+import ProjectFormContainer from './ProjectForm';
 
 interface ProjectEditContainerProps {
   project: Project;
@@ -32,7 +34,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const toast = useToast();
   const query = useQuery();
   const history = useHistory();
-
   const { name, budget, summary, workPackages } = project;
   const [managerId, setManagerId] = useState<string | undefined>(project.manager?.userId.toString());
   const [leadId, setLeadId] = useState<string | undefined>(project.lead?.userId.toString());
@@ -54,6 +55,55 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       url: link.url,
       linkTypeName: link.linkType.name
     };
+  });
+
+  const changeRequestSchema = yup.object().shape({
+    type: yup.mixed<StandardChangeRequestType>().required('Type is required'),
+    what: yup.string().required('What is required'),
+    why: yup
+      .array()
+      .min(1, 'At least one Why is required')
+      .required('Why is required')
+      .of(
+        yup.object().shape({
+          type: yup.mixed<ChangeRequestReason>().required('Why Type is required'),
+          explain: yup
+            .string()
+            .required('Why Explain is required')
+            .when('type', ([type], schema) =>
+              type === ChangeRequestReason.OtherProject
+                ? schema.required().test('wbs-num-valid', 'WBS Number is not valid', wbsTester)
+                : yup.string()
+            )
+        })
+      )
+  });
+
+  const { reset: resetChangeRequestForm, ...changeRequestFormMethods } = useForm<FormInput>({
+    resolver: yupResolver(changeRequestSchema),
+    defaultValues: query.get('budgetChange')
+      ? {
+          what: 'Increase the budget to account for the cost of materials',
+          why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
+          type: ChangeRequestType.Issue
+        }
+      : query.get('timelineDelay')
+        ? {
+            what: 'Timeline delay',
+            why: [{ type: ChangeRequestReason.Other, explain: 'Decided to extend timeline after design review' }],
+            type: ChangeRequestType.Redefinition
+          }
+        : query.get('createWP')
+          ? {
+              what: '',
+              why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
+              type: ChangeRequestType.Redefinition
+            }
+          : {
+              what: '',
+              why: [{ type: ChangeRequestReason.Other, explain: '' }],
+              type: ChangeRequestType.Issue
+            }
   });
 
   if (isLoading || isCRHookLoading) return <LoadingIndicator />;
@@ -179,8 +229,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       onSubmit={onSubmit}
       setManagerId={setManagerId}
       setLeadId={setLeadId}
-      schema={schema}
       defaultValues={defaultValues}
+      schema={schema}
+      changeRequestFormReturn={changeRequestFormMethods}
       leadId={leadId}
       managerId={managerId}
       onSubmitChangeRequest={onSubmitChangeRequest}

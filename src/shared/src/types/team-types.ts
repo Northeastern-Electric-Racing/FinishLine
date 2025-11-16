@@ -4,7 +4,7 @@
  */
 
 import { TeamType } from './design-review-types';
-import { ProjectPreview } from './project-types';
+import { ProjectGantt } from './project-types';
 import { User } from './user-types';
 
 export interface Team {
@@ -14,11 +14,11 @@ export interface Team {
   slackId: string;
   description: string;
   members: User[];
-  projects: ProjectPreview[];
+  projects: ProjectGantt[];
   leads: User[];
   userArchived?: User;
   dateArchived?: Date;
   teamType?: TeamType;
 }
 
-export type TeamPreview = Pick<Team, 'teamId' | 'teamName' | 'members' | 'head' | 'leads' | 'teamType'>;
+export type TeamPreview = Pick<Team, 'teamId' | 'teamName' | 'members' | 'head' | 'leads' | 'teamType' | 'slackId'>;

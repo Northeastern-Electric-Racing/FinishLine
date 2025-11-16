@@ -48,7 +48,7 @@ const UserScheduleSettingsView = ({
     if (confirmedAvailabilities.size === 0 && scheduleSettings.availabilities.length > 0) {
       const confirmed = getMostRecentAvailabilities(
         scheduleSettings.availabilities,
-        designReview?.dateScheduled || new Date()
+        designReview?.initialDate || new Date()
       );
       setConfirmedAvailabilities(new Map(confirmed.map((availability) => [availability.dateSet.getTime(), availability])));
     }
@@ -57,13 +57,13 @@ const UserScheduleSettingsView = ({
   return (
     <Grid container rowSpacing={1} columnSpacing={4}>
       <SingleAvailabilityModal
-        open={availabilityOpen}
+        open={confirmAvailabilityOpen}
         onHide={() => setAvailabilityOpen(false)}
         header={'Availability'}
         availabilites={scheduleSettings.availabilities}
       />
       <AvailabilityEditModal
-        open={confirmAvailabilityOpen}
+        open={availabilityOpen}
         onHide={() => setConfirmAvailabilityOpen(false)}
         header={confirmModalTitle}
         confirmedAvailabilities={confirmedAvailabilities}

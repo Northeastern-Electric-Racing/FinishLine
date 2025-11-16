@@ -1,5 +1,5 @@
-import { isAdmin, isHead, Team, TeamPreview, TeamType, WorkPackage } from 'shared';
-import { Organization, User, WBS_Element_Status } from '@prisma/client';
+import { isAdmin, isHead, Team, TeamPreview, TeamType, User } from 'shared';
+import { Organization, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import teamTransformer, { teamPreviewTransformer } from '../transformers/teams.transformer';
 import {
@@ -16,8 +16,6 @@ import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamPreviewQueryArgs, getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { teamTypeTransformer } from '../transformers/team-types.transformer';
-import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import workPackageTransformer from '../transformers/work-packages.transformer';
 
 export default class TeamsService {
   /**
@@ -173,6 +171,37 @@ export default class TeamsService {
   }
 
   /**
+   * Updates the slack id of a given team
+   * @param updater the user updating
+   * @param organization the organizaiton
+   * @param teamId the id of the team
+   * @param slackId the new slack id
+   * @returns a preview of the updated team
+   */
+  static async editSlackId(updater: User, organization: Organization, teamId: string, slackId: string) {
+    const team = await TeamsService.getSingleTeam(teamId, organization);
+    if (team.dateArchived) throw new HttpException(400, 'Cannot edit the slack id of an archived team');
+
+    if (
+      !(
+        (await userHasPermission(updater.userId, organization.organizationId, isAdmin)) ||
+        updater.userId === team.head.userId
+      )
+    )
+      throw new AccessDeniedException('you must be an admin or the team head to update the slack id!');
+
+    const updatedTeam = await prisma.team.update({
+      where: { teamId },
+      data: {
+        slackId
+      },
+      ...getTeamPreviewQueryArgs(organization.organizationId)
+    });
+
+    return teamPreviewTransformer(updatedTeam);
+  }
+
+  /**
    * Update the team's head of the given team to the given user
    * @param submitter The submitter of this request
    * @param teamId The id for the team that is being edited
@@ -206,22 +235,6 @@ export default class TeamsService {
     if (!newHead) throw new NotFoundException('User', userId);
     if (!(await userHasPermission(newHead.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('The team head must be at least a head');
-
-    // checking to see if any other teams have the new head as their current head or lead
-    const newHeadTeam = await prisma.team.findFirst({
-      where: {
-        AND: [
-          { OR: [{ headId: userId }, { leads: { some: { userId } } }] },
-          { NOT: { teamId: team.teamId } },
-          { organizationId: organization.organizationId }
-        ]
-      }
-    });
-
-    if (newHeadTeam)
-      throw new AccessDeniedException(
-        'The new team head must not be a head or lead of another team in the same organization!'
-      );
 
     const updateTeam = await prisma.team.update({
       where: { teamId },
@@ -291,14 +304,6 @@ export default class TeamsService {
     if (!newHead) throw new NotFoundException('User', headId);
     if (!(await userHasPermission(newHead.userId, organization.organizationId, isHead)))
       throw new HttpException(400, 'The team head must be at least a head');
-
-    // checking to see if any other teams have the new head as their current head
-    const newHeadTeam = await prisma.team.findFirst({
-      where: { headId, organizationId: organization.organizationId }
-    });
-
-    if (newHeadTeam)
-      throw new HttpException(400, 'The new team head must not be a head of another team in the same organization.');
 
     const duplicateName = await prisma.team.findFirst({
       where: { teamName, organizationId: organization.organizationId }
@@ -407,6 +412,15 @@ export default class TeamsService {
     });
 
     return teamTransformer(updatedTeam);
+  }
+
+  static async getMyTeamAsHead(user: User, organization: Organization): Promise<string | undefined> {
+    const team = await prisma.team.findFirst({
+      where: { headId: user.userId, organizationId: organization.organizationId },
+      select: { teamId: true }
+    });
+
+    return team?.teamId;
   }
 
   /**
@@ -678,49 +692,5 @@ export default class TeamsService {
     });
 
     return updatedTeamType;
-  }
-
-  /**
-   * Gets the current users teams workpackages
-   *
-   * @param user The current user
-   * @param organization The organization the current user is logged in for
-   */
-  static async getMyTeamsWorkpackages(user: User, organization: Organization): Promise<WorkPackage[]> {
-    const usersTeams = await prisma.team.findMany({
-      where: {
-        organizationId: organization.organizationId,
-        dateArchived: null,
-        OR: [
-          {
-            members: { some: { userId: user.userId } },
-            leads: { some: { userId: user.userId } },
-            headId: user.userId
-          }
-        ]
-      }
-    });
-
-    const workPackages = await prisma.work_Package.findMany({
-      where: {
-        wbsElement: {
-          organizationId: organization.organizationId,
-          dateDeleted: null,
-          status: { not: WBS_Element_Status.COMPLETE }
-        },
-        project: {
-          teams: {
-            some: {
-              teamId: {
-                in: usersTeams.map((team) => team.teamId)
-              }
-            }
-          }
-        }
-      },
-      ...getWorkPackageQueryArgs(organization.organizationId)
-    });
-
-    return workPackages.map(workPackageTransformer);
   }
 }

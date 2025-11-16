@@ -24,9 +24,27 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   initialDate,
   canChangeDateRange = true
 }) => {
-  const [currentlyDisplayedAvailabilities, setCurrentlyDisplayedAvailabilities] = useState(
-    getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), initialDate)
-  );
+  const [currentlyDisplayedAvailabilities, setCurrentlyDisplayedAvailabilities] = useState(() => {
+    const availabilities = Array.from(editedAvailabilities.values());
+    if (availabilities.length === 0) {
+      const defaultAvailabilities: Availability[] = [];
+      for (let i = 0; i < 7; i++) {
+        const date = addDaysToDate(initialDate, i);
+        defaultAvailabilities.push({
+          dateSet: date,
+          availability: []
+        });
+      }
+
+      defaultAvailabilities.forEach((availability) => {
+        editedAvailabilities.set(availability.dateSet.getTime(), availability);
+      });
+      setEditedAvailabilities(editedAvailabilities);
+
+      return defaultAvailabilities;
+    }
+    return availabilities;
+  });
 
   const [isDragging, setIsDragging] = useState(false);
 
@@ -105,33 +123,43 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     <Grid container>
       <Grid container justifyContent="space-between" mb={1}>
         <Typography display={'flex'} justifyContent={'flex-start'} mt={1} variant="subtitle1">
-          Available times in red
+          Available times in green
         </Typography>
         <NERButton variant="outlined" sx={{ display: 'flex', justifyContent: 'flex-end' }} onClick={invertAvailabilities}>
           Invert Availability
         </NERButton>
       </Grid>
-      <TimeSlot backgroundColor={HeatmapColors[0]} small={true} heightOverride="40px" />
+      <TimeSlot backgroundColor={HeatmapColors[0]} widthOverride="106px" heightOverride="50px" />
       {currentlyDisplayedAvailabilities.map((availability) => (
         <TimeSlot
           key={availability.dateSet.getTime()}
           backgroundColor={HeatmapColors[0]}
-          small={true}
-          heightOverride="40px"
-          text={getDayOfWeek(availability.dateSet) + ' ' + datePipe(availability.dateSet)}
-          fontSize={'12px'}
+          widthOverride="106px"
+          heightOverride="50px"
+          text={
+            <Typography fontSize="15px" fontWeight="bold">
+              {getDayOfWeek(availability.dateSet)} <br /> {datePipe(availability.dateSet)}
+            </Typography>
+          }
         />
       ))}
       {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container item>
-          <TimeSlot backgroundColor={HeatmapColors[0]} small={true} text={time} fontSize={'13px'} />
+          <TimeSlot
+            backgroundColor={HeatmapColors[0]}
+            widthOverride="106px"
+            heightOverride="32px"
+            text={time}
+            fontSize={'15px'}
+          />
           {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
             const backgroundColor = availability.availability.includes(timeIndex) ? HeatmapColors[3] : HeatmapColors[0];
             return (
               <TimeSlot
                 key={timeIndex * enumToArray(REVIEW_TIMES).length + dayIndex}
                 backgroundColor={backgroundColor}
-                small={true}
+                widthOverride="106px"
+                heightOverride="32px"
                 onMouseDown={(e) => handleMouseDown(e, availability, timeIndex)}
                 onMouseEnter={(e) => handleMouseEnter(e, availability, timeIndex)}
                 onMouseUp={handleMouseUp}

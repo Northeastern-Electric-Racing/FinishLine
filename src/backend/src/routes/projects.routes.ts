@@ -11,7 +11,8 @@ import ProjectsController from '../controllers/projects.controllers';
 
 const projectRouter = express.Router();
 
-projectRouter.get('/all/:deleted', ProjectsController.getAllProjects);
+projectRouter.get('/all-gantt', ProjectsController.getAllProjectsGantt);
+projectRouter.get('/all-previews', ProjectsController.getAllProjects);
 projectRouter.get('/users-teams', ProjectsController.getUsersTeamsProjects);
 projectRouter.get('/leading', ProjectsController.getUsersLeadingProjects);
 projectRouter.get('/teams-projects/:teamId', ProjectsController.getTeamsProjects);
@@ -28,6 +29,7 @@ projectRouter.post(
 );
 projectRouter.post(
   '/link-types/:linkTypeName/edit',
+  nonEmptyString(body('name').optional()),
   nonEmptyString(body('iconName')),
   body('required').isBoolean(),
   validateInputs,

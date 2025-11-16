@@ -106,7 +106,6 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             setDrawerOpen={setDrawerOpen}
             moveContent={moveContent}
             setMoveContent={setMoveContent}
-            organization={organization}
           />
         </>
       )}

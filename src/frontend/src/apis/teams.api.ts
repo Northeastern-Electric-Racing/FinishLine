@@ -4,11 +4,10 @@
  */
 
 import axios from '../utils/axios';
-import { Team, TeamPreview, WorkPackage } from 'shared';
+import { Team, TeamPreview } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateTeamPayload } from '../hooks/teams.hooks';
 import { teamPreviewTransformer, teamTransformer } from './transformers/teams.transformers';
-import { workPackageTransformer } from './transformers/work-packages.transformers';
 
 export const getAllTeams = () => {
   return axios.get<TeamPreview[]>(apiUrls.teams(), {
@@ -44,6 +43,12 @@ export const setTeamDescription = (id: string, description: string) => {
   });
 };
 
+export const setTeamSlackId = (id: string, slackId: string) => {
+  return axios.post<TeamPreview>(apiUrls.teamsSetSlackId(id), {
+    slackId
+  });
+};
+
 export const setTeamHead = (id: string, userId: string) => {
   return axios.post<Team>(apiUrls.teamsSetHead(id), {
     userId
@@ -68,8 +73,6 @@ export const setTeamLeads = (id: string, userIds: string[]) => {
   });
 };
 
-export const getMyTeamsWorkpackages = () => {
-  return axios.get<WorkPackage[]>(apiUrls.myTeamsWorkpackages(), {
-    transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
-  });
+export const getMyTeamAsHead = () => {
+  return axios.get<string>(apiUrls.myTeamAsHead());
 };
