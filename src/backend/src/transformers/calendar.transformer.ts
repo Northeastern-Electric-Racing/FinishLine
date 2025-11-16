@@ -1,13 +1,11 @@
 import { Prisma } from '@prisma/client';
-import { Machinery, Shop, ShopMachinery, EventType, Calendar, Event, ScheduleSlot, DayOfWeek } from 'shared';
+import { Machinery, Shop, ShopMachinery, EventType, Calendar, Event, ScheduleSlot, DayOfWeek, EventStatus } from 'shared';
 import { MachineryQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
-import { userTransformer } from './user.transformer';
+import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 import { EventQueryArgs } from '../prisma-query-args/event.query-args';
 import { ShopQueryArgs } from '../prisma-query-args/shop.query-args';
-import workPackageTransformer from './work-packages.transformer';
-import teamTransformer from './teams.transformer';
 
 export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Shop => {
   return {
@@ -20,7 +18,7 @@ export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Sho
 };
 
 export const shopMachineryTransformer = (
-  shopMachinery: Prisma.ShopMachineryGetPayload<ShopMachineryQueryArgs>
+  shopMachinery: Prisma.Shop_MachineryGetPayload<ShopMachineryQueryArgs>
 ): ShopMachinery => {
   return {
     shopMachineryId: shopMachinery.shopMachineryId,
@@ -40,7 +38,7 @@ export const machineryTransformer = (machinery: Prisma.MachineryGetPayload<Machi
   };
 };
 
-export const eventTypeTransformer = (eventType: Prisma.EventTypeGetPayload<EventTypeQueryArgs>): EventType => {
+export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<EventTypeQueryArgs>): EventType => {
   return {
     eventTypeId: eventType.eventTypeId,
     name: eventType.name,
@@ -49,16 +47,18 @@ export const eventTypeTransformer = (eventType: Prisma.EventTypeGetPayload<Event
     initialDateScheduled: eventType.initialDateScheduled,
     allDay: eventType.allDay,
     recurring: eventType.recurring,
-    members: eventType.members,
+    requiredMembers: eventType.requiredMembers,
+    optionalMembers: eventType.optionalMembers,
+    teams: eventType.teams,
     location: eventType.location,
     zoomLink: eventType.zoomLink,
-    availability: eventType.availabilities,
     shop: eventType.shop,
     machinery: eventType.machinery,
     workPackage: eventType.workPackage,
     questionDocument: eventType.questionDocument,
     documents: eventType.documents,
-    description: eventType.description
+    description: eventType.description,
+    onlyHeadsOrAboveForEventCreation: eventType.onlyHeadsOrAboveForEventCreation
   };
 };
 
@@ -74,7 +74,7 @@ export const calendarTransformer = (calendar: Prisma.CalendarGetPayload<Calendar
   };
 };
 
-export const scheduleTimesTransformer = (scheduleTimes: Prisma.ScheduleSlotGetPayload<null>): ScheduleSlot => {
+export const scheduleTimesTransformer = (scheduleTimes: Prisma.Schedule_SlotGetPayload<null>): ScheduleSlot => {
   return {
     scheduleSlotId: scheduleTimes.scheduleSlotId,
     days: scheduleTimes.days.map((d) => d as DayOfWeek),
@@ -94,19 +94,22 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     userCreated: userTransformer(event.userCreated),
     dateCreated: event.dateCreated,
     eventTypeId: event.eventTypeId,
-    people: event.members.map(userTransformer),
-    teams: event.teams.map(teamTransformer),
-    shops: event.shops.map(shopTransformer),
-    machinery: event.machinery.map(machineryTransformer),
-    workPackages: event.workPackages.map(workPackageTransformer),
+    requiredMembers: event.requiredMembers.map(userTransformer),
+    optionalMembers: event.optionalMembers.map(userTransformer),
+    confirmedMembers: event.confirmedMembers.map(userWithScheduleSettingsTransformer),
+    deniedMembers: event.deniedMembers.map(userTransformer),
+    teams: event.teams,
+    shops: event.shops,
+    machinery: event.machinery,
+    workPackages: event.workPackages,
     documentIds: event.documentIds,
     scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer),
-    availability: event.availabilities,
     approved: event.approved,
-    approvedBy: event.approvedBy ?? undefined,
+    approvalRequiredFrom: event.approvalRequiredBy ?? undefined,
     location: event.location ?? undefined,
     zoomLink: event.zoomLink ?? undefined,
     questionDocument: event.questionDocument ?? undefined,
-    description: event.description ?? undefined
+    description: event.description ?? undefined,
+    status: event.status as EventStatus
   };
 };

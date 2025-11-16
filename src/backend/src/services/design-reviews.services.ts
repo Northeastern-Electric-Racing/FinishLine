@@ -1,4 +1,4 @@
-import { Design_Review_Status, Team_Type, Organization } from '@prisma/client';
+import { Event_Status, Team_Type, Organization } from '@prisma/client';
 import {
   DesignReview,
   WbsNumber,
@@ -160,7 +160,7 @@ export default class DesignReviewsService {
         initialDateScheduled: date,
         dateScheduled: date,
         dateCreated: new Date(),
-        status: Design_Review_Status.UNCONFIRMED,
+        status: Event_Status.UNCONFIRMED,
         isOnline: false,
         isInPerson: false,
         userCreated: { connect: { userId: submitter.userId } },
@@ -262,7 +262,7 @@ export default class DesignReviewsService {
    * @param zoomLink the zoom link for the design review meeting
    * @param location the location for the design review meeting
    * @param docTemplateLink the document template link for the design review
-   * @param status see Design_Review_Status enum
+   * @param status see Event_Status enum
    * @param attendees the attendees for the design review
    * @param meetingTimes meeting time must be between 0-83 (representing 1hr increments from 10am 10pm, Monday-Sunday)
    * @param organizationId the organization that the user is currently in
@@ -280,7 +280,7 @@ export default class DesignReviewsService {
     zoomLink: string | null,
     location: string | null,
     docTemplateLink: string | null,
-    status: Design_Review_Status,
+    status: Event_Status,
     attendees: string[],
     meetingTimes: number[],
     organization: Organization
@@ -307,7 +307,7 @@ export default class DesignReviewsService {
     meetingTimes = validateMeetingTimes(meetingTimes);
 
     // docTemplateLink is required if the status is scheduled or done
-    if (status === Design_Review_Status.SCHEDULED || status === Design_Review_Status.DONE) {
+    if (status === Event_Status.SCHEDULED || status === Event_Status.DONE) {
       if (docTemplateLink == null) {
         throw new HttpException(400, 'doc template link is required for scheduled and done design reviews');
       }
@@ -349,8 +349,8 @@ export default class DesignReviewsService {
       originaldesignReview.confirmedMembers.map((user) => user.userId).includes(member.userId)
     );
 
-    if (status === Design_Review_Status.CONFIRMED && allRequiredMembersConfirmed) {
-      status = Design_Review_Status.SCHEDULED;
+    if (status === Event_Status.CONFIRMED && allRequiredMembersConfirmed) {
+      status = Event_Status.SCHEDULED;
     }
 
     // actually try to update the design review
@@ -381,7 +381,7 @@ export default class DesignReviewsService {
       ...getDesignReviewQueryArgs(organization.organizationId)
     });
 
-    if (status === Design_Review_Status.SCHEDULED) {
+    if (status === Event_Status.SCHEDULED) {
       await sendDRScheduledSlackNotif(updatedDesignReview.notificationSlackThreads, updatedDesignReview);
       if (updatedDesignReview.calendarEventId && updatedDesignReview.teamType.calendarId) {
         await updateCalendarEvent(
@@ -479,7 +479,7 @@ export default class DesignReviewsService {
           where: { designReviewId },
           ...getDesignReviewQueryArgs(organization.organizationId),
           data: {
-            status: Design_Review_Status.CONFIRMED
+            status: Event_Status.CONFIRMED
           }
         });
 

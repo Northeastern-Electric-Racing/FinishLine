@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import CalendarService from '../services/calendar.services';
+import { getCurrentUserWithUserSettings } from '../utils/auth.utils';
 
 export default class CalendarController {
   static async createEventType(req: Request, res: Response, next: NextFunction) {
@@ -10,16 +11,19 @@ export default class CalendarController {
         initialDateScheduled,
         recurring,
         allDay,
-        members,
+        requiredMembers,
+        optionalMembers,
+        teams,
         location,
         zoomLink,
-        availabilities,
         shop,
         machinery,
         workPackage,
         questionDocument,
         documents,
-        description
+        description,
+        onlyHeadsOrAbove,
+        requiresConfirmation
       } = req.body;
 
       const eventType = await CalendarService.createEventType(
@@ -30,16 +34,19 @@ export default class CalendarController {
         initialDateScheduled,
         recurring,
         allDay,
-        members,
+        requiredMembers,
+        optionalMembers,
+        teams,
         location,
         zoomLink,
-        availabilities,
         shop,
         machinery,
         workPackage,
         questionDocument,
         documents,
-        description
+        description,
+        onlyHeadsOrAbove,
+        requiresConfirmation
       );
       res.status(200).json(eventType);
     } catch (error: unknown) {
@@ -185,20 +192,24 @@ export default class CalendarController {
     try {
       const { eventTypeId } = req.params;
       const {
+        name,
         calendarIds,
         initialDateScheduled,
         recurring,
         allDay,
-        members,
+        requiredMembers,
+        optionalMembers,
+        teams,
         location,
         zoomLink,
-        availabilities,
         shop,
         machinery,
         workPackage,
         questionDocument,
         documents,
-        description
+        description,
+        onlyHeadsOrAbove,
+        requiresConfirmation
       } = req.body;
 
       const eventType = await CalendarService.editEventType(
@@ -206,21 +217,37 @@ export default class CalendarController {
         req.currentUser,
         calendarIds,
         req.organization,
+        name,
         initialDateScheduled,
         recurring,
         allDay,
-        members,
+        requiredMembers,
+        optionalMembers,
+        teams,
         location,
         zoomLink,
-        availabilities,
         shop,
         machinery,
         workPackage,
         questionDocument,
         documents,
-        description
+        description,
+        onlyHeadsOrAbove,
+        requiresConfirmation
       );
       res.status(200).json(eventType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteEventType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventTypeId } = req.params;
+
+      const deletedEventType = await CalendarService.deleteEventType(req.currentUser, eventTypeId, req.organization);
+
+      res.status(200).json(deletedEventType);
     } catch (error: unknown) {
       next(error);
     }
@@ -250,9 +277,6 @@ export default class CalendarController {
         workPackageIds,
         documentIds,
         scheduleSlot,
-        availability,
-        approved,
-        approvedByUserId,
         questionDocument,
         location,
         zoomLink,
@@ -271,15 +295,95 @@ export default class CalendarController {
         workPackageIds,
         documentIds,
         scheduleSlot,
-        availability,
-        approved,
-        approvedByUserId,
         questionDocument,
         location,
         zoomLink,
         description
       );
       res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+
+      const {
+        title,
+        requiredMemberIds,
+        optionalMemberIds,
+        teamIds,
+        status,
+        shopIds,
+        machineryIds,
+        workPackageIds,
+        documentIds,
+        scheduleSlot,
+        questionDocument,
+        location,
+        zoomLink
+      } = req.body;
+
+      const event = await CalendarService.editEvent(
+        req.currentUser,
+        eventId,
+        title,
+        req.organization,
+        requiredMemberIds,
+        optionalMemberIds,
+        status,
+        teamIds,
+        shopIds,
+        machineryIds,
+        teamIds,
+        workPackageIds,
+        documentIds,
+        scheduleSlot,
+        questionDocument,
+        location,
+        zoomLink
+      );
+      res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async approveEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+
+      const event = await CalendarService.approveEvent(req.currentUser, eventId, req.organization);
+      res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  // Mark the current user as confirmed for the given event
+  static async markUserConfirmed(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { availability } = req.body;
+      const { eventId } = req.params;
+      const user = await getCurrentUserWithUserSettings(res);
+
+      const updatedEvent = await CalendarService.markUserConfirmed(eventId, availability, user, req.organization);
+      res.status(200).json(updatedEvent);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  // Set a new status for the event
+  static async setStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+      const { status } = req.body;
+
+      const updatedEvent = await CalendarService.setStatus(req.currentUser, eventId, status, req.organization);
+      res.status(200).json(updatedEvent);
     } catch (error: unknown) {
       next(error);
     }
@@ -299,6 +403,18 @@ export default class CalendarController {
     try {
       const calendars = await CalendarService.getAllCalendars(req.organization);
       res.status(200).json(calendars);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+
+      const event = await CalendarService.deleteEvent(req.currentUser, eventId, req.organization);
+
+      res.status(200).json(event);
     } catch (error: unknown) {
       next(error);
     }
