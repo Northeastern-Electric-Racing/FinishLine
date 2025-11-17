@@ -37,25 +37,19 @@ export interface Rule {
   ruleCode: string;
   ruleContent: string;
   imageFileIds: string[];
-  ruleset: {
-    rulesetId: string;
-    name: string;
-  };
   parentRule?: {
     ruleId: string;
     ruleCode: string;
   };
   subRuleIds: string[];
-  referencedRules: { ruleId: string; ruleCode: string }[];
-  referencedBy: { ruleId: string; ruleCode: string }[];
-  projects: ProjectRule[];
+  referencedRuleIds: string[];
 }
 
 export interface RuleStatusChange {
   historyId: string;
   projectRuleId: string;
-  userUpdated: User;
-  updatedAt: Date;
+  createdBy: User;
+  dateCreated: Date;
   newStatus: RuleCompletion;
   note: string;
 }
@@ -66,4 +60,15 @@ export interface ProjectRule {
   projectId: string;
   currentStatus: RuleCompletion;
   statusHistory: RuleStatusChange[];
+}
+
+export interface RulesetPreview {
+  name: string;
+  dateCreated: Date;
+  active: boolean;
+  assignedPercentage: number;
+  car: {
+    carId: string;
+    name: string;
+  };
 }

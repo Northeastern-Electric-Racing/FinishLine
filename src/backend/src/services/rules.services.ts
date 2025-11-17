@@ -1,5 +1,5 @@
-import { Organization, Rule, User } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RuleCompletion, RulesetType, notGuest } from 'shared';
+import { Organization, Rule, User, Rule_Completion } from '@prisma/client';
+import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -10,12 +10,18 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
-import { getRuleQueryArgs, getProjectRuleQueryArgs, getRulesetQueryArgs } from '../prisma-query-args/rules.query-args';
+import {
+  getProjectRuleQueryArgs,
+  getRulesetQueryArgs,
+  getRulesetPreviewQueryArgs,
+  getRulePreviewQueryArgs
+} from '../prisma-query-args/rules.query-args';
 import {
   ruleTransformer,
   projectRuleTransformer,
   rulesetTransformer,
-  rulesetTypeTransformer
+  rulesetTypeTransformer,
+  rulesetPreviewTransformer
 } from '../transformers/rules.transformer';
 
 export default class RulesService {
@@ -137,7 +143,7 @@ export default class RulesService {
           }
         })
       },
-      ...getRuleQueryArgs(organization.organizationId)
+      ...getRulePreviewQueryArgs()
     });
 
     return ruleTransformer(rule);
@@ -309,7 +315,12 @@ export default class RulesService {
     }
 
     const projectRule = await prisma.project_Rule.create({
-      data: { ruleId, projectId, currentStatus: RuleCompletion.REVIEW },
+      data: {
+        ruleId,
+        projectId,
+        currentStatus: Rule_Completion.REVIEW,
+        createdByUserId: submitter.userId
+      },
       ...getProjectRuleQueryArgs()
     });
 
@@ -370,6 +381,140 @@ export default class RulesService {
   }
 
   /**
+   * Gets rulesets for a given ruleset type
+   * @param rulesetTypeId id of ruleset type
+   * @param organizationId id of organization
+   * @returns rulesets associated with provided ruleset type
+   */
+  static async getRulesetsByRulesetType(rulesetTypeId: string, organizationId: string): Promise<RulesetPreview[]> {
+    const rulesets = await prisma.ruleset.findMany({
+      where: {
+        rulesetTypeId,
+        deletedBy: null,
+        rulesetType: {
+          organizationId
+        }
+      },
+      ...getRulesetPreviewQueryArgs()
+    });
+
+    return rulesets.map(rulesetPreviewTransformer);
+  }
+
+  /**
+   * Updates the status of a project rule
+   * Such as changing a project rule from INCOMPLETE to COMPLETED
+   * @param submitter the user updating the status
+   * @param organization the organization of the rule
+   * @param projectRuleId the id of the project rule to update
+   * @param newStatus the new status of the project rule
+   * @returns the project rule with updated status
+   */
+  static async editProjectRuleStatus(
+    submitter: User,
+    organization: Organization,
+    projectRuleId: string,
+    newStatus: Rule_Completion
+  ): Promise<ProjectRule> {
+    // Ensure new satus is a valid Rule_Completion value
+    if (!Object.values(Rule_Completion).includes(newStatus as Rule_Completion)) {
+      throw new HttpException(400, `status must be one of: ${Object.values(Rule_Completion).join(', ')}`);
+    }
+
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('You do not have permissions to update a project rule status');
+    }
+
+    const projectRule = await prisma.project_Rule.findUnique({
+      where: { projectRuleId },
+      include: { rule: { include: { ruleset: { include: { car: { include: { wbsElement: true } } } } } } }
+    });
+
+    if (!projectRule) {
+      throw new NotFoundException('Project Rule', projectRuleId);
+    }
+
+    if (projectRule.rule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Project Rule');
+    }
+
+    // If the status does not change, simply return the project rule
+    if (projectRule.currentStatus === newStatus) {
+      const originalProjectRule = await prisma.project_Rule.findUnique({
+        where: { projectRuleId },
+        ...getProjectRuleQueryArgs()
+      });
+      return projectRuleTransformer(originalProjectRule);
+    }
+
+    const newStatusHistory = {
+      createdByUserId: submitter.userId,
+      newStatus,
+      note: `${submitter.firstName} ${submitter.lastName} marked as ${newStatus}`
+    };
+
+    const updatedProjectRule = await prisma.project_Rule.update({
+      where: { projectRuleId },
+      data: { currentStatus: newStatus, statusHistory: { create: newStatusHistory } },
+      ...getProjectRuleQueryArgs()
+    });
+
+    return projectRuleTransformer(updatedProjectRule);
+  }
+
+  /**
+   * Deletes a ruleset type and all the rulesets in the ruleset type's revision files.
+   *
+   * @param user The user who is deleting the ruleset type
+   * @param rulesetTypeId The ruleset type to be deleted
+   * @param organization The organization that the ruleset is being deleted for
+   */
+  static async deleteRulesetType(deleter: User, id: string, organization: Organization): Promise<RulesetType> {
+    //check if user is admin
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete ruleset types');
+    }
+
+    const rulesetType = await prisma.ruleset_Type.findUnique({
+      where: { rulesetTypeId: id },
+      include: {
+        revisionFiles: true
+      }
+    });
+
+    if (!rulesetType) {
+      throw new NotFoundException('Ruleset Type', id);
+    }
+    if (rulesetType.deletedByUserId) {
+      throw new DeletedException('Ruleset Type', id);
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // delete all rulesets in revision files
+      for (const ruleset of rulesetType.revisionFiles) {
+        await tx.ruleset.update({
+          where: { rulesetId: ruleset.rulesetId },
+          data: { deletedByUserId: deleter.userId }
+        });
+      }
+      // delete the actual ruleset type itself
+      await tx.ruleset_Type.update({
+        where: { rulesetTypeId: id },
+        data: { deletedByUserId: deleter.userId }
+      });
+    });
+
+    const deletedRule = await prisma.ruleset_Type.findUnique({
+      where: { rulesetTypeId: id },
+      include: {
+        revisionFiles: true
+      }
+    });
+
+    return rulesetTypeTransformer(deletedRule);
+  }
+  
+  /**
    * Deletes a project rule and its associated rule status changes
    * @param projectRuleId The ID of the project rule to delete
    * @param deleter The user deleting the project rule (must be admin)
@@ -406,12 +551,14 @@ export default class RulesService {
     });
 
     if (!projectRule) {
-      throw new NotFoundException('Rule', projectRuleId);
+      throw new NotFoundException('Project Rule', projectRuleId);
     }
 
     if (projectRule.project.wbsElement.organizationId !== organization.organizationId) {
-      throw new InvalidOrganizationException('Rule');
+      throw new InvalidOrganizationException('Project Rule');
     }
+
+    // Mark as deleted
 
     await prisma.rule_Status_Change.deleteMany({
       where: { projectRuleId }

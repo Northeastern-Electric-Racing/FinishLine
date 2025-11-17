@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services';
 import { ProjectRule } from 'shared';
-
 export default class RulesController {
   static async createRule(req: Request, res: Response, next: NextFunction) {
     try {
@@ -69,6 +68,16 @@ export default class RulesController {
     }
   }
 
+  static async getRulesetsByRulesetType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const rulesetTypeId = req.body;
+      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetTypeId, req.organization.organizationId);
+      res.status(200).json(rulesets);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteRuleset(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetId } = req.params;
@@ -84,6 +93,34 @@ export default class RulesController {
       const { projectRuleId } = req.params;
       const deletedProjectRule = await RulesService.deleteProjectRule(projectRuleId, req.currentUser, req.organization);
       res.status(200).json(deletedProjectRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+      
+  static async editProjectRuleStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectRuleId } = req.params;
+      const { newStatus } = req.body;
+
+      const projectRule: ProjectRule = await RulesService.editProjectRuleStatus(
+        req.currentUser,
+        req.organization,
+        projectRuleId,
+        newStatus
+      );
+
+      res.status(200).json(projectRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteRulesetType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetTypeId } = req.params;
+      const rulesetType = await RulesService.deleteRulesetType(req.currentUser, rulesetTypeId, req.organization);
+      res.status(200).json(rulesetType);
     } catch (error: unknown) {
       next(error);
     }

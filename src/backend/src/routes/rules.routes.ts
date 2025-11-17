@@ -35,4 +35,14 @@ rulesRouter.get('/rulesetTypes', RulesController.getAllRulesetTypes);
 rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
 rulesRouter.post('/projectRule/:projectRuleId/delete', RulesController.deleteProjectRule);
 
+rulesRouter.get('/rulesets/:rulesetTypeId', RulesController.getRulesetsByRulesetType);
+rulesRouter.post(
+  '/projectRule/:projectRuleId/editStatus',
+  nonEmptyString(body('newStatus')),
+  validateInputs,
+  RulesController.editProjectRuleStatus
+);
+
+rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
+
 export default rulesRouter;
