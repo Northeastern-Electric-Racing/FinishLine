@@ -24,7 +24,6 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { useEffect, useState } from 'react';
 import { FilterArgs, ScheduleSlot } from 'shared';
 import { Event } from 'shared';
-import { time } from 'console';
 
 interface YourEventsHeadCells {
   id: string;
@@ -186,7 +185,7 @@ const YourEventsPage = () => {
                       )}
                     </TableCell>
                     <TableCell align="center">
-                      {event.approved ? `${event.approvalRequiredFrom?.firstName} ${event.approvalRequiredFrom?.lastName}` : 'N/A'}
+                      {!event.approved ? `${event.approvalRequiredFrom?.firstName} ${event.approvalRequiredFrom?.lastName}` : 'N/A'}
                     </TableCell>
                     <TableCell align="center">{event.approved ? 'Approved' : 'Pending'}</TableCell>
                   </TableRow>

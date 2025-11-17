@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Shop, Machinery, FilterArgs } from 'shared';
+import { Shop, Machinery, FilterArgs, Event } from 'shared';
 import {
   getAllShops,
   postCreateShop,
