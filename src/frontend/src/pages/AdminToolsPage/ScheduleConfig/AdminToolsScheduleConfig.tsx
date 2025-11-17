@@ -1,23 +1,19 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Grid,
-  Typography,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Button,
-} from '@mui/material';
+import { Box, Grid, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
 import { IconButton, Tooltip } from '@mui/material';
-import { useAllShops, useCreateShop, useEditShop, useAllMachines,  useDeleteMachinery, useAllCalendars,
+import {
+  useAllShops,
+  useCreateShop,
+  useEditShop,
+  useAllMachines,
+  useDeleteMachinery,
+  useAllCalendars,
   useCreateCalendar,
-  useEditCalendar} from '../../../hooks/calendar.hooks';
+  useEditCalendar
+} from '../../../hooks/calendar.hooks';
 import ShopModal from './Shop/ShopModal';
 import CalendarModal, { CalendarFormValues } from './Calendar/CalendarModal';
 import EditIcon from '@mui/icons-material/Edit';
