@@ -97,7 +97,7 @@ export default class RulesController {
       next(error);
     }
   }
-      
+
   static async editProjectRuleStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { projectRuleId } = req.params;

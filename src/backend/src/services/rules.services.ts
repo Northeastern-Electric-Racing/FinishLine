@@ -513,7 +513,7 @@ export default class RulesService {
 
     return rulesetTypeTransformer(deletedRule);
   }
-  
+
   /**
    * Deletes a project rule and its associated rule status changes
    * @param projectRuleId The ID of the project rule to delete
@@ -558,16 +558,24 @@ export default class RulesService {
       throw new InvalidOrganizationException('Project Rule');
     }
 
-    // Mark as deleted
+    if (projectRule.dateDeleted) {
+      throw new DeletedException('Project Rule', projectRuleId);
+    }
 
-    await prisma.rule_Status_Change.deleteMany({
-      where: { projectRuleId }
+    await prisma.rule_Status_Change.updateMany({
+      where: { projectRuleId, dateDeleted: null },
+      data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
     });
 
-    await prisma.project_Rule.delete({
-      where: { projectRuleId }
+    const deletedProjectRule = await prisma.project_Rule.update({
+      where: { projectRuleId },
+      data: {
+        dateDeleted: new Date(),
+        deletedByUserId: deleter.userId
+      },
+      ...getProjectRuleQueryArgs()
     });
 
-    return projectRuleTransformer(projectRule);
+    return projectRuleTransformer(deletedProjectRule);
   }
 }
