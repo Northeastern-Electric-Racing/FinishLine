@@ -402,6 +402,70 @@ export default class RulesService {
   }
 
   /**
+   * Gets all rules assigned to a team that are in the active ruleset of a given ruleset type
+   * @param teamId id of the team
+   * @param rulesetTypeId id of ruleset type
+   * @param organization the organization
+   * @returns array of rule previews
+   */
+  static async getTeamRulesInRulesetType(teamId: string, rulesetTypeId: string, organization: Organization) {
+    const team = await prisma.team.findUnique({
+      where: { teamId }
+    });
+
+    if (!team) {
+      throw new NotFoundException('Team', teamId);
+    }
+
+    if (team.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Team');
+    }
+
+    const rulesetType = await prisma.ruleset_Type.findUnique({
+      where: { rulesetTypeId }
+    });
+
+    if (!rulesetType) {
+      throw new NotFoundException('Ruleset Type', rulesetTypeId);
+    }
+
+    if (rulesetType.deletedByUserId) {
+      throw new DeletedException('Ruleset Type', rulesetTypeId);
+    }
+
+    if (rulesetType.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Ruleset Type');
+    }
+
+    const activeRuleset = await prisma.ruleset.findFirst({
+      where: {
+        rulesetTypeId,
+        active: true,
+        deletedBy: null
+      }
+    });
+
+    if (!activeRuleset) {
+      return [];
+    }
+
+    const rules = await prisma.rule.findMany({
+      where: {
+        rulesetId: activeRuleset.rulesetId,
+        dateDeleted: null,
+        teams: {
+          some: {
+            teamId
+          }
+        }
+      },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return rules.map(ruleTransformer);
+  }
+
+  /**
    * Updates the status of a project rule
    * Such as changing a project rule from INCOMPLETE to COMPLETED
    * @param submitter the user updating the status

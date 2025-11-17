@@ -44,5 +44,6 @@ rulesRouter.post(
 );
 
 rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
+rulesRouter.get('/rules/:rulesetTypeId/team/:teamId', RulesController.getTeamRulesInRulesetType);
 
 export default rulesRouter;

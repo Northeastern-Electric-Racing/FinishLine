@@ -125,4 +125,14 @@ export default class RulesController {
       next(error);
     }
   }
+
+  static async getTeamRulesInRulesetType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetTypeId, teamId } = req.params;
+      const rules = await RulesService.getTeamRulesInRulesetType(teamId, rulesetTypeId, req.organization);
+      res.status(200).json(rules);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
