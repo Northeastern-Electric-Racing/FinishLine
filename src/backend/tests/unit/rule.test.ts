@@ -685,7 +685,7 @@ describe('Delete Rules Tests', () => {
 
       await expect(
         async () => await RulesService.deleteProjectRule(projectRule.projectRuleId, nonLeadership, organization)
-      ).rejects.toThrow(new AccessDeniedException('admin and app-admin only have the ability to delete project rules'));
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete project rules'));
     });
     it('Delete project rule fails if project rule was already deleted', async () => {
       const car = await createUniqueCar(orgId);
