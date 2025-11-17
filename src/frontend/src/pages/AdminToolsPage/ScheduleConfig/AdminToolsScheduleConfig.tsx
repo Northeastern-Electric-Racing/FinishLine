@@ -16,21 +16,18 @@ import {
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
-import {
-  useAllShops,
-  useCreateShop,
-  useEditShop,
-  useAllMachines,
-  useAllCalendars,
+import { IconButton, Tooltip } from '@mui/material';
+import { useAllShops, useCreateShop, useEditShop, useAllMachines,  useDeleteMachinery, useAllCalendars,
   useCreateCalendar,
-  useEditCalendar
-} from '../../../hooks/calendar.hooks';
+  useEditCalendar} from '../../../hooks/calendar.hooks';
 import ShopModal from './Shop/ShopModal';
 import CalendarModal, { CalendarFormValues } from './Calendar/CalendarModal';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
+import NERDeleteModal from '../../../components/NERDeleteModal';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading: shopsLoading, isError: shopsError, error: shopsErrorMsg } = useAllShops();
@@ -39,6 +36,27 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
   const [editingShopId, setEditingShopId] = useState<string | undefined>();
   const editShopMutation = useEditShop(editingShopId ?? '');
+  const [machineryToDelete, setMachineryToDelete] = useState<{
+    machineryId: string;
+    machineName: string;
+  } | null>(null);
+  const { mutateAsync: deleteMachinery } = useDeleteMachinery();
+  const toast = useToast();
+
+  const handleDeleteMachinery = async () => {
+    if (!machineryToDelete) return;
+    setMachineryToDelete(null);
+    try {
+      await deleteMachinery(machineryToDelete.machineryId);
+      toast.success('Machinery deleted successfully');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      } else {
+        toast.error('Failed to delete machinery', 3000);
+      }
+    }
+  };
 
   const [openCreate, setOpenCreate] = useState(false);
   const [openCreateMachinery, setOpenCreateMachinery] = useState(false);
@@ -302,9 +320,19 @@ const AdminToolsScheduleConfig: React.FC = () => {
                                   </span>
                                 </Tooltip>
 
-                                <Tooltip title="Delete" arrow>
+                                <Tooltip title="Delete Machine" arrow>
                                   <span>
-                                    <IconButton size="small" color="error" disabled aria-label="delete machine">
+                                    <IconButton
+                                      size="small"
+                                      color="inherit"
+                                      aria-label="delete machine"
+                                      onClick={() =>
+                                        setMachineryToDelete({
+                                          machineryId: machine.machineryId,
+                                          machineName: machine.name
+                                        })
+                                      }
+                                    >
                                       <DeleteIcon fontSize="small" />
                                     </IconButton>
                                   </span>
@@ -413,6 +441,15 @@ const AdminToolsScheduleConfig: React.FC = () => {
           setEditingShop(null);
           setEditingShopId(undefined);
         }}
+      />
+
+      {/* Delete Machinery */}
+      <NERDeleteModal
+        open={!!machineryToDelete}
+        onHide={() => setMachineryToDelete(null)}
+        formId="delete-machinery-form"
+        dataType={`machine ${machineryToDelete?.machineName || ''}`}
+        onFormSubmit={handleDeleteMachinery}
       />
     </Box>
   );
