@@ -43,6 +43,17 @@ export const postEditMachinery = async (payload: { machineryId: string; name: st
   return data;
 };
 
+export const postDeleteMachinery = async (machineryId: string) => {
+  const { data } = await axios.post<Machinery>(
+    apiUrls.calendarDeleteMachinery(machineryId),
+    {},
+    {
+      transformResponse: (data) => JSON.parse(data) as Machinery
+    }
+  );
+  return data;
+};
+
 export const postAddMachineryToShop = async (payload: {
   machineryId: string;
   shopId: string;
