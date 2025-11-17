@@ -484,20 +484,18 @@ export default class RulesService {
       throw new NotFoundException('Ruleset Type', rulesetTypeId);
     }
 
-    const wbsElement = await prisma.wBS_Element.findFirst({
+    const car = await prisma.car.findFirst({
       where: {
-        carNumber,
-        organizationId: organization.organizationId,
-        car: {
-          isNot: null
+        wbsElement: {
+          carNumber,
+          organizationId: organization.organizationId,
+          dateDeleted: null
         }
       },
-      include: {
-        car: true
-      }
+      include: { wbsElement: true }
     });
 
-    if (!wbsElement || !wbsElement.car) {
+    if (!car) {
       throw new NotFoundException('Car', carNumber);
     }
 
@@ -506,7 +504,7 @@ export default class RulesService {
         fileId,
         rulesetTypeId,
         name,
-        carId: wbsElement.car.carId,
+        carId: car.carId,
         active,
         createdByUserId: submitter.userId
       }
