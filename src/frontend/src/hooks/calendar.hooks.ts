@@ -12,7 +12,7 @@ import {
 } from '../apis/calendar.api';
 
 export const MACHINERY_KEY = ['machinery'] as const;
-export const SHOP_KEY = ['shop', 'shops'] as const;
+const SHOP_KEY = ['shops'] as const;
 
 export const useAllShops = () =>
   useQuery<Shop[], Error>(SHOP_KEY, async () => {
@@ -108,6 +108,7 @@ export const useDeleteShop = () => {
   const qc = useQueryClient();
   return useMutation<{ shopId: string }, Error, string>(
     async (shopId: string) => {
+      console.log(shopId)
       const { data } = await postDeleteShop(shopId);
       return data;
     },

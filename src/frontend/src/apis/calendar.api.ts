@@ -14,8 +14,8 @@ export const postCreateShop = (payload: { name: string; description: string }) =
   });
 };
 
-export const postDeleteShop = async (name: string) => {
-  return axios.post<Shop>(apiUrls.calendarDeleteShop(name));
+export const postDeleteShop = async (id: string) => {
+  return axios.post<Shop>(apiUrls.calendarDeleteShop(id));
 };
 
 export const getAllMachinery = () => {

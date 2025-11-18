@@ -4,7 +4,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
 import { IconButton, Tooltip } from '@mui/material';
-import { useAllShops, useCreateShop, useEditShop, useAllMachines } from '../../../hooks/calendar.hooks';
+import { useAllShops, useCreateShop, useEditShop, useAllMachines, useDeleteShop } from '../../../hooks/calendar.hooks';
 import ShopModal from './Shop/ShopModal';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -12,6 +12,7 @@ import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
 import DeleteShopModal from './Shop/DeleteShopModal';
 import { Shop } from 'shared';
+import NERDeleteModal from '../../../components/NERDeleteModal';
 
 const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading: shopsLoading, isError: shopsError, error: shopsErrorMsg } = useAllShops();
@@ -26,7 +27,10 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [editMachinery, setEditMachinery] = useState<{ machineryId: string; shopId: string } | null>(null);
   const [openEdit, setOpenEdit] = useState(false);
   const [editingShop, setEditingShop] = useState<any>(null);
+  const [deletingShop, setDeletingShop] = useState<any>(false);
   const [shopToDelete, setShopToDelete] = useState<Shop | undefined>(undefined);
+  const { mutateAsync } = useDeleteShop();
+
 
   if (shopsLoading || machinesLoading) return <LoadingIndicator />;
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
@@ -117,7 +121,12 @@ const AdminToolsScheduleConfig: React.FC = () => {
                                 size="small"
                                 color="error"
                                 aria-label="delete shop"
-                                onClick={() => setShopToDelete(shop)}
+                                onClick={
+                                  () => {
+                                      setShopToDelete(shop);
+                                      setDeletingShop(true);
+                                  }
+                                }
                               >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
@@ -228,9 +237,16 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
       {/* Delete Shop Modal */}
       {shopToDelete && (
-        <DeleteShopModal
-          shop={shopToDelete}
-          onClose={() => {
+        <NERDeleteModal
+          onFormSubmit={async () => {
+            await mutateAsync(shopToDelete.shopId);
+            setDeletingShop(false);
+            setShopToDelete(undefined);
+          }}
+          dataType={shopToDelete.name}
+          open={deletingShop}
+          onHide={() => {
+            setDeletingShop(false);
             setShopToDelete(undefined);
           }}
         />
