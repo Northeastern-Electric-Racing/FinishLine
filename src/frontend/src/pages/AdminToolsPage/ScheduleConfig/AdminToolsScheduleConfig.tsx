@@ -10,7 +10,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
-import DeleteShopModal from './Shop/DeleteShopModal';
 import { Shop } from 'shared';
 import NERDeleteModal from '../../../components/NERDeleteModal';
 
