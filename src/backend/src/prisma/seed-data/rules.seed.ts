@@ -86,19 +86,21 @@ const secondActiveRuleset = (carId: string, userCreatedId: string, rulesetTypeId
 };
 
 // project rules
-const projectRule1 = (projectId: string, ruleId: string): Prisma.Project_RuleCreateInput => {
+const projectRule1 = (projectId: string, ruleId: string, createdByUserId: string): Prisma.Project_RuleCreateInput => {
   return {
     currentStatus: 'REVIEW',
     rule: { connect: { ruleId } },
-    project: { connect: { projectId } }
+    project: { connect: { projectId } },
+    createdBy: { connect: { userId: createdByUserId } }
   };
 };
 
-const projectRule2 = (projectId: string, ruleId: string): Prisma.Project_RuleCreateInput => {
+const projectRule2 = (projectId: string, ruleId: string, createdByUserId: string): Prisma.Project_RuleCreateInput => {
   return {
     currentStatus: 'REVIEW',
     rule: { connect: { ruleId } },
-    project: { connect: { projectId } }
+    project: { connect: { projectId } },
+    createdBy: { connect: { userId: createdByUserId } }
   };
 };
 
