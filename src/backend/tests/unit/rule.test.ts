@@ -806,7 +806,7 @@ describe('Delete Rules Tests', () => {
       const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
 
       expect(unassignedRules.length).toBe(5);
-      // Check that rules are ordered by ruleCode
+      // Check that rules are sorted by ruleCode
       for (let i = 0; i < unassignedRules.length - 1; i++) {
         expect(unassignedRules[i].ruleCode <= unassignedRules[i + 1].ruleCode).toBe(true);
       }
