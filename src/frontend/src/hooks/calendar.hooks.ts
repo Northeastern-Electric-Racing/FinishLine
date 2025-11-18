@@ -108,7 +108,6 @@ export const useDeleteShop = () => {
   const qc = useQueryClient();
   return useMutation<{ shopId: string }, Error, string>(
     async (shopId: string) => {
-      console.log(shopId)
       const { data } = await postDeleteShop(shopId);
       return data;
     },
@@ -118,4 +117,4 @@ export const useDeleteShop = () => {
       }
     }
   );
-};
+}
