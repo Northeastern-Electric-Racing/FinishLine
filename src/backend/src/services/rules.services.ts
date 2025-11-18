@@ -476,7 +476,9 @@ export default class RulesService {
 
     const rulesetType = await prisma.ruleset_Type.findUnique({
       where: {
-        rulesetTypeId
+        rulesetTypeId,
+        deletedBy: null,
+        organizationId: organization.organizationId
       }
     });
 
