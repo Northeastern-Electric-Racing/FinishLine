@@ -527,7 +527,7 @@ export default class RulesService {
     }
 
     const rulesetType = await prisma.ruleset_Type.findUnique({
-      where: { rulesetTypeId: id },
+      where: { rulesetTypeId: id, deletedBy: null, organizationId: organization.organizationId },
       include: {
         revisionFiles: true
       }
