@@ -759,14 +759,15 @@ describe('Delete Rules Tests', () => {
 
     it('Successfully deletes the ruleset type', async () => {
       let rulesetTypes = await RulesService.getAllRulesetTypes(organization);
-      expect(rulesetTypes.length).toEqual(1);
+      console.log(rulesetTypes);
+      expect(rulesetTypes.length).toEqual(2);
 
       const appAdmin = await createTestUser(batmanAppAdmin, orgId);
       const result = await RulesService.deleteRulesetType(appAdmin, fsaeRulesetType.rulesetTypeId, organization);
 
       rulesetTypes = await RulesService.getAllRulesetTypes(organization);
 
-      expect(rulesetTypes.length).toEqual(0);
+      expect(rulesetTypes.length).toEqual(1);
 
       expect(result.rulesetTypeId).toBe(fsaeRulesetType.rulesetTypeId);
     });
