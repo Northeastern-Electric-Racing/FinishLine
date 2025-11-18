@@ -89,6 +89,16 @@ export class AccessDeniedGuestException extends AccessDeniedException {
   }
 }
 
+export class InvalidEventTypeConfigurationException extends HttpException {
+  /**
+   * Constructs an invalid event type configuration error
+   * @param field the name of the required field that is missing
+   */
+  constructor(field: string) {
+    super(400, `Event Type requires ${field}`);
+  }
+}
+
 /*
  * Error handling middleware. Takes the error and sends back the status of it and the message
  */
@@ -165,5 +175,5 @@ export type ExceptionObjectNames =
   | 'Encryption Key'
   | 'Reimbursement Request Comment'
   | 'Calendar'
-  | 'Event'
-  | 'Event Type';
+  | 'Event Type'
+  | 'Event';

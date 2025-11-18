@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { intMinZero, nonEmptyString, isDate, isDesignReviewStatus, validateInputs } from '../utils/validation.utils';
+import { intMinZero, nonEmptyString, isDate, isEventStatus, validateInputs } from '../utils/validation.utils';
 import DesignReviewsController from '../controllers/design-reviews.controllers';
 const designReviewsRouter = express.Router();
 
@@ -39,7 +39,7 @@ designReviewsRouter.post(
   nonEmptyString(body('zoomLink')).isURL().optional(),
   nonEmptyString(body('location')).optional(),
   nonEmptyString(body('docTemplateLink')).optional(),
-  isDesignReviewStatus(body('status')),
+  isEventStatus(body('status')),
   body('attendees').isArray(),
   nonEmptyString(body('attendees.*')),
   body('meetingTimes').isArray(),
@@ -60,7 +60,7 @@ designReviewsRouter.post(
 
 designReviewsRouter.post(
   '/:designReviewId/set-status',
-  isDesignReviewStatus(body('status')),
+  isEventStatus(body('status')),
   validateInputs,
   DesignReviewsController.setStatus
 );
