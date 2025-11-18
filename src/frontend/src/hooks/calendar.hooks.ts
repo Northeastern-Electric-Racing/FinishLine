@@ -7,6 +7,7 @@ import {
   getAllMachinery,
   postCreateMachinery,
   postEditMachinery,
+  postDeleteMachinery,
   postAddMachineryToShop,
   editShop
 } from '../apis/calendar.api';
@@ -115,6 +116,15 @@ export const useDeleteShop = () => {
     {
       onSuccess: () => {
         qc.invalidateQueries(SHOP_KEY);
+export const useDeleteMachinery = () => {
+  const qc = useQueryClient();
+  return useMutation<Machinery, Error, string>(
+    async (machineryId: string) => {
+      return await postDeleteMachinery(machineryId);
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(MACHINERY_KEY);
       }
     }
   );
