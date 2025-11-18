@@ -1,14 +1,15 @@
 import NERFormModal from '../../../components/NERFormModal';
 import { useForm } from 'react-hook-form';
-import { TextField } from '@mui/material';
+import { Box, TextField, Typography } from '@mui/material';
+import { FormatUnderlined, Title } from '@mui/icons-material';
 
 interface AddNewFileModalProps {
   open: boolean;
   onHide: () => void;
-  onConfirm: (data: FormData) => Promise<void>;
+  onConfirm: (data: NewFileFormData) => Promise<void>;
 }
 
-interface FormData {
+interface NewFileFormData {
   file: File;
   name: string;
   car: string;
@@ -16,7 +17,7 @@ interface FormData {
 }
 
 const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfirm }) => {
-  const { register, handleSubmit, reset } = useForm<FormData>({
+  const { register, handleSubmit, reset } = useForm<NewFileFormData>({
     defaultValues: {
       name: '',
       car: '',
@@ -36,7 +37,21 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfi
       onFormSubmit={onConfirm}
       formId={'add-new-file-form'}
     >
-      <TextField required autoComplete="off" placeholder={'Name File'} {...register('name')} />
+      <Box></Box>
+      <Box>
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 'bold',
+            color: '#ef4345',
+            textDecoration: 'underline',
+            fontSize: '1rem'
+          }}
+        >
+          Name Ruleset File:
+        </Typography>
+        <TextField required autoComplete="off" placeholder={'Name File'} {...register('name')} />
+      </Box>
     </NERFormModal>
   );
 };
