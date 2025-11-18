@@ -558,22 +558,28 @@ export default class RulesService {
       throw new InvalidOrganizationException('Project Rule');
     }
 
+    if (projectRule.rule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Project Rule');
+    }
+
     if (projectRule.dateDeleted) {
       throw new DeletedException('Project Rule', projectRuleId);
     }
 
-    await prisma.rule_Status_Change.updateMany({
-      where: { projectRuleId, dateDeleted: null },
-      data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
-    });
+    const deletedProjectRule = await prisma.$transaction(async (tx) => {
+      await tx.rule_Status_Change.updateMany({
+        where: { projectRuleId, dateDeleted: null },
+        data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
+      });
 
-    const deletedProjectRule = await prisma.project_Rule.update({
-      where: { projectRuleId },
-      data: {
-        dateDeleted: new Date(),
-        deletedByUserId: deleter.userId
-      },
-      ...getProjectRuleQueryArgs()
+      return await tx.project_Rule.update({
+        where: { projectRuleId },
+        data: {
+          dateDeleted: new Date(),
+          deletedByUserId: deleter.userId
+        },
+        ...getProjectRuleQueryArgs()
+      });
     });
 
     return projectRuleTransformer(deletedProjectRule);
