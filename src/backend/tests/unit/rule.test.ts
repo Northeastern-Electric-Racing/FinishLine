@@ -667,6 +667,55 @@ describe('Delete Rules Tests', () => {
     });
   });
 
+  describe('Delete Project Rule', () => {
+    it('Deletes a project rule successfully and returns the correct information', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
+
+      await RulesService.editProjectRuleStatus(admin, organization, projectRule.projectRuleId, Rule_Completion.COMPLETED);
+      await RulesService.editProjectRuleStatus(admin, organization, projectRule.projectRuleId, Rule_Completion.INCOMPLETE);
+
+      const deletedProjectRule = await RulesService.deleteProjectRule(projectRule.projectRuleId, admin, organization);
+
+      expect(deletedProjectRule).toBeDefined();
+      expect(deletedProjectRule.projectRuleId).toBe(projectRule.projectRuleId);
+
+      const statusChanges = await prisma.rule_Status_Change.findMany({
+        where: { projectRuleId: projectRule.projectRuleId }
+      });
+      expect(statusChanges.length).toBeGreaterThan(0);
+      statusChanges.forEach((statusChange) => {
+        expect(statusChange.dateDeleted).toBeDefined();
+        expect(statusChange.deletedByUserId).toBe(admin.userId);
+      });
+    });
+    it('Delete project rule fails if user does not have permission', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
+
+      await expect(
+        async () => await RulesService.deleteProjectRule(projectRule.projectRuleId, nonLeadership, organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete project rules'));
+    });
+    it('Delete project rule fails if project rule was already deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
+
+      await RulesService.deleteProjectRule(projectRule.projectRuleId, admin, organization);
+      await expect(
+        async () => await RulesService.deleteProjectRule(projectRule.projectRuleId, admin, organization)
+      ).rejects.toThrow(new DeletedException('Project Rule', projectRule.projectRuleId));
+    });
+    it('Delete project rule fails if project rule does not exist', async () => {
+      await expect(
+        async () => await RulesService.deleteProjectRule('fake-project-rule-id', admin, organization)
+      ).rejects.toThrow(new NotFoundException('Project Rule', 'fake-project-rule-id'));
+    });
+  });
+
   describe('Delete Ruleset Type', () => {
     it('Fails if user not an admin', async () => {
       await expect(async () => await RulesService.deleteRulesetType(nonLeadership, 'FSAE', organization)).rejects.toThrow(

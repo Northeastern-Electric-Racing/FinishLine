@@ -33,6 +33,7 @@ rulesRouter.post(
 
 rulesRouter.get('/rulesetTypes', RulesController.getAllRulesetTypes);
 rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
+rulesRouter.post('/projectRule/:projectRuleId/delete', RulesController.deleteProjectRule);
 
 rulesRouter.get('/rulesets/:rulesetTypeId', RulesController.getRulesetsByRulesetType);
 rulesRouter.post(

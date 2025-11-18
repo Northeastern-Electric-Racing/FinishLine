@@ -88,6 +88,16 @@ export default class RulesController {
     }
   }
 
+  static async deleteProjectRule(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectRuleId } = req.params;
+      const deletedProjectRule = await RulesService.deleteProjectRule(projectRuleId, req.currentUser, req.organization);
+      res.status(200).json(deletedProjectRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async editProjectRuleStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { projectRuleId } = req.params;
