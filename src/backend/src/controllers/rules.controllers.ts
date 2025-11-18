@@ -115,4 +115,14 @@ export default class RulesController {
       next(error);
     }
   }
+
+  static async getUnassignedRules(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const rules = await RulesService.getUnassignedRules(rulesetId, req.organization);
+      res.status(200).json(rules);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
