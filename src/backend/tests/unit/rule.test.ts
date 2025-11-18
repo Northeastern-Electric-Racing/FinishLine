@@ -696,7 +696,7 @@ describe('Delete Rules Tests', () => {
       );
     });
 
-    it('Fails if ruleset type is alread deleted', async () => {
+    it('Fails if ruleset type is already deleted', async () => {
       await prisma.ruleset_Type.update({
         where: {
           rulesetTypeId: emptyRulesetType.rulesetTypeId
@@ -711,10 +711,10 @@ describe('Delete Rules Tests', () => {
       );
     });
 
-    it('Fails if there are no rulesets in the given ruleset type', async () => {
-      await expect(RulesService.getActiveRuleset(admin, emptyRulesetType.rulesetTypeId, organization)).rejects.toThrow(
-        new NotFoundException('Active Ruleset for given Ruleset Type', emptyRulesetType.rulesetTypeId)
-      );
+    it('Returns an empty array if there are no rulesets in the given ruleset type', async () => {
+      const emptyRuleset = await RulesService.getActiveRuleset(admin, emptyRulesetType.rulesetTypeId, organization);
+      expect(Array.isArray(emptyRuleset)).toBe(true);
+      expect(emptyRuleset).toHaveLength(0);
     });
 
     it('Successfully gets the active ruleset for a ruleset type', async () => {
@@ -722,8 +722,12 @@ describe('Delete Rules Tests', () => {
 
       const activeRuleset = await RulesService.getActiveRuleset(admin, fsaeRulesetType.rulesetTypeId, organization);
       expect(activeRuleset).toBeDefined();
-      expect(activeRuleset!.name).toBe('FSAE Rules 2025');
-      expect(activeRuleset!.active).toBe(true);
+      if (Array.isArray(activeRuleset)) {
+        throw new Error('Expected a single active ruleset, but got an array');
+      }
+
+      expect(activeRuleset.name).toBe('FSAE Rules 2025');
+      expect(activeRuleset.active).toBe(true);
     });
   });
 });

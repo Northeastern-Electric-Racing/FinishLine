@@ -57,7 +57,7 @@ export default class RulesService {
     });
 
     if (!activeRuleset) {
-      throw new NotFoundException('Active Ruleset for given Ruleset Type', rulesetTypeId);
+      return [];
     }
 
     return rulesetTransformer(activeRuleset);
