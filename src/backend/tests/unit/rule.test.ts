@@ -5,11 +5,18 @@ import {
   financeMember,
   wonderwomanGuest,
   batmanAppAdmin,
-  aquamanLeadership
+  aquamanLeadership,
+  theVisitorGuest
 } from '../test-data/users.test-data';
 import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedException,
+  AccessDeniedGuestException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../../src/utils/errors.utils';
 
 describe('Create Rules Tests', () => {
   let orgId: string;
@@ -654,6 +661,27 @@ describe('Delete Rules Tests', () => {
       });
       const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
       expect(rulesetTypes.length).toEqual(0);
+    });
+  });
+
+  describe('Add team to rule', () => {
+    it('Fails if user is a guest', async () => {
+      const visitor = await createTestUser(theVisitorGuest, orgId);
+      await expect(
+        async () => await RulesService.assignRuleTeam('fake-ruleset-id', [], visitor, organization)
+      ).rejects.toThrow(new AccessDeniedGuestException('assign teams to rule'));
+    });
+    it('Fails if rule does not exist', async () => {
+      // test code here
+    });
+    it('Fails if rule is deleted', async () => {
+      // test code here
+    });
+    it('Fails if a team does not exist', async () => {
+      // test code here
+    });
+    it('Returns a message on success', async () => {
+      // test code here
     });
   });
 });
