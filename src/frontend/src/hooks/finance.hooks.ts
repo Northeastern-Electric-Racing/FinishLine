@@ -90,6 +90,28 @@ import {
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 
+/**
+ * Helper function to handle file upload errors with specific error messages
+ * @param error - The error object from the API call
+ * @param fileName - The name of the file being uploaded
+ * @throws corresponding error
+ */
+const handleFileUploadError = (error: any, fileName: string): never => {
+  if (error.response?.status === 413) {
+    throw new Error(`File "${fileName}" is too large. Maximum file size allowed is 25MB.`);
+  } else if (error.response?.status === 400 && error.response?.data?.message?.includes('File too large')) {
+    throw new Error(`File "${fileName}" is too large. ${error.response.data.message}`);
+  } else if (error.response?.status === 415) {
+    throw new Error(`File "${fileName}" has an unsupported format. Please upload PNG, JPEG, or PDF files only.`);
+  } else if (error.response?.data?.message) {
+    throw new Error(`Failed to upload "${fileName}": ${error.response.data.message}`);
+  } else if (error.message) {
+    throw new Error(`Failed to upload "${fileName}": ${error.message}`);
+  } else {
+    throw new Error(`Failed to upload "${fileName}": Network error. Please check your connection and try again.`);
+  }
+};
+
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
   dateOfExpense?: Date;
@@ -339,23 +361,7 @@ export const useUploadSingleReceipt = () => {
         const { data } = await uploadSingleReceipt(formData.file, formData.id);
         return data;
       } catch (error: any) {
-        if (error.response?.status === 413) {
-          throw new Error(`File "${formData.file.name}" is too large. Maximum file size allowed is 25MB.`);
-        } else if (error.response?.status === 400 && error.response?.data?.message?.includes('File too large')) {
-          throw new Error(`File "${formData.file.name}" is too large. ${error.response.data.message}`);
-        } else if (error.response?.status === 415) {
-          throw new Error(
-            `File "${formData.file.name}" has an unsupported format. Please upload PNG, JPEG, or PDF files only.`
-          );
-        } else if (error.response?.data?.message) {
-          throw new Error(`Failed to upload "${formData.file.name}": ${error.response.data.message}`);
-        } else if (error.message) {
-          throw new Error(`Failed to upload "${formData.file.name}": ${error.message}`);
-        } else {
-          throw new Error(
-            `Failed to upload "${formData.file.name}": Network error. Please check your connection and try again.`
-          );
-        }
+        handleFileUploadError(error, formData.file.name);
       }
     }
   );
@@ -375,19 +381,7 @@ export const useUploadManyReceipts = () => {
         try {
           results.push(await uploadSingleReceipt(file, formData.id));
         } catch (error: any) {
-          if (error.response?.status === 413) {
-            throw new Error(`File "${file.name}" is too large. Maximum file size allowed is 25MB.`);
-          } else if (error.response?.status === 400 && error.response?.data?.message?.includes('File too large')) {
-            throw new Error(`File "${file.name}" is too large. ${error.response.data.message}`);
-          } else if (error.response?.status === 415) {
-            throw new Error(`File "${file.name}" has an unsupported format. Please upload PNG, JPEG, or PDF files only.`);
-          } else if (error.response?.data?.message) {
-            throw new Error(`Failed to upload "${file.name}": ${error.response.data.message}`);
-          } else if (error.message) {
-            throw new Error(`Failed to upload "${file.name}": ${error.message}`);
-          } else {
-            throw new Error(`Failed to upload "${file.name}": Network error. Please check your connection and try again.`);
-          }
+          handleFileUploadError(error, file.name);
         }
       }
       return results.map((result) => result.data);
