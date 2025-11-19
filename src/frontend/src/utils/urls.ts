@@ -443,6 +443,7 @@ const calendarFilterEvents = () => `${calendar()}/events/filter`;
 const calendarMachinery = () => `${calendar()}/machinery`;
 const calendarCreateMachinery = () => `${calendar()}/machinery/create`;
 const calendarEditMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/edit`;
+const calendarDeleteMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/delete`;
 const calendarAddMachineryToShop = (machineryId: string) => `${calendar()}/machinery/${machineryId}/add-to-shop`;
 const calendarEditShop = (shopId: string) => `${calendar()}/shop/${shopId}/edit`;
 
@@ -753,6 +754,7 @@ export const apiUrls = {
   calendarMachinery,
   calendarCreateMachinery,
   calendarEditMachinery,
+  calendarDeleteMachinery,
   calendarAddMachineryToShop,
   calendarEditShop,
 
