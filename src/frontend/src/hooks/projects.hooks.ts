@@ -10,6 +10,8 @@ import {
   LinkType,
   LinkTypeCreatePayload,
   Project,
+  ProjectOverview,
+  ProjectGantt,
   ProjectPreview,
   WbsNumber,
   WorkPackageTemplate
@@ -17,7 +19,7 @@ import {
 import {
   editSingleProject,
   createSingleProject,
-  getAllProjects,
+  getAllProjectsGantt,
   getSingleProject,
   setProjectTeam,
   deleteProject,
@@ -32,35 +34,55 @@ import {
   getUsersLeadingProjects,
   setAbbreviation,
   deleteAbbreviation,
-  getTeamsProjects
+  getTeamsProjects,
+  getAllProjects
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
 
 /**
- * Custom React Hook to supply all projects.
+ * Custom React Hook to supply all projects with Gantt querry args
  */
-export const useAllProjects = (includeDeleted: boolean = false) => {
-  return useQuery<ProjectPreview[], Error>(['projects'], async () => {
-    const { data } = await getAllProjects(includeDeleted);
+export const useAllProjectsGantt = () => {
+  return useQuery<ProjectGantt[], Error>(['projects'], async () => {
+    const { data } = await getAllProjectsGantt();
     return data;
   });
 };
 
+/**
+ * Custom React Hook to supply all projects
+ */
+export const useAllProjects = () => {
+  return useQuery<ProjectPreview[], Error>(['projects', 'previews'], async () => {
+    const { data } = await getAllProjects();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply all of the projects that are on the users teams
+ */
 export const useGetUsersTeamsProjects = () => {
-  return useQuery<ProjectPreview[], Error>(['projects', 'teams'], async () => {
+  return useQuery<ProjectOverview[], Error>(['projects', 'teams'], async () => {
     const { data } = await getUsersTeamsProjects();
     return data;
   });
 };
 
+/**
+ * Custom React Hook to supply all of the projects that the user is the manager or lead of
+ */
 export const useGetUsersLeadingProjects = () => {
-  return useQuery<ProjectPreview[], Error>(['projects', 'leading'], async () => {
+  return useQuery<ProjectOverview[], Error>(['projects', 'leading'], async () => {
     const { data } = await getUsersLeadingProjects();
     return data;
   });
 };
 
+/**
+ * Custom React Hook to supply all of the projects for a given team
+ */
 export const useGetTeamsProjects = (teamId: string) => {
   return useQuery<Project[], Error>(['projects', 'teams'], async () => {
     const { data } = await getTeamsProjects(teamId);

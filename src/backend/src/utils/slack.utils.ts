@@ -220,11 +220,12 @@ export const sendSubmittedToSaboNotification = async (threads: SlackMessageThrea
 export const sendSlackDesignReviewConfirmNotification = async (
   slackId: string,
   designReviewId: string,
-  designReviewName: string
+  designReviewName: string,
+  projectName: string
 ) => {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction) return; // don't send msgs unless in prod
-  const msg = `You have been invited to the ${designReviewName} Design Review!`;
+  const msg = `You have been invited to the ${designReviewName} Design Review in project ${projectName}!`;
   const fullLink = isProduction
     ? `https://finishlinebyner.com/settings/preferences?drId=${designReviewId}`
     : `http://localhost:3000/settings/preferences?drId=${designReviewId}`;
@@ -323,10 +324,12 @@ export const sendSlackDRNotifications = async (
   teams: Team[],
   designReview: Design_Review,
   submitter: User,
-  workPackageName: string
+  workPackageName: string,
+  projectName: string
 ) => {
+  if (process.env.NODE_ENV !== 'production') return []; // don't send msgs unless in prod
   const notifications: { channelId: string; ts: string }[] = [];
-  const message = `:spiral_calendar_pad: Design Review for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
+  const message = `:spiral_calendar_pad: Design Review for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
 
   const completion: Promise<void>[] = teams.map(async (team) => {
     const sentNotifications: { channelId: string; ts: string }[] = await sendSlackDesignReviewNotification(team, message);

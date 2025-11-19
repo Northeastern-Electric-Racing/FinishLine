@@ -1,7 +1,7 @@
 import { useHistory, useParams } from 'react-router-dom';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { Box, Grid } from '@mui/material';
+import { Box } from '@mui/material';
 import GraphView from '../GraphView/GraphView';
 import { useGetSingleGraphCollection } from '../../../hooks/statistics.hooks';
 import { NERButton } from '../../../components/NERButton';
@@ -34,34 +34,38 @@ const GraphCollectionViewContainer = () => {
           <NERButton variant="contained" sx={{ mx: 1 }} onClick={() => setShowEditGraphCollectionModal(true)}>
             Edit Graph Collection
           </NERButton>
+          <NERButton
+            variant="outlined"
+            sx={{ mx: 1 }}
+            onClick={() => history.push(`${routes.STATISTICS}/graph-collections/${graphCollection.id}/graph/create`)}
+          >
+            Add Graph
+          </NERButton>
         </Box>
       }
     >
-      <Grid container spacing={1}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 2,
+          alignItems: 'flex-start'
+        }}
+      >
         {graphCollection.graphs.map((graph) => (
-          <Grid item lg={4} md={6} xs={12} overflow={'hidden'}>
-            <GraphView graph={graph} height={400} />
-          </Grid>
-        ))}
-        <Grid item lg={4} md={6} xs={12}>
           <Box
+            key={graph.graphId}
             sx={{
-              width: '100%',
-              height: 400,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              border: '2px dashed #ef4343'
+              flex: '0 0 auto',
+              minWidth: 300,
+              minHeight: 200
             }}
           >
-            <NERButton
-              onClick={() => history.push(`${routes.STATISTICS}/graph-collections/${graphCollection.id}/graph/create`)}
-            >
-              Add Graph
-            </NERButton>
+            <GraphView graph={graph} height={400} width={600} />
           </Box>
-        </Grid>
-      </Grid>
+        ))}
+      </Box>
+
       <UpdateGraphCollectionForm
         open={showEditGraphCollectionModal}
         onHide={() => setShowEditGraphCollectionModal(false)}

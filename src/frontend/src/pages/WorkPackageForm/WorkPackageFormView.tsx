@@ -3,8 +3,27 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBulletPreview, User, validateWBS, WbsElement, wbsPipe, WorkPackageTemplate } from 'shared';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import {
+  ChangeRequestReason,
+  ChangeRequestType,
+  DescriptionBulletPreview,
+  User,
+  validateWBS,
+  WbsElement,
+  wbsPipe,
+  WorkPackageTemplate
+} from 'shared';
+import {
+  Control,
+  Controller,
+  FormState,
+  useFieldArray,
+  useForm,
+  UseFormHandleSubmit,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch
+} from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
 import { useState, useEffect } from 'react';
@@ -19,8 +38,8 @@ import { WorkPackageStage } from 'shared';
 import { ObjectSchema } from 'yup';
 import { getMonday, transformDate } from '../../utils/datetime.utils';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
-import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeRequestModal';
-import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequest';
+import { StandardChangeRequestType } from '../CreateChangeRequestPage/CreateChangeRequestView';
+import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequestView';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import HelpIcon from '@mui/icons-material/Help';
@@ -31,6 +50,19 @@ import { useAllWorkPackageTemplates } from '../../hooks/wbs-templates.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { WorkPackageTemplateSection } from './WorkPackageTemplateSection';
+import { useQuery } from '../../hooks/utils.hooks';
+import { wbsTester } from '../../utils/form';
+import * as yup from 'yup';
+import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeRequestModal';
+
+export interface WorkPackageFormReturn {
+  register: UseFormRegister<WorkPackageFormViewPayload>;
+  handleSubmit: UseFormHandleSubmit<WorkPackageFormViewPayload, WorkPackageFormViewPayload>;
+  control: Control<WorkPackageFormViewPayload, any, WorkPackageFormViewPayload>;
+  watch: UseFormWatch<WorkPackageFormViewPayload>;
+  formState: FormState<WorkPackageFormViewPayload>;
+  setValue: UseFormSetValue<WorkPackageFormViewPayload>;
+}
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -68,16 +100,10 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   schema,
   breadcrumbs
 }) => {
+  const query = useQuery();
   const toast = useToast();
   const user = useCurrentUser();
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    formState: { errors },
-    setValue
-  } = useForm<WorkPackageFormViewPayload>({
+  const { reset: resetWorkPackageForm, ...workPackageFormMethods } = useForm<WorkPackageFormViewPayload>({
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.name ?? '',
@@ -90,6 +116,14 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       stage: defaultValues?.stage ?? 'NONE'
     }
   });
+  const {
+    control,
+    watch,
+    handleSubmit,
+    setValue,
+    register,
+    formState: { errors }
+  } = workPackageFormMethods;
 
   const history = useHistory();
 
@@ -122,6 +156,55 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const watchedStage = watch('stage');
   const watchedDuration = watch('duration');
   const watchedDescriptionBullets = watch('descriptionBullets');
+
+  const changeRequestSchema = yup.object().shape({
+    type: yup.mixed<StandardChangeRequestType>().required('Type is required'),
+    what: yup.string().required('What is required'),
+    why: yup
+      .array()
+      .min(1, 'At least one Why is required')
+      .required('Why is required')
+      .of(
+        yup.object().shape({
+          type: yup.mixed<ChangeRequestReason>().required('Why Type is required'),
+          explain: yup
+            .string()
+            .required('Why Explain is required')
+            .when('type', ([type], schema) =>
+              type === ChangeRequestReason.OtherProject
+                ? schema.required().test('wbs-num-valid', 'WBS Number is not valid', wbsTester)
+                : yup.string()
+            )
+        })
+      )
+  });
+
+  const { reset: resetChangeRequestForm, ...changeRequestFormMethods } = useForm<FormInput>({
+    resolver: yupResolver(changeRequestSchema),
+    defaultValues: query.get('budgetChange')
+      ? {
+          what: 'Increase the budget to account for the cost of materials',
+          why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
+          type: ChangeRequestType.Issue
+        }
+      : query.get('timelineDelay')
+        ? {
+            what: 'Timeline delay',
+            why: [{ type: ChangeRequestReason.Other, explain: 'Decided to extend timeline after design review' }],
+            type: ChangeRequestType.Redefinition
+          }
+        : query.get('createWP')
+          ? {
+              what: '',
+              why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
+              type: ChangeRequestType.Redefinition
+            }
+          : {
+              what: '',
+              why: [{ type: ChangeRequestReason.Other, explain: '' }],
+              type: ChangeRequestType.Issue
+            }
+  });
 
   useEffect(() => {
     if (currentWorkPackageTemplate) {
@@ -319,6 +402,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         onHide={() => setIsModalOpen(false)}
         wbsNum={wbsPipe(wbsElement.wbsNum)}
         open={isModalOpen}
+        changeRequestFormReturn={changeRequestFormMethods}
       />
     </form>
   );

@@ -15,7 +15,9 @@ import {
   Task_Priority,
   Task_Status,
   Team,
-  Part_Tag
+  Part_Tag,
+  Prisma,
+  Ruleset_Type
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
@@ -27,7 +29,6 @@ import {
   RoleEnum,
   SpecialPermission,
   StandardChangeRequest,
-  User,
   WbsElementStatus,
   WorkPackageStage
 } from 'shared';
@@ -50,6 +51,8 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
+import { ruleSeedData } from './seed-data/rules.seed';
+import RulesService from '../services/rules.services';
 import { seedRulesetType } from './seed-data/rules.seed';
 
 const prisma = new PrismaClient();
@@ -804,21 +807,16 @@ const performSeed: () => Promise<void> = async () => {
    * Graphs
    */
 
-  /** Graph 1 */
-  const graph1 = await seedGraph(
-    new Date('12/12/2024'),
-    new Date('12/12/2027'),
-    'new graph',
-    Graph_Type.PROJECT_BUDGET_BY_DIVISION,
-    Graph_Display_Type.BAR,
-    Measure.SUM,
-    thomasEmrax,
-    ner
-  );
-
-  /**
-   * Graph Collection 1
-   */
+  const graph1 = await prisma.graph.create({
+    data: {
+      title: 'graph1',
+      graphType: Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
+      displayGraphType: Graph_Display_Type.BAR,
+      measure: Measure.SUM,
+      userCreatedId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
   const graph2 = await prisma.graph.create({
     data: {
       title: 'graph2',
@@ -833,9 +831,8 @@ const performSeed: () => Promise<void> = async () => {
   const graphCollection1 = await prisma.graph_Collection.create({
     data: {
       title: 'Graph Collection 1',
-      viewPermissions: [SpecialPermission.FINANCE_ONLY],
       graphs: {
-        connect: [{ id: graph2.id }]
+        connect: [{ id: graph2.id }, { id: graph1.id }]
       },
       userCreatedId: thomasEmrax.userId,
       organizationId: ner.organizationId
@@ -3042,6 +3039,35 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
+  /**
+   * Rules
+   */
+
+  // ruleset types
+  const fsaeRulesetType = await prisma.ruleset_Type.create({
+    data: ruleSeedData.rulesetType1(batman.userId, ner.organizationId)
+  });
+
+  // rulesets
+  const ruleset1 = await prisma.ruleset.create({
+    data: ruleSeedData.ruleset1(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
+  });
+
+  // rules
+  const ruleT = await prisma.rule.create({ data: ruleSeedData.topLevelRule(ruleset1.rulesetId, batman.userId) });
+  const ruleT2 = await prisma.rule.create({
+    data: ruleSeedData.secondLevelRule(ruleset1.rulesetId, batman.userId, ruleT.ruleId)
+  });
+  const ruleT21 = await prisma.rule.create({
+    data: ruleSeedData.thirdLevelRule(ruleset1.rulesetId, batman.userId, ruleT2.ruleId)
+  });
+  const ruleT211 = await prisma.rule.create({
+    data: ruleSeedData.leafRule(ruleset1.rulesetId, batman.userId, ruleT21.ruleId)
+  });
+
+  // project rules
+  await RulesService.createProjectRule(batman, ner, ruleT211.ruleId, project1Id);
+
   const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156', 3000);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32', 10);
@@ -3070,6 +3096,404 @@ const performSeed: () => Promise<void> = async () => {
     new Date(7, 5, 25),
     thomasEmrax.userId
   );
+
+  /**
+   * RULESET TYPES AND RULESETS
+   */
+
+  const formulaStudentRulesetType = await prisma.ruleset_Type.create({
+    data: {
+      name: 'Formula Student Rules',
+      createdByUserId: superman.userId,
+      organizationId: ner.organizationId
+    }
+  });
+
+  // Create rulesets
+  const fsae2025Ruleset = await prisma.ruleset.create({
+    data: {
+      fileId: 'fsae-2025-rules-file-id',
+      name: '2025 FSAE Electric Rules',
+      active: true,
+      rulesetTypeId: fsaeRulesetType.rulesetTypeId,
+      carId: fergus.carId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const fsae2024Ruleset = await prisma.ruleset.create({
+    data: {
+      fileId: 'fsae-2024-rules-file-id',
+      name: '2024 FSAE Electric Rules',
+      active: false,
+      rulesetTypeId: fsaeRulesetType.rulesetTypeId,
+      carId: fergus.carId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  /**
+   * RULES
+   */
+  // Technical Rules Section
+  const techRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1',
+      ruleContent: 'Technical Rules - All technical requirements for the vehicle must be met to compete',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const vehicleConfigRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.1',
+      ruleContent: 'Vehicle Configuration - The vehicle must be a four-wheeled, open-wheel, open-cockpit vehicle',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: techRule.ruleId,
+      createdByUserId: thomasEmrax.userId,
+      imageFileIds: []
+    }
+  });
+
+  const wheelRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.1.1',
+      ruleContent: 'All four wheels must be visible when viewed from above. Wheels must not exceed 13 inches in diameter',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: vehicleConfigRule.ruleId,
+      createdByUserId: joeShmoe.userId
+    }
+  });
+
+  const wheelbaseRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.1.2',
+      ruleContent: 'The wheelbase must be at least 1525 mm (60 inches)',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: vehicleConfigRule.ruleId,
+      createdByUserId: joeShmoe.userId
+    }
+  });
+
+  const trackWidthRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.1.3',
+      ruleContent: 'The smaller track width must be no less than 75% of the wheelbase',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: vehicleConfigRule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+  const rulesetType = await prisma.ruleset_Type.create({
+    data: {
+      name: 'FSAE',
+      createdByUserId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
+
+  // Powertrain Rules
+  const powertrainRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.2',
+      ruleContent: 'Powertrain - Electric powertrain systems must comply with all electrical safety requirements',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: techRule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  const motorRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.2.1',
+      ruleContent: 'The maximum nominal voltage of the accumulator must not exceed 600 VDC',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: powertrainRule.ruleId,
+      createdByUserId: joeShmoe.userId
+    }
+  });
+
+  const motorPowerRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.2.2',
+      ruleContent: 'The maximum continuous power delivered by the accumulator must not exceed 80 kW',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: powertrainRule.ruleId,
+      createdByUserId: joeBlow.userId
+    }
+  });
+
+  // Chassis Rules
+  const chassisRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.3',
+      ruleContent: 'Chassis and Frame - The chassis must provide adequate driver protection',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: techRule.ruleId,
+      createdByUserId: batman.userId,
+      imageFileIds: ['chassis-spec-drawing-1', 'chassis-spec-drawing-2']
+    }
+  });
+
+  const chassisMaterialRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.3.1',
+      ruleContent: 'The frame must be a space frame design or a carbon fiber monocoque meeting specific standards',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: chassisRule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  // Safety Rules Section
+  const safetyRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.1',
+      ruleContent: 'Safety Rules - All safety requirements must be met before the vehicle is allowed to compete',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const frameRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.1.1',
+      ruleContent:
+        'Frame Requirements - The main hoop must be directly behind the driver and be the tallest part of the car',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: safetyRule.ruleId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const rollHoopRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.1.1.1',
+      ruleContent: 'The main roll hoop must extend from the lowest chassis frame members on one side to the other',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: frameRule.ruleId,
+      createdByUserId: superman.userId
+    }
+  });
+
+  const harnessRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.1.2',
+      ruleContent: 'Harness - A 5-point or 6-point harness must be used, meeting SFI 16.1 or FIA 8853/98 standards',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: safetyRule.ruleId,
+      createdByUserId: superman.userId
+    }
+  });
+
+  const fireExtinguisherRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.1.3',
+      ruleContent: 'Fire Extinguisher - An onboard fire extinguisher system must be installed and accessible',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: safetyRule.ruleId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  // Braking System Rules with Cross-References
+  const brakingRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.2.1',
+      ruleContent:
+        'Braking System - The vehicle must have a braking system that acts on all four wheels and operates on two independent hydraulic circuits',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: thomasEmrax.userId,
+      referencedRule: {
+        connect: [{ ruleId: vehicleConfigRule.ruleId }, { ruleId: wheelRule.ruleId }]
+      }
+    }
+  });
+
+  const brakePedalRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.2.1.1',
+      ruleContent: 'The brake pedal must be capable of locking all four wheels in both dry and wet conditions',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: brakingRule.ruleId,
+      createdByUserId: joeShmoe.userId
+    }
+  });
+
+  // Electrical System Rules with References
+  const electricalSystemRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.3.1',
+      ruleContent: 'Electrical System - All high voltage components must be protected and isolated per safety requirements',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: thomasEmrax.userId,
+      imageFileIds: ['electrical-diagram-1', 'electrical-diagram-2', 'electrical-diagram-3'],
+      referencedRule: {
+        connect: [{ ruleId: powertrainRule.ruleId }, { ruleId: safetyRule.ruleId }]
+      }
+    }
+  });
+
+  const shutdownCircuitRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.3.1.1',
+      ruleContent: 'A shutdown circuit must be installed that disables the tractive system when activated',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: electricalSystemRule.ruleId,
+      createdByUserId: joeBlow.userId
+    }
+  });
+
+  const shutdownButtonRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.3.1.2',
+      ruleContent: 'Shutdown buttons must be located on both sides of the vehicle and be easily accessible',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: electricalSystemRule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  // Accumulator Container Rules
+  const accumulatorRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.3.2',
+      ruleContent: 'Accumulator Container - The accumulator container must protect the cells from impact and debris',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: batman.userId,
+      referencedRule: {
+        connect: [{ ruleId: safetyRule.ruleId }]
+      }
+    }
+  });
+
+  const accumulatorMountingRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.3.2.1',
+      ruleContent: 'The accumulator container must be rigidly mounted to the frame',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: accumulatorRule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  // General Rules (Orphan - no parent)
+  const generalRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'G.1',
+      ruleContent:
+        'General - All rules are subject to interpretation by competition officials. When in doubt, contact the rules committee',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const competitionEligibilityRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'G.2',
+      ruleContent: 'Competition Eligibility - Teams must register before the deadline and submit all required documentation',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: superman.userId
+    }
+  });
+
+  // Driver Requirements
+  const driverRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.2',
+      ruleContent: 'Driver Requirements - All drivers must meet safety equipment and training requirements',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: superman.userId
+    }
+  });
+
+  const helmetRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.2.1',
+      ruleContent: 'Helmet - Driver must wear a helmet meeting Snell SA2020, FIA 8859-2015, or equivalent standards',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: driverRule.ruleId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const suitRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.2.2',
+      ruleContent: 'Suit - Driver must wear a driving suit meeting SFI 3.2A/1 or FIA 8856-2000 standards',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: driverRule.ruleId,
+      createdByUserId: superman.userId
+    }
+  });
+
+  // Suspension Rules
+  const suspensionRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.4.1',
+      ruleContent: 'Suspension - All vehicles must have a fully operational suspension system on all wheels',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: thomasEmrax.userId,
+      referencedRule: {
+        connect: [{ ruleId: wheelRule.ruleId }]
+      }
+    }
+  });
+
+  const suspensionTravelRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.4.1.1',
+      ruleContent: 'The suspension must have at least 50.8 mm (2 inches) of travel',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: suspensionRule.ruleId,
+      createdByUserId: joeShmoe.userId
+    }
+  });
+
+  // Adding some rules to the 2024 ruleset as well
+  const tech2024Rule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1',
+      ruleContent: 'Technical Rules - 2024 Edition',
+      rulesetId: fsae2024Ruleset.rulesetId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const vehicle2024Rule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.1',
+      ruleContent: 'Vehicle must be four-wheeled (2024 rules)',
+      rulesetId: fsae2024Ruleset.rulesetId,
+      parentRuleId: tech2024Rule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  const ruleset = await prisma.ruleset.create({
+    data: {
+      name: 'FSAE Rules 2025',
+      fileId: 'fsae-rules-2025',
+      active: true,
+      dateCreated: new Date('2025-01-01T10:00:00Z'),
+      rulesetTypeId: rulesetType.rulesetTypeId,
+      createdByUserId: thomasEmrax.userId,
+      carId: fergus.carId
+    }
+  });
+
+  await prisma.rule.create({
+    data: {
+      ruleCode: 'T2.1.1',
+      ruleContent:
+        'The vehicle must be open-wheeled and open-cockpit (a formula style body) with four (4) wheels that are not in a straight line.',
+      imageFileIds: [],
+      dateCreated: new Date('2025-09-01T10:00:00Z'),
+      ruleset: { connect: { rulesetId: ruleset.rulesetId } },
+      createdBy: { connect: { userId: thomasEmrax.userId } }
+    }
+  });
 };
 
 performSeed()

@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args';
-import { getProjectManyQueryArgs } from './projects.query-args';
+import { getProjectGanttQueryArgs } from './projects.query-args';
 
 export type TeamQueryArgs = ReturnType<typeof getTeamQueryArgs>;
 
@@ -20,7 +20,7 @@ export const getTeamQueryArgs = (organizationId: string) =>
             dateDeleted: null
           }
         },
-        ...getProjectManyQueryArgs(organizationId)
+        ...getProjectGanttQueryArgs(organizationId)
       }
     }
   });
