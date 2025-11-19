@@ -73,6 +73,8 @@ export class FHEParser extends RuleParser {
     return rules;
   }
 
+  // TOC extraction for FHE not yet implemented
+  // However FHE rules json DOES exclude toc data atm
   protected extractToc(text: string): RuleData[] {
     return [];
   }

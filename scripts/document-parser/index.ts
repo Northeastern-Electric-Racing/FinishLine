@@ -2,11 +2,15 @@ import { FSAEParser } from './parsers/FSAEParser';
 import { FHEParser } from './parsers/FHEParser';
 import { ParserType, RuleParser } from './RuleParser';
 
+// For manual testing of parsers
+// Run 'npm start FHE FHE.pdf' or 'npm start FSAE FSAE.pdf'
 async function main() {
   const type = (process.argv[2]?.toUpperCase() as ParserType) || ParserType.FSAE;
   const pdfFileName = process.argv[3];
-  const userId = process.argv[4] || 'c8ff9535-8b88-40dd-8e99-ba1b800bb380';
-  const carId = process.argv[5] || '3cdd8115-c48b-4775-9c46-136b0d157a72';
+  // these are values from prisma:studio so not a permanent fix
+  const userId = process.argv[4] || 'f9f1f920-82c2-45ff-98f3-b30f759330fc';
+  const carId = process.argv[5] || 'a24e6261-0ca1-47a8-9f49-5e1db76713bd';
+  const organizationId = process.argv[6] || 'ecf53ed9-d91d-42d2-8b7c-811a3cf10021';
 
   if (!pdfFileName) {
     console.error('Usage: npm start <FHE|FSAE> <filename.pdf>');
@@ -23,7 +27,7 @@ async function main() {
     const result = await parser.parsePdf(pdfFileName);
     await parser.saveToJSON(result.rules, outputPath, result.tocEntries, tocPath, result.imgInfo, imgPath);
     await parser.saveToTxt(result.text, txtPath);
-    await parser.saveToDatabase(result.rules, type, userId, carId, pdfFileName);
+    await parser.saveToDatabase(result.rules, type, userId, carId, organizationId, pdfFileName);
 
     console.log(`${type} parsing completed`);
   } catch (error) {

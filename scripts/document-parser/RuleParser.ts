@@ -264,6 +264,7 @@ export abstract class RuleParser {
     parserType: ParserType,
     userId: string,
     carId: string,
+    organizationId: string,
     pdfFileName: string
   ): Promise<void> {
     try {
@@ -271,7 +272,8 @@ export abstract class RuleParser {
       const rulesetType = await prisma.ruleset_Type.create({
         data: {
           name: parserType,
-          createdByUserId: userId
+          createdByUserId: userId,
+          organizationId: organizationId
         }
       });
       // create new ruleset

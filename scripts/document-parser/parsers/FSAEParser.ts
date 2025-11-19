@@ -71,7 +71,7 @@ export class FSAEParser extends RuleParser {
   }
 
   /**
-   * Adds .dup suffix to duplicate rule codes
+   * Adds .duplicate suffix to duplicate rule codes
    */
   private handleDuplicateCodes(rule: RuleData, seenRuleCodes: Map<string, number>): RuleData {
     const originalCode = rule.ruleCode;
@@ -79,7 +79,7 @@ export class FSAEParser extends RuleParser {
     seenRuleCodes.set(originalCode, count + 1);
 
     if (count > 0) {
-      const suffix = count === 1 ? '.dup' : `.dup${count}`;
+      const suffix = count === 1 ? '.duplicate' : `.duplicate${count}`;
       console.log(`Duplicate rule found: ${originalCode} -> ${originalCode}${suffix}`);
       return {
         ...rule,
