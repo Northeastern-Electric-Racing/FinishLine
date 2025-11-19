@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableRow } from '@mui/material';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
@@ -187,23 +187,6 @@ const RulesetPage: React.FC = () => {
           <Box sx={{ paddingBottom: '100px' }}>
             <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
               <Table>
-                <TableHead
-                  sx={{
-                    backgroundColor: '#dd514c'
-                  }}
-                >
-                  <TableRow>
-                    <TableCell align="left" sx={{ fontSize: '16px', fontWeight: 600 }}>
-                      Rule Code
-                    </TableCell>
-                    <TableCell align="left" sx={{ fontSize: '16px', fontWeight: 600 }}>
-                      Rule Content
-                    </TableCell>
-                    <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
-                      Actions
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
                 <TableBody sx={{ backgroundColor: '#9d9d9d' }}>
                   {ruleset.rules?.map((rule) => (
                     <TableRow
