@@ -18,23 +18,10 @@ rulesRouter.post(
   validateInputs,
   RulesController.createRule
 );
-rulesRouter.post(
-  '/rule/:ruleId/edit',
-  nonEmptyString(body('ruleContent')),
-  nonEmptyString(body('ruleCode')),
-  body('imageFileIds').isArray(),
-  nonEmptyString(body('imageFileIds.*')),
-  body('parentRuleId').optional().isString(),
-  validateInputs,
-  RulesController.editRule
-);
-rulesRouter.post('/rule/:ruleId/delete', RulesController.deleteRule);
 
 rulesRouter.post('/rulesetType/create', nonEmptyString(body('name')), validateInputs, RulesController.createRulesetType);
-rulesRouter.get('/rulesetTypes', RulesController.getAllRulesetTypes);
 
-rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
-rulesRouter.get('/rulesets/:rulesetTypeId', RulesController.getRulesetsByRulesetType);
+rulesRouter.post('/rule/:ruleId/delete', RulesController.deleteRule);
 
 rulesRouter.post(
   '/projectRule/create',
@@ -43,6 +30,12 @@ rulesRouter.post(
   validateInputs,
   RulesController.createProjectRule
 );
+
+rulesRouter.get('/rulesetTypes', RulesController.getAllRulesetTypes);
+rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
+rulesRouter.post('/projectRule/:projectRuleId/delete', RulesController.deleteProjectRule);
+
+rulesRouter.get('/rulesets/:rulesetTypeId', RulesController.getRulesetsByRulesetType);
 rulesRouter.post(
   '/projectRule/:projectRuleId/editStatus',
   nonEmptyString(body('newStatus')),
