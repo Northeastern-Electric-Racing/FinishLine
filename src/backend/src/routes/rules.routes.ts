@@ -42,4 +42,11 @@ rulesRouter.post(
   RulesController.editProjectRuleStatus
 );
 
+rulesRouter.post(
+  '/rule/:ruleId/assign-team',
+  body('teamIds').optional().isArray(),
+  nonEmptyString(body('teamIds.*')),
+  RulesController.assignRuleTeam
+);
+
 export default rulesRouter;

@@ -3,6 +3,7 @@ import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPrevi
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
+  AccessDeniedGuestException,
   AccessDeniedException,
   DeletedException,
   HttpException,
@@ -456,5 +457,56 @@ export default class RulesService {
     });
 
     return projectRuleTransformer(updatedProjectRule);
+  }
+
+  /**
+   * Assigns each team in the inputted array of rules to
+   * the rule with the inputted ruleId.
+   * @param ruleId The ruleId of the rule to be added to
+   * @param teamIds An array of teamId's to be added to the rule
+   * @param user The user adding the teams to the rule
+   * @param org The organization the rule belongs to
+   * @throws If the user is a guest, the rule does not exist or
+   *         is deleted, or a team does not exist.
+   */
+  static async assignRuleTeam(ruleId: string, teamIds: string[], user: User, org: Organization) {
+    // Checks that the user is not a guest
+    if (!(await userHasPermission(user.userId, org.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('assign teams to rule');
+    }
+
+    // Checks that the rule exists and is not deleted
+    const rule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: { teams: true }
+    });
+    if (!rule) {
+      throw new NotFoundException('Rule', ruleId);
+    }
+    if (rule.deletedByUserId) {
+      throw new DeletedException('Rule', ruleId);
+    }
+
+    // Checks that each team exists
+    for (const teamId of teamIds) {
+      const team = await prisma.team.findUnique({ where: { teamId } });
+      if (!team) throw new NotFoundException('Team', teamId);
+    }
+
+    // We add the team to the rule if it is not already in the rule
+    for (const teamId of teamIds) {
+      if (!rule.teams.some((currTeam) => currTeam.teamId === teamId)) {
+        await prisma.rule.update({
+          where: { ruleId: rule.ruleId },
+          data: {
+            teams: {
+              connect: {
+                teamId
+              }
+            }
+          }
+        });
+      }
+    }
   }
 }

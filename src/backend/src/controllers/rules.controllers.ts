@@ -106,4 +106,17 @@ export default class RulesController {
       next(error);
     }
   }
+
+  static async assignRuleTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ruleId } = req.params;
+      const { teamIds } = req.body;
+
+      await RulesService.assignRuleTeam(ruleId, teamIds, req.currentUser, req.organization);
+
+      res.status(200).json({ message: `Teams of rule ${ruleId} successfully updated.` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
