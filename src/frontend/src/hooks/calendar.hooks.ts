@@ -115,6 +115,11 @@ export const useDeleteShop = () => {
     {
       onSuccess: () => {
         qc.invalidateQueries(SHOP_KEY);
+      }
+    }
+  );
+};
+
 export const useDeleteMachinery = () => {
   const qc = useQueryClient();
   return useMutation<Machinery, Error, string>(
@@ -127,4 +132,4 @@ export const useDeleteMachinery = () => {
       }
     }
   );
-}
+};
