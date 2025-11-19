@@ -6,19 +6,16 @@
 aws_region = "us-east-1"
 
 # Network Configuration
-# Add your IP addresses here to allow direct RDS access (for psql, TablePlus, etc.)
-# Find your IP: curl ifconfig.me
-allowed_ips = [
-  # IP 1,
-  # IP 2
-]
+vpc_cidr = "10.0.0.0/16"
+
+# Database Configuration
 database_name      = "finishline"
 db_master_username = "postgres"
 
 # RDS Configuration
 rds_instance_class      = "db.t4g.medium"
 rds_allocated_storage   = 20
-rds_publicly_accessible = false 
+rds_publicly_accessible = false  # Always false for production 
 rds_multi_az            = false  # Set to true for high availability (costs 2x)
 
 # Elastic Beanstalk Configuration

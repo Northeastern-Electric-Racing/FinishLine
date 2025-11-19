@@ -28,18 +28,6 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-variable "allowed_ips" {
-  description = "List of IP addresses (in CIDR notation) allowed to access RDS directly. Leave empty for no direct access."
-  type        = list(string)
-  default     = []
-  
-  # Example:
-  # allowed_ips = [
-  #   "73.123.45.67/32",  # Your home IP
-  #   "52.98.76.54/32"    # Your office IP
-  # ]
-}
-
 #####################
 # RDS Variables
 #####################
@@ -75,7 +63,7 @@ variable "db_master_username" {
 }
 
 variable "rds_publicly_accessible" {
-  description = "Whether RDS should be publicly accessible"
+  description = "Whether RDS should be publicly accessible (should always be false for production)"
   type        = bool
   default     = false
 }

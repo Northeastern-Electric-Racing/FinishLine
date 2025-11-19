@@ -46,7 +46,6 @@ module "network" {
   environment  = local.environment
   aws_region   = var.aws_region
   vpc_cidr     = var.vpc_cidr
-  allowed_ips  = var.allowed_ips
 }
 
 #############
@@ -122,9 +121,10 @@ module "rds" {
   database_name        = var.database_name
   master_username      = var.db_master_username
   master_password      = module.secrets.db_password
+  # Keep RDS in private subnets (best practice for production)
   db_subnet_group_name = module.network.db_subnet_group_name
   security_group_id    = module.network.rds_security_group_id
-  publicly_accessible  = var.rds_publicly_accessible
+  publicly_accessible  = false  # Keep private for security
   multi_az             = var.rds_multi_az
 
   # Backup configuration

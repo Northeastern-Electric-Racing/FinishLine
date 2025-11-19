@@ -191,13 +191,7 @@ resource "aws_security_group" "rds" {
   description = "Security group for RDS database"
   vpc_id      = aws_vpc.main.id
 
-  ingress {
-    description     = "PostgreSQL from EB instances"
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.eb_instance.id]
-  }
+  # No inline rules - all rules defined separately below
 
   egress {
     description = "Allow all outbound traffic"
@@ -219,22 +213,20 @@ resource "aws_security_group" "rds" {
 }
 
 #############
-# Security Group Rule - RDS Access from Whitelisted IPs
+# Security Group Rule - RDS Access from EB Instances
 #############
-resource "aws_security_group_rule" "rds_from_whitelisted_ips" {
-  count = length(var.allowed_ips) > 0 ? 1 : 0
-
-  type              = "ingress"
-  description       = "PostgreSQL from whitelisted IPs"
-  from_port         = 5432
-  to_port           = 5432
-  protocol          = "tcp"
-  cidr_blocks       = var.allowed_ips
-  security_group_id = aws_security_group.rds.id
+resource "aws_security_group_rule" "rds_from_eb" {
+  type                     = "ingress"
+  description              = "PostgreSQL from EB instances"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.eb_instance.id
+  security_group_id        = aws_security_group.rds.id
 }
 
 #############
-# DB Subnet Group for RDS
+# DB Subnet Group for RDS (Private Subnets)
 #############
 resource "aws_db_subnet_group" "main" {
   name       = "${var.project_name}-${var.environment}-db-subnet-group"
