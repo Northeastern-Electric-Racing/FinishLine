@@ -94,7 +94,6 @@ const YourEventsPage = () => {
     });
   }, [filterEventsMutate, user.userId]);
 
-  // Every second, just setInterval(true) to trigger re-render for time updates
   useEffect(() => {
     const timer = setInterval(() => {
       setUpdate((prev) => !prev);
