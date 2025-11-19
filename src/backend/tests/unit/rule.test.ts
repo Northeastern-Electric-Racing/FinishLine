@@ -5,10 +5,16 @@ import {
   financeMember,
   wonderwomanGuest,
   batmanAppAdmin,
-  aquamanLeadership,
-  theVisitorGuest
+  aquamanLeadership
 } from '../test-data/users.test-data';
-import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
+import {
+  createTestOrganization,
+  createTestProject,
+  createTestTeam,
+  createTestTeamType,
+  createTestUser,
+  resetUsers
+} from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import {
   AccessDeniedException,
@@ -346,6 +352,7 @@ describe('Delete Rules Tests', () => {
   let orgId: string;
   let admin: User;
   let nonLeadership: User;
+  let guest: User;
   let project: Project;
   let fsaeRulesetType: Ruleset_Type;
 
@@ -354,6 +361,7 @@ describe('Delete Rules Tests', () => {
     orgId = organization.organizationId;
     admin = await createTestUser(supermanAdmin, organization.organizationId);
     nonLeadership = await createTestUser(financeMember, organization.organizationId);
+    guest = await createTestUser(wonderwomanGuest, orgId);
     project = await createTestProject(admin, organization.organizationId);
 
     fsaeRulesetType = await prisma.ruleset_Type.create({
@@ -666,22 +674,47 @@ describe('Delete Rules Tests', () => {
 
   describe('Add team to rule', () => {
     it('Fails if user is a guest', async () => {
-      const visitor = await createTestUser(theVisitorGuest, orgId);
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
       await expect(
-        async () => await RulesService.assignRuleTeam('fake-ruleset-id', [], visitor, organization)
+        async () => await RulesService.assignRuleTeam(topLevelRule.ruleId, [], guest, organization)
       ).rejects.toThrow(new AccessDeniedGuestException('assign teams to rule'));
     });
     it('Fails if rule does not exist', async () => {
-      // test code here
+      await expect(async () => await RulesService.assignRuleTeam('fake-rule-id', [], admin, organization)).rejects.toThrow(
+        new NotFoundException('Rule', 'fake-rule-id')
+      );
     });
     it('Fails if rule is deleted', async () => {
-      // test code here
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      await RulesService.deleteRule(topLevelRule.ruleId, admin, organization);
+      await expect(
+        async () => await RulesService.assignRuleTeam(topLevelRule.ruleId, [], admin, organization)
+      ).rejects.toThrow(new DeletedException('Rule', topLevelRule.ruleId));
     });
     it('Fails if a team does not exist', async () => {
-      // test code here
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const teamType = await createTestTeamType('electrical', organization.organizationId);
+      const team = await createTestTeam(admin.userId, teamType.teamTypeId, organization.organizationId);
+      await expect(
+        async () =>
+          await RulesService.assignRuleTeam(topLevelRule.ruleId, [team.teamId, 'fake-team-id'], admin, organization)
+      ).rejects.toThrow(new NotFoundException('Team', 'fake-team-id'));
     });
-    it('Returns a message on success', async () => {
-      // test code here
+    it('Successfully adds a team to a rule', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const teamType = await createTestTeamType('electrical', organization.organizationId);
+      const team = await createTestTeam(admin.userId, teamType.teamTypeId, organization.organizationId);
+      await RulesService.assignRuleTeam(topLevelRule.ruleId, [team.teamId], admin, organization);
+      const ruleWithTeams = await prisma.rule.findUnique({
+        where: { ruleId: topLevelRule.ruleId },
+        include: { teams: true }
+      });
+      expect(ruleWithTeams?.teams.length).toBe(1);
+      expect(ruleWithTeams?.teams[0].teamId).toBe(team.teamId);
     });
   });
 });
