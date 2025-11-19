@@ -19,4 +19,4 @@ export const filterEventsTransformer = (events: Event[]): any => {
       endTime: schedule.endTime ? new Date(schedule.endTime) : undefined
     }))
   }));
-}
+};

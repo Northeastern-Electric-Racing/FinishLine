@@ -2,21 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import {
-  Box,
-  Button,
-  Link,
-  Paper,
-  Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  Typography
-} from '@mui/material';
+import { Box, Link, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import TableCellHuge from './YourEventsComponents/TableCellHuge';
 import { useFilterEvents } from '../../hooks/calendar.hooks';
@@ -78,14 +64,14 @@ const YourEventsPage = () => {
 
   const [events, setEvents] = useState([] as Event[]);
   const [eventsLoading, setEventsLoading] = useState(true);
-  const [update, setUpdate] = useState(true);
+  const [, setUpdate] = useState(true); // Linting...
 
   useEffect(() => {
     // Example filter on mount
     console.log('Filtering events...');
     const filterArgs: FilterArgs = {
       memberIds: [user.userId],
-      startPeriod: new Date(0), // Adjust as needed
+      startPeriod: new Date(0),
       endPeriod: new Date(2099, 11, 31) // Adjust as needed
     };
     filterEventsMutate(filterArgs).then((events) => {
@@ -184,7 +170,9 @@ const YourEventsPage = () => {
                       )}
                     </TableCell>
                     <TableCell align="center">
-                      {!event.approved ? `${event.approvalRequiredFrom?.firstName} ${event.approvalRequiredFrom?.lastName}` : 'N/A'}
+                      {!event.approved
+                        ? `${event.approvalRequiredFrom?.firstName} ${event.approvalRequiredFrom?.lastName}`
+                        : 'N/A'}
                     </TableCell>
                     <TableCell align="center">{event.approved ? 'Approved' : 'Pending'}</TableCell>
                   </TableRow>
