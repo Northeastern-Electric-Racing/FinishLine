@@ -42,4 +42,6 @@ rulesRouter.post(
   RulesController.editProjectRuleStatus
 );
 
+rulesRouter.get('/:ruleId/subrule', RulesController.getChildRules);
+
 export default rulesRouter;

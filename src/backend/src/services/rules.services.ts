@@ -1,5 +1,5 @@
 import { Organization, Rule, User, Rule_Completion } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview } from 'shared';
+import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview, Rule as SharedRule } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -14,7 +14,8 @@ import {
   getRuleQueryArgs,
   getProjectRuleQueryArgs,
   getRulesetQueryArgs,
-  getRulesetPreviewQueryArgs
+  getRulesetPreviewQueryArgs,
+  getRulePreviewQueryArgs
 } from '../prisma-query-args/rules.query-args';
 import {
   ruleTransformer,
@@ -460,5 +461,21 @@ export default class RulesService {
     });
 
     return projectRuleTransformer(updatedProjectRule);
+  }
+
+  /**
+   * Gets all subrules of a specific rule.
+   * @param ruleId the ID of the parent rule
+   * @returns an array of all child rules (the Rule object)
+   */
+  static async getChildRules(ruleId: string): Promise<SharedRule[]> {
+    const subRules = await prisma.rule.findMany({
+      where: {
+        parentRuleId: ruleId,
+        dateDeleted: null
+      },
+      ...getRulePreviewQueryArgs()
+    });
+    return subRules.map((rule) => ruleTransformer(rule as any));
   }
 }
