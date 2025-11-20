@@ -33,6 +33,7 @@ rulesRouter.post(
 
 rulesRouter.get('/rulesetTypes', RulesController.getAllRulesetTypes);
 rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
+rulesRouter.post('/projectRule/:projectRuleId/delete', RulesController.deleteProjectRule);
 
 rulesRouter.get('/rulesets/:rulesetTypeId', RulesController.getRulesetsByRulesetType);
 rulesRouter.post(
@@ -41,6 +42,18 @@ rulesRouter.post(
   validateInputs,
   RulesController.editProjectRuleStatus
 );
+
+rulesRouter.post(
+  '/ruleset/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('rulesetTypeId')),
+  body('carNumber').isInt(),
+  body('active').isBoolean(),
+  nonEmptyString(body('fileId')),
+  validateInputs,
+  RulesController.createRuleset
+);
+rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
 
 rulesRouter.get('/:ruleId/subrule', RulesController.getChildRules);
 

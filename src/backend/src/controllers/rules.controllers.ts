@@ -89,6 +89,16 @@ export default class RulesController {
     }
   }
 
+  static async deleteProjectRule(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectRuleId } = req.params;
+      const deletedProjectRule = await RulesService.deleteProjectRule(projectRuleId, req.currentUser, req.organization);
+      res.status(200).json(deletedProjectRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async editProjectRuleStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { projectRuleId } = req.params;
@@ -102,6 +112,38 @@ export default class RulesController {
       );
 
       res.status(200).json(projectRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, rulesetTypeId, carNumber, active, fileId } = req.body;
+
+      const ruleset = await RulesService.createRuleset(
+        req.currentUser,
+        req.organization,
+        name,
+        rulesetTypeId,
+        carNumber,
+        active,
+        fileId
+      );
+
+      res.status(200).json(ruleset);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteRulesetType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetTypeId } = req.params;
+
+      const rulesetType = await RulesService.deleteRulesetType(req.currentUser, rulesetTypeId, req.organization);
+
+      res.status(200).json(rulesetType);
     } catch (error: unknown) {
       next(error);
     }
