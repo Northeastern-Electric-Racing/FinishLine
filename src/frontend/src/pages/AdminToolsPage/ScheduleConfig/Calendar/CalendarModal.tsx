@@ -83,7 +83,6 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
 
   const computedTitle = initialValues ? 'Edit Calendar' : 'Add Calendar';
 
-
   const onFormSubmit = async (data: CalendarFormValues) => {
     try {
       await onSubmit(data);
