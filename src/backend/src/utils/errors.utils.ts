@@ -1,4 +1,6 @@
 import { ErrorRequestHandler, Request, Response, NextFunction } from 'express';
+import multer from 'multer';
+import { MAX_FILE_SIZE } from 'shared';
 
 /**
  * Custom Error type that has a status code and a message (from the default Error class)
@@ -103,6 +105,54 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request,
     res.status(500).json({ message: JSON.stringify(error) });
     throw error;
   }
+};
+
+/**
+ * Handles Multer-specific errors and converts them to appropriate HTTP responses
+ * @param error - The Multer error object
+ * @returns multer error as HttpException
+ */
+export const handleMulterError = (error: multer.MulterError): HttpException => {
+  switch (error.code) {
+    case 'LIMIT_FILE_SIZE':
+      return new HttpException(400, `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB`);
+    case 'LIMIT_UNEXPECTED_FILE':
+      return new HttpException(400, 'Unexpected field name for file upload');
+    case 'LIMIT_FILE_COUNT':
+      return new HttpException(400, 'Too many files uploaded');
+    case 'LIMIT_PART_COUNT':
+      return new HttpException(400, 'Too many parts in upload');
+    case 'LIMIT_FIELD_KEY':
+      return new HttpException(400, 'Field name too long');
+    case 'LIMIT_FIELD_VALUE':
+      return new HttpException(400, 'Field value too long');
+    case 'LIMIT_FIELD_COUNT':
+      return new HttpException(400, 'Too many fields');
+    default:
+      return new HttpException(400, `File upload error: ${error.message}`);
+  }
+};
+
+/**
+ * Middleware to handle Multer upload errors and convert them to HTTP exceptions
+ * Can be used with any multer upload configuration
+ * @param upload - The multer upload
+ */
+export const multerErrorMiddleware = (upload: any) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    upload(req, res, (err: any): void => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          const httpError = handleMulterError(err);
+          res.status(httpError.status).json({ message: httpError.message });
+          return;
+        }
+        res.status(500).json({ message: 'Unknown upload error' });
+        return;
+      }
+      next();
+    });
+  };
 };
 
 // type so that the not found error messages are consistent

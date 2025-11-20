@@ -91,19 +91,13 @@ import {
 import { fullNamePipe } from '../utils/pipes';
 
 /**
- * Helper function to handle file upload errors with specific error messages
+ * Helper function to handle file upload errors with file name context
  * @param error - The error object from the API call
  * @param fileName - The name of the file being uploaded
- * @throws corresponding error
+ * @throws file upload error
  */
 const handleFileUploadError = (error: any, fileName: string): never => {
-  if (error.response?.status === 413) {
-    throw new Error(`File "${fileName}" is too large. Maximum file size allowed is 25MB.`);
-  } else if (error.response?.status === 400 && error.response?.data?.message?.includes('File too large')) {
-    throw new Error(`File "${fileName}" is too large. ${error.response.data.message}`);
-  } else if (error.response?.status === 415) {
-    throw new Error(`File "${fileName}" has an unsupported format. Please upload PNG, JPEG, or PDF files only.`);
-  } else if (error.response?.data?.message) {
+  if (error.response?.data?.message) {
     throw new Error(`Failed to upload "${fileName}": ${error.response.data.message}`);
   } else if (error.message) {
     throw new Error(`Failed to upload "${fileName}": ${error.message}`);

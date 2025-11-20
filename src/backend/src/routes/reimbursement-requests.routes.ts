@@ -16,6 +16,7 @@ import {
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
 import multer, { memoryStorage } from 'multer';
 import { MAX_FILE_SIZE } from 'shared';
+import { multerErrorMiddleware } from '../utils/errors.utils';
 
 const reimbursementRequestsRouter = express.Router();
 
@@ -26,31 +27,7 @@ const upload = multer({
   }
 });
 
-const handleMulterError = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
-  upload.single('image')(req, res, (err: any) => {
-    if (err) {
-      if (err instanceof multer.MulterError) {
-        switch (err.code) {
-          case 'LIMIT_FILE_SIZE':
-            res.status(400).json({ message: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB` });
-            return;
-          case 'LIMIT_UNEXPECTED_FILE':
-            res.status(400).json({ message: 'Unexpected field name for file upload' });
-            return;
-          case 'LIMIT_FILE_COUNT':
-            res.status(400).json({ message: 'Too many files uploaded' });
-            return;
-          default:
-            res.status(400).json({ message: 'File upload error: ' + err.message });
-            return;
-        }
-      }
-      res.status(500).json({ message: 'Unknown upload error' });
-      return;
-    }
-    next();
-  });
-};
+const handleMulterError = multerErrorMiddleware(upload.single('image'));
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
