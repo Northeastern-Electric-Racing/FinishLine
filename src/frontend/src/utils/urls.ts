@@ -196,6 +196,7 @@ const financeDeleteOtherProductReason = (otherReasonId: string) =>
 const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
+const financeSetVendorTaxExemptStatus = (vendorId: string) => `${financeEndpoints()}/vendors/${vendorId}/setTaxExemptStatus`;
 const financeDeleteVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/delete`;
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
 
@@ -613,6 +614,7 @@ export const apiUrls = {
   financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
+  financeSetVendorTaxExemptStatus,
   financeDeleteVendor,
   financeLeadershipApprove,
   financeCreateSponsor,
