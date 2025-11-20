@@ -43,16 +43,6 @@ rulesRouter.post(
   RulesController.editProjectRuleStatus
 );
 
-rulesRouter.post(
-  '/ruleset/create',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('rulesetTypeId')),
-  body('carNumber').isInt(),
-  body('active').isBoolean(),
-  nonEmptyString(body('fileId')),
-  validateInputs,
-  RulesController.createRuleset
-);
 rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
 
 export default rulesRouter;

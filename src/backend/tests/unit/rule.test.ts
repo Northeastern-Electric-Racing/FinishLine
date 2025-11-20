@@ -240,56 +240,6 @@ describe('Create Rules Tests', () => {
       await RulesService.createRule(aquaman, 'T.1.2', 'Leadership created rule', rulesetId, organization);
       await RulesService.createRule(superman, 'T.1.3', 'Admin created rule', rulesetId, organization);
     });
-
-    describe('Create ruleset', () => {
-      it('successful create ruleset', async () => {
-        const ruleset = await RulesService.createRuleset(
-          superman,
-          organization,
-          'ruleset name',
-          rulesetType.rulesetTypeId,
-          0,
-          false,
-          'fileId'
-        );
-
-        expect(ruleset.name).toEqual('ruleset name');
-      });
-      it('Create ruleset fails when submitters is not leadership', async () => {
-        await expect(
-          async () =>
-            await RulesService.createRuleset(
-              wonderwoman,
-              organization,
-              'ruleset name',
-              rulesetType.rulesetTypeId,
-              0,
-              false,
-              'fileId'
-            )
-        ).rejects.toThrow(new AccessDeniedException('only leadership and above can create ruleset!'));
-      });
-      it('Create ruleset fails when given bad ruleset id', async () => {
-        await expect(
-          async () =>
-            await RulesService.createRuleset(superman, organization, 'ruleset name', 'bad ruleset type', 0, false, 'fileId')
-        ).rejects.toThrow(new NotFoundException('Ruleset Type', 'bad ruleset type'));
-      });
-      it('Create ruleset fails when given bad car number', async () => {
-        await expect(
-          async () =>
-            await RulesService.createRuleset(
-              superman,
-              organization,
-              'ruleset name',
-              rulesetType.rulesetTypeId,
-              12312312,
-              false,
-              'fileId'
-            )
-        ).rejects.toThrow(new NotFoundException('Car', 12312312));
-      });
-    });
   });
 
   describe('Complex Rule Scenarios', () => {
