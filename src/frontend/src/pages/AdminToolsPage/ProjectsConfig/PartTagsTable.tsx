@@ -1,6 +1,6 @@
 import { Box, IconButton, TableCell, TableRow, Typography } from '@mui/material';
 import { NERButton } from '../../../components/NERButton';
-import NERTable from '../../../components/NERTable';
+import AdminToolTable from '../AdminToolTable';
 import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -109,7 +109,7 @@ const PartTagsTable: React.FC = () => {
     <Box>
       <Typography variant="h6">Part Tags</Typography>
       <CreatePartTagModal showModal={openModal} handleClose={() => setOpenModal(false)} />
-      <NERTable
+      <AdminToolTable
         columns={[
           { name: 'Tag Name', width: '80%' },
           { name: ' ', width: '20%' }

@@ -14,14 +14,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { isGuest, ReimbursementRequest } from 'shared';
 import { ReimbursementRequestRow, ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
-import {
-  undefinedPipe,
-  fullNamePipe,
-  centsToDollar,
-  datePipe,
-  dateUndefinedPipe,
-  formatSaboIdPipe
-} from '../../../utils/pipes';
+import { undefinedPipe, fullNamePipe, centsToDollar, datePipe, dateUndefinedPipe } from '../../../utils/pipes';
 import {
   createReimbursementRequestRowData,
   vendorDescendingComparator,
@@ -43,7 +36,6 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface ReimbursementRequestInfoProps {
   userReimbursementRequests: ReimbursementRequest[];
-  assignedReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
   canViewAllReimbursementRequests?: boolean;
   currentTab?: number;
@@ -61,7 +53,6 @@ interface ReimbursementTableHeadCell {
 
 const ReimbursementRequestInfo = ({
   userReimbursementRequests,
-  assignedReimbursementRequests,
   allReimbursementRequests,
   canViewAllReimbursementRequests = false,
   currentTab = 0,
@@ -79,11 +70,9 @@ const ReimbursementRequestInfo = ({
   const [sidePageTitle, setSidePageTitle] = useState('');
 
   const displayedReimbursementRequests =
-    canViewAllReimbursementRequests && currentTab === 1 && allReimbursementRequests
+    canViewAllReimbursementRequests && currentTab !== 0 && allReimbursementRequests
       ? allReimbursementRequests
-      : currentTab === 0
-        ? userReimbursementRequests
-        : assignedReimbursementRequests;
+      : userReimbursementRequests;
 
   const rows = displayedReimbursementRequests
     .map(createReimbursementRequestRowData)
@@ -168,10 +157,6 @@ const ReimbursementRequestInfo = ({
     {
       id: 'dateSubmittedToSabo',
       label: 'Date Submitted To SABO'
-    },
-    {
-      id: 'financeMemberAssigned',
-      label: 'Assigned To'
     }
   ];
 
@@ -254,8 +239,7 @@ const ReimbursementRequestInfo = ({
             <TableRow>
               {headCells.map(
                 (headCell) =>
-                  (currentTab !== 0 || headCell.id !== 'submitter') &&
-                  (currentTab === 1 || headCell.id !== 'financeMemberAssigned') && (
+                  (currentTab === 1 || (headCell.id !== 'submitter' && headCell.id !== 'refundSource')) && (
                     <ColumnHeader
                       id={headCell.id}
                       title={headCell.label}
@@ -294,13 +278,12 @@ const ReimbursementRequestInfo = ({
                       {cleanReimbursementRequestStatus(row.status)}
                     </Box>
                   </TableCell>
-                  {currentTab !== 0 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
+                  {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
                   <TableCell align="center">{`$${centsToDollar(row.amount)}`}</TableCell>
                   <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
-                  <TableCell align="center">{formatSaboIdPipe(row.saboId)}</TableCell>
+                  <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                   <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                   <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
-                  {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.financeMemberAssigned)}</TableCell>}
                   <TableCell align="center">
                     {
                       <Button

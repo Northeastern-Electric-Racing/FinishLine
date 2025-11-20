@@ -65,11 +65,6 @@ reimbursementRequestsRouter.post(
 
 reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.getCurrentUserReimbursementRequests);
 
-reimbursementRequestsRouter.get(
-  '/assigned-user',
-  ReimbursementRequestController.getCurrentUserAssignedReimbursementRequests
-);
-
 reimbursementRequestsRouter.get('/reimbursements/current-user', ReimbursementRequestController.getCurrentUserReimbursements);
 
 reimbursementRequestsRouter.get(
@@ -91,11 +86,6 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('notes')).optional(),
   validateInputs,
   ReimbursementRequestController.editVendor
-);
-
-reimbursementRequestsRouter.post(
-  '/vendors/:vendorId/setTaxExemptStatus',
-  ReimbursementRequestController.setVendorTaxExemptStatus
 );
 
 reimbursementRequestsRouter.post('/:vendorId/vendors/delete', ReimbursementRequestController.deleteVendor);
@@ -131,13 +121,6 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.editReimbursementRequest
 );
 
-reimbursementRequestsRouter.post(
-  '/:requestId/assign-finance-member',
-  nonEmptyString(body('assigneeId')),
-  validateInputs,
-  ReimbursementRequestController.assignFinanceMember
-);
-
 reimbursementRequestsRouter.get('/pending-advisor/list', ReimbursementRequestController.getPendingAdvisorList);
 
 reimbursementRequestsRouter.post(
@@ -164,7 +147,7 @@ reimbursementRequestsRouter.post(
   body('taxExempt').isBoolean(),
   body('twoFactorContacts').isArray(),
   nonEmptyString(body('twoFactorContacts.*')),
-  body('notes').optional().isString(),
+  nonEmptyString(body('notes')).optional(),
   validateInputs,
   ReimbursementRequestController.createVendor
 );

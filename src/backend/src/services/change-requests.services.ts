@@ -177,7 +177,7 @@ export default class ChangeRequestsService {
         dateReviewed: null
       },
       {
-        changes: { none: {} }
+        NOT: { scopeChangeRequest: null }
       }
     ];
 
@@ -665,7 +665,9 @@ export default class ChangeRequestsService {
       include: {
         changeRequests: {
           where: {
-            dateDeleted: null
+            dateDeleted: {
+              not: null
+            }
           },
           include: {
             changes: true
@@ -1140,8 +1142,6 @@ export default class ChangeRequestsService {
         }
       }
 
-      const isCreatingNewProject = projectProposedChanges && projectNumber === 0;
-
       const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
           scopeChangeRequest: {
@@ -1150,7 +1150,7 @@ export default class ChangeRequestsService {
             }
           },
           name,
-          status: isCreatingNewProject ? WBS_Element_Status.INACTIVE : wbsElement.status,
+          status: WBS_Element_Status.ACTIVE,
           links: {
             create: validationResult.links.map((linkInfo) => ({
               url: linkInfo.url,
@@ -1233,13 +1233,11 @@ export default class ChangeRequestsService {
         managerId
       );
 
-      const isCreatingNewWorkPackage = workPackageProposedChanges && workPackageNumber === 0;
-
       const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
           scopeChangeRequest: { connect: { scopeCrId: createdCR.scopeChangeRequest!.scopeCrId } },
           name,
-          status: isCreatingNewWorkPackage ? WBS_Element_Status.INACTIVE : wbsElement.status,
+          status: WBS_Element_Status.INACTIVE,
           proposedDescriptionBulletChanges: {
             create: validationResult.descriptionBullets.map((bullet) => ({
               detail: bullet.detail,

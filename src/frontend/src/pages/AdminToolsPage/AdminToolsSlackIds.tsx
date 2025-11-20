@@ -17,7 +17,7 @@ import ErrorPage from '../ErrorPage';
 import { Organization, TeamPreview } from 'shared';
 import HelpIcon from '@mui/icons-material/Help';
 import { useAllTeams } from '../../hooks/teams.hooks';
-import NERTable from '../../components/NERTable';
+import AdminToolTable from './AdminToolTable';
 import EditTeamSlackIdFormModal from './TeamConfig/EditTeamSlackIdFormModal';
 
 interface AdminToolsWorkspaceIdViewProps {
@@ -142,7 +142,7 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
         </Typography>
         <Grid container columnSpacing={2}>
           <Grid item xs={12} md={6} sx={{ marginTop: '24px' }}>
-            <NERTable columns={[{ name: 'Team Name' }, { name: 'Slack Channel ID' }]} rows={teamTableRows} />
+            <AdminToolTable columns={[{ name: 'Team Name' }, { name: 'Slack Channel ID' }]} rows={teamTableRows} />
           </Grid>
         </Grid>
         {clickedTeam && (

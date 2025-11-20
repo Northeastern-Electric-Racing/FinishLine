@@ -3,7 +3,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
-import NERTable from '../../../components/NERTable';
+import AdminToolTable from '../AdminToolTable';
 import { useGetAllCars } from '../../../hooks/cars.hooks';
 import CreateCarModal from './CreateCarFormModal';
 import { useState } from 'react';
@@ -33,7 +33,10 @@ const CarsTable: React.FC = () => {
   return (
     <Box>
       <CreateCarModal showModal={openModal} handleClose={() => setOpenModal(false)} />
-      <NERTable columns={[{ name: 'Car Number' }, { name: 'Car Name' }, { name: 'Date Created' }]} rows={carsTableRows} />
+      <AdminToolTable
+        columns={[{ name: 'Car Number' }, { name: 'Car Name' }, { name: 'Date Created' }]}
+        rows={carsTableRows}
+      />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton variant="contained" onClick={() => setOpenModal(true)}>
           New Car

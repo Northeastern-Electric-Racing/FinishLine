@@ -13,7 +13,6 @@ import ReimbursementRequestTable from './ReimbursementRequestsSection';
 import { useToast } from '../../hooks/toasts.hooks';
 import {
   useAllReimbursementRequests,
-  useCurrentUserAssignedReimbursementRequests,
   useCurrentUserReimbursementRequests,
   useDownloadCSVFileOfReimbursementRequests
 } from '../../hooks/finance.hooks';
@@ -98,17 +97,11 @@ const ReimbursementRequests: React.FC = () => {
   );
 
   const {
-    data: createdReimbursementRequests,
-    refetch: refetchCreatedReimbursementRequests,
-    isError: createdReimbursementRequestIsError,
-    error: createdReimbursementRequestError
+    data: userReimbursementRequests,
+    refetch: refetchUserReimbursementRequests,
+    isError: userReimbursementRequestIsError,
+    error: userReimbursementRequestError
   } = useCurrentUserReimbursementRequests();
-  const {
-    data: assignedReimbursementRequests,
-    refetch: refetchAssignedReimbursementRequests,
-    isError: assignedReimbursementRequestIsError,
-    error: assignedReimbursementRequestError
-  } = useCurrentUserAssignedReimbursementRequests();
   const {
     data: allReimbursementRequests,
     refetch: refetchAllReimbursementRequests,
@@ -134,8 +127,7 @@ const ReimbursementRequests: React.FC = () => {
   };
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
-  if (assignedReimbursementRequestIsError) return <ErrorPage message={assignedReimbursementRequestError?.message} />;
-  if (createdReimbursementRequestIsError) return <ErrorPage message={createdReimbursementRequestError?.message} />;
+  if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
 
   const filterMenu = (
     <Menu
@@ -268,17 +260,15 @@ const ReimbursementRequests: React.FC = () => {
       {canViewAllReimbursementRequests && SearchAndFilterBar}
       <Box sx={{ position: 'relative', top: tableOffset }}>
         <ReimbursementRequestTable
-          userReimbursementRequests={createdReimbursementRequests ?? []}
-          assignedReimbursementRequests={assignedReimbursementRequests ?? []}
+          userReimbursementRequests={userReimbursementRequests ?? []}
           allReimbursementRequests={allReimbursementRequests ?? []}
           searchText={searchText}
           statuses={selectedStatuses}
           startDate={startDate}
           endDate={endDate}
           onCloseSidePage={() => {
-            refetchCreatedReimbursementRequests();
+            refetchUserReimbursementRequests();
             refetchAllReimbursementRequests();
-            refetchAssignedReimbursementRequests();
           }}
         />
       </Box>

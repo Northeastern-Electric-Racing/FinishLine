@@ -3,7 +3,7 @@ import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAllTeams } from '../../../hooks/teams.hooks';
 import { fullNamePipe } from '../../../utils/pipes';
-import NERTable from '../../../components/NERTable';
+import AdminToolTable from '../AdminToolTable';
 
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -41,7 +41,7 @@ const TeamsTools = () => {
           <CreateTeamForm />
         </Grid>
         <Grid item xs={12} md={6} sx={{ marginTop: '24px' }}>
-          <NERTable
+          <AdminToolTable
             columns={[{ name: 'Team Name' }, { name: 'Head' }, { name: 'Members', width: '20%' }]}
             rows={teamTableRows}
           />

@@ -18,7 +18,7 @@ interface EditSponsorPageProps {
 }
 
 const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProps) => {
-  const { isLoading, mutateAsync } = useEditSponsor();
+  const { isLoading, mutateAsync } = useEditSponsor(sponsor.sponsorId);
 
   const defaultSponsorTasks: CreateSponsorTask[] =
     sponsor.sponsorTasks?.map((task) => ({
@@ -54,7 +54,7 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
   const onSubmit = async (formData: SponsorPayload) => {
     try {
       setSubmitError(null);
-      await mutateAsync({ sponsorId: sponsor.sponsorId, ...formData });
+      await mutateAsync({ ...formData });
       handleClose();
     } catch (err: unknown) {
       if (err instanceof Error) {

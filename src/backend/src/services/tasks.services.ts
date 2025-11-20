@@ -27,7 +27,6 @@ export default class TasksService {
    * @param status the status of the task
    * @param assignees the assignees ids of the task
    * @param organizationId the organization that the user is currently in
-   * @param startDate the start date of the task
    * @param deadline the deadline of the task
    * @returns the id of the successfully created task
    * @throws if the user does not have access to create a task, wbs element does not exist, or wbs element is deleted
@@ -41,7 +40,6 @@ export default class TasksService {
     status: Task_Status,
     assignees: string[],
     organization: Organization,
-    startDate?: Date,
     deadline?: Date
   ): Promise<Task> {
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
@@ -95,7 +93,6 @@ export default class TasksService {
         },
         title,
         notes,
-        startDate,
         deadline,
         priority,
         status,
@@ -130,8 +127,7 @@ export default class TasksService {
     title: string,
     notes: string,
     priority: Task_Priority,
-    startDate?: Date,
-    deadline?: Date
+    deadline: Date
   ) {
     const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
     if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
@@ -148,7 +144,7 @@ export default class TasksService {
 
     const updatedTask = await prisma.task.update({
       where: { taskId },
-      data: { title, notes, priority, startDate, deadline },
+      data: { title, notes, priority, deadline },
       ...getTaskQueryArgs(originalTask.wbsElement.organizationId)
     });
     return taskTransformer(updatedTask);
@@ -266,11 +262,8 @@ export default class TasksService {
 
     // this checks the current users permissions
     const isLead = wbsElement.leadId === currentUser.userId || wbsElement.managerId === currentUser.userId;
-    const isCreator = task.createdByUserId === currentUser.userId;
-    if (!(await userHasPermission(currentUser.userId, organization.organizationId, isAdmin)) && !isLead && !isCreator) {
-      throw new AccessDeniedException(
-        'Only admin, app-admins, project leads, project managers, and the task creator can delete tasks'
-      );
+    if (!(await userHasPermission(currentUser.userId, organization.organizationId, isAdmin)) && !isLead) {
+      throw new AccessDeniedException('Only admin, app-admins, project leads, and project managers can delete tasks');
     }
 
     const deletedTask = await prisma.task.update({

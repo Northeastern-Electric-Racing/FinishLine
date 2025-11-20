@@ -4,7 +4,7 @@
  */
 
 import { WbsElement } from 'shared';
-import { useGetApprovedChangeRequests, useGetUnreviewedChangeRequests } from '../hooks/change-requests.hooks';
+import { useGetUnreviewedChangeRequests } from '../hooks/change-requests.hooks';
 import ErrorPage from '../pages/ErrorPage';
 import LoadingIndicator from './LoadingIndicator';
 import ChangeRequestRow from './ChangeRequestRow';
@@ -21,7 +21,7 @@ const ChangeRequestTab = ({ wbsElement }: { wbsElement: WbsElement }) => {
     isError: approvedCRIsError,
     isLoading: approvedCRIsLoading,
     error: approvedCRError
-  } = useGetApprovedChangeRequests(wbsElement.wbsNum);
+  } = useGetUnreviewedChangeRequests(wbsElement.wbsNum);
 
   if (unreviewedCRIsError) return <ErrorPage message={unreviewedCRError?.message} />;
   if (approvedCRIsError) return <ErrorPage message={approvedCRError?.message} />;

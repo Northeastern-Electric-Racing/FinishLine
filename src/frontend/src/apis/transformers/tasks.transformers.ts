@@ -11,7 +11,6 @@ export const taskTransformer = (task: Task): Task => {
     ...task,
     dateCreated: new Date(task.dateCreated),
     dateDeleted: task.dateDeleted ? new Date(task.dateDeleted) : undefined,
-    deadline: task.deadline ? new Date(task.deadline) : undefined,
-    startDate: task.startDate ? new Date(task.startDate) : undefined
+    deadline: task.deadline ? new Date(task.deadline) : undefined
   };
 };

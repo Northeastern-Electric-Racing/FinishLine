@@ -1,6 +1,6 @@
 import { Draggable } from '@hello-pangea/dnd';
 import { Construction, Delete, Schedule } from '@mui/icons-material';
-import { Box, Card, CardContent, Chip, Grid, Typography, IconButton } from '@mui/material';
+import { Box, Card, CardContent, Chip, Grid, Typography } from '@mui/material';
 import { useState } from 'react';
 import { notGuest, Project, Task } from 'shared';
 import { useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../../../hooks/tasks.hooks';
@@ -9,7 +9,6 @@ import { useCurrentUser } from '../../../../../hooks/users.hooks';
 import { datePipe, fullNamePipe } from '../../../../../utils/pipes';
 import { EditTaskFormInput } from '../TaskFormModal';
 import TaskModal from '../TaskModal';
-import NERModal from '../../../../../components/NERModal';
 
 export const TaskCard = ({
   task,
@@ -32,14 +31,9 @@ export const TaskCard = ({
 
   const toast = useToast();
   const [showModal, setShowModal] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = async () => {
     try {
       await deleteTask({ taskId: task.taskId });
       onDeleteTask(task.taskId);
@@ -49,17 +43,15 @@ export const TaskCard = ({
         toast.error('Failed to delete Task: ' + error.message);
       }
     }
-    setShowDeleteConfirm(false);
   };
 
-  const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority, startDate }: EditTaskFormInput) => {
+  const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority }: EditTaskFormInput) => {
     try {
       await editTask({
         taskId,
         notes,
         title,
         deadline,
-        startDate,
         priority
       });
       const newTask = await editTaskAssignees({
@@ -88,17 +80,6 @@ export const TaskCard = ({
         onSubmit={handleEditTask}
         hasEditPermissions={notGuest(user.role)}
       />
-      <NERModal
-        open={showDeleteConfirm}
-        onHide={() => setShowDeleteConfirm(false)}
-        title="Warning!"
-        cancelText="No"
-        submitText="Yes"
-        onSubmit={confirmDelete}
-      >
-        <Typography>Are you sure you want to delete the task "{task.title}"?</Typography>
-        <Typography sx={{ fontWeight: 'bold', mt: 1 }}>This action cannot be undone!</Typography>
-      </NERModal>
       <Draggable draggableId={String(task.taskId)} index={index}>
         {(provided, snapshot) => (
           <Box sx={{ marginBottom: 1 }} {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
@@ -119,9 +100,7 @@ export const TaskCard = ({
                       </Typography>
                     </Grid>
                     <Grid item xs={1}>
-                      <IconButton onClick={handleDelete} size="small">
-                        <Delete />
-                      </IconButton>
+                      <Delete onClick={handleDelete} />
                     </Grid>
                     <Grid item xs={12}>
                       <Typography variant="body1" color={priorityColor}>
@@ -141,23 +120,9 @@ export const TaskCard = ({
                       />
                     </Grid>
                     <Grid item xs={12} lg={4} justifyContent={'right'}>
-                      <Box alignItems={'center'} mt={1} justifyContent={'right'} display={'flex'} flexDirection={'column'}>
-                        {task.startDate && (
-                          <Box alignItems={'center'} justifyContent={'right'} display={'flex'} mb={0.5}>
-                            <Schedule sx={{ fontSize: 16, mr: 0.5 }} />
-                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
-                              Start: {datePipe(task.startDate)}
-                            </Typography>
-                          </Box>
-                        )}
-                        {task.deadline && (
-                          <Box alignItems={'center'} justifyContent={'right'} display={'flex'}>
-                            <Schedule sx={{ fontSize: 16, mr: 0.5 }} />
-                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
-                              Due: {datePipe(task.deadline)}
-                            </Typography>
-                          </Box>
-                        )}
+                      <Box alignItems={'center'} mt={1} justifyContent={'right'} display={'flex'}>
+                        <Schedule />
+                        <Typography variant="body2">{datePipe(task.deadline)}</Typography>
                       </Box>
                     </Grid>
                   </Grid>

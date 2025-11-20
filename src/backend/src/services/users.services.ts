@@ -167,8 +167,7 @@ export default class UsersService {
           }
         },
         wbsElement: {
-          organizationId: organization.organizationId,
-          dateDeleted: null
+          organizationId: organization.organizationId
         }
       },
       ...getProjectGanttQueryArgs(organization.organizationId)

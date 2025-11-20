@@ -85,7 +85,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       name: string;
       cost: number;
       index: number;
-      id?: string;
     }[]
   >();
 
@@ -105,9 +104,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as OtherProductReason).name;
     if (uniqueWbsElementsWithProducts.has(productReason)) {
       const products = uniqueWbsElementsWithProducts.get(productReason);
-      products?.push({ ...product, index, id: product.id });
+      products?.push({ ...product, index });
     } else {
-      uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index, id: product.id }]);
+      uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index }]);
     }
   });
 
@@ -443,7 +442,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       )}
                     </Box>
                     {uniqueWbsElementsWithProducts.get(key)?.map((product) => (
-                      <ListItem key={product.id}>
+                      <ListItem key={product.index}>
                         <Box sx={{ display: 'flex' }}>
                           <Box
                             sx={{

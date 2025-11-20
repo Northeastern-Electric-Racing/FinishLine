@@ -7,11 +7,10 @@ import { render, screen, routerWrapperBuilder, fireEvent } from '../../../test-s
 import { exampleResearchWorkPackage, exampleDesignWorkPackage } from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageViewContainer from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageViewContainer';
 import * as wpHooks from '../../../../hooks/work-packages.hooks';
+import { exampleAdminUser } from '../../../test-support/test-data/users.stub';
 import AppContextUser from '../../../../app/AppContextUser';
 import * as userHooks from '../../../../hooks/users.hooks';
 import { mockManyWorkPackages } from '../../../test-support/mock-hooks';
-import { exampleAuthenticatedAdminUser } from '../../../test-support/test-data/authenticated-user.stub';
-import ClarityProvider from '../../../../app/ClarityProvider';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = (
@@ -25,26 +24,24 @@ const renderComponent = (
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ClarityProvider>
-        <AppContextUser>
-          <WorkPackageViewContainer
-            workPackage={workPackage}
-            enterEditMode={() => null}
-            allowEdit={allowEdit}
-            allowActivate={allowActivate}
-            allowStageGate={allowStageGate}
-            allowRequestChange={allowRequestChange}
-            allowDelete={allowDelete}
-          />
-        </AppContextUser>
-      </ClarityProvider>
+      <AppContextUser>
+        <WorkPackageViewContainer
+          workPackage={workPackage}
+          enterEditMode={() => null}
+          allowEdit={allowEdit}
+          allowActivate={allowActivate}
+          allowStageGate={allowStageGate}
+          allowRequestChange={allowRequestChange}
+          allowDelete={allowDelete}
+        />
+      </AppContextUser>
     </RouterWrapper>
   );
 };
 
 describe.skip('work package container view', () => {
   beforeEach(() => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     vi.spyOn(wpHooks, 'useGetManyWorkPackages').mockReturnValue(mockManyWorkPackages([exampleResearchWorkPackage]));
   });
 

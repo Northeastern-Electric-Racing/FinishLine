@@ -20,7 +20,6 @@ export interface ReimbursementRequestRow {
   submitter: User;
   vendor: Vendor;
   refundSource: IndexCode;
-  financeMemberAssigned: User | undefined;
 }
 
 export enum ReimbursementStatusType {
@@ -62,7 +61,6 @@ export interface ReimbursementRequest {
   dateDelivered?: Date;
   accountCode: AccountCode;
   comments: ReimbursementRequestComment[];
-  assignee?: User;
 }
 
 export interface OtherProductReason {

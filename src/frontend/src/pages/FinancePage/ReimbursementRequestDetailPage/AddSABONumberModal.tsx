@@ -7,15 +7,12 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useSetSaboNumber } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 
-const schema = yup.object({
+const schema = yup.object().shape({
   saboNumber: yup
     .number()
     .typeError('The SABO number should be a valid number')
-    .required('The SABO number is required')
-    .test('exact-5-digits', 'The SABO number must be exactly 5 digits', function () {
-      const original = this.originalValue?.toString().trim();
-      return /^\d{5}$/.test(original || '');
-    })
+    .required()
+    .test('length', 'The SABO number must be at least 5 digits', (num) => String(num).length >= 5)
 });
 
 interface AddSABONumberModalProps {

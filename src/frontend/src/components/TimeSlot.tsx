@@ -2,7 +2,7 @@ import { Box } from '@mui/system';
 import { Icon } from '@mui/material';
 
 interface TimeSlotProps {
-  text?: React.ReactNode;
+  text?: string;
   fontSize?: string;
   backgroundColor?: string;
   icon?: string;
@@ -13,7 +13,6 @@ interface TimeSlotProps {
   onMouseOver?: () => void;
   onClick?: () => void;
   heightOverride?: string;
-  widthOverride?: string;
   selected?: boolean;
 }
 
@@ -28,15 +27,14 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   onMouseUp,
   onMouseOver,
   onClick,
-  heightOverride,
-  widthOverride,
+  heightOverride = undefined,
   selected = false
 }) => {
   return (
     <Box
       sx={{
-        height: heightOverride ?? (small ? '25px' : '4.7vh'),
-        width: widthOverride ?? (small ? '81px' : '12.2%'),
+        height: heightOverride ? heightOverride : small ? '25px' : '4.7vh',
+        width: small ? '81px' : '12.2%',
         backgroundColor,
         cursor: onMouseEnter ? 'pointer' : undefined,
         borderStyle: 'solid',

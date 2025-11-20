@@ -7,8 +7,7 @@ import { useQuery } from 'react-query';
 import { VersionObject } from '../utils/types';
 import { getReleaseInfo } from '../apis/misc.api';
 import { useHistory } from 'react-router-dom';
-import { useContext, useState } from 'react';
-import { ClarityContext } from '../app/ClarityProvider';
+import { useState } from 'react';
 
 export const useGetVersionNumber = () => {
   return useQuery<VersionObject, Error>(['version'], async () => {
@@ -34,18 +33,4 @@ export const useHistoryState = <T>(key: string, initialValue: T): [T, (t: T) => 
     rawSetState(value);
   }
   return [rawState, setState];
-};
-
-/**
- * useClarity hook
- *
- * Returns the Clarity function from context. Use this to call Clarity API methods.
- * Example: const clarity = useClarity();
- */
-export const useClarity = () => {
-  const context = useContext(ClarityContext);
-  if (context === undefined) {
-    throw new Error('useClarity must be used within a ClarityProvider');
-  }
-  return context;
 };

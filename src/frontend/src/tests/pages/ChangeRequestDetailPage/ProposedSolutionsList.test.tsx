@@ -10,8 +10,6 @@ import { exampleAdminUser, exampleLeadershipUser } from '../../test-support/test
 import { ToastProvider } from '../../../components/Toast/ToastProvider';
 import AppContextUser from '../../../app/AppContextUser';
 import * as userHooks from '../../../hooks/users.hooks';
-import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
-import ClarityProvider from '../../../app/ClarityProvider';
 
 const exampleProposedSolution1: ProposedSolution = {
   id: '1',
@@ -43,21 +41,19 @@ const exampleProposedSolutions = [exampleProposedSolution1, exampleProposedSolut
 const renderComponent = (proposedSolutions: ProposedSolution[] = [], crReviewed: boolean | undefined = undefined) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <ClarityProvider>
-      <AppContextUser>
-        <RouterWrapper>
-          <ToastProvider>
-            <ProposedSolutionsList proposedSolutions={proposedSolutions} crReviewed={crReviewed} crId={'0'} />{' '}
-          </ToastProvider>
-        </RouterWrapper>
-      </AppContextUser>
-    </ClarityProvider>
+    <AppContextUser>
+      <RouterWrapper>
+        <ToastProvider>
+          <ProposedSolutionsList proposedSolutions={proposedSolutions} crReviewed={crReviewed} crId={'0'} />{' '}
+        </ToastProvider>
+      </RouterWrapper>
+    </AppContextUser>
   );
 };
 
 describe('Proposed Solutions List Test Suite', () => {
   beforeEach(() => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
   });
 
   it('Renders correctly when empty and CR is not reviewed', () => {

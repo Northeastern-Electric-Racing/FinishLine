@@ -715,7 +715,6 @@ export const createTestTaskWithOrganization = async (user: User, organization?: 
     TaskStatus.IN_PROGRESS,
     [user.userId],
     organization,
-    undefined,
     new Date()
   );
 

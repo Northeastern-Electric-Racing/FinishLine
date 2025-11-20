@@ -1,21 +1,11 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import {
-  ChangeRequestReason,
-  ChangeRequestType,
-  Link,
-  LinkCreateArgs,
-  ProjectGantt,
-  Task,
-  WbsElementPreview,
-  WorkPackage
-} from 'shared';
+import { ChangeRequestReason, ChangeRequestType, Link, LinkCreateArgs, ProjectGantt, WorkPackage } from 'shared';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import { useCreateSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
-import { useCreateTask, useEditTask, CreateTaskPayload, TaskPayload } from '../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { NERDraggableFormModal } from '../../../../components/NERDraggableFormModal';
 import { GanttRequestChangeModalProps } from './GanttRequestChangeModal';
@@ -35,17 +25,8 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
   } = useSingleProject(change.element.wbsNum);
   const { isLoading: isLoadingChangeRequest, mutateAsync: createStandardChangeRequest } = useCreateStandardChangeRequest();
   const { isLoading: isLoadingWorkPackageCreate, mutateAsync: createSingleWorkPackage } = useCreateSingleWorkPackage();
-  const { isLoading: isLoadingTaskCreate, mutateAsync: createTask } = useCreateTask();
-  const { isLoading: isLoadingTaskEdit, mutateAsync: editTask } = useEditTask();
 
-  if (
-    !originalProject ||
-    originalProjectIsLoading ||
-    isLoadingChangeRequest ||
-    isLoadingWorkPackageCreate ||
-    isLoadingTaskCreate ||
-    isLoadingTaskEdit
-  )
+  if (!originalProject || originalProjectIsLoading || isLoadingChangeRequest || isLoadingWorkPackageCreate)
     return <LoadingIndicator />;
   if (originalProjectIsError) return <ErrorPage error={originalProjectError} />;
 
@@ -99,29 +80,6 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
           existingWorkPackage.endDate.getTime() !== workPackage.endDate.getTime())
       ) {
         editedWorkPackages.push(workPackage);
-      }
-    }
-  });
-
-  const editedTasks: Task[] = [];
-  const createdTasks: Task[] = [];
-  project.tasks?.forEach((task) => {
-    const existingTask = originalProject.tasks.find((t) => t.taskId === task.taskId);
-    if (!existingTask) {
-      createdTasks.push(task);
-    } else {
-      const hasChanges =
-        existingTask.title !== task.title ||
-        existingTask.notes !== task.notes ||
-        existingTask.priority !== task.priority ||
-        existingTask.status !== task.status ||
-        existingTask.startDate?.getTime() !== task.startDate?.getTime() ||
-        existingTask.deadline?.getTime() !== task.deadline?.getTime() ||
-        existingTask.assignees.length !== task.assignees.length ||
-        existingTask.assignees.some((assignee, index) => assignee.userId !== task.assignees[index]?.userId);
-
-      if (hasChanges) {
-        editedTasks.push(task);
       }
     }
   });
@@ -188,51 +146,6 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
         });
       });
       if (createdWorkPackages.length > 0) toast.success('Successfully Created Work Packages');
-
-      if (createdTasks.length > 0) {
-        for (const task of createdTasks) {
-          const taskPayload: CreateTaskPayload = {
-            wbsNum: project.wbsNum,
-            title: task.title,
-            priority: task.priority,
-            status: task.status,
-            assignees: task.assignees?.map((user) => user.userId) || [],
-            notes: task.notes || '',
-            deadline: task.deadline?.toISOString(),
-            startDate: task.startDate?.toISOString()
-          };
-
-          try {
-            await createTask(taskPayload);
-            toast.success(`Successfully created ${createdTasks.length} task(s)`);
-          } catch (error) {
-            console.error('Error creating task:', error);
-            toast.error(`Failed to create task: ${task.title}`);
-          }
-        }
-      }
-
-      if (editedTasks.length > 0) {
-        for (const task of editedTasks) {
-          const taskPayload: TaskPayload = {
-            taskId: task.taskId,
-            title: task.title,
-            priority: task.priority,
-            notes: task.notes || '',
-            deadline: task.deadline,
-            startDate: task.startDate
-          };
-
-          try {
-            await editTask(taskPayload);
-            toast.success(`Successfully updated ${editedTasks.length} task(s)`);
-          } catch (error) {
-            console.error('Error editing task:', error);
-            toast.error(`Failed to edit task: ${task.title}`);
-          }
-        }
-      }
-
       handleClose(false);
     } catch (e) {
       if (e instanceof Error) {
@@ -244,18 +157,15 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
   return (
     <NERDraggableFormModal
       open={open}
-      title={(change.element as WbsElementPreview).name ?? (change.element as Task).title}
+      title={change.element.name}
       disableSuccessButton={editedWorkPackages.length > 0 && (!reasonForChange || !explanationForChange)}
       handleSubmit={handleSubmit}
       onHide={() => handleClose(true)}
     >
       <Box sx={{ padding: 2, borderRadius: '10px 0 10px 0' }}>
-        <Typography sx={{ fontSize: '1em', mb: 0.5 }}>
-          {`Edit ${editedWorkPackages.length} Work Packages and Create ${createdWorkPackages.length} Work Packages`}
-        </Typography>
-        <Typography sx={{ fontSize: '1em', mb: 0.5 }}>
-          {`Edit ${editedTasks.length} Tasks and Create ${createdTasks.length} Tasks`}
-        </Typography>
+        <Typography
+          sx={{ fontSize: '1em', mb: 0.5 }}
+        >{`Edit ${editedWorkPackages.length} Work Packages and Create ${createdWorkPackages.length} Work Packages`}</Typography>
         <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline(change.newStart, change.newEnd)}`}</Typography>
         {editedWorkPackages.length > 0 && (
           <Box sx={{ mt: 2 }}>

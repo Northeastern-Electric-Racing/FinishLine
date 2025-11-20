@@ -196,8 +196,7 @@ export const createReimbursementRequestRowData = (reimbursementRequest: Reimburs
     dateSubmittedToSabo: getReimbursementRequestDateSubmittedToSabo(reimbursementRequest),
     submitter: reimbursementRequest.recipient,
     vendor: reimbursementRequest.vendor,
-    refundSource: reimbursementRequest.indexCode,
-    financeMemberAssigned: reimbursementRequest.assignee
+    refundSource: reimbursementRequest.indexCode
   };
 };
 

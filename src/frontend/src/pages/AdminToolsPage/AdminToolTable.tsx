@@ -1,25 +1,17 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableSortLabel } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead } from '@mui/material';
 
 interface AdminToolTableProps {
   columns: {
     name: string;
     width?: string;
-    sort?: SortLabelProps;
   }[];
   rows: JSX.Element[];
-  size?: 'small' | 'medium';
 }
 
-export interface SortLabelProps {
-  active?: boolean;
-  direction: 'asc' | 'desc';
-  onClick: () => void;
-}
-
-const NERTable = ({ columns, rows, size }: AdminToolTableProps) => {
+const AdminToolTable = ({ columns, rows }: AdminToolTableProps) => {
   return (
     <TableContainer>
-      <Table size={size}>
+      <Table>
         <TableHead>
           {columns.map((column, idx) => (
             <TableCell
@@ -34,7 +26,7 @@ const NERTable = ({ columns, rows, size }: AdminToolTableProps) => {
               }}
               width={column.width}
             >
-              <TableSortLabel {...column.sort}>{column.name}</TableSortLabel>
+              {column.name}
             </TableCell>
           ))}
         </TableHead>
@@ -44,4 +36,4 @@ const NERTable = ({ columns, rows, size }: AdminToolTableProps) => {
   );
 };
 
-export default NERTable;
+export default AdminToolTable;

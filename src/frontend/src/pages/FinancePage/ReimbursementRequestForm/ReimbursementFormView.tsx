@@ -1,7 +1,6 @@
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import HelpIcon from '@mui/icons-material/Help';
-import AddIcon from '@mui/icons-material/Add';
 import {
   FormControl,
   FormHelperText,
@@ -16,9 +15,7 @@ import {
   Snackbar,
   Alert,
   Button,
-  useTheme,
-  Autocomplete,
-  TextField
+  useTheme
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import {
@@ -34,8 +31,6 @@ import {
   AccountCode,
   CreateRefundSourceArgs,
   IndexCode,
-  isHead,
-  MAX_FILE_SIZE,
   ReimbursementProductFormArgs,
   ReimbursementReceiptCreateArgs,
   ReimbursementReceiptUploadArgs,
@@ -47,19 +42,15 @@ import { ClearIcon, DatePicker } from '@mui/x-date-pickers';
 import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
-import { NERButton } from '../../../components/NERButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
-import { codeAndRefundSourceName, accountCodePipe, fullNamePipe } from '../../../utils/pipes';
-import { useCreateVendor } from '../../../hooks/finance.hooks';
-import { useGetFinanceDelegates } from '../../../hooks/organizations.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
-import { useCurrentUser } from '../../../hooks/users.hooks';
+import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
+import NERModal from '../../../components/NERModal';
+import CheckList from '../../../components/CheckList';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -84,9 +75,6 @@ interface ReimbursementRequestFormViewProps {
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
   hasSecureSettingsSet: boolean;
   onFormExit?: () => void;
-  isEditing?: boolean;
-  isLeadershipApproved?: boolean;
-  onSubmitToFinance?: (data: ReimbursementRequestFormInput) => void;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -108,17 +96,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   submitText,
   setValue,
   hasSecureSettingsSet,
-  onFormExit,
-  isEditing = false,
-  isLeadershipApproved = false,
-  onSubmitToFinance
+  onFormExit
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [showAddRefundSourceModal, setShowAddRefundSourceModal] = useState(false);
-  const [newVendorName, setNewVendorName] = useState<string>('');
-  const [showCreateVendorField, setShowCreateVendorField] = useState<boolean>(false);
-  const { mutateAsync: createVendor } = useCreateVendor();
-  const user = useCurrentUser();
 
   // to grab all the proper refund sources
   const refundSources: CreateRefundSourceArgs[] = Array.from(
@@ -227,6 +208,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const calculatedTotalCost = products
     .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost), 0)
     .toFixed(2);
+  const [showReimbursementGuidelinesModal, setShowReimbursementGuidelinesModal] = useState(true);
 
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
@@ -234,16 +216,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   }));
 
   wbsElementAutocompleteOptions.sort((wbsNum1, wbsNum2) => wbsNumComparator(wbsNum1.id, wbsNum2.id));
-
-  const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();
-
-  if (isLoading || !financeDelegates) {
-    return <LoadingIndicator />;
-  }
-
-  if (isError) {
-    return <ErrorPage message={error.message} />;
-  }
 
   const ReceiptFileInput = () => (
     <FormControl>
@@ -292,6 +264,61 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     </FormControl>
   );
 
+  const ReimbursementGuidelinesModal = () => (
+    <NERModal
+      open={showReimbursementGuidelinesModal}
+      onHide={() => setShowReimbursementGuidelinesModal(false)}
+      title="Finance Checklist"
+      cancelText="No"
+      submitText="Yes"
+      onSubmit={() => setShowReimbursementGuidelinesModal(false)}
+    >
+      <CheckList
+        title="Receipts must have the following: "
+        items={[
+          {
+            resolved: false,
+            detail:
+              'I certify my receipts with expenses greater than $75 include an itemized description of goods or service purchased.',
+            id: '1'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include the vendor's name (for ex. Amazon, stop and shop, Target).`,
+            id: '2'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include a Transaction Date for each expense.`,
+            id: '3'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include the amount paid for each expense.`,
+            id: '4'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include the form of payment for each expense (Cash, check or last four digits of credit card).`,
+            id: '5'
+          },
+          {
+            resolved: false,
+            detail: `This reimbursement request is "NOT" for a faculty or full-time staff member.`,
+            id: '6'
+          },
+          {
+            resolved: false,
+            detail: `The reimbursement does not include sales tax unless it is for a prepared meal or hotel.`,
+            id: '7'
+          }
+        ]}
+        isDisabled={false}
+        checkDescriptionBullets={false}
+      />
+    </NERModal>
+  );
+
   const accountCodesToAutocomplete = (accountCode: AccountCode): { label: string; id: string } => {
     return {
       label: accountCodePipe(accountCode),
@@ -316,6 +343,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         justifyContent: 'space-between'
       }}
     >
+      <ReimbursementGuidelinesModal />
       {!hasSecureSettingsSet && (
         <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={true}>
           <Alert variant="filled" severity="warning">
@@ -328,67 +356,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           </Alert>
         </Snackbar>
       )}
-
-      <Box
-        sx={{
-          backgroundColor: 'rgba(211, 47, 47, 0.1)',
-          border: '2px solid #d32f2f',
-          borderRadius: '8px',
-          padding: '16px',
-          marginBottom: '20px',
-          width: '100%'
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: '12px'
-          }}
-        >
-          <Typography
-            sx={{
-              color: '#d32f2f',
-              fontWeight: 'bold',
-              fontSize: '16px',
-              textAlign: 'center'
-            }}
-          >
-            To submit Reimbursement Requests you{' '}
-            <span style={{ textDecoration: 'underline' }}>
-              <strong>must</strong>
-            </span>{' '}
-            assign the below users as delegates on Concur
-          </Typography>
-          <Tooltip
-            title="In order for the finance team to submit reimbursements on your behalf, you must assign them as delegates in concur. To do this, go to concur (reach out to your head if you do not have concur access), click your profile -> Profile Settings -> Expense Delegates -> add all finance delegates, and ensure they have can prepare permissions."
-            placement="right"
-          >
-            <HelpIcon sx={{ color: '#d32f2f', fontSize: '20px', cursor: 'pointer' }} />
-          </Tooltip>
-        </Box>
-        {financeDelegates.length > 0 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '8px' }}>
-            {financeDelegates.map((delegate) => (
-              <Typography
-                key={delegate.userId}
-                sx={{
-                  color: '#d32f2f',
-                  fontWeight: 'bold',
-                  fontSize: '14px',
-                  backgroundColor: 'rgba(211, 47, 47, 0.2)',
-                  padding: '4px 12px',
-                  borderRadius: '12px'
-                }}
-              >
-                {fullNamePipe(delegate)}
-              </Typography>
-            ))}
-          </Box>
-        )}
-      </Box>
 
       <Grid item container spacing={5} md={12} xs={12} sx={{ '&.MuiGrid-item': { height: 'fit-content' } }}>
         <Grid item xs={12} md={6}>
@@ -414,136 +381,38 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 control={control}
                 render={({ field: { onChange, value } }) => {
                   const mappedVendors = allVendors.sort((a, b) => a.name.localeCompare(b.name)).map(vendorsToAutocomplete);
-
-                  const handleCreateVendor = async () => {
-                    if (!newVendorName.trim()) {
-                      toast.error('Vendor name cannot be empty');
-                      return;
-                    }
-
-                    try {
-                      const newVendor = await createVendor({ name: newVendorName.trim() });
-                      toast.success(
-                        `Vendor "${newVendorName}" created successfully! You can add logins, discount codes, and notes in the Companies tab.`,
-                        5000
-                      );
-                      onChange(newVendor.vendorId);
-                      setNewVendorName('');
-                      setShowCreateVendorField(false);
-                    } catch (error: any) {
-                      toast.error(error?.message || 'Failed to create vendor');
-                    }
-                  };
-
                   return (
                     <>
-                      {!showCreateVendorField ? (
-                        <Autocomplete
-                          options={mappedVendors}
-                          value={mappedVendors.find((v) => v.id === value) || null}
-                          onChange={(_, newValue) => {
-                            if (newValue?.id === 'create-new') {
-                              setShowCreateVendorField(true);
-                            } else if (newValue) {
-                              onChange(newValue.id);
-                            }
-                          }}
-                          filterOptions={(options, params) => {
-                            const filtered = options.filter((option) =>
-                              option.label.toLowerCase().includes(params.inputValue.toLowerCase())
-                            );
-                            return [...filtered, { id: 'create-new', label: '' }];
-                          }}
-                          getOptionLabel={(option) => option.label}
-                          isOptionEqualToValue={(option, value) => option.id === value.id}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              placeholder="Select Vendor"
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  background: '#4c4c4c',
-                                  borderRadius: '20px',
-                                  '& fieldset': {
-                                    borderColor: 'transparent'
-                                  },
-                                  '&:hover fieldset': {
-                                    borderColor: 'rgba(255, 255, 255, 0.23)'
-                                  },
-                                  '&.Mui-focused fieldset': {
-                                    borderColor: theme.palette.primary.main
-                                  }
-                                },
-                                '& .MuiInputBase-input': {
-                                  color: value ? 'inherit' : 'gray'
-                                }
-                              }}
-                            />
-                          )}
-                          renderOption={(props, option) => {
-                            if (option.id === 'create-new') {
-                              return (
-                                <Box component="li" {...props} display="flex" alignItems="center">
-                                  <AddIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
-                                  <Typography variant="body2" color="primary">
-                                    Create New Vendor
-                                  </Typography>
-                                </Box>
-                              );
-                            }
-                            return (
-                              <Typography component="li" {...props} variant="body2">
-                                {option.label}
-                              </Typography>
-                            );
-                          }}
-                          sx={{
-                            '& .MuiAutocomplete-popupIndicator': {
-                              color: 'white'
-                            }
-                          }}
-                        />
-                      ) : (
-                        <Box display="flex" flexDirection="column" gap={1}>
-                          <TextField
-                            fullWidth
-                            value={newVendorName}
-                            onChange={(e) => setNewVendorName(e.target.value)}
-                            placeholder="Enter new vendor name"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleCreateVendor();
-                              }
-                            }}
-                            autoFocus
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                background: '#4c4c4c',
-                                borderRadius: '20px'
-                              }
-                            }}
-                          />
-                          <Box display="flex" gap={1} justifyContent="flex-end">
-                            <NERButton
-                              variant="outlined"
-                              onClick={() => {
-                                setShowCreateVendorField(false);
-                                setNewVendorName('');
-                              }}
-                            >
-                              Cancel
-                            </NERButton>
-                            <NERSuccessButton
-                              variant="contained"
-                              onClick={handleCreateVendor}
-                              disabled={!newVendorName.trim()}
-                            >
-                              Create
-                            </NERSuccessButton>
-                          </Box>
-                        </Box>
-                      )}
+                      <Select
+                        displayEmpty
+                        value={value}
+                        onChange={(e) => {
+                          onChange(e.target.value);
+                        }}
+                        IconComponent={KeyboardArrowDownIcon}
+                        sx={{
+                          background: '#4c4c4c',
+                          borderRadius: '20px',
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '20px'
+                          },
+                          '& .MuiSelect-icon': {
+                            fontSize: 'xxx-large'
+                          }
+                        }}
+                        renderValue={(selected) => {
+                          if (!selected) {
+                            return <Typography style={{ color: 'gray' }}>Select Vendor</Typography>;
+                          }
+                          return mappedVendors.find((vendor) => vendor.id === selected)?.label;
+                        }}
+                      >
+                        {mappedVendors.map((vendor) => (
+                          <MenuItem key={vendor.id} value={vendor.id}>
+                            {vendor.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
                       <FormHelperText error>{errors.vendorId?.message}</FormHelperText>
                     </>
                   );
@@ -614,77 +483,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             </FormControl>
           </Grid>
         </Grid>
-        {(isHead(user.role) || (isEditing && isLeadershipApproved)) && (
-          <Grid item xs={12} md={6}>
-            <Grid item xs={12}>
-              <FormControl sx={{ borderRadius: '25px', width: '85%' }}>
-                <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
-                  <FormLabel
-                    sx={{
-                      color: '#dd524c',
-                      textShadow: '1.5px 0 #dd524c',
-                      letterSpacing: '0.5px',
-                      textDecoration: 'underline',
-                      textUnderlineOffset: '3.5px',
-                      textDecorationThickness: '0.6px',
-                      paddingBottom: '2px',
-                      fontSize: 'x-large',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Date of Expense*
-                  </FormLabel>
-                  <Tooltip
-                    title="Reimbursements with Different Purchase Dates Should be on Different Requests. Leave Empty for Not Yet Purchased Items"
-                    placement="right"
-                  >
-                    <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px' }} />
-                  </Tooltip>
-                </Box>
-                <Controller
-                  name="dateOfExpense"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <DatePicker
-                      value={value}
-                      open={datePickerOpen}
-                      sx={{
-                        background: '#4c4c4c',
-                        borderRadius: '20px',
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '20px',
-                          color: '#989898'
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          color: '#ffffff'
-                        }
-                      }}
-                      onClose={() => setDatePickerOpen(false)}
-                      onOpen={() => setDatePickerOpen(true)}
-                      onChange={(newValue) => {
-                        onChange(newValue ?? new Date());
-                      }}
-                      slotProps={{
-                        textField: {
-                          error: !!errors.dateOfExpense,
-                          helperText: errors.dateOfExpense?.message,
-                          InputProps: {
-                            onClick: (e) => {
-                              const target = e.target as HTMLElement;
-                              if (target.closest('button')) {
-                                setDatePickerOpen(true);
-                              }
-                            }
-                          }
-                        }
-                      }}
-                    />
-                  )}
-                />
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sx={{ paddingTop: '38px' }}>
-              <FormControl sx={{ display: 'flex', borderRadius: '25px', width: '85%' }}>
+        <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
+            <FormControl sx={{ borderRadius: '25px', width: '85%' }}>
+              <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
                 <FormLabel
                   sx={{
                     color: '#dd524c',
@@ -698,58 +500,121 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     fontWeight: 'bold'
                   }}
                 >
-                  Receipts
+                  Date of Expense*
                 </FormLabel>
-
-                <Box>
-                  <ReceiptFileInput />
-                  <Button
-                    variant="contained"
-                    color="success"
-                    component="label"
+                <Tooltip
+                  title="Reimbursements with Different Purchase Dates Should be on Different Requests. Leave Empty for Not Yet Purchased Items"
+                  placement="right"
+                >
+                  <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px' }} />
+                </Tooltip>
+              </Box>
+              <Controller
+                name="dateOfExpense"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <DatePicker
+                    value={value}
+                    open={datePickerOpen}
                     sx={{
-                      width: 'fit-content',
-                      textTransform: 'none',
-                      color: 'white',
-                      marginLeft: '10px'
+                      background: '#4c4c4c',
+                      borderRadius: '20px',
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '20px',
+                        color: '#989898'
+                      }
                     }}
-                  >
-                    Upload
-                    <input
-                      onChange={(e) => {
-                        if (e.target.files) {
-                          [...e.target.files].forEach((file) => {
-                            if (file.size >= MAX_FILE_SIZE) {
-                              toast.error(
-                                `Error uploading ${file.name}; file must be less than ${MAX_FILE_SIZE / 1024 / 1024} MB`,
-                                5000
-                              );
-                              document.getElementById('receipt-image')!.innerHTML = '';
-                            } else {
-                              receiptPrepend({
-                                file,
-                                name: file.name,
-                                googleFileId: ''
-                              });
-                            }
-                          });
-                        }
-                      }}
-                      type="file"
-                      id="receipt-image"
-                      accept="image/png, image/jpeg, application/pdf"
-                      name="receiptFiles"
-                      multiple
-                      hidden
-                    />
-                  </Button>
-                </Box>
-
-                <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
-              </FormControl>
-            </Grid>
+                    onClose={() => setDatePickerOpen(false)}
+                    onOpen={() => setDatePickerOpen(true)}
+                    onChange={(newValue) => {
+                      onChange(newValue ?? new Date());
+                    }}
+                    slotProps={{
+                      textField: {
+                        error: !!errors.dateOfExpense,
+                        helperText: errors.dateOfExpense?.message,
+                        onClick: () => setDatePickerOpen(true),
+                        inputProps: { readOnly: true }
+                      }
+                    }}
+                  />
+                )}
+              />
+            </FormControl>
           </Grid>
-        )}
+          <Grid item xs={12} sx={{ paddingTop: '38px' }}>
+            <FormControl sx={{ display: 'flex', borderRadius: '25px', width: '85%' }}>
+              <FormLabel
+                sx={{
+                  color: '#dd524c',
+                  textShadow: '1.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3.5px',
+                  textDecorationThickness: '0.6px',
+                  paddingBottom: '2px',
+                  fontSize: 'x-large',
+                  fontWeight: 'bold'
+                }}
+              >
+                Receipts
+              </FormLabel>
+
+              <Box>
+                <ReceiptFileInput />
+                <Button
+                  variant="contained"
+                  color="success"
+                  component="label"
+                  sx={{
+                    width: 'fit-content',
+                    textTransform: 'none',
+                    color: 'white',
+                    marginLeft: '10px'
+                  }}
+                >
+                  Upload
+                  <input
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        [...e.target.files].forEach((file) => {
+                          /* The regex /^[\w.]+$/ limits the file name to the set of alphanumeric characters (\w) and dots (for file type) */
+                          if (file.size >= 1000000) {
+                            toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
+                            document.getElementById('receipt-image')!.innerHTML = '';
+                          } else if (file.name.length > 20) {
+                            toast.error(`Error uploading ${file.name}; file name must be less than 20 characters`, 5000);
+                            document.getElementById('receipt-image')!.innerHTML = '';
+                          } else if (!/^[\w.]+$/.test(file.name)) {
+                            toast.error(
+                              `Error uploading ${file.name}; file name must only contain letter and numbers`,
+                              5000
+                            );
+                            document.getElementById('receipt-image')!.innerHTML = '';
+                          } else {
+                            receiptPrepend({
+                              file,
+                              name: file.name,
+                              googleFileId: ''
+                            });
+                          }
+                        });
+                      }
+                    }}
+                    type="file"
+                    id="receipt-image"
+                    accept="image/png, image/jpeg, application/pdf"
+                    name="receiptFiles"
+                    multiple
+                    hidden
+                  />
+                </Button>
+              </Box>
+
+              <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+        </Grid>
         <Grid
           item
           xs={12}
@@ -990,7 +855,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           <FormLabel>Total Cost</FormLabel>
           <Typography variant="h6">${calculatedTotalCost}</Typography>
         </Box>
-        <Box sx={{ display: 'flex', alignSelf: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignSelf: 'center' }}>
           <NERFailButton
             onClick={() => onFormExit?.()}
             variant="contained"
@@ -1006,16 +871,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           >
             {submitText}
           </NERSuccessButton>
-          {(isHead(user.role) || (isEditing && isLeadershipApproved)) && onSubmitToFinance && (
-            <NERSuccessButton
-              variant="contained"
-              onClick={handleSubmit(onSubmitToFinance)}
-              disabled={!hasSecureSettingsSet}
-              sx={{ background: '#dd524c', color: 'white', borderRadius: '10px' }}
-            >
-              Save and Submit to Finance
-            </NERSuccessButton>
-          )}
         </Box>
       </Box>
     </form>

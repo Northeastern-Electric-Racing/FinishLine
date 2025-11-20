@@ -129,37 +129,27 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           Invert Availability
         </NERButton>
       </Grid>
-      <TimeSlot backgroundColor={HeatmapColors[0]} widthOverride="106px" heightOverride="50px" />
+      <TimeSlot backgroundColor={HeatmapColors[0]} small={true} heightOverride="40px" />
       {currentlyDisplayedAvailabilities.map((availability) => (
         <TimeSlot
           key={availability.dateSet.getTime()}
           backgroundColor={HeatmapColors[0]}
-          widthOverride="106px"
-          heightOverride="50px"
-          text={
-            <Typography fontSize="15px" fontWeight="bold">
-              {getDayOfWeek(availability.dateSet)} <br /> {datePipe(availability.dateSet)}
-            </Typography>
-          }
+          small={true}
+          heightOverride="40px"
+          text={getDayOfWeek(availability.dateSet) + ' ' + datePipe(availability.dateSet)}
+          fontSize={'12px'}
         />
       ))}
       {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container item>
-          <TimeSlot
-            backgroundColor={HeatmapColors[0]}
-            widthOverride="106px"
-            heightOverride="32px"
-            text={time}
-            fontSize={'15px'}
-          />
+          <TimeSlot backgroundColor={HeatmapColors[0]} small={true} text={time} fontSize={'13px'} />
           {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
             const backgroundColor = availability.availability.includes(timeIndex) ? HeatmapColors[3] : HeatmapColors[0];
             return (
               <TimeSlot
                 key={timeIndex * enumToArray(REVIEW_TIMES).length + dayIndex}
                 backgroundColor={backgroundColor}
-                widthOverride="106px"
-                heightOverride="32px"
+                small={true}
                 onMouseDown={(e) => handleMouseDown(e, availability, timeIndex)}
                 onMouseEnter={(e) => handleMouseEnter(e, availability, timeIndex)}
                 onMouseUp={handleMouseUp}

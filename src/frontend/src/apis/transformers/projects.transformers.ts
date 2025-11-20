@@ -96,8 +96,7 @@ export const projectGanttTransformer = (project: ProjectGantt): ProjectGantt => 
     dateCreated: new Date(project.dateCreated),
     startDate: project.startDate ? new Date(project.startDate) : undefined,
     endDate: project.endDate ? new Date(project.endDate) : undefined,
-    workPackages: project.workPackages.map(workPackageTransformer),
-    tasks: project.tasks.map(taskTransformer)
+    workPackages: project.workPackages.map(workPackageTransformer)
   };
 };
 

@@ -1095,20 +1095,15 @@ export default class FinanceServices {
 
     if (!tier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
 
-    if (name !== oldSponsor.name) {
-      const existingSponsor = await prisma.sponsor.findFirst({
-        where: {
-          name: {
-            equals: name,
-            mode: 'insensitive'
-          },
-          organizationId: organization.organizationId
-        }
-      });
-
-      if (existingSponsor) {
-        throw new HttpException(400, `A sponsor with the name "${name}" already exists.`);
+    const existingSponsor = await prisma.sponsor.findFirst({
+      where: {
+        name,
+        organizationId: organization.organizationId
       }
+    });
+
+    if (existingSponsor) {
+      throw new HttpException(400, `A sponsor with the name "${name}" already exists.`);
     }
 
     const updatedSponsor = await prisma.sponsor.update({
