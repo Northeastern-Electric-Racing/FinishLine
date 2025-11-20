@@ -42,7 +42,6 @@ import { getUserPreviewQueryArgs } from '../prisma-query-args/user.query-args';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
-
   /**
    * Retrieve all work packages, optionally filtered by query parameters.
    *
