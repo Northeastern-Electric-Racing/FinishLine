@@ -3,7 +3,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import { useState } from 'react';
-import AdminToolTable from '../AdminToolTable';
+import NERTable from '../../../components/NERTable';
 import { useGetAllUnits, useDeleteUnit } from '../../../hooks/bom.hooks';
 import CreateUnitFormModal from './CreateUnitFormModal';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -59,7 +59,7 @@ const UnitTypeTable: React.FC = () => {
   return (
     <Box>
       <CreateUnitFormModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
-      <AdminToolTable columns={[{ name: 'Unit' }, { name: '' }]} rows={unitTypesTableRows} />
+      <NERTable columns={[{ name: 'Unit' }, { name: '' }]} rows={unitTypesTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"

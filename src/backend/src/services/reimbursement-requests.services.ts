@@ -1544,6 +1544,42 @@ export default class ReimbursementRequestService {
     return vendorTransformer(vendor);
   }
 
+  static async setVendorTaxExemptStatus(
+    vendorId: string,
+    taxExempt: boolean,
+    submitter: User,
+    organization: Organization
+  ): Promise<Vendor> {
+    const existingVendor = await prisma.vendor.findUnique({
+      where: { vendorId, dateDeleted: null },
+      include: { twoFactorContacts: { select: { userId: true } } }
+    });
+
+    if (!existingVendor) {
+      throw new NotFoundException('Vendor', vendorId);
+    }
+
+    if (existingVendor.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Vendor');
+    }
+
+    const isUserAuthorized =
+      existingVendor.addedByUserId === submitter.userId ||
+      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
+      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
+    if (!isUserAuthorized) {
+      throw new AccessDeniedException(`You are not a member of the finance team!`);
+    }
+
+    const updatedVendor = await prisma.vendor.update({
+      where: { vendorId },
+      data: { taxExempt },
+      ...getVendorQueryArgs(organization.organizationId)
+    });
+
+    return vendorTransformer(updatedVendor);
+  }
+
   /**
    * Deletes the vendor
    *

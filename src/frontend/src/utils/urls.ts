@@ -196,6 +196,7 @@ const financeDeleteOtherProductReason = (otherReasonId: string) =>
 const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
+const financeSetVendorTaxExemptStatus = (vendorId: string) => `${financeEndpoints()}/vendors/${vendorId}/setTaxExemptStatus`;
 const financeDeleteVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/delete`;
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
 
@@ -445,6 +446,7 @@ const calendarEditMachinery = (machineryId: string) => `${calendar()}/machinery/
 const calendarDeleteMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/delete`;
 const calendarAddMachineryToShop = (machineryId: string) => `${calendar()}/machinery/${machineryId}/add-to-shop`;
 const calendarEditShop = (shopId: string) => `${calendar()}/shop/${shopId}/edit`;
+const calendarDeleteShop = (shopId: string) => `${calendar()}/shop/${shopId}/delete`;
 const calendarCreateCalendar = () => `${calendar()}/create`;
 const calendarEditCalendar = (calendarId: string) => `${calendar()}/${calendarId}/edit`;
 const calendarCalendars = () => `${calendar()}/calendars`;
@@ -615,6 +617,7 @@ export const apiUrls = {
   financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
+  financeSetVendorTaxExemptStatus,
   financeDeleteVendor,
   financeLeadershipApprove,
   financeCreateSponsor,
@@ -758,6 +761,7 @@ export const apiUrls = {
   calendarDeleteMachinery,
   calendarAddMachineryToShop,
   calendarEditShop,
+  calendarDeleteShop,
   calendarCreateCalendar,
   calendarEditCalendar,
   calendarCalendars,

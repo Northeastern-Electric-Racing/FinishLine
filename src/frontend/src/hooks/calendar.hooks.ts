@@ -3,6 +3,7 @@ import { Shop, Machinery, Calendar } from 'shared';
 import {
   getAllShops,
   postCreateShop,
+  postDeleteShop,
   getAllMachinery,
   postCreateMachinery,
   postEditMachinery,
@@ -15,6 +16,7 @@ import {
 } from '../apis/calendar.api';
 
 export const MACHINERY_KEY = ['machinery'] as const;
+const SHOP_KEY = ['shops'] as const;
 
 export const useAllCalendars = () =>
   useQuery<Calendar[], Error>(['calendars'], async () => {
@@ -53,7 +55,7 @@ export const useEditCalendar = (calendarId: string) => {
 };
 
 export const useAllShops = () =>
-  useQuery<Shop[], Error>(['shops'], async () => {
+  useQuery<Shop[], Error>(SHOP_KEY, async () => {
     const res = await getAllShops();
     return res.data;
   });
@@ -67,7 +69,7 @@ export const useCreateShop = () => {
     },
     {
       onSuccess: () => {
-        qc.invalidateQueries(['shops']);
+        qc.invalidateQueries(SHOP_KEY);
       }
     }
   );
@@ -82,7 +84,7 @@ export const useEditShop = (shopId: string) => {
     },
     {
       onSuccess: () => {
-        qc.invalidateQueries(['shops']);
+        qc.invalidateQueries(SHOP_KEY);
       }
     }
   );
@@ -137,6 +139,21 @@ export const useAddMachineryToShop = (machineryId: string) => {
     {
       onSuccess: () => {
         qc.invalidateQueries(MACHINERY_KEY);
+      }
+    }
+  );
+};
+
+export const useDeleteShop = () => {
+  const qc = useQueryClient();
+  return useMutation<{ shopId: string }, Error, string>(
+    async (shopId: string) => {
+      const { data } = await postDeleteShop(shopId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(SHOP_KEY);
       }
     }
   );
