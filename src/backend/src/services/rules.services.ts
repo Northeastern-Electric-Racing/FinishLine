@@ -1,4 +1,4 @@
-import { Organization, Rule, User, Rule_Completion, Ruleset } from '@prisma/client';
+import { Organization, Rule, User, Rule_Completion } from '@prisma/client';
 import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -470,7 +470,7 @@ export default class RulesService {
     carNumber: number,
     active: boolean,
     fileId: string
-  ): Promise<Ruleset> {
+  ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
       throw new AccessDeniedException('only leadership and above can create ruleset!');
 
@@ -509,10 +509,11 @@ export default class RulesService {
         carId: car.carId,
         active,
         createdByUserId: submitter.userId
-      }
+      },
+      ...getRulesetQueryArgs(organization.organizationId)
     });
 
-    return ruleset;
+    return rulesetTransformer(ruleset);
   }
 
   /**

@@ -254,7 +254,6 @@ describe('Create Rules Tests', () => {
         );
 
         expect(ruleset.name).toEqual('ruleset name');
-        expect(ruleset.rulesetTypeId).toEqual(rulesetType.rulesetTypeId);
       });
       it('Create ruleset fails when submitters is not leadership', async () => {
         await expect(
