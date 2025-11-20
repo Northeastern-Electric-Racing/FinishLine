@@ -10,6 +10,7 @@ import { CreateSingleProjectPayload } from '../../../../utils/types';
 import { WorkPackageApiInputs } from '../../../../apis/work-packages.api';
 import { useCreateSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
 import { GanttRequestChangeModalProps } from './GanttRequestChangeModal';
+import { useCreateTask } from '../../../../hooks/tasks.hooks';
 
 interface GanttProjectCreateModalProps extends GanttRequestChangeModalProps {}
 
@@ -17,14 +18,15 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
   const toast = useToast();
   const { isLoading, mutateAsync: createProject } = useCreateSingleProject();
   const { isLoading: workPackageIsLoading, mutateAsync: createWorkPackage } = useCreateSingleWorkPackage();
+  const { isLoading: isLoadingTaskCreate, mutateAsync: createSingleTask } = useCreateTask();
   const project = change.element as ProjectGantt;
-
   const startDate = getProjectStartDate(project);
   const latestEndDate = getProjectEndDate(project);
 
-  if (isLoading || workPackageIsLoading) return <LoadingIndicator />;
+  if (isLoading || workPackageIsLoading || isLoadingTaskCreate) return <LoadingIndicator />;
 
   const changeInTimeline = `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(latestEndDate).format('MMMM D, YYYY')}`;
+
   const handleSubmit = async () => {
     const [selectedTeam] = project.teams;
 
@@ -53,12 +55,35 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
     }));
 
     try {
-      const project = await createProject(payload);
+      const createdProject = await createProject(payload);
       toast.success('Project Created Successfully!');
+
       for (const workPackage of workPackagePayloads) {
-        await createWorkPackage({ ...workPackage, projectWbsNum: project.wbsNum });
+        await createWorkPackage({ ...workPackage, projectWbsNum: createdProject.wbsNum });
       }
       toast.success('All work packages created successfully!');
+
+      if (project.tasks && project.tasks.length > 0) {
+        for (const task of project.tasks) {
+          try {
+            await createSingleTask({
+              wbsNum: createdProject.wbsNum,
+              title: task.title,
+              priority: task.priority,
+              status: task.status,
+              assignees: task.assignees.map((user) => user.userId),
+              notes: task.notes || '',
+              deadline: task.deadline ? task.deadline.toISOString() : undefined,
+              startDate: task.startDate ? task.startDate.toISOString() : undefined
+            });
+            toast.success('All tasks created successfully!');
+          } catch (error) {
+            console.error('Error creating task:', error);
+            toast.error(`Failed to create task: ${task.title}`);
+          }
+        }
+      }
+
       handleClose(false);
     } catch (e) {
       if (e instanceof Error) {

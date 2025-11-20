@@ -209,3 +209,14 @@ export const labelPipe = (label: string) => {
 
   return result;
 };
+
+// Pad SABO ID with leading zeroes
+export const formatSaboIdPipe = (saboId: number | undefined): string => {
+  if (saboId === undefined || saboId === null) return undefinedPipe(saboId as any);
+  const str = String(saboId);
+  // Only pad if it's shorter than 5
+  if (str.length < 5) {
+    return str.padStart(5, '0');
+  }
+  return str;
+};

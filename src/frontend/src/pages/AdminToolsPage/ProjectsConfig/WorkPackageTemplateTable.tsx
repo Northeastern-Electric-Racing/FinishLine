@@ -1,5 +1,5 @@
 import { TableRow, TableCell, Box, IconButton, Typography } from '@mui/material';
-import AdminToolTable from '../AdminToolTable';
+import NERTable from '../../../components/NERTable';
 import { NERButton } from '../../../components/NERButton';
 import { isAdmin } from 'shared/src/permission-utils';
 import { useCurrentUser } from '../../../hooks/users.hooks';
@@ -63,7 +63,7 @@ const WorkPackageTemplateTable = () => {
 
   return (
     <Box>
-      <AdminToolTable
+      <NERTable
         columns={[{ name: 'Name' }, { name: 'Description' }, { name: '', width: '10%' }]}
         rows={workPackageTemplateRows}
       />

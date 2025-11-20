@@ -8,10 +8,11 @@ import {
 } from '../utils/notifications.utils';
 import { sendMessage } from '../integrations/slack';
 import { daysBetween, meetingStartTimePipe, startOfDay, wbsPipe } from 'shared';
-import { buildDueString } from '../utils/slack.utils';
+import { buildDueString, sendThreadResponse } from '../utils/slack.utils';
 import WorkPackagesService from './work-packages.services';
 import { addWeeksToDate } from 'shared';
 import { HttpException } from '../utils/errors.utils';
+import { Reimbursement_Status_Type } from '@prisma/client';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
@@ -19,6 +20,7 @@ export default class NotificationsService {
     await NotificationsService.sendDesignReviewSlackNotifications();
     await NotificationsService.sendWorkPackageDeadlineSlackNotifications();
     await NotificationsService.sendSponsorTaskNotifications();
+    await NotificationsService.sendPendingSaboSubmissionNotifications();
   }
 
   /**
@@ -238,6 +240,56 @@ export default class NotificationsService {
           message,
           `finishlinebyner.com/finance/companies/sponsors/${sponsor.sponsorId}`,
           `View Tasks for ${sponsor.name}`
+        );
+      }
+    });
+
+    await Promise.all(promises);
+  }
+
+  static async sendPendingSaboSubmissionNotifications() {
+    const rrsPendingSaboSubmission = await prisma.reimbursement_Request.findMany({
+      where: {
+        dateDeleted: null,
+        AND: [
+          {
+            reimbursementStatuses: {
+              some: {
+                type: Reimbursement_Status_Type.PENDING_SABO_SUBMISSION
+              }
+            }
+          },
+          {
+            reimbursementStatuses: {
+              none: {
+                type: Reimbursement_Status_Type.SABO_SUBMITTED
+              }
+            }
+          },
+          {
+            reimbursementStatuses: {
+              none: {
+                type: Reimbursement_Status_Type.DENIED
+              }
+            }
+          }
+        ]
+      },
+      include: {
+        reimbursementStatuses: true,
+        notificationSlackThreads: true,
+        receiptPictures: true
+      }
+    });
+    const promises = rrsPendingSaboSubmission.map(async (rr) => {
+      const dateMarkedPendingSaboSubmission = rr.reimbursementStatuses.find(
+        (status) => status.type === Reimbursement_Status_Type.PENDING_SABO_SUBMISSION
+      )?.dateCreated;
+      // Only send notification if it has been more than 24 hours since marked pending SABO submission
+      if (dateMarkedPendingSaboSubmission && dateMarkedPendingSaboSubmission.getTime() <= Date.now() - 24 * 60 * 60 * 1000) {
+        await sendThreadResponse(
+          rr.notificationSlackThreads,
+          `This Reimbursement Request is still pending SABO submission. Please submit to SABO and mark as submitted on Finishline as soon as possible.`
         );
       }
     });
