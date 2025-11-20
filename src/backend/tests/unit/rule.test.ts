@@ -400,7 +400,6 @@ describe('Delete Rules Tests', () => {
   let orgId: string;
   let admin: User;
   let nonLeadership: User;
-  let guest: User;
   let project: Project;
   let fsaeRulesetType: Ruleset_Type;
 
@@ -409,7 +408,6 @@ describe('Delete Rules Tests', () => {
     orgId = organization.organizationId;
     admin = await createTestUser(supermanAdmin, organization.organizationId);
     nonLeadership = await createTestUser(financeMember, organization.organizationId);
-    guest = await createTestUser(wonderwomanGuest, orgId);
     project = await createTestProject(admin, organization.organizationId);
 
     fsaeRulesetType = await prisma.ruleset_Type.create({
@@ -731,6 +729,7 @@ describe('Delete Rules Tests', () => {
     it('Fails if user is a guest', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
+      const guest = await createTestUser(wonderwomanGuest, orgId);
       await expect(
         async () => await RulesService.assignRuleTeam(topLevelRule.ruleId, [], guest, organization)
       ).rejects.toThrow(new AccessDeniedGuestException('assign teams to rule'));
