@@ -81,7 +81,8 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
     }
   }, [open, initialValues, reset]);
 
-  const computedTitle = frozenValuesRef.current.name !== '' ? 'Edit Calendar' : 'Add Calendar';
+  const computedTitle = initialValues ? 'Edit Calendar' : 'Add Calendar';
+
 
   const onFormSubmit = async (data: CalendarFormValues) => {
     try {
