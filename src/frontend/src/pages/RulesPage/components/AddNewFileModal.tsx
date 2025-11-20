@@ -48,18 +48,31 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfi
       formId={'add-new-file-form'}
     >
       <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography variant="h6" sx={sectionHeaderStyle}>
-            Active:
-          </Typography>
-          <Checkbox {...register('isActive')} checked={isActive} />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="h6" sx={sectionHeaderStyle}>
+              Car:
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="h6" sx={sectionHeaderStyle}>
+              Active:
+            </Typography>
+            <Checkbox {...register('isActive')} checked={isActive} />
+          </Box>
         </Box>
       </Box>
       <Box>
-        <Typography variant="h6" sx={sectionHeaderStyle}>
+        <Typography variant="h6" sx={{ ...sectionHeaderStyle, pb: 1 }}>
           Name Ruleset File:
         </Typography>
-        <TextField required autoComplete="off" placeholder={'Name File'} {...register('name')} />
+        <TextField
+          inputProps={{ style: { fontSize: 13 } }}
+          required
+          autoComplete="off"
+          placeholder={'Name File'}
+          {...register('name')}
+        />
       </Box>
     </NERFormModal>
   );
