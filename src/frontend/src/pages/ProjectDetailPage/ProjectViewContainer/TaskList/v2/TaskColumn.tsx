@@ -30,30 +30,25 @@ export const TaskColumn = ({
   const theme = useTheme();
 
   const handleCreateTask = async ({ notes, title, deadline, assignees, priority, startDate }: EditTaskFormInput) => {
-    try {
-      const task = await createTask({
-        wbsNum: project.wbsNum,
-        title,
-        deadline: deadline ? transformDate(deadline) : undefined,
-        startDate: startDate ? transformDate(startDate) : undefined,
-        priority,
-        status: status as TaskStatus,
-        assignees,
-        notes
-      });
-      onAddTask(task);
-      toast.success('Task Successfully Created!');
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        toast.error(e.message, 6000);
-      }
-    }
+    const task = await createTask({
+      wbsNum: project.wbsNum,
+      title,
+      deadline: deadline ? transformDate(deadline) : undefined,
+      startDate: startDate ? transformDate(startDate) : undefined,
+      priority,
+      status: status as TaskStatus,
+      assignees,
+      notes
+    });
+    onAddTask(task);
+    toast.success('Task Successfully Created!');
     setShowCreateTaskModal(false);
   };
 
   return (
     <>
       <TaskFormModal
+        status={status}
         onSubmit={handleCreateTask}
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
