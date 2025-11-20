@@ -462,6 +462,60 @@ export default class RulesService {
     return projectRuleTransformer(updatedProjectRule);
   }
 
+  static async createRuleset(
+    submitter: User,
+    organization: Organization,
+    name: string,
+    rulesetTypeId: string,
+    carNumber: number,
+    active: boolean,
+    fileId: string
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
+      throw new AccessDeniedException('only leadership and above can create ruleset!');
+
+    const rulesetType = await prisma.ruleset_Type.findUnique({
+      where: {
+        rulesetTypeId,
+        deletedBy: null,
+        organizationId: organization.organizationId
+      }
+    });
+
+    if (!rulesetType) {
+      throw new NotFoundException('Ruleset Type', rulesetTypeId);
+    }
+
+    const car = await prisma.car.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        }
+      },
+      include: { wbsElement: true }
+    });
+
+    if (!car) {
+      throw new NotFoundException('Car', carNumber);
+    }
+
+    const ruleset = await prisma.ruleset.create({
+      data: {
+        fileId,
+        rulesetTypeId,
+        name,
+        carId: car.carId,
+        active,
+        createdByUserId: submitter.userId
+      },
+      ...getRulesetQueryArgs(organization.organizationId)
+    });
+
+    return rulesetTransformer(ruleset);
+  }
+
   /**
    * Deletes a ruleset type and all the rulesets in the ruleset type's revision files.
    *
@@ -470,13 +524,13 @@ export default class RulesService {
    * @param organization The organization that the ruleset is being deleted for
    */
   static async deleteRulesetType(deleter: User, id: string, organization: Organization): Promise<RulesetType> {
-    //check if user is admin
+    // check if user is admin
     if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('delete ruleset types');
     }
 
     const rulesetType = await prisma.ruleset_Type.findUnique({
-      where: { rulesetTypeId: id },
+      where: { rulesetTypeId: id, organizationId: organization.organizationId },
       include: {
         revisionFiles: true
       }
@@ -497,6 +551,7 @@ export default class RulesService {
           data: { deletedByUserId: deleter.userId }
         });
       }
+
       // delete the actual ruleset type itself
       await tx.ruleset_Type.update({
         where: { rulesetTypeId: id },
