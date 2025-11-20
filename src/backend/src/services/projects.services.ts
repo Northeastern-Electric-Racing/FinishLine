@@ -626,7 +626,8 @@ export default class ProjectsService {
     iconName: string,
     required: boolean,
     submitter: User,
-    organization: Organization
+    organization: Organization,
+    newName?: string
   ): Promise<LinkType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('Only an admin can update the linkType');
@@ -643,11 +644,25 @@ export default class ProjectsService {
 
     if (!linkType) throw new NotFoundException('Link Type', linkName);
 
+    // If attempting to rename, ensure new name does not conflict with an existing LinkType
+    if (newName && newName !== linkName) {
+      const existingWithNewName = await prisma.link_Type.findUnique({
+        where: {
+          uniqueLinkType: {
+            name: newName,
+            organizationId: organization.organizationId
+          }
+        }
+      });
+
+      if (existingWithNewName) throw new HttpException(400, 'LinkType with that name already exists in this organization.');
+    }
+
     // update the LinkType
     const linkTypeUpdated = await prisma.link_Type.update({
       where: { id: linkType.id },
       data: {
-        name: linkName,
+        name: newName && newName ? newName : linkName,
         iconName,
         required
       },

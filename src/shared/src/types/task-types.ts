@@ -25,9 +25,10 @@ export interface Task {
   notes: string;
   dateDeleted?: Date;
   dateCreated: Date;
-  createdBy: UserPreview;
-  deletedBy?: UserPreview;
-  assignees: UserPreview[];
+  createdBy: User;
+  deletedBy?: User;
+  assignees: User[];
+  startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
   status: TaskStatus;

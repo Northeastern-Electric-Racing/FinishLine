@@ -14,7 +14,6 @@ import { exampleDesignWorkPackage, exampleResearchWorkPackage } from '../../test
 import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import WorkPackagePage from '../../../pages/WorkPackageDetailPage/WorkPackagePage';
-import AppContextUser from '../../../app/AppContextUser';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 
 vi.mock('../../../hooks/work-packages.hooks');
@@ -51,9 +50,7 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <AppContextUser>
-        <WorkPackagePage wbsNum={exampleWbsProject1} />
-      </AppContextUser>
+      <WorkPackagePage wbsNum={exampleWbsProject1} />
     </RouterWrapper>
   );
 };

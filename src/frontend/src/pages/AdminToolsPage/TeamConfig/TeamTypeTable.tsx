@@ -2,7 +2,7 @@ import { TableRow, TableCell, Box, Typography, Icon } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
-import AdminToolTable from '../AdminToolTable';
+import NERTable from '../../../components/NERTable';
 import CreateTeamTypeFormModal from './CreateTeamTypeFormModal';
 import { TeamType } from 'shared';
 import EditTeamTypeFormModal from './EditTeamTypeFormModal';
@@ -159,7 +159,7 @@ const TeamTypeTable: React.FC = () => {
           teamType={editingTeamType}
         />
       )}
-      <AdminToolTable
+      <NERTable
         columns={[{ name: 'Division Name' }, { name: 'Icon' }, { name: 'Description' }, { name: 'Image' }]}
         rows={teamTypesTableRows}
       />
