@@ -391,6 +391,7 @@ describe('Create Rules Tests', () => {
 describe('Rule Tests', () => {
   let organization: Organization;
   let orgId: string;
+  let otherOrg: Organization;
   let admin: User;
   let nonLeadership: User;
   let project: Project;
@@ -409,6 +410,26 @@ describe('Rule Tests', () => {
         slackId: 'test-slack',
         headId: admin.userId,
         organizationId: organization.organizationId
+      }
+    });
+    const otherOrgUser = await prisma.user.create({
+      data: {
+        firstName: 'Other',
+        lastName: 'Admin',
+        email: 'other@test.com',
+        googleAuthId: 'otherOrganizationCreator' // different googleAuthId
+      }
+    });
+    otherOrg = await prisma.organization.create({
+      data: {
+        name: 'Other Organization',
+        description: 'Other test organization',
+        applicationLink: '',
+        userCreated: {
+          connect: {
+            userId: otherOrgUser.userId
+          }
+        }
       }
     });
 
@@ -831,7 +852,6 @@ describe('Rule Tests', () => {
   describe('Get unassigned Rules - unassigned to project', () => {
     it('fails if ruleset is in the wrong org', async () => {
       const car = await createUniqueCar(orgId);
-      const otherOrg = await createTestOrganization();
       const otherOrgRulesetType = await prisma.ruleset_Type.create({
         data: {
           name: 'Other Org FHE',
@@ -855,7 +875,6 @@ describe('Rule Tests', () => {
     });
     it('fails if team is in the wrong org', async () => {
       const car = await createUniqueCar(orgId);
-      const otherOrg = await createTestOrganization();
       const otherTeam = await prisma.team.create({
         data: {
           teamName: 'Other Team',
