@@ -385,6 +385,32 @@ describe('Create Rules Tests', () => {
       expect(rulesets[1].name).toBe('2025 FSAE Rules2');
     });
   });
+
+  describe('Update ruleset status', () => {
+    it('update ruleset status - successful', async () => {
+      const ruleset = await RulesService.updateActiveRuleset(batman, orgId, rulesetId, false);
+      expect(ruleset.active).toBe(false);
+    });
+    it('update ruleset status - fails non leadership', async () => {
+      await expect(async () => await RulesService.updateActiveRuleset(wonderwoman, orgId, rulesetId, false)).rejects.toThrow(
+        new AccessDeniedException('You do not have permissions to update ruleset status')
+      );
+    });
+    it('update ruleset status - fails if one is already active', async () => {
+      const ruleset2 = await RulesService.createRuleset(
+        superman,
+        organization,
+        'ruleset name',
+        rulesetType.rulesetTypeId,
+        0,
+        false,
+        'fileId'
+      );
+      await expect(
+        async () => await RulesService.updateActiveRuleset(batman, orgId, ruleset2.rulesetId, true)
+      ).rejects.toThrow(new HttpException(400, 'There is already an active ruleset for this ruleset type'));
+    });
+  });
 });
 
 describe('Delete Rules Tests', () => {

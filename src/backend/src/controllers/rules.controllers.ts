@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services';
-import { ProjectRule } from 'shared';
+import { ProjectRule, Ruleset } from 'shared';
 export default class RulesController {
   static async createRule(req: Request, res: Response, next: NextFunction) {
     try {
@@ -143,6 +143,24 @@ export default class RulesController {
       const rulesetType = await RulesService.deleteRulesetType(req.currentUser, rulesetTypeId, req.organization);
 
       res.status(200).json(rulesetType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async updateActiveRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const { status } = req.body;
+
+      const ruleset: Ruleset = await RulesService.updateActiveRuleset(
+        req.currentUser,
+        req.organization.organizationId,
+        rulesetId,
+        status
+      );
+
+      res.status(200).json(ruleset);
     } catch (error: unknown) {
       next(error);
     }

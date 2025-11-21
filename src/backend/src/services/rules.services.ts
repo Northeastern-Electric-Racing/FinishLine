@@ -639,4 +639,39 @@ export default class RulesService {
 
     return projectRuleTransformer(deletedProjectRule);
   }
+
+  static async updateActiveRuleset(submitter: User, organizationId: string, rulesetId: string, status: boolean) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isLeadership))) {
+      throw new AccessDeniedException('You do not have permissions to update ruleset status');
+    }
+
+    if (status) {
+      const activeRuleset = await prisma.ruleset.findFirst({
+        where: {
+          active: true,
+          rulesetType: {
+            organizationId
+          }
+        }
+      });
+
+      if (activeRuleset && activeRuleset.rulesetId !== rulesetId) {
+        throw new HttpException(400, 'There is already an active ruleset for this ruleset type');
+      }
+    }
+    const ruleset = await prisma.ruleset.update({
+      where: {
+        rulesetId,
+        rulesetType: {
+          organizationId
+        }
+      },
+      data: {
+        active: status
+      },
+      ...getRulesetQueryArgs(organizationId)
+    });
+
+    return rulesetTransformer(ruleset);
+  }
 }

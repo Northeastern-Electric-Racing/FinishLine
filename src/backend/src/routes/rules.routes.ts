@@ -55,4 +55,11 @@ rulesRouter.post(
 );
 rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
 
+rulesRouter.post(
+  '/ruleset/:rulesetId/update',
+  body('status').isBoolean(),
+  validateInputs,
+  RulesController.updateActiveRuleset
+);
+
 export default rulesRouter;
