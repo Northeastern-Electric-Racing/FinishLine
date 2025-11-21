@@ -73,12 +73,12 @@ const AdminToolsScheduleConfig: React.FC = () => {
     setCalendarToDelete(undefined);
     try {
       await deleteCalendar(calendarToDelete.calendarId);
-      toast.success('Shop deleted successfully');
+      toast.success('Calendar deleted successfully');
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
       } else {
-        toast.error('Failed to delete shop', 3000);
+        toast.error('Failed to delete calendar', 3000);
       }
     }
   };

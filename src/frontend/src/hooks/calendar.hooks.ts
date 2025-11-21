@@ -15,6 +15,7 @@ import {
 
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;
+const CALENDAR_KEY = ['calendars'] as const;
 
 export const useAllShops = () =>
   useQuery<Shop[], Error>(SHOP_KEY, async () => {
@@ -144,7 +145,7 @@ export const useDeleteCalendar = () => {
     },
     {
       onSuccess: () => {
-        qc.invalidateQueries(SHOP_KEY);
+        qc.invalidateQueries(CALENDAR_KEY);
       }
     }
   );
