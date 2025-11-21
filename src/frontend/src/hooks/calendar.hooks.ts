@@ -26,7 +26,7 @@ export const useAllCalendars = () =>
 
 export const useCreateCalendar = () => {
   const qc = useQueryClient();
-  return useMutation<Calendar, Error, { name: string; description: string; color: string }>(
+  return useMutation<Calendar, Error, { name: string; description: string; colorHexCode: string }>(
     async (payload) => {
       const { data } = await postCreateCalendar(payload);
       return data;
@@ -41,7 +41,7 @@ export const useCreateCalendar = () => {
 
 export const useEditCalendar = (calendarId: string) => {
   const qc = useQueryClient();
-  return useMutation<Calendar, Error, { name: string; description: string; color: string }>(
+  return useMutation<Calendar, Error, { name: string; description: string; colorHexCode: string }>(
     async (payload) => {
       const { data } = await postEditCalendar(calendarId, payload);
       return data;

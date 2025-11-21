@@ -16,7 +16,8 @@ import {
   useEditCalendar
 } from '../../../hooks/calendar.hooks';
 import ShopModal from './Shop/ShopModal';
-import CalendarModal, { CalendarFormValues } from './Calendar/CalendarModal';
+import CreateCalendarModal from './Calendar/CreateCalendarModal';
+import EditCalendarModal from './Calendar/EditCalendarModal';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
@@ -89,7 +90,8 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [editingCalendarId, setEditingCalendarId] = useState<string | undefined>();
   const editCalendarMutation = useEditCalendar(editingCalendarId ?? '');
 
-  const [openCalendarModal, setOpenCalendarModal] = useState(false);
+  const [openCreateCalendar, setOpenCreateCalendar] = useState(false);
+  const [openEditCalendar, setOpenEditCalendar] = useState(false);
   const [editingCalendar, setEditingCalendar] = useState<any>(null);
 
   if (shopsLoading || machinesLoading || calendarsLoading) return <LoadingIndicator />;
@@ -111,9 +113,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
               <Button
                 variant="contained"
                 onClick={() => {
-                  setEditingCalendar(null);
-                  setEditingCalendarId(undefined);
-                  setOpenCalendarModal(true);
+                  setOpenCreateCalendar(true);
                 }}
               >
                 Add Calendar
@@ -167,7 +167,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
                                 onClick={() => {
                                   setEditingCalendar(calendar);
                                   setEditingCalendarId(calendar.calendarId);
-                                  setOpenCalendarModal(true);
+                                  setOpenEditCalendar(true);
                                 }}
                               >
                                 <EditIcon fontSize="small" />
@@ -390,43 +390,48 @@ const AdminToolsScheduleConfig: React.FC = () => {
         onFormSubmit={handleShopDelete}
       />
 
-      {/* Calendar Modal */}
-      <CalendarModal
-        open={openCalendarModal}
-        onClose={() => {
-          setOpenCalendarModal(false);
-          setEditingCalendar(null);
-          setEditingCalendarId(undefined);
-        }}
-        initialValues={
-          editingCalendar
-            ? {
-                name: editingCalendar.name ?? '',
-                description: editingCalendar.description ?? '',
-                color: editingCalendar.color ?? '#F97316'
-              }
-            : undefined
-        }
-        onSubmit={async ({ name, description, color }: CalendarFormValues) => {
-          const payload = {
+      {/* Create Calendar Modal */}
+      <CreateCalendarModal
+        open={openCreateCalendar}
+        onClose={() => setOpenCreateCalendar(false)}
+        onSubmit={async ({ name, description, colorHexCode }) => {
+          await createCalendarMutate({
             name,
             description,
-            color,
-            colorHexCode: color
-          } as any;
-
-          if (editingCalendarId) {
-            await editCalendarMutation.mutateAsync(payload);
-          } else {
-            await createCalendarMutate(payload);
-          }
-
-          setOpenCalendarModal(false);
-          setEditingCalendar(null);
-          setEditingCalendarId(undefined);
+            colorHexCode
+          });
+          setOpenCreateCalendar(false);
         }}
       />
 
+      {/* Edit Calendar Modal */}
+      {editingCalendarId && (
+        <EditCalendarModal
+          open={openEditCalendar}
+          onClose={() => {
+            setOpenEditCalendar(false);
+            setEditingCalendar(null);
+            setEditingCalendarId(undefined);
+          }}
+          initialValues={{
+            name: editingCalendar?.name ?? '',
+            description: editingCalendar?.description ?? '',
+            colorHexCode: editingCalendar?.color ?? ''
+          }}
+          onSubmit={async ({ name, description, colorHexCode }) => {
+            if (!editingCalendarId) return;
+
+            await editCalendarMutation.mutateAsync({
+              name,
+              description,
+              colorHexCode
+            });
+            setOpenEditCalendar(false);
+            setEditingCalendar(null);
+            setEditingCalendarId(undefined);
+          }}
+        />
+      )}
       {/* Create Machine Modal */}
       <CreateMachineryModal open={openCreateMachinery} onClose={() => setOpenCreateMachinery(false)} />
 

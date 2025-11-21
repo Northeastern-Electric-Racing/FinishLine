@@ -8,13 +8,16 @@ export const getAllCalendars = () => {
   });
 };
 
-export const postCreateCalendar = (payload: { name: string; description: string; color: string }) => {
+export const postCreateCalendar = (payload: { name: string; description: string; colorHexCode: string }) => {
   return axios.post<Calendar>(apiUrls.calendarCreateCalendar(), payload, {
     transformResponse: (data) => JSON.parse(data) as Calendar
   });
 };
 
-export const postEditCalendar = (calendarId: string, payload: { name: string; description: string; color: string }) => {
+export const postEditCalendar = (
+  calendarId: string,
+  payload: { name: string; description: string; colorHexCode: string }
+) => {
   return axios.post<Calendar>(apiUrls.calendarEditCalendar(calendarId), payload, {
     transformResponse: (data) => JSON.parse(data) as Calendar
   });
