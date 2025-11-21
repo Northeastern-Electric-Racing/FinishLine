@@ -1,6 +1,6 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop, Machinery } from 'shared';
+import { Shop, Machinery, Calendar } from 'shared';
 
 export const getAllShops = () => {
   return axios.get<Shop[]>(apiUrls.calendarShops(), {
@@ -75,4 +75,8 @@ export const editShop = (shopId: string, payload: { name: string; description: s
   return axios.post<Shop>(apiUrls.calendarEditShop(shopId), payload, {
     transformResponse: (data) => JSON.parse(data) as Shop
   });
+};
+
+export const postDeleteCalendar = async (id: string) => {
+  return axios.post<Calendar>(apiUrls.calendarDeleteCalendar(id));
 };

@@ -10,14 +10,15 @@ import {
   useEditShop,
   useAllMachines,
   useDeleteMachinery,
-  useDeleteShop
+  useDeleteShop,
+  useDeleteCalendar
 } from '../../../hooks/calendar.hooks';
 import ShopModal from './Shop/ShopModal';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
-import { Shop } from 'shared';
+import { Calendar, Shop } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERDeleteModal from '../../../components/NERDeleteModal';
 
@@ -34,6 +35,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
   } | null>(null);
   const { mutateAsync: deleteMachinery } = useDeleteMachinery();
   const { mutateAsync: deleteShop } = useDeleteShop();
+  const { mutateAsync: deleteCalendar } = useDeleteCalendar();
   const toast = useToast();
 
   const handleDeleteMachinery = async () => {
@@ -66,12 +68,28 @@ const AdminToolsScheduleConfig: React.FC = () => {
     }
   };
 
+  const handleCalendarDelete = async () => {
+    if (!calendarToDelete) return;
+    setCalendarToDelete(undefined);
+    try {
+      await deleteCalendar(calendarToDelete.calendarId);
+      toast.success('Shop deleted successfully');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      } else {
+        toast.error('Failed to delete shop', 3000);
+      }
+    }
+  };
+
   const [openCreate, setOpenCreate] = useState(false);
   const [openCreateMachinery, setOpenCreateMachinery] = useState(false);
   const [editMachinery, setEditMachinery] = useState<{ machineryId: string; shopId: string } | null>(null);
   const [openEdit, setOpenEdit] = useState(false);
   const [editingShop, setEditingShop] = useState<any>(null);
   const [shopToDelete, setShopToDelete] = useState<Shop | undefined>(undefined);
+  const [calendarToDelete, setCalendarToDelete] = useState<Calendar | undefined>(undefined);
 
   if (shopsLoading || machinesLoading) return <LoadingIndicator />;
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
@@ -271,6 +289,15 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Delete Calendars Modal */}
+      <NERDeleteModal
+        open={!!calendarToDelete}
+        onHide={() => setCalendarToDelete(undefined)}
+        formId="delete-calendar-form"
+        dataType={calendarToDelete?.name || ''}
+        onFormSubmit={handleCalendarDelete}
+      />
 
       {/* Add Shop Modal */}
       <ShopModal
