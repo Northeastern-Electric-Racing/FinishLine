@@ -651,7 +651,6 @@ export default class RulesService {
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
-        rulesetId: true,
         rulesetType: {
           select: {
             organizationId: true
@@ -671,7 +670,6 @@ export default class RulesService {
     const team = await prisma.team.findUnique({
       where: { teamId },
       select: {
-        teamId: true,
         organizationId: true
       }
     });

@@ -395,6 +395,7 @@ describe('Rule Tests', () => {
   let nonLeadership: User;
   let project: Project;
   let fsaeRulesetType: Ruleset_Type;
+  let testTeam: Team;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
@@ -402,6 +403,14 @@ describe('Rule Tests', () => {
     admin = await createTestUser(supermanAdmin, organization.organizationId);
     nonLeadership = await createTestUser(financeMember, organization.organizationId);
     project = await createTestProject(admin, organization.organizationId);
+    testTeam = await prisma.team.create({
+      data: {
+        teamName: 'Test',
+        slackId: 'test-slack',
+        headId: admin.userId,
+        organizationId: organization.organizationId
+      }
+    });
 
     fsaeRulesetType = await prisma.ruleset_Type.create({
       data: {
@@ -820,21 +829,8 @@ describe('Rule Tests', () => {
   });
 
   describe('Get unassigned Rules - unassigned to project', () => {
-    let car: Car;
-    let testTeam: Team;
-
-    beforeEach(async () => {
-      car = await createUniqueCar(orgId);
-      testTeam = await prisma.team.create({
-        data: {
-          teamName: 'Test',
-          slackId: 'test-slack',
-          headId: admin.userId,
-          organizationId: organization.organizationId
-        }
-      });
-    });
     it('fails if ruleset is in the wrong org', async () => {
+      const car = await createUniqueCar(orgId);
       const otherOrg = await createTestOrganization();
       const otherOrgRulesetType = await prisma.ruleset_Type.create({
         data: {
@@ -843,7 +839,6 @@ describe('Rule Tests', () => {
           organizationId: otherOrg.organizationId
         }
       });
-
       const otherRuleset: Ruleset = await prisma.ruleset.create({
         data: {
           name: '2024',
@@ -859,6 +854,7 @@ describe('Rule Tests', () => {
       ).rejects.toThrow(InvalidOrganizationException);
     });
     it('fails if team is in the wrong org', async () => {
+      const car = await createUniqueCar(orgId);
       const otherOrg = await createTestOrganization();
       const otherTeam = await prisma.team.create({
         data: {
@@ -873,8 +869,20 @@ describe('Rule Tests', () => {
         RulesService.getUnassignedRulesForRuleset(ruleset1.rulesetId, otherTeam.teamId, organization.organizationId)
       ).rejects.toThrow(InvalidOrganizationException);
     });
-
+    it('fails if ruleset does not exist', async () => {
+      await expect(
+        RulesService.getUnassignedRulesForRuleset('nonexistent-ruleset-id', testTeam.teamId, organization.organizationId)
+      ).rejects.toThrow(new NotFoundException('Ruleset', 'nonexistent-ruleset-id'));
+    });
+    it('fails if team does not exist', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+      await expect(
+        RulesService.getUnassignedRulesForRuleset(ruleset1.rulesetId, 'fake-team-id', organization.organizationId)
+      ).rejects.toThrow(new NotFoundException('Team', 'fake-team-id'));
+    });
     it('successfully returns rules in the team that have no projects', async () => {
+      const car = await createUniqueCar(orgId);
       const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
       // add rules to the team
       await prisma.rule.update({
@@ -914,13 +922,11 @@ describe('Rule Tests', () => {
           createdByUserId: admin.userId
         }
       });
-
       const rules = await RulesService.getUnassignedRulesForRuleset(
         ruleset1.rulesetId,
         testTeam.teamId,
         organization.organizationId
       );
-
       expect(rules.length).toEqual(2);
       expect(rules[0].ruleCode).toEqual('T');
       expect(rules[1].ruleCode).toEqual('T2');
@@ -928,6 +934,16 @@ describe('Rule Tests', () => {
       expect(rules.find((r) => r.ruleCode === leafRule2.ruleCode)).toBeUndefined();
       // ruleWithProject has a project so should not be returned
       expect(rules.find((r) => r.ruleCode === ruleWithProject.ruleCode)).toBeUndefined();
+    });
+    it('successfully returns empty if team has no assigned rules', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+      const rules = await RulesService.getUnassignedRulesForRuleset(
+        ruleset1.rulesetId,
+        testTeam.teamId,
+        organization.organizationId
+      );
+      expect(rules).toEqual([]);
     });
   });
 });
