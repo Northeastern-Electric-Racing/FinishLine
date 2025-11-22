@@ -7,7 +7,6 @@ export default class CalendarController {
     try {
       const {
         name,
-        calendarIds,
         initialDateScheduled,
         recurring,
         allDay,
@@ -29,7 +28,6 @@ export default class CalendarController {
       const eventType = await CalendarService.createEventType(
         req.currentUser,
         name,
-        calendarIds,
         req.organization,
         initialDateScheduled,
         recurring,
@@ -193,7 +191,6 @@ export default class CalendarController {
       const { eventTypeId } = req.params;
       const {
         name,
-        calendarIds,
         initialDateScheduled,
         recurring,
         allDay,
@@ -215,7 +212,6 @@ export default class CalendarController {
       const eventType = await CalendarService.editEventType(
         eventTypeId,
         req.currentUser,
-        calendarIds,
         req.organization,
         name,
         initialDateScheduled,
@@ -236,18 +232,6 @@ export default class CalendarController {
         requiresConfirmation
       );
       res.status(200).json(eventType);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async deleteEventType(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { eventTypeId } = req.params;
-
-      const deletedEventType = await CalendarService.deleteEventType(req.currentUser, eventTypeId, req.organization);
-
-      res.status(200).json(deletedEventType);
     } catch (error: unknown) {
       next(error);
     }
@@ -403,6 +387,15 @@ export default class CalendarController {
     try {
       const calendars = await CalendarService.getAllCalendars(req.organization);
       res.status(200).json(calendars);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllEventTypes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const eventTypes = await CalendarService.getAllEventTypes(req.organization);
+      res.status(200).json(eventTypes);
     } catch (error: unknown) {
       next(error);
     }
