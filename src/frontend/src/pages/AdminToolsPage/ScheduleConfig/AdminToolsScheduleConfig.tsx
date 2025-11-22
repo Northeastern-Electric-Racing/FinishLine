@@ -22,7 +22,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
-import { Shop } from 'shared';
+import { Calendar, Shop } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERDeleteModal from '../../../components/NERDeleteModal';
 
@@ -73,10 +73,10 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
   const [openCreate, setOpenCreate] = useState(false);
   const [openCreateMachinery, setOpenCreateMachinery] = useState(false);
-  const [editMachinery, setEditMachinery] = useState<{ machineryId: string; shopId: string } | null>(null);
+  const [editMachinery, setEditMachinery] = useState<{ machineryId: string; shopId: string }>();
   const [openEdit, setOpenEdit] = useState(false);
-  const [editingShop, setEditingShop] = useState<any>(null);
-  const [shopToDelete, setShopToDelete] = useState<Shop | undefined>(undefined);
+  const [editingShop, setEditingShop] = useState<Shop>();
+  const [shopToDelete, setShopToDelete] = useState<Shop>();
 
   const {
     data: calendars,
@@ -87,12 +87,12 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
   const { mutateAsync: createCalendarMutate } = useCreateCalendar();
 
-  const [editingCalendarId, setEditingCalendarId] = useState<string | undefined>();
+  const [editingCalendarId, setEditingCalendarId] = useState<string>();
   const editCalendarMutation = useEditCalendar(editingCalendarId ?? '');
 
   const [openCreateCalendar, setOpenCreateCalendar] = useState(false);
   const [openEditCalendar, setOpenEditCalendar] = useState(false);
-  const [editingCalendar, setEditingCalendar] = useState<any>(null);
+  const [editingCalendar, setEditingCalendar] = useState<Calendar>();
 
   if (shopsLoading || machinesLoading || calendarsLoading) return <LoadingIndicator />;
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
@@ -140,7 +140,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  calendars.map((calendar: any) => (
+                  calendars.map((calendar: Calendar) => (
                     <TableRow key={calendar.calendarId} hover>
                       <TableCell>{calendar.name}</TableCell>
                       <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{calendar.description ?? '—'}</TableCell>
@@ -410,7 +410,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           open={openEditCalendar}
           onClose={() => {
             setOpenEditCalendar(false);
-            setEditingCalendar(null);
+            setEditingCalendar(undefined);
             setEditingCalendarId(undefined);
           }}
           initialValues={{
@@ -427,7 +427,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
               colorHexCode
             });
             setOpenEditCalendar(false);
-            setEditingCalendar(null);
+            setEditingCalendar(undefined);
             setEditingCalendarId(undefined);
           }}
         />
@@ -453,7 +453,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
             shops: [selectedShopMachinery]
           };
 
-          return <EditMachineryModal open={true} onClose={() => setEditMachinery(null)} machinery={machineryForEdit} />;
+          return <EditMachineryModal open={true} onClose={() => setEditMachinery(undefined)} machinery={machineryForEdit} />;
         })()}
 
       {/* Edit Shop Modal */}
@@ -461,7 +461,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
         open={openEdit}
         onClose={() => {
           setOpenEdit(false);
-          setEditingShop(null);
+          setEditingShop(undefined);
           setEditingShopId(undefined);
         }}
         initialValues={{
@@ -472,7 +472,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           if (!editingShopId) return;
           await editShopMutation.mutateAsync({ name, description });
           setOpenEdit(false);
-          setEditingShop(null);
+          setEditingShop(undefined);
           setEditingShopId(undefined);
         }}
       />
