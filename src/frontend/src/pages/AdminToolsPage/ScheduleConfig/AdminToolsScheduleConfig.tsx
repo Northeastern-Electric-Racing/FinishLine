@@ -13,7 +13,8 @@ import {
   useDeleteShop,
   useAllCalendars,
   useCreateCalendar,
-  useEditCalendar
+  useEditCalendar,
+  useAllEventTypes
 } from '../../../hooks/calendar.hooks';
 import ShopModal from './Shop/ShopModal';
 import CreateCalendarModal from './Calendar/CreateCalendarModal';
@@ -22,13 +23,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
-<<<<<<< HEAD
 import CreateEventModal from './Event/CreateEventModal';
 import EditEventModal from './Event/EditEventModal';
-import { Shop, EventType } from 'shared';
-=======
-import { Calendar, Shop } from 'shared';
->>>>>>> 5f45f9f7d27aa9f3e48ad53c82abb5d4a17a5a54
+import { Shop, EventType, Calendar } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERDeleteModal from '../../../components/NERDeleteModal';
 
@@ -106,10 +103,14 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [openEditCalendar, setOpenEditCalendar] = useState(false);
   const [editingCalendar, setEditingCalendar] = useState<Calendar>();
 
-  if (shopsLoading || machinesLoading || calendarsLoading) return <LoadingIndicator />;
+  const [openCreateEventType, setOpenCreateEventType] = useState(false);
+  const [editingEventType, setEditingEventType] = useState<EventType | null>(null);
+
+  if (shopsLoading || machinesLoading || calendarsLoading || eventTypesLoading) return <LoadingIndicator />;
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
   if (machinesError) return <ErrorPage message={(machinesErrorMsg as Error).message} />;
   if (calendarsError) return <ErrorPage message={(calendarsErrorMsg as Error).message} />;
+  if (eventTypesError) return <ErrorPage message={(eventTypesErrorMsg as Error).message} />;
 
   return (
     <Box padding="5px">
