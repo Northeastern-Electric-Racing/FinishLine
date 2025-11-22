@@ -10,20 +10,29 @@ import {
   useEditShop,
   useAllMachines,
   useDeleteMachinery,
-  useDeleteShop
+  useDeleteShop,
+  useAllEventTypes
 } from '../../../hooks/calendar.hooks';
 import ShopModal from './Shop/ShopModal';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
-import { Shop } from 'shared';
+import CreateEventModal from './Event/CreateEventModal';
+import EditEventModal from './Event/EditEventModal';
+import { Shop, EventType } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERDeleteModal from '../../../components/NERDeleteModal';
 
 const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading: shopsLoading, isError: shopsError, error: shopsErrorMsg } = useAllShops();
   const { data: machines, isLoading: machinesLoading, isError: machinesError, error: machinesErrorMsg } = useAllMachines();
+  const {
+    data: eventTypes,
+    isLoading: eventTypesLoading,
+    isError: eventTypesError,
+    error: eventTypesErrorMsg
+  } = useAllEventTypes();
   const { mutateAsync: createShopMutate } = useCreateShop();
 
   const [editingShopId, setEditingShopId] = useState<string | undefined>();
@@ -72,10 +81,13 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [openEdit, setOpenEdit] = useState(false);
   const [editingShop, setEditingShop] = useState<any>(null);
   const [shopToDelete, setShopToDelete] = useState<Shop | undefined>(undefined);
+  const [openCreateEventType, setOpenCreateEventType] = useState(false);
+  const [editingEventType, setEditingEventType] = useState<EventType | null>(null);
 
-  if (shopsLoading || machinesLoading) return <LoadingIndicator />;
+  if (shopsLoading || machinesLoading || eventTypesLoading) return <LoadingIndicator />;
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
   if (machinesError) return <ErrorPage message={(machinesErrorMsg as Error).message} />;
+  if (eventTypesError) return <ErrorPage message={(eventTypesErrorMsg as Error).message} />;
 
   return (
     <Box padding="5px">
@@ -95,14 +107,76 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
+        {/* Event Types Table */}
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
-            <Typography variant="h6" gutterBottom>
-              Event Types
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              ...
-            </Typography>
+            <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+              <Typography variant="h6">Event Type</Typography>
+              <Button variant="contained" onClick={() => setOpenCreateEventType(true)}>
+                Add Event Type
+              </Button>
+            </Box>
+
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
+                  <TableCell sx={{ fontWeight: 600, width: 160 }} align="center">
+                    Actions
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {!eventTypes || eventTypes.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={2} align="center">
+                      No event types yet.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  eventTypes.map((eventType) => (
+                    <TableRow key={eventType.eventTypeId} hover>
+                      <TableCell>{eventType.name}</TableCell>
+                      <TableCell align="center">
+                        <Box display="flex" gap={1} justifyContent="center">
+                          <Tooltip title="Edit" arrow>
+                            <span>
+                              <IconButton
+                                size="small"
+                                aria-label="edit event type"
+                                onClick={() => {
+                                  setEditingEventType(eventType);
+                                }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+
+                          <Tooltip title="Delete" arrow>
+                            <span>
+                              <IconButton
+                                size="small"
+                                aria-label="delete event type"
+                                disabled
+                                sx={{
+                                  color: 'white',
+                                  '&.Mui-disabled': {
+                                    color: 'white'
+                                  }
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </Paper>
         </Grid>
 
@@ -345,6 +419,14 @@ const AdminToolsScheduleConfig: React.FC = () => {
         dataType={`machine ${machineryToDelete?.machineName || ''}`}
         onFormSubmit={handleDeleteMachinery}
       />
+
+      {/* Create Event Type Modal */}
+      <CreateEventModal open={openCreateEventType} onClose={() => setOpenCreateEventType(false)} />
+
+      {/* Edit Event Type Modal */}
+      {editingEventType && (
+        <EditEventModal open={true} onClose={() => setEditingEventType(null)} eventType={editingEventType} />
+      )}
     </Box>
   );
 };

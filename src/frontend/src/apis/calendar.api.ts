@@ -1,6 +1,6 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop, Machinery } from 'shared';
+import { Shop, Machinery, EventType, Calendar } from 'shared';
 
 export const getAllShops = () => {
   return axios.get<Shop[]>(apiUrls.calendarShops(), {
@@ -74,5 +74,68 @@ export const postAddMachineryToShop = async (payload: {
 export const editShop = (shopId: string, payload: { name: string; description: string }) => {
   return axios.post<Shop>(apiUrls.calendarEditShop(shopId), payload, {
     transformResponse: (data) => JSON.parse(data) as Shop
+  });
+};
+
+export const getAllEventTypes = () => {
+  return axios.get<EventType[]>(apiUrls.calendarEventTypes(), {
+    transformResponse: (data) => JSON.parse(data) as EventType[]
+  });
+};
+
+export const postCreateEventType = (payload: {
+  name: string;
+  initialDateScheduled: boolean;
+  allDay: boolean;
+  recurring: boolean;
+  requiredMembers: boolean;
+  optionalMembers: boolean;
+  teams: boolean;
+  location: boolean;
+  zoomLink: boolean;
+  shop: boolean;
+  machinery: boolean;
+  workPackage: boolean;
+  questionDocument: boolean;
+  documents: boolean;
+  description: boolean;
+  onlyHeadsOrAbove: boolean;
+  requiresConfirmation: boolean;
+}) => {
+  return axios.post<EventType>(apiUrls.calendarCreateEventType(), payload, {
+    transformResponse: (data) => JSON.parse(data) as EventType
+  });
+};
+
+export const postEditEventType = (
+  eventTypeId: string,
+  payload: {
+    name: string;
+    initialDateScheduled: boolean;
+    allDay: boolean;
+    recurring: boolean;
+    requiredMembers: boolean;
+    optionalMembers: boolean;
+    teams: boolean;
+    location: boolean;
+    zoomLink: boolean;
+    shop: boolean;
+    machinery: boolean;
+    workPackage: boolean;
+    questionDocument: boolean;
+    documents: boolean;
+    description: boolean;
+    onlyHeadsOrAbove: boolean;
+    requiresConfirmation: boolean;
+  }
+) => {
+  return axios.post<EventType>(apiUrls.calendarEditEventType(eventTypeId), payload, {
+    transformResponse: (data) => JSON.parse(data) as EventType
+  });
+};
+
+export const getAllCalendars = () => {
+  return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
+    transformResponse: (data) => JSON.parse(data) as Calendar[]
   });
 };

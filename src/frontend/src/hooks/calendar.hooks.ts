@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Shop, Machinery } from 'shared';
+import { Shop, Machinery, Event, EventType, Calendar } from 'shared';
 import {
   getAllShops,
   postCreateShop,
@@ -9,11 +9,16 @@ import {
   postEditMachinery,
   postDeleteMachinery,
   postAddMachineryToShop,
-  editShop
+  editShop,
+  getAllEventTypes,
+  postCreateEventType,
+  postEditEventType,
+  getAllCalendars
 } from '../apis/calendar.api';
 
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;
+export const EVENT_TYPE_KEY = ['event-types'] as const;
 
 export const useAllShops = () =>
   useQuery<Shop[], Error>(SHOP_KEY, async () => {
@@ -129,6 +134,92 @@ export const useDeleteMachinery = () => {
     {
       onSuccess: () => {
         qc.invalidateQueries(MACHINERY_KEY);
+      }
+    }
+  );
+};
+
+export const useAllCalendars = () =>
+  useQuery<Calendar[], Error>(['calendars'], async () => {
+    const res = await getAllCalendars();
+    return res.data;
+  });
+
+export const useAllEventTypes = () =>
+  useQuery<EventType[], Error>(EVENT_TYPE_KEY, async () => {
+    const res = await getAllEventTypes();
+    return res.data;
+  });
+
+export const useCreateEventType = () => {
+  const qc = useQueryClient();
+  return useMutation<
+    EventType,
+    Error,
+    {
+      name: string;
+      initialDateScheduled: boolean;
+      allDay: boolean;
+      recurring: boolean;
+      requiredMembers: boolean;
+      optionalMembers: boolean;
+      teams: boolean;
+      location: boolean;
+      zoomLink: boolean;
+      shop: boolean;
+      machinery: boolean;
+      workPackage: boolean;
+      questionDocument: boolean;
+      documents: boolean;
+      description: boolean;
+      onlyHeadsOrAbove: boolean;
+      requiresConfirmation: boolean;
+    }
+  >(
+    async (payload) => {
+      const { data } = await postCreateEventType(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(EVENT_TYPE_KEY);
+      }
+    }
+  );
+};
+
+export const useEditEventType = (eventTypeId: string) => {
+  const qc = useQueryClient();
+  return useMutation<
+    EventType,
+    Error,
+    {
+      name: string;
+      initialDateScheduled: boolean;
+      allDay: boolean;
+      recurring: boolean;
+      requiredMembers: boolean;
+      optionalMembers: boolean;
+      teams: boolean;
+      location: boolean;
+      zoomLink: boolean;
+      shop: boolean;
+      machinery: boolean;
+      workPackage: boolean;
+      questionDocument: boolean;
+      documents: boolean;
+      description: boolean;
+      onlyHeadsOrAbove: boolean;
+      requiresConfirmation: boolean;
+    }
+  >(
+    async (payload) => {
+      const { data } = await postEditEventType(eventTypeId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(EVENT_TYPE_KEY);
       }
     }
   );

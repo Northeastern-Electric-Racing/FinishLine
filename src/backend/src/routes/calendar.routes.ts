@@ -17,8 +17,6 @@ calendarRouter.post(
 calendarRouter.post(
   '/event-type/create',
   nonEmptyString(body('name')),
-  body('calendarIds').isArray(),
-  body('calendarIds.*').isString(),
   body('initialDateScheduled').isBoolean(),
   body('allDay').isBoolean(),
   body('recurring').isBoolean(),
@@ -42,8 +40,6 @@ calendarRouter.post(
 calendarRouter.post(
   '/event-type/:eventTypeId/edit',
   nonEmptyString(body('name')),
-  body('calendarIds').isArray(),
-  body('calendarIds.*').isString(),
   body('initialDateScheduled').isBoolean(),
   body('allDay').isBoolean(),
   body('recurring').isBoolean(),
@@ -198,8 +194,6 @@ calendarRouter.post(
   CalendarController.editShop
 );
 
-calendarRouter.post('/event-type/:eventTypeId/delete', CalendarController.deleteEventType);
-
 calendarRouter.post('/:calendarId/delete', CalendarController.deleteCalendar);
 
 calendarRouter.post('/shop/:shopId/delete', nonEmptyString(param('shopId')), validateInputs, CalendarController.deleteShop);
@@ -207,6 +201,8 @@ calendarRouter.post('/shop/:shopId/delete', nonEmptyString(param('shopId')), val
 calendarRouter.get('/shops', CalendarController.getAllShops);
 
 calendarRouter.get('/machinery', CalendarController.getAllMachinery);
+
+calendarRouter.get('/event-types', CalendarController.getAllEventTypes);
 
 // no restrictions filtering, in case multiple filters need to be sent
 calendarRouter.post(
