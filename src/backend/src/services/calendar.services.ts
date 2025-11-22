@@ -52,6 +52,7 @@ export default class CalendarService {
    *
    * @param submitter The user submitting the request, who must be an admin.
    * @param name The name of the event type.
+   * @param calendarIds An array of the calendars this event type is associated with.
    * @param organization The organization for which the event type is being created.
    * @param initialDateScheduled Determines if a date is associated with this event type.
    * @param recurring Determines if this event type is recurring.
@@ -72,10 +73,13 @@ export default class CalendarService {
    * @returns The created event type.
    *
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the given calendarIds are not found.
+   * @throws InvalidOrganizationException If the given calendarIds are not part of the same organization.
    */
   static async createEventType(
     submitter: User,
     name: string,
+    calendarIds: string[],
     organization: Organization,
     initialDateScheduled: boolean,
     recurring: boolean,
@@ -98,6 +102,27 @@ export default class CalendarService {
       throw new AccessDeniedAdminOnlyException('create event type');
     }
 
+    // Check if calendars with ids exist and belong to the same organization
+    const existingCalendars = await prisma.calendar.findMany({
+      where: {
+        calendarId: { in: calendarIds }
+      }
+    });
+
+    // Ensure all provided calendars exist
+    if (existingCalendars.length !== calendarIds.length) {
+      const foundIds = existingCalendars.map((c) => c.calendarId);
+      const missingIds = calendarIds.filter((id) => !foundIds.includes(id));
+      throw new NotFoundException('Calendar', missingIds.join(', '));
+    }
+
+    // Ensure all calendars belong to the given organization
+    for (const calendar of existingCalendars) {
+      if (calendar.organizationId !== organization.organizationId) {
+        throw new InvalidOrganizationException('Calendar');
+      }
+    }
+
     const duplicate = await prisma.event_Type.findFirst({
       where: {
         organizationId: organization.organizationId,
@@ -112,6 +137,9 @@ export default class CalendarService {
     const newEventType = await prisma.event_Type.create({
       data: {
         name,
+        calendars: {
+          connect: calendarIds.map((calendarId) => ({ calendarId }))
+        },
         userCreatedId: submitter.userId,
         initialDateScheduled,
         recurring,
@@ -1598,8 +1626,9 @@ export default class CalendarService {
    *
    * @param eventTypeId The id of the event type of be edited
    * @param submitter The user submitting the request, who must be an admin.
-   * @param name The name of the event type.
+   * @param calendarIds An array of the calendars this event type is associated with.
    * @param organization The organization for which the event type is being created.
+   * @param name The name of the event type.
    * @param initialDateScheduled Determines if a date is associated with this event type.
    * @param recurring Determines if this event type is recurring.
    * @param allDay Determines if this event type is all day.
@@ -1619,10 +1648,13 @@ export default class CalendarService {
    * @returns The created event type.
    *
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the given calendarIds are not found.
+   * @throws InvalidOrganizationException If the given calendarIds are not part of the same organization.
    */
   static async editEventType(
     eventTypeId: string,
     submitter: User,
+    calendarIds: string[],
     organization: Organization,
     name: string,
     initialDateScheduled: boolean,
@@ -1646,6 +1678,27 @@ export default class CalendarService {
       throw new AccessDeniedAdminOnlyException('edit event type');
     }
 
+    // Check if calendars with ids exist and belong to the same organization
+    const existingCalendars = await prisma.calendar.findMany({
+      where: {
+        calendarId: { in: calendarIds }
+      }
+    });
+
+    // Ensure all provided calendars exist
+    if (existingCalendars.length !== calendarIds.length) {
+      const foundIds = existingCalendars.map((c) => c.calendarId);
+      const missingIds = calendarIds.filter((id) => !foundIds.includes(id));
+      throw new NotFoundException('Calendar', missingIds.join(', '));
+    }
+
+    // Ensure all calendars belong to the given organization
+    for (const calendar of existingCalendars) {
+      if (calendar.organizationId !== organization.organizationId) {
+        throw new InvalidOrganizationException('Calendar');
+      }
+    }
+
     // Ensure event type to edit exists
     const oldEventType = await prisma.event_Type.findUnique({
       where: {
@@ -1661,6 +1714,9 @@ export default class CalendarService {
       where: { eventTypeId: oldEventType.eventTypeId },
       data: {
         name,
+        calendars: {
+          set: calendarIds.map((calendarId) => ({ calendarId }))
+        },
         initialDateScheduled,
         recurring,
         allDay,
@@ -1682,6 +1738,43 @@ export default class CalendarService {
     });
 
     return eventTypeTransformer(updatedEventType);
+  }
+
+  /**
+   * Deletes an event type by its ID.
+   * Requires the submitter to be an admin.
+   * @param submitter The user submitting the request.
+   * @param eventTypeId The ID of the event type to be deleted.
+   * @param organization The organization to which the event type belongs.
+   * @returns The deleted event type object.
+   * @throws AccessDeniedException If the submitter is not an admin.
+   * @throws NotFoundException If the event type with the given ID does not exist.
+   * @throws DeletedException If the event type is already deleted.
+   * @throws InvalidOrganizationException If the event type does not belong to the given organization.
+   */
+  static async deleteEventType(submitter: User, eventTypeId: string, organization: Organization): Promise<EventType> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedException('Only admins can delete event types!');
+    }
+
+    const eventType = await prisma.event_Type.findUnique({
+      where: { eventTypeId }
+    });
+
+    if (!eventType) throw new NotFoundException('Event Type', eventTypeId);
+    if (eventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
+
+    if (eventType.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Event Type');
+    }
+
+    const deletedEventType = await prisma.event_Type.update({
+      where: { eventTypeId },
+      data: { dateDeleted: new Date(), userDeletedId: submitter.userId },
+      ...getEventTypeQueryArgs(organization.organizationId)
+    });
+
+    return eventTypeTransformer(deletedEventType);
   }
 
   /**

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Shop, Machinery, Event, EventType, Calendar } from 'shared';
+import { Shop, Machinery, EventType, Calendar } from 'shared';
 import {
   getAllShops,
   postCreateShop,
@@ -158,6 +158,7 @@ export const useCreateEventType = () => {
     Error,
     {
       name: string;
+      calendarIds: string[];
       initialDateScheduled: boolean;
       allDay: boolean;
       recurring: boolean;
@@ -195,6 +196,7 @@ export const useEditEventType = (eventTypeId: string) => {
     Error,
     {
       name: string;
+      calendarIds: string[];
       initialDateScheduled: boolean;
       allDay: boolean;
       recurring: boolean;

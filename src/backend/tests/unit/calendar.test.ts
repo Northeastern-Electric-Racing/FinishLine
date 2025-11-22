@@ -268,7 +268,7 @@ describe('Calendar Tests', () => {
       const result = await CalendarService.createEventType(
         await createTestUser(supermanAdmin, orgId),
         'Meeting',
-        [],
+        [calendar.calendarId],
         organization,
         true,
         false,
@@ -2083,10 +2083,21 @@ describe('Calendar Tests', () => {
       });
       const AdminInOtherOrg = await createTestUser(alfred, otherOrg.organizationId);
 
+      const otherOrgCalendar = await prisma.calendar.create({
+        data: {
+          name: 'Other Org Calendar',
+          description: 'Calendar for other org',
+          colorHexCode: '#ff0000',
+          userCreated: { connect: { userId: AdminInOtherOrg.userId } },
+          dateCreated: new Date(),
+          organization: { connect: { organizationId: otherOrg.organizationId } }
+        }
+      });
+
       const otherOrgEventType = await CalendarService.createEventType(
         AdminInOtherOrg,
         'Other Org Event Type',
-        [],
+        [otherOrgCalendar.calendarId],
         otherOrg,
         true,
         false,

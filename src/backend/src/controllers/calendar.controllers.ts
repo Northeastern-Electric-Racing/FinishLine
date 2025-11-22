@@ -7,6 +7,7 @@ export default class CalendarController {
     try {
       const {
         name,
+        calendarIds,
         initialDateScheduled,
         recurring,
         allDay,
@@ -28,6 +29,7 @@ export default class CalendarController {
       const eventType = await CalendarService.createEventType(
         req.currentUser,
         name,
+        calendarIds,
         req.organization,
         initialDateScheduled,
         recurring,
@@ -191,6 +193,7 @@ export default class CalendarController {
       const { eventTypeId } = req.params;
       const {
         name,
+        calendarIds,
         initialDateScheduled,
         recurring,
         allDay,
@@ -212,6 +215,7 @@ export default class CalendarController {
       const eventType = await CalendarService.editEventType(
         eventTypeId,
         req.currentUser,
+        calendarIds,
         req.organization,
         name,
         initialDateScheduled,
@@ -231,6 +235,17 @@ export default class CalendarController {
         onlyHeadsOrAbove,
         requiresConfirmation
       );
+      res.status(200).json(eventType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteEventType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventTypeId } = req.params;
+
+      const eventType = await CalendarService.deleteEventType(req.currentUser, eventTypeId, req.organization);
       res.status(200).json(eventType);
     } catch (error: unknown) {
       next(error);

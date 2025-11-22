@@ -17,6 +17,8 @@ calendarRouter.post(
 calendarRouter.post(
   '/event-type/create',
   nonEmptyString(body('name')),
+  body('calendarIds').isArray(),
+  body('calendarIds.*').isString(),
   body('initialDateScheduled').isBoolean(),
   body('allDay').isBoolean(),
   body('recurring').isBoolean(),
@@ -40,6 +42,8 @@ calendarRouter.post(
 calendarRouter.post(
   '/event-type/:eventTypeId/edit',
   nonEmptyString(body('name')),
+  body('calendarIds').isArray(),
+  body('calendarIds.*').isString(),
   body('initialDateScheduled').isBoolean(),
   body('allDay').isBoolean(),
   body('recurring').isBoolean(),
@@ -59,6 +63,8 @@ calendarRouter.post(
   validateInputs,
   CalendarController.editEventType
 );
+
+calendarRouter.post('/event-type/:eventTypeId/delete', validateInputs, CalendarController.deleteEventType);
 
 calendarRouter.post(
   '/event/create',

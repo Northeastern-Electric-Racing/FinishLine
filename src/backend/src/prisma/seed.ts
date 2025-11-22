@@ -3220,7 +3220,7 @@ const performSeed: () => Promise<void> = async () => {
   const manufacturingEventType = await CalendarService.createEventType(
     thomasEmrax,
     'Manufacturing',
-    [],
+    [calendar.calendarId],
     ner,
     true,
     false,
@@ -3244,7 +3244,7 @@ const performSeed: () => Promise<void> = async () => {
   const bayTimeEventType = await CalendarService.createEventType(
     thomasEmrax,
     'Bay Time',
-    [],
+    [calendar.calendarId],
     ner,
     true,
     true,

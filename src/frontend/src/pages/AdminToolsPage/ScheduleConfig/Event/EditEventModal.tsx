@@ -27,6 +27,7 @@ const EditEventModal = ({ open, onClose, eventType }: EditEventModalProps) => {
 
   const eventTypeData: EventFormValues = {
     name: eventType.name,
+    calendarIds: eventType.calendarIds || [],
     initialDateScheduled: eventType.initialDateScheduled,
     allDay: eventType.allDay,
     recurring: eventType.recurring,

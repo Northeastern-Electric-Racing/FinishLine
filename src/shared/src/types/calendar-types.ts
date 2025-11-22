@@ -85,6 +85,7 @@ export interface EventType {
   name: string;
   userCreated: User;
   dateCreated: Date;
+  calendarIds: string[];
   initialDateScheduled: boolean;
   allDay: boolean;
   recurring: boolean;

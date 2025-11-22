@@ -85,6 +85,7 @@ export const getAllEventTypes = () => {
 
 export const postCreateEventType = (payload: {
   name: string;
+  calendarIds: string[];
   initialDateScheduled: boolean;
   allDay: boolean;
   recurring: boolean;
@@ -111,6 +112,7 @@ export const postEditEventType = (
   eventTypeId: string,
   payload: {
     name: string;
+    calendarIds: string[];
     initialDateScheduled: boolean;
     allDay: boolean;
     recurring: boolean;

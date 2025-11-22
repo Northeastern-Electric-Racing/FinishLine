@@ -21,6 +21,7 @@ import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 
 export interface EventFormValues {
   name: string;
+  calendarIds: string[];
   initialDateScheduled: boolean;
   allDay: boolean;
   recurring: boolean;
@@ -41,6 +42,7 @@ export interface EventFormValues {
 
 const createSchema = yup.object({
   name: yup.string().required('Event Type name is required'),
+  calendarIds: yup.array().of(yup.string()).required(),
   initialDateScheduled: yup.boolean().required(),
   allDay: yup.boolean().required(),
   recurring: yup.boolean().required(),
@@ -61,6 +63,7 @@ const createSchema = yup.object({
 
 const editSchema = yup.object({
   name: yup.string().required('Event Type name is required'),
+  calendarIds: yup.array().of(yup.string()).required(),
   initialDateScheduled: yup.boolean().required(),
   allDay: yup.boolean().required(),
   recurring: yup.boolean().required(),
@@ -92,6 +95,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({ open, onClose, o
   const defaultValues: EventFormValues = useMemo(
     () => ({
       name: '',
+      calendarIds: [],
       initialDateScheduled: true,
       allDay: false,
       recurring: false,
@@ -179,6 +183,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({ open, onClose, o
             mb: 1
           }}
         >
+          <Controller name="calendarIds" control={control} render={() => <></>} />
           <ReactHookTextField
             name="name"
             control={control}
