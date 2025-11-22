@@ -447,6 +447,9 @@ const calendarDeleteMachinery = (machineryId: string) => `${calendar()}/machiner
 const calendarAddMachineryToShop = (machineryId: string) => `${calendar()}/machinery/${machineryId}/add-to-shop`;
 const calendarEditShop = (shopId: string) => `${calendar()}/shop/${shopId}/edit`;
 const calendarDeleteShop = (shopId: string) => `${calendar()}/shop/${shopId}/delete`;
+const calendarCreateCalendar = () => `${calendar()}/create`;
+const calendarEditCalendar = (calendarId: string) => `${calendar()}/${calendarId}/edit`;
+const calendarCalendars = () => `${calendar()}/calendars`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -759,6 +762,9 @@ export const apiUrls = {
   calendarAddMachineryToShop,
   calendarEditShop,
   calendarDeleteShop,
+  calendarCreateCalendar,
+  calendarEditCalendar,
+  calendarCalendars,
 
   version
 };
