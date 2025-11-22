@@ -2,6 +2,27 @@ import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { Shop, Machinery, EventType, Calendar } from 'shared';
 
+export const getAllCalendars = () => {
+  return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
+    transformResponse: (data) => JSON.parse(data) as Calendar[]
+  });
+};
+
+export const postCreateCalendar = (payload: { name: string; description: string; colorHexCode: string }) => {
+  return axios.post<Calendar>(apiUrls.calendarCreateCalendar(), payload, {
+    transformResponse: (data) => JSON.parse(data) as Calendar
+  });
+};
+
+export const postEditCalendar = (
+  calendarId: string,
+  payload: { name: string; description: string; colorHexCode: string }
+) => {
+  return axios.post<Calendar>(apiUrls.calendarEditCalendar(calendarId), payload, {
+    transformResponse: (data) => JSON.parse(data) as Calendar
+  });
+};
+
 export const getAllShops = () => {
   return axios.get<Shop[]>(apiUrls.calendarShops(), {
     transformResponse: (data) => JSON.parse(data) as Shop[]
@@ -85,7 +106,6 @@ export const getAllEventTypes = () => {
 
 export const postCreateEventType = (payload: {
   name: string;
-  calendarIds: string[];
   initialDateScheduled: boolean;
   allDay: boolean;
   recurring: boolean;
@@ -112,7 +132,6 @@ export const postEditEventType = (
   eventTypeId: string,
   payload: {
     name: string;
-    calendarIds: string[];
     initialDateScheduled: boolean;
     allDay: boolean;
     recurring: boolean;
@@ -133,11 +152,5 @@ export const postEditEventType = (
 ) => {
   return axios.post<EventType>(apiUrls.calendarEditEventType(eventTypeId), payload, {
     transformResponse: (data) => JSON.parse(data) as EventType
-  });
-};
-
-export const getAllCalendars = () => {
-  return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
-    transformResponse: (data) => JSON.parse(data) as Calendar[]
   });
 };

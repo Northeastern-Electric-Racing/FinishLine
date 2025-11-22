@@ -13,12 +13,50 @@ import {
   getAllEventTypes,
   postCreateEventType,
   postEditEventType,
-  getAllCalendars
+  getAllCalendars,
+  postCreateCalendar,
+  postEditCalendar
 } from '../apis/calendar.api';
 
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;
 export const EVENT_TYPE_KEY = ['event-types'] as const;
+
+export const useAllCalendars = () =>
+  useQuery<Calendar[], Error>(['calendars'], async () => {
+    const res = await getAllCalendars();
+    return res.data;
+  });
+
+export const useCreateCalendar = () => {
+  const qc = useQueryClient();
+  return useMutation<Calendar, Error, { name: string; description: string; colorHexCode: string }>(
+    async (payload) => {
+      const { data } = await postCreateCalendar(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(['calendars']);
+      }
+    }
+  );
+};
+
+export const useEditCalendar = (calendarId: string) => {
+  const qc = useQueryClient();
+  return useMutation<Calendar, Error, { name: string; description: string; colorHexCode: string }>(
+    async (payload) => {
+      const { data } = await postEditCalendar(calendarId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(['calendars']);
+      }
+    }
+  );
+};
 
 export const useAllShops = () =>
   useQuery<Shop[], Error>(SHOP_KEY, async () => {
@@ -138,12 +176,6 @@ export const useDeleteMachinery = () => {
     }
   );
 };
-
-export const useAllCalendars = () =>
-  useQuery<Calendar[], Error>(['calendars'], async () => {
-    const res = await getAllCalendars();
-    return res.data;
-  });
 
 export const useAllEventTypes = () =>
   useQuery<EventType[], Error>(EVENT_TYPE_KEY, async () => {

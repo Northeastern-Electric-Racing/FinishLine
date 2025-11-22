@@ -196,6 +196,7 @@ const financeDeleteOtherProductReason = (otherReasonId: string) =>
 const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
+const financeSetVendorTaxExemptStatus = (vendorId: string) => `${financeEndpoints()}/vendors/${vendorId}/setTaxExemptStatus`;
 const financeDeleteVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/delete`;
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
 
@@ -449,6 +450,8 @@ const calendarDeleteShop = (shopId: string) => `${calendar()}/shop/${shopId}/del
 const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateEventType = () => `${calendar()}/event-type/create`;
 const calendarEditEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/edit`;
+const calendarCreateCalendar = () => `${calendar()}/create`;
+const calendarEditCalendar = (calendarId: string) => `${calendar()}/${calendarId}/edit`;
 const calendarCalendars = () => `${calendar()}/calendars`;
 
 /**************** Other Endpoints ****************/
@@ -617,6 +620,7 @@ export const apiUrls = {
   financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
+  financeSetVendorTaxExemptStatus,
   financeDeleteVendor,
   financeLeadershipApprove,
   financeCreateSponsor,
@@ -764,6 +768,8 @@ export const apiUrls = {
   calendarEventTypes,
   calendarCreateEventType,
   calendarEditEventType,
+  calendarCreateCalendar,
+  calendarEditCalendar,
   calendarCalendars,
 
   version
