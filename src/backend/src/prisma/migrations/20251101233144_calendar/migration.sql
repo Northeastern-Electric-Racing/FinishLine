@@ -120,14 +120,7 @@ CREATE TABLE "public"."Event_Type" (
 CREATE TYPE "public"."Event_Status" AS ENUM ('UNCONFIRMED', 'CONFIRMED', 'SCHEDULED', 'DONE');
 
 -- AlterTable
-ALTER TABLE "public"."Design_Review" DROP COLUMN "status",
-ADD COLUMN     "status" "public"."Event_Status" NOT NULL;
-
--- AlterTable
 ALTER TABLE "public"."Event" ADD COLUMN     "status" "public"."Event_Status" NOT NULL;
-
--- DropEnum
-DROP TYPE "public"."Design_Review_Status";
 
 -- CreateTable
 CREATE TABLE "public"."_EventToSchedule_Slot" (
@@ -406,8 +399,8 @@ SELECT DISTINCT ON (org."organizationId")
     true, -- questionDocument (docTemplateLink)
     true, -- documents
     false, -- description
-    false, -- onlyHeadsOrAboveForEventCreation
-    false, -- requiresConfirmation
+    true, -- onlyHeadsOrAboveForEventCreation
+    true, -- requiresConfirmation
     org."organizationId"
 FROM "public"."Organization" org
 WHERE EXISTS (
@@ -506,7 +499,7 @@ SELECT
     CASE WHEN dr."docTemplateLink" IS NOT NULL THEN ARRAY[dr."docTemplateLink"] ELSE ARRAY[]::TEXT[] END,
     dr."docTemplateLink", -- questionDocument uses docTemplateLink
     NULL, -- description (not in Design_Review)
-    dr."status",
+    dr."status"::"text"::"public"."Event_Status",
     dr."teamTypeId"
 FROM "public"."Design_Review" dr
 JOIN "public"."WBS_Element" w ON dr."wbsElementId" = w."wbsElementId";
@@ -686,3 +679,6 @@ DROP TABLE IF EXISTS "public"."_userAttended" CASCADE;
 -- Drop the old Meeting and Design_Review tables
 DROP TABLE IF EXISTS "public"."Meeting" CASCADE;
 DROP TABLE IF EXISTS "public"."Design_Review" CASCADE;
+
+-- DropEnum
+DROP TYPE "public"."Design_Review_Status";
