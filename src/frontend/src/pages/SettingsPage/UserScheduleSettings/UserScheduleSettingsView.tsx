@@ -58,13 +58,13 @@ const UserScheduleSettingsView = ({
     <Grid container rowSpacing={1} columnSpacing={4}>
       <SingleAvailabilityModal
         open={confirmAvailabilityOpen}
-        onHide={() => setAvailabilityOpen(false)}
+        onHide={() => setConfirmAvailabilityOpen(false)}
         header={'Availability'}
         availabilites={scheduleSettings.availabilities}
       />
       <AvailabilityEditModal
         open={availabilityOpen}
-        onHide={() => setConfirmAvailabilityOpen(false)}
+        onHide={() => setAvailabilityOpen(false)}
         header={confirmModalTitle}
         confirmedAvailabilities={confirmedAvailabilities}
         setConfirmedAvailabilities={setConfirmedAvailabilities}
