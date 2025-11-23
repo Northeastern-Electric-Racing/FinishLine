@@ -101,6 +101,11 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.editVendor
 );
 
+reimbursementRequestsRouter.post(
+  '/vendors/:vendorId/setTaxExemptStatus',
+  ReimbursementRequestController.setVendorTaxExemptStatus
+);
+
 reimbursementRequestsRouter.post('/:vendorId/vendors/delete', ReimbursementRequestController.deleteVendor);
 
 reimbursementRequestsRouter.post(
@@ -167,7 +172,7 @@ reimbursementRequestsRouter.post(
   body('taxExempt').optional().isBoolean(),
   body('twoFactorContacts').optional().isArray(),
   nonEmptyString(body('twoFactorContacts.*')),
-  nonEmptyString(body('notes')).optional(),
+  body('notes').optional().isString(),
   validateInputs,
   ReimbursementRequestController.createVendor
 );

@@ -1,7 +1,28 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop, Machinery, AvailabilityCreateArgs, Event, EventStatus } from 'shared';
+import { Shop, Machinery, AvailabilityCreateArgs, Event, EventStatus, Calendar } from 'shared';
 import { eventTransformer } from './transformers/calendar.transformer';
+
+export const getAllCalendars = () => {
+  return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
+    transformResponse: (data) => JSON.parse(data) as Calendar[]
+  });
+};
+
+export const postCreateCalendar = (payload: { name: string; description: string; colorHexCode: string }) => {
+  return axios.post<Calendar>(apiUrls.calendarCreateCalendar(), payload, {
+    transformResponse: (data) => JSON.parse(data) as Calendar
+  });
+};
+
+export const postEditCalendar = (
+  calendarId: string,
+  payload: { name: string; description: string; colorHexCode: string }
+) => {
+  return axios.post<Calendar>(apiUrls.calendarEditCalendar(calendarId), payload, {
+    transformResponse: (data) => JSON.parse(data) as Calendar
+  });
+};
 
 export const getAllShops = () => {
   return axios.get<Shop[]>(apiUrls.calendarShops(), {
@@ -13,6 +34,10 @@ export const postCreateShop = (payload: { name: string; description: string }) =
   return axios.post<Shop>(apiUrls.calendarCreateShop(), payload, {
     transformResponse: (data) => JSON.parse(data) as Shop
   });
+};
+
+export const postDeleteShop = async (id: string) => {
+  return axios.post<Shop>(apiUrls.calendarDeleteShop(id));
 };
 
 export const getAllMachinery = () => {
@@ -37,6 +62,17 @@ export const postEditMachinery = async (payload: { machineryId: string; name: st
   const { data } = await axios.post<Machinery>(
     apiUrls.calendarEditMachinery(machineryId),
     { name },
+    {
+      transformResponse: (data) => JSON.parse(data) as Machinery
+    }
+  );
+  return data;
+};
+
+export const postDeleteMachinery = async (machineryId: string) => {
+  const { data } = await axios.post<Machinery>(
+    apiUrls.calendarDeleteMachinery(machineryId),
+    {},
     {
       transformResponse: (data) => JSON.parse(data) as Machinery
     }
