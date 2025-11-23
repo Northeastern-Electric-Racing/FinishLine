@@ -5,8 +5,6 @@
 
 import {
   DescriptionBullet,
-  Link,
-  LinkType,
   Project,
   ProjectOverview,
   ProjectGantt,
@@ -33,33 +31,6 @@ export const descriptionBulletTransformer = (bullet: DescriptionBullet) => {
 };
 
 /**
- * Transforms a link to ensure deep field transformation of date objects.
- *
- * @param link Icoming link object supplied by the HTTP response.
- * @returns Properly transformed link object.
- */
-const linkTransformer = (link: Link) => {
-  return {
-    ...link,
-    dateCreated: new Date(link.dateCreated),
-    linkType: linkTypeTransformer(link.linkType)
-  };
-};
-
-/**
- * Transforms a link type to ensure deep field transformation of date objects.
- *
- * @param linkType Incoming link type to be transformed
- * @returns Properly transformed description bullet
- */
-export const linkTypeTransformer = (linkType: LinkType) => {
-  return {
-    ...linkType,
-    dateCreated: new Date(linkType.dateCreated)
-  };
-};
-
-/**
  * Transforms a project to ensure deep field transformation of date objects.
  *
  * @param project Incoming project object supplied by the HTTP response.
@@ -74,8 +45,7 @@ export const projectTransformer = (project: Project): Project => {
     workPackages: project.workPackages.map(workPackageTransformer),
     descriptionBullets: project.descriptionBullets.map(descriptionBulletTransformer),
     changes: project.changes.map(implementedChangeTransformer),
-    tasks: project.tasks.map(taskTransformer),
-    links: project.links.map(linkTransformer)
+    tasks: project.tasks.map(taskTransformer)
   };
 };
 
@@ -127,7 +97,7 @@ export const projectOverviewTransformer = (project: ProjectOverview): ProjectOve
       startDate: new Date(wp.startDate),
       endDate: new Date(wp.endDate)
     })),
-    links: project.links.map(linkTransformer),
+    links: project.links,
     tasks: project.tasks.map(taskTransformer)
   };
 };

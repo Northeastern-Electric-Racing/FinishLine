@@ -13,7 +13,7 @@ export const getCarQueryArgs = (organizationId: string) =>
           lead: getUserQueryArgs(organizationId),
           descriptionBullets: getDescriptionBulletQueryArgs(organizationId),
           manager: getUserQueryArgs(organizationId),
-          links: getLinkQueryArgs(organizationId),
+          links: getLinkQueryArgs(),
           changes: {
             where: { changeRequest: { dateDeleted: null } },
             include: { implementer: getUserQueryArgs(organizationId) }

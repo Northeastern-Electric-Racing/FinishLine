@@ -285,7 +285,6 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         handleEdit={handleEdit}
         designReview={designReview}
         allDesignReviews={allDesignReviews}
-        allUsers={allUsers}
         selectedDate={date}
         setSelectDate={setDate}
         requiredUserIds={requiredUsers.map((user) => user.id)}
