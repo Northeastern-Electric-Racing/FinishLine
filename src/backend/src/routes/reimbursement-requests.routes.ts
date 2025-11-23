@@ -223,7 +223,7 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
-  '/:requestId/upload-receipt/upload',
+  '/:requestId/upload-receipt',
   handleMulterError,
   ReimbursementRequestController.uploadReceipt
 );
