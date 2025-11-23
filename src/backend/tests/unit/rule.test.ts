@@ -388,15 +388,86 @@ describe('Create Rules Tests', () => {
 
   describe('Update ruleset status', () => {
     it('update ruleset status - successful', async () => {
-      const ruleset = await RulesService.updateActiveRuleset(batman, orgId, rulesetId, false);
-      expect(ruleset.active).toBe(false);
+      const ruleset1 = await RulesService.updateActiveRuleset(batman, orgId, rulesetId, false);
+      expect(ruleset1.active).toBe(false);
+      const ruleset2 = await RulesService.updateActiveRuleset(batman, orgId, rulesetId, true);
+      expect(ruleset2.active).toBe(true);
+    });
+    it('update ruleset status on deleted ruleset fails', async () => {
+      await RulesService.deleteRuleset(rulesetId, batman.userId, orgId);
+      await expect(async () => await RulesService.updateActiveRuleset(batman, orgId, rulesetId, false)).rejects.toThrow(
+        new NotFoundException('Ruleset', rulesetId)
+      );
+    });
+    it('update active ruleset successful with active ruleset in different type', async () => {
+      const ruleset2 = await RulesService.createRuleset(
+        superman,
+        organization,
+        'ruleset name',
+        (await RulesService.createRulesetType(batman, 'ruleset type 2', organization)).rulesetTypeId,
+        0,
+        false,
+        'fileId'
+      );
+      await RulesService.updateActiveRuleset(batman, orgId, ruleset2.rulesetId, false);
+      const ruleset = await RulesService.updateActiveRuleset(batman, orgId, rulesetId, true);
+      expect(ruleset.active).toBe(true);
+    });
+    it('update ruleset status fails with wrong org', async () => {
+      const wrongOrg = await prisma.organization.create({
+        data: {
+          name: 'wrong org',
+          userCreatedId: batman.userId,
+          description: 'desc',
+          applyInterestImageId: '1',
+          exploreAsGuestImageId: '1',
+          applicationLink: '1'
+        }
+      });
+
+      const wrongOrgCar = await prisma.car.create({
+        data: {
+          wbsElement: {
+            create: {
+              name: 'wrong org car',
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0,
+              organizationId: wrongOrg.organizationId
+            }
+          }
+        }
+      });
+
+      const wrongOrgRulesetType = await prisma.ruleset_Type.create({
+        data: {
+          name: 'ruleset type 2',
+          createdBy: { connect: { userId: batman.userId } },
+          organization: { connect: { organizationId: wrongOrg.organizationId } }
+        }
+      });
+
+      const wrongOrgRuleset = await prisma.ruleset.create({
+        data: {
+          fileId: 'fileId',
+          name: 'ruleset name',
+          active: false,
+          rulesetType: { connect: { rulesetTypeId: wrongOrgRulesetType.rulesetTypeId } },
+          car: { connect: { carId: wrongOrgCar.carId } },
+          createdBy: { connect: { userId: batman.userId } }
+        }
+      });
+
+      await expect(
+        async () => await RulesService.updateActiveRuleset(batman, orgId, wrongOrgRuleset.rulesetId, false)
+      ).rejects.toThrow(new NotFoundException('Ruleset', wrongOrgRuleset.rulesetId));
     });
     it('update ruleset status - fails non leadership', async () => {
       await expect(async () => await RulesService.updateActiveRuleset(wonderwoman, orgId, rulesetId, false)).rejects.toThrow(
         new AccessDeniedException('You do not have permissions to update ruleset status')
       );
     });
-    it('update ruleset status - fails if one is already active', async () => {
+    it('update ruleset status - fails if one is already active in same type', async () => {
       const ruleset2 = await RulesService.createRuleset(
         superman,
         organization,

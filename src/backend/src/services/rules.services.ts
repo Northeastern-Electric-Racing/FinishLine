@@ -645,13 +645,34 @@ export default class RulesService {
       throw new AccessDeniedException('You do not have permissions to update ruleset status');
     }
 
+    const rulesetExists = await prisma.ruleset.findUnique({
+      where: {
+        rulesetId,
+        rulesetType: {
+          organizationId,
+          deletedByUserId: null
+        },
+        deletedByUserId: null
+      }
+    });
+
+    if (!rulesetExists) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (rulesetExists.deletedByUserId) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
     if (status) {
       const activeRuleset = await prisma.ruleset.findFirst({
         where: {
           active: true,
           rulesetType: {
+            rulesetTypeId: rulesetExists.rulesetTypeId,
             organizationId
-          }
+          },
+          dateDeleted: null
         }
       });
 
