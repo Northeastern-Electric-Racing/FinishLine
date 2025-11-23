@@ -3,15 +3,15 @@ import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useEditEventType, EVENT_TYPE_KEY } from '../../../../hooks/calendar.hooks';
 import { useQueryClient } from 'react-query';
 import { EventType } from 'shared';
-import EventFormModal, { EventFormValues } from './EventFormModal';
+import EventTypeFormModal, { EventTypeFormValues } from './EventTypeFormModal';
 
-interface EditEventModalProps {
+interface EditEventTypeModalProps {
   open: boolean;
   onClose: () => void;
   eventType: EventType;
 }
 
-const EditEventModal = ({ open, onClose, eventType }: EditEventModalProps) => {
+const EditEventTypeModal = ({ open, onClose, eventType }: EditEventTypeModalProps) => {
   const queryClient = useQueryClient();
 
   const {
@@ -25,7 +25,7 @@ const EditEventModal = ({ open, onClose, eventType }: EditEventModalProps) => {
   const isError = isEditError;
   const error = editError;
 
-  const eventTypeData: EventFormValues = {
+  const eventTypeData: EventTypeFormValues = {
     name: eventType.name,
     calendarIds: eventType.calendarIds || [],
     initialDateScheduled: eventType.initialDateScheduled,
@@ -49,14 +49,15 @@ const EditEventModal = ({ open, onClose, eventType }: EditEventModalProps) => {
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  const onSubmit = async (data: EventFormValues) => {
+  const onSubmit = async (data: EventTypeFormValues) => {
     const result = await editEventType(data);
     await queryClient.invalidateQueries(EVENT_TYPE_KEY);
     await queryClient.refetchQueries(EVENT_TYPE_KEY);
     return result;
   };
 
-  return <EventFormModal open={open} onClose={onClose} onSubmit={onSubmit} initialValues={eventTypeData} />;
+  return <EventTypeFormModal open={open} onClose={onClose} onSubmit={onSubmit} initialValues={eventTypeData} />;
 };
 
-export default EditEventModal;
+export default EditEventTypeModal;
+

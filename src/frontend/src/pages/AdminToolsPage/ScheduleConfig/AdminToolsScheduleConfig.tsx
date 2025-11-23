@@ -23,8 +23,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
-import CreateEventModal from './Event/CreateEventModal';
-import EditEventModal from './Event/EditEventModal';
+import CreateEventTypeModal from './EventType/CreateEventTypeModal';
+import EditEventTypeModal from './EventType/EditEventTypeModal';
 import { Shop, EventType, Calendar } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERDeleteModal from '../../../components/NERDeleteModal';
@@ -562,11 +562,11 @@ const AdminToolsScheduleConfig: React.FC = () => {
       />
 
       {/* Create Event Type Modal */}
-      <CreateEventModal open={openCreateEventType} onClose={() => setOpenCreateEventType(false)} />
+      <CreateEventTypeModal open={openCreateEventType} onClose={() => setOpenCreateEventType(false)} />
 
       {/* Edit Event Type Modal */}
       {editingEventType && (
-        <EditEventModal open={true} onClose={() => setEditingEventType(null)} eventType={editingEventType} />
+        <EditEventTypeModal open={true} onClose={() => setEditingEventType(null)} eventType={editingEventType} />
       )}
     </Box>
   );
