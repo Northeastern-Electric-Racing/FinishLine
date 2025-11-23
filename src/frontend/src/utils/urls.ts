@@ -334,6 +334,7 @@ const bomUnitById = (id: string) => `${bomGetAllUnits()}/${id}`;
 const bomDeleteUnit = (id: string) => `${bomUnitById(id)}/delete`;
 
 /************** Design Review Endpoints *******************************/
+/*
 const designReviews = () => `${API_URL}/design-reviews`;
 const designReviewsCreate = () => `${designReviews()}/create`;
 const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
@@ -341,6 +342,7 @@ const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
 const designReviewSetStatus = (id: string) => `${designReviewById(id)}/set-status`;
+*/
 
 /******************* WBS Element Template Endpoints ********************/
 
@@ -438,12 +440,17 @@ const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 /**************** Calendar Endpoints ****************/
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
+const calendarEvents = () => `${calendar()}/events`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
 const calendarMachinery = () => `${calendar()}/machinery`;
 const calendarCreateMachinery = () => `${calendar()}/machinery/create`;
 const calendarEditMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/edit`;
 const calendarAddMachineryToShop = (machineryId: string) => `${calendar()}/machinery/${machineryId}/add-to-shop`;
 const calendarEditShop = (shopId: string) => `${calendar()}/shop/${shopId}/edit`;
+const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
+const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
+const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
+const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -661,7 +668,7 @@ export const apiUrls = {
   bomCreateUnit,
   bomUnitById,
   bomDeleteUnit,
-
+  /*
   designReviews,
   designReviewsCreate,
   designReviewById,
@@ -669,7 +676,7 @@ export const apiUrls = {
   designReviewMarkUserConfirmed,
   designReviewDelete,
   designReviewSetStatus,
-
+*/
   workPackageTemplates,
   workPackageTemplatesById,
   workPackageTemplatesEdit,
@@ -753,6 +760,11 @@ export const apiUrls = {
   calendarEditMachinery,
   calendarAddMachineryToShop,
   calendarEditShop,
+  calendarEventMarkUserConfirmed,
+  calendarGetSingleEvent,
+  calendarEvents,
+  calendarDeleteEvent,
+  calendarEventSetStatus,
 
   version
 };

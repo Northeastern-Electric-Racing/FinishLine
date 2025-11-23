@@ -1,50 +1,51 @@
 import { Grid, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import { DesignReview, User } from 'shared';
+import { Event, User } from 'shared';
 import { MemberPill } from '../../../components/MemberPill';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { useEditDesignReview } from '../../../hooks/design-reviews.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 
-interface DesignReviewSummaryModalAttendeesProps {
-  designReview: DesignReview;
+interface EventSummaryModalAttendeesProps {
+  event: Event;
 }
 
-interface DesignReviewEditAttendeesProps {
+interface EventEditAttendeesProps {
   requiredMembers: User[];
   optionalMembers: User[];
 }
 
-const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttendeesProps> = ({ designReview }) => {
+const EventSummaryModalAttendees: React.FC<EventSummaryModalAttendeesProps> = ({ event }) => {
   const toast = useToast();
-  const { requiredMembers } = designReview;
-  const { optionalMembers } = designReview;
+  const { requiredMembers } = event;
+  const { optionalMembers } = event;
   const currentUser = useCurrentUser();
 
+  /*
   const { isLoading: editDesignReviewIsLoading, mutateAsync: editDesignReview } = useEditDesignReview(
     designReview.designReviewId
   );
+  */
 
   const handleRemoveRequiredMember = (user: User) => {
-    if (currentUser.userId === designReview.userCreated.userId) {
+    if (currentUser.userId === event.userCreated.userId) {
       const updatedMembers = requiredMembers.filter((member) => member.userId !== user.userId);
       saveMembers({ requiredMembers: updatedMembers, optionalMembers });
     } else {
-      toast.error('Only the creator of the Design Review can edit attendees');
+      toast.error('Only the creator of the Event can edit attendees');
     }
   };
 
   const handleRemoveOptionalMember = (user: User) => {
-    if (currentUser.userId === designReview.userCreated.userId) {
+    if (currentUser.userId === event.userCreated.userId) {
       const updatedMembers = optionalMembers.filter((member) => member.userId !== user.userId);
       saveMembers({ requiredMembers, optionalMembers: updatedMembers });
     } else {
-      toast.error('Only the creator of the Design Review can edit attendees');
+      toast.error('Only the creator of the Event can edit attendees');
     }
   };
 
-  const saveMembers = async (payload: DesignReviewEditAttendeesProps) => {
+  const saveMembers = async (_payload: EventEditAttendeesProps) => {
+    /*
     try {
       await editDesignReview({
         ...designReview,
@@ -61,9 +62,10 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
         toast.error(e.message);
       }
     }
+      */
   };
 
-  if (editDesignReviewIsLoading) return <LoadingIndicator />;
+  // if (editDesignReviewIsLoading) return <LoadingIndicator />;
 
   return (
     <Box paddingY="20px">
@@ -72,13 +74,13 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
           <Typography>Required: </Typography>
         </Grid>
         <Grid item xs={10} container>
-          <MemberPill user={designReview.userCreated} />
+          <MemberPill user={event.userCreated} />
           {requiredMembers.map((member, index) => (
             <Grid item key={index}>
               <MemberPill
                 user={member}
                 handleClick={
-                  currentUser.userId === designReview.userCreated.userId
+                  currentUser.userId === event.userCreated.userId
                     ? () => {
                         handleRemoveRequiredMember(member);
                       }
@@ -98,7 +100,7 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
                 <MemberPill
                   user={member}
                   handleClick={
-                    currentUser.userId === designReview.userCreated.userId
+                    currentUser.userId === event.userCreated.userId
                       ? () => {
                           handleRemoveOptionalMember(member);
                         }
@@ -114,4 +116,4 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
   );
 };
 
-export default DesignReviewSummaryModalAttendees;
+export default EventSummaryModalAttendees;

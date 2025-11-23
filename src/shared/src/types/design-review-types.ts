@@ -1,3 +1,4 @@
+/*
 import { WbsNumber } from './project-types';
 import { User, UserWithScheduleSettings } from './user-types';
 
@@ -38,6 +39,7 @@ export enum DesignReviewStatus {
   SCHEDULED = 'SCHEDULED',
   DONE = 'DONE'
 }
+  */
 
 export interface TeamType {
   teamTypeId: string;

@@ -6,31 +6,39 @@
 import { Grid } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { NERButton } from '../../../components/NERButton';
-import { Availability, DesignReview, getMostRecentAvailabilities, UserScheduleSettings } from 'shared';
-import { useEffect, useState } from 'react';
+import { Availability, Event, getMostRecentAvailabilities, UserScheduleSettings } from 'shared';
+import { useEffect, useMemo, useState } from 'react';
 import SingleAvailabilityModal from './Availability/SingleAvailabilityModal';
 import AvailabilityEditModal from './Availability/AvailabilityEditModal';
-import { useMarkUserConfirmed } from '../../../hooks/design-reviews.hooks';
+import { useMarkUserConfirmed } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 const UserScheduleSettingsView = ({
   scheduleSettings,
-  designReview
+  event
 }: {
   scheduleSettings: UserScheduleSettings;
-  designReview?: DesignReview;
+  event?: Event;
 }) => {
   const [availabilityOpen, setAvailabilityOpen] = useState(false);
   const toast = useToast();
-  const defaultOpen = designReview !== undefined;
+  const defaultOpen = event !== undefined;
   const [confirmAvailabilityOpen, setConfirmAvailabilityOpen] = useState(defaultOpen || false);
   const [confirmedAvailabilities, setConfirmedAvailabilities] = useState(new Map());
-  const { mutateAsync } = useMarkUserConfirmed(designReview?.designReviewId || '');
-  const confirmModalTitle = designReview
-    ? `Update your availability for the ${designReview?.wbsName} Design Review on the week of ${new Date(
-        designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000
-      ).toLocaleDateString()}`
-    : '';
+  const { mutateAsync } = useMarkUserConfirmed(event?.eventId || '');
+
+  // Get the first scheduled date from the event
+  const firstScheduledDate = event?.scheduledTimes[0]?.initialDateScheduled;
+
+  // Get work package names for the event title
+  const workPackageNames = event?.workPackages.map((wp) => wp.wbsElement.name).join(', ') || 'Event';
+
+  const confirmModalTitle =
+    event && firstScheduledDate
+      ? `Update your availability for the ${workPackageNames} Design Review on the week of ${new Date(
+          firstScheduledDate.getTime() - firstScheduledDate.getTimezoneOffset() * -60000
+        ).toLocaleDateString()}`
+      : '';
 
   const handleConfirm = async (payload: { availability: Availability[] }) => {
     setConfirmAvailabilityOpen(false);
@@ -44,15 +52,17 @@ const UserScheduleSettingsView = ({
     }
   };
 
+  const firstDate = useMemo(() => {
+    const firstSlot = event?.scheduledTimes[0];
+    return firstSlot?.initialDateScheduled ?? new Date();
+  }, [event?.scheduledTimes]);
+
   useEffect(() => {
     if (confirmedAvailabilities.size === 0 && scheduleSettings.availabilities.length > 0) {
-      const confirmed = getMostRecentAvailabilities(
-        scheduleSettings.availabilities,
-        designReview?.initialDate || new Date()
-      );
+      const confirmed = getMostRecentAvailabilities(scheduleSettings.availabilities, firstDate);
       setConfirmedAvailabilities(new Map(confirmed.map((availability) => [availability.dateSet.getTime(), availability])));
     }
-  }, [scheduleSettings.availabilities, designReview, confirmedAvailabilities]);
+  }, [confirmedAvailabilities.size, scheduleSettings.availabilities, firstDate]);
 
   return (
     <Grid container rowSpacing={1} columnSpacing={4}>
@@ -69,7 +79,7 @@ const UserScheduleSettingsView = ({
         confirmedAvailabilities={confirmedAvailabilities}
         setConfirmedAvailabilities={setConfirmedAvailabilities}
         totalAvailabilities={scheduleSettings.availabilities}
-        initialDate={designReview?.initialDate || new Date()}
+        initialDate={firstScheduledDate || new Date()}
         onSubmit={() => handleConfirm({ availability: Array.from(confirmedAvailabilities.values()) })}
         canChangeDateRange={false}
       />

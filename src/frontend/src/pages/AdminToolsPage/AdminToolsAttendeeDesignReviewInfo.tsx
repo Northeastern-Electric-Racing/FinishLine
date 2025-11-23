@@ -6,26 +6,21 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
 import { useAllUsers } from '../../hooks/users.hooks';
-import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
-import { DesignReviewStatus } from 'shared';
+import { useAllEvents } from '../../hooks/calendar.hooks';
+import { EventStatus } from 'shared';
 
 const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: allTeams, isLoading: teamsIsLoading, isError: teamsIsError, error: teamsError } = useAllTeams();
   const { data: allUsers, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
-  const {
-    data: allDesignReviews,
-    isLoading: designReviewsIsLoading,
-    isError: designReviewsIsError,
-    error: designReviewsError
-  } = useAllDesignReviews();
+  const { data: allEvents, isLoading: eventsIsLoading, isError: eventsIsError, error: eventsError } = useAllEvents();
 
-  if (!allTeams || teamsIsLoading || !allUsers || usersIsLoading || !allDesignReviews || designReviewsIsLoading)
+  if (!allTeams || teamsIsLoading || !allUsers || usersIsLoading || !allEvents || eventsIsLoading)
     return <LoadingIndicator />;
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;
-  if (designReviewsIsError) return <ErrorPage message={designReviewsError.message} />;
+  if (eventsIsError) return <ErrorPage message={eventsError.message} />;
 
   const filteredMembers = allUsers.filter((member) =>
     fullNamePipe(member).toLowerCase().includes(searchQuery.toLowerCase())
@@ -38,9 +33,9 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const attendanceDict: Map<string, number> = new Map();
   const missedDict: Map<string, number> = new Map();
 
-  allDesignReviews.forEach((review) => {
-    if (review.status === DesignReviewStatus.DONE) {
-      review.attendees.forEach((member) => {
+  allEvents.forEach((review) => {
+    if (review.status === EventStatus.DONE) {
+      review.requiredMembers.forEach((member) => {
         if (attendanceDict.has(member.userId)) {
           attendanceDict.set(member.userId, attendanceDict.get(member.userId)! + 1);
         } else {
@@ -48,7 +43,7 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
         }
       });
       review.requiredMembers.forEach((member) => {
-        if (!review.attendees.map((user) => user.userId).includes(member.userId)) {
+        if (!review.requiredMembers.map((user) => user.userId).includes(member.userId)) {
           if (missedDict.has(member.userId)) {
             missedDict.set(member.userId, missedDict.get(member.userId)! + 1);
           } else {
@@ -80,7 +75,7 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   return (
     <Grid>
       <Typography variant="h5" color="#ef4345" borderBottom={1} borderColor={'white'} gutterBottom>
-        Design Review Attendee Info
+        Event Attendee Info
       </Typography>
       <FormControl fullWidth sx={{ marginBottom: 2 }}>
         <FormLabel htmlFor="search-by-name">Search by team member name</FormLabel>
@@ -89,7 +84,7 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
       <AdminToolTable
         columns={[
           { name: 'Team Member Name', width: '33%' },
-          { name: 'No. Of Design Reviews Attended', width: '33%' },
+          { name: 'No. Of Events Attended', width: '33%' },
           { name: 'Required to come but did not', width: '34%' }
         ]}
         rows={attendeeRows}

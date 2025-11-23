@@ -60,11 +60,10 @@ describe('Calendar Tests', () => {
       [calendar.calendarId],
       organization,
       true,
+      true,
+      true,
+      true,
       false,
-      true,
-      true,
-      true,
-      true,
       true,
       true,
       true,
@@ -247,8 +246,7 @@ describe('Calendar Tests', () => {
             true,
             true,
             true,
-            true,
-            true,
+            false,
             false,
             true,
             false,
@@ -271,10 +269,9 @@ describe('Calendar Tests', () => {
         [],
         organization,
         true,
+        true,
+        true,
         false,
-        true,
-        true,
-        true,
         false,
         true,
         true,
@@ -289,12 +286,11 @@ describe('Calendar Tests', () => {
       );
 
       expect(result.name).toEqual('Meeting');
-      expect(result.initialDateScheduled).toBe(true);
-      expect(result.recurring).toBe(false);
-      expect(result.allDay).toBe(true);
+      expect(result.schedule).toBe(true);
       expect(result.requiredMembers).toBe(true);
       expect(result.optionalMembers).toBe(true);
       expect(result.teams).toBe(false);
+      expect(result.teamType).toBe(false);
       expect(result.location).toBe(true);
       expect(result.zoomLink).toBe(true);
       expect(result.shop).toBe(false);
@@ -637,10 +633,9 @@ describe('Calendar Tests', () => {
         [calendar.calendarId],
         organization,
         true,
+        true,
+        true,
         false,
-        true,
-        true,
-        true,
         false,
         false,
         false,
@@ -678,7 +673,6 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
-          false,
           false
         )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit event type'));
@@ -693,7 +687,6 @@ describe('Calendar Tests', () => {
           [invalidCalendarId],
           organization,
           'Initial Event Type 2',
-          true,
           true,
           true,
           true,
@@ -754,7 +747,6 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
-          false,
           false
         )
       ).rejects.toThrow(new InvalidOrganizationException('Calendar'));
@@ -770,10 +762,9 @@ describe('Calendar Tests', () => {
           organization,
           'Non Existent Event Type',
           false,
-          true,
-          true,
           false,
           true,
+          false,
           false,
           true,
           false,
@@ -798,9 +789,8 @@ describe('Calendar Tests', () => {
         'Initial Event Type 2',
         false,
         true,
+        true,
         false,
-        true,
-        true,
         false,
         true,
         false,
@@ -815,13 +805,12 @@ describe('Calendar Tests', () => {
       );
 
       expect(result.name).toBe('Initial Event Type 2');
-      expect(result.initialDateScheduled).toBe(false);
-      expect(result.recurring).toBe(true);
-      expect(result.allDay).toBe(false);
+      expect(result.schedule).toBe(false);
       expect(result.eventTypeId).toBe(eventType.eventTypeId);
       expect(result.requiredMembers).toBe(true);
       expect(result.optionalMembers).toBe(true);
       expect(result.teams).toBe(false);
+      expect(result.teamType).toBe(false);
       expect(result.location).toBe(true);
       expect(result.zoomLink).toBe(false);
       expect(result.shop).toBe(true);
@@ -900,6 +889,7 @@ describe('Calendar Tests', () => {
         [],
         [document],
         scheduleSlots,
+        undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -920,6 +910,7 @@ describe('Calendar Tests', () => {
       expect(result.documentIds).toHaveLength(1);
       expect(result.scheduledTimes).toHaveLength(1);
       expect(result.scheduledTimes[0].days).toEqual([DayOfWeek.MONDAY, DayOfWeek.TUESDAY]);
+      expect(result.teamType).toBe(undefined);
       expect(result.approved).toBe(true);
       expect(result.approvalRequiredFrom).toBe(undefined);
       expect(result.questionDocument).toBe('https://example.com/questions.pdf');
@@ -1013,6 +1004,7 @@ describe('Calendar Tests', () => {
         [],
         [document],
         scheduleSlots,
+        undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1030,6 +1022,7 @@ describe('Calendar Tests', () => {
       expect(result.workPackages).toHaveLength(0);
       expect(result.documentIds).toHaveLength(1);
       expect(result.scheduledTimes).toHaveLength(1);
+      expect(result.teamType).toBe(undefined);
       expect(result.approved).toBe(true);
       expect(result.approvalRequiredFrom).toBeUndefined();
       expect(result.questionDocument).toBe('https://example.com/questions.pdf');
@@ -1064,6 +1057,7 @@ describe('Calendar Tests', () => {
           [],
           [document],
           scheduleSlots,
+          undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1098,6 +1092,7 @@ describe('Calendar Tests', () => {
           [],
           [document],
           scheduleSlots,
+          undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1132,6 +1127,7 @@ describe('Calendar Tests', () => {
           [],
           [document],
           scheduleSlots,
+          undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1166,6 +1162,7 @@ describe('Calendar Tests', () => {
           [],
           [document],
           scheduleSlots,
+          undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1200,6 +1197,7 @@ describe('Calendar Tests', () => {
           [],
           [document],
           scheduleSlots,
+          undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1240,6 +1238,7 @@ describe('Calendar Tests', () => {
           [],
           [document],
           scheduleSlots,
+          undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1287,6 +1286,7 @@ describe('Calendar Tests', () => {
           [],
           [document],
           scheduleSlots,
+          undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1326,6 +1326,7 @@ describe('Calendar Tests', () => {
         [],
         [document],
         scheduleSlots,
+        undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1345,6 +1346,7 @@ describe('Calendar Tests', () => {
         [],
         [document],
         scheduleSlots,
+        undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1387,6 +1389,7 @@ describe('Calendar Tests', () => {
         [],
         [document],
         scheduleSlots,
+        undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1406,6 +1409,7 @@ describe('Calendar Tests', () => {
         [],
         [document],
         scheduleSlots,
+        undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1437,6 +1441,7 @@ describe('Calendar Tests', () => {
         [],
         [document],
         scheduleSlots2,
+        undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1480,6 +1485,7 @@ describe('Calendar Tests', () => {
         [],
         [document],
         scheduleSlots,
+        undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1499,6 +1505,7 @@ describe('Calendar Tests', () => {
         [],
         [document],
         scheduleSlots,
+        undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1530,6 +1537,7 @@ describe('Calendar Tests', () => {
         [],
         [document],
         scheduleSlots2,
+        undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1630,8 +1638,7 @@ describe('Calendar Tests', () => {
         data: {
           shopId: anotherShop.shopId,
           machineryId: machineryToDelete.machineryId,
-          quantity: 1,
-          description: 'Bridge row for deletion test'
+          quantity: 1
         }
       });
     });
@@ -1713,6 +1720,7 @@ describe('Calendar Tests', () => {
         [],
         ['document'],
         scheduleSlots,
+        undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1781,6 +1789,7 @@ describe('Calendar Tests', () => {
           [],
           ['document'],
           scheduleSlots,
+          undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1805,6 +1814,7 @@ describe('Calendar Tests', () => {
           [],
           ['document'],
           scheduleSlots,
+          undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1859,6 +1869,7 @@ describe('Calendar Tests', () => {
           [],
           ['document'],
           scheduleSlots,
+          undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1889,6 +1900,7 @@ describe('Calendar Tests', () => {
           [],
           ['document'],
           scheduleSlots,
+          undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1924,6 +1936,7 @@ describe('Calendar Tests', () => {
         [],
         ['doc2', 'doc3'],
         newScheduleSlots,
+        undefined,
         'https://updated.com/questions.pdf',
         'Updated Location',
         'https://zoom.us/updated',
@@ -1976,6 +1989,7 @@ describe('Calendar Tests', () => {
         [],
         ['doc2', 'doc3'],
         scheduleSlots,
+        undefined,
         'https://updated.com/questions.pdf',
         'Updated Location',
         'https://zoom.us/updated',
@@ -2030,10 +2044,9 @@ describe('Calendar Tests', () => {
         [calendar.calendarId],
         organization,
         true,
+        true,
+        true,
         false,
-        true,
-        true,
-        true,
         false,
         true,
         false,
@@ -2089,10 +2102,9 @@ describe('Calendar Tests', () => {
         [],
         otherOrg,
         true,
+        true,
+        true,
         false,
-        true,
-        true,
-        true,
         false,
         true,
         false,

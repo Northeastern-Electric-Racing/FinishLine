@@ -1,3 +1,4 @@
+/*
 import { NextFunction, Request, Response } from 'express';
 import DesignReviewsService from '../services/design-reviews.services';
 import { getCurrentUserWithUserSettings } from '../utils/auth.utils';
@@ -133,3 +134,4 @@ export default class DesignReviewsController {
     }
   }
 }
+*/

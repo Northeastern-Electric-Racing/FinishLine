@@ -8,12 +8,11 @@ export default class CalendarController {
       const {
         name,
         calendarIds,
-        initialDateScheduled,
-        recurring,
-        allDay,
+        schedule,
         requiredMembers,
         optionalMembers,
         teams,
+        teamType,
         location,
         zoomLink,
         shop,
@@ -31,12 +30,11 @@ export default class CalendarController {
         name,
         calendarIds,
         req.organization,
-        initialDateScheduled,
-        recurring,
-        allDay,
+        schedule,
         requiredMembers,
         optionalMembers,
         teams,
+        teamType,
         location,
         zoomLink,
         shop,
@@ -194,12 +192,11 @@ export default class CalendarController {
       const {
         name,
         calendarIds,
-        initialDateScheduled,
-        recurring,
-        allDay,
+        schedule,
         requiredMembers,
         optionalMembers,
         teams,
+        teamType,
         location,
         zoomLink,
         shop,
@@ -218,12 +215,11 @@ export default class CalendarController {
         calendarIds,
         req.organization,
         name,
-        initialDateScheduled,
-        recurring,
-        allDay,
+        schedule,
         requiredMembers,
         optionalMembers,
         teams,
+        teamType,
         location,
         zoomLink,
         shop,
@@ -272,6 +268,7 @@ export default class CalendarController {
         eventTypeId,
         memberIds,
         teamIds,
+        teamTypeId,
         shopIds,
         machineryIds,
         workPackageIds,
@@ -295,6 +292,7 @@ export default class CalendarController {
         workPackageIds,
         documentIds,
         scheduleSlot,
+        teamTypeId,
         questionDocument,
         location,
         zoomLink,
@@ -315,6 +313,7 @@ export default class CalendarController {
         requiredMemberIds,
         optionalMemberIds,
         teamIds,
+        teamTypeId,
         status,
         shopIds,
         machineryIds,
@@ -341,6 +340,7 @@ export default class CalendarController {
         workPackageIds,
         documentIds,
         scheduleSlot,
+        teamTypeId,
         questionDocument,
         location,
         zoomLink
@@ -427,6 +427,26 @@ export default class CalendarController {
       const machinery = await CalendarService.deleteMachinery(req.currentUser, machineryId, req.organization);
 
       res.status(200).json(machinery);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSingleEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+
+      const event = await CalendarService.getSingleEvent(req.currentUser, eventId, req.organization);
+      res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const events = await CalendarService.getAllEvents(req.organization);
+      res.status(200).json(events);
     } catch (error: unknown) {
       next(error);
     }

@@ -1,3 +1,4 @@
+/*
 import express from 'express';
 import { body } from 'express-validator';
 import { intMinZero, nonEmptyString, isDate, isEventStatus, validateInputs } from '../utils/validation.utils';
@@ -66,3 +67,4 @@ designReviewsRouter.post(
 );
 
 export default designReviewsRouter;
+*/

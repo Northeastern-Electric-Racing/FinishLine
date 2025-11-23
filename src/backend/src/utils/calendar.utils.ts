@@ -33,6 +33,7 @@ export function validateEventTypeConfiguration(
     requiredMemberIds: string[];
     optionalMemberIds: string[];
     teamIds: string[];
+    teamTypeId?: string;
     shopIds: string[];
     machineryIds: string[];
     workPackageIds: string[];
@@ -48,11 +49,11 @@ export function validateEventTypeConfiguration(
   if (eventType.requiredMembers && eventData.requiredMemberIds.length === 0) {
     throw new InvalidEventTypeConfigurationException('at least one required member');
   }
-  if (eventType.location && !eventData.location) {
-    throw new InvalidEventTypeConfigurationException('a location');
+  if (eventType.teamType && !eventData.teamTypeId) {
+    throw new InvalidEventTypeConfigurationException('a team type');
   }
-  if (eventType.zoomLink && !eventData.zoomLink) {
-    throw new InvalidEventTypeConfigurationException('a zoom link');
+  if ((eventType.location && !eventData.location) || (eventType.zoomLink && !eventData.zoomLink)) {
+    throw new InvalidEventTypeConfigurationException('a location or zoom link');
   }
   if (eventType.workPackage && eventData.workPackageIds.length === 0) {
     throw new InvalidEventTypeConfigurationException('at least one work package');
@@ -60,7 +61,7 @@ export function validateEventTypeConfiguration(
   if (eventType.questionDocument && !eventData.questionDocument) {
     throw new InvalidEventTypeConfigurationException('a question document');
   }
-  if (eventType.initialDateScheduled && eventData.scheduleSlot.length === 0) {
+  if (eventType.schedule && eventData.scheduleSlot.length === 0) {
     throw new InvalidEventTypeConfigurationException('at least one schedule slot');
   }
 
@@ -95,7 +96,7 @@ export function validateEventTypeConfiguration(
   if (!eventType.description && eventData.description) {
     throw new InvalidEventTypeConfigurationException('Event type does not allow a description');
   }
-  if (!eventType.initialDateScheduled && eventData.scheduleSlot.length > 0) {
+  if (!eventType.schedule && eventData.scheduleSlot.length > 0) {
     throw new InvalidEventTypeConfigurationException('Event type does not allow schedule slots');
   }
 }

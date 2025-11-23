@@ -25,10 +25,10 @@ export const isSubset = (elements: string[], suppliedArray: string[]): boolean =
   return elements.every((element) => suppliedArray.includes(element));
 };
 
-export const meetingStartTimePipe = (times: number[]) => {
-  const time = (times[0] % 12) + 10;
-
-  return time <= 12 ? time + 'am' : time - 12 + 'pm';
+export const meetingStartTimePipeNumbers = (hours: number[]) => {
+  const [hour] = hours;
+  const displayHour = hour % 12 || 12; // Convert 0 to 12 for midnight, 13-23 to 1-11
+  return displayHour + (hour < 12 ? 'am' : 'pm');
 };
 
 export const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
