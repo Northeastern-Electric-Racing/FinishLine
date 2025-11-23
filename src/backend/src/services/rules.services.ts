@@ -23,6 +23,7 @@ import {
   rulesetTypeTransformer,
   rulesetPreviewTransformer
 } from '../transformers/rules.transformer';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
 
 export default class RulesService {
   /**
@@ -643,13 +644,41 @@ export default class RulesService {
   /**
    * Gets all subrules of a specific rule.
    * @param ruleId the ID of the parent rule
+   * @param organization the organization the rule belongs to
    * @returns an array of all child rules (the Rule object)
    */
-  static async getChildRules(ruleId: string): Promise<SharedRule[]> {
+  static async getChildRules(ruleId: string, organization: Organization): Promise<SharedRule[]> {
+    // Verify the parent rule exists and belongs to the organization
+    const parentRule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: {
+        ruleset: {
+          include: {
+            car: {
+              include: {
+                wbsElement: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!parentRule) {
+      throw new NotFoundException('Rule', ruleId);
+    }
+
+    if (parentRule.dateDeleted) {
+      throw new DeletedException('Rule', ruleId);
+    }
+
+    if (parentRule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Rule');
+    }
+
     const subRules = await prisma.rule.findMany({
       where: {
-        parentRuleId: ruleId,
-        dateDeleted: null
+        parentRuleId: ruleId
       },
       ...getRulePreviewQueryArgs()
     });

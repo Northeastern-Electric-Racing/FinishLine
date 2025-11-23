@@ -153,7 +153,7 @@ export default class RulesController {
     try {
       const { ruleId: parentRuleId } = req.params;
 
-      const childrenRules: Rule[] = await RulesService.getChildRules(parentRuleId);
+      const childrenRules: Rule[] = await RulesService.getChildRules(parentRuleId, req.organization);
 
       res.status(200).json(childrenRules);
     } catch (error: unknown) {
