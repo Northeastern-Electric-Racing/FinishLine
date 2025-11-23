@@ -58,6 +58,19 @@ import { seedRulesetType } from './seed-data/rules.seed';
 
 const prisma = new PrismaClient();
 
+// Compute relative dates for seeding
+const getRelativeDate = (daysOffset: number, hoursOffset: number = 0): Date => {
+  const date = new Date();
+  date.setDate(date.getDate() + daysOffset);
+  date.setHours(date.getHours() + hoursOffset);
+  return date;
+};
+
+const daysAgo = (days: number): Date => getRelativeDate(-days);
+const daysFromNow = (days: number): Date => getRelativeDate(days);
+const weeksAgo = (weeks: number): Date => daysAgo(weeks * 7);
+const weeksFromNow = (weeks: number): Date => daysFromNow(weeks * 7);
+
 export const CreatePartTag = async (organizationId: string, name: string, colorHexCode: string) => {
   return await prisma.part_Tag.create({
     data: {
@@ -1547,7 +1560,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
-    new Date('01/01/2024')
+    undefined,
+    daysFromNow(10)
   );
 
   await TasksService.createTask(
@@ -1559,7 +1573,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
     ner,
-    new Date('01/01/2024')
+    daysAgo(5),
+    daysFromNow(15)
   );
 
   await TasksService.createTask(
@@ -1571,7 +1586,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId, joeBlow.userId],
     ner,
-    new Date('01/01/2024')
+    undefined,
+    daysFromNow(8)
   );
 
   await TasksService.createTask(
@@ -1584,7 +1600,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeBlow.userId],
     ner,
-    new Date('2024-02-17T00:00:00-05:00')
+    undefined,
+    daysFromNow(14)
   );
 
   await TasksService.createTask(
@@ -1596,7 +1613,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
     ner,
-    new Date('2024-01-01T00:00:00-05:00')
+    daysAgo(14),
+    daysFromNow(7)
   );
 
   await TasksService.createTask(
@@ -1608,7 +1626,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
     ner,
-    new Date('2024-01-20T00:00:00-05:00')
+    undefined,
+    daysFromNow(9)
   );
 
   await TasksService.createTask(
@@ -1620,7 +1639,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
     ner,
-    new Date('2023-05-19T00:00:00-04:00')
+    undefined,
+    daysFromNow(6)
   );
 
   await TasksService.createTask(
@@ -1632,7 +1652,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeShmoe.userId],
     ner,
-    new Date('01/01/2024')
+    undefined,
+    daysAgo(30)
   );
 
   await TasksService.createTask(
@@ -1652,7 +1673,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeShmoe.userId],
     ner,
-    new Date('2022-11-16T00:00-05:00')
+    undefined,
+    daysAgo(90)
   );
 
   await TasksService.createTask(
@@ -1664,7 +1686,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
     ner,
-    new Date('2023-03-15T00:00:00-04:00')
+    daysAgo(70),
+    daysAgo(55)
   );
 
   await TasksService.createTask(
@@ -1676,7 +1699,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [],
     ner,
-    new Date('2023-04-01T00:00:00-04:00')
+    undefined,
+    daysFromNow(12)
   );
 
   await TasksService.createTask(
@@ -1688,7 +1712,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
-    new Date('2024-01-01T00:00:00-05:00')
+    undefined,
+    daysFromNow(8)
   );
 
   await TasksService.createTask(
@@ -1700,7 +1725,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeShmoe.userId],
     ner,
-    new Date('2024-01-01T00:00:00-05:00')
+    undefined,
+    daysFromNow(7)
   );
 
   await TasksService.createTask(
@@ -1712,7 +1738,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [thomasEmrax.userId],
     ner,
-    new Date('2023-10-31T00:00:00-04:00')
+    daysAgo(80),
+    daysAgo(65)
   );
 
   await TasksService.createTask(
@@ -1724,7 +1751,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId),
     ner,
-    new Date('2024-05-01T00:00:00-04:00')
+    undefined,
+    daysFromNow(16)
   );
 
   await TasksService.createTask(
@@ -1736,7 +1764,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
-    new Date('2024-02-29T00:00:00-05:00')
+    undefined,
+    daysFromNow(13)
   );
 
   await TasksService.createTask(
@@ -1748,7 +1777,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
     ner,
-    new Date('2024-03-17T00:00:00-05:00')
+    undefined,
+    daysFromNow(18)
   );
 
   await TasksService.createTask(
@@ -1760,7 +1790,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeBlow.userId],
     ner,
-    new Date('2024-04-15T00:00:00-04:00')
+    undefined,
+    daysAgo(45)
   );
 
   await TasksService.createTask(
@@ -1772,7 +1803,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeBlow.userId],
     ner,
-    new Date('2024-04-15T00:00:00-04:00')
+    undefined,
+    daysAgo(60)
   );
 
   await TasksService.createTask(
@@ -1784,7 +1816,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [regina.userId],
     ner,
-    new Date('2023-06-23T00:00:00-04:00')
+    daysAgo(21),
+    daysAgo(10)
   );
 
   /**

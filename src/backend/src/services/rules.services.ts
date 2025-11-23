@@ -1,5 +1,5 @@
-import { Organization, Rule, User, Rule_Completion } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview } from 'shared';
+import { Organization, Rule, Rule_Completion } from '@prisma/client';
+import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview, User } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -17,7 +17,7 @@ import {
   getRulePreviewQueryArgs
 } from '../prisma-query-args/rules.query-args';
 import {
-  ruleTransformer,
+ruleTransformer,
   projectRuleTransformer,
   rulesetTransformer,
   rulesetTypeTransformer,
