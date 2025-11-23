@@ -640,6 +640,14 @@ export default class RulesService {
     return projectRuleTransformer(deletedProjectRule);
   }
 
+  /**
+   * Updates a rulesets status
+   * @param submitter user updating the ruleset
+   * @param organizationId organization of ruleset being updated
+   * @param rulesetId id of ruleset being updated
+   * @param status new status of ruleset
+   * @returns
+   */
   static async updateActiveRuleset(submitter: User, organizationId: string, rulesetId: string, status: boolean) {
     if (!(await userHasPermission(submitter.userId, organizationId, isLeadership))) {
       throw new AccessDeniedException('You do not have permissions to update ruleset status');
