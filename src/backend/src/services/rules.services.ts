@@ -653,6 +653,6 @@ export default class RulesService {
       },
       ...getRulePreviewQueryArgs()
     });
-    return subRules.map((rule) => ruleTransformer(rule as any));
+    return subRules.map((rule) => ruleTransformer(rule));
   }
 }
