@@ -24,16 +24,18 @@ export const TaskColumn = ({
   onDeleteTask: (taskId: string) => void;
   onAddTask: (task: Task) => void;
 }) => {
-  const { mutateAsync: createTask } = useCreateTask(project.wbsNum);
+  const { mutateAsync: createTask } = useCreateTask();
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const toast = useToast();
   const theme = useTheme();
 
-  const handleCreateTask = async ({ notes, title, deadline, assignees, priority }: EditTaskFormInput) => {
+  const handleCreateTask = async ({ notes, title, deadline, assignees, priority, startDate }: EditTaskFormInput) => {
     try {
       const task = await createTask({
+        wbsNum: project.wbsNum,
         title,
         deadline: deadline ? transformDate(deadline) : undefined,
+        startDate: startDate ? transformDate(startDate) : undefined,
         priority,
         status: status as TaskStatus,
         assignees,

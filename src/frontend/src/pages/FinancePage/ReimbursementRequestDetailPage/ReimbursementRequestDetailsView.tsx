@@ -3,12 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { accountCodePipe, displayEnum } from '../../../utils/pipes';
+import { accountCodePipe, displayEnum, formatSaboIdPipe } from '../../../utils/pipes';
 import { Assignment, ChangeCircle, Edit, Pending } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
@@ -39,7 +40,7 @@ import {
 } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { centsToDollar, fullNamePipe, undefinedPipe } from '../../../utils/pipes';
+import { centsToDollar, fullNamePipe } from '../../../utils/pipes';
 import {
   imageDownloadUrl,
   imageFileUrl,
@@ -66,9 +67,10 @@ import ReimbursementRequestStatusPill from '../../../components/ReimbursementReq
 import SidePage from '../FinanceComponents/SidePagePopup';
 import EditReimbursementRequestPage from '../EditReimbursementRequest/EditReimbursementRequest';
 import { ReimbursementRequestDataSubmission } from '../ReimbursementRequestForm/ReimbursementRequestForm';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetFinanceDelegates } from '../../../hooks/organizations.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import AssignFinanceMemberModal from './AssignFinanceMemberModal';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -95,6 +97,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const [showMarkSubmittedToSaboModal, setShowMarkSubmittedToSaboModal] = useState(false);
   const [showMarkPendingFinanceModal, setShowMarkPendingFinanceModal] = useState(false);
   const [showRequestChangesModal, setShowRequestChangesModal] = useState(false);
+  const [showAssignUserModal, setShowAssignUserModal] = useState(false);
   const { mutateAsync: deleteReimbursementRequest } = useDeleteReimbursementRequest(
     reimbursementRequest.reimbursementRequestId
   );
@@ -394,6 +397,12 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         (isAdmin(user.role) || user.userId === reimbursementRequest.recipient.userId)
     },
     {
+      title: 'Assign Finance Member',
+      onClick: () => setShowAssignUserModal(true),
+      icon: <AssignmentIndIcon />,
+      show: user.isFinance
+    },
+    {
       title: 'Request Changes',
       onClick: () => setShowRequestChangesModal(true),
       icon: <ChangeCircle />,
@@ -439,7 +448,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { label: 'Purchased From', icon: <StoreIcon fontSize="small" /> },
     { label: 'SABO Number', icon: <SellIcon fontSize="small" /> },
     { label: 'Refund Source', icon: <CurrencyExchangeIcon fontSize="small" /> },
-    { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> }
+    { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> },
+    { label: 'Assigned To', icon: <PersonOutlineIcon fontSize="small" /> }
   ];
 
   // grab all unique refund source names
@@ -469,11 +479,12 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     },
     { content: `$${centsToDollar(reimbursementRequest.totalCost)}` },
     { content: reimbursementRequest.vendor.name },
-    { content: `${undefinedPipe(reimbursementRequest.saboId)}` },
+    { content: `${formatSaboIdPipe(reimbursementRequest.saboId)}` },
     {
       content: refundSourceNames.join(', ')
     },
-    { content: accountCodePipe(reimbursementRequest.accountCode) }
+    { content: accountCodePipe(reimbursementRequest.accountCode) },
+    { content: fullNamePipe(reimbursementRequest.assignee) }
   ];
 
   const { id } = useParams<{ id: string }>();
@@ -506,6 +517,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       id: reimbursementRequest.reimbursementRequestId,
       files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file!)
     });
+
+    if (isHead(user.role) && !isReimbursementRequestLeadershipApproved(reimbursementRequest)) {
+      await leadershipApproveReimbursementRequest();
+    }
 
     await markPendingFinance();
     closeSidePage();
@@ -596,6 +611,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         <MarkDeliveredModal
           modalShow={showMarkDelivered}
           onHide={() => setShowMarkDelivered(false)}
+          reimbursementRequest={reimbursementRequest}
+        />
+        <AssignFinanceMemberModal
+          modalShow={showAssignUserModal}
+          onHide={() => setShowAssignUserModal(false)}
           reimbursementRequest={reimbursementRequest}
         />
         <MarkReimbursedModal />

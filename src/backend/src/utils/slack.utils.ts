@@ -200,18 +200,27 @@ export const sendThreadResponse = async (threads: SlackMessageThread[], message:
   }
 };
 
-export const sendReimbursementRequestPendingFinanceNotification = async (threads: SlackMessageThread[]) =>
-  await sendThreadResponse(threads, `This Reimbursement Request is now pending finance :moneybag:`);
+export const sendReimbursementRequestPendingFinanceNotification = async (
+  threads: SlackMessageThread[],
+  assigneeId: string | null
+) =>
+  await sendThreadResponse(
+    threads,
+    `${assigneeId ? await getUserSlackMentionOrName(assigneeId) : ''} This Reimbursement Request is now pending finance :moneybag:`
+  );
 
 export const sendReimbursementRequestLeadershipApprovedNotification = async (
   threads: SlackMessageThread[],
   approverId: string,
   recipientId: string
-) =>
+) => {
+  // Only notify parties if the recipient is different from the approver
+  if (approverId === recipientId) return;
   await sendThreadResponse(
     threads,
     `${await getUserSlackMentionOrName(approverId)} has approved this reimbursement request. ${await getUserSlackMentionOrName(recipientId)} you may now purchase the items, add the receipts, and mark the reimbursement request as pending finance.`
   );
+};
 
 export const sendReimbursementRequestChangesRequestedNotification = async (threads: SlackMessageThread[], userId: string) =>
   await sendThreadResponse(

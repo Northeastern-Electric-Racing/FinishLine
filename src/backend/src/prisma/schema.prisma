@@ -266,6 +266,7 @@ model User {
   deletedReimbursementRequestComments     Reimbursement_Request_Comment[]      @relation(name: "deletedReimbursementRequestComments")
   deletedSponsorTiers                     Sponsor_Tier[]
   financeDelegateForOrganizations         Organization[]                       @relation(name: "financeDelegates")
+  assignedReimbursementRequests           Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
   createdRuleStatuses                     Rule_Status_Change[]                 @relation(name: "ruleStatusCreator")
   deletedRuleStatuses                     Rule_Status_Change[]                 @relation(name: "ruleStatusDeletor")
   createdRulesetTypes                     Ruleset_Type[]                       @relation(name: "rulesetTypeCreator")
@@ -651,6 +652,7 @@ model Task {
   title           String
   notes           String
   deadline        DateTime?
+  startDate       DateTime?
   assignees       User[]        @relation(name: "assignedTo")
   priority        Task_Priority
   status          Task_Status
@@ -719,6 +721,8 @@ model Reimbursement_Request {
   notificationSlackThreads Message_Info[]
   materials                Material[]
   reimbursementComments    Reimbursement_Request_Comment[]
+  assigneeId               String?
+  assignee                 User?                           @relation(name: "reimbursementRequestAssignee", fields: [assigneeId], references: [userId])
 
   @@unique([identifier, organizationId], name: "uniqueReimbursementRequest")
   @@index([organizationId])

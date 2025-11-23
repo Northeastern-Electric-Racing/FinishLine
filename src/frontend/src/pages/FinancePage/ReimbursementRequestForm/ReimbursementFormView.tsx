@@ -34,6 +34,7 @@ import {
   AccountCode,
   CreateRefundSourceArgs,
   IndexCode,
+  isHead,
   MAX_FILE_SIZE,
   ReimbursementProductFormArgs,
   ReimbursementReceiptCreateArgs,
@@ -58,6 +59,7 @@ import { useCreateVendor } from '../../../hooks/finance.hooks';
 import { useGetFinanceDelegates } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -116,6 +118,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const [newVendorName, setNewVendorName] = useState<string>('');
   const [showCreateVendorField, setShowCreateVendorField] = useState<boolean>(false);
   const { mutateAsync: createVendor } = useCreateVendor();
+  const user = useCurrentUser();
 
   // to grab all the proper refund sources
   const refundSources: CreateRefundSourceArgs[] = Array.from(
@@ -611,7 +614,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             </FormControl>
           </Grid>
         </Grid>
-        {isEditing && isLeadershipApproved && (
+        {(isHead(user.role) || (isEditing && isLeadershipApproved)) && (
           <Grid item xs={12} md={6}>
             <Grid item xs={12}>
               <FormControl sx={{ borderRadius: '25px', width: '85%' }}>
@@ -651,6 +654,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                         '& .MuiOutlinedInput-root': {
                           borderRadius: '20px',
                           color: '#989898'
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          color: '#ffffff'
                         }
                       }}
                       onClose={() => setDatePickerOpen(false)}
@@ -662,8 +668,14 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                         textField: {
                           error: !!errors.dateOfExpense,
                           helperText: errors.dateOfExpense?.message,
-                          onClick: () => setDatePickerOpen(true),
-                          inputProps: { readOnly: true }
+                          InputProps: {
+                            onClick: (e) => {
+                              const target = e.target as HTMLElement;
+                              if (target.closest('button')) {
+                                setDatePickerOpen(true);
+                              }
+                            }
+                          }
                         }
                       }}
                     />
@@ -994,7 +1006,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           >
             {submitText}
           </NERSuccessButton>
-          {isEditing && isLeadershipApproved && onSubmitToFinance && (
+          {(isHead(user.role) || (isEditing && isLeadershipApproved)) && onSubmitToFinance && (
             <NERSuccessButton
               variant="contained"
               onClick={handleSubmit(onSubmitToFinance)}

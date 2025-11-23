@@ -6,7 +6,7 @@ import { NERButton } from '../../../../components/NERButton';
 import { useState } from 'react';
 import CreateLinkTypeModal from './CreateLinkTypeModal';
 import EditLinkTypeModal from './EditLinkTypeModal';
-import AdminToolTable from '../../AdminToolTable';
+import NERTable from '../../../../components/NERTable';
 import { isAdmin, LinkType } from 'shared';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 
@@ -65,7 +65,7 @@ const LinkTypeTable = () => {
         />
       )}
       <Typography variant="subtitle1">Registered LinkTypes</Typography>
-      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Icon Name' }, { name: 'Required' }]} rows={linkTypeTableRows} />
+      <NERTable columns={[{ name: 'Name' }, { name: 'Icon Name' }, { name: 'Required' }]} rows={linkTypeTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         {isAdmin(currentUser.role) && (
           <NERButton

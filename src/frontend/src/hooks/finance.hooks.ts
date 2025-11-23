@@ -64,7 +64,10 @@ import {
   deleteOtherProductReason,
   deleteSponsorTier,
   editSponsorTier,
-  editIndexCode
+  editIndexCode,
+  getCurrentUserAssignedReimbursementRequests,
+  assignMemberToRR,
+  setTaxExemptStatus
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -147,6 +150,10 @@ export interface SponsorPayload {
   sponsorContact: string;
   sponsorTasks: CreateSponsorTask[];
   discountCode?: string;
+}
+
+interface EditSponsorPayload extends SponsorPayload {
+  sponsorId: string;
 }
 
 export interface SponsorTierPayload {
@@ -388,6 +395,16 @@ export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
   );
 };
 
+export const useAssignMemberToRR = (reimbursementRequestId: string) => {
+  return useMutation<ReimbursementRequest, Error, { assigneeId: string }>(
+    ['reimbursement-requests', 'edit'],
+    async (payload: { assigneeId: string }) => {
+      const { data } = await assignMemberToRR(reimbursementRequestId, payload);
+      return data;
+    }
+  );
+};
+
 /**
  * Custom react hook to get all account codes
  *
@@ -401,11 +418,21 @@ export const useGetAllAccountCodes = () => {
 };
 
 /**
- * Custom React Hook to get the reimbursement requests for the current user
+ * Custom React Hook to get the reimbursement requests created by the current user
  */
 export const useCurrentUserReimbursementRequests = () => {
   return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
     const { data } = await getCurrentUserReimbursementRequests();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get the reimbursement requests assigned to the current user
+ */
+export const useCurrentUserAssignedReimbursementRequests = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'assignee'], async () => {
+    const { data } = await getCurrentUserAssignedReimbursementRequests();
     return data;
   });
 };
@@ -445,6 +472,21 @@ export const useEditVendor = (vendorId: string) => {
     queryClient.invalidateQueries(['vendors']);
     return data;
   });
+};
+
+/**
+ * Custom react hook to set tax exempt status of a vendor
+ */
+export const useSetTaxExemptStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Vendor, Error, { vendorId: string; taxExempt: boolean }>(
+    ['vendors', 'taxExemptStatus'],
+    async ({ vendorId, taxExempt }) => {
+      const { data } = await setTaxExemptStatus(vendorId, taxExempt);
+      queryClient.invalidateQueries(['vendors']);
+      return data;
+    }
+  );
 };
 
 /**
@@ -1201,11 +1243,11 @@ export const useGetAllSponsorTiers = () => {
   });
 };
 
-export const useEditSponsor = (sponsorId: string) => {
+export const useEditSponsor = () => {
   const queryClient = useQueryClient();
-  return useMutation<Sponsor, Error, SponsorPayload>(
+  return useMutation<Sponsor, Error, EditSponsorPayload>(
     ['sponsor', 'edit'],
-    async (formData: SponsorPayload) => {
+    async ({ sponsorId, ...formData }: EditSponsorPayload) => {
       const { data } = await editSponsor(sponsorId, formData);
       return data;
     },

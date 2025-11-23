@@ -93,6 +93,23 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Returns all reimbursement requests that are assigned to the given user in the organization
+   * @param assignee the assignee
+   * @param organization the organization
+   * @returns the reimbursement requests assigned to that user
+   */
+  static async getUserAssignedReimbursementRequests(
+    assignee: User,
+    organization: Organization
+  ): Promise<ReimbursementRequest[]> {
+    const assignedReimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: { dateDeleted: null, assigneeId: assignee.userId, organizationId: organization.organizationId },
+      ...getReimbursementRequestQueryArgs(organization.organizationId)
+    });
+    return assignedReimbursementRequests.map(reimbursementRequestTransformer);
+  }
+
+  /**
    * Returns all reimbursement requests in the database that are created by any user in the given user's team and for the currently selected organization.
    * @param recipient The user retrieving their teams reimbursement requests
    * @param organizationId The organization the user is currently in
@@ -408,6 +425,64 @@ export default class ReimbursementRequestService {
     await removeDeletedReceiptPictures(receiptPictures, oldReimbursementRequest.receiptPictures || [], submitter);
 
     return updatedReimbursementRequest;
+  }
+
+  /**
+   * Assigns a finance member to a reimbursement request to keep track of it
+   * @param assigner the user making the assignment
+   * @param organization the organization
+   * @param requestId the reimbursement request being assigned to
+   * @param assigneeId the user being assigned to the rr
+   * @returns the updated RR
+   */
+  static async assignFinanceMember(assigner: User, organization: Organization, requestId: string, assigneeId: string) {
+    if (!(await userHasPermission(assigner.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedException('Only members can assign reimbursement requests');
+    }
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: {
+        reimbursementRequestId: requestId
+      }
+    });
+
+    if (!reimbursementRequest) {
+      throw new NotFoundException('Reimbursement Request', requestId);
+    }
+
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', requestId);
+    }
+
+    if (reimbursementRequest.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Reimbursement Request');
+    }
+
+    const assignee = await prisma.user.findUnique({
+      where: {
+        userId: assigneeId
+      }
+    });
+
+    if (!assignee) {
+      throw new NotFoundException('User', assigneeId);
+    }
+
+    const updatedRR = await prisma.reimbursement_Request.update({
+      where: {
+        reimbursementRequestId: requestId
+      },
+      data: {
+        assignee: {
+          connect: {
+            userId: assigneeId
+          }
+        }
+      },
+      ...getReimbursementQueryArgs
+    });
+
+    return updatedRR;
   }
 
   /**
@@ -1122,11 +1197,14 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
     try {
-      await sendReimbursementRequestLeadershipApprovedNotification(
-        reimbursementRequest.notificationSlackThreads,
-        submitter.userId,
-        reimbursementRequest.recipientId
-      );
+      // Only send notification if the submitter is not the recipient
+      if (submitter.userId !== reimbursementRequest.recipientId) {
+        await sendReimbursementRequestLeadershipApprovedNotification(
+          reimbursementRequest.notificationSlackThreads,
+          submitter.userId,
+          reimbursementRequest.recipientId
+        );
+      }
     } catch (e: unknown) {
       console.error('Error sending reimbursement request leadership approved notification:', e);
     }
@@ -1466,6 +1544,42 @@ export default class ReimbursementRequestService {
     return vendorTransformer(vendor);
   }
 
+  static async setVendorTaxExemptStatus(
+    vendorId: string,
+    taxExempt: boolean,
+    submitter: User,
+    organization: Organization
+  ): Promise<Vendor> {
+    const existingVendor = await prisma.vendor.findUnique({
+      where: { vendorId, dateDeleted: null },
+      include: { twoFactorContacts: { select: { userId: true } } }
+    });
+
+    if (!existingVendor) {
+      throw new NotFoundException('Vendor', vendorId);
+    }
+
+    if (existingVendor.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Vendor');
+    }
+
+    const isUserAuthorized =
+      existingVendor.addedByUserId === submitter.userId ||
+      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
+      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
+    if (!isUserAuthorized) {
+      throw new AccessDeniedException(`You are not a member of the finance team!`);
+    }
+
+    const updatedVendor = await prisma.vendor.update({
+      where: { vendorId },
+      data: { taxExempt },
+      ...getVendorQueryArgs(organization.organizationId)
+    });
+
+    return vendorTransformer(updatedVendor);
+  }
+
   /**
    * Deletes the vendor
    *
@@ -1621,7 +1735,10 @@ export default class ReimbursementRequestService {
     });
 
     try {
-      await sendReimbursementRequestPendingFinanceNotification(reimbursementRequest.notificationSlackThreads);
+      await sendReimbursementRequestPendingFinanceNotification(
+        reimbursementRequest.notificationSlackThreads,
+        reimbursementRequest.assigneeId
+      );
     } catch (e: unknown) {
       console.error('Error sending reimbursement request pending finance notification:', e);
     }

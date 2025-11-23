@@ -168,10 +168,12 @@ const financeCreateReimbursementRequest = () => `${financeEndpoints()}/create`;
 const financeReimbursementRequestById = (id: string) => `${financeEndpoints()}/${id}`;
 const financeImageById = (fileId: string) => `${financeEndpoints()}/receipt-image/${fileId}`;
 const financeEditReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/edit`;
+const financeAssignMemberToRR = (id: string) => `${financeEndpoints()}/${id}/assign-finance-member`;
 const getAllAccountCodes = () => `${financeEndpoints()}/account-codes`;
 const getAllVendors = () => `${financeEndpoints()}/vendors`;
 const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
 const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
+const financeGetUserAssignedReimbursementRequest = () => `${financeEndpoints()}/assigned-user`;
 const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
 const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
 const financeReportRefund = () => `${financeEndpoints()}/reimburse`;
@@ -194,6 +196,7 @@ const financeDeleteOtherProductReason = (otherReasonId: string) =>
 const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
+const financeSetVendorTaxExemptStatus = (vendorId: string) => `${financeEndpoints()}/vendors/${vendorId}/setTaxExemptStatus`;
 const financeDeleteVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/delete`;
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
 
@@ -570,12 +573,14 @@ export const apiUrls = {
   financeUploadRceipt,
   financeCreateReimbursementRequest,
   financeEditReimbursementRequest,
+  financeAssignMemberToRR,
   financeReimbursementRequestById,
   getAllAccountCodes,
   getAllVendors,
   financeEndpoints,
   financeUploadReceipt,
   financeGetUserReimbursementRequest,
+  financeGetUserAssignedReimbursementRequest,
   financeGetUserReimbursements,
   financeGetAllReimbursements,
   financeReportRefund,
@@ -597,6 +602,7 @@ export const apiUrls = {
   financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
+  financeSetVendorTaxExemptStatus,
   financeDeleteVendor,
   financeLeadershipApprove,
   financeCreateSponsor,
