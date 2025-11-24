@@ -147,4 +147,16 @@ export default class RulesController {
       next(error);
     }
   }
+
+  static async getProjectRules(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId, projectId } = req.params;
+
+      const projectRules = await RulesService.getProjectRules(rulesetId, projectId, req.organization);
+
+      res.status(200).json(projectRules);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

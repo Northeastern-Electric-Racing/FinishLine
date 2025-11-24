@@ -639,4 +639,62 @@ export default class RulesService {
 
     return projectRuleTransformer(deletedProjectRule);
   }
+
+  static async getProjectRules(rulesetId: string, projectId: string, organization: Organization): Promise<ProjectRule[]> {
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      include: {
+        car: {
+          include: {
+            wbsElement: true
+          }
+        }
+      }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.deletedByUserId) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const project = await prisma.project.findUnique({
+      where: { projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project', projectId);
+    }
+
+    if (project.wbsElement.dateDeleted) {
+      throw new DeletedException('Project', projectId);
+    }
+
+    if (project.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Project');
+    }
+
+    const projectRules = await prisma.project_Rule.findMany({
+      where: {
+        projectId,
+        rule: {
+          rulesetId,
+          dateDeleted: null
+        },
+        dateDeleted: null
+      },
+      ...getProjectRuleQueryArgs()
+    });
+
+    return projectRules.map(projectRuleTransformer);
+  }
 }
