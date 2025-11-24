@@ -473,7 +473,7 @@ export default class RulesService {
    * @throws If the user is a guest, the rule does not exist or
    *         is deleted, or a team does not exist.
    */
-  static async assignRuleTeam(ruleId: string, teamIds: string[], user: User, org: Organization) {
+  static async assignRuleTeam(ruleId: string, teamId: string, user: User, org: Organization) {
     // Checks that the user is not a guest
     if (!(await userHasPermission(user.userId, org.organizationId, notGuest))) {
       throw new AccessDeniedGuestException('assign teams to rule');
@@ -491,27 +491,25 @@ export default class RulesService {
       throw new DeletedException('Rule', ruleId);
     }
 
-    // Checks that each team exists
-    for (const teamId of teamIds) {
-      const team = await prisma.team.findUnique({ where: { teamId } });
-      if (!team) throw new NotFoundException('Team', teamId);
-    }
+    // Checks that the team exists
+    const team = await prisma.team.findUnique({ where: { teamId } });
+    if (!team) throw new NotFoundException('Team', teamId);
 
     // We add the team to the rule if it is not already in the rule
-    for (const teamId of teamIds) {
-      if (!rule.teams.some((currTeam) => currTeam.teamId === teamId)) {
-        await prisma.rule.update({
-          where: { ruleId: rule.ruleId },
-          data: {
-            teams: {
-              connect: {
-                teamId
-              }
+    if (!rule.teams.some((currTeam) => currTeam.teamId === teamId)) {
+      await prisma.rule.update({
+        where: { ruleId: rule.ruleId },
+        data: {
+          teams: {
+            connect: {
+              teamId
             }
           }
-        });
-      }
+        }
+      });
     }
+
+    return rule;
   }
 
   static async createRuleset(

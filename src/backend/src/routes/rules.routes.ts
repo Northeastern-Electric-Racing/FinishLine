@@ -46,8 +46,8 @@ rulesRouter.post(
 
 rulesRouter.post(
   '/rule/:ruleId/assign-team',
-  body('teamIds').isArray(),
-  nonEmptyString(body('teamIds.*')),
+  nonEmptyString(body('teamId')),
+  validateInputs,
   RulesController.assignRuleTeam
 );
 
