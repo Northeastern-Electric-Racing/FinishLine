@@ -1,4 +1,4 @@
-import { Organization, Rule, Rule_Completion, User } from '@prisma/client';
+import { Organization, Rule, Rule_Completion } from '@prisma/client';
 import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview, User, Rule as SharedRule } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -17,7 +17,7 @@ import {
   getRulePreviewQueryArgs
 } from '../prisma-query-args/rules.query-args';
 import {
-ruleTransformer,
+  ruleTransformer,
   projectRuleTransformer,
   rulesetTransformer,
   rulesetTypeTransformer,
