@@ -1,8 +1,7 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop, Machinery, FilterArgs, Event } from 'shared';
 import { filterEventsTransformer } from './transformers/calendar.transformer';
-import { Shop, Machinery, Calendar } from 'shared';
+import { Shop, Machinery, Calendar, FilterArgs, Event } from 'shared';
 
 export const getAllCalendars = () => {
   return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
@@ -41,6 +40,8 @@ export const postFilterEvents = (payload: FilterArgs) => {
   return axios.post<any>(apiUrls.calendarFilterEvents(), payload, {
     transformResponse: (data) => filterEventsTransformer(JSON.parse(data) as Event[])
   });
+};
+
 export const postDeleteShop = async (id: string) => {
   return axios.post<Shop>(apiUrls.calendarDeleteShop(id));
 };

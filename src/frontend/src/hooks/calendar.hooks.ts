@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Shop, Machinery, FilterArgs, Event } from 'shared';
-import { Shop, Machinery, Calendar } from 'shared';
+import { Shop, Machinery, Calendar, FilterArgs, Event } from 'shared';
 import {
   getAllShops,
   postCreateShop,
@@ -14,8 +13,9 @@ import {
   postFilterEvents
 } from '../apis/calendar.api';
 
-export const MACHINERY_KEY = ['machinery'] as const;
 export const FILTER_EVENTS_KEY = ['filter_events'] as const;
+
+import {
   getAllCalendars,
   postEditCalendar,
   postCreateCalendar
