@@ -29,6 +29,7 @@ projectRouter.post(
 );
 projectRouter.post(
   '/link-types/:linkTypeName/edit',
+  nonEmptyString(body('name').optional()),
   nonEmptyString(body('iconName')),
   body('required').isBoolean(),
   validateInputs,

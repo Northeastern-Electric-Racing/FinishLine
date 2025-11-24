@@ -301,6 +301,7 @@ const CreditsPage: React.FC = () => {
         }
       }
     },
+    { name: 'Edgar Buttner', color: '#9E9764' },
     {
       name: 'John Cassidy',
       color: '#8378ffff',
@@ -326,6 +327,13 @@ const CreditsPage: React.FC = () => {
       }
     },
     {
+      name: 'Anthony Basko',
+      color: '#c0aed0ff',
+      sx: {
+        textShadow: '0px 0px 3px rgba(152, 119, 233, 1), 0px .5px rgba(53, 37, 66, 1)'
+      }
+    },
+    {
       name: 'Santiago Ordonez Merizalde',
       color: 'transparent',
       sx: {
@@ -344,6 +352,21 @@ const CreditsPage: React.FC = () => {
           '100%': { backgroundPosition: '0% 50%' }
         },
         filter: 'drop-shadow(0 0 4px rgba(190, 80, 255, 0.6))'
+      }
+    },
+    {
+      name: 'Tony Feng',
+      color: 'transparent',
+      sx: {
+        textShadow: '0 0 5px #a7f3eaff, 0 0 10px #fb99e9ff, 0 0 30px #97eb97ff',
+        background: 'linear-gradient(90deg, white, violet, blue, red, white)',
+        '-webkit-background-clip': 'text',
+        backgroundSize: '800% 800%',
+        animation: 'gradient 30s infinite linear',
+        '@keyframes gradient': {
+          '0%': { backgroundPosition: '400% 200%' },
+          '100%': { backgroundPosition: '0% 200%' }
+        }
       }
     },
     { name: 'Josh Len', color: '#000000ff' }
