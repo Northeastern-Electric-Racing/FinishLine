@@ -3,21 +3,19 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { DesignReview, DesignReviewStatus } from 'shared';
+import { DesignReview } from 'shared';
 import MonthSelector from '../CalendarPage/CalendarComponents/MonthSelector';
-import CalendarDayCard, { getTeamTypeIcon } from '../CalendarPage/CalendarComponents/CalendarDayCard';
+import CalendarDayCard from '../CalendarPage/CalendarComponents/CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import ActionsMenu from '../../components/ActionsMenu';
 import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
 import ErrorPage from '../ErrorPage';
-import { useCurrentUser } from '../../hooks/users.hooks';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import DRCSummaryModal from '../CalendarPage/DesignReviewSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -30,7 +28,6 @@ const NewCalendarPage = () => {
 
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
   const { isLoading, isError, error, data: allDesignReviews } = useAllDesignReviews();
-  const user = useCurrentUser();
   const [unconfirmedDesignReview, setUnconfirmedDesignReview] = useState<DesignReview>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
@@ -59,37 +56,10 @@ const NewCalendarPage = () => {
     }
   });
 
-  const currentUserDesignReviews = allDesignReviews.filter(
-    (designReview) => designReview.userCreated.userId === user.userId && designReview.status !== DesignReviewStatus.DONE
-  );
-
   const startOfEachWeek = [0, 7, 14, 21, 28, 35];
 
   const isDayInDifferentMonth = (day: number, week: number) => {
     return day < week - 7 || day < 1 || day > week + 7;
-  };
-
-  const designReviewButtons = (designReviews: DesignReview[]) => {
-    return designReviews.map((designReview) => {
-      return {
-        icon: getTeamTypeIcon(designReview.teamType.name),
-        title: designReview.wbsName,
-        onClick: () => {
-          setUnconfirmedDesignReview(designReview);
-        },
-        disabled: false
-      };
-    });
-  };
-
-  const NoDRSButton = () => {
-    return [
-      {
-        title: 'No Design Reviews',
-        disabled: true,
-        onClick: () => {}
-      }
-    ];
   };
 
   const paddingArrayStart = [...Array<number>(calendarPaddingDays(displayMonthYear)).keys()]
@@ -105,15 +75,6 @@ const NewCalendarPage = () => {
   const daysThisMonth = paddingArrayStart
     .concat([...Array(daysInMonth(displayMonthYear)).keys()].map((day) => day + 1))
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
-
-  const unconfirmedDRSDropdown = (
-    <ActionsMenu
-      title="My Design Reviews"
-      buttons={currentUserDesignReviews.length === 0 ? NoDRSButton() : designReviewButtons(currentUserDesignReviews)}
-    >
-      My Unconfirmed DRs
-    </ActionsMenu>
-  );
 
   if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
   if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
@@ -133,11 +94,30 @@ const NewCalendarPage = () => {
       <PageLayout hidePageTitle>
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
           <Typography variant="h4"></Typography>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Tooltip title="Click on a day to schedule an event">
-              <HelpOutlineIcon fontSize="medium" sx={{ position: 'relative' }} />
-            </Tooltip>
-            <Box marginLeft={1}>{unconfirmedDRSDropdown}</Box>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', columnGap: 1, rowGap: 1 }}>
+            {/* New Event Button (does not do anything yet) */}
+            <Button
+              variant="contained"
+              disableElevation
+              onClick={() => {}}
+              endIcon={<AddCircleOutlineIcon sx={{ fontSize: { xs: 24, sm: 30 } }} />}
+              sx={{
+                flexShrink: 0,
+                height: { xs: 36, sm: 40 },
+                px: { xs: 1, sm: 1 },
+                textTransform: 'none',
+                fontFamily: (t) => t.typography.h4.fontFamily,
+                fontSize: { xs: 20, sm: 25 },
+                fontWeight: 800,
+                color: (t) => t.palette.common.white,
+                bgcolor: '#F44336',
+                '&:hover': { bgcolor: '#FF0000' },
+                '& .MuiButton-endIcon svg': { fontSize: 30 }
+              }}
+              aria-label="Create New Event"
+            >
+              New Event
+            </Button>
           </Stack>
         </Stack>
         <Box sx={{ display: 'flex', gap: 2 }}>
