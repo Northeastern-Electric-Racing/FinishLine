@@ -7,7 +7,14 @@ import {
   batmanAppAdmin,
   aquamanLeadership
 } from '../test-data/users.test-data';
-import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
+import {
+  createTestOrganization,
+  createTestProject,
+  createTestUser,
+  resetUsers,
+  createTestTeam,
+  createTestTeamType
+} from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import {
   AccessDeniedException,
@@ -815,6 +822,191 @@ describe('Delete Rules Tests', () => {
       await RulesService.deleteRulesetType(admin, fsaeRulesetType2WithRevisionFiles.rulesetTypeId, organization);
       rulesets = await RulesService.getRulesetsByRulesetType(fsaeRulesetType2WithRevisionFiles.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(0);
+    });
+  });
+
+  describe('Get Unassigned Rules', () => {
+    it('Successfully gets unassigned rules', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
+
+      expect(unassignedRules.length).toBe(3);
+      expect(unassignedRules.map((r) => r.ruleCode)).toContain('T');
+      expect(unassignedRules.map((r) => r.ruleCode)).toContain('T2');
+      expect(unassignedRules.map((r) => r.ruleCode)).toContain('T2.1');
+    });
+
+    it('Returns only rules with no team assignments', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+
+      const teamType = await createTestTeamType('TestTeamType', orgId);
+      const team = await createTestTeam(admin.userId, teamType.teamTypeId, orgId);
+      await prisma.rule.update({
+        where: { ruleId: topLevelRule.ruleId },
+        data: {
+          teams: { connect: { teamId: team.teamId } }
+        }
+      });
+
+      const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
+
+      expect(unassignedRules.length).toBe(2);
+      expect(unassignedRules.map((r) => r.ruleId)).not.toContain(topLevelRule.ruleId);
+      expect(unassignedRules.map((r) => r.ruleId)).toContain(leafRule1.ruleId);
+      expect(unassignedRules.map((r) => r.ruleId)).toContain(leafRule2.ruleId);
+    });
+
+    it('Returns only non-deleted rules', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+
+      // Delete one rule
+      await prisma.rule.update({
+        where: { ruleId: leafRule1.ruleId },
+        data: { dateDeleted: new Date(), deletedBy: { connect: { userId: admin.userId } } }
+      });
+
+      const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
+
+      expect(unassignedRules.length).toBe(2);
+      expect(unassignedRules.map((r) => r.ruleId)).not.toContain(leafRule1.ruleId);
+      expect(unassignedRules.map((r) => r.ruleId)).toContain(topLevelRule.ruleId);
+      expect(unassignedRules.map((r) => r.ruleId)).toContain(leafRule2.ruleId);
+    });
+
+    it('Returns rules ordered by ruleCode ascending', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      // Create additional rules with different codes
+      await prisma.rule.create({
+        data: {
+          ruleCode: 'A.1',
+          ruleContent: 'Rule A',
+          imageFileIds: [],
+          ruleset: { connect: { rulesetId: ruleset1.rulesetId } },
+          createdBy: { connect: { userId: admin.userId } }
+        }
+      });
+
+      await prisma.rule.create({
+        data: {
+          ruleCode: 'Z.1',
+          ruleContent: 'Rule Z',
+          imageFileIds: [],
+          ruleset: { connect: { rulesetId: ruleset1.rulesetId } },
+          createdBy: { connect: { userId: admin.userId } }
+        }
+      });
+
+      const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
+
+      expect(unassignedRules.length).toBe(5);
+      // Check that rules are sorted by ruleCode
+      for (let i = 0; i < unassignedRules.length - 1; i++) {
+        expect(unassignedRules[i].ruleCode <= unassignedRules[i + 1].ruleCode).toBe(true);
+      }
+    });
+
+    it('Returns empty array when all rules are assigned to teams', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+
+      // Create a team and assign all rules to it
+      const teamType = await createTestTeamType('TestTeamType', orgId);
+      const team = await createTestTeam(admin.userId, teamType.teamTypeId, orgId);
+      await prisma.rule.updateMany({
+        where: { rulesetId: ruleset1.rulesetId },
+        data: {}
+      });
+
+      await prisma.rule.update({
+        where: { ruleId: topLevelRule.ruleId },
+        data: {
+          teams: { connect: { teamId: team.teamId } }
+        }
+      });
+
+      await prisma.rule.update({
+        where: { ruleId: leafRule1.ruleId },
+        data: {
+          teams: { connect: { teamId: team.teamId } }
+        }
+      });
+
+      await prisma.rule.update({
+        where: { ruleId: leafRule2.ruleId },
+        data: {
+          teams: { connect: { teamId: team.teamId } }
+        }
+      });
+
+      const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
+
+      expect(unassignedRules.length).toBe(0);
+    });
+
+    it('Returns empty array when all rules are deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+
+      // Delete all rules
+      await prisma.rule.update({
+        where: { ruleId: topLevelRule.ruleId },
+        data: { dateDeleted: new Date(), deletedBy: { connect: { userId: admin.userId } } }
+      });
+
+      await prisma.rule.update({
+        where: { ruleId: leafRule1.ruleId },
+        data: { dateDeleted: new Date(), deletedBy: { connect: { userId: admin.userId } } }
+      });
+
+      await prisma.rule.update({
+        where: { ruleId: leafRule2.ruleId },
+        data: { dateDeleted: new Date(), deletedBy: { connect: { userId: admin.userId } } }
+      });
+
+      const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
+
+      expect(unassignedRules.length).toBe(0);
+    });
+
+    it('Fails when ruleset does not exist', async () => {
+      await expect(RulesService.getUnassignedRules('fake-ruleset-id', organization)).rejects.toThrow(
+        new NotFoundException('Ruleset', 'fake-ruleset-id')
+      );
+    });
+
+    it('Fails when ruleset is deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
+
+      await expect(RulesService.getUnassignedRules(ruleset1.rulesetId, organization)).rejects.toThrow(
+        new DeletedException('Ruleset', ruleset1.rulesetId)
+      );
+    });
+
+    it('Returns rules with parent and subRules correctly transformed', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule, leafRule1 } = await setupRules(car);
+
+      const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
+
+      const topRule = unassignedRules.find((r) => r.ruleId === topLevelRule.ruleId);
+      const leafRule = unassignedRules.find((r) => r.ruleId === leafRule1.ruleId);
+
+      expect(topRule).toBeDefined();
+      expect(topRule?.parentRule).toBeUndefined();
+      expect(topRule?.subRuleIds).toContain(leafRule1.ruleId);
+
+      expect(leafRule).toBeDefined();
+      expect(leafRule?.parentRule?.ruleId).toBe(topLevelRule.ruleId);
+      expect(leafRule?.parentRule?.ruleCode).toBe(topLevelRule.ruleCode);
     });
   });
 });

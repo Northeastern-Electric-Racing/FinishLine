@@ -32,6 +32,7 @@ rulesRouter.post(
 );
 
 rulesRouter.get('/rulesetTypes', RulesController.getAllRulesetTypes);
+rulesRouter.get('/ruleset/:rulesetId/rules/unassigned', RulesController.getUnassignedRules);
 rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
 rulesRouter.post('/projectRule/:projectRuleId/delete', RulesController.deleteProjectRule);
 
