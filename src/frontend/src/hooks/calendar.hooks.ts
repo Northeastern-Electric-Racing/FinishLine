@@ -13,13 +13,9 @@ import {
   postFilterEvents
 } from '../apis/calendar.api';
 
-export const FILTER_EVENTS_KEY = ['filter_events'] as const;
+import { getAllCalendars, postEditCalendar, postCreateCalendar } from '../apis/calendar.api';
 
-import {
-  getAllCalendars,
-  postEditCalendar,
-  postCreateCalendar
-} from '../apis/calendar.api';
+export const FILTER_EVENTS_KEY = ['filter_events'] as const;
 
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;
