@@ -640,6 +640,13 @@ export default class RulesService {
     return projectRuleTransformer(deletedProjectRule);
   }
 
+  /**
+   * Gets all rules associated with a specific project and ruleset
+   * @param rulesetId the id of the ruleset
+   * @param projectId the id of the project
+   * @param organization the organization the project and ruleset belong to
+   * @returns Array of ProjectRule objects
+   */
   static async getProjectRules(rulesetId: string, projectId: string, organization: Organization): Promise<ProjectRule[]> {
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
