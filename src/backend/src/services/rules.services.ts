@@ -26,12 +26,11 @@ import {
 
 export default class RulesService {
   /**
-   * Gets the active ruleset type for the given ruleset type ID or gets the most
-   * recently created ruleset if none are active
-   * @param user a user who is requesting for the active ruleset type
+   * Gets the active ruleset for the given ruleset type ID or returns an empty array if there is no active ruleset
+   * @param user a user who is requesting for the active ruleset
    * @param rulesetTypeId the given ruleset type id
    * @param organization the organization for permission check
-   * @returns the ruleset type with the given id if it exists and is active
+   * @returns a ruleset with the given id if it exists and is active, otherwise an empty array
    */
   static async getActiveRuleset(user: User, rulesetTypeId: string, organization: Organization) {
     if (!(await userHasPermission(user.userId, organization.organizationId, notGuest)))
@@ -49,10 +48,8 @@ export default class RulesService {
       throw new DeletedException('Ruleset Type', rulesetTypeId);
     }
 
-    // currently calling findFirst because we don't have a unique constraint on active ruleset
     const activeRuleset = await prisma.ruleset.findFirst({
-      where: { rulesetTypeId, deletedByUserId: null },
-      orderBy: [{ active: 'desc' }, { dateCreated: 'desc' }],
+      where: { rulesetTypeId, deletedByUserId: null, active: true },
       ...getRulesetQueryArgs(organization.organizationId)
     });
 

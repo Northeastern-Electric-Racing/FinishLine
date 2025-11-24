@@ -60,6 +60,14 @@ const rulesetType1 = (userCreatedId: string, organizationId: string): Prisma.Rul
   };
 };
 
+const emptyRulesetType = (userCreatedId: string, organizationId: string): Prisma.Ruleset_TypeCreateInput => {
+  return {
+    name: 'Empty Ruleset Type',
+    createdBy: { connect: { userId: userCreatedId } },
+    organization: { connect: { organizationId } }
+  };
+}
+
 // rulesets
 const ruleset1 = (carId: string, userCreatedId: string, rulesetTypeId: string): Prisma.RulesetCreateInput => {
   return {
@@ -116,6 +124,7 @@ export const ruleSeedData = {
   thirdLevelRule,
   leafRule,
   rulesetType1,
+  emptyRulesetType,
   ruleset1,
   secondActiveRuleset,
   projectRule1,
