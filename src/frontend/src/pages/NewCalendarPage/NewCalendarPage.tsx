@@ -3,6 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
+import { ArrowDropDown } from '@mui/icons-material';
+
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DesignReview } from 'shared';
@@ -16,6 +18,8 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import DRCSummaryModal from '../CalendarPage/DesignReviewSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { NERButton } from '../../components/NERButton';
+import FilterModal from './FilterModal';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -31,6 +35,12 @@ const NewCalendarPage = () => {
   const [unconfirmedDesignReview, setUnconfirmedDesignReview] = useState<DesignReview>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
+  const [openFilterModal, setOpenFilterModal] = useState(false);
+  const [memberIds, setMemberIds] = useState<string[]>([]);
+  const [teamIds, setTeamIds] = useState<string[]>([]);
+  const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
+  const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
+
   if (isLoading || !allDesignReviews) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
@@ -118,6 +128,18 @@ const NewCalendarPage = () => {
             >
               New Event
             </Button>
+            <NERButton variant="contained" id="filter-events-button" onClick={() => setOpenFilterModal(true)}>
+              More Filters
+            </NERButton>
+            <NERButton variant="contained" id="filter-events-button" onClick={() => {}}>
+              Show Invited Events: {String(showInvitedEvents)}
+            </NERButton>
+            <NERButton variant="contained" id="filter-events-button" onClick={() => {}}>
+              Show Team Events: {String(showTeamEvents)}
+            </NERButton>
+            <NERButton variant="contained" id="filter-events-button" onClick={() => {}}>
+              Track Members: {memberIds}
+            </NERButton>
           </Stack>
         </Stack>
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -173,6 +195,15 @@ const NewCalendarPage = () => {
             <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
           </Box>
         </Box>
+        <FilterModal
+          open={openFilterModal}
+          onClose={() => setOpenFilterModal(false)}
+          filterValues={{ memberIds, teamIds, showInvited: showInvitedEvents, showTeam: showTeamEvents }}
+          setMemberIds={setMemberIds}
+          setTeamIds={setTeamIds}
+          setShowInvited={setShowInvitedEvents}
+          setShowTeam={setShowTeamEvents}
+        />
       </PageLayout>
     </>
   );
