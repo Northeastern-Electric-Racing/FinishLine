@@ -5,7 +5,7 @@ import ErrorPage from '../../ErrorPage';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import UpdateApplicationLinkModal from './UpdateApplicationLinkModal';
 import { useState } from 'react';
-import AdminToolTable from '../AdminToolTable';
+import NERTable from '../../../components/NERTable';
 
 const ApplicationLinkTable: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
@@ -59,7 +59,7 @@ const ApplicationLinkTable: React.FC = () => {
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Links Config
       </Typography>
-      <AdminToolTable columns={[{ name: 'Link Name' }, { name: 'URL' }]} rows={applicationLinkRows} />
+      <NERTable columns={[{ name: 'Link Name' }, { name: 'URL' }]} rows={applicationLinkRows} />
       <UpdateApplicationLinkModal open={showModal} onHide={() => setShowModal(false)} currentApplicationLink={url} />
     </Box>
   );

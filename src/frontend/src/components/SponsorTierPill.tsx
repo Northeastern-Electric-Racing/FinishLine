@@ -7,13 +7,18 @@ const SponsorTierPill = ({ tier }: { tier: SponsorTier }) => {
       label={tier.name}
       variant="filled"
       sx={{
-        fontSize: 23,
+        '& .MuiChip-label': {
+          fontSize: 'inherit',
+          lineHeight: '1em'
+        },
         fontWeight: 500,
         color: 'white',
         backgroundColor: tier.colorHexCode,
-        width: 125,
-        height: 40,
-        borderRadius: 15
+        px: 1.25,
+        py: 0.25,
+        borderRadius: '999px',
+        height: 'auto',
+        minHeight: 0
       }}
     />
   );

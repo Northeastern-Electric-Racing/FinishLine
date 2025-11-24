@@ -196,6 +196,7 @@ const financeDeleteOtherProductReason = (otherReasonId: string) =>
 const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
+const financeSetVendorTaxExemptStatus = (vendorId: string) => `${financeEndpoints()}/vendors/${vendorId}/setTaxExemptStatus`;
 const financeDeleteVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/delete`;
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
 
@@ -447,6 +448,9 @@ const calendarAddMachineryToShop = (machineryId: string) => `${calendar()}/machi
 const calendarEditShop = (shopId: string) => `${calendar()}/shop/${shopId}/edit`;
 const calendarDeleteShop = (shopId: string) => `${calendar()}/shop/${shopId}/delete`;
 const calendarDeleteCalendar = (calendarId: string) => `${calendar()}/shop/${calendarId}/delete`;
+const calendarCreateCalendar = () => `${calendar()}/create`;
+const calendarEditCalendar = (calendarId: string) => `${calendar()}/${calendarId}/edit`;
+const calendarCalendars = () => `${calendar()}/calendars`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -614,6 +618,7 @@ export const apiUrls = {
   financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
+  financeSetVendorTaxExemptStatus,
   financeDeleteVendor,
   financeLeadershipApprove,
   financeCreateSponsor,
@@ -759,6 +764,9 @@ export const apiUrls = {
   calendarEditShop,
   calendarDeleteShop,
   calendarDeleteCalendar,
+  calendarCreateCalendar,
+  calendarEditCalendar,
+  calendarCalendars,
 
   version
 };
