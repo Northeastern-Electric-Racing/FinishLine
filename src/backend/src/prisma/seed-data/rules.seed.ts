@@ -66,7 +66,7 @@ const emptyRulesetType = (userCreatedId: string, organizationId: string): Prisma
     createdBy: { connect: { userId: userCreatedId } },
     organization: { connect: { organizationId } }
   };
-}
+};
 
 // rulesets
 const ruleset1 = (carId: string, userCreatedId: string, rulesetTypeId: string): Prisma.RulesetCreateInput => {
