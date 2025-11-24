@@ -5,7 +5,7 @@ import { validateWBS, WbsNumber } from 'shared';
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, deadline, priority, status, assignees, notes } = req.body;
+      const { title, deadline, startDate, priority, status, assignees, notes } = req.body;
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
 
       const task = await TasksService.createTask(
@@ -17,6 +17,7 @@ export default class TasksController {
         status,
         assignees,
         req.organization,
+        startDate ? new Date(startDate) : undefined,
         deadline ? new Date(deadline) : undefined
       );
 
@@ -28,7 +29,7 @@ export default class TasksController {
 
   static async editTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, notes, priority, deadline } = req.body;
+      const { title, notes, priority, deadline, startDate } = req.body;
       const { taskId } = req.params;
 
       const updateTask = await TasksService.editTask(
@@ -38,7 +39,8 @@ export default class TasksController {
         title,
         notes,
         priority,
-        deadline
+        startDate ? new Date(startDate) : undefined,
+        deadline ? new Date(deadline) : undefined
       );
 
       res.status(200).json(updateTask);
@@ -85,6 +87,17 @@ export default class TasksController {
       const updatedTask = await TasksService.deleteTask(req.currentUser, taskId, req.organization);
 
       res.status(200).json(updatedTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getOverdueTasksByTeamLeadership(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+
+      const tasks = await TasksService.getOverdueTasksByTeamLeadership(userId, req.organization);
+      res.status(200).json(tasks);
     } catch (error: unknown) {
       next(error);
     }

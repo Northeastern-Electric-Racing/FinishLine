@@ -8,8 +8,8 @@ import {
   Task,
   TaskPriority,
   TaskStatus,
-  User,
   UserSettings,
+  UserWithRole,
   WorkPackage
 } from 'shared';
 import { CheckDescriptionBulletRequestPayload } from '../../hooks/description-bullets.hooks';
@@ -17,29 +17,31 @@ import { CreateTaskPayload, DeleteTaskPayload, TaskPayload } from '../../hooks/t
 import { VersionObject } from '../../utils/types';
 import { mockUseMutationResult, mockUseQueryResult } from './test-data/test-utils.stub';
 import { exampleAdminUser } from './test-data/users.stub';
+import { exampleAuthenticatedAdminUser } from './test-data/authenticated-user.stub';
 
 export const mockLogUserInReturnValue = mockUseMutationResult<AuthenticatedUser>(
   false,
   false,
-  exampleAdminUser,
+  exampleAuthenticatedAdminUser,
   new Error()
 ) as UseMutationResult<AuthenticatedUser, Error, string, unknown>;
 
 export const mockLogUserInDevReturnValue = mockUseMutationResult<AuthenticatedUser>(
   false,
   false,
-  exampleAdminUser,
+  exampleAuthenticatedAdminUser,
   new Error()
 ) as UseMutationResult<AuthenticatedUser, Error, string, unknown>;
 
 export const mockGetCurrentUserValue = mockUseMutationResult<AuthenticatedUser>(
   false,
   false,
-  exampleAdminUser,
+  exampleAuthenticatedAdminUser,
   new Error()
 ) as UseMutationResult<AuthenticatedUser, Error, void, unknown>;
 
-export const mockUseAllUsersReturnValue = (users: User[]) => mockUseQueryResult<User[]>(false, false, users, new Error());
+export const mockUseAllUsersReturnValue = (users: UserWithRole[]) =>
+  mockUseQueryResult<UserWithRole[]>(false, false, users, new Error());
 
 export const mockUseSingleUserSettings = (settings?: UserSettings) =>
   mockUseQueryResult<UserSettings>(
@@ -144,3 +146,6 @@ export const mockManyMaterials = (materials: Material[]) =>
 
 export const mockUseGetReimbursementRequestProjectData = (rrData: ReimbursementRequestData) =>
   mockUseQueryResult<ReimbursementRequestData>(false, false, rrData, new Error());
+
+export const mockUseMyTeamAsHead = (teamId?: string) =>
+  mockUseQueryResult<string | undefined>(false, false, teamId, new Error());

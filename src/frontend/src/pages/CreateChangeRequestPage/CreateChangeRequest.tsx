@@ -14,7 +14,6 @@ import CreateChangeRequestsView from './CreateChangeRequestView';
 import { useState } from 'react';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useForm } from 'react-hook-form';
-import { useCurrentUser } from '../../hooks/users.hooks';
 import { FormInput } from './CreateChangeRequestView';
 import * as yup from 'yup';
 import { StandardChangeRequestType } from './CreateChangeRequestView';
@@ -25,7 +24,6 @@ interface CreateChangeRequestProps {}
 const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   const query = useQuery();
   const history = useHistory();
-  const user = useCurrentUser();
   const { isLoading, isError, error, mutateAsync } = useCreateStandardChangeRequest();
   const defaultProposedSolution = query.get('budgetChange')
     ? [
@@ -34,10 +32,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
           description: 'Increase Budget',
           budgetImpact: Number(query.get('budgetChange')),
           timelineImpact: 0,
-          scopeImpact: 'No Changes',
-          createdBy: user,
-          dateCreated: new Date(),
-          approved: false
+          scopeImpact: 'No Changes'
         }
       ]
     : query.get('timelineDelay')
@@ -47,10 +42,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
             description: 'Timeline Delay',
             budgetImpact: 0,
             timelineImpact: Number(query.get('timelineDelay')),
-            scopeImpact: 'No Changes',
-            createdBy: user,
-            dateCreated: new Date(),
-            approved: false
+            scopeImpact: 'No Changes'
           }
         ]
       : [];

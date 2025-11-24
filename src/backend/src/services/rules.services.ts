@@ -1,5 +1,5 @@
-import { Organization, Rule, User, Rule_Completion } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview } from 'shared';
+import { Organization, Rule, Rule_Completion } from '@prisma/client';
+import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview, User, Rule as SharedRule } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -690,5 +690,52 @@ export default class RulesService {
     });
 
     return projectRuleTransformer(deletedProjectRule);
+  }
+
+  /**
+   * Gets all unassigned rules (rules with no team assignments) for a given ruleset
+   * @param rulesetId the id of the ruleset
+   * @param organization the organization the ruleset belongs to
+   * @returns an array of rules with no team assignments, ordered by ruleCode ascending
+   */
+  static async getUnassignedRules(rulesetId: string, organization: Organization): Promise<SharedRule[]> {
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      include: {
+        car: {
+          include: {
+            wbsElement: true
+          }
+        }
+      }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.deletedByUserId) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const rules = await prisma.rule.findMany({
+      where: {
+        rulesetId,
+        dateDeleted: null,
+        teams: {
+          none: {}
+        }
+      },
+      orderBy: {
+        ruleCode: 'asc'
+      },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return rules.map(ruleTransformer);
   }
 }

@@ -1,6 +1,6 @@
 import { Box, IconButton, TableCell, TableRow, Typography } from '@mui/material';
 import { NERButton } from '../../../components/NERButton';
-import AdminToolTable from '../AdminToolTable';
+import NERTable from '../../../components/NERTable';
 import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -149,7 +149,7 @@ const SponsorTierTable: React.FC = () => {
       {tierToEdit && (
         <EditSponsorTierModal showModal={!!tierToEdit} handleClose={() => setTierToEdit(null)} sponsorTier={tierToEdit} />
       )}
-      <AdminToolTable
+      <NERTable
         columns={[
           { name: 'Tier Name', width: '40%' },
           { name: 'Minimum Support Value', width: '40%' },

@@ -3,7 +3,6 @@ import { Car, WbsElementStatus } from 'shared';
 import { CarQueryArgs } from '../prisma-query-args/cars.query-args';
 import { descBulletConverter } from '../utils/description-bullets.utils';
 import { wbsNumOf } from '../utils/utils';
-import { linkTransformer } from './links.transformer';
 import { userTransformer } from './user.transformer';
 
 export const carTransformer = (car: Prisma.CarGetPayload<CarQueryArgs>): Car => {
@@ -13,7 +12,7 @@ export const carTransformer = (car: Prisma.CarGetPayload<CarQueryArgs>): Car => 
     wbsNum: wbsNumOf(car.wbsElement),
     dateCreated: car.wbsElement.dateCreated,
     name: car.wbsElement.name,
-    links: car.wbsElement.links.map(linkTransformer),
+    links: car.wbsElement.links,
     status: car.wbsElement.status as WbsElementStatus,
     lead: car.wbsElement.lead ? userTransformer(car.wbsElement.lead) : undefined,
     manager: car.wbsElement.manager ? userTransformer(car.wbsElement.manager) : undefined,
