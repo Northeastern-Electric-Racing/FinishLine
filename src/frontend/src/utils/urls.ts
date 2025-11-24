@@ -447,7 +447,7 @@ const calendarDeleteMachinery = (machineryId: string) => `${calendar()}/machiner
 const calendarAddMachineryToShop = (machineryId: string) => `${calendar()}/machinery/${machineryId}/add-to-shop`;
 const calendarEditShop = (shopId: string) => `${calendar()}/shop/${shopId}/edit`;
 const calendarDeleteShop = (shopId: string) => `${calendar()}/shop/${shopId}/delete`;
-const calendarDeleteCalendar = (calendarId: string) => `${calendar()}/shop/${calendarId}/delete`;
+const calendarDeleteCalendar = (calendarId: string) => `${calendar()}/${calendarId}/delete`;
 const calendarCreateCalendar = () => `${calendar()}/create`;
 const calendarEditCalendar = (calendarId: string) => `${calendar()}/${calendarId}/edit`;
 const calendarCalendars = () => `${calendar()}/calendars`;

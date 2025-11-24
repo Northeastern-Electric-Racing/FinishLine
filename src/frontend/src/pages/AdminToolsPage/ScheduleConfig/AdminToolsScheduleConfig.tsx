@@ -195,7 +195,12 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
                           <Tooltip title="Delete" arrow>
                             <span>
-                              <IconButton size="small" color="error" disabled aria-label="delete calendar">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                aria-label="delete calendar"
+                                onClick={() => setCalendarToDelete(calendar)}
+                              >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
                             </span>
