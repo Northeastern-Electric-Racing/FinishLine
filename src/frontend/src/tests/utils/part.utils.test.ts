@@ -6,27 +6,21 @@ const creator: User = {
   firstName: 'Chris',
   lastName: 'Pyle',
   email: 'email',
-  emailId: '',
-  role: RoleEnum.ADMIN,
-  permissions: []
+  role: RoleEnum.ADMIN
 };
 const reviewer1: User = {
   userId: '8',
   firstName: 'Griffin',
   lastName: 'Cooper',
   email: 'email',
-  emailId: '',
-  role: RoleEnum.ADMIN,
-  permissions: []
+  role: RoleEnum.ADMIN
 };
 const reviewer2: User = {
   userId: '3',
   firstName: 'Zachary',
   lastName: 'Wen',
   email: 'email',
-  emailId: '',
-  role: RoleEnum.ADMIN,
-  permissions: []
+  role: RoleEnum.ADMIN
 };
 
 const partReview1: PartReview = {

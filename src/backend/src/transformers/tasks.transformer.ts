@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
-import { Task } from 'shared';
+import { Task, TaskCardPreview } from 'shared';
 import { wbsNumOf } from '../utils/utils';
 import { convertTaskPriority, convertTaskStatus } from '../utils/tasks.utils';
 import { userTransformer } from './user.transformer';
-import { TaskQueryArgs } from '../prisma-query-args/tasks.query-args';
+import { TaskQueryArgs, TaskPreviewQueryArgs } from '../prisma-query-args/tasks.query-args';
 
 const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
   const wbsNum = wbsNumOf(task.wbsElement);
@@ -13,6 +13,7 @@ const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
     title: task.title,
     notes: task.notes,
     deadline: task.deadline ?? undefined,
+    startDate: task.startDate ?? undefined,
     priority: convertTaskPriority(task.priority),
     status: convertTaskStatus(task.status),
     createdBy: userTransformer(task.createdBy),
@@ -20,6 +21,14 @@ const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
     dateDeleted: task.dateDeleted ?? undefined,
     dateCreated: task.dateCreated,
     deletedBy: task.deletedBy ? userTransformer(task.deletedBy) : undefined
+  };
+};
+
+export const taskCardPreviewTransformer = (task: Prisma.TaskGetPayload<TaskPreviewQueryArgs>): TaskCardPreview => {
+  return {
+    ...task,
+    priority: convertTaskPriority(task.priority),
+    deadline: task.deadline ?? undefined
   };
 };
 

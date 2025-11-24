@@ -1,4 +1,4 @@
-import { Design_Review_Status, Team_Type, User, Organization } from '@prisma/client';
+import { Design_Review_Status, Team_Type, Organization } from '@prisma/client';
 import {
   DesignReview,
   WbsNumber,
@@ -6,7 +6,8 @@ import {
   isLeadership,
   isNotLeadership,
   DesignReviewStatus,
-  AvailabilityCreateArgs
+  AvailabilityCreateArgs,
+  User
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {

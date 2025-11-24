@@ -273,16 +273,6 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
             return;
           }
 
-          if (!/^[\w.]+$/.test(file.name)) {
-            toast.error('File name can only contain letters, numbers, underscores, and dots');
-            return;
-          }
-
-          if (file.name.length > 20) {
-            toast.error('File name must be 20 characters or less');
-            return;
-          }
-
           setPreviewUploading(true);
           try {
             await uploadPreviewImage(file);
