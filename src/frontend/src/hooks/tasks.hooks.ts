@@ -3,12 +3,21 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { WbsNumber, TaskPriority, TaskStatus, Task } from 'shared';
-import { createSingleTask, deleteSingleTask, editSingleTaskStatus, editTask, editTaskAssignees } from '../apis/tasks.api';
+import {
+  createSingleTask,
+  deleteSingleTask,
+  editSingleTaskStatus,
+  editTask,
+  editTaskAssignees,
+  getOverdueTasksByTeamLeader
+} from '../apis/tasks.api';
 
 export interface CreateTaskPayload {
+  wbsNum: WbsNumber;
   title: string;
+  startDate?: string;
   deadline?: string;
   priority: TaskPriority;
   status: TaskStatus;
@@ -16,25 +25,36 @@ export interface CreateTaskPayload {
   assignees: string[];
 }
 
-export const useCreateTask = (wbsNum: WbsNumber) => {
-  return useMutation<Task, Error, CreateTaskPayload>(['tasks'], async (createTaskPayload: CreateTaskPayload) => {
-    const { data } = await createSingleTask(
-      wbsNum,
-      createTaskPayload.title,
-      createTaskPayload.priority,
-      createTaskPayload.status,
-      createTaskPayload.assignees,
-      createTaskPayload.notes ?? '',
-      createTaskPayload.deadline
-    );
-    return data;
-  });
+export const useCreateTask = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Task, Error, CreateTaskPayload>(
+    ['tasks', 'create'],
+    async (createTaskPayload: CreateTaskPayload) => {
+      const { data } = await createSingleTask(
+        createTaskPayload.wbsNum,
+        createTaskPayload.title,
+        createTaskPayload.priority,
+        createTaskPayload.status,
+        createTaskPayload.assignees,
+        createTaskPayload.notes ?? '',
+        createTaskPayload.deadline,
+        createTaskPayload.startDate
+      );
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
 };
 
 export interface TaskPayload {
   taskId: string;
   notes?: string;
   title: string;
+  startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
 }
@@ -53,7 +73,8 @@ export const useEditTask = () => {
         taskPayload.title,
         taskPayload.notes ?? '',
         taskPayload.priority,
-        taskPayload.deadline
+        taskPayload.deadline,
+        taskPayload.startDate
       );
 
       return data;
@@ -124,4 +145,11 @@ export const useDeleteTask = () => {
       }
     }
   );
+};
+
+export const useOverdueTasksByTeamLeader = (userId: string) => {
+  return useQuery<Task[], Error>([userId, 'tasks'], async () => {
+    const { data } = await getOverdueTasksByTeamLeader(userId);
+    return data;
+  });
 };

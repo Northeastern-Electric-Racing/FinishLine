@@ -1,5 +1,5 @@
-import { Organization, Rule, User, Rule_Completion } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview, Rule as SharedRule } from 'shared';
+import { Organization, Rule, Rule_Completion } from '@prisma/client';
+import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview, Rule as SharedRule, User } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,

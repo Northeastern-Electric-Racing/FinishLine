@@ -1,7 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { DescriptionBullet } from 'shared';
 import { DescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
-import { userTransformer } from './user.transformer';
 
 const descriptionBulletTransformer = (
   descBullet: Prisma.Description_BulletGetPayload<DescriptionBulletQueryArgs>
@@ -12,7 +11,13 @@ const descriptionBulletTransformer = (
     dateAdded: descBullet.dateAdded,
     type: descBullet.descriptionBulletType.name,
     dateDeleted: descBullet.dateDeleted ?? undefined,
-    userChecked: descBullet.userChecked ? userTransformer(descBullet.userChecked) : undefined,
+    userChecked: descBullet.userChecked
+      ? {
+          userId: descBullet.userChecked.userId,
+          firstName: descBullet.userChecked.firstName,
+          lastName: descBullet.userChecked.lastName
+        }
+      : undefined,
     dateChecked: descBullet.dateTimeChecked ?? undefined
   };
 };

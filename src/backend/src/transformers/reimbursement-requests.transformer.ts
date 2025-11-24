@@ -60,7 +60,8 @@ export const reimbursementRequestTransformer = (
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
     dateDelivered: reimbursementRequest.dateDelivered ?? undefined,
     accountCode: accountCodeTransformer(reimbursementRequest.accountCode),
-    comments: reimbursementRequest.reimbursementComments.map(reimbursementRequestCommentTransformer)
+    comments: reimbursementRequest.reimbursementComments.map(reimbursementRequestCommentTransformer),
+    assignee: reimbursementRequest.assignee ? userTransformer(reimbursementRequest.assignee) : undefined
   };
 };
 

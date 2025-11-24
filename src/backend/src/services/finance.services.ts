@@ -7,9 +7,10 @@ import {
   Sponsor,
   SponsorTask,
   SponsorTier,
-  wbsPipe
+  wbsPipe,
+  User
 } from 'shared';
-import { User, Organization, Sponsor_Task, Reimbursement_Status_Type } from '@prisma/client';
+import { Organization, Sponsor_Task, Reimbursement_Status_Type } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import {
   getSponsorQueryArgs,
@@ -1095,15 +1096,20 @@ export default class FinanceServices {
 
     if (!tier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
 
-    const existingSponsor = await prisma.sponsor.findFirst({
-      where: {
-        name,
-        organizationId: organization.organizationId
-      }
-    });
+    if (name !== oldSponsor.name) {
+      const existingSponsor = await prisma.sponsor.findFirst({
+        where: {
+          name: {
+            equals: name,
+            mode: 'insensitive'
+          },
+          organizationId: organization.organizationId
+        }
+      });
 
-    if (existingSponsor) {
-      throw new HttpException(400, `A sponsor with the name "${name}" already exists.`);
+      if (existingSponsor) {
+        throw new HttpException(400, `A sponsor with the name "${name}" already exists.`);
+      }
     }
 
     const updatedSponsor = await prisma.sponsor.update({
