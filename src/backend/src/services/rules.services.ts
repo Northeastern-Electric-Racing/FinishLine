@@ -23,7 +23,6 @@ import {
   rulesetTypeTransformer,
   rulesetPreviewTransformer
 } from '../transformers/rules.transformer';
-import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
 
 export default class RulesService {
   /**

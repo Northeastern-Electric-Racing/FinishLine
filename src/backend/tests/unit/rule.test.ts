@@ -392,22 +392,8 @@ describe('Create Rules Tests', () => {
   describe('Get Child Rules', () => {
     it('Successfully gets child rules for a parent rule', async () => {
       const parentRule = await RulesService.createRule(batman, 'T.1', 'Parent Rule', rulesetId, organization);
-      const childRule1 = await RulesService.createRule(
-        batman,
-        'T.1.1',
-        'Child Rule 1',
-        rulesetId,
-        organization,
-        parentRule.ruleId
-      );
-      const childRule2 = await RulesService.createRule(
-        batman,
-        'T.1.2',
-        'Child Rule 2',
-        rulesetId,
-        organization,
-        parentRule.ruleId
-      );
+      await RulesService.createRule(batman, 'T.1.1', 'Child Rule 1', rulesetId, organization, parentRule.ruleId);
+      await RulesService.createRule(batman, 'T.1.2', 'Child Rule 2', rulesetId, organization, parentRule.ruleId);
       const childRules = await RulesService.getChildRules(parentRule.ruleId, organization);
       expect(childRules.length).toBe(2);
       expect(childRules[0].ruleCode).toBe('T.1.1');
@@ -432,24 +418,10 @@ describe('Create Rules Tests', () => {
 
     it('Successfully gets child rules after adding child rule', async () => {
       const parentRule = await RulesService.createRule(batman, 'T.3', 'Parent Rule', rulesetId, organization);
-      const childRule1 = await RulesService.createRule(
-        batman,
-        'T.3.1',
-        'Child Rule 1',
-        rulesetId,
-        organization,
-        parentRule.ruleId
-      );
+      await RulesService.createRule(batman, 'T.3.1', 'Child Rule 1', rulesetId, organization, parentRule.ruleId);
       const childRulesAfterOne = await RulesService.getChildRules(parentRule.ruleId, organization);
       expect(childRulesAfterOne.length).toBe(1);
-      const childRule2 = await RulesService.createRule(
-        batman,
-        'T.3.2',
-        'Child Rule 2',
-        rulesetId,
-        organization,
-        parentRule.ruleId
-      );
+      await RulesService.createRule(batman, 'T.3.2', 'Child Rule 2', rulesetId, organization, parentRule.ruleId);
       const childRulesAfterTwo = await RulesService.getChildRules(parentRule.ruleId, organization);
       expect(childRulesAfterTwo.length).toBe(2);
       expect(childRulesAfterTwo[0].ruleCode).toBe('T.3.1');
