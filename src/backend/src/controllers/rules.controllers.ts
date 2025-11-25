@@ -167,17 +167,18 @@ export default class RulesController {
       next(error);
     }
   }
-  
-  static async updateActiveRuleset(req: Request, res: Response, next: NextFunction) {
+
+  static async updateRuleset(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetId } = req.params;
-      const { status } = req.body;
+      const { name, isActive } = req.body;
 
-      const ruleset: Ruleset = await RulesService.updateActiveRuleset(
+      const ruleset: Ruleset = await RulesService.updateRuleset(
         req.currentUser,
         req.organization.organizationId,
         rulesetId,
-        status
+        name,
+        isActive
       );
 
       res.status(200).json(ruleset);

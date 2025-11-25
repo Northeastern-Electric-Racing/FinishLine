@@ -69,9 +69,10 @@ rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRul
 
 rulesRouter.post(
   '/ruleset/:rulesetId/update',
-  body('status').isBoolean(),
+  body('isActive').isBoolean(),
+  nonEmptyString(body('name')),
   validateInputs,
-  RulesController.updateActiveRuleset
+  RulesController.updateRuleset
 );
 rulesRouter.get('/ruleset/:rulesetId/team/:teamId/rules/unassigned', RulesController.getUnassignedRulesForRuleset);
 
