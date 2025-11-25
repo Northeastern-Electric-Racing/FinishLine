@@ -130,7 +130,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfi
                     field.ref(e);
                   }}
                   onChange={(e) => {
-                    const files = e.target.files;
+                    const { files } = e.target;
                     if (files && files.length > 0) {
                       onChange(files[0]);
                     }

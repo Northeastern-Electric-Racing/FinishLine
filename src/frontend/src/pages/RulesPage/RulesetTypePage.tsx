@@ -4,7 +4,6 @@
  */
 import React from 'react';
 import PageLayout from '../../components/PageLayout';
-import { Box } from '@mui/material';
 import AddNewFileModal from './components/AddNewFileModal';
 import { NERButton } from '../../components/NERButton';
 
