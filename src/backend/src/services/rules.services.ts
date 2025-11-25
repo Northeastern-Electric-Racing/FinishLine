@@ -470,9 +470,11 @@ export default class RulesService {
    * @param teamIds An array of teamId's to be added to the rule
    * @param user The user adding the teams to the rule
    * @param org The organization the rule belongs to
+   * @returns the updated rule
    * @throws If the user is a guest, the rule does not exist or
    *         is deleted, or a team does not exist, is in the wrong
    *         organization, or is archived.
+   *
    */
   static async assignRuleTeam(ruleId: string, teamId: string, user: User, org: Organization) {
     // Checks that the user is not a guest
