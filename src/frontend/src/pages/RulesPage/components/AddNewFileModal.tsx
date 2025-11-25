@@ -1,11 +1,8 @@
 import NERFormModal from '../../../components/NERFormModal';
 import Checkbox from '@mui/material/Checkbox';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { Box, TextField, Typography } from '@mui/material';
-import { flexbox } from '@mui/system';
-import { useState } from 'react';
-import { Console } from 'console';
-import { NERButton } from '../../../components/NERButton';
+import { useState, useRef } from 'react';
 
 interface AddNewFileModalProps {
   open: boolean;
@@ -42,7 +39,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ options, onChange }) => {
   };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+    <div style={{ display: 'flex', gap: '4px' }}>
       {options.map((option) => (
         <button
           type="button"
@@ -50,6 +47,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ options, onChange }) => {
           onClick={() => handleClick(option)}
           style={{
             borderRadius: 6,
+            height: 25,
             border: 0,
             backgroundColor: selected === option ? '#ef4345' : '#c7c7c7ff',
             transition: 'background-color 120ms ease'
@@ -63,15 +61,30 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ options, onChange }) => {
 };
 
 const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfirm, carOptions }) => {
-  const { register, handleSubmit, reset, watch, setValue } = useForm<NewFileFormData>({
+  // For general information in the form
+  const {
+    formState: { errors },
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    control
+  } = useForm<NewFileFormData>({
     defaultValues: {
+      file: undefined,
       name: '',
       car: '',
       isActive: false
     }
   });
-
   const isActive = watch('isActive');
+
+  // For file inputs
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const handleAddFileClick = () => {
+    fileInputRef.current?.click();
+  };
 
   return (
     <NERFormModal
@@ -86,32 +99,89 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfi
       formId={'add-new-file-form'}
     >
       <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="h6" sx={sectionHeaderStyle}>
+              Upload Ruleset File:
+            </Typography>
+            <button
+              type="button"
+              onClick={handleAddFileClick}
+              style={{
+                borderRadius: 6,
+                border: 0,
+                backgroundColor: '#c7c7c7ff',
+                transition: 'background-color 120ms ease'
+              }}
+            >
+              <Typography> Select File</Typography>
+            </button>
+            <Controller
+              name="file"
+              control={control}
+              rules={{ required: 'File is required' }}
+              render={({ field: { onChange, ...field } }) => (
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  style={{ display: 'none' }}
+                  ref={(e) => {
+                    fileInputRef.current = e;
+                    field.ref(e);
+                  }}
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (files && files.length > 0) {
+                      onChange(files[0]);
+                    }
+                  }}
+                />
+              )}
+            />
+            {errors.file && (
+              <Typography color="error" sx={{ fontSize: 12, mt: 0.5 }}>
+                {errors.file.message as string}
+              </Typography>
+            )}
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
             <Typography variant="h6" sx={sectionHeaderStyle}>
               Car:
             </Typography>
-            <ButtonGroup options={carOptions} onChange={(value) => setValue('car', value)}></ButtonGroup>
+            <ButtonGroup
+              options={carOptions}
+              onChange={(value) => setValue('car', value, { shouldValidate: true })}
+            ></ButtonGroup>
+            <input type="hidden" {...register('car', { required: 'Car is required' })} />
+            {errors.car && (
+              <Typography color="error" sx={{ fontSize: 12, mt: 0.5 }}>
+                {errors.car.message as string}
+              </Typography>
+            )}
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="h6" sx={sectionHeaderStyle}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0 }}>
+            <Typography variant="h6" sx={{ ...sectionHeaderStyle, lineHeight: '27.5px' }}>
               Active:
             </Typography>
-            <Checkbox {...register('isActive')} checked={isActive} />
+            <Checkbox {...register('isActive')} checked={isActive} sx={{ mt: '-5.5px' }} />
           </Box>
         </Box>
       </Box>
       <Box>
-        <Typography variant="h6" sx={{ ...sectionHeaderStyle, pb: 1 }}>
+        <Typography variant="h6" sx={{ ...sectionHeaderStyle, pb: 0.5 }}>
           Name Ruleset File:
         </Typography>
         <TextField
           inputProps={{ style: { fontSize: 13 } }}
-          required
           autoComplete="off"
           placeholder={'Name File'}
-          {...register('name')}
+          {...register('name', { required: 'Name is required' })}
         />
+        {errors.name && (
+          <Typography color="error" sx={{ fontSize: 12, mt: 0.5 }}>
+            {errors.name.message}
+          </Typography>
+        )}
       </Box>
     </NERFormModal>
   );
