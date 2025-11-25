@@ -60,6 +60,26 @@ export default class RulesController {
     }
   }
 
+  static async editRule(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ruleId } = req.params;
+      const { ruleContent, ruleCode, imageFileIds, parentRuleId } = req.body;
+
+      const rule = await RulesService.editRule(
+        req.currentUser,
+        ruleContent,
+        ruleId,
+        ruleCode,
+        imageFileIds,
+        req.organization,
+        parentRuleId
+      );
+      res.status(200).json(rule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllRulesetTypes(req: Request, res: Response, next: NextFunction) {
     try {
       const rulesets = await RulesService.getAllRulesetTypes(req.organization);
@@ -156,6 +176,16 @@ export default class RulesController {
       const childrenRules: Rule[] = await RulesService.getChildRules(parentRuleId, req.organization);
 
       res.status(200).json(childrenRules);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getUnassignedRules(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const rules = await RulesService.getUnassignedRules(rulesetId, req.organization);
+      res.status(200).json(rules);
     } catch (error: unknown) {
       next(error);
     }
