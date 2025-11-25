@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import { useReducer, useState } from 'react';
 import { useCheckDescriptionBullet } from '../hooks/description-bullets.hooks';
 import { Tooltip } from '@mui/material';
-import { User } from 'shared';
+import { UserPreview } from 'shared';
 import NERModal from './NERModal';
 import { fullNamePipe } from '../utils/pipes';
 import { useToast } from '../hooks/toasts.hooks';
@@ -20,7 +20,7 @@ export type CheckListItem = {
   id: string;
   detail: string;
   resolved: boolean;
-  user?: User;
+  user?: UserPreview;
   dateChecked?: Date;
 };
 

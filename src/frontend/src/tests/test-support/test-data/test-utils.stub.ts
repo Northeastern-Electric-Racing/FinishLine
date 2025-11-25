@@ -5,7 +5,7 @@
 
 import { AxiosHeaders, AxiosResponse } from 'axios';
 import { UseMutationResult, UseQueryResult } from 'react-query';
-import { User } from 'shared';
+import { AuthenticatedUser } from 'shared';
 import { exampleAuthenticatedAdminUser } from './authenticated-user.stub';
 import { Auth } from '../../../utils/types';
 
@@ -88,7 +88,7 @@ export const mockUseMutationResult = <Input>(isLoading: boolean, isError: boolea
   } as UseMutationResult<Input, Error>;
 };
 
-export const mockAuth = (isLoading: boolean, user?: User) => {
+export const mockAuth = (isLoading: boolean, user?: AuthenticatedUser) => {
   return {
     user,
     devSignin: () => new Promise((res) => res(exampleAuthenticatedAdminUser)),

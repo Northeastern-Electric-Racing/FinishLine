@@ -18,6 +18,17 @@ rulesRouter.post(
   validateInputs,
   RulesController.createRule
 );
+rulesRouter.post(
+  '/rule/:ruleId/edit',
+  nonEmptyString(body('ruleContent')),
+  nonEmptyString(body('ruleCode')),
+  body('imageFileIds').isArray(),
+  nonEmptyString(body('imageFileIds.*')),
+  body('parentRuleId').optional().isString(),
+  validateInputs,
+  RulesController.editRule
+);
+rulesRouter.post('/rule/:ruleId/delete', RulesController.deleteRule);
 
 rulesRouter.post('/rulesetType/create', nonEmptyString(body('name')), validateInputs, RulesController.createRulesetType);
 
@@ -32,6 +43,7 @@ rulesRouter.post(
 );
 
 rulesRouter.get('/rulesetTypes', RulesController.getAllRulesetTypes);
+rulesRouter.get('/ruleset/:rulesetId/rules/unassigned', RulesController.getUnassignedRules);
 rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
 rulesRouter.post('/projectRule/:projectRuleId/delete', RulesController.deleteProjectRule);
 

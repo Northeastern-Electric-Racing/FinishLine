@@ -48,14 +48,20 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
           </Grid>
           <Grid item xs={12} md={6}>
             <Typography fontWeight={'bold'}>
-              Deadline:
-              <Typography display={'inline'}> {datePipe(task.deadline)}</Typography>
+              Author:
+              <Typography display={'inline'}> {fullNamePipe(task.createdBy)}</Typography>
             </Typography>
           </Grid>
           <Grid item xs={12} md={6}>
             <Typography fontWeight={'bold'}>
-              Author:
-              <Typography display={'inline'}> {fullNamePipe(task.createdBy)}</Typography>
+              Start Date:
+              <Typography display={'inline'}> {datePipe(task.startDate)}</Typography>
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Typography fontWeight={'bold'}>
+              Deadline:
+              <Typography display={'inline'}> {datePipe(task.deadline)}</Typography>
             </Typography>
           </Grid>
           <Grid item xs={12} md={6}>

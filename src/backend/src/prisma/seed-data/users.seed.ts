@@ -44,7 +44,7 @@ const joeShmoe: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.LIGHT,
-      slackId: 'asdf'
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'shmoe'
     }
   }
 };
@@ -58,7 +58,7 @@ const joeBlow: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.DARK,
-      slackId: 'blow'
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'blow'
     }
   }
 };
@@ -68,7 +68,13 @@ const wonderwoman: Prisma.UserCreateInput = {
   lastName: 'Prince',
   email: 'wonderwoman@justiceleague.com',
   emailId: 'wonderwoman',
-  googleAuthId: 'wonderwoman'
+  googleAuthId: 'wonderwoman',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'wonderwoman'
+    }
+  }
 };
 
 const lexLuther: Prisma.UserCreateInput = {
@@ -132,7 +138,13 @@ const flash: Prisma.UserCreateInput = {
   lastName: 'Allen',
   googleAuthId: 'flaaaash',
   email: 'flash@starlabs.edu',
-  emailId: 'barry.allen'
+  emailId: 'barry.allen',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'flash'
+    }
+  }
 };
 
 const aquaman: Prisma.UserCreateInput = {
@@ -140,7 +152,13 @@ const aquaman: Prisma.UserCreateInput = {
   lastName: 'Curry',
   googleAuthId: 'fish',
   email: 'aquaman@gmail.com',
-  emailId: 'thefishman'
+  emailId: 'thefishman',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'aquaman'
+    }
+  }
 };
 
 const robin: Prisma.UserCreateInput = {
@@ -159,7 +177,7 @@ const batman: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.DARK,
-      slackId: 'batman'
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'batman'
     }
   }
 };
@@ -172,7 +190,7 @@ const superman: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.LIGHT,
-      slackId: 'superman'
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'superman'
     }
   }
 };
@@ -181,21 +199,39 @@ const cyborg: Prisma.UserCreateInput = {
   firstName: 'Vic',
   lastName: 'Stone',
   email: 'cyborg@justiceleague.com',
-  googleAuthId: 'beepboop'
+  googleAuthId: 'beepboop',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'cyborg'
+    }
+  }
 };
 
 const martianManhunter: Prisma.UserCreateInput = {
   firstName: `J'onn`,
   lastName: `J'onnz`,
   email: 'martian.manhunter@justiceleague.com',
-  googleAuthId: 'martian'
+  googleAuthId: 'martian',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'martian'
+    }
+  }
 };
 
 const greenLantern: Prisma.UserCreateInput = {
   firstName: 'Hal',
   lastName: 'Jordan',
   email: 'greenlantern1@justiceleague.com',
-  googleAuthId: 'green'
+  googleAuthId: 'green',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'greenlantern'
+    }
+  }
 };
 
 const hawkMan: Prisma.UserCreateInput = {
@@ -216,7 +252,13 @@ const nightwing: Prisma.UserCreateInput = {
   firstName: 'Dick',
   lastName: 'Grayson',
   email: 'robin1@brucewayne.com',
-  googleAuthId: 'robin1'
+  googleAuthId: 'robin1',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'nightwing'
+    }
+  }
 };
 
 const brandonHyde: Prisma.UserCreateInput = {
@@ -342,35 +384,65 @@ const aang: Prisma.UserCreateInput = {
   firstName: 'Aang',
   lastName: 'Airbender',
   googleAuthId: 'aang',
-  email: 'aang@avatarBenders.com'
+  email: 'aang@avatarBenders.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'aang'
+    }
+  }
 };
 
 const katara: Prisma.UserCreateInput = {
   firstName: 'Katara',
   lastName: 'Waterbender',
   googleAuthId: 'katara',
-  email: 'katara@avatarBenders.com'
+  email: 'katara@avatarBenders.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'katara'
+    }
+  }
 };
 
 const sokka: Prisma.UserCreateInput = {
   firstName: 'Sokka',
   lastName: 'Warrior',
   googleAuthId: 'sokka',
-  email: 'sokka@avatarBenders.com'
+  email: 'sokka@avatarBenders.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'sokka'
+    }
+  }
 };
 
 const toph: Prisma.UserCreateInput = {
   firstName: 'Toph',
   lastName: 'Beifong',
   googleAuthId: 'toph',
-  email: 'toph@avatarBenders.com'
+  email: 'toph@avatarBenders.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'toph'
+    }
+  }
 };
 
 const zuko: Prisma.UserCreateInput = {
   firstName: 'Zuko',
   lastName: 'Firebender',
   googleAuthId: 'zuko',
-  email: 'zuko@avatarBenders.com'
+  email: 'zuko@avatarBenders.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'zuko'
+    }
+  }
 };
 
 const iroh: Prisma.UserCreateInput = {
@@ -705,7 +777,7 @@ const monopolyMan: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.LIGHT,
-      slackId: 'monopolyman'
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'monopolyman'
     }
   }
 };
@@ -718,7 +790,7 @@ const mrKrabs: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.LIGHT,
-      slackId: 'mrkrabs'
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'mrkrabs'
     }
   }
 };
@@ -731,7 +803,7 @@ const richieRich: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.LIGHT,
-      slackId: 'richietherich'
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'richietherich'
     }
   }
 };
@@ -788,7 +860,13 @@ const cady: Prisma.UserCreateInput = {
   firstName: 'Cady',
   lastName: 'Heron',
   email: 'cadyheron@gmail.com',
-  googleAuthId: 'cady'
+  googleAuthId: 'cady',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'cady'
+    }
+  }
 };
 
 const janis: Prisma.UserCreateInput = {
@@ -809,14 +887,26 @@ const gretchen: Prisma.UserCreateInput = {
   firstName: 'Gretchen',
   lastName: 'Wieners',
   googleAuthId: 'gretch',
-  email: 'gretchen.weiners@hotmail.com'
+  email: 'gretchen.weiners@hotmail.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'gretchen'
+    }
+  }
 };
 
 const karen: Prisma.UserCreateInput = {
   firstName: 'Karen',
   lastName: 'Smith',
   googleAuthId: 'karen',
-  email: 'smithkaren@hotmail.com'
+  email: 'smithkaren@hotmail.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'karen'
+    }
+  }
 };
 
 const aaron: Prisma.UserCreateInput = {
@@ -879,14 +969,26 @@ const spongebob: Prisma.UserCreateInput = {
   firstName: 'Spongebob',
   lastName: 'Squarepants',
   googleAuthId: 'spongebob',
-  email: 'goofygooober@gmail.com'
+  email: 'goofygooober@gmail.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'spongebob'
+    }
+  }
 };
 
 const patrick: Prisma.UserCreateInput = {
   firstName: 'Patrick',
   lastName: 'Star',
   googleAuthId: 'patrick',
-  email: 'patrickstar@gmail.com'
+  email: 'patrickstar@gmail.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'patrick'
+    }
+  }
 };
 
 export const dbSeedAllUsers = {
