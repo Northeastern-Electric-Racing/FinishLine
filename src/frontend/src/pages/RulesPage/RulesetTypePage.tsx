@@ -12,10 +12,6 @@ import { NERButton } from '../../components/NERButton';
 const RulesetTypePage: React.FC = () => {
   // testing for modal
   const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
-    if (!data.file) {
-      alert('Please upload a PDF file!');
-      return;
-    }
     console.log('Form submitted with:', data);
     setOpen(false);
   };
