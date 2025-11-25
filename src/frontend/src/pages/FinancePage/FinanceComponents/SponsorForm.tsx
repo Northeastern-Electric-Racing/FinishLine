@@ -89,13 +89,9 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
     name: 'sponsorTasks'
   });
 
-  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
-
   if (membersIsError) return <ErrorPage message={membersError?.message}></ErrorPage>;
   if (sponsorTierIsError) return <ErrorPage message={sponsorTierError?.message}></ErrorPage>;
-  if (membersLoading || !members || !allSponsorTiers || sponsorTierIsLoading || !users || allUsersIsLoading)
-    return <LoadingIndicator />;
-  if (allUsersIsError) return <ErrorPage message={allUsersError?.message}></ErrorPage>;
+  if (membersLoading || !members || !allSponsorTiers || sponsorTierIsLoading) return <LoadingIndicator />;
 
   return (
     <Grid container justifyContent="space-between" alignItems="flex-start" spacing={3}>

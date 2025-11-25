@@ -1,5 +1,5 @@
 import { Box, IconButton, TableCell, TableRow, Typography } from '@mui/material';
-import AdminToolTable from '../AdminToolTable';
+import NERTable from '../../../components/NERTable';
 import { NERButton } from '../../../components/NERButton';
 import { useAllProjects, useDeleteProjectAbbreviation } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -55,7 +55,7 @@ const AbbreviationsTable: React.FC = () => {
         }}
       />
       <Typography variant="h6">Project Name Abbreviations</Typography>
-      <AdminToolTable columns={[{ name: 'Project Name' }, { name: 'Abbreviation' }, { name: '' }]} rows={projectTableRows} />
+      <NERTable columns={[{ name: 'Project Name' }, { name: 'Abbreviation' }, { name: '' }]} rows={projectTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"

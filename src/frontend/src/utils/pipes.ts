@@ -5,14 +5,14 @@
 
 import {
   WbsNumber,
-  User,
   wbsPipe,
   isProject,
   IndexCode,
   AccountCode,
   DesignReview,
   WorkPackagePreview,
-  WbsElementPreview
+  WbsElementPreview,
+  UserPreview
 } from 'shared';
 
 /**
@@ -46,7 +46,7 @@ export const projectWbsPipe = (wbsNum: WbsNumber) => {
 };
 
 /** Display user by their name "Joe Shmoe" */
-export const fullNamePipe = (user?: Pick<User, 'firstName' | 'lastName'>) => {
+export const fullNamePipe = (user?: UserPreview) => {
   return user ? `${user.firstName} ${user.lastName}` : emDashPipe('');
 };
 
@@ -208,4 +208,15 @@ export const labelPipe = (label: string) => {
   }
 
   return result;
+};
+
+// Pad SABO ID with leading zeroes
+export const formatSaboIdPipe = (saboId: number | undefined): string => {
+  if (saboId === undefined || saboId === null) return undefinedPipe(saboId as any);
+  const str = String(saboId);
+  // Only pad if it's shorter than 5
+  if (str.length < 5) {
+    return str.padStart(5, '0');
+  }
+  return str;
 };
