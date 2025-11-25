@@ -33,89 +33,76 @@ const RulesetTypePage: React.FC = () => {
 
   return (
     <PageLayout title="Rules">
-      <Box>
-        <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-          <Table aria-label="simple table">
-            <TableHead
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 120px)' }}>
+        <Box sx={{ flexGrow: 1 }}>
+          <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
+            <Table aria-label="simple table">
+              <TableHead
+                sx={{
+                  backgroundColor: '#dd514c'
+                }}
+              >
+                <TableRow>
+                  {headCells.map((headCell) => (
+                    <TableCell
+                      align="center"
+                      sx={{ fontSize: '16px', fontWeight: 600 }}
+                      style={{ paddingLeft: '24px', paddingRight: '0px' }}
+                    >
+                      {headCell.label}
+                    </TableCell>
+                  ))}
+                  <TableCell align="center" />
+                </TableRow>
+              </TableHead>
+              <TableBody sx={{ backgroundColor: '#121313' }}>{/* Table Rows & Cells Here */}</TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+        <Box
+          sx={{
+            backgroundColor: '#121313',
+            position: 'sticky',
+            bottom: 0,
+            zIndex: 2,
+            width: '100%'
+          }}
+        >
+          <Box
+            sx={{
+              borderBottom: '2px solid white',
+              mb: 2
+            }}
+          />
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end'
+            }}
+          >
+            <Button
+              className="viewButton"
+              variant="contained"
               sx={{
-                backgroundColor: '#dd514c'
+                borderRadius: '8px',
+                color: '#ededed',
+                backgroundColor: '#dd514c',
+                padding: '2px 20px',
+                mb: 1,
+                mr: 2,
+                display: 'flex',
+                fontSize: '16px',
+                fontWeight: 700,
+                textTransform: 'none',
+                '&:hover': {
+                  backgroundColor: '#c74340'
+                }
               }}
             >
-              <TableRow>
-                {headCells.map((headCell) => (
-                  <TableCell
-                    align="center"
-                    sx={{ fontSize: '16px', fontWeight: 600 }}
-                    style={{ paddingLeft: '24px', paddingRight: '0px' }}
-                  >
-                    {headCell.label}
-                  </TableCell>
-                ))}
-                <TableCell align="center" />
-              </TableRow>
-            </TableHead>
-            <TableBody sx={{ backgroundColor: '#121313' }}>
-              {/* {paginatedRows.map((row, index) => {
-                return (
-                  <TableRow
-                    key={`$${row.amount}-${index}`}
-                    sx={{
-                      textDecoration: 'none',
-                      '&:last-child td, &:last-child th': { border: 0 },
-                      '&:hover .viewButton': { opacity: 1 },
-                      '&:hover': { backgroundColor: '#5e5e5e' }
-                    }}
-                  >
-                    <TableCell align="center">
-                      <Box
-                        sx={{
-                          padding: '3px 8px',
-                          display: 'inline-flex',
-                          borderRadius: '8px',
-                          backgroundColor: getStatusColor(row.status),
-                          fontWeight: 700
-                        }}
-                      >
-                        {cleanReimbursementRequestStatus(row.status)}
-                      </Box>
-                    </TableCell>
-                    {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
-                    <TableCell align="center">{`$${centsToDollar(row.amount)}`}</TableCell>
-                    <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
-                    <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
-                    <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
-                    <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
-                    <TableCell align="center">
-                      {
-                        <Button
-                          className="viewButton"
-                          size="small"
-                          variant="contained"
-                          component={RouterLink}
-                          onClick={() => openSidePage()}
-                          to={`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${row.id}`}
-                          sx={{
-                            borderRadius: '8px',
-                            color: '#ededed',
-                            backgroundColor: '#dd514c',
-                            boxShadow: '0px 4px rgba(0,0,0,0.3)',
-                            padding: '2px 6px',
-                            opacity: 0,
-                            '&:hover': {
-                              backgroundColor: '#c74340'
-                            }
-                          }}
-                        >
-                          View Ruleset
-                        </Button>
-                      }
-                    </TableCell>
-                  </TableRow>
-                );
-              })} */}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              Add Ruleset
+            </Button>
+          </Box>
+        </Box>
       </Box>
     </PageLayout>
   );
