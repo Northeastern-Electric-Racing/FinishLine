@@ -494,6 +494,8 @@ export default class RulesService {
     // Checks that the team exists
     const team = await prisma.team.findUnique({ where: { teamId } });
     if (!team) throw new NotFoundException('Team', teamId);
+    if (team.organizationId !== org.organizationId) throw new InvalidOrganizationException('Rule');
+    if (team.dateArchived) throw new HttpException(400, 'Cannot assign an archived team.');
 
     // We add the team to the rule if it is not already in the rule
     if (!rule.teams.some((currTeam) => currTeam.teamId === teamId)) {
@@ -509,7 +511,13 @@ export default class RulesService {
       });
     }
 
-    return rule;
+    // retrieve and return the updated rule
+    const newRule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: { teams: true }
+    });
+
+    return newRule;
   }
 
   static async createRuleset(
