@@ -757,12 +757,31 @@ describe('Delete Rules Tests', () => {
       ).rejects.toThrow(new NotFoundException('Team', 'fake-team-id'));
     });
     it('Fails if a team is not in the correct organization', async () => {
-      const org2 = await createTestOrganization();
+      const user = await prisma.user.create({
+        data: {
+          firstName: 'Admin',
+          lastName: 'Admin',
+          email: 'testemail@hotmail.com',
+          googleAuthId: 'orgCreator1'
+        }
+      });
+      const org2 = await prisma.organization.create({
+        data: {
+          name: 'Joe mama',
+          description: 'Joe mama`s organization',
+          applicationLink: '',
+          userCreated: {
+            connect: {
+              userId: user.userId
+            }
+          }
+        }
+      });
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
       const teamType = await createTestTeamType('electrical', org2.organizationId);
       const team = await createTestTeam(admin.userId, teamType.teamTypeId, org2.organizationId);
-      await expect(await RulesService.assignRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization)).rejects.toThrow(
+      await expect(RulesService.assignRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization)).rejects.toThrow(
         new InvalidOrganizationException('Rule')
       );
     });
@@ -772,8 +791,8 @@ describe('Delete Rules Tests', () => {
       const teamType = await createTestTeamType('electrical', organization.organizationId);
       const team = await createTestTeam(admin.userId, teamType.teamTypeId, organization.organizationId);
       await TeamsService.archiveTeam(admin, team.teamId, organization);
-      await expect(await RulesService.assignRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization)).rejects.toThrow(
-        new InvalidOrganizationException('Rule')
+      await expect(RulesService.assignRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization)).rejects.toThrow(
+        new HttpException(400, 'Cannot assign an archived team.')
       );
     });
     it('Successfully adds a team to a rule', async () => {
