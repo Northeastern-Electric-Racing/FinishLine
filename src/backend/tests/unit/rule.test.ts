@@ -22,8 +22,10 @@ import {
   DeletedException,
   HttpException,
   NotFoundException,
-  AccessDeniedAdminOnlyException
+  AccessDeniedAdminOnlyException,
+  InvalidOrganizationException
 } from '../../src/utils/errors.utils';
+import TeamsService from '../../src/services/teams.services';
 
 describe('Create Rules Tests', () => {
   let orgId: string;
@@ -753,6 +755,26 @@ describe('Delete Rules Tests', () => {
       await expect(
         async () => await RulesService.assignRuleTeam(topLevelRule.ruleId, 'fake-team-id', admin, organization)
       ).rejects.toThrow(new NotFoundException('Team', 'fake-team-id'));
+    });
+    it('Fails if a team is not in the correct organization', async () => {
+      const org2 = await createTestOrganization();
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const teamType = await createTestTeamType('electrical', org2.organizationId);
+      const team = await createTestTeam(admin.userId, teamType.teamTypeId, org2.organizationId);
+      await expect(await RulesService.assignRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization)).rejects.toThrow(
+        new InvalidOrganizationException('Rule')
+      );
+    });
+    it('Fails if a team is archived', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const teamType = await createTestTeamType('electrical', organization.organizationId);
+      const team = await createTestTeam(admin.userId, teamType.teamTypeId, organization.organizationId);
+      await TeamsService.archiveTeam(admin, team.teamId, organization);
+      await expect(await RulesService.assignRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization)).rejects.toThrow(
+        new InvalidOrganizationException('Rule')
+      );
     });
     it('Successfully adds a team to a rule', async () => {
       const car = await createUniqueCar(orgId);

@@ -471,7 +471,8 @@ export default class RulesService {
    * @param user The user adding the teams to the rule
    * @param org The organization the rule belongs to
    * @throws If the user is a guest, the rule does not exist or
-   *         is deleted, or a team does not exist.
+   *         is deleted, or a team does not exist, is in the wrong
+   *         organization, or is archived.
    */
   static async assignRuleTeam(ruleId: string, teamId: string, user: User, org: Organization) {
     // Checks that the user is not a guest
@@ -491,7 +492,7 @@ export default class RulesService {
       throw new DeletedException('Rule', ruleId);
     }
 
-    // Checks that the team exists
+    // Checks based on the team
     const team = await prisma.team.findUnique({ where: { teamId } });
     if (!team) throw new NotFoundException('Team', teamId);
     if (team.organizationId !== org.organizationId) throw new InvalidOrganizationException('Rule');
