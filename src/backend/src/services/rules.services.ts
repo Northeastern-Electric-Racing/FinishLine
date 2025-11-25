@@ -767,4 +767,68 @@ export default class RulesService {
 
     return rules.map(ruleTransformer);
   }
+
+  /**
+   * Gets team rules that are unassigned to a project
+   * @param rulesetId ruleset the rules are in
+   * @param teamId team that rules are assigned to
+   * @param organizationId the organization id
+   * @returns the rules in this team that do not have an associated project rule
+   */
+  static async getUnassignedRulesForRuleset(rulesetId: string, teamId: string, organizationId: string) {
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      select: {
+        rulesetType: {
+          select: {
+            organizationId: true
+          }
+        }
+      }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.rulesetType.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const team = await prisma.team.findUnique({
+      where: { teamId },
+      select: {
+        organizationId: true
+      }
+    });
+
+    if (!team) {
+      throw new NotFoundException('Team', teamId);
+    }
+
+    if (team.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Team');
+    }
+
+    const rules = await prisma.rule.findMany({
+      where: {
+        rulesetId,
+        teams: {
+          some: {
+            teamId,
+            organizationId
+          }
+        },
+        projects: {
+          none: {}
+        },
+        deletedBy: null
+      },
+      ...getRulePreviewQueryArgs(),
+      orderBy: {
+        ruleCode: 'asc'
+      }
+    });
+    return rules.map(ruleTransformer);
+  }
 }
