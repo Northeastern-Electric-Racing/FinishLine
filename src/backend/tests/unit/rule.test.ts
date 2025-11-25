@@ -648,6 +648,55 @@ describe('Delete Rules Tests', () => {
     });
   });
 
+  describe('Edit Rule', () => {
+    it('Fails if user is not an admin', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+      await expect(
+        async () =>
+          await RulesService.editRule(
+            await createTestUser(wonderwomanGuest, orgId),
+            'Some rule content',
+            leafRule1.ruleId,
+            leafRule1.ruleCode,
+            ['newfile'],
+            organization
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a rule'));
+    });
+
+    it('Fails if rule doesn`t exist', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+      await expect(
+        async () =>
+          await RulesService.editRule(
+            await createTestUser(batmanAppAdmin, orgId),
+            'Some more rule content',
+            '1',
+            leafRule1.ruleCode,
+            ['samefile'],
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Rule', 1));
+    });
+
+    it('Succeeds and edits a rule', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+      const updatedRule = await RulesService.editRule(
+        admin,
+        'BRAND NEW RULE CONTENT',
+        leafRule1.ruleId,
+        leafRule1.ruleCode,
+        leafRule1.imageFileIds,
+        organization
+      );
+
+      expect(updatedRule.ruleContent).toEqual('BRAND NEW RULE CONTENT');
+    });
+  });
+
   describe('Delete Ruleset', () => {
     it('Deletes a ruleset successfully and returns the correct information', async () => {
       const car = await createUniqueCar(orgId);
