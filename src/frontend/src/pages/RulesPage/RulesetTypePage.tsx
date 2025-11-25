@@ -11,15 +11,15 @@ import { NERButton } from '../../components/NERButton';
 // FSAE or FHE page
 const RulesetTypePage: React.FC = () => {
   // testing for modal
-  const handleConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
+  const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
     console.log('Form submitted with:', data);
+    setOpen(false);
   };
   const [open, setOpen] = React.useState(false);
   return (
     <PageLayout title="Rules">
       <NERButton onClick={() => setOpen(!open)}> Add New File </NERButton>
-      <AddNewFileModal open={open} onHide={() => setOpen(false)} onConfirm={handleConfirm} />
-      <Box></Box>
+      <AddNewFileModal open={open} onHide={() => setOpen(false)} onConfirm={handleFileConfirm} carOptions={['1', '2']} />
     </PageLayout>
   );
 };
