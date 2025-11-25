@@ -677,7 +677,8 @@ export default class RulesService {
 
     const subRules = await prisma.rule.findMany({
       where: {
-        parentRuleId: ruleId
+        parentRuleId: ruleId,
+        dateDeleted: null
       },
       ...getRulePreviewQueryArgs()
     });

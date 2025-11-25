@@ -55,6 +55,6 @@ rulesRouter.post(
 );
 rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
 
-rulesRouter.get('/:ruleId/subrule', RulesController.getChildRules);
+rulesRouter.get('/:ruleId/subrules', RulesController.getChildRules);
 
 export default rulesRouter;

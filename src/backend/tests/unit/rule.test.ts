@@ -412,8 +412,7 @@ describe('Create Rules Tests', () => {
       );
       await RulesService.deleteRule(childRule.ruleId, batman, organization);
       const childRules = await RulesService.getChildRules(parentRule.ruleId, organization);
-      expect(childRules.length).toBe(1);
-      expect(childRules[0].ruleCode).toBe('T.2.1');
+      expect(childRules.length).toBe(0);
     });
 
     it('Successfully gets child rules after adding child rule', async () => {
