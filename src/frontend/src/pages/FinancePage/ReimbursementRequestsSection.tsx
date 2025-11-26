@@ -9,6 +9,7 @@ import ReimbursementRequestInfo from './FinanceComponents/ReimbursementRequestIn
 
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
+  assignedReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
   onCloseSidePage: () => void;
   searchText?: string;
@@ -19,6 +20,7 @@ interface ReimbursementRequestTableProps {
 
 const ReimbursementRequestTable = ({
   userReimbursementRequests,
+  assignedReimbursementRequests,
   allReimbursementRequests,
   onCloseSidePage,
   searchText,
@@ -36,6 +38,10 @@ const ReimbursementRequestTable = ({
   const tabs = [{ tabUrlValue: 'my-requests', tabName: 'My Requests' }];
 
   if (canViewAllReimbursementRequests) tabs.push({ tabUrlValue: 'all-requests', tabName: 'All Requests' });
+
+  if (assignedReimbursementRequests.length > 0) {
+    tabs.push({ tabUrlValue: 'requests-assigned-to-me', tabName: 'Requests Assigned To Me' });
+  }
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
@@ -58,6 +64,7 @@ const ReimbursementRequestTable = ({
       )}
       <ReimbursementRequestInfo
         userReimbursementRequests={userReimbursementRequests}
+        assignedReimbursementRequests={assignedReimbursementRequests}
         allReimbursementRequests={allReimbursementRequests}
         canViewAllReimbursementRequests={canViewAllReimbursementRequests}
         currentTab={tabValue}

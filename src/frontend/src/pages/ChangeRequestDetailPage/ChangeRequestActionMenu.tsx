@@ -1,4 +1,4 @@
-import { ChangeRequest, ChangeRequestStatus, isLeadership, UserWithScheduleSettings, wbsPipe } from 'shared';
+import { ChangeRequest, ChangeRequestStatus, isLeadership, User, wbsPipe } from 'shared';
 import ActionsMenu from '../../components/ActionsMenu';
 import { Autocomplete, Checkbox, TextField, Box } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
@@ -65,7 +65,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   const isRequestAllowed =
     changeRequest.submitter.userId === currentUser.userId && changeRequest.status === ChangeRequestStatus.Open;
 
-  const potentialCrReviewers = (value: UserWithScheduleSettings): boolean => {
+  const potentialCrReviewers = (value: User): boolean => {
     return isLeadership(value.role) && value.userId !== currentUser.userId;
   };
 
