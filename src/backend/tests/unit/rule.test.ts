@@ -721,10 +721,10 @@ describe('Delete Rules Tests', () => {
       );
     });
 
-    it('Returns an empty array if there are no rulesets in the given ruleset type', async () => {
-      const emptyRuleset = await RulesService.getActiveRuleset(admin, emptyRulesetType.rulesetTypeId, organization);
-      expect(Array.isArray(emptyRuleset)).toBe(true);
-      expect(emptyRuleset).toHaveLength(0);
+    it('Fails if there are no rulesets in the given ruleset type', async () => {
+      await expect(RulesService.getActiveRuleset(admin, emptyRulesetType.rulesetTypeId, organization)).rejects.toThrow(
+        new NotFoundException('Active Ruleset for given Ruleset Type', emptyRulesetType.rulesetTypeId)
+      );
     });
 
     it('Successfully gets the active ruleset for a ruleset type', async () => {

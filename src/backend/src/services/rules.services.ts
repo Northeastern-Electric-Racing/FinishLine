@@ -26,11 +26,11 @@ import {
 
 export default class RulesService {
   /**
-   * Gets the active ruleset for the given ruleset type ID or returns an empty array if there is no active ruleset
+   * Gets the active ruleset for the given ruleset type ID
    * @param user a user who is requesting for the active ruleset
    * @param rulesetTypeId the given ruleset type id
    * @param organization the organization for permission check
-   * @returns a ruleset with the given id if it exists and is active, otherwise an empty array
+   * @returns a ruleset with the given id if it exists, otherwise throws an error
    */
   static async getActiveRuleset(user: User, rulesetTypeId: string, organization: Organization) {
     if (!(await userHasPermission(user.userId, organization.organizationId, notGuest)))
@@ -54,7 +54,7 @@ export default class RulesService {
     });
 
     if (!activeRuleset) {
-      return [];
+      throw new NotFoundException('Active Ruleset for given Ruleset Type', rulesetTypeId);
     }
 
     return rulesetTransformer(activeRuleset);
