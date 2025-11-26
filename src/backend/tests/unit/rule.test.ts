@@ -1,6 +1,5 @@
 import RulesService from '../../src/services/rules.services';
 import { Organization, User, Project, Car, Ruleset_Type, Ruleset, Rule_Completion, Team } from '@prisma/client';
-import { Organization, User, Project, Car, Ruleset_Type, Ruleset, Rule_Completion, Team } from '@prisma/client';
 import {
   supermanAdmin,
   financeMember,
