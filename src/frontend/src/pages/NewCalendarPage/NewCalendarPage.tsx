@@ -36,6 +36,7 @@ const NewCalendarPage = () => {
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
+
   const [memberIds, setMemberIds] = useState<string[]>([]);
   const [teamIds, setTeamIds] = useState<string[]>([]);
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
