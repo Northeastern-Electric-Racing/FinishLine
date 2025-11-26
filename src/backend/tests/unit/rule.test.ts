@@ -711,7 +711,7 @@ describe('Rule Tests', () => {
       await expect(
         async () =>
           await RulesService.editRule(
-            await createTestUser(wonderwomanGuest, orgId),
+            guest,
             'Some rule content',
             leafRule1.ruleId,
             leafRule1.ruleCode,
