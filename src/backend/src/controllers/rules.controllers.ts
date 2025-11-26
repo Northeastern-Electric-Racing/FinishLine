@@ -115,4 +115,14 @@ export default class RulesController {
       next(error);
     }
   }
+
+  static async getTopLevelRules(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const rules = await RulesService.getTopLevelRules(rulesetId);
+      res.status(200).json(rules);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

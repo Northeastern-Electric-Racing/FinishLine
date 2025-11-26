@@ -513,4 +513,21 @@ export default class RulesService {
 
     return rulesetTypeTransformer(deletedRule);
   }
+
+  /**
+   * Gets all rules with no parent id
+   * @param rulesetId id of ruleset
+   * @returns an array of rules with no parent Id
+   */
+  static async getTopLevelRules(rulesetId: string): Promise<Rule[]> {
+    const rules = await prisma.rule.findMany({
+      where: {
+        rulesetId,
+        deletedBy: null,
+        parentRuleId: null
+      }
+    });
+
+    return rules.map(ruleTransformer);
+  }
 }
