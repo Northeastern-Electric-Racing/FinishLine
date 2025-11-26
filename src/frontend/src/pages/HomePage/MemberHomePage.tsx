@@ -4,9 +4,6 @@
  */
 
 import { Box, Grid, Typography } from '@mui/material';
-import { useSingleUserSettings } from '../../hooks/users.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
 import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import MyTasks from './components/MyTasks';
@@ -18,11 +15,6 @@ interface MemberHomePageProps {
 }
 
 const MemberHomePage = ({ user }: MemberHomePageProps) => {
-  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
-
-  if (isLoading || !userSettingsData) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} message={error.message} />;
-
   return (
     <PageLayout title="Home" hidePageTitle>
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>

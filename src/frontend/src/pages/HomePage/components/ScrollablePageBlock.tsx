@@ -33,7 +33,6 @@ const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, tit
         <Box
           sx={{
             mt: 2,
-            display: 'flex',
             flexDirection: horizontal ? 'row' : 'column',
             flexWrap: 'nowrap',
             gap: 2,

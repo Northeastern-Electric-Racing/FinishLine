@@ -30,3 +30,5 @@ export const meetingStartTimePipe = (times: number[]) => {
 
   return time <= 12 ? time + 'am' : time - 12 + 'pm';
 };
+
+export const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB

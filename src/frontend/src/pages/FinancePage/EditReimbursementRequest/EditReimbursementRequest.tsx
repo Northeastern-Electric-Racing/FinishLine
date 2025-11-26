@@ -16,7 +16,8 @@ import EditReimbursementRequestRenderedDefaultValues from './EditReimbursementRe
 const EditReimbursementRequestPage: React.FC<{
   onSubmitEditData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
   onExitEditPage: () => void;
-}> = ({ onSubmitEditData, onExitEditPage }) => {
+  onSubmitToFinance?: (data: ReimbursementRequestDataSubmission) => Promise<void>;
+}> = ({ onSubmitEditData, onExitEditPage, onSubmitToFinance }) => {
   const { id } = useParams<{ id: string }>();
 
   const { isLoading: editReimbursementRequestIsLoading } = useEditReimbursementRequest(id);
@@ -33,6 +34,7 @@ const EditReimbursementRequestPage: React.FC<{
       reimbursementRequest={reimbursementRequest}
       onSubmitData={onSubmitEditData}
       onExitEditPage={onExitEditPage}
+      onSubmitToFinance={onSubmitToFinance}
     />
   );
 };
