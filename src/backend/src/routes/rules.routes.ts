@@ -5,6 +5,8 @@ import { body } from 'express-validator';
 
 const rulesRouter = express.Router();
 
+rulesRouter.get('/rulesetType/:rulesetTypeId/active', RulesController.getActiveRuleset);
+
 rulesRouter.post(
   '/rule/create',
   nonEmptyString(body('ruleCode')),
