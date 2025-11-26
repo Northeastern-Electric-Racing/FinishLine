@@ -784,8 +784,8 @@ describe('Delete Rules Tests', () => {
     });
 
     it('Does not return deleted top level rules', async () => {
-      const car = await createUniqueCar(orgId);
-      const { ruleset1, topLevelRule } = await setupRules(car);
+      const carr = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule } = await setupRules(carr);
 
       await prisma.rule.update({
         where: { ruleId: topLevelRule.ruleId },
