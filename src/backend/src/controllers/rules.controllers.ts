@@ -2,6 +2,16 @@ import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services';
 import { ProjectRule } from 'shared';
 export default class RulesController {
+  static async getActiveRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetTypeId } = req.params;
+      const rulesetType = await RulesService.getActiveRuleset(req.currentUser, rulesetTypeId, req.organization);
+      res.status(200).json(rulesetType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createRule(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleCode, ruleContent, rulesetId, parentRuleId, referencedRules, imageFileIds } = req.body;
@@ -54,6 +64,26 @@ export default class RulesController {
       );
 
       res.status(200).json(projectRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editRule(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ruleId } = req.params;
+      const { ruleContent, ruleCode, imageFileIds, parentRuleId } = req.body;
+
+      const rule = await RulesService.editRule(
+        req.currentUser,
+        ruleContent,
+        ruleId,
+        ruleCode,
+        imageFileIds,
+        req.organization,
+        parentRuleId
+      );
+      res.status(200).json(rule);
     } catch (error: unknown) {
       next(error);
     }
@@ -143,6 +173,26 @@ export default class RulesController {
       const rulesetType = await RulesService.deleteRulesetType(req.currentUser, rulesetTypeId, req.organization);
 
       res.status(200).json(rulesetType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getUnassignedRules(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const rules = await RulesService.getUnassignedRules(rulesetId, req.organization);
+      res.status(200).json(rules);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getUnassignedRulesForRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId, teamId } = req.params;
+      const rules = await RulesService.getUnassignedRulesForRuleset(rulesetId, teamId, req.organization.organizationId);
+      res.status(200).json(rules);
     } catch (error: unknown) {
       next(error);
     }

@@ -12,10 +12,12 @@ import { taskTransformer } from './transformers/tasks.transformers';
  * Api call to create a task.
  * @param wbsNum wbsNum of the wbsElement that the task is associated with
  * @param title the title of the task
- * @param deadline the datestring deadline of the task
  * @param priority the priority of the task
  * @param status the status of the task
  * @param assignees the ids of the users assigned to the task
+ * @param notes the notes for the task
+ * @param deadline the datestring deadline of the task
+ * @param startDate the datestring start date of the task
  * @returns
  */
 export const createSingleTask = (
@@ -25,13 +27,15 @@ export const createSingleTask = (
   status: TaskStatus,
   assignees: string[],
   notes: string,
-  deadline?: string
+  deadline?: string,
+  startDate?: string
 ) => {
   return axios.post<Task>(
     apiUrls.tasksCreate(wbsPipe(wbsNum)),
     {
       title,
       deadline,
+      startDate,
       priority,
       status,
       assignees,
@@ -50,15 +54,23 @@ export const createSingleTask = (
  * @param notes the new notes
  * @param priority the new priority
  * @param deadline the new deadline
- * @param assignees the new assignees
+ * @param startDate the new start date
  * @returns the edited task
  */
-export const editTask = (taskId: string, title: string, notes: string, priority: TaskPriority, deadline?: Date) => {
+export const editTask = (
+  taskId: string,
+  title: string,
+  notes: string,
+  priority: TaskPriority,
+  deadline?: Date,
+  startDate?: Date
+) => {
   return axios.post<{ message: string }>(apiUrls.editTaskById(taskId), {
     title,
     notes,
     priority,
-    deadline
+    deadline,
+    startDate
   });
 };
 
@@ -99,4 +111,10 @@ export const editSingleTaskStatus = (id: string, status: TaskStatus) => {
  */
 export const deleteSingleTask = (taskId: string) => {
   return axios.post<{ message: string }>(apiUrls.deleteTask(taskId), {});
+};
+
+export const getOverdueTasksByTeamLeader = (userId: string) => {
+  return axios.get<Task[]>(apiUrls.overdueTasksByTeamLeadership(userId), {
+    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  });
 };

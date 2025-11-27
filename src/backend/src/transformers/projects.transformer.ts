@@ -16,7 +16,6 @@ import {
 import { convertStatus, wbsNumOf } from '../utils/utils';
 import taskTransformer from './tasks.transformer';
 import { calculateProjectStatus } from '../utils/projects.utils';
-import { linkTransformer } from './links.transformer';
 import { descBulletConverter } from '../utils/description-bullets.utils';
 import { userTransformer } from './user.transformer';
 import {
@@ -58,7 +57,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
     teams: project.teams.map(teamPreviewTransformer),
     summary: project.summary,
     budget: project.budget,
-    links: project.wbsElement.links.map(linkTransformer),
+    links: project.wbsElement.links,
     duration: calculateDuration(project.workPackages),
     startDate: calculateProjectStartDate(project.workPackages),
     endDate: calculateProjectEndDate(project.workPackages),
@@ -120,6 +119,7 @@ export const projectPreviewTransformer = (project: Prisma.ProjectGetPayload<Proj
     abbreviation: project.abbreviation ?? undefined,
     teams: project.teams,
     workPackages: project.workPackages.map((wp) => ({
+      ...wp,
       status: convertStatus(wp.wbsElement.status),
       name: wp.wbsElement.name,
       wbsElementId: wp.wbsElement.wbsElementId,
@@ -142,7 +142,7 @@ export const projectOverviewTransformer = (project: Prisma.ProjectGetPayload<Pro
   return {
     ...projectPreviewTransformer(project),
     tasks: project.wbsElement.tasks.map(taskTransformer),
-    links: project.wbsElement.links.map(linkTransformer)
+    links: project.wbsElement.links
   };
 };
 

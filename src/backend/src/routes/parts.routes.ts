@@ -10,11 +10,10 @@ import {
 } from '../utils/validation.utils';
 import { body } from 'express-validator';
 import PartReviewController from '../controllers/part-review.controllers';
-import { Review_Status } from 'shared';
+import { Review_Status, MAX_FILE_SIZE } from 'shared';
 import multer, { memoryStorage } from 'multer';
 
-//limit uploads to 5 mb per file
-const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 }, storage: memoryStorage() });
+const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 const partsRouter = express.Router();
 
