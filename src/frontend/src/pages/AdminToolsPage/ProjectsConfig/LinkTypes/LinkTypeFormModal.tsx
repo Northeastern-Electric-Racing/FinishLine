@@ -63,6 +63,7 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
     }
     handleClose();
   };
+
   const tooltipMessage = (
     <Typography sx={{ fontSize: 14 }}>
       Click to view possible icon names. For names with multiple words, seperate them with an _. AttachMoney = attach_money
@@ -73,7 +74,7 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
       open={open}
       onHide={handleClose}
       title={!!defaultValues ? 'Edit LinkType' : 'Create LinkType'}
-      reset={() => reset({ name: '' })}
+      reset={reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-LinkType-form' : 'create-LinkType-form'}
@@ -83,7 +84,7 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
         <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>LinkType Name</FormLabel>
-            <ReactHookTextField name="name" control={control} disabled={!creatingNew} />
+            <ReactHookTextField name="name" control={control} />
             <FormHelperText error>{errors.name?.message}</FormHelperText>
           </FormControl>
         </Grid>

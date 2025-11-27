@@ -4,7 +4,7 @@
  */
 
 import { Dispatch, MouseEventHandler, SetStateAction } from 'react';
-import { Project, Task, TaskPriority, TaskStatus, TeamPreview, User, UserPreview } from 'shared';
+import { Project, Task, TaskPriority, TaskStatus, TeamPreview, User } from 'shared';
 import { EditTaskFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskFormModal';
 import { fullNamePipe } from './pipes';
 import { daysOverdue } from './datetime.utils';
@@ -27,7 +27,7 @@ export type Row = {
   title: string;
   deadline?: Date;
   priority: TaskPriority;
-  assignees: UserPreview[];
+  assignees: User[];
   taskId: string;
   notes: string;
   task: Task;
@@ -49,7 +49,7 @@ export interface TaskListDataGridProps {
   tableRowCount: string;
   setSelectedTask: Dispatch<SetStateAction<Task | undefined>>;
   setModalShow: Dispatch<SetStateAction<boolean>>;
-  createTask: (title: string, priority: TaskPriority, assignees: UserPreview[], deadline?: Date) => Promise<void>;
+  createTask: (title: string, priority: TaskPriority, assignees: User[], deadline?: Date) => Promise<void>;
   status: TaskStatus;
   addTask: boolean;
   onAddCancel: () => void;

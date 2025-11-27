@@ -1,6 +1,6 @@
 import { LinkCreateArgs } from 'shared';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import { batmanAppAdmin, flashAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { testLink1 } from '../test-data/organizations.test-data';
@@ -283,6 +283,79 @@ describe('Organization Tests', () => {
       );
 
       expect(updatedOrg.sponsorshipNotificationsSlackChannelId).toEqual('sponsorshipNotifId');
+    });
+  });
+
+  describe('Get Finance Delegates', () => {
+    it('Succeeds and returns empty array when no delegates', async () => {
+      const delegates = await OrganizationsService.getFinanceDelegates(orgId);
+
+      expect(delegates).not.toBeNull();
+      expect(delegates.length).toBe(0);
+    });
+
+    it('Succeeds and returns all finance delegates', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+
+      await OrganizationsService.setFinanceDelegates(testBatman, orgId, [testSuperman.userId]);
+
+      const delegates = await OrganizationsService.getFinanceDelegates(orgId);
+
+      expect(delegates).not.toBeNull();
+      expect(delegates.length).toBe(1);
+      expect(delegates[0].userId).toBe(testSuperman.userId);
+      expect(delegates[0].firstName).toBe('Clark');
+      expect(delegates[0].lastName).toBe('Kent');
+    });
+  });
+
+  describe('Set Finance Delegates', () => {
+    it('Fails if user is not admin', async () => {
+      const testWonderwoman = await createTestUser(wonderwomanGuest, orgId);
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+
+      await expect(OrganizationsService.setFinanceDelegates(testWonderwoman, orgId, [testSuperman.userId])).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('set finance delegates')
+      );
+    });
+
+    it('Fails if one or more user IDs do not exist', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+
+      await expect(OrganizationsService.setFinanceDelegates(testBatman, orgId, ['nonexistent-user-id'])).rejects.toThrow(
+        new HttpException(404, 'One or more users not found')
+      );
+    });
+
+    it('Succeeds and sets finance delegates', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+      const testFlash = await createTestUser(flashAdmin, orgId);
+
+      const delegates = await OrganizationsService.setFinanceDelegates(testBatman, orgId, [
+        testSuperman.userId,
+        testFlash.userId
+      ]);
+
+      expect(delegates).not.toBeNull();
+      expect(delegates.length).toBe(2);
+      expect(delegates.some((delegate) => delegate.userId === testSuperman.userId)).toBeTruthy();
+      expect(delegates.some((delegate) => delegate.userId === testFlash.userId)).toBeTruthy();
+    });
+
+    it('Succeeds and replaces existing finance delegates', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+      const testFlash = await createTestUser(flashAdmin, orgId);
+
+      await OrganizationsService.setFinanceDelegates(testBatman, orgId, [testSuperman.userId]);
+
+      const updatedDelegates = await OrganizationsService.setFinanceDelegates(testBatman, orgId, [testFlash.userId]);
+
+      expect(updatedDelegates).not.toBeNull();
+      expect(updatedDelegates.length).toBe(1);
+      expect(updatedDelegates[0].userId).toBe(testFlash.userId);
     });
   });
 });
