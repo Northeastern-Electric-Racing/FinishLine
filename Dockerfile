@@ -18,7 +18,6 @@ WORKDIR /app
 RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 COPY package.json ./
-# COPY .yarn ./.yarn
 
 COPY src/backend/package.json ./src/backend/
 COPY src/shared/package.json ./src/shared/
@@ -34,6 +33,12 @@ COPY --from=builder /app/src/backend/src/prisma ./src/backend/src/prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
+# Copy the entrypoint script to run migrations
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 EXPOSE 3001
 
+# Use entrypoint to run migrations before starting app
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["yarn", "backend"]
