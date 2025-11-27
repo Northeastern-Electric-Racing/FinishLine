@@ -1287,7 +1287,7 @@ describe('Rule Tests', () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1, topLevelRule } = await setupRules(car);
 
-      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId);
+      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
 
       expect(rules.length).toEqual(1);
       expect(rules[0].ruleCode).toEqual('T');
@@ -1297,7 +1297,6 @@ describe('Rule Tests', () => {
     it('Gets multiple top level rules', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
-
       await prisma.rule.create({
         data: {
           ruleCode: 'A',
@@ -1309,7 +1308,7 @@ describe('Rule Tests', () => {
         }
       });
 
-      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId);
+      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
 
       expect(rules.length).toEqual(2);
       expect(rules.map((r) => r.ruleCode).sort()).toEqual(['A', 'T']);
@@ -1329,16 +1328,14 @@ describe('Rule Tests', () => {
         }
       });
 
-      const rules = await RulesService.getTopLevelRules(ruleset.rulesetId);
-
+      const rules = await RulesService.getTopLevelRules(ruleset.rulesetId, organization.organizationId);
       expect(rules.length).toEqual(0);
     });
 
     it('Does not return child rules', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
-
-      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId);
+      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
 
       expect(rules.length).toEqual(1);
       expect(rules[0].ruleId).toEqual(topLevelRule.ruleId);
@@ -1358,8 +1355,7 @@ describe('Rule Tests', () => {
         }
       });
 
-      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId);
-
+      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
       expect(rules.length).toEqual(0);
     });
   });

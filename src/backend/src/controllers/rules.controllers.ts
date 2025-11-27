@@ -201,7 +201,7 @@ export default class RulesController {
   static async getTopLevelRules(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetId } = req.params;
-      const rules = await RulesService.getTopLevelRules(rulesetId);
+      const rules = await RulesService.getTopLevelRules(rulesetId, req.organization.organizationId);
       res.status(200).json(rules);
     } catch (error: unknown) {
       next(error);

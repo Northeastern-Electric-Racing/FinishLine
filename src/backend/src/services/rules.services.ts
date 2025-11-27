@@ -872,13 +872,32 @@ export default class RulesService {
    * @param rulesetId id of ruleset
    * @returns an array of rules with no parent Id
    */
-  static async getTopLevelRules(rulesetId: string): Promise<Rule[]> {
+  static async getTopLevelRules(rulesetId: string, organizationId: string): Promise<Rule[]> {
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      select: {
+        rulesetType: {
+          select: {
+            organizationId: true
+          }
+        }
+      }
+    });
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.rulesetType.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
     const rules = await prisma.rule.findMany({
       where: {
         rulesetId,
         deletedBy: null,
         parentRuleId: null
-      }
+      },
+      ...getRulePreviewQueryArgs()
     });
 
     return rules.map(ruleTransformer);

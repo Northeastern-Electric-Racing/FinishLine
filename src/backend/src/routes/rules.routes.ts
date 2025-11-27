@@ -71,6 +71,6 @@ rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRul
 
 rulesRouter.get('/ruleset/:rulesetId/team/:teamId/rules/unassigned', RulesController.getUnassignedRulesForRuleset);
 
-rulesRouter.post('rules/:rulesetId/parentRules', RulesController.getTopLevelRules);
+rulesRouter.post('/:rulesetId/parentRules', RulesController.getTopLevelRules);
 
 export default rulesRouter;
