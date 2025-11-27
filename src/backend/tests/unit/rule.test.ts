@@ -1407,15 +1407,15 @@ describe('Rule Tests', () => {
       expect(rules.map((r) => r.ruleId)).not.toContain(rule3.ruleId);
     });
 
-    it('Returns empty array when no active ruleset exists', async () => {
+    it('Fails when no active ruleset exists', async () => {
       await prisma.ruleset.update({
         where: { rulesetId: activeRuleset.rulesetId },
         data: { active: false }
       });
 
-      const rules = await RulesService.getTeamRulesInRulesetType(team.teamId, fsaeRulesetType.rulesetTypeId, organization);
-
-      expect(rules.length).toBe(0);
+      await expect(
+        RulesService.getTeamRulesInRulesetType(team.teamId, fsaeRulesetType.rulesetTypeId, organization)
+      ).rejects.toThrow(new NotFoundException('Active Ruleset for given Ruleset Type', activeRuleset.rulesetTypeId));
     });
 
     it('Only returns rules from active ruleset, not inactive', async () => {
