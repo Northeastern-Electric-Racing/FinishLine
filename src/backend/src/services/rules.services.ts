@@ -814,6 +814,7 @@ export default class RulesService {
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
+        dateDeleted: true,
         rulesetType: {
           select: {
             organizationId: true
@@ -824,6 +825,10 @@ export default class RulesService {
 
     if (!ruleset) {
       throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.dateDeleted) {
+      throw new DeletedException('Ruleset', rulesetId);
     }
 
     if (ruleset.rulesetType.organizationId !== organizationId) {
@@ -876,6 +881,7 @@ export default class RulesService {
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
+        dateDeleted: true,
         rulesetType: {
           select: {
             organizationId: true
@@ -883,8 +889,13 @@ export default class RulesService {
         }
       }
     });
+    
     if (!ruleset) {
       throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.dateDeleted) {
+      throw new DeletedException('Ruleset', rulesetId);
     }
 
     if (ruleset.rulesetType.organizationId !== organizationId) {
