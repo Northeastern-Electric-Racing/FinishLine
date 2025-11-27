@@ -872,7 +872,7 @@ export default class RulesService {
    * @param rulesetId id of ruleset
    * @returns an array of rules with no parent Id
    */
-  static async getTopLevelRules(rulesetId: string, organizationId: string): Promise<Rule[]> {
+  static async getTopLevelRules(rulesetId: string, organizationId: string) {
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
@@ -894,7 +894,7 @@ export default class RulesService {
     const rules = await prisma.rule.findMany({
       where: {
         rulesetId,
-        deletedBy: null,
+        dateDeleted: null,
         parentRuleId: null
       },
       ...getRulePreviewQueryArgs()
