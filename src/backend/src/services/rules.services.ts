@@ -464,11 +464,10 @@ export default class RulesService {
   }
 
   /**
-   * Assigns each team in the inputted array of rules to
-   * the rule with the inputted ruleId.
+   * Assigns a rule to a team
    * @param ruleId The ruleId of the rule to be added to
-   * @param teamIds An array of teamId's to be added to the rule
-   * @param user The user adding the teams to the rule
+   * @param teamIds The team to be added to the rule
+   * @param user The user adding the team to the rule
    * @param org The organization the rule belongs to
    * @returns the updated rule
    * @throws If the user is a guest, the rule does not exist or
@@ -485,13 +484,19 @@ export default class RulesService {
     // Checks that the rule exists and is not deleted
     const rule = await prisma.rule.findUnique({
       where: { ruleId },
-      include: { teams: true }
+      include: {
+        teams: true,
+        ruleset: { select: { car: { include: { wbsElement: { select: { organizationId: true } } } } } }
+      }
     });
     if (!rule) {
       throw new NotFoundException('Rule', ruleId);
     }
     if (rule.deletedByUserId) {
       throw new DeletedException('Rule', ruleId);
+    }
+    if (rule.ruleset.car.wbsElement.organizationId !== org.organizationId) {
+      throw new InvalidOrganizationException('Rule');
     }
 
     // Checks based on the team
@@ -501,6 +506,8 @@ export default class RulesService {
     if (team.dateArchived) throw new HttpException(400, 'Cannot assign an archived team.');
 
     // We add the team to the rule if it is not already in the rule
+    // If the rule is not in this team, add the team to the rule
+    // If the rule is already in this team, remove the team from the rule
     if (!rule.teams.some((currTeam) => currTeam.teamId === teamId)) {
       await prisma.rule.update({
         where: { ruleId: rule.ruleId },
@@ -512,15 +519,26 @@ export default class RulesService {
           }
         }
       });
+    } else {
+      await prisma.rule.update({
+        where: { ruleId: rule.ruleId },
+        data: {
+          teams: {
+            disconnect: {
+              teamId
+            }
+          }
+        }
+      });
     }
 
     // retrieve and return the updated rule
     const newRule = await prisma.rule.findUnique({
       where: { ruleId },
-      include: { teams: true }
+      ...getRulePreviewQueryArgs()
     });
 
-    return newRule;
+    return ruleTransformer(newRule!);
   }
 
   static async createRuleset(

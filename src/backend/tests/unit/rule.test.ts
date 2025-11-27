@@ -809,6 +809,23 @@ describe('Delete Rules Tests', () => {
       expect(ruleWithTeams?.teams.length).toBe(1);
       expect(ruleWithTeams?.teams[0].teamId).toBe(team.teamId);
     });
+    it('Successfully removes a team from a rule', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const teamType = await createTestTeamType('electrical', organization.organizationId);
+      const team = await createTestTeam(admin.userId, teamType.teamTypeId, organization.organizationId);
+      const teamAddedRule = await RulesService.assignRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization);
+      expect(teamAddedRule).toBeDefined();
+
+      const teamRemovedRule = await RulesService.assignRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization);
+      const ruleWithTeams = await prisma.rule.findUnique({
+        where: { ruleId: topLevelRule.ruleId },
+        include: { teams: true }
+      });
+      expect(teamRemovedRule).toBeDefined();
+      expect(ruleWithTeams?.teams.length).toBe(0);
+      expect(ruleWithTeams?.teams[0]).toBeUndefined();
+    });
   });
 
   describe('Delete Project Rule', () => {
