@@ -1348,4 +1348,82 @@ describe('Rule Tests', () => {
       ).rejects.toThrow(new DeletedException('Ruleset', topLevelRule.rulesetId));
     });
   });
+
+  describe('Get Top Level Rules', () => {
+    it('Successful get all rules with no parent id', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule } = await setupRules(car);
+
+      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
+
+      expect(rules.length).toEqual(1);
+      expect(rules[0].ruleCode).toEqual('T');
+      expect(rules[0].ruleId).toEqual(topLevelRule.ruleId);
+    });
+
+    it('Gets multiple top level rules', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+      await prisma.rule.create({
+        data: {
+          ruleCode: 'A',
+          ruleContent: 'PART A - ADMINISTRATIVE REQUIREMENTS',
+          imageFileIds: [],
+          dateCreated: new Date(),
+          ruleset: { connect: { rulesetId: ruleset1.rulesetId } },
+          createdBy: { connect: { userId: admin.userId } }
+        }
+      });
+
+      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
+
+      expect(rules.length).toEqual(2);
+      expect(rules.map((r) => r.ruleCode).sort()).toEqual(['A', 'T']);
+    });
+
+    it('Returns empty array when no top level rules exist', async () => {
+      const car = await createUniqueCar(orgId);
+      const ruleset = await prisma.ruleset.create({
+        data: {
+          name: 'Empty Ruleset',
+          fileId: 'empty-ruleset',
+          active: true,
+          dateCreated: new Date(),
+          car: { connect: { carId: car.carId } },
+          createdBy: { connect: { userId: admin.userId } },
+          rulesetType: { connect: { rulesetTypeId: fsaeRulesetType.rulesetTypeId } }
+        }
+      });
+
+      const rules = await RulesService.getTopLevelRules(ruleset.rulesetId, organization.organizationId);
+      expect(rules.length).toEqual(0);
+    });
+
+    it('Does not return child rules', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
+
+      expect(rules.length).toEqual(1);
+      expect(rules[0].ruleId).toEqual(topLevelRule.ruleId);
+      expect(rules.find((r) => r.ruleId === leafRule1.ruleId)).toBeUndefined();
+      expect(rules.find((r) => r.ruleId === leafRule2.ruleId)).toBeUndefined();
+    });
+
+    it('Does not return deleted top level rules', async () => {
+      const carr = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule } = await setupRules(carr);
+
+      await prisma.rule.update({
+        where: { ruleId: topLevelRule.ruleId },
+        data: {
+          dateDeleted: new Date(),
+          deletedByUserId: admin.userId
+        }
+      });
+
+      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
+      expect(rules.length).toEqual(0);
+    });
+  });
 });
