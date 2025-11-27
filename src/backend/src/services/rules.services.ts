@@ -732,7 +732,7 @@ export default class RulesService {
    * @param status new status of ruleset
    * @returns
    */
-  static async updateRuleset(submitter: User, organizationId: string, rulesetId: string, name: string, status: boolean) {
+  static async updateRuleset(submitter: User, organizationId: string, rulesetId: string, name: string, isActive: boolean) {
     if (!(await userHasPermission(submitter.userId, organizationId, isHead))) {
       throw new AccessDeniedException('You do not have permissions to update ruleset status');
     }
@@ -751,7 +751,7 @@ export default class RulesService {
       throw new NotFoundException('Ruleset', rulesetId);
     }
 
-    if (!rulesetExists.active && status) {
+    if (!rulesetExists.active && isActive) {
       const activeRuleset = await prisma.ruleset.findFirst({
         where: {
           active: true,
@@ -776,7 +776,7 @@ export default class RulesService {
       },
       data: {
         name,
-        active: status
+        active: isActive
       },
       ...getRulesetQueryArgs(organizationId)
     });
