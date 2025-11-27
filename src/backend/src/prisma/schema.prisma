@@ -525,6 +525,7 @@ model Project {
   featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
   abbreviation             String?
   parts                    Part[]
+  noField                  String
 
   @@index([carId])
 }

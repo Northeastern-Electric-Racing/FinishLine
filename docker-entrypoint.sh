@@ -15,7 +15,7 @@ echo "📊 Database URL is configured"
 echo "🔄 Running Prisma migrations..."
 cd /app/src/backend
 
-# Run migrations with proper error handling
+# Run migrations with error handling (if migrations fail )
 if npx prisma migrate deploy; then
   echo "✅ Migrations completed successfully"
 else
