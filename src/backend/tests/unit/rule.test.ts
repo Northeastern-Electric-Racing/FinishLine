@@ -26,7 +26,6 @@ import {
   InvalidOrganizationException
 } from '../../src/utils/errors.utils';
 import TeamsService from '../../src/services/teams.services';
-import { create } from 'domain';
 
 describe('Create Rules Tests', () => {
   let orgId: string;
