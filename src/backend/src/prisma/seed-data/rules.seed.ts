@@ -61,6 +61,14 @@ const rulesetType1 = (userCreatedId: string, organizationId: string): Prisma.Rul
   };
 };
 
+const emptyRulesetType = (userCreatedId: string, organizationId: string): Prisma.Ruleset_TypeCreateInput => {
+  return {
+    name: 'Empty Ruleset Type',
+    createdBy: { connect: { userId: userCreatedId } },
+    organization: { connect: { organizationId } }
+  };
+};
+
 // rulesets
 const ruleset1 = (carId: string, userCreatedId: string, rulesetTypeId: string): Prisma.RulesetCreateInput => {
   return {
@@ -68,6 +76,18 @@ const ruleset1 = (carId: string, userCreatedId: string, rulesetTypeId: string): 
     fileId: 'fsae-rules-2025',
     active: true,
     dateCreated: new Date('2025-01-01T10:00:00Z'),
+    car: { connect: { carId } },
+    createdBy: { connect: { userId: userCreatedId } },
+    rulesetType: { connect: { rulesetTypeId } }
+  };
+};
+
+const secondActiveRuleset = (carId: string, userCreatedId: string, rulesetTypeId: string): Prisma.RulesetCreateInput => {
+  return {
+    name: 'Another Active FSAE Rules 2025 Revision',
+    fileId: '2active-fsae-rules-2025',
+    active: true,
+    dateCreated: new Date('2024-12-31T10:00:00Z'),
     car: { connect: { carId } },
     createdBy: { connect: { userId: userCreatedId } },
     rulesetType: { connect: { rulesetTypeId } }
@@ -105,7 +125,9 @@ export const ruleSeedData = {
   thirdLevelRule,
   leafRule,
   rulesetType1,
+  emptyRulesetType,
   ruleset1,
+  secondActiveRuleset,
   projectRule1,
   projectRule2
 };

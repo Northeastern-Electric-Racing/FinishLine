@@ -2,6 +2,16 @@ import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services';
 import { ProjectRule } from 'shared';
 export default class RulesController {
+  static async getActiveRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetTypeId } = req.params;
+      const rulesetType = await RulesService.getActiveRuleset(req.currentUser, rulesetTypeId, req.organization);
+      res.status(200).json(rulesetType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createRule(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleCode, ruleContent, rulesetId, parentRuleId, referencedRules, imageFileIds } = req.body;
@@ -173,6 +183,18 @@ export default class RulesController {
       const { rulesetId, teamId } = req.params;
       const rules = await RulesService.getUnassignedRulesForRuleset(rulesetId, teamId, req.organization.organizationId);
       res.status(200).json(rules);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getProjectRules(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId, projectId } = req.params;
+
+      const projectRules = await RulesService.getProjectRules(rulesetId, projectId, req.organization);
+
+      res.status(200).json(projectRules);
     } catch (error: unknown) {
       next(error);
     }
