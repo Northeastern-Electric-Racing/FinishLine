@@ -98,6 +98,7 @@ export const getProjectPreviewQueryArgs = (organizationId: string) =>
       projectId: true,
       budget: true,
       abbreviation: true,
+      testFeild: true,
       teams: {
         select: {
           teamId: true,
@@ -135,6 +136,7 @@ export const getProjectOverviewQueryArgs = (organizationId: string) =>
           teamId: true,
           teamName: true
         }
-      }
+      },
+      testFeild: true
     }
   });
