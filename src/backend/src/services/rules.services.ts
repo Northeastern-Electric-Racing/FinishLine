@@ -558,11 +558,12 @@ export default class RulesService {
         rulesetTypeId,
         active: true,
         deletedBy: null
-      }
+      },
+      ...getRulesetQueryArgs(organization.organizationId)
     });
 
     if (!activeRuleset) {
-      return [];
+      throw new NotFoundException('Active Ruleset for given Ruleset Type', rulesetTypeId);
     }
 
     const rules = await prisma.rule.findMany({
