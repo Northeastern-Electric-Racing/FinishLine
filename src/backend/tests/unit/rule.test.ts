@@ -1281,4 +1281,71 @@ describe('Rule Tests', () => {
       expect(rules).toEqual([]);
     });
   });
+
+  describe('Get Project Rules', () => {
+    it('Successfully gets all project rules for a project', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+
+      const projectRules = await RulesService.getProjectRules(topLevelRule.rulesetId, projectRule.projectId, organization);
+
+      expect(projectRules.length).toBe(1);
+      expect(projectRules[0].projectRuleId).toBe(projectRule.projectRuleId);
+      expect(projectRules[0].rule.ruleId).toBe(topLevelRule.ruleId);
+    });
+
+    it('Get project rules returns empty array if no project rules exist for the project', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+
+      const projectRules = await RulesService.getProjectRules(topLevelRule.rulesetId, project.projectId, organization);
+      expect(projectRules.length).toBe(0);
+    });
+
+    it('Get project rules fails if project is deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      await prisma.project.update({
+        where: { projectId: project.projectId },
+        data: {
+          wbsElement: {
+            update: { dateDeleted: new Date() }
+          }
+        }
+      });
+
+      await expect(
+        async () => await RulesService.getProjectRules(topLevelRule.rulesetId, project.projectId, organization)
+      ).rejects.toThrow(new DeletedException('Project', project.projectId));
+    });
+
+    it('Get project rules fails if ruleset does not exist', async () => {
+      await expect(
+        async () => await RulesService.getProjectRules('fake-ruleset-id', project.projectId, organization)
+      ).rejects.toThrow(new NotFoundException('Ruleset', 'fake-ruleset-id'));
+    });
+
+    it('Get project rules fails if project does not exist', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+
+      await expect(
+        async () => await RulesService.getProjectRules(topLevelRule.rulesetId, 'fake-project-id', organization)
+      ).rejects.toThrow(new NotFoundException('Project', 'fake-project-id'));
+    });
+
+    it('Get project rules fails if ruleset is deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      await prisma.ruleset.update({
+        where: { rulesetId: topLevelRule.rulesetId },
+        data: { dateDeleted: new Date(), deletedBy: { connect: { userId: admin.userId } } }
+      });
+
+      await expect(
+        async () => await RulesService.getProjectRules(topLevelRule.rulesetId, project.projectId, organization)
+      ).rejects.toThrow(new DeletedException('Ruleset', topLevelRule.rulesetId));
+    });
+  });
 });
