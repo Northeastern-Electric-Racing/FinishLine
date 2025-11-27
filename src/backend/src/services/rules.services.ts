@@ -1,5 +1,15 @@
 import { Organization, Rule, Rule_Completion } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview, User, Rule as SharedRule } from 'shared';
+import {
+  isAdmin,
+  isLeadership,
+  ProjectRule,
+  RulesetType,
+  notGuest,
+  RulesetPreview,
+  User,
+  Rule as SharedRule,
+  isHead
+} from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -693,7 +703,7 @@ export default class RulesService {
    * @returns The deleted project rule
    */
   static async deleteProjectRule(projectRuleId: string, deleter: User, organization: Organization): Promise<ProjectRule> {
-    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedAdminOnlyException('delete project rules');
     }
 
@@ -737,23 +747,76 @@ export default class RulesService {
       throw new DeletedException('Project Rule', projectRuleId);
     }
 
-    const deletedProjectRule = await prisma.$transaction(async (tx) => {
-      await tx.rule_Status_Change.updateMany({
-        where: { projectRuleId, dateDeleted: null },
-        data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
-      });
-
-      return await tx.project_Rule.update({
-        where: { projectRuleId },
-        data: {
-          dateDeleted: new Date(),
-          deletedByUserId: deleter.userId
-        },
-        ...getProjectRuleQueryArgs()
-      });
+    const deletedProjectRule = await prisma.project_Rule.update({
+      where: { projectRuleId },
+      data: {
+        dateDeleted: new Date(),
+        deletedByUserId: deleter.userId
+      },
+      ...getProjectRuleQueryArgs()
     });
 
     return projectRuleTransformer(deletedProjectRule);
+  }
+
+  /**
+   * Updates a rulesets status
+   * @param submitter user updating the ruleset
+   * @param organizationId organization of ruleset being updated
+   * @param rulesetId id of ruleset being updated
+   * @param status new status of ruleset
+   * @returns
+   */
+  static async updateRuleset(submitter: User, organizationId: string, rulesetId: string, name: string, isActive: boolean) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isHead))) {
+      throw new AccessDeniedException('You do not have permissions to update ruleset status');
+    }
+
+    const rulesetExists = await prisma.ruleset.findUnique({
+      where: {
+        rulesetId,
+        rulesetType: {
+          organizationId
+        },
+        deletedByUserId: null
+      }
+    });
+
+    if (!rulesetExists) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (!rulesetExists.active && isActive) {
+      const activeRuleset = await prisma.ruleset.findFirst({
+        where: {
+          active: true,
+          rulesetType: {
+            rulesetTypeId: rulesetExists.rulesetTypeId,
+            organizationId
+          },
+          dateDeleted: null
+        }
+      });
+
+      if (activeRuleset) {
+        throw new HttpException(400, 'There is already an active ruleset for this ruleset type');
+      }
+    }
+    const ruleset = await prisma.ruleset.update({
+      where: {
+        rulesetId,
+        rulesetType: {
+          organizationId
+        }
+      },
+      data: {
+        name,
+        active: isActive
+      },
+      ...getRulesetQueryArgs(organizationId)
+    });
+
+    return rulesetTransformer(ruleset);
   }
 
   /**
