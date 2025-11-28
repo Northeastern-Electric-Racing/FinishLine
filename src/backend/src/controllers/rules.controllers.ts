@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services';
-import { ProjectRule } from 'shared';
+import { ProjectRule, Ruleset } from 'shared';
 export default class RulesController {
   static async getActiveRuleset(req: Request, res: Response, next: NextFunction) {
     try {
@@ -178,6 +178,25 @@ export default class RulesController {
     }
   }
 
+  static async updateRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const { name, isActive } = req.body;
+
+      const ruleset: Ruleset = await RulesService.updateRuleset(
+        req.currentUser,
+        req.organization.organizationId,
+        rulesetId,
+        name,
+        isActive
+      );
+
+      res.status(200).json(ruleset);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getUnassignedRules(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetId } = req.params;
@@ -214,6 +233,16 @@ export default class RulesController {
     try {
       const { rulesetTypeId, teamId } = req.params;
       const rules = await RulesService.getTeamRulesInRulesetType(teamId, rulesetTypeId, req.organization);
+      res.status(200).json(rules);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getTopLevelRules(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const rules = await RulesService.getTopLevelRules(rulesetId, req.organization.organizationId);
       res.status(200).json(rules);
     } catch (error: unknown) {
       next(error);

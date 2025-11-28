@@ -70,8 +70,17 @@ rulesRouter.post(
 rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
 rulesRouter.get('/:rulesetTypeId/team/:teamId', RulesController.getTeamRulesInRulesetType);
 
+rulesRouter.post(
+  '/ruleset/:rulesetId/update',
+  body('isActive').isBoolean(),
+  nonEmptyString(body('name')),
+  validateInputs,
+  RulesController.updateRuleset
+);
 rulesRouter.get('/ruleset/:rulesetId/team/:teamId/rules/unassigned', RulesController.getUnassignedRulesForRuleset);
 
 rulesRouter.get('/ruleset/:rulesetId/project/:projectId/rules', RulesController.getProjectRules);
+
+rulesRouter.get('/:rulesetId/parentRules', RulesController.getTopLevelRules);
 
 export default rulesRouter;
