@@ -107,6 +107,8 @@ export interface EventType {
   documents: boolean;
   description: boolean;
   onlyHeadsOrAboveForEventCreation: boolean;
+  requiresConfirmation: boolean;
+  sendSlackNotifications: boolean;
 }
 
 export interface Shop {

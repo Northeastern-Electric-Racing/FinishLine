@@ -46,13 +46,13 @@ import {
 import { UserWithSettings } from '../utils/auth.utils';
 import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 import {
-  sendDREventConfirmationToThread,
-  sendDREventScheduledSlackNotif,
-  sendDREventUserConfirmationToThread,
-  sendSlackDesignReviewEventConfirmNotification,
-  sendSlackDREventNotifications
+  sendEventConfirmationToThread,
+  sendEventScheduledSlackNotif,
+  sendEventUserConfirmationToThread,
+  sendSlackEventNotifications,
+  sendSlackEventConfirmNotification
 } from '../utils/slack.utils';
-import { sendDrEventPopUp } from '../utils/pop-up.utils';
+import { sendEventPopUp } from '../utils/pop-up.utils';
 
 export default class CalendarService {
   /**
@@ -76,6 +76,7 @@ export default class CalendarService {
    * @param documents Determines if documents are associates with this event type.
    * @param description Determines if a description is associated with this event type.
    * @param onlyHeadsOrAbove Determines if events under this event type can only be created by heads or above.
+   * @param sendSlackNotifications Determines if users will be notified via slack
    *
    * @returns The created event type.
    *
@@ -88,7 +89,6 @@ export default class CalendarService {
     name: string,
     calendarIds: string[],
     organization: Organization,
-    schedule: boolean,
     requiredMembers: boolean,
     optionalMembers: boolean,
     teams: boolean,
@@ -102,7 +102,8 @@ export default class CalendarService {
     documents: boolean,
     description: boolean,
     onlyHeadsOrAbove: boolean,
-    requiresConfirmation: boolean
+    requiresConfirmation: boolean,
+    sendSlackNotifications: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create event type');
@@ -147,7 +148,7 @@ export default class CalendarService {
           connect: calendarIds.map((calendarId) => ({ calendarId }))
         },
         userCreatedId: submitter.userId,
-        schedule,
+        schedule: true,
         requiredMembers,
         optionalMembers,
         teams,
@@ -162,6 +163,7 @@ export default class CalendarService {
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
         requiresConfirmation,
+        sendSlackNotifications,
         organizationId: organization.organizationId
       },
       ...getEventTypeQueryArgs(organization.organizationId)
@@ -280,12 +282,12 @@ export default class CalendarService {
       requiredMemberIds,
       optionalMemberIds,
       teamIds,
-      teamTypeId,
       shopIds,
       machineryIds,
       workPackageIds,
       documentIds,
       scheduleSlot,
+      teamTypeId,
       location,
       zoomLink,
       questionDocument,
@@ -469,7 +471,7 @@ export default class CalendarService {
       ...getEventQueryArgs(organization.organizationId)
     });
 
-    if (workPackageIds.length > 0) {
+    if (foundEventType.sendSlackNotifications) {
       const members = await prisma.user.findMany({
         where: { userId: { in: optionalMemberIds.concat(requiredMemberIds) } }
       });
@@ -491,13 +493,13 @@ export default class CalendarService {
 
       const projects = newEvent.workPackages.map((wp) => wp.project);
 
-      // Send a slack message to all members invited to the design review
+      // Send a slack message to all members invited to the event
       for (const memberUserSetting of memberUserSettings) {
         if (memberUserSetting.slackId) {
           try {
             // For each project associated with this event
             for (const project of projects) {
-              await sendSlackDesignReviewEventConfirmNotification(
+              await sendSlackEventConfirmNotification(
                 memberUserSetting.slackId,
                 newEvent.eventId,
                 newEvent.title,
@@ -512,15 +514,19 @@ export default class CalendarService {
         }
       }
 
+      if (newEvent.status === Event_Status.CONFIRMED) {
+        await sendEventConfirmationToThread(newEvent.notificationSlackThreads, newEvent.userCreated);
+      }
+
       // Send popup notification
-      await sendDrEventPopUp(newEvent, members, submitter, workPackageNames, organization.organizationId);
+      await sendEventPopUp(newEvent, members, submitter, workPackageNames, organization.organizationId);
 
       const createdEvent = eventTransformer(newEvent);
 
       for (const project of projects) {
         const projectTeams = project.teams;
         if (projectTeams.length > 0) {
-          await sendSlackDREventNotifications(
+          await sendSlackEventNotifications(
             projectTeams,
             createdEvent,
             submitter,
@@ -604,12 +610,12 @@ export default class CalendarService {
       requiredMemberIds,
       optionalMemberIds,
       teamIds,
-      teamTypeId,
       shopIds,
       machineryIds,
       workPackageIds,
       documentIds,
       scheduleSlot,
+      teamTypeId,
       location,
       zoomLink,
       questionDocument,
@@ -898,8 +904,12 @@ export default class CalendarService {
 
     const edittedEvent = eventTransformer(updatedEvent);
 
-    if (status === Event_Status.SCHEDULED && workPackageIds.length > 0) {
-      await sendDREventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent);
+    if (status === Event_Status.SCHEDULED && foundEventType.sendSlackNotifications) {
+      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent);
+    }
+
+    if (status === Event_Status.CONFIRMED && foundEventType.sendSlackNotifications) {
+      await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
     }
 
     return edittedEvent;
@@ -1011,8 +1021,16 @@ export default class CalendarService {
         }
       });
 
-      if (updatedEvent.workPackages.length > 0) {
-        await sendDREventUserConfirmationToThread(updatedEvent.notificationSlackThreads, submitter);
+      const { eventTypeId } = updatedEvent;
+      const foundEventType = await prisma.event_Type.findUnique({
+        where: { eventTypeId }
+      });
+
+      if (!foundEventType) throw new NotFoundException('Event Type', eventTypeId);
+      if (foundEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
+
+      if (foundEventType.sendSlackNotifications) {
+        await sendEventUserConfirmationToThread(updatedEvent.notificationSlackThreads, submitter);
       }
 
       // If all required attendees have confirmed their schedule and this member was a required attendee, mark design review as confirmed
@@ -1027,8 +1045,8 @@ export default class CalendarService {
             status: Event_Status.CONFIRMED
           }
         });
-        if (updatedEvent.workPackages.length > 0) {
-          await sendDREventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
+        if (foundEventType.sendSlackNotifications) {
+          await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
         }
       }
 
@@ -1766,7 +1784,6 @@ export default class CalendarService {
     calendarIds: string[],
     organization: Organization,
     name: string,
-    schedule: boolean,
     requiredMembers: boolean,
     optionalMembers: boolean,
     teams: boolean,
@@ -1780,7 +1797,8 @@ export default class CalendarService {
     documents: boolean,
     description: boolean,
     onlyHeadsOrAbove: boolean,
-    requiresConfirmation: boolean
+    requiresConfirmation: boolean,
+    sendSlackNotifications: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('edit event type');
@@ -1825,7 +1843,7 @@ export default class CalendarService {
         calendars: {
           connect: calendarIds.map((calendarId) => ({ calendarId }))
         },
-        schedule,
+        schedule: true,
         requiredMembers,
         optionalMembers,
         teams,
@@ -1839,7 +1857,8 @@ export default class CalendarService {
         documents,
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
-        requiresConfirmation
+        requiresConfirmation,
+        sendSlackNotifications
       },
       ...getEventTypeQueryArgs(organization.organizationId)
     });

@@ -10,14 +10,14 @@ import { PopUpService } from '../services/pop-up.services';
  * @param workPackageName the name of the work package associated witht the event
  * @param organizationId  id of the organization of the event
  */
-export const sendDrEventPopUp = async (
+export const sendEventPopUp = async (
   event: Event,
   members: User[],
   submitter: User,
   workPackageName: string,
   organizationId: string
 ) => {
-  const designReviewEventLink = `/settings/preferences?drId=${event.eventId}`;
+  const designReviewEventLink = `/settings/preferences?eventId=${event.eventId}`;
 
   const msg = `Design Review for ${workPackageName} is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
   await PopUpService.sendPopUpToUsers(

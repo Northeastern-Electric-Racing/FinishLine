@@ -111,6 +111,7 @@ CREATE TABLE "public"."Event_Type" (
     "description" BOOLEAN NOT NULL DEFAULT FALSE,
     "onlyHeadsOrAboveForEventCreation" BOOLEAN NOT NULL DEFAULT FALSE,
     "requiresConfirmation" BOOLEAN NOT NULL DEFAULT FALSE,
+    "sendSlackNotifications" BOOLEAN NOT NULL DEFAULT FALSE,
     "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Event_Type_pkey" PRIMARY KEY ("eventTypeId")
@@ -507,6 +508,29 @@ JOIN "public"."WBS_Element" w ON dr."wbsElementId" = w."wbsElementId";
 -- Create Schedule_Slot records for Design Reviews
 -- This creates one slot per time per design review
 -- Design Reviews are non-recurring, so endDate = dateScheduled
+CREATE TEMP TABLE temp_dr_schedule_slots AS
+SELECT 
+    dr."designReviewId" as event_id,
+    gen_random_uuid() as slot_id,
+    ARRAY[CASE EXTRACT(DOW FROM dr."dateScheduled")
+        WHEN 0 THEN 'SUNDAY'::public."DayOfWeek"
+        WHEN 1 THEN 'MONDAY'::public."DayOfWeek"
+        WHEN 2 THEN 'TUESDAY'::public."DayOfWeek"
+        WHEN 3 THEN 'WEDNESDAY'::public."DayOfWeek"
+        WHEN 4 THEN 'THURSDAY'::public."DayOfWeek"
+        WHEN 5 THEN 'FRIDAY'::public."DayOfWeek"
+        WHEN 6 THEN 'SATURDAY'::public."DayOfWeek"
+    END] as days,
+    dr."dateScheduled" + ((10 + time_slot) * INTERVAL '1 hour') as start_time,
+    dr."dateScheduled" + ((11 + time_slot) * INTERVAL '1 hour') as end_time,
+    0 as recurrence_number,
+    dr."initialDateScheduled" as initial_date,
+    dr."dateScheduled" as end_date,
+    false as all_day
+FROM "public"."Design_Review" dr
+CROSS JOIN LATERAL unnest(dr."meetingTimes") AS time_slot;
+
+-- Insert schedule slots from temp table
 INSERT INTO "public"."Schedule_Slot" (
     "scheduleSlotId",
     "days",
@@ -518,35 +542,23 @@ INSERT INTO "public"."Schedule_Slot" (
     "allDay"
 )
 SELECT 
-    gen_random_uuid(),
-    ARRAY[CASE EXTRACT(DOW FROM dr."dateScheduled")
-        WHEN 0 THEN 'SUNDAY'::public."DayOfWeek"
-        WHEN 1 THEN 'MONDAY'::public."DayOfWeek"
-        WHEN 2 THEN 'TUESDAY'::public."DayOfWeek"
-        WHEN 3 THEN 'WEDNESDAY'::public."DayOfWeek"
-        WHEN 4 THEN 'THURSDAY'::public."DayOfWeek"
-        WHEN 5 THEN 'FRIDAY'::public."DayOfWeek"
-        WHEN 6 THEN 'SATURDAY'::public."DayOfWeek"
-    END],
-    dr."dateScheduled" + ((10 + time_slot) * INTERVAL '1 hour'), -- 10am + time_slot
-    dr."dateScheduled" + ((11 + time_slot) * INTERVAL '1 hour'), -- End time (1 hour later)
-    0, -- No recurrence for design reviews
-    dr."dateScheduled", -- initialDateScheduled is the actual scheduled date
-    dr."dateScheduled", -- endDate same as scheduled date (no recurrence)
-    false
-FROM "public"."Design_Review" dr
-CROSS JOIN LATERAL unnest(dr."meetingTimes") AS time_slot;
+    slot_id,
+    days,
+    start_time,
+    end_time,
+    recurrence_number,
+    initial_date,
+    end_date,
+    all_day
+FROM temp_dr_schedule_slots;
 
--- Link Schedule_Slots to Events for Design Reviews
+-- Link Schedule_Slots to Events using the temp table
 INSERT INTO "public"."_EventToSchedule_Slot" ("A", "B")
-SELECT 
-    dr."designReviewId",
-    ss."scheduleSlotId"
-FROM "public"."Design_Review" dr
-JOIN "public"."Schedule_Slot" ss ON 
-    ss."initialDateScheduled" = dr."dateScheduled"
-    AND ss."endDate" = dr."dateScheduled"
-    AND DATE_PART('hour', ss."startTime") - 10 = ANY(dr."meetingTimes");
+SELECT event_id, slot_id
+FROM temp_dr_schedule_slots;
+
+-- Drop temp table
+DROP TABLE temp_dr_schedule_slots;
 
 -- Migrate Design Review member relationships
 INSERT INTO "public"."_requiredEventAttendee" ("A", "B")
@@ -601,6 +613,33 @@ FROM "public"."Meeting" m
 JOIN "public"."Team" t ON m."teamId" = t."teamId";
 
 -- Create Schedule_Slot records for Meetings
+-- This creates one slot per time per meeting
+CREATE TEMP TABLE temp_meeting_schedule_slots AS
+SELECT 
+    m."meetingId" as event_id,
+    gen_random_uuid() as slot_id,
+    ARRAY[CASE EXTRACT(DOW FROM m."dateSet")
+        WHEN 0 THEN 'SUNDAY'::public."DayOfWeek"
+        WHEN 1 THEN 'MONDAY'::public."DayOfWeek"
+        WHEN 2 THEN 'TUESDAY'::public."DayOfWeek"
+        WHEN 3 THEN 'WEDNESDAY'::public."DayOfWeek"
+        WHEN 4 THEN 'THURSDAY'::public."DayOfWeek"
+        WHEN 5 THEN 'FRIDAY'::public."DayOfWeek"
+        WHEN 6 THEN 'SATURDAY'::public."DayOfWeek"
+    END] as days,
+    m."dateSet" + ((10 + time_slot) * INTERVAL '1 hour') as start_time,
+    m."dateSet" + ((11 + time_slot) * INTERVAL '1 hour') as end_time,
+    CASE WHEN m."recurringInterval" > 0 THEN m."recurringInterval" ELSE 0 END as recurrence_number,
+    m."dateSet"::DATE as initial_date,
+    CASE 
+        WHEN m."recurringInterval" > 0 THEN (m."dateSet" + INTERVAL '1 year')::DATE 
+        ELSE m."dateSet"::DATE 
+    END as end_date,
+    false as all_day
+FROM "public"."Meeting" m
+CROSS JOIN LATERAL unnest(m."meetingTimes") AS time_slot;
+
+-- Insert schedule slots from temp table
 INSERT INTO "public"."Schedule_Slot" (
     "scheduleSlotId",
     "days",
@@ -612,38 +651,23 @@ INSERT INTO "public"."Schedule_Slot" (
     "allDay"
 )
 SELECT 
-    gen_random_uuid(),
-    ARRAY[CASE EXTRACT(DOW FROM m."dateSet")
-        WHEN 0 THEN 'SUNDAY'::public."DayOfWeek"
-        WHEN 1 THEN 'MONDAY'::public."DayOfWeek"
-        WHEN 2 THEN 'TUESDAY'::public."DayOfWeek"
-        WHEN 3 THEN 'WEDNESDAY'::public."DayOfWeek"
-        WHEN 4 THEN 'THURSDAY'::public."DayOfWeek"
-        WHEN 5 THEN 'FRIDAY'::public."DayOfWeek"
-        WHEN 6 THEN 'SATURDAY'::public."DayOfWeek"
-    END],
-    m."dateSet" + ((10 + time_slot) * INTERVAL '1 hour'), -- 10am + time_slot
-    m."dateSet" + ((11 + time_slot) * INTERVAL '1 hour'), -- End time (1 hour later)
-    CASE WHEN m."recurringInterval" > 0 THEN m."recurringInterval" ELSE 0 END,
-    m."dateSet"::DATE,
-    CASE 
-        WHEN m."recurringInterval" > 0 THEN (m."dateSet" + INTERVAL '1 year')::DATE 
-        ELSE m."dateSet"::DATE 
-    END,
-    false
-FROM "public"."Meeting" m
-CROSS JOIN LATERAL unnest(m."meetingTimes") AS time_slot;
+    slot_id,
+    days,
+    start_time,
+    end_time,
+    recurrence_number,
+    initial_date,
+    end_date,
+    all_day
+FROM temp_meeting_schedule_slots;
 
--- Link Schedule_Slots to Events for Meetings
+-- Link Schedule_Slots to Events using the temp table
 INSERT INTO "public"."_EventToSchedule_Slot" ("A", "B")
-SELECT 
-    m."meetingId",
-    ss."scheduleSlotId"
-FROM "public"."Meeting" m
-JOIN "public"."Schedule_Slot" ss ON 
-    ss."initialDateScheduled" = m."dateSet"::DATE
-    AND DATE_PART('hour', ss."startTime") - 10 = ANY(m."meetingTimes")
-    AND ss."recurrenceNumber" = CASE WHEN m."recurringInterval" > 0 THEN m."recurringInterval" ELSE 0 END;
+SELECT event_id, slot_id
+FROM temp_meeting_schedule_slots;
+
+-- Drop temp table
+DROP TABLE temp_meeting_schedule_slots;
 
 -- Link Meetings to Teams
 INSERT INTO "public"."_affiliatedTeam" ("A", "B")
@@ -670,15 +694,15 @@ ON DELETE SET NULL
 ON UPDATE CASCADE;
 
 -- Drop old relation tables for Design_Review
-DROP TABLE IF EXISTS "public"."_requiredAttendee" CASCADE;
-DROP TABLE IF EXISTS "public"."_optionalAttendee" CASCADE;
-DROP TABLE IF EXISTS "public"."_confirmedAttendee" CASCADE;
-DROP TABLE IF EXISTS "public"."_deniedAttendee" CASCADE;
-DROP TABLE IF EXISTS "public"."_userAttended" CASCADE;
+DROP TABLE "public"."_requiredAttendee" CASCADE;
+DROP TABLE "public"."_optionalAttendee" CASCADE;
+DROP TABLE "public"."_confirmedAttendee" CASCADE;
+DROP TABLE "public"."_deniedAttendee" CASCADE;
+DROP TABLE "public"."_userAttended" CASCADE;
 
 -- Drop the old Meeting and Design_Review tables
-DROP TABLE IF EXISTS "public"."Meeting" CASCADE;
-DROP TABLE IF EXISTS "public"."Design_Review" CASCADE;
+DROP TABLE "public"."Meeting" CASCADE;
+DROP TABLE "public"."Design_Review" CASCADE;
 
 -- DropEnum
 DROP TYPE "public"."Design_Review_Status";

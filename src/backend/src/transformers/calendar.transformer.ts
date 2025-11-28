@@ -67,7 +67,9 @@ export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<Even
     questionDocument: eventType.questionDocument,
     documents: eventType.documents,
     description: eventType.description,
-    onlyHeadsOrAboveForEventCreation: eventType.onlyHeadsOrAboveForEventCreation
+    onlyHeadsOrAboveForEventCreation: eventType.onlyHeadsOrAboveForEventCreation,
+    requiresConfirmation: eventType.requiresConfirmation,
+    sendSlackNotifications: eventType.sendSlackNotifications
   };
 };
 

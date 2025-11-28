@@ -62,13 +62,13 @@ describe('Calendar Tests', () => {
       true,
       true,
       true,
-      true,
       false,
       true,
       true,
       true,
       true,
       false,
+      true,
       true,
       true,
       true,
@@ -289,17 +289,19 @@ describe('Calendar Tests', () => {
       expect(result.schedule).toBe(true);
       expect(result.requiredMembers).toBe(true);
       expect(result.optionalMembers).toBe(true);
-      expect(result.teams).toBe(false);
+      expect(result.teams).toBe(true);
       expect(result.teamType).toBe(false);
-      expect(result.location).toBe(true);
+      expect(result.location).toBe(false);
       expect(result.zoomLink).toBe(true);
-      expect(result.shop).toBe(false);
+      expect(result.shop).toBe(true);
       expect(result.machinery).toBe(false);
       expect(result.workPackage).toBe(false);
       expect(result.questionDocument).toBe(false);
       expect(result.documents).toBe(false);
-      expect(result.description).toBe(true);
-      expect(result.onlyHeadsOrAboveForEventCreation).toBe(false);
+      expect(result.description).toBe(false);
+      expect(result.onlyHeadsOrAboveForEventCreation).toBe(true);
+      expect(result.requiresConfirmation).toBe(false);
+      expect(result.sendSlackNotifications).toBe(false);
     });
   });
 
@@ -787,7 +789,6 @@ describe('Calendar Tests', () => {
         [calendar.calendarId],
         organization,
         'Initial Event Type 2',
-        false,
         true,
         true,
         false,
@@ -799,13 +800,14 @@ describe('Calendar Tests', () => {
         true,
         false,
         true,
+        false,
         false,
         false,
         false
       );
 
       expect(result.name).toBe('Initial Event Type 2');
-      expect(result.schedule).toBe(false);
+      expect(result.schedule).toBe(true);
       expect(result.eventTypeId).toBe(eventType.eventTypeId);
       expect(result.requiredMembers).toBe(true);
       expect(result.optionalMembers).toBe(true);
@@ -820,6 +822,8 @@ describe('Calendar Tests', () => {
       expect(result.documents).toBe(true);
       expect(result.description).toBe(false);
       expect(result.onlyHeadsOrAboveForEventCreation).toBe(false);
+      expect(result.requiresConfirmation).toBe(false);
+      expect(result.sendSlackNotifications).toBe(false);
     });
   });
 

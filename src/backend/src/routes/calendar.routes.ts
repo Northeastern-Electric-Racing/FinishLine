@@ -19,7 +19,6 @@ calendarRouter.post(
   nonEmptyString(body('name')),
   body('calendarIds').isArray(),
   body('calendarIds.*').isString(),
-  body('schedule').isBoolean(),
   body('requiredMembers').isBoolean(),
   body('optionalMembers').isBoolean(),
   body('teams').isBoolean(),
@@ -34,6 +33,7 @@ calendarRouter.post(
   body('description').isBoolean(),
   body('onlyHeadsOrAbove').isBoolean(),
   body('requiresConfirmation').isBoolean(),
+  body('sendSlackNotifications').isBoolean(),
   validateInputs,
   CalendarController.createEventType
 );
@@ -43,7 +43,6 @@ calendarRouter.post(
   nonEmptyString(body('name')),
   body('calendarIds').isArray(),
   body('calendarIds.*').isString(),
-  body('schedule').isBoolean(),
   body('requiredMembers').isBoolean(),
   body('optionalMembers').isBoolean(),
   body('teams').isBoolean(),
@@ -58,6 +57,7 @@ calendarRouter.post(
   body('description').isBoolean(),
   body('onlyHeadsOrAbove').isBoolean(),
   body('requiresConfirmation').isBoolean(),
+  body('sendSlackNotifications').isBoolean(),
   validateInputs,
   CalendarController.editEventType
 );

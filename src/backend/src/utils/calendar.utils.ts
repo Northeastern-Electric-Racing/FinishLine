@@ -33,12 +33,12 @@ export function validateEventTypeConfiguration(
     requiredMemberIds: string[];
     optionalMemberIds: string[];
     teamIds: string[];
-    teamTypeId?: string;
     shopIds: string[];
     machineryIds: string[];
     workPackageIds: string[];
     documentIds: string[];
     scheduleSlot: ScheduleSlotCreateArgs[];
+    teamTypeId?: string;
     location?: string;
     zoomLink?: string;
     questionDocument?: string;

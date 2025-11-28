@@ -18,7 +18,7 @@ import { scheduleTimesTransformer } from '../transformers/calendar.transformer';
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
     await NotificationsService.sendTaskDeadlineSlackNotifications();
-    await NotificationsService.sendDesignReviewEventSlackNotifications();
+    await NotificationsService.sendEventSlackNotifications();
     await NotificationsService.sendWorkPackageDeadlineSlackNotifications();
     await NotificationsService.sendSponsorTaskNotifications();
     await NotificationsService.sendPendingSaboSubmissionNotifications();
@@ -120,11 +120,11 @@ export default class NotificationsService {
   /**
    * Sends the design review slack notifications for all design reviews scheduled for today
    */
-  static async sendDesignReviewEventSlackNotifications() {
+  static async sendEventSlackNotifications() {
     const endOfToday = startOfDayTomorrow();
     const startOfToday = startOfDay(new Date());
 
-    const designReviewEvents = await prisma.event.findMany({
+    const events = await prisma.event.findMany({
       where: {
         status: 'SCHEDULED',
         dateDeleted: null,
@@ -161,7 +161,7 @@ export default class NotificationsService {
 
     const desginReviewEventTeamMap = new Map<string, EventWithAttendees[]>();
 
-    designReviewEvents.forEach((event) => {
+    events.forEach((event) => {
       // Get all unique teams from all work packages associated with this event
       const teamSlackIds = new Set<string>();
 

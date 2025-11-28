@@ -1106,6 +1106,7 @@ model Event_Type {
   description                      Boolean
   onlyHeadsOrAboveForEventCreation Boolean
   requiresConfirmation             Boolean
+  sendSlackNotifications           Boolean
   events                           Event[]
   organizationId                   String
   organization                     Organization @relation(fields: [organizationId], references: [organizationId])

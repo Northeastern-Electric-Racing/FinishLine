@@ -8,7 +8,6 @@ export default class CalendarController {
       const {
         name,
         calendarIds,
-        schedule,
         requiredMembers,
         optionalMembers,
         teams,
@@ -22,7 +21,8 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
-        requiresConfirmation
+        requiresConfirmation,
+        sendSlackNotifications
       } = req.body;
 
       const eventType = await CalendarService.createEventType(
@@ -30,7 +30,6 @@ export default class CalendarController {
         name,
         calendarIds,
         req.organization,
-        schedule,
         requiredMembers,
         optionalMembers,
         teams,
@@ -44,7 +43,8 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
-        requiresConfirmation
+        requiresConfirmation,
+        sendSlackNotifications
       );
       res.status(200).json(eventType);
     } catch (error: unknown) {
@@ -192,7 +192,6 @@ export default class CalendarController {
       const {
         name,
         calendarIds,
-        schedule,
         requiredMembers,
         optionalMembers,
         teams,
@@ -206,7 +205,8 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
-        requiresConfirmation
+        requiresConfirmation,
+        sendSlackNotifications
       } = req.body;
 
       const eventType = await CalendarService.editEventType(
@@ -215,7 +215,6 @@ export default class CalendarController {
         calendarIds,
         req.organization,
         name,
-        schedule,
         requiredMembers,
         optionalMembers,
         teams,
@@ -229,7 +228,8 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
-        requiresConfirmation
+        requiresConfirmation,
+        sendSlackNotifications
       );
       res.status(200).json(eventType);
     } catch (error: unknown) {

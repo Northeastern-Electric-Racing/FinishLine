@@ -243,7 +243,7 @@ export const sendPendingSaboSubmissionNotification = async (
   );
 };
 
-export const sendSlackDesignReviewEventConfirmNotification = async (
+export const sendSlackEventConfirmNotification = async (
   slackId: string,
   eventId: string,
   eventName: string,
@@ -331,7 +331,7 @@ export const sendAndGetSlackCRNotifications = async (
   return notifications;
 };
 
-export const sendSlackDesignReviewEventNotification = async (
+export const sendSlackEventNotification = async (
   team: Team,
   message: string
 ): Promise<{ channelId: string; ts: string }[]> => {
@@ -346,7 +346,7 @@ export const sendSlackDesignReviewEventNotification = async (
   return msgs;
 };
 
-export const sendSlackDREventNotifications = async (
+export const sendSlackEventNotifications = async (
   teams: Team[],
   event: Event,
   submitter: User,
@@ -358,10 +358,7 @@ export const sendSlackDREventNotifications = async (
   const message = `:spiral_calendar_pad: Design Review for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
 
   const completion: Promise<void>[] = teams.map(async (team) => {
-    const sentNotifications: { channelId: string; ts: string }[] = await sendSlackDesignReviewEventNotification(
-      team,
-      message
-    );
+    const sentNotifications: { channelId: string; ts: string }[] = await sendSlackEventNotification(team, message);
     if (sentNotifications) notifications.push(...sentNotifications);
   });
   await Promise.all(completion);
@@ -384,7 +381,7 @@ export const sendSlackDREventNotifications = async (
   return notifications;
 };
 
-export const sendDREventUserConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
+export const sendEventUserConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} confirmed their availability!`;
@@ -400,7 +397,7 @@ export const sendDREventUserConfirmationToThread = async (threads: SlackMessageT
   }
 };
 
-export const sendDREventConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
+export const sendEventConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} All of the required attendees have confirmed their availability!`;
@@ -416,7 +413,7 @@ export const sendDREventConfirmationToThread = async (threads: SlackMessageThrea
   }
 };
 
-export const sendDREventScheduledSlackNotif = async (threads: SlackMessageThread[], event: Event) => {
+export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[], event: Event) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
 
   // Get work package names
