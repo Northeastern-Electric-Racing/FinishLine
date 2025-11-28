@@ -266,8 +266,11 @@ export default class TasksService {
 
     // this checks the current users permissions
     const isLead = wbsElement.leadId === currentUser.userId || wbsElement.managerId === currentUser.userId;
-    if (!(await userHasPermission(currentUser.userId, organization.organizationId, isAdmin)) && !isLead) {
-      throw new AccessDeniedException('Only admin, app-admins, project leads, and project managers can delete tasks');
+    const isCreator = task.createdByUserId === currentUser.userId;
+    if (!(await userHasPermission(currentUser.userId, organization.organizationId, isAdmin)) && !isLead && !isCreator) {
+      throw new AccessDeniedException(
+        'Only admin, app-admins, project leads, project managers, and the task creator can delete tasks'
+      );
     }
 
     const deletedTask = await prisma.task.update({
