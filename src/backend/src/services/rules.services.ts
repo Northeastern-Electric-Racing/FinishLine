@@ -536,7 +536,7 @@ export default class RulesService {
    */
   static async getTeamRulesInRulesetType(teamId: string, rulesetTypeId: string, organization: Organization) {
     const team = await prisma.team.findUnique({
-      where: { teamId }
+      where: { teamId, dateArchived: null }
     });
 
     if (!team) {
