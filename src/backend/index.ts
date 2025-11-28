@@ -44,6 +44,7 @@ const allowedOrigins = [
 
 const options: cors.CorsOptions = {
   origin: (origin, callback) => {
+    // allow requests with no origin like postman or curl requests
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
