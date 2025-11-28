@@ -42,8 +42,6 @@ const allowedOrigins = [
   'https://qa.finishlinebyner.com'
 ];
 
-// Terraform test: allow any Amplify domain MUST FIX LATER
-// Amplify domains follow pattern: *.amplifyapp.com
 const options: cors.CorsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);

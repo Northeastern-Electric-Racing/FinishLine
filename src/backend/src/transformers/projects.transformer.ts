@@ -93,7 +93,7 @@ export const projectGanttTransformer = (project: Prisma.ProjectGetPayload<Projec
     startDate: calculateProjectStartDate(project.workPackages),
     tasks: project.wbsElement.tasks.map(taskTransformer),
     workPackages: project.workPackages.map(workPackageTransformer),
-    abbreviation: project.abbreviation ?? undefined,
+    abbreviation: project.abbreviation ?? undefined
   };
 };
 
