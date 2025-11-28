@@ -45,11 +45,11 @@ const allowedOrigins = [
 const options: cors.CorsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    
+
     callback(new Error('Not allowed by CORS'));
   },
   methods: 'GET, POST, DELETE',
