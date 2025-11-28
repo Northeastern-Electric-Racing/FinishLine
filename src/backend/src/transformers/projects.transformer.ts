@@ -64,8 +64,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
     descriptionBullets: wbsElement.descriptionBullets.map(descBulletConverter),
     tasks: wbsElement.tasks.map(taskTransformer),
     workPackages: project.workPackages.map(workPackageTransformer),
-    abbreviation: project.abbreviation ?? undefined,
-    testField: project.testFeild
+    abbreviation: project.abbreviation ?? undefined
   };
 };
 
@@ -119,7 +118,6 @@ export const projectPreviewTransformer = (project: Prisma.ProjectGetPayload<Proj
     startDate: calculateProjectStartDate(project.workPackages),
     abbreviation: project.abbreviation ?? undefined,
     teams: project.teams,
-    testField: project.testFeild,
     workPackages: project.workPackages.map((wp) => ({
       ...wp,
       status: convertStatus(wp.wbsElement.status),

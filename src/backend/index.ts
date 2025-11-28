@@ -52,10 +52,6 @@ const options: cors.CorsOptions = {
       return callback(null, true);
     }
     
-    if (isProd && origin.endsWith('.amplifyapp.com')) {
-      return callback(null, true);
-    }
-    
     callback(new Error('Not allowed by CORS'));
   },
   methods: 'GET, POST, DELETE',

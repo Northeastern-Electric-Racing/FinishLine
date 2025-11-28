@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Starting FinishLine backend..."
+echo "Starting FinishLine backend..."
 
 # Check if DATABASE_URL is set
 if [ -z "$DATABASE_URL" ]; then
@@ -9,13 +9,13 @@ if [ -z "$DATABASE_URL" ]; then
   exit 1
 fi
 
-echo "📊 Database URL is configured"
+echo "Database URL is configured"
 
 # Run migrations
 echo "🔄 Running Prisma migrations..."
 cd /app/src/backend
 
-# Run migrations with error handling (if migrations fail )
+# Run migrations with error handling
 if npx prisma migrate deploy; then
   echo "✅ Migrations completed successfully"
 else
@@ -26,7 +26,7 @@ fi
 # Return to app directory
 cd /app
 
-echo "🎉 Migrations complete, starting application..."
+echo "Migrations complete, starting application..."
 
 # Execute the CMD passed to docker run
 exec "$@"

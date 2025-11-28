@@ -30,7 +30,7 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
       <Grid item>
         <Link component={RouterLink} to={`/projects/${wbsPipe(project.wbsNum)}`}>
           <Typography variant="h5">
-            {wbsPipe(project.wbsNum)} - {project.name} - {project.testField} projectllakf
+            {wbsPipe(project.wbsNum)} - {project.name}
           </Typography>
         </Link>
       </Grid>

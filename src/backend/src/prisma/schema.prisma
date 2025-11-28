@@ -525,7 +525,6 @@ model Project {
   featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
   abbreviation             String?
   parts                    Part[]
-  testFeild                String         @default("test")
 
   @@index([carId])
 }

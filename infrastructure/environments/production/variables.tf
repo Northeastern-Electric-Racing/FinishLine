@@ -119,19 +119,19 @@ variable "use_custom_domain" {
 }
 
 variable "hosted_zone_name" {
-  description = "Route53 hosted zone name (e.g., finishlinebyner.com)"
+  description = "Route53 hosted zone name"
   type        = string
   default     = "finishlinebyner.com"
 }
 
 variable "frontend_domain" {
-  description = "Custom domain for frontend (e.g., qa.finishlinebyner.com)"
+  description = "Custom domain for frontend"
   type        = string
   default     = "qa.finishlinebyner.com"
 }
 
 variable "backend_domain" {
-  description = "Custom domain for backend (e.g., api-qa.finishlinebyner.com)"
+  description = "Custom domain for backend"
   type        = string
   default     = "api-qa.finishlinebyner.com"
 }
@@ -239,13 +239,13 @@ variable "github_access_token" {
 variable "deploy_branch_name" {
   description = "Branch name to deploy (use a test branch initially, then switch to 'main')"
   type        = string
-  default     = "amplify-test"  # Change to 'main' when ready for production
+  default     = "multitenancy"  # Change to 'main' when ready for production
 }
 
 variable "enable_pull_request_preview" {
   description = "Enable automatic preview deployments for pull requests"
   type        = bool
-  default     = false  # Set to true when you want PR previews
+  default     = false # TODO: Enable this when we have PR previews set up
 }
 
 #####################

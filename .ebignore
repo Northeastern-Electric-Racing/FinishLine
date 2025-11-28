@@ -1,4 +1,4 @@
-# Dockerfiles (we use pre-built images from ECR)
+# Dockerfiles (use pre-built images from ECR)
 Dockerfile
 Dockerfile.*
 
@@ -6,7 +6,7 @@ Dockerfile.*
 docker-compose*.yml
 docker-compose*.yaml
 
-# Infrastructure as Code
+# Terraform
 infrastructure/
 *.tf
 *.tfvars
@@ -101,7 +101,7 @@ tmp/
 temp/
 *.tmp
 
-# Scripts (not needed in container)
+# Scripts
 scripts/
 
 # eb-deploy directory (if it exists)
