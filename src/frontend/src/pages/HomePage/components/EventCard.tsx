@@ -1,6 +1,6 @@
 import { Box, Card, CardContent, Link, Stack, Typography, useTheme } from '@mui/material';
-import { AuthenticatedUser, DesignReview, meetingStartTimePipe } from 'shared';
-import { datePipe, projectWbsPipe } from '../../../utils/pipes';
+import { AuthenticatedUser, Event } from 'shared';
+import { datePipe, meetingStartTimePipeScheduleSlot, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -9,12 +9,12 @@ import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../../components/NERButton';
 import { timezoneOffset } from '../../../utils/datetime.utils';
 
-interface DesignReviewProps {
-  designReview: DesignReview;
+interface EventProps {
+  event: Event;
   user: AuthenticatedUser;
 }
 
-const DesignReviewInfo = ({ icon, text, link }: { icon: React.ReactNode; text: string; link?: boolean }) => {
+const EventInfo = ({ icon, text, link }: { icon: React.ReactNode; text: string; link?: boolean }) => {
   return (
     <Stack direction="row" spacing={1}>
       <Typography sx={{ fontSize: 21 }}>{icon}</Typography>
@@ -33,9 +33,9 @@ const DesignReviewInfo = ({ icon, text, link }: { icon: React.ReactNode; text: s
   );
 };
 
-const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview, user }) => {
+const DisplayStatus: React.FC<EventProps> = ({ event, user }) => {
   const history = useHistory();
-  const confirmedMemberIds = designReview.confirmedMembers.map((user) => user.userId);
+  const confirmedMemberIds = event.confirmedMembers.map((user) => user.userId);
 
   return (
     <>
@@ -45,14 +45,14 @@ const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview, user }) => {
           size="small"
           sx={{ color: 'white', padding: 1 }}
           onClick={() => {
-            history.push(`${routes.SETTINGS_PREFERENCES}?drId=${designReview.designReviewId}`);
+            history.push(`${routes.SETTINGS_PREFERENCES}?eventId=${event.eventId}`);
           }}
           component={RouterLink}
         >
           Confirm Availibility
         </NERButton>
       ) : (
-        <Typography mr={1}>{designReview.status}</Typography>
+        <Typography mr={1}>{event.status}</Typography>
       )}
     </>
   );
@@ -67,9 +67,25 @@ const removeYear = (str: string): string => {
   return str.substring(0, str.length - 5);
 };
 
-const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, user }) => {
+const UpcomingEventCard: React.FC<EventProps> = ({ event, user }) => {
   const theme = useTheme();
-  const timezoneAdjustedDate = timezoneOffset(designReview.dateScheduled);
+  const firstScheduledDate = event.scheduledTimes[0]?.initialDateScheduled;
+  const timezoneAdjustedDate = firstScheduledDate ? timezoneOffset(firstScheduledDate) : new Date();
+
+  const [firstWorkPackage] = event.workPackages;
+
+  const wbsNumber = firstWorkPackage
+    ? {
+        carNumber: firstWorkPackage.wbsElement.carNumber,
+        projectNumber: firstWorkPackage.wbsElement.projectNumber,
+        workPackageNumber: firstWorkPackage.wbsElement.workPackageNumber
+      }
+    : { carNumber: 0, projectNumber: 0, workPackageNumber: 0 };
+
+  const eventName = firstWorkPackage?.wbsElement?.name
+    ? `${firstWorkPackage.wbsElement.carNumber}.${firstWorkPackage.wbsElement.projectNumber}.${firstWorkPackage.wbsElement.workPackageNumber} - ${firstWorkPackage.wbsElement.name}`
+    : event.title;
+
   return (
     <Card
       variant="outlined"
@@ -85,8 +101,8 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, 
         <Stack direction="row" justifyContent="space-between" alignItems={'center'}>
           <Box sx={{ scrollbarWidth: 'auto', scrollbarColor: `${theme.palette.primary.main} transparent` }}>
             <Typography fontWeight={'regular'} variant="h5" noWrap>
-              <Link component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(designReview.wbsNum)}`}>
-                {designReview.wbsName}
+              <Link component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(wbsNumber)}`}>
+                {eventName}
               </Link>
             </Typography>
             <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
@@ -96,21 +112,17 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, 
                   ', ' +
                   removeYear(datePipe(timezoneAdjustedDate)) +
                   ' @ ' +
-                  meetingStartTimePipe(designReview.meetingTimes)}
+                  meetingStartTimePipeScheduleSlot(event.scheduledTimes)}
               </Typography>
             </Stack>
-            {designReview.isInPerson && !!designReview.location && (
-              <DesignReviewInfo icon={<LocationOnOutlined />} text={designReview.location} />
-            )}
-            {designReview.isOnline && !!designReview.zoomLink && (
-              <DesignReviewInfo icon={<Computer />} text={designReview.zoomLink} link />
-            )}
+            {event.location && <EventInfo icon={<LocationOnOutlined />} text={event.location} />}
+            {event.zoomLink && <EventInfo icon={<Computer />} text={event.zoomLink} link />}
           </Box>
-          <DisplayStatus designReview={designReview} user={user} />
+          <DisplayStatus event={event} user={user} />
         </Stack>
       </CardContent>
     </Card>
   );
 };
 
-export default UpcomingDesignReviewsCard;
+export default UpcomingEventCard;

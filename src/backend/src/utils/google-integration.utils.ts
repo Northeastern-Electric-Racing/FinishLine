@@ -4,9 +4,7 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { HttpException } from './errors.utils';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
-import { User, WBS_Element } from '@prisma/client';
-import { transformDate } from './datetime.utils';
-import { transformStartTime } from './design-reviews.utils';
+import { Schedule_Slot, User } from '@prisma/client';
 import { getUsers } from './users.utils';
 
 const { OAuth2 } = google.auth;
@@ -193,42 +191,49 @@ export const createCalendar = async (name: string) => {
 
 /**
  * Creates A Google Calendar Event on the NER Google Calendar
- * @param members required and optional members
  * @param calendarId the id of the calendar to add the event
- * @param dateScheduled
- * @param isInPerson
- * @param zoomLink
- * @param location
- * @param meetingTimes
- * @param wbsElement
+ * @param memberIds required and optional members
+ * @param scheduledSlots the scheduled time slots for the event
+ * @param isInPerson whether the event is in person
+ * @param zoomLink zoom link if online
+ * @param location physical location if in person
+ * @param eventTitle the title of the event
  * @returns the id of the calendar event
  */
 export const createCalendarEvent = async (
   calendarId: string,
   memberIds: string[],
-  dateScheduled: Date,
+  scheduledSlots: Schedule_Slot[],
   isInPerson: boolean,
   zoomLink: string | null,
   location: string | null,
-  meetingTimes: number[],
-  wbsElement: WBS_Element
+  eventTitle: string
 ) => {
   if (process.env.NODE_ENV !== 'production') return;
+
+  const [firstSlot] = scheduledSlots;
+  if (!firstSlot?.startTime || !firstSlot?.endTime) {
+    throw new Error('Event must have a valid start and end time');
+  }
+
   try {
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
     });
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    const startTime = transformStartTime(meetingTimes);
+
+    const startDateTime = new Date(firstSlot.startTime);
+    const endDateTime = new Date(firstSlot.endTime);
+
     const eventInput = {
       location: isInPerson ? location : zoomLink,
-      summary: `Design Review - ${wbsElement.projectNumber} ${wbsElement.name}`,
+      summary: eventTitle,
       start: {
-        dateTime: `${transformDate(new Date(dateScheduled))}T${startTime}:00:00-04:00`,
+        dateTime: startDateTime.toISOString(),
         timeZone: 'America/New_York'
       },
       end: {
-        dateTime: `${transformDate(new Date(dateScheduled))}T${startTime + 1}:00:00-04:00`,
+        dateTime: endDateTime.toISOString(),
         timeZone: 'America/New_York'
       },
       attendees: (await getUsers(memberIds)).map((user) => {
@@ -258,36 +263,47 @@ export const createCalendarEvent = async (
  * Updates a Google Calendar Event
  * @param calendarId Id of the calendar the event is on
  * @param eventId Id of the calendar event
- * @param members required and optional members
- * @param designReview
+ * @param memberIds required and optional members
+ * @param scheduledSlots the scheduled time slots for the event
+ * @param isInPerson whether the event is in person
+ * @param zoomLink zoom link if online
+ * @param location physical location if in person
+ * @param eventTitle the title of the event
  * @returns the id of the updated calendar event
  */
 export const updateCalendarEvent = async (
   calendarId: string,
   eventId: string,
   memberIds: string[],
-  dateScheduled: Date,
+  scheduledSlots: Schedule_Slot[],
   isInPerson: boolean,
   zoomLink: string | null,
   location: string | null,
-  meetingTimes: number[],
-  wbsElement: WBS_Element
+  eventTitle: string
 ) => {
+  const [firstSlot] = scheduledSlots;
+  if (!firstSlot?.startTime || !firstSlot?.endTime) {
+    throw new Error('Event must have a valid start and end time');
+  }
+
   try {
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
     });
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    const startTime = transformStartTime(meetingTimes);
+
+    const startDateTime = new Date(firstSlot.startTime);
+    const endDateTime = new Date(firstSlot.endTime);
+
     const eventInput = {
       location: isInPerson ? location : zoomLink,
-      summary: `Design Review - ${wbsElement.projectNumber} ${wbsElement.name}`,
+      summary: eventTitle,
       start: {
-        dateTime: `${transformDate(dateScheduled)}T${startTime}:00:00-04:00`,
+        dateTime: startDateTime.toISOString(),
         timeZone: 'America/New_York'
       },
       end: {
-        dateTime: `${transformDate(dateScheduled)}T${startTime + 1}:00:00-04:00`,
+        dateTime: endDateTime.toISOString(),
         timeZone: 'America/New_York'
       },
       attendees: (await getUsers(memberIds)).map((user) => {
@@ -301,11 +317,13 @@ export const updateCalendarEvent = async (
         ]
       }
     };
+
     const calendarEvent = await calendar.events.update({
       calendarId,
       eventId,
       requestBody: eventInput
     });
+
     return calendarEvent.data.id;
   } catch (error: unknown) {
     throw error;

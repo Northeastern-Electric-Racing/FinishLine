@@ -20,56 +20,68 @@ import { useState } from 'react';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { DatePicker } from '@mui/x-date-pickers';
-import { DesignReview, DesignReviewStatus } from 'shared';
-import { EditDesignReviewPayload, useAllDesignReviews, useEditDesignReview } from '../../../hooks/design-reviews.hooks';
-import { designReviewNamePipe, meetingStartTimePipe } from '../../../utils/pipes';
+import { Event, meetingStartTimePipeNumbers } from 'shared';
+import { useAllEvents } from '../../../hooks/calendar.hooks';
+import { eventNamePipe } from '../../../utils/pipes';
 import { HOURS } from '../../../utils/design-review.utils';
-import { useHistory } from 'react-router-dom';
-import { useToast } from '../../../hooks/toasts.hooks';
-import { routes } from '../../../utils/routes';
 
-export interface DesignReviewEditData {
+export interface EventEditData {
   requiredUserIds: string[];
   optionalUserIds: string[];
   selectedDate: Date;
   startTime: number;
   endTime: number;
 }
-interface DesignReviewDetailPageProps {
-  designReview: DesignReview;
+interface EventDetailPageProps {
+  event: Event;
 }
 
-export interface FinalizeReviewInformation {
+export interface FinalizeEventInformation {
   docTemplateLink: string;
   zoomLink?: string;
   location?: string;
   meetingType: string[];
 }
 
-const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designReview }) => {
+const EventDetailPage: React.FC<EventDetailPageProps> = ({ event }) => {
   const theme = useTheme();
-  const [requiredUsers, setRequiredUsers] = useState(designReview.requiredMembers.map(userToAutocompleteOption));
-  const [optionalUsers, setOptionalUsers] = useState(designReview.optionalMembers.map(userToAutocompleteOption));
-  const [date, setDate] = useState(
-    new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)
+  const [requiredUsers, setRequiredUsers] = useState(event.requiredMembers.map(userToAutocompleteOption));
+  const [optionalUsers, setOptionalUsers] = useState(event.optionalMembers.map(userToAutocompleteOption));
+
+  const [firstScheduledSlot] = event.scheduledTimes;
+  const lastScheduledSlot = event.scheduledTimes.at(-1);
+
+  // Convert string dates → real Date objects (defensive)
+  const parseDate = (dateInput: Date | string | undefined): Date => {
+    if (!dateInput) return new Date();
+    return typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  };
+
+  const [date, setDate] = useState<Date>(
+    firstScheduledSlot?.initialDateScheduled ? parseDate(firstScheduledSlot.initialDateScheduled) : new Date()
   );
-  const [startTime, setStateTime] = useState(designReview.meetingTimes[0] % 12);
-  const [endTime, setEndTime] = useState((designReview.meetingTimes[designReview.meetingTimes.length - 1] % 12) + 1);
-  const { mutateAsync: editDesignReview } = useEditDesignReview(designReview.designReviewId);
+
+  const [startTime, setStartTime] = useState<number>(
+    firstScheduledSlot?.startTime ? new Date(firstScheduledSlot.startTime).getHours() - 10 : 0
+  );
+
+  const [endTime, setEndTime] = useState<number>(
+    lastScheduledSlot?.endTime
+      ? new Date(lastScheduledSlot.endTime).getHours() - 9 // +1 hour from start
+      : 1
+  );
 
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
   const {
-    data: allDesignReviews,
-    isError: allDesignReviewsIsError,
-    error: allDesignReviewsError,
-    isLoading: allDesignReviewsIsLoading
-  } = useAllDesignReviews();
-  const history = useHistory();
-  const toast = useToast();
+    data: allEvents,
+    isError: allEventsIsError,
+    error: allEventsError,
+    isLoading: allEventsIsLoading
+  } = useAllEvents();
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
-  if (allDesignReviewsIsError) return <ErrorPage message={allDesignReviewsError?.message} />;
-  if (allUsersIsLoading || !allUsers || allDesignReviewsIsLoading || !allDesignReviews) return <LoadingIndicator />;
+  if (allEventsIsError) return <ErrorPage message={allEventsError?.message} />;
+  if (allUsersIsLoading || !allUsers || allEventsIsLoading || !allEvents) return <LoadingIndicator />;
 
   const users = allUsers.map(userToAutocompleteOption);
 
@@ -88,13 +100,13 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     setRequiredUsers(newValue);
   };
 
-  const handleEdit = async (data?: FinalizeReviewInformation) => {
+  const handleEdit = async () => {
     const times = [];
     for (let i = startTime; i < endTime; i++) {
       times.push(i % 12);
     }
     date.setHours(12);
-
+    /*
     try {
       const payload: EditDesignReviewPayload = {
         dateScheduled: date,
@@ -117,6 +129,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         toast.error(error.message);
       }
     }
+      */
   };
 
   const DateField = () => {
@@ -153,7 +166,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
           <Box sx={NonEditableFieldStyle}>Name</Box>
         </Grid>
         <Grid item xs={6}>
-          <Box sx={{ ...NonEditableFieldStyle, textDecoration: 'none' }}>{designReviewNamePipe(designReview)}</Box>
+          <Box sx={{ ...NonEditableFieldStyle, textDecoration: 'none' }}>{eventNamePipe(event)}</Box>
         </Grid>
         <Grid item xs={2}>
           <DateField />
@@ -162,9 +175,9 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
           <Select
             id="start-time-autocomplete"
             displayEmpty
-            renderValue={(value) => meetingStartTimePipe([value])}
+            renderValue={(value) => meetingStartTimePipeNumbers([value])}
             value={startTime}
-            onChange={(event: SelectChangeEvent<number>) => setStateTime(Number(event.target.value))}
+            onChange={(event: SelectChangeEvent<number>) => setStartTime(Number(event.target.value))}
             size={'small'}
             label={'Start Time'}
             sx={EditableFieldStyle}
@@ -172,7 +185,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             {HOURS.map((hour) => {
               return (
                 <MenuItem key={hour} value={hour}>
-                  {meetingStartTimePipe([hour])}
+                  {meetingStartTimePipeNumbers([hour])}
                 </MenuItem>
               );
             })}
@@ -183,7 +196,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
           <Select
             id="end-time-autocomplete"
             displayEmpty
-            renderValue={(value) => meetingStartTimePipe([value], true)}
+            renderValue={(value) => meetingStartTimePipeNumbers([value])}
             value={endTime}
             disabled={true}
             onChange={(event: SelectChangeEvent<number>) => setEndTime(Number(event.target.value))}
@@ -194,7 +207,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             {HOURS.map((hour) => {
               return (
                 <MenuItem key={hour} value={hour}>
-                  {meetingStartTimePipe([hour])}
+                  {meetingStartTimePipeNumbers([hour])}
                 </MenuItem>
               );
             })}
@@ -283,19 +296,19 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
       </Grid>
       <AvailabilityView
         handleEdit={handleEdit}
-        designReview={designReview}
-        allDesignReviews={allDesignReviews}
+        event={event}
+        allEvents={allEvents}
         selectedDate={date}
         setSelectDate={setDate}
         requiredUserIds={requiredUsers.map((user) => user.id)}
         optionalUserIds={optionalUsers.map((user) => user.id)}
         startTime={startTime}
         endTime={endTime}
-        setStartTime={setStateTime}
+        setStartTime={setStartTime}
         setEndTime={setEndTime}
       />
     </PageLayout>
   );
 };
 
-export default DesignReviewDetailPage;
+export default EventDetailPage;
