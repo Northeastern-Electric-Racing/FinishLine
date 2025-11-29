@@ -3,22 +3,29 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableRow } from '@mui/material';
+import { Box, Button, Paper, Table, TableBody, TableContainer } from '@mui/material';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
 import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
-import LoadingIndicator from '../../components/LoadingIndicator';
+import RuleRow from './RuleRow';
+import RuleActions from './RuleActions';
+import { Rule } from 'shared';
 import ErrorPage from '../ErrorPage';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
-// Placeholder
+/**
+ * Placeholder hook to fetch a single ruleset.
+ * @param rulesetId - The ID of the ruleset to fetch.
+ * @returns The ruleset data.
+ */
 const useSingleRuleset = (rulesetId: string) => {
-  const placeholderRules = [
+  const placeholderRules: Rule[] = [
     {
       ruleId: '1',
       ruleCode: 'GR - General Regulations',
-      ruleContent: 'General Regulations',
+      ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
       subRuleIds: [],
@@ -27,7 +34,7 @@ const useSingleRuleset = (rulesetId: string) => {
     {
       ruleId: '2',
       ruleCode: 'AD - Administrative Regulations',
-      ruleContent: 'Administrative Regulations',
+      ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
       subRuleIds: [],
@@ -36,7 +43,7 @@ const useSingleRuleset = (rulesetId: string) => {
     {
       ruleId: '3',
       ruleCode: 'DR - Document Requirements',
-      ruleContent: 'Document Requirements',
+      ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
       subRuleIds: [],
@@ -45,7 +52,7 @@ const useSingleRuleset = (rulesetId: string) => {
     {
       ruleId: '4',
       ruleCode: 'V - Vehicle Requirements',
-      ruleContent: 'Vehicle Requirements',
+      ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
       subRuleIds: ['5', '6', '7'],
@@ -54,7 +61,7 @@ const useSingleRuleset = (rulesetId: string) => {
     {
       ruleId: '5',
       ruleCode: 'V.1 - Configuration',
-      ruleContent: 'Configuration',
+      ruleContent: '',
       imageFileIds: [],
       parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
       subRuleIds: [],
@@ -63,7 +70,7 @@ const useSingleRuleset = (rulesetId: string) => {
     {
       ruleId: '6',
       ruleCode: 'V.2 - Driver',
-      ruleContent: 'Driver',
+      ruleContent: '',
       imageFileIds: [],
       parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
       subRuleIds: [],
@@ -72,7 +79,7 @@ const useSingleRuleset = (rulesetId: string) => {
     {
       ruleId: '7',
       ruleCode: 'V.3 - Suspension and Steering',
-      ruleContent: 'Suspension and Steering',
+      ruleContent: '',
       imageFileIds: [],
       parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
       subRuleIds: ['8', '9'],
@@ -81,7 +88,7 @@ const useSingleRuleset = (rulesetId: string) => {
     {
       ruleId: '8',
       ruleCode: 'V.3.1 - Suspension',
-      ruleContent: 'Suspension',
+      ruleContent: '',
       imageFileIds: [],
       parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
       subRuleIds: [],
@@ -90,7 +97,7 @@ const useSingleRuleset = (rulesetId: string) => {
     {
       ruleId: '9',
       ruleCode: 'V.3.2 - Steering',
-      ruleContent: 'Steering',
+      ruleContent: '',
       imageFileIds: [],
       parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
       subRuleIds: ['10', '11', '12'],
@@ -99,7 +106,8 @@ const useSingleRuleset = (rulesetId: string) => {
     {
       ruleId: '10',
       ruleCode: 'V.3.2.1',
-      ruleContent: 'The Steering Wheel must be mechanically connected to the front wheels',
+      ruleContent:
+        'Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line',
       imageFileIds: [],
       parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
       subRuleIds: [],
@@ -127,7 +135,7 @@ const useSingleRuleset = (rulesetId: string) => {
     {
       ruleId: '13',
       ruleCode: 'F - Chassis and Structural',
-      ruleContent: 'Chassis and Structural',
+      ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
       subRuleIds: [],
@@ -143,12 +151,16 @@ const useSingleRuleset = (rulesetId: string) => {
   };
 };
 
+/**
+ * RulesetPage component for displaying and managing ruleset rules.
+ * Supports editing and assigning rules to projects and teams.
+ */
 const RulesetPage: React.FC = () => {
   const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>();
   const [tabValue, setTabValue] = useState(0);
   const defaultTab = 'edit-rules';
 
-  const { data: ruleset, isLoading, isError, error } = useSingleRuleset(rulesetId || '');
+  const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
 
   const tabs = [
     { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
@@ -166,6 +178,24 @@ const RulesetPage: React.FC = () => {
   const handleAddRuleSection = () => {
     // Placeholder
   };
+
+  const handleAddRule = (ruleId: string) => {
+    // Placeholder
+    console.log('Add rule to:', ruleId);
+  };
+
+  const handleRemoveRule = (ruleId: string) => {
+    // Placeholder
+    console.log('Remove rule:', ruleId);
+  };
+
+  const handleEditRule = (ruleId: string) => {
+    // Placeholder
+    console.log('Edit rule:', ruleId);
+  };
+
+  // Filter to only show top-level rules
+  const topLevelRules = ruleset.rules.filter((rule) => !rule.parentRule);
 
   return (
     <PageLayout
@@ -186,26 +216,28 @@ const RulesetPage: React.FC = () => {
         {tabValue === 0 ? (
           <Box sx={{ paddingBottom: '100px' }}>
             <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-              <Table>
+              <Table sx={{ borderCollapse: 'collapse' }}>
                 <TableBody sx={{ backgroundColor: '#9d9d9d' }}>
-                  {ruleset.rules?.map((rule) => (
-                    <TableRow
+                  {topLevelRules.map((rule) => (
+                    <RuleRow
                       key={rule.ruleId}
-                      sx={{
-                        '&:last-child td, &:last-child th': { border: 0 },
-                        '&:hover': { backgroundColor: '#5e5e5e' }
-                      }}
-                    >
-                      <TableCell align="left" sx={{ color: '#000000', fontSize: '16px' }}>
-                        {rule.ruleCode}
-                      </TableCell>
-                      <TableCell align="left" sx={{ color: '#000000', fontSize: '16px' }}>
-                        {rule.ruleContent}
-                      </TableCell>
-                      <TableCell align="center" sx={{ color: '#000000', fontSize: '16px' }}>
-                        {/* Actions will be added in a future ticket */}
-                      </TableCell>
-                    </TableRow>
+                      rule={rule}
+                      allRules={ruleset.rules}
+                      rightContent={(currentRule) => (
+                        <RuleActions
+                          ruleId={currentRule.ruleId}
+                          onAdd={handleAddRule}
+                          onRemove={handleRemoveRule}
+                          onEdit={handleEditRule}
+                          iconColor="#000000"
+                        />
+                      )}
+                      backgroundColor="#9d9d9d"
+                      textColor="#000000"
+                      hoverColor="#5e5e5e"
+                      rowHeight="10px"
+                      verticalPadding="5px"
+                    />
                   ))}
                 </TableBody>
               </Table>
