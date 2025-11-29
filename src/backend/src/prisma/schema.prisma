@@ -1091,7 +1091,6 @@ model Event_Type {
   userDeletedId                    String?
   userDeleted                      User?        @relation(fields: [userDeletedId], references: [userId], name: "eventTypeDeleter")
   calendars                        Calendar[]
-  schedule                         Boolean
   requiredMembers                  Boolean
   optionalMembers                  Boolean
   teams                            Boolean

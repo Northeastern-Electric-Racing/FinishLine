@@ -93,7 +93,6 @@ export interface EventType {
   name: string;
   userCreated: User;
   dateCreated: Date;
-  schedule: boolean;
   requiredMembers: boolean;
   optionalMembers: boolean;
   teams: boolean;

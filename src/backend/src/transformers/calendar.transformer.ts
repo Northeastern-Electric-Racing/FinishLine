@@ -54,7 +54,6 @@ export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<Even
     name: eventType.name,
     userCreated: userTransformer(eventType.userCreated),
     dateCreated: eventType.dateCreated,
-    schedule: eventType.schedule,
     requiredMembers: eventType.requiredMembers,
     optionalMembers: eventType.optionalMembers,
     teams: eventType.teams,

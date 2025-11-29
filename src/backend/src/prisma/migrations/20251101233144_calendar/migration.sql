@@ -96,7 +96,6 @@ CREATE TABLE "public"."Event_Type" (
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
-    "schedule" BOOLEAN NOT NULL DEFAULT FALSE,
     "optionalMembers" BOOLEAN NOT NULL DEFAULT FALSE,
     "requiredMembers" BOOLEAN NOT NULL DEFAULT FALSE,
     "teams" BOOLEAN NOT NULL DEFAULT FALSE,
@@ -365,7 +364,6 @@ INSERT INTO "public"."Event_Type" (
     "name",
     "dateCreated",
     "userCreatedId",
-    "schedule",
     "requiredMembers",
     "optionalMembers",
     "teams",
@@ -387,7 +385,6 @@ SELECT DISTINCT ON (org."organizationId")
     'Design Review',
     NOW(),
     org."userCreatedId",
-    true, -- schedule
     true, -- requiredMembers
     true, -- optionalMembers
     false, -- teams 
@@ -417,7 +414,6 @@ INSERT INTO "public"."Event_Type" (
     "name",
     "dateCreated",
     "userCreatedId",
-    "schedule",
     "requiredMembers",
     "optionalMembers",
     "teams",
@@ -439,7 +435,6 @@ SELECT DISTINCT ON (org."organizationId")
     'Meeting',
     NOW(),
     org."userCreatedId",
-    true, -- schedule
     false, -- requiredMembers
     false, -- optionalMembers
     true, -- teams

@@ -286,7 +286,6 @@ describe('Calendar Tests', () => {
       );
 
       expect(result.name).toEqual('Meeting');
-      expect(result.schedule).toBe(true);
       expect(result.requiredMembers).toBe(true);
       expect(result.optionalMembers).toBe(true);
       expect(result.teams).toBe(true);
@@ -807,7 +806,6 @@ describe('Calendar Tests', () => {
       );
 
       expect(result.name).toBe('Initial Event Type 2');
-      expect(result.schedule).toBe(true);
       expect(result.eventTypeId).toBe(eventType.eventTypeId);
       expect(result.requiredMembers).toBe(true);
       expect(result.optionalMembers).toBe(true);

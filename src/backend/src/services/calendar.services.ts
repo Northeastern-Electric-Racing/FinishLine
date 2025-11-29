@@ -62,7 +62,6 @@ export default class CalendarService {
    * @param name The name of the event type.
    * @param calendarIds An array of the calendars this event type is associated with.
    * @param organization The organization for which the event type is being created.
-   * @param schedule Determines if a date is associated with this event type.
    * @param requiredMembers Determines if this event type has required members.
    * @param optionalMembers Determines if this event type has optional members.
    * @param teams Determines if this event type has teams.
@@ -76,6 +75,7 @@ export default class CalendarService {
    * @param documents Determines if documents are associates with this event type.
    * @param description Determines if a description is associated with this event type.
    * @param onlyHeadsOrAbove Determines if events under this event type can only be created by heads or above.
+   * @param requiredConfirmation Determines if events under this event type need to be confirmed.
    * @param sendSlackNotifications Determines if users will be notified via slack
    *
    * @returns The created event type.
@@ -148,7 +148,6 @@ export default class CalendarService {
           connect: calendarIds.map((calendarId) => ({ calendarId }))
         },
         userCreatedId: submitter.userId,
-        schedule: true,
         requiredMembers,
         optionalMembers,
         teams,
@@ -1771,6 +1770,8 @@ export default class CalendarService {
    * @param documents Determines if documents are associates with this event type.
    * @param description Determines if a description is associated with this event type.
    * @param onlyHeadsOrAbove Determines if events associated with this event type can only be made by heads or above.
+   * @param requiredConfirmation Determines if events associated with this event type need to be confirmed.
+   * @param sendSlackNotifications Determines if events associated with this event type should receive slack notifications.
    *
    * @returns The created event type.
    *
@@ -1843,7 +1844,6 @@ export default class CalendarService {
         calendars: {
           connect: calendarIds.map((calendarId) => ({ calendarId }))
         },
-        schedule: true,
         requiredMembers,
         optionalMembers,
         teams,

@@ -61,7 +61,7 @@ export function validateEventTypeConfiguration(
   if (eventType.questionDocument && !eventData.questionDocument) {
     throw new InvalidEventTypeConfigurationException('a question document');
   }
-  if (eventType.schedule && eventData.scheduleSlot.length === 0) {
+  if (eventData.scheduleSlot.length === 0) {
     throw new InvalidEventTypeConfigurationException('at least one schedule slot');
   }
 
@@ -95,9 +95,6 @@ export function validateEventTypeConfiguration(
   }
   if (!eventType.description && eventData.description) {
     throw new InvalidEventTypeConfigurationException('Event type does not allow a description');
-  }
-  if (!eventType.schedule && eventData.scheduleSlot.length > 0) {
-    throw new InvalidEventTypeConfigurationException('Event type does not allow schedule slots');
   }
 }
 
