@@ -84,7 +84,7 @@ const RuleRow: React.FC<RuleRowProps> = ({
       <TableRow
         sx={{
           borderBottom: '1px solid #7d7d7d',
-          backgroundColor: backgroundColor,
+          backgroundColor,
           '&:hover': { backgroundColor: hoverColor },
           '&:last-child': {
             borderBottom: 'none'
