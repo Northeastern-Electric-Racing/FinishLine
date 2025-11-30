@@ -1,3 +1,4 @@
+/*
 import { DesignReview, DesignReviewPreview } from 'shared';
 
 export const designReviewTransformer = (designReview: DesignReview): DesignReview => {
@@ -20,3 +21,4 @@ export const designReviewPreviewTransformer = (designReview: DesignReviewPreview
     dateScheduled: new Date(anyDesignReview.dateScheduled.split('T')[0] + 'T04:00:00.000Z')
   };
 };
+*/

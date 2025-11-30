@@ -1,6 +1,6 @@
 import { Typography, Box } from '@mui/material';
 
-export const DesignReviewPill: React.FC<{
+export const EventPill: React.FC<{
   icon: React.ReactNode;
   displayText: string;
 }> = ({ icon, displayText }) => {

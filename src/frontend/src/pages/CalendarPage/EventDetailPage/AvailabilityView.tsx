@@ -1,27 +1,19 @@
 import { Grid } from '@mui/material';
-import {
-  Availability,
-  DesignReview,
-  DesignReviewStatus,
-  getMostRecentAvailabilities,
-  isSameDay,
-  User,
-  UserWithScheduleSettings
-} from 'shared';
+import { Availability, Event, EventStatus, getMostRecentAvailabilities, User, UserWithScheduleSettings } from 'shared';
 import { useState } from 'react';
 import AvailabilityScheduleView from './AvailabilityScheduleView';
 import UserAvailabilites from './UserAvailabilitesView';
 import { getWeekDateRange } from '../../../utils/design-review.utils';
 import { dateRangePipe } from '../../../utils/pipes';
-import { FinalizeReviewInformation } from './DesignReviewDetailPage';
+import { FinalizeEventInformation } from './EventDetailPage';
 import { useManyUsersWithScheduleSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
 interface AvailabilityViewProps {
-  designReview: DesignReview;
-  allDesignReviews: DesignReview[];
-  handleEdit: (data?: FinalizeReviewInformation) => void;
+  event: Event;
+  allEvents: Event[];
+  handleEdit: (data?: FinalizeEventInformation) => void;
   selectedDate: Date;
   setSelectDate: (date: Date) => void;
   startTime: number;
@@ -33,8 +25,8 @@ interface AvailabilityViewProps {
 }
 
 const AvailabilityView: React.FC<AvailabilityViewProps> = ({
-  designReview,
-  allDesignReviews,
+  event,
+  allEvents,
   handleEdit,
   selectedDate,
   setSelectDate,
@@ -64,8 +56,12 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
   if (isLoading || !relevantUsers) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const currentWeekDesignReviews = allDesignReviews.filter((currDr) => {
-    const drDate = new Date(currDr.dateScheduled).getTime();
+  // Get events within the current week
+  const currentWeekEvents = allEvents.filter((currEvent) => {
+    const eventDate = currEvent.scheduledTimes[0]?.initialDateScheduled;
+    if (!eventDate) return false;
+
+    const drDate = new Date(eventDate).getTime();
     const startRange = startDateRange.getTime();
     const endRange = endDateRange.getTime();
 
@@ -79,29 +75,47 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
     setSelectDate(day);
   };
 
-  const conflictingDesignReviews = allDesignReviews.filter((currDr) => {
-    const times = [];
-    for (let i = startTime; i < endTime; i++) {
-      times.push(i);
-    }
-    const cleanDate = new Date(currDr.dateScheduled.getTime() - currDr.dateScheduled.getTimezoneOffset() * -60000);
-    return (
-      currDr.status === DesignReviewStatus.SCHEDULED &&
-      cleanDate.toLocaleDateString() === selectedDate.toLocaleDateString() &&
-      times.some((time) => isSameDay(currDr.dateScheduled, selectedDate) && currDr.meetingTimes.includes(time)) &&
-      currDr.designReviewId !== designReview.designReviewId
-    );
+  // Find conflicting events for the selected time
+  const conflictingEvents = allEvents.filter((currEvent) => {
+    if (currEvent.eventId === event.eventId) return false;
+    if (currEvent.status !== EventStatus.SCHEDULED) return false;
+
+    const eventDate = currEvent.scheduledTimes[0]?.initialDateScheduled;
+    if (!eventDate) return false;
+
+    const cleanDate = new Date(eventDate.getTime() - eventDate.getTimezoneOffset() * -60000);
+
+    // Check if event is on the selected date
+    if (cleanDate.toLocaleDateString() !== selectedDate.toLocaleDateString()) return false;
+
+    // Check if any scheduled times overlap with selected time range
+    return currEvent.scheduledTimes.some((slot) => {
+      if (!slot.startTime) return false;
+      const slotHour = new Date(slot.startTime).getHours();
+      return slotHour >= startTime + 10 && slotHour < endTime + 10;
+    });
   });
 
-  currentWeekDesignReviews.forEach((dr) =>
-    dr.meetingTimes.forEach((meetingTime) => {
-      if (dr.status === DesignReviewStatus.SCHEDULED && dr.designReviewId !== designReview.designReviewId)
-        existingMeetingData.set(meetingTime, dr.teamType.iconName);
-    })
-  );
+  // Map existing scheduled events to time slots for visualization
+  currentWeekEvents.forEach((ev) => {
+    if (ev.status === EventStatus.SCHEDULED && ev.eventId !== event.eventId) {
+      ev.scheduledTimes.forEach((slot) => {
+        if (slot.startTime) {
+          const hour = new Date(slot.startTime).getHours();
+          const timeIndex = hour - 10; // Convert back to 0-11 index
+          if (timeIndex >= 0 && timeIndex < 12) {
+            existingMeetingData.set(timeIndex, ev.teamType?.name || 'default');
+          }
+        }
+      });
+    }
+  });
+
+  // Get the initial date for availability lookup
+  const initialDate = event.scheduledTimes[0]?.initialDateScheduled || new Date();
 
   relevantUsers.forEach((user: UserWithScheduleSettings) => {
-    const availability = getMostRecentAvailabilities(user.scheduleSettings?.availabilities ?? [], designReview.initialDate);
+    const availability = getMostRecentAvailabilities(user.scheduleSettings?.availabilities ?? [], initialDate);
 
     usersToAvailabilities.set(user, availability ?? []);
   });
@@ -118,7 +132,7 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
           setCurrentUnavailableUsers={setCurrentUnavailableUsers}
           dateRangeTitle={dateRangePipe(startDateRange, endDateRange)}
           onSelectedTimeslotChanged={onSelectedTimeslotChanged}
-          designReview={designReview}
+          event={event}
         />
       </Grid>
       <Grid item xs={3}>
@@ -126,8 +140,8 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
           currentAvailableUsers={currentAvailableUsers}
           currentUnavailableUsers={currentUnavailableUsers}
           usersToAvailabilities={usersToAvailabilities}
-          designReview={designReview}
-          conflictingDesignReviews={conflictingDesignReviews}
+          event={event}
+          conflictingEvents={conflictingEvents}
           handleEdit={handleEdit}
           selectedDate={selectedDate}
           startTime={startTime}

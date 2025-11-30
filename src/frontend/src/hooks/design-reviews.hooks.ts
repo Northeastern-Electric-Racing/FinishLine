@@ -2,8 +2,9 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
+/*
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { DesignReview, WbsNumber, DesignReviewStatus, AvailabilityCreateArgs } from 'shared';
+import { WbsNumber, AvailabilityCreateArgs } from 'shared';
 import {
   deleteDesignReview,
   editDesignReview,
@@ -39,12 +40,13 @@ export const useCreateDesignReviews = () => {
     }
   );
 };
-
+/*
 /**
  * Custom react hook to get all design reviews
  *
  * @returns all the design reviews
  */
+/*
 export const useAllDesignReviews = () => {
   return useQuery<DesignReview[], Error>(['design-reviews'], async () => {
     const { data } = await getAllDesignReviews();
@@ -66,11 +68,12 @@ export interface EditDesignReviewPayload {
   attendees: string[];
   meetingTimes: number[];
 }
-
+/*
 /**
  * Custom React Hook to edit a Design Review
  * @param designReviewId the design review being edited
  */
+/*
 export const useEditDesignReview = (designReviewId: string) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, EditDesignReviewPayload>(
@@ -86,11 +89,11 @@ export const useEditDesignReview = (designReviewId: string) => {
     }
   );
 };
-
+/*
 /**
  * Custom react hook to delete a design review
  */
-
+/*
 export const useDeleteDesignReview = (id: string) => {
   const queryClient = useQueryClient();
   return useMutation<DesignReview, Error>(
@@ -106,12 +109,13 @@ export const useDeleteDesignReview = (id: string) => {
     }
   );
 };
-
+/*
 /**
  * Custom react hook to get a single design review
  *
  * @returns a single design review
  */
+/*
 export const useSingleDesignReview = (id?: string) => {
   return useQuery<DesignReview, Error>(
     ['design-reviews', id],
@@ -156,3 +160,4 @@ export const useSetDesignReviewStatus = (id: string) => {
     }
   );
 };
+*/

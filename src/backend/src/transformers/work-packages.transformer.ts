@@ -4,8 +4,8 @@ import descriptionBulletTransformer from '../transformers/description-bullets.tr
 import { convertStatus, wbsNumOf } from '../utils/utils';
 import { userTransformer } from './user.transformer';
 import { WorkPackageQueryArgs, WorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import { designReviewPreviewTransformer } from './design-reviews.transformer';
 import { teamTypeTransformer } from './team-types.transformer';
+import { eventPreviewTransformer } from './calendar.transformer';
 
 const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
   const wbsNum = wbsNumOf(wpInput.wbsElement);
@@ -39,9 +39,9 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
     projectName: wpInput.project.wbsElement.name,
     stage: (wpInput.stage as WorkPackageStage) || undefined,
     blocking: wpInput.wbsElement.blocking.map((wp) => wbsNumOf(wp.wbsElement)),
-    designReviews: wpInput.wbsElement.designReviews.map((designReview) =>
-      designReviewPreviewTransformer(designReview, `${wpInput.project.wbsElement.name} - ${wpInput.wbsElement.name}`)
-    ),
+    events: wpInput.events
+      .filter((event) => event.workPackages.length > 0) // Only events that are design reviews (have work packages)
+      .map((event) => eventPreviewTransformer(event, `${wpInput.project.wbsElement.name} - ${wpInput.wbsElement.name}`)),
     deleted: wpInput.wbsElement.dateDeleted !== null
   };
 };

@@ -7,15 +7,15 @@ import { ArrowDropDown } from '@mui/icons-material';
 
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { DesignReview } from 'shared';
+import { Event } from 'shared';
 import MonthSelector from '../CalendarPage/CalendarComponents/MonthSelector';
 import CalendarDayCard from '../CalendarPage/CalendarComponents/CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
+import { useAllEvents } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import DRCSummaryModal from '../CalendarPage/DesignReviewSummaryModal';
+import EventSummaryModal from '../CalendarPage/EventSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { NERButton } from '../../components/NERButton';
@@ -31,8 +31,8 @@ const NewCalendarPage = () => {
   } = useAllTeamTypes();
 
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
-  const { isLoading, isError, error, data: allDesignReviews } = useAllDesignReviews();
-  const [unconfirmedDesignReview, setUnconfirmedDesignReview] = useState<DesignReview>();
+  const { isLoading, isError, error, data: allEvents } = useAllEvents();
+  const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
@@ -43,28 +43,37 @@ const NewCalendarPage = () => {
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
 
   if (isLoading || !allDesignReviews) return <LoadingIndicator />;
+
+  if (isLoading || !allEvents) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  const confirmedDesignReviews = allDesignReviews;
-
-  const eventDict = new Map<string, DesignReview[]>();
-  confirmedDesignReviews.sort((designReview1, designReview2) => {
-    if (designReview1.dateScheduled.getTime() === designReview2.dateScheduled.getTime()) {
-      return designReview1.meetingTimes[0] - designReview2.meetingTimes[0];
-    }
-    return designReview1.dateScheduled.getTime() - designReview2.dateScheduled.getTime();
+  // Sort events by their first occurrence's start time
+  const sortedEvents = [...allEvents].sort((event1, event2) => {
+    const time1 = event1.scheduledTimes[0]?.startTime ? new Date(event1.scheduledTimes[0].startTime).getTime() : 0;
+    const time2 = event2.scheduledTimes[0]?.startTime ? new Date(event2.scheduledTimes[0].startTime).getTime() : 0;
+    return time1 - time2;
   });
 
-  confirmedDesignReviews.forEach((designReview) => {
-    // Accessing the date actually converts it to local time, which causes the date to be off. This is a workaround.
-    const date = datePipe(
-      new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)
-    );
-    if (eventDict.has(date)) {
-      eventDict.get(date)?.push(designReview);
-    } else {
-      eventDict.set(date, [designReview]);
-    }
+  const eventDict = new Map<string, Event[]>();
+
+  sortedEvents.forEach((event) => {
+    event.scheduledTimes.forEach((slot) => {
+      if (!slot.startTime) return;
+
+      // startTime is already a full timestamp, just use it directly
+      const startTimeDate = new Date(slot.startTime);
+      const date = datePipe(new Date(startTimeDate.getTime() - startTimeDate.getTimezoneOffset() * -60000));
+
+      if (eventDict.has(date)) {
+        // Check if this event is already in this date's array to avoid duplicates
+        const existingEvents = eventDict.get(date)!;
+        if (!existingEvents.find((e) => e.eventId === event.eventId)) {
+          existingEvents.push(event);
+        }
+      } else {
+        eventDict.set(date, [event]);
+      }
+    });
   });
 
   const startOfEachWeek = [0, 7, 14, 21, 28, 35];
@@ -92,13 +101,13 @@ const NewCalendarPage = () => {
 
   return (
     <>
-      {unconfirmedDesignReview && (
-        <DRCSummaryModal
-          open={!!unconfirmedDesignReview}
+      {selectedEvent && (
+        <EventSummaryModal
+          open={!!selectedEvent}
           onHide={() => {
-            setUnconfirmedDesignReview(undefined);
+            setSelectedEvent(undefined);
           }}
-          designReview={unconfirmedDesignReview as DesignReview}
+          event={selectedEvent as Event}
           teamTypes={allTeamTypes}
         />
       )}

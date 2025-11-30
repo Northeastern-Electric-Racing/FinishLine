@@ -6,7 +6,7 @@ export type EventQueryArgs = ReturnType<typeof getEventQueryArgs>;
 export const getEventQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.EventDefaultArgs>()({
     include: {
-      userCreated: getUserQueryArgs(organizationId),
+      userCreated: getUserWithSettingsQueryArgs(organizationId),
       requiredMembers: getUserQueryArgs(organizationId),
       optionalMembers: getUserQueryArgs(organizationId),
       confirmedMembers: getUserWithSettingsQueryArgs(organizationId),
@@ -15,6 +15,12 @@ export const getEventQueryArgs = (organizationId: string) =>
         select: {
           teamName: true,
           teamId: true
+        }
+      },
+      teamType: {
+        select: {
+          teamTypeId: true,
+          name: true
         }
       },
       shops: {
@@ -33,13 +39,23 @@ export const getEventQueryArgs = (organizationId: string) =>
         select: {
           wbsElement: {
             select: {
-              name: true
+              name: true,
+              carNumber: true,
+              projectNumber: true,
+              workPackageNumber: true
+            }
+          },
+          project: {
+            include: {
+              wbsElement: true,
+              teams: true
             }
           },
           workPackageId: true
         }
       },
       approvalRequiredBy: getUserQueryArgs(organizationId),
-      scheduledTimes: true
+      scheduledTimes: true,
+      notificationSlackThreads: true
     }
   });

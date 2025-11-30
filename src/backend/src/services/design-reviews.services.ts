@@ -1,3 +1,4 @@
+/*
 import { Event_Status, Team_Type, Organization } from '@prisma/client';
 import {
   DesignReview,
@@ -48,6 +49,7 @@ export default class DesignReviewsService {
    * @param organizationId the organization id of the current user
    * @returns All of the design reviews
    */
+/*
   static async getAllDesignReviews(organization: Organization): Promise<DesignReview[]> {
     const designReviews = await prisma.design_Review.findMany({
       where: { dateDeleted: null, wbsElement: { organizationId: organization.organizationId } },
@@ -62,6 +64,7 @@ export default class DesignReviewsService {
    * @param designReviewId the id of the design review to be deleted
    * @param organizationId the organization that the user is currently in
    */
+/*
   static async deleteDesignReview(
     submitter: User,
     designReviewId: string,
@@ -114,6 +117,7 @@ export default class DesignReviewsService {
    * @param organizationId the organization that the user is currently in
    * @returns a new design review
    */
+/*
   static async createDesignReview(
     submitter: User,
     initialDate: string,
@@ -230,6 +234,7 @@ export default class DesignReviewsService {
    * @param organizationId the organization that the user is currently in
    * @returns the design review
    */
+/*
   static async getSingleDesignReview(
     _submitter: User,
     designReviewId: string,
@@ -267,6 +272,7 @@ export default class DesignReviewsService {
    * @param meetingTimes meeting time must be between 0-83 (representing 1hr increments from 10am 10pm, Monday-Sunday)
    * @param organizationId the organization that the user is currently in
    */
+/*
 
   static async editDesignReview(
     user: User,
@@ -409,6 +415,7 @@ export default class DesignReviewsService {
    * @param organizationId the organization that the user is currently in
    * @returns the modified design review with its updated confirmedMembers
    */
+/*
   static async markUserConfirmed(
     designReviewId: string,
     availabilities: AvailabilityCreateArgs[],
@@ -499,6 +506,7 @@ export default class DesignReviewsService {
    * @param organizationId the organization that the user is currently in
    * @returns the modified design review
    */
+/*
   static async setStatus(
     user: User,
     designReviewId: string,
@@ -541,6 +549,7 @@ export default class DesignReviewsService {
    * @param organizationId The organization that the user is currently in
    * @returns The retrieved Team Type
    */
+/*
   static async getSingleTeamType(teamTypeId: string, organization: Organization): Promise<Team_Type> {
     const teamType = await prisma.team_Type.findUnique({
       where: { teamTypeId }
@@ -552,3 +561,4 @@ export default class DesignReviewsService {
     return teamType;
   }
 }
+*/

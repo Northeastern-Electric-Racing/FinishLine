@@ -1,35 +1,34 @@
 import { Box, Grid, Link, ToggleButton, ToggleButtonGroup, Typography, Tooltip } from '@mui/material';
 import HelpIcon from '@mui/icons-material/Help';
 import React, { useState, useEffect } from 'react';
-import { DesignReview, wbsPipe } from 'shared';
-import { meetingStartTimePipe } from '../../../utils/pipes';
+import { Event, meetingStartTimePipeNumbers, wbsPipe } from 'shared';
 import NERFormModal from '../../../components/NERFormModal';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { FinalizeReviewInformation } from './DesignReviewDetailPage';
+import { FinalizeEventInformation } from './EventDetailPage';
 import { useCurrentUser, useUserScheduleSettings } from '../../../hooks/users.hooks';
 
-interface FinalizeDesignReviewProps {
+interface FinalizeEventProps {
   open: boolean;
   setOpen: (val: boolean) => void;
-  designReview: DesignReview;
-  conflictingDesignReviews: DesignReview[];
+  event: Event;
+  conflictingEvents: Event[];
   startTime: number;
   selectedDate: Date;
-  finalizeDesignReview: (data: FinalizeReviewInformation) => void;
+  finalizeEvent: (data: FinalizeEventInformation) => void;
 }
 
-const FinalizeDesignReviewDetailsModal = ({
+const FinalizeEventDetailsModal = ({
   open,
   setOpen,
-  designReview,
-  conflictingDesignReviews,
-  finalizeDesignReview,
+  event,
+  conflictingEvents,
+  finalizeEvent,
   startTime,
   selectedDate
-}: FinalizeDesignReviewProps) => {
+}: FinalizeEventProps) => {
   const [meetingType, setMeetingType] = useState<string[]>([]);
   const currentUser = useCurrentUser();
   const { data: userScheduleSettings } = useUserScheduleSettings(currentUser.userId);
@@ -43,16 +42,30 @@ const FinalizeDesignReviewDetailsModal = ({
       docTemplateLink: yup.string().required('Question Doc is Required')
     });
 
-  const title = `Finalize Design Review for ${designReview.wbsName}`;
+  const [firstWorkPackage] = event.workPackages;
 
-  const designReviewConflicts = conflictingDesignReviews.map(
-    (designReview) => `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName} at ${meetingStartTimePipe([startTime])}`
+  const wbsNum = firstWorkPackage
+    ? {
+        carNumber: firstWorkPackage.wbsElement.carNumber,
+        projectNumber: firstWorkPackage.wbsElement.projectNumber,
+        workPackageNumber: firstWorkPackage.wbsElement.workPackageNumber
+      }
+    : { carNumber: 0, projectNumber: 0, workPackageNumber: 0 };
+
+  const eventName = firstWorkPackage?.wbsElement?.name
+    ? `${firstWorkPackage.wbsElement.carNumber}.${firstWorkPackage.wbsElement.projectNumber}.${firstWorkPackage.wbsElement.workPackageNumber} - ${firstWorkPackage.wbsElement.name}`
+    : event.title;
+
+  const title = `Finalize Event for ${eventName}`;
+
+  const eventConflicts = conflictingEvents.map(
+    (_event) => `${wbsPipe(wbsNum)} - ${eventName} at ${meetingStartTimePipeNumbers([startTime])}`
   );
 
   const defaultValues = {
-    docTemplateLink: designReview.docTemplateLink ?? '',
-    zoomLink: designReview.zoomLink ?? userScheduleSettings?.personalZoomLink ?? '',
-    location: designReview.location ?? undefined
+    docTemplateLink: event.questionDocument ?? '',
+    zoomLink: event.zoomLink ?? userScheduleSettings?.personalZoomLink ?? '',
+    location: event.location ?? undefined
   };
 
   const {
@@ -72,24 +85,24 @@ const FinalizeDesignReviewDetailsModal = ({
   };
 
   const onSubmit = async (data: { docTemplateLink: string; zoomLink?: string; location?: string }) => {
-    finalizeDesignReview({ ...data, zoomLink: data.zoomLink ? data.zoomLink : undefined, meetingType });
+    finalizeEvent({ ...data, zoomLink: data.zoomLink ? data.zoomLink : undefined, meetingType });
     setOpen(false);
   };
 
   useEffect(() => {
-    if (userScheduleSettings && designReview.isOnline && !designReview.zoomLink) {
+    if (userScheduleSettings && !event.zoomLink) {
       reset({
-        docTemplateLink: designReview.docTemplateLink ?? '',
+        docTemplateLink: event.questionDocument ?? '',
         zoomLink: userScheduleSettings.personalZoomLink ?? '',
-        location: designReview.location ?? undefined
+        location: event.location ?? undefined
       });
     }
-    if (designReview.zoomLink === '' && !designReview.isOnline) {
+    if (event.zoomLink === '') {
       reset({
         zoomLink: undefined
       });
     }
-  }, [userScheduleSettings, designReview, reset]);
+  }, [userScheduleSettings, event, reset]);
 
   return (
     <NERFormModal
@@ -100,11 +113,11 @@ const FinalizeDesignReviewDetailsModal = ({
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       submitText="Schedule"
-      formId="finalize-design-review-form"
+      formId="finalize-event-form"
     >
       <Box style={{ display: 'flex', marginBottom: 20 }}>
         <Typography style={{ fontSize: '1.2em', marginRight: 90 }}>Meeting Time:</Typography>
-        <Typography style={{ fontSize: '1.2em' }}>{`${meetingStartTimePipe([
+        <Typography style={{ fontSize: '1.2em' }}>{`${meetingStartTimePipeNumbers([
           startTime
         ])} - ${selectedDate.toDateString()}`}</Typography>
       </Box>
@@ -155,7 +168,7 @@ const FinalizeDesignReviewDetailsModal = ({
         </Box>
       )}
       <Grid container justifyContent="center" style={{ alignItems: 'center' }}>
-        {designReviewConflicts && designReviewConflicts.length > 0 && (
+        {eventConflicts && eventConflicts.length > 0 && (
           <Grid item container justifyContent="center" style={{ alignItems: 'center' }}>
             <Box sx={{ backgroundColor: '#ef4345', width: '70%', padding: 0.5 }}>
               <Typography>Design Review Conflicts</Typography>
@@ -170,7 +183,7 @@ const FinalizeDesignReviewDetailsModal = ({
                   padding: 1
                 }}
               >
-                {designReviewConflicts.map((conflictDesign, index) => (
+                {eventConflicts.map((conflictDesign, index) => (
                   <Typography key={index} style={{ color: 'black', borderTop: '1px solid black' }}>
                     {conflictDesign}
                   </Typography>
@@ -183,4 +196,4 @@ const FinalizeDesignReviewDetailsModal = ({
     </NERFormModal>
   );
 };
-export default FinalizeDesignReviewDetailsModal;
+export default FinalizeEventDetailsModal;
