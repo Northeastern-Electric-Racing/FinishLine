@@ -31,6 +31,7 @@ google_client_id = ""  # e.g., "123456789-abcdef.apps.googleusercontent.com"
 slack_id =
 github_repository="https://github.com/Northeastern-Electric-Racing/FinishLine"
 deploy_branch_name="multitenancy"
+clarity_project_id = 
 
 # Secrets (NEVER commit these or anything above but that stuff is less important)
 db_master_password            =

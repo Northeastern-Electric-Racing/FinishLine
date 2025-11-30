@@ -224,7 +224,7 @@ variable "calendar_refresh_token" {
 variable "github_repository" {
   description = "GitHub repository URL (e.g., https://github.com/username/FinishLine)"
   type        = string
-  default     = ""  # Set this to your GitHub repo URL
+  default     = "https://github.com/Northeastern-Electric-Racing/FinishLine"
 }
 
 variable "github_access_token" {
@@ -239,7 +239,7 @@ variable "github_access_token" {
 variable "deploy_branch_name" {
   description = "Branch name to deploy (use a test branch initially, then switch to 'main')"
   type        = string
-  default     = "multitenancy"  # Change to 'main' when ready for production
+  default     = "multitenancy"
 }
 
 variable "enable_pull_request_preview" {
@@ -266,6 +266,12 @@ variable "google_drive_folder_id" {
 
 variable "slack_id" {
   description = "Slack app ID (public)"
+  type        = string
+  default     = ""
+}
+
+variable "clarity_project_id" {
+  description = "Microsoft Clarity project ID (public)"
   type        = string
   default     = ""
 }

@@ -221,7 +221,6 @@ module "frontend" {
   github_repository    = var.github_repository
   github_access_token  = var.github_access_token
   
-  # Deploy from a test branch for now (change to "main" when ready for production)
   main_branch_name     = var.deploy_branch_name
   
   # Backend API URL - use custom domain if configured, otherwise EB default
@@ -236,7 +235,8 @@ module "frontend" {
   
   # Additional environment variables for frontend build
   additional_environment_variables = {
-    VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID = var.google_client_id
+    VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID = var.google_client_id,
+    VITE_REACT_APP_CLARITY_PROJECT_ID = var.clarity_project_id
   }
 }
 
