@@ -117,7 +117,7 @@ output "cloudwatch_dashboard_name" {
 
 output "sns_topic_arn" {
   description = "SNS topic ARN for alerts"
-  value       = module.monitoring.sns_topic_arn
+  value       = aws_sns_topic.alerts.arn
 }
 
 #####################

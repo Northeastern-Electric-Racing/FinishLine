@@ -35,3 +35,8 @@ variable "log_retention_days" {
   type        = number
   default     = 7
 }
+
+variable "sns_topic_arn" {
+  description = "ARN of the SNS topic for alarm notifications"
+  type        = string
+}

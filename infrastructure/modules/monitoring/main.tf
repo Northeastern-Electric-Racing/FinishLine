@@ -1,26 +1,6 @@
 # Monitoring Module - CloudWatch Dashboards and Alarms
 
 #############
-# SNS Topic for Alerts
-#############
-resource "aws_sns_topic" "alerts" {
-  name = "${var.project_name}-${var.environment}-alerts"
-
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-alerts"
-    Environment = var.environment
-    Project     = var.project_name
-  }
-}
-
-# TODO: Add email subscriptions
-# resource "aws_sns_topic_subscription" "alerts_email" {
-#   topic_arn = aws_sns_topic.alerts.arn
-#   protocol  = "email"
-#   endpoint  = "your-email@example.com"
-# }
-
-#############
 # CloudWatch Dashboard
 #############
 resource "aws_cloudwatch_dashboard" "main" {
@@ -28,30 +8,42 @@ resource "aws_cloudwatch_dashboard" "main" {
 
   dashboard_body = jsonencode({
     widgets = [
-      # EB CPU Utilization
+      # EC2 CPU Utilization
       {
         type = "metric"
         properties = {
           metrics = [
-            ["AWS/ElasticBeanstalk", "EnvironmentHealth", { stat = "Average" }]
+            ["AWS/EC2", "CPUUtilization", "AutoScalingGroupName", var.eb_autoscaling_group_name, { stat = "Average" }]
           ]
           period = 300
           stat   = "Average"
           region = var.aws_region
-          title  = "Environment Health"
+          title  = "EC2 CPU Utilization (%)"
+          yAxis = {
+            left = {
+              min = 0
+              max = 100
+            }
+          }
         }
       },
-      # EB Memory Utilization
+      # EC2 Memory Utilization
       {
         type = "metric"
         properties = {
           metrics = [
-            ["CWAgent", "mem_used_percent", "AutoScalingGroupName", var.eb_autoscaling_group_name]
+            ["CWAgent", "mem_used_percent", "AutoScalingGroupName", var.eb_autoscaling_group_name, { stat = "Average" }]
           ]
           period = 300
           stat   = "Average"
           region = var.aws_region
-          title  = "Memory Utilization (%)"
+          title  = "EC2 Memory Utilization (%)"
+          yAxis = {
+            left = {
+              min = 0
+              max = 100
+            }
+          }
         }
       },
       # EB Request Count
@@ -59,7 +51,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         type = "metric"
         properties = {
           metrics = [
-            ["AWS/ElasticBeanstalk", "RequestCount", { stat = "Sum" }]
+            ["AWS/ElasticBeanstalk", "RequestCount", "EnvironmentName", var.eb_environment_name, { stat = "Sum" }]
           ]
           period = 300
           stat   = "Sum"
@@ -67,25 +59,72 @@ resource "aws_cloudwatch_dashboard" "main" {
           title  = "Request Count"
         }
       },
-      # RDS CPU
+      # HTTP 5xx Errors
       {
         type = "metric"
         properties = {
           metrics = [
-            ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", var.rds_instance_id]
+            ["AWS/ElasticBeanstalk", "ApplicationRequests5xx", "EnvironmentName", var.eb_environment_name, { stat = "Sum" }]
+          ]
+          period = 300
+          stat   = "Sum"
+          region = var.aws_region
+          title  = "HTTP 5xx Errors"
+        }
+      },
+      # RDS CPU Utilization
+      {
+        type = "metric"
+        properties = {
+          metrics = [
+            ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", var.rds_instance_id, { stat = "Average" }]
           ]
           period = 300
           stat   = "Average"
           region = var.aws_region
-          title  = "RDS CPU Utilization"
+          title  = "RDS CPU Utilization (%)"
+          yAxis = {
+            left = {
+              min = 0
+              max = 100
+            }
+          }
         }
       },
-      # RDS Connections
+      # RDS Read/Write IOPS
       {
         type = "metric"
         properties = {
           metrics = [
-            ["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", var.rds_instance_id]
+            ["AWS/RDS", "ReadIOPS", "DBInstanceIdentifier", var.rds_instance_id, { stat = "Average", label = "Read IOPS" }],
+            [".", "WriteIOPS", ".", ".", { stat = "Average", label = "Write IOPS" }]
+          ]
+          period = 300
+          stat   = "Average"
+          region = var.aws_region
+          title  = "RDS Read/Write IOPS"
+        }
+      },
+      # RDS Network Throughput
+      {
+        type = "metric"
+        properties = {
+          metrics = [
+            ["AWS/RDS", "NetworkReceiveThroughput", "DBInstanceIdentifier", var.rds_instance_id, { stat = "Average", label = "Network In" }],
+            [".", "NetworkTransmitThroughput", ".", ".", { stat = "Average", label = "Network Out" }]
+          ]
+          period = 300
+          stat   = "Average"
+          region = var.aws_region
+          title  = "RDS Network Throughput (Bytes/sec)"
+        }
+      },
+      # RDS Database Connections
+      {
+        type = "metric"
+        properties = {
+          metrics = [
+            ["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", var.rds_instance_id, { stat = "Average" }]
           ]
           period = 300
           stat   = "Average"
@@ -98,12 +137,12 @@ resource "aws_cloudwatch_dashboard" "main" {
         type = "metric"
         properties = {
           metrics = [
-            ["AWS/RDS", "FreeableMemory", "DBInstanceIdentifier", var.rds_instance_id]
+            ["AWS/RDS", "FreeableMemory", "DBInstanceIdentifier", var.rds_instance_id, { stat = "Average" }]
           ]
           period = 300
           stat   = "Average"
           region = var.aws_region
-          title  = "RDS Freeable Memory"
+          title  = "RDS Freeable Memory (Bytes)"
         }
       }
     ]
@@ -125,7 +164,7 @@ resource "aws_cloudwatch_metric_alarm" "eb_cpu_high" {
   statistic           = "Average"
   threshold           = 80
   alarm_description   = "This metric monitors EC2 CPU utilization"
-  alarm_actions       = [aws_sns_topic.alerts.arn]
+  alarm_actions       = [var.sns_topic_arn]
 
   dimensions = {
     AutoScalingGroupName = var.eb_autoscaling_group_name
@@ -137,15 +176,7 @@ resource "aws_cloudwatch_metric_alarm" "eb_cpu_high" {
   }
 }
 
-# NOTE: Memory alarms below require CloudWatch Agent to be installed on EB instances.
-# To enable memory monitoring:
-# 1. Create .ebextensions/cloudwatch-agent.config in your app
-# 2. Follow AWS docs: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Install-CloudWatch-Agent.html
-# 3. Uncomment the alarms below
-
-# High Memory Alarm (requires CloudWatch Agent) - COMMENTED OUT
-# Uncomment after installing CloudWatch Agent
-/*
+# High Memory Alarm
 resource "aws_cloudwatch_metric_alarm" "eb_memory_high" {
   alarm_name          = "${var.project_name}-${var.environment}-eb-memory-high"
   comparison_operator = "GreaterThanThreshold"
@@ -156,7 +187,7 @@ resource "aws_cloudwatch_metric_alarm" "eb_memory_high" {
   statistic           = "Average"
   threshold           = 80
   alarm_description   = "This metric monitors EC2 memory utilization"
-  alarm_actions       = [aws_sns_topic.alerts.arn]
+  alarm_actions       = [var.sns_topic_arn]
 
   dimensions = {
     AutoScalingGroupName = var.eb_autoscaling_group_name
@@ -167,11 +198,8 @@ resource "aws_cloudwatch_metric_alarm" "eb_memory_high" {
     Project     = var.project_name
   }
 }
-*/
 
-# Critical Memory Alarm (requires CloudWatch Agent) - COMMENTED OUT
-# Uncomment after installing CloudWatch Agent
-/*
+# Critical Memory Alarm
 resource "aws_cloudwatch_metric_alarm" "eb_memory_critical" {
   alarm_name          = "${var.project_name}-${var.environment}-eb-memory-critical"
   comparison_operator = "GreaterThanThreshold"
@@ -182,7 +210,7 @@ resource "aws_cloudwatch_metric_alarm" "eb_memory_critical" {
   statistic           = "Average"
   threshold           = 90
   alarm_description   = "This metric monitors EC2 memory utilization - CRITICAL"
-  alarm_actions       = [aws_sns_topic.alerts.arn]
+  alarm_actions       = [var.sns_topic_arn]
 
   dimensions = {
     AutoScalingGroupName = var.eb_autoscaling_group_name
@@ -193,20 +221,20 @@ resource "aws_cloudwatch_metric_alarm" "eb_memory_critical" {
     Project     = var.project_name
   }
 }
-*/
 
-# Environment Health Alarm
-resource "aws_cloudwatch_metric_alarm" "eb_environment_health" {
-  alarm_name          = "${var.project_name}-${var.environment}-eb-health-degraded"
-  comparison_operator = "LessThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "EnvironmentHealth"
+# HTTP 5xx Error Rate Alarm
+# This monitors server errors which indicate application health issues
+resource "aws_cloudwatch_metric_alarm" "eb_http_5xx_errors" {
+  alarm_name          = "${var.project_name}-${var.environment}-eb-http-5xx-high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "ApplicationRequests5xx"
   namespace           = "AWS/ElasticBeanstalk"
   period              = 300
-  statistic           = "Average"
-  threshold           = 15  # Healthy = 25, Warning = 15, Degraded = 10
-  alarm_description   = "Environment health is degraded"
-  alarm_actions       = [aws_sns_topic.alerts.arn]
+  statistic           = "Sum"
+  threshold           = 10  # Alert if more than 10 5xx errors in 5 minutes
+  alarm_description   = "High rate of HTTP 5xx errors indicates application issues"
+  alarm_actions       = [var.sns_topic_arn]
 
   dimensions = {
     EnvironmentName = var.eb_environment_name

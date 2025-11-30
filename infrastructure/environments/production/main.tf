@@ -137,8 +137,8 @@ module "rds" {
 
   # Monitoring
   performance_insights_enabled = true
-  # Note: Alarms will be created by monitoring module
-  # alarm_actions = []  # Empty for now to avoid circular dependency
+  # Pass SNS topic for alarm notifications
+  alarm_actions = [aws_sns_topic.alerts.arn]
 }
 
 # Note: ACM Certificates are now created in the DNS module
@@ -241,6 +241,19 @@ module "frontend" {
 }
 
 #############
+# SNS Topic for Alerts (created first to avoid circular dependency)
+#############
+resource "aws_sns_topic" "alerts" {
+  name = "${local.project_name}-${local.environment}-alerts"
+
+  tags = {
+    Name        = "${local.project_name}-${local.environment}-alerts"
+    Environment = local.environment
+    Project     = local.project_name
+  }
+}
+
+#############
 # Monitoring Module
 #############
 module "monitoring" {
@@ -253,4 +266,5 @@ module "monitoring" {
   eb_autoscaling_group_name  = module.elasticbeanstalk.autoscaling_groups[0]
   rds_instance_id            = module.rds.db_instance_id
   log_retention_days         = 30
+  sns_topic_arn              = aws_sns_topic.alerts.arn
 }
