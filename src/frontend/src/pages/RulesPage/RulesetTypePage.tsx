@@ -1,9 +1,21 @@
-/*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
- * See the LICENSE file in the repository root folder for details.
- */
 import PageLayout from '../../components/PageLayout';
-import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import {
+  Box,
+  Button,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  useMediaQuery,
+  useTheme,
+  Card,
+  CardContent,
+  Typography,
+  Stack
+} from '@mui/material';
 
 type RulesetTypeColumnId = 'id' | 'name' | 'lastUpdated' | 'revisions' | 'actions';
 
@@ -13,6 +25,9 @@ interface RulesetTypeHeadCell {
 }
 
 const RulesetTypePage: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const headCells: readonly RulesetTypeHeadCell[] = [
     {
       id: 'name',
@@ -32,34 +47,97 @@ const RulesetTypePage: React.FC = () => {
     }
   ];
 
+  // Mock data for now - will be replaced with ruleset type data
+  const mockRulesets = [
+    { id: '1', name: 'Ruleset 1', lastUpdated: '2024-01-15', revisions: 5, actions: 'Edit' },
+    { id: '2', name: 'Ruleset 2', lastUpdated: '2024-01-14', revisions: 3, actions: 'Edit' }
+  ];
+
   return (
     <PageLayout title="Rules">
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 120px)' }}>
         <Box sx={{ flexGrow: 1 }}>
-          <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-            <Table aria-label="ruleset types">
-              <TableHead
-                sx={{
-                  backgroundColor: '#dd514c'
-                }}
-              >
-                <TableRow>
-                  {headCells.map((headCell) => (
-                    <TableCell
-                      align="center"
-                      sx={{ fontSize: '16px', fontWeight: 600 }}
-                      style={{ paddingLeft: '24px', paddingRight: '0px' }}
-                      key={headCell.id}
-                    >
-                      {headCell.label}
-                    </TableCell>
-                  ))}
-                  <TableCell align="center" />
-                </TableRow>
-              </TableHead>
-              <TableBody sx={{ backgroundColor: '#121313' }}>{/* Table Rows & Cells Here */}</TableBody>
-            </Table>
-          </TableContainer>
+          {isMobile ? (
+            <Stack spacing={2} sx={{ px: 1 }}>
+              {mockRulesets.map((ruleset) => (
+                <Card
+                  key={ruleset.id}
+                  sx={{
+                    backgroundColor: '#121313',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                  }}
+                >
+                  <CardContent>
+                    <Typography variant="h6" sx={{ color: '#dd514c', fontWeight: 600, mb: 2 }}>
+                      {ruleset.name}
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="body2" sx={{ color: '#999' }}>
+                          Last Updated:
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#ededed' }}>
+                          {ruleset.lastUpdated}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="body2" sx={{ color: '#999' }}>
+                          Revisions:
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#ededed' }}>
+                          {ruleset.revisions}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            color: '#dd514c',
+                            borderColor: '#dd514c',
+                            '&:hover': {
+                              borderColor: '#c74340',
+                              backgroundColor: 'rgba(221, 81, 76, 0.08)'
+                            }
+                          }}
+                        >
+                          Actions
+                        </Button>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Stack>
+          ) : (
+            <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
+              <Table aria-label="ruleset types">
+                <TableHead
+                  sx={{
+                    backgroundColor: '#dd514c'
+                  }}
+                >
+                  <TableRow>
+                    {headCells.map((headCell) => (
+                      <TableCell
+                        align="center"
+                        sx={{ fontSize: '16px', fontWeight: 600 }}
+                        style={{ paddingLeft: '24px', paddingRight: '0px' }}
+                        key={headCell.id}
+                      >
+                        {headCell.label}
+                      </TableCell>
+                    ))}
+                    <TableCell align="center" />
+                  </TableRow>
+                </TableHead>
+                <TableBody sx={{ backgroundColor: '#121313' }}>
+                  {/* Table rows will go here with ruleset type data */}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </Box>
         <Box
           sx={{
@@ -67,7 +145,8 @@ const RulesetTypePage: React.FC = () => {
             position: 'sticky',
             bottom: 0,
             zIndex: 2,
-            width: '100%'
+            width: '100%',
+            px: { xs: 1, md: 0 }
           }}
         >
           <Box
@@ -79,7 +158,7 @@ const RulesetTypePage: React.FC = () => {
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'flex-end'
+              justifyContent: { xs: 'center', md: 'flex-end' }
             }}
           >
             <Button
@@ -89,13 +168,15 @@ const RulesetTypePage: React.FC = () => {
                 borderRadius: '8px',
                 color: '#ededed',
                 backgroundColor: '#dd514c',
-                padding: '2px 20px',
+                padding: { xs: '8px 16px', md: '2px 20px' },
                 mb: 1,
-                mr: 2,
+                mr: { xs: 0, md: 2 },
                 display: 'flex',
-                fontSize: '16px',
+                fontSize: { xs: '14px', md: '16px' },
                 fontWeight: 700,
                 textTransform: 'none',
+                width: { xs: '100%', sm: 'auto' },
+                maxWidth: { xs: '300px', sm: 'none' },
                 '&:hover': {
                   backgroundColor: '#c74340'
                 }
