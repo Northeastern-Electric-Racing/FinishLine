@@ -54,7 +54,7 @@ const RulesetTypePage: React.FC = () => {
   ];
 
   return (
-    <PageLayout title="Rules">
+    <PageLayout title="Rulesets">
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 120px)' }}>
         <Box sx={{ flexGrow: 1 }}>
           {isMobile ? (
@@ -129,7 +129,6 @@ const RulesetTypePage: React.FC = () => {
                         {headCell.label}
                       </TableCell>
                     ))}
-                    <TableCell align="center" />
                   </TableRow>
                 </TableHead>
                 <TableBody sx={{ backgroundColor: '#121313' }}>
