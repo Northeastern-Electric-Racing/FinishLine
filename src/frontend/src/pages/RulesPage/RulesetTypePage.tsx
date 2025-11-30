@@ -4,10 +4,11 @@
  */
 import PageLayout from '../../components/PageLayout';
 import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { RulesetTypeRow } from 'shared';
+
+type RulesetTypeColumnId = 'id' | 'name' | 'lastUpdated' | 'revisions' | 'actions';
 
 interface RulesetTypeHeadCell {
-  id: keyof RulesetTypeRow;
+  id: RulesetTypeColumnId;
   label: string;
 }
 
@@ -36,7 +37,7 @@ const RulesetTypePage: React.FC = () => {
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 120px)' }}>
         <Box sx={{ flexGrow: 1 }}>
           <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-            <Table aria-label="simple table">
+            <Table aria-label="ruleset types">
               <TableHead
                 sx={{
                   backgroundColor: '#dd514c'
@@ -48,6 +49,7 @@ const RulesetTypePage: React.FC = () => {
                       align="center"
                       sx={{ fontSize: '16px', fontWeight: 600 }}
                       style={{ paddingLeft: '24px', paddingRight: '0px' }}
+                      key={headCell.id}
                     >
                       {headCell.label}
                     </TableCell>

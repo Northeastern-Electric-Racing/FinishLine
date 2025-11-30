@@ -5,15 +5,6 @@
 
 import { User } from './user-types';
 
-export interface RulesetTypeRow {
-  identifier: number;
-  id: string;
-  name: number;
-  lastUpdated: Date;
-  revisions: number;
-  actions: string;
-}
-
 export enum RuleCompletion {
   REVIEW = 'REVIEW',
   INCOMPLETE = 'INCOMPLETE',
