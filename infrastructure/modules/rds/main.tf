@@ -43,6 +43,9 @@ resource "aws_db_instance" "main" {
   # Auto Minor Version Upgrade
   auto_minor_version_upgrade = true
 
+  # Apply changes immediately instead of during maintenance window
+  apply_immediately = true
+
   # Deletion Protection
   deletion_protection = var.deletion_protection
 
