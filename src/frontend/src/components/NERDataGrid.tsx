@@ -14,6 +14,7 @@ interface NERDataGridProps<T> {
   pageSizeDefault?: number;
   rowsPerPageOptions?: number[];
   onAdd: () => void;
+  addLabel?: string; // optional label for the add/create button (defaults to 'Add')
   onRowClick?: (item: T) => void;
   // optional simple search fields (keys of mapped row) or a custom filter function
   searchFields?: (keyof MapRowResult<T>)[];
@@ -33,6 +34,7 @@ function NERDataGrid<T>({
   pageSizeDefault = 10,
   rowsPerPageOptions,
   onAdd,
+  addLabel = 'Add',
   onRowClick,
   searchFields,
   searchFilter,
@@ -96,7 +98,7 @@ function NERDataGrid<T>({
             sx={{ flex: 1 }}
           />
           <Button variant="contained" size="small" onClick={onAdd} sx={{ ml: 1 }}>
-            Add
+            {addLabel}
           </Button>
         </Box>
 

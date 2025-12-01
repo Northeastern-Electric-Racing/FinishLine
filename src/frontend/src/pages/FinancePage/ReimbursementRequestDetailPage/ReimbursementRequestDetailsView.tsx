@@ -64,8 +64,6 @@ import CheckList from '../../../components/CheckList';
 import MarkDeliveredModal from './MarkDeliveredModal';
 import ReimbursementRequestTimeline from '../FinanceComponents/ReimbursementRequestTimeline';
 import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
-import SidePage from '../FinanceComponents/SidePagePopup';
-import EditReimbursementRequestPage from '../EditReimbursementRequest/EditReimbursementRequest';
 import { ReimbursementRequestDataSubmission } from '../ReimbursementRequestForm/ReimbursementRequestForm';
 import { useGetFinanceDelegates } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -80,8 +78,7 @@ interface ReimbursementRequestDetailsViewProps {
 
 const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({
   reimbursementRequest,
-  onCloseSidePage,
-  onCloseEditPage
+  onCloseSidePage
 }) => {
   const theme = useTheme();
   const user = useCurrentUser();
@@ -118,16 +115,9 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const isPendingSaboSubmission = isReimbursementRequestPendingSaboSubmission(reimbursementRequest);
   const isLeadershipApproved = isReimbursementRequestLeadershipApproved(reimbursementRequest);
   const isPendingFinance = isReimbursementRequestPendingFinance(reimbursementRequest);
-  const [showEditSidePage, setShowEditSidePage] = useState(false);
-
-  const openSidePage = () => {
-    setShowEditSidePage(true);
-  };
 
   const closeSidePage = () => {
-    setShowEditSidePage(false);
     onCloseSidePage();
-    onCloseEditPage();
   };
 
   const handleDelete = async () => {
@@ -315,7 +305,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Edit',
       onClick: () => {
         history.push(`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${reimbursementRequest.reimbursementRequestId}/edit`);
-        openSidePage();
       },
       icon: <Edit />,
       // Only show Edit if: not leadership approved yet OR already has purchase details
@@ -326,7 +315,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Add Purchase Details',
       onClick: () => {
         history.push(`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${reimbursementRequest.reimbursementRequestId}/edit`);
-        openSidePage();
       },
       icon: <Edit />,
       // Only show if leadership approved and NO purchase details yet
@@ -636,18 +624,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           modalShow={addSaboNumberModalShow}
           onHide={() => setAddSaboNumberModalShow(false)}
           reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
-        />
-        <SidePage
-          showPage={showEditSidePage}
-          handleClose={closeSidePage}
-          title={''}
-          component={
-            <EditReimbursementRequestPage
-              onExitEditPage={closeSidePage}
-              onSubmitEditData={onSubmit}
-              onSubmitToFinance={onSubmitToFinance}
-            />
-          }
         />
         <Box sx={{ display: 'flex', mt: 2 }}>
           <Box>

@@ -7,6 +7,9 @@ import { routes } from '../../utils/routes';
 import FinanceDashboard from './FinanceDashboard/FinanceDashboard';
 import ReimbursmentRequests from './ReimbursmentRequests';
 import CompaniesPage from './CompaniesPage';
+import ReimbursementRequestForm from './ReimbursementRequestForm/ReimbursementRequestForm';
+import CreateReimbursementRequestPage from './CreateReimbursementRequest';
+import EditReimbursementRequestPage from './EditReimbursementRequest/EditReimbursementRequest';
 
 // Redirect is used since the default display page for the table should be 'my-requests'.
 // It also allows the side page to stay highlighted for both tabs of the table
@@ -14,7 +17,8 @@ import CompaniesPage from './CompaniesPage';
 const Finance: React.FC = () => {
   return (
     <Switch>
-      <Route path={routes.REIMBURSEMENT_REQUEST_EDIT} component={ReimbursmentRequests} />
+      <Route path={routes.NEW_REIMBURSEMENT_REQUEST} component={CreateReimbursementRequestPage} />
+      <Route path={routes.REIMBURSEMENT_REQUEST_EDIT} component={EditReimbursementRequestPage} />
       <Route path={routes.NEW_REIMBURSEMENT_REQUEST} component={ReimbursmentRequests} />
       <Route path={routes.REIMBURSEMENT_REQUEST_BY_ID} component={ReimbursmentRequests} />
       <Route path={routes.FINANCE_DASHBOARD} component={FinanceDashboard} />

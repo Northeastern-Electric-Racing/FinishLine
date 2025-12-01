@@ -12,7 +12,6 @@ interface ReimbursementRequestTableProps {
   assignedReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
   onCloseSidePage: () => void;
-  searchText?: string;
   statuses?: ReimbursementStatusType[];
   startDate?: Date | null;
   endDate?: Date | null;
@@ -23,7 +22,6 @@ const ReimbursementRequestTable = ({
   assignedReimbursementRequests,
   allReimbursementRequests,
   onCloseSidePage,
-  searchText,
   statuses,
   startDate,
   endDate
@@ -68,7 +66,6 @@ const ReimbursementRequestTable = ({
         allReimbursementRequests={allReimbursementRequests}
         canViewAllReimbursementRequests={canViewAllReimbursementRequests}
         currentTab={tabValue}
-        searchText={searchText}
         statuses={statuses}
         startDate={startDate}
         endDate={endDate}
