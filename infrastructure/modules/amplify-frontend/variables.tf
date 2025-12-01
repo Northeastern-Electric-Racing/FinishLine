@@ -24,7 +24,7 @@ variable "github_access_token" {
 variable "main_branch_name" {
   description = "Name of the main branch to deploy"
   type        = string
-  default     = "main"
+  default     = "multitenancy"
 }
 
 variable "backend_api_url" {
