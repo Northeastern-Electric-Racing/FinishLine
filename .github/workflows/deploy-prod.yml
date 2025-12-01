@@ -3,7 +3,6 @@ name: Deploy to Production
 on:
   push:
     branches:
-      - infrastructure
       - multitenancy
 
 jobs:
