@@ -3292,6 +3292,130 @@ const performSeed: () => Promise<void> = async () => {
 
   await CalendarService.createEvent(
     thomasEmrax,
+    'Weekly Team Sync 2',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        days: [DayOfWeek.MONDAY],
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        recurrenceNumber: 2,
+        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
+        allDay: false
+      },
+      {
+        days: [DayOfWeek.WEDNESDAY],
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        recurrenceNumber: 2,
+        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    undefined
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 3',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        days: [DayOfWeek.MONDAY],
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        recurrenceNumber: 2,
+        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    undefined
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 4',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        days: [DayOfWeek.MONDAY],
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        recurrenceNumber: 7,
+        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    undefined
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 5',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        days: [DayOfWeek.MONDAY],
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        recurrenceNumber: 2,
+        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    undefined
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
     'Impact Attenuator Design Review',
     designReviewEventType.eventTypeId,
     ner,

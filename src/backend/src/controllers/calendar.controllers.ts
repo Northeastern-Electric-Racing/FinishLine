@@ -451,4 +451,13 @@ export default class CalendarController {
       next(error);
     }
   }
+
+  static async getAllEventTypes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const events = await CalendarService.getAllEventTypes(req.organization);
+      res.status(200).json(events);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

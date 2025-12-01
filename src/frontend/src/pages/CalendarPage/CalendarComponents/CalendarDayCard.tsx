@@ -1,6 +1,6 @@
 import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { Event, EventStatus, TeamType } from 'shared';
-import { meetingStartTimePipeScheduleSlot } from '../../../utils/pipes';
+import { Calendar, DayOfWeek, Event, EventStatus, EventType, TeamType } from 'shared';
+import { datePipe, meetingStartTimePipeScheduleSlot } from '../../../utils/pipes';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
@@ -9,6 +9,15 @@ import { useState } from 'react';
 import DRCSummaryModal from '../EventSummaryModal';
 import DynamicTooltip from '../../../components/DynamicTooltip';
 import { eventStatusColor } from '../../../utils/design-review.utils';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import GroupIcon from '@mui/icons-material/Group';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
+import LinkIcon from '@mui/icons-material/Link';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -24,20 +33,30 @@ interface CalendarDayCardProps {
   cardDate: Date;
   events: Event[];
   teamTypes: TeamType[];
+  eventTypes: EventType[];
+  calendars: Calendar[];
+  dayOfWeek: DayOfWeek;
 }
 
-const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, teamTypes }) => {
+const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
+  cardDate,
+  events,
+  teamTypes,
+  eventTypes,
+  calendars,
+  dayOfWeek
+}) => {
   const [, setIsCreateModalOpen] = useState(false);
   const theme = useTheme();
   const DayCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
       <Grid item xs display="flex" justifyContent="flex-end">
         <Typography
-          variant="h6"
-          marginRight={1}
+          variant="h5"
+          margin={1}
           noWrap
           sx={{
-            color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[600] : 'inherit'
+            color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[100] : theme.palette.grey[600]
           }}
         >
           {cardDate.getDate()}
@@ -46,10 +65,249 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
     </Grid>
   );
 
+  const EventPopupInfo = ({ event, color }: { event: Event; color: string }) => {
+    const name = event.workPackages[0]?.wbsElement?.name || event.title;
+    const specificSlot = event.scheduledTimes.find((slot) => slot.days.find((day) => day === dayOfWeek));
+    const startTime = new Date(
+      specificSlot?.startTime ?? Date.now() - (specificSlot?.startTime?.getTimezoneOffset() ?? Date.now()) * -60000
+    );
+
+    const endTime = new Date(
+      specificSlot?.endTime ?? Date.now() - (specificSlot?.endTime?.getTimezoneOffset() ?? Date.now()) * -60000
+    );
+
+    const convertedStartTime = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const convertedEndTime = endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    return (
+      <>
+        <Stack direction="column" spacing={2}>
+          <Stack direction="row">
+            <Typography marginX={0.5} marginY={0.1} lineHeight={'120%'} fontSize={24} fontWeight="bold" noWrap align="left">
+              {getTeamTypeIcon(event.teamType?.name ?? '', true)}
+            </Typography>
+
+            <Typography
+              marginX={0.5}
+              marginY={0.5}
+              lineHeight={'120%'}
+              fontSize={24}
+              fontWeight="bold"
+              noWrap
+              align="left"
+              color={color}
+            >
+              {name}
+            </Typography>
+          </Stack>
+          <Stack direction="row">
+            <AccessTimeIcon />
+            <Typography
+              marginX={0.5}
+              marginY={0.5}
+              marginRight={8}
+              lineHeight={'120%'}
+              fontSize={14}
+              fontWeight="bold"
+              noWrap
+              align="left"
+            >
+              {convertedStartTime} - {convertedEndTime}
+            </Typography>
+            <LocationOnIcon />
+            <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={14} fontWeight="bold" noWrap align="left">
+              {event.location ?? 'N/A'}
+            </Typography>
+          </Stack>
+          {event.requiredMembers.length > 0 && (
+            <Stack direction="row">
+              <GroupIcon />
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                Required :
+              </Typography>
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.requiredMembers.length > 0 &&
+                  event.requiredMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
+                {event.requiredMembers.length === 0 && 'N/A'}
+              </Typography>
+            </Stack>
+          )}
+          {event.optionalMembers.length > 0 && (
+            <Stack direction="row">
+              <GroupIcon />
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                Optional :
+              </Typography>
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.optionalMembers.length > 0 &&
+                  event.optionalMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
+                {event.optionalMembers.length === 0 && 'N/A'}
+              </Typography>
+            </Stack>
+          )}
+          {event.confirmedMembers.length > 0 && (
+            <Stack direction="row">
+              <CheckCircleIcon />
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.confirmedMembers.length > 0 &&
+                  event.confirmedMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
+                {event.confirmedMembers.length === 0 && 'N/A'}
+              </Typography>
+            </Stack>
+          )}
+          {event.deniedMembers.length > 0 && (
+            <Stack direction="row">
+              <DoNotDisturbIcon />
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.deniedMembers.length > 0 &&
+                  event.deniedMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
+                {event.deniedMembers.length === 0 && 'N/A'}
+              </Typography>
+            </Stack>
+          )}
+          {event.machinery.length > 0 && (
+            <Stack direction="row">
+              <ConstructionIcon />
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.machinery.length > 0 && event.machinery.map((machine) => `${machine.name}`).join(', ')}
+                {event.machinery.length === 0 && 'N/A'}
+              </Typography>
+            </Stack>
+          )}
+          {event.shops.length > 0 && (
+            <Stack direction="row">
+              <StorefrontIcon />
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.shops.length > 0 && event.shops.map((shop) => `${shop.name}`).join(', ')}
+                {event.shops.length === 0 && 'N/A'}
+              </Typography>
+            </Stack>
+          )}
+          {event.workPackages.length > 0 && (
+            <Stack direction="row">
+              <BusinessCenterIcon />
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.workPackages.length > 0 && event.workPackages.map((wp) => `${wp.wbsElement.name}`).join(', ')}
+                {event.workPackages.length === 0 && 'N/A'}
+              </Typography>
+            </Stack>
+          )}
+          {event.zoomLink && (
+            <Stack direction="row">
+              <LinkIcon />
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.zoomLink ? <Link href={event.zoomLink}>Zoom Link</Link> : 'N/A'}
+              </Typography>
+            </Stack>
+          )}
+          {event.description && (
+            <Stack direction="row">
+              <DescriptionIcon />
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.description}
+              </Typography>
+            </Stack>
+          )}
+        </Stack>
+      </>
+    );
+  };
+
   const EventCard = ({ event }: { event: Event }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const [markedStatus, setMarkedStatus] = useState(event.status);
     const name = event.workPackages[0]?.wbsElement?.name || event.title;
+    const specificEventType = eventTypes?.find((eventType) => eventType.eventTypeId === event.eventTypeId);
+    const specificCalendar = calendars?.find((calendar) =>
+      calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)
+    );
 
     return (
       <>
@@ -64,6 +322,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
         <Box
           marginLeft={0.5}
           marginBottom={0.5}
+          marginRight={0.5}
           onClick={(e) => {
             e.stopPropagation();
             setIsSummaryModalOpen(true);
@@ -76,28 +335,39 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
         >
           <Card
             sx={{
-              backgroundColor: eventStatusColor(markedStatus),
+              backgroundColor: specificCalendar?.color ?? 'gray',
               borderRadius: 1,
               width: '100%',
-              minHeight: 20,
-              maxHeight: 20
+              minHeight: 30,
+              maxHeight: 30
             }}
           >
-            <DynamicTooltip
-              title={
-                name +
-                ' - ' +
-                (event.status !== EventStatus.UNCONFIRMED
-                  ? event.scheduledTimes.length > 0
-                    ? meetingStartTimePipeScheduleSlot(event.scheduledTimes)
-                    : ''
-                  : 'UNCONFIRMED! THIS TIME IS SUBJECT TO CHANGE')
-              }
+            <Tooltip
+              placement="right"
+              arrow
+              title={<EventPopupInfo event={event} color={specificCalendar?.color ?? 'gray'} />}
+              slotProps={{
+                tooltip: {
+                  sx: {
+                    maxWidth: 'none',
+                    borderRadius: 4,
+                    p: 2
+                  }
+                }
+              }}
             >
-              <Typography marginX={0.5} marginY={0.2} lineHeight={'120%'} fontSize={14} fontWeight="bold" noWrap>
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
                 {name}
               </Typography>
-            </DynamicTooltip>
+            </Tooltip>
           </Card>
         </Box>
       </>
@@ -118,25 +388,16 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           markedStatus={markedStatus}
           setMarkedStatus={setMarkedStatus}
         />
-        <Link
-          style={{ cursor: 'pointer' }}
-          fontSize={15}
-          onClick={() => {
-            setIsSummaryModalOpen(true);
-          }}
-        >
-          {event.workPackages[0]?.wbsElement?.name ||
-            event.title + (event.scheduledTimes.length > 0 ? meetingStartTimePipeScheduleSlot(event.scheduledTimes) : '')}
-        </Link>
+        <EventCard event={event} />
       </>
     );
   };
 
   const ExtraEventsCard = ({ extraEvents }: { extraEvents: Event[] }) => {
-    const [showTooltip, setShowTooltip] = useState(false);
     return (
       <Box
         marginLeft={0.5}
+        marginRight={0.5}
         marginBottom={0.2}
         sx={{
           position: 'relative',
@@ -145,41 +406,16 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
       >
         <Card
           sx={{
-            backgroundColor: 'grey',
+            backgroundColor: theme.palette.grey[800],
             borderRadius: 1,
-            minWidth: 140,
-            maxWidth: 140,
-            minHeight: 20,
-            maxHeight: 20
+            width: '100%',
+            minHeight: 30,
+            maxHeight: 30
           }}
         >
           <Tooltip
             id="tooltip"
-            open={showTooltip}
-            disableHoverListener
-            onClick={() => setShowTooltip(!showTooltip)}
             placement="right"
-            sx={{ cursor: 'pointer' }}
-            PopperProps={{
-              popperOptions: {
-                modifiers: [
-                  {
-                    name: 'flip',
-                    options: {
-                      fallbackPlacements: ['top', 'bottom'],
-                      padding: -1,
-                      rootBoundary: 'document'
-                    }
-                  },
-                  {
-                    name: 'offset',
-                    options: {
-                      offset: [0, -1]
-                    }
-                  }
-                ]
-              }
-            }}
             arrow
             title={
               <Stack direction="column">
@@ -189,7 +425,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
               </Stack>
             }
           >
-            <Typography marginLeft={0.5} marginBottom={0.3} align="center">
+            <Typography marginLeft={0.5} marginBottom={0.3} align="center" fontSize={14} fontWeight="bold">
               {'+' + extraEvents.length}
             </Typography>
           </Tooltip>
@@ -210,9 +446,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           backgroundColor: !(isFutureDay || isCurrentDay) ? theme.palette.grey[900] : 'inherit',
           borderRadius: 2,
           width: { xs: '95%', md: '80%' },
-          height: { xs: '10vh', sm: '15vh' },
+          height: { xs: '10vh', sm: '12vh' },
           border: isCurrentDay ? '2px solid gray' : 'none',
-          boxShadow: isCurrentDay ? '0 0 10px rgba(255, 255, 255, 0.5)' : 'none',
           cursor: isFutureDay || isCurrentDay ? 'pointer' : 'default',
           transition: 'background 0.2s',
           '&:hover': isFutureDay || isCurrentDay ? { background: '#232323' } : {}
@@ -239,7 +474,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           ) : (
             <>
               <EventCard event={events[0]} />
-              <ExtraEventsCard extraEvents={events.slice(1)} />
+              {events.length > 0 && <EventCard event={events[1]} />}
+              <ExtraEventsCard extraEvents={events.slice(2)} />
             </>
           )}
         </CardContent>

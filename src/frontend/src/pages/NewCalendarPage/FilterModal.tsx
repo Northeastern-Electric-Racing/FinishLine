@@ -1,16 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Autocomplete, Box, Button, Checkbox, FormControl, FormHelperText, TextField, Typography } from '@mui/material';
-import { Controller, useForm } from 'react-hook-form';
-import * as yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
-import type { Shop, User } from 'shared';
-import { useToast } from '../../hooks/toasts.hooks';
-import NERFormModal from '../../components/NERFormModal';
-import ReactHookTextField from '../../components/ReactHookTextField';
+import React, { useState } from 'react';
+import { Autocomplete, Box, Button, Checkbox, TextField, Typography } from '@mui/material';
 import NERModal from '../../components/NERModal';
 import PeopleIcon from '@mui/icons-material/People';
 import { useAllUsers } from '../../hooks/users.hooks';
-import { width } from '@mui/system';
+import { useAllTeams } from '../../hooks/teams.hooks';
 
 export interface FilterFormValues {
   memberIds: string[];
@@ -38,15 +31,16 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
   setShowInvited,
   setShowTeam
 }) => {
-  const [dropDownOpen, setDropDownOpen] = useState(false);
+  const [dropDownMembersOpen, setDropDownMembersOpen] = useState(false);
+  const [dropDownTeamOpen, setDropDownTeamOpen] = useState(false);
 
   const MemberDropdown = () => {
     const memberIds = filterValues?.memberIds ?? [];
-    const { isLoading, isError, error, data: allUsers } = useAllUsers();
+    const { data: allUsers } = useAllUsers();
 
     return (
       <Box sx={{ width: '100%', display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-        {!dropDownOpen &&
+        {!dropDownMembersOpen &&
           memberIds.map((id) => {
             const user = allUsers?.find((user) => user.userId === id);
             return (
@@ -82,10 +76,10 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
               </Box>
             );
           })}
-        {!dropDownOpen && (
+        {!dropDownMembersOpen && (
           <Button
             variant="contained"
-            onClick={() => setDropDownOpen(true)}
+            onClick={() => setDropDownMembersOpen(true)}
             sx={{
               bgcolor: 'rgba(255, 255, 255, 0.2)',
               color: 'white',
@@ -99,14 +93,14 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
           </Button>
         )}
 
-        {dropDownOpen && (
+        {dropDownMembersOpen && (
           <Autocomplete
             multiple
-            open={dropDownOpen}
+            open={dropDownMembersOpen}
             disableCloseOnSelect
             onClose={(_, reason) => {
               if (reason !== 'toggleInput') {
-                setDropDownOpen(false);
+                setDropDownMembersOpen(false);
               }
             }}
             options={allUsers ?? []}
@@ -118,6 +112,108 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
               <TextField
                 {...params}
                 placeholder="Search members..."
+                autoFocus
+                sx={{
+                  mt: 1,
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  '& .MuiInputBase-root': {
+                    color: 'white'
+                  }
+                }}
+              />
+            )}
+            sx={{
+              width: '100%',
+              '& .MuiAutocomplete-option': {
+                bgcolor: '#666',
+                color: 'white',
+                '&:hover': {
+                  bgcolor: '#777'
+                }
+              }
+            }}
+          />
+        )}
+      </Box>
+    );
+  };
+
+  const TeamDropdown = () => {
+    const teamIds = filterValues?.teamIds ?? [];
+    const { data: allTeams } = useAllTeams();
+
+    return (
+      <Box sx={{ width: '100%', display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+        {!dropDownTeamOpen &&
+          teamIds.map((id) => {
+            const team = allTeams?.find((team) => team?.teamId === id);
+            return (
+              <Box
+                key={id}
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  bgcolor: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: '999px',
+                  px: 1.5,
+                  py: 0.5,
+                  color: 'white',
+                  fontSize: '14px'
+                }}
+              >
+                <Box>{team?.teamName ?? 'Default Team'}</Box>
+                <Box
+                  onClick={() => {
+                    setTeamIds(teamIds.filter((mid) => mid !== id));
+                  }}
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    lineHeight: 1
+                  }}
+                >
+                  ×
+                </Box>
+              </Box>
+            );
+          })}
+        {!dropDownTeamOpen && (
+          <Button
+            variant="contained"
+            onClick={() => setDropDownTeamOpen(true)}
+            sx={{
+              bgcolor: 'rgba(255, 255, 255, 0.2)',
+              color: 'white',
+              textTransform: 'none',
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.3)'
+              }
+            }}
+          >
+            Add Teams
+          </Button>
+        )}
+
+        {dropDownTeamOpen && (
+          <Autocomplete
+            multiple
+            open={dropDownTeamOpen}
+            disableCloseOnSelect
+            onClose={(_, reason) => {
+              if (reason !== 'toggleInput') {
+                setDropDownTeamOpen(false);
+              }
+            }}
+            options={allTeams ?? []}
+            getOptionLabel={(team) => `${team.teamName}`}
+            value={allTeams?.filter((team) => teamIds.includes(team.teamId)) ?? []}
+            onChange={(_, newValue) => setTeamIds(newValue.map((team) => team.teamId))}
+            filterSelectedOptions
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder="Search teams..."
                 autoFocus
                 sx={{
                   mt: 1,
@@ -176,6 +272,7 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
         <PeopleIcon sx={{ color: 'white', mr: 1 }} />
         <Typography variant="h6">Team / Subteam</Typography>
       </Box>
+      <TeamDropdown />
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Checkbox
           checked={filterValues?.showTeam ?? false}

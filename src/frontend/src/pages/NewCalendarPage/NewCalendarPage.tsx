@@ -7,11 +7,11 @@ import { ArrowDropDown } from '@mui/icons-material';
 
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { Event } from 'shared';
+import { DayOfWeek, Event } from 'shared';
 import MonthSelector from '../CalendarPage/CalendarComponents/MonthSelector';
 import CalendarDayCard from '../CalendarPage/CalendarComponents/CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useAllEvents } from '../../hooks/calendar.hooks';
+import { useAllCalendars, useAllEvents, useAllEventTypes } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -20,6 +20,7 @@ import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { NERButton } from '../../components/NERButton';
 import FilterModal from './FilterModal';
+import { DateCalendar } from '@mui/x-date-pickers';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -30,19 +31,21 @@ const NewCalendarPage = () => {
     error: allTeamTypesError
   } = useAllTeamTypes();
 
-  const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
-  const { isLoading, isError, error, data: allEvents } = useAllEvents();
-  const [selectedEvent, setSelectedEvent] = useState<Event>();
-  const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
-  const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
-  const [openFilterModal, setOpenFilterModal] = useState(false);
-
   const [memberIds, setMemberIds] = useState<string[]>([]);
   const [teamIds, setTeamIds] = useState<string[]>([]);
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
 
-  if (isLoading || !allDesignReviews) return <LoadingIndicator />;
+  const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
+  const { isLoading, isError, error, data: allEvents } = useAllEvents();
+  const { data: allEventTypes } = useAllEventTypes();
+  const { data: allCalendars } = useAllCalendars();
+  const [selectedEvent, setSelectedEvent] = useState<Event>();
+  const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
+  const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
+  const [openFilterModal, setOpenFilterModal] = useState(false);
+
+  if (isLoading || !allEvents) return <LoadingIndicator />;
 
   if (isLoading || !allEvents) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
@@ -54,25 +57,77 @@ const NewCalendarPage = () => {
     return time1 - time2;
   });
 
+  const convertDayToInt = (day: DayOfWeek) => {
+    if (day === DayOfWeek.MONDAY) {
+      return 1;
+    } else if (day === DayOfWeek.TUESDAY) {
+      return 2;
+    } else if (day === DayOfWeek.WEDNESDAY) {
+      return 3;
+    } else if (day === DayOfWeek.THURSDAY) {
+      return 4;
+    } else if (day === DayOfWeek.FRIDAY) {
+      return 5;
+    } else if (day === DayOfWeek.SATURDAY) {
+      return 6;
+    } else if (day === DayOfWeek.SUNDAY) {
+      return 0;
+    }
+
+    return -1;
+  };
+
   const eventDict = new Map<string, Event[]>();
+  const dayDict = new Map<string, DayOfWeek>();
 
   sortedEvents.forEach((event) => {
     event.scheduledTimes.forEach((slot) => {
-      if (!slot.startTime) return;
+      if (!slot.initialDateScheduled) return;
 
       // startTime is already a full timestamp, just use it directly
-      const startTimeDate = new Date(slot.startTime);
-      const date = datePipe(new Date(startTimeDate.getTime() - startTimeDate.getTimezoneOffset() * -60000));
+      const startTimeDate = new Date(slot.initialDateScheduled);
 
-      if (eventDict.has(date)) {
-        // Check if this event is already in this date's array to avoid duplicates
-        const existingEvents = eventDict.get(date)!;
-        if (!existingEvents.find((e) => e.eventId === event.eventId)) {
-          existingEvents.push(event);
+      const convertedStartTime = new Date(startTimeDate.getTime() - startTimeDate.getTimezoneOffset() * -60000);
+
+      const dayInt = convertedStartTime.getDay();
+
+      slot.days.forEach((day) => {
+        const eventDate = new Date(convertedStartTime);
+        eventDate.setHours(0, 0, 0, 0);
+        const offset = dayInt - convertDayToInt(day);
+
+        eventDate.setDate(eventDate.getDate() - offset);
+        const date = datePipe(new Date(eventDate.getTime()));
+
+        dayDict.set(date, day);
+
+        if (eventDict.has(date)) {
+          // Check if this event is already in this date's array to avoid duplicates
+          const existingEvents = eventDict.get(date)!;
+          if (!existingEvents.find((e) => e.eventId === event.eventId)) {
+            existingEvents.push(event);
+          }
+        } else {
+          eventDict.set(date, [event]);
         }
-      } else {
-        eventDict.set(date, [event]);
-      }
+
+        for (let i = 1; i <= slot.recurrenceNumber; i++) {
+          const nextDate = new Date(eventDate);
+          nextDate.setDate(nextDate.getDate() + 7 * i);
+
+          const date = datePipe(new Date(nextDate.getTime()));
+          dayDict.set(date, day);
+
+          if (eventDict.has(date)) {
+            const existingEvents = eventDict.get(date)!;
+            if (!existingEvents.find((e) => e.eventId === event.eventId)) {
+              existingEvents.push(event);
+            }
+          } else {
+            eventDict.set(date, [event]);
+          }
+        }
+      });
     });
   });
 
@@ -150,6 +205,9 @@ const NewCalendarPage = () => {
             <NERButton variant="contained" id="filter-events-button" onClick={() => {}}>
               Track Members: {memberIds}
             </NERButton>
+            <NERButton variant="contained" id="filter-events-button" onClick={() => {}}>
+              Track Teams: {teamIds}
+            </NERButton>
           </Stack>
         </Stack>
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -166,7 +224,7 @@ const NewCalendarPage = () => {
                 </Grid>
               ))}
             </Grid>
-            <Box sx={{ border: '2px solid grey', borderRadius: 2, bgcolor: theme.palette.background.paper }}>
+            <Box sx={{ border: '2px solid white', borderRadius: 2, bgcolor: '#1a1a1a', p: 1 }}>
               <Grid container marginBottom={2}>
                 {startOfEachWeek.map((week, weekIndex) => (
                   <Grid container key={weekIndex}>
@@ -178,7 +236,7 @@ const NewCalendarPage = () => {
                       );
                       return (
                         <Grid item xs={12 / 7} key={dayIndex}>
-                          <Box marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
+                          <Box marginTop={6} sx={{ justifyContent: 'center', display: 'flex' }}>
                             <CalendarDayCard
                               cardDate={cardDate}
                               events={
@@ -187,6 +245,13 @@ const NewCalendarPage = () => {
                                 ) ?? []
                               }
                               teamTypes={allTeamTypes}
+                              eventTypes={allEventTypes ?? []}
+                              calendars={allCalendars ?? []}
+                              dayOfWeek={
+                                dayDict.get(
+                                  datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))
+                                ) ?? DayOfWeek.SUNDAY
+                              }
                             />
                           </Box>
                         </Grid>
@@ -202,7 +267,28 @@ const NewCalendarPage = () => {
               width: 320
             }}
           >
-            <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
+            <DateCalendar
+              value={displayMonthYear}
+              onMonthChange={(newDate) => setDisplayMonthYear(newDate)}
+              onChange={(newDate) => {
+                if (newDate) setDisplayMonthYear(newDate);
+              }}
+              slotProps={{
+                day: {
+                  sx: {
+                    '&.Mui-selected': {
+                      bgcolor: 'red',
+                      '&:hover': {
+                        bgcolor: 'darkred'
+                      },
+                      '&:focus': {
+                        bgcolor: 'red'
+                      }
+                    }
+                  }
+                }
+              }}
+            />
           </Box>
         </Box>
         <FilterModal

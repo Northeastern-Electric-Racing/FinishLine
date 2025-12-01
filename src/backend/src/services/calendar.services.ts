@@ -2198,4 +2198,12 @@ export default class CalendarService {
     });
     return events.map(eventTransformer);
   }
+
+  static async getAllEventTypes(organization: Organization): Promise<EventType[]> {
+    const eventTypes = await prisma.event_Type.findMany({
+      where: { dateDeleted: null },
+      ...getEventTypeQueryArgs(organization.organizationId)
+    });
+    return eventTypes.map(eventTypeTransformer);
+  }
 }
