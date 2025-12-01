@@ -18,6 +18,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import DescriptionIcon from '@mui/icons-material/Description';
+import ArticleIcon from '@mui/icons-material/Article';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -279,6 +280,22 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
               </Typography>
             </Stack>
           )}
+          {event.questionDocument && (
+            <Stack direction="row">
+              <ArticleIcon />
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.questionDocument ? <Link href={event.questionDocument}>Question Document Link</Link> : 'N/A'}
+              </Typography>
+            </Stack>
+          )}
           {event.description && (
             <Stack direction="row">
               <DescriptionIcon />
@@ -291,7 +308,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                 noWrap
                 align="left"
               >
-                {event.description}
+                {event.description.substring(0, name.length * 2)}
+                {event.description.length > name.length * 2 && '...'}
               </Typography>
             </Stack>
           )}

@@ -3186,7 +3186,7 @@ const performSeed: () => Promise<void> = async () => {
     false,
     false,
     false,
-    false,
+    true,
     false,
     false,
     false
@@ -3287,7 +3287,7 @@ const performSeed: () => Promise<void> = async () => {
     undefined,
     'Conference Room A',
     'https://zoom.us/j/123456789',
-    undefined
+    'Test meeting'
   );
 
   await CalendarService.createEvent(
@@ -3324,7 +3324,7 @@ const performSeed: () => Promise<void> = async () => {
     undefined,
     'Conference Room A',
     'https://zoom.us/j/123456789',
-    undefined
+    'This is the second Weekly Sync in our database. Please come and join to get vital information! Thank you for reading.'
   );
 
   await CalendarService.createEvent(
@@ -3353,7 +3353,7 @@ const performSeed: () => Promise<void> = async () => {
     undefined,
     'Conference Room A',
     'https://zoom.us/j/123456789',
-    undefined
+    'This is the third test meeting! Glad to say hi.'
   );
 
   await CalendarService.createEvent(
@@ -3382,7 +3382,7 @@ const performSeed: () => Promise<void> = async () => {
     undefined,
     'Conference Room A',
     'https://zoom.us/j/123456789',
-    undefined
+    'This is the fourth meeting! Please come anyway, we have a lot to say.'
   );
 
   await CalendarService.createEvent(
@@ -3411,7 +3411,7 @@ const performSeed: () => Promise<void> = async () => {
     undefined,
     'Conference Room A',
     'https://zoom.us/j/123456789',
-    undefined
+    "This one is optional, up to you if you want to show up, we won't judge"
   );
 
   await CalendarService.createEvent(
