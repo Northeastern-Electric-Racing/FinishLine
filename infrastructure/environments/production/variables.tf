@@ -127,13 +127,13 @@ variable "hosted_zone_name" {
 variable "frontend_domain" {
   description = "Custom domain for frontend"
   type        = string
-  default     = "qa.finishlinebyner.com"
+  default     = "finishlinebyner.com"
 }
 
 variable "backend_domain" {
   description = "Custom domain for backend"
   type        = string
-  default     = "api-qa.finishlinebyner.com"
+  default     = "api-finishlinebyner.com"
 }
 
 # Legacy variable - kept for backwards compatibility

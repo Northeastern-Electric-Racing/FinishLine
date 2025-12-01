@@ -16,12 +16,12 @@ variable "hosted_zone_name" {
 }
 
 variable "frontend_domain" {
-  description = "Frontend domain name (e.g., qa.finishlinebyner.com)"
+  description = "Frontend domain name (e.g., finishlinebyner.com)"
   type        = string
 }
 
 variable "backend_domain" {
-  description = "Backend domain name (e.g., api-qa.finishlinebyner.com)"
+  description = "Backend domain name (e.g., api-finishlinebyner.com)"
   type        = string
 }
 

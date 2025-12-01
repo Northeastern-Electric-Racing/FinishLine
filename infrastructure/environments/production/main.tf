@@ -231,7 +231,7 @@ module "frontend" {
   
   # Custom domain configuration
   domain_name   = var.use_custom_domain ? var.frontend_domain : ""
-  domain_prefix = ""  # Empty since we're using the full domain (qa.finishlinebyner.com)
+  domain_prefix = ""  # Empty since we're using the full domain (finishlinebyner.com)
   
   # Additional environment variables for frontend build
   additional_environment_variables = {
