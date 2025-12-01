@@ -144,7 +144,7 @@ variable "domain_name" {
 }
 
 #####################
-# Secrets (Set via TF_VAR_* environment variables)
+# Secrets (Set via TF_VAR_* env variables)
 #####################
 
 variable "db_master_password" {
