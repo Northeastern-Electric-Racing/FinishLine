@@ -8,7 +8,7 @@ set -e
 ENV_NAME="finishline-production-env"
 DB_IDENTIFIER="finishline-production-db"
 KEY_PATH="~/.ssh/aws-eb"
-LOCAL_PORT=5432
+LOCAL_PORT=5434
 
 echo "🔍 Finding RDS endpoint..."
 RDS_ENDPOINT=$(aws rds describe-db-instances \
