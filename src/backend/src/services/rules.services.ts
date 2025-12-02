@@ -479,7 +479,7 @@ export default class RulesService {
   static async toggleRuleTeam(ruleId: string, teamId: string, user: User, org: Organization) {
     // Checks that the user is not a guest
     if (!(await userHasPermission(user.userId, org.organizationId, notGuest))) {
-      throw new AccessDeniedGuestException('assign teams to rule');
+      throw new AccessDeniedGuestException('Toggle Rule Team');
     }
 
     // Checks that the rule exists and is not deleted
@@ -504,7 +504,7 @@ export default class RulesService {
     const team = await prisma.team.findUnique({ where: { teamId } });
     if (!team) throw new NotFoundException('Team', teamId);
     if (team.organizationId !== org.organizationId) throw new InvalidOrganizationException('Rule');
-    if (team.dateArchived) throw new HttpException(400, 'Cannot assign an archived team.');
+    if (team.dateArchived) throw new HttpException(400, 'Cannot toggle an archived team.');
 
     // We add the team to the rule if it is not already in the rule
     // If the rule is not in this team, add the team to the rule

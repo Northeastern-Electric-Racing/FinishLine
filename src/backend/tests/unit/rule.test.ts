@@ -735,7 +735,7 @@ describe('Delete Rules Tests', () => {
       const { topLevelRule } = await setupRules(car);
       await expect(
         async () => await RulesService.toggleRuleTeam(topLevelRule.ruleId, '', guest, organization)
-      ).rejects.toThrow(new AccessDeniedGuestException('assign teams to rule'));
+      ).rejects.toThrow(new AccessDeniedGuestException('Toggle Rule Team'));
     });
     it('Fails if rule does not exist', async () => {
       await expect(async () => await RulesService.toggleRuleTeam('fake-rule-id', '', admin, organization)).rejects.toThrow(
@@ -793,7 +793,7 @@ describe('Delete Rules Tests', () => {
       const team = await createTestTeam(admin.userId, teamType.teamTypeId, organization.organizationId);
       await TeamsService.archiveTeam(admin, team.teamId, organization);
       await expect(RulesService.toggleRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization)).rejects.toThrow(
-        new HttpException(400, 'Cannot assign an archived team.')
+        new HttpException(400, 'Cannot toggle an archived team.')
       );
     });
     it('Successfully adds a team to a rule', async () => {
