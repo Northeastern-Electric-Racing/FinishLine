@@ -45,10 +45,10 @@ rulesRouter.post(
 );
 
 rulesRouter.post(
-  '/rule/:ruleId/assign-team',
+  '/rule/:ruleId/toggle-team',
   nonEmptyString(body('teamId')),
   validateInputs,
-  RulesController.assignRuleTeam
+  RulesController.toggleRuleTeam
 );
 
 rulesRouter.post(

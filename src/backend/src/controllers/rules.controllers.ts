@@ -116,12 +116,12 @@ export default class RulesController {
     }
   }
 
-  static async assignRuleTeam(req: Request, res: Response, next: NextFunction) {
+  static async toggleRuleTeam(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleId } = req.params;
       const { teamId } = req.body;
 
-      const changedRule = await RulesService.assignRuleTeam(ruleId, teamId, req.currentUser, req.organization);
+      const changedRule = await RulesService.toggleRuleTeam(ruleId, teamId, req.currentUser, req.organization);
 
       res.status(200).json(changedRule);
     } catch (error: unknown) {

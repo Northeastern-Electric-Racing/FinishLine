@@ -464,7 +464,8 @@ export default class RulesService {
   }
 
   /**
-   * Assigns a rule to a team
+   * Assigns a rule to a team. If the team already is assigned to the
+   * rule, removes the team from the rule.
    * @param ruleId The ruleId of the rule to be added to
    * @param teamIds The team to be added to the rule
    * @param user The user adding the team to the rule
@@ -475,7 +476,7 @@ export default class RulesService {
    *         organization, or is archived.
    *
    */
-  static async assignRuleTeam(ruleId: string, teamId: string, user: User, org: Organization) {
+  static async toggleRuleTeam(ruleId: string, teamId: string, user: User, org: Organization) {
     // Checks that the user is not a guest
     if (!(await userHasPermission(user.userId, org.organizationId, notGuest))) {
       throw new AccessDeniedGuestException('assign teams to rule');
