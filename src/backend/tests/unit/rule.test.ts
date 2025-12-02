@@ -729,7 +729,7 @@ describe('Delete Rules Tests', () => {
     });
   });
 
-  describe('Toggle Rule Assignment', () => {
+  describe('Toggle Rule Team', () => {
     it('Fails if user is a guest', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
