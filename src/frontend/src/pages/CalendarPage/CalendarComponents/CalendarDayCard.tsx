@@ -236,7 +236,13 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                 noWrap
                 align="left"
               >
-                {event.zoomLink ? <Link href={event.zoomLink}>Zoom Link</Link> : 'N/A'}
+                {event.zoomLink ? (
+                  <Link href={event.zoomLink} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener">
+                    Zoom Link
+                  </Link>
+                ) : (
+                  'N/A'
+                )}
               </Typography>
             </Stack>
           )}
@@ -252,7 +258,13 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                 noWrap
                 align="left"
               >
-                {event.questionDocument ? <Link href={event.questionDocument}>Question Document Link</Link> : 'N/A'}
+                {event.questionDocument ? (
+                  <Link href={event.questionDocument} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener">
+                    Question Document Link
+                  </Link>
+                ) : (
+                  'N/A'
+                )}
               </Typography>
             </Stack>
           )}
@@ -407,6 +419,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                     maxWidth: 'none',
                     borderRadius: 4,
                     p: 2,
+                    cursor: 'pointer',
                     bgcolor: theme.palette.grey[900],
                     boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
                   }
