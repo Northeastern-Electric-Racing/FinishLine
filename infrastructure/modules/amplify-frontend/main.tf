@@ -11,42 +11,31 @@ resource "aws_amplify_app" "frontend" {
   access_token = var.github_access_token
 
   # Build specification
-  build_spec = yamlencode({
-    version = 1
-    applications = [{
-      frontend = {
-        phases = {
-          preBuild = {
-            commands = [
-              "echo 'Installing dependencies...'",
-              "yarn install",
-              "echo 'Building shared package...'",
-              "yarn workspace shared build",
-            ]
-          }
-          build = {
-            commands = [
-              "echo 'Building frontend...'",
-              "yarn workspace frontend build",
-            ]
-          }
-        }
-        artifacts = {
-        baseDirectory = "src/frontend/dist"
-        files         = ["**/*"]
-        }
-        cache = {
-          paths = [
-            "node_modules/**/*",
-            "src/frontend/node_modules/**/*",
-            "src/backend/node_modules/**/*",
-            "src/shared/node_modules/**/*",
-          ]
-        }
-      }
-      appRoot = "."
-    }]
-  })
+  build_spec = <<-EOT
+    version: 1
+    frontend:
+      phases:
+        preBuild:
+          commands:
+            - echo 'Installing dependencies...'
+            - yarn install --frozen-lockfile
+            - echo 'Building shared package...'
+            - yarn workspace shared build
+        build:
+          commands:
+            - echo 'Building frontend...'
+            - yarn workspace frontend build
+      artifacts:
+        baseDirectory: src/frontend/dist
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - src/frontend/node_modules/**/*
+          - src/backend/node_modules/**/*
+          - src/shared/node_modules/**/*
+    EOT
 
   # Environment variables for the build
   environment_variables = merge(
