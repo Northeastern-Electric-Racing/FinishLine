@@ -19,6 +19,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ArticleIcon from '@mui/icons-material/Article';
+import HelpIcon from '@mui/icons-material/Help';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -66,19 +67,34 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     </Grid>
   );
 
-  const EventPopupInfo = ({ event, color }: { event: Event; color: string }) => {
-    const name = event.workPackages[0]?.wbsElement?.name || event.title;
+  const getConvertedStart = (event: Event) => {
     const specificSlot = event.scheduledTimes.find((slot) => slot.days.find((day) => day === dayOfWeek));
     const startTime = new Date(
       specificSlot?.startTime ?? Date.now() - (specificSlot?.startTime?.getTimezoneOffset() ?? Date.now()) * -60000
     );
 
+    const convertedStartTime = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+    return convertedStartTime;
+  };
+
+  const getConvertedEnd = (event: Event) => {
+    const specificSlot = event.scheduledTimes.find((slot) => slot.days.find((day) => day === dayOfWeek));
+
     const endTime = new Date(
       specificSlot?.endTime ?? Date.now() - (specificSlot?.endTime?.getTimezoneOffset() ?? Date.now()) * -60000
     );
 
-    const convertedStartTime = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     const convertedEndTime = endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+    return convertedEndTime;
+  };
+
+  const EventPopupInfo = ({ event, color }: { event: Event; color: string }) => {
+    const name = event.workPackages[0]?.wbsElement?.name || event.title;
+
+    const convertedStartTime = getConvertedStart(event);
+    const convertedEndTime = getConvertedEnd(event);
     return (
       <>
         <Stack direction="column" spacing={2}>
@@ -122,15 +138,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           {event.requiredMembers.length > 0 && (
             <Stack direction="row">
               <GroupIcon />
-              <Typography
-                marginX={0.5}
-                marginY={0.5}
-                lineHeight={'120%'}
-                fontSize={14}
-                fontWeight="bold"
-                noWrap
-                align="left"
-              >
+              <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={14} fontWeight="bold" align="left">
                 Required :
               </Typography>
               <Typography
@@ -151,15 +159,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           {event.optionalMembers.length > 0 && (
             <Stack direction="row">
               <GroupIcon />
-              <Typography
-                marginX={0.5}
-                marginY={0.5}
-                lineHeight={'120%'}
-                fontSize={14}
-                fontWeight="bold"
-                noWrap
-                align="left"
-              >
+              <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={14} fontWeight="bold" align="left">
                 Optional :
               </Typography>
               <Typography
@@ -180,15 +180,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           {event.confirmedMembers.length > 0 && (
             <Stack direction="row">
               <CheckCircleIcon />
-              <Typography
-                marginX={0.5}
-                marginY={0.5}
-                lineHeight={'120%'}
-                fontSize={14}
-                fontWeight="bold"
-                noWrap
-                align="left"
-              >
+              <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={14} fontWeight="bold" align="left">
                 {event.confirmedMembers.length > 0 &&
                   event.confirmedMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
                 {event.confirmedMembers.length === 0 && 'N/A'}
@@ -198,15 +190,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           {event.deniedMembers.length > 0 && (
             <Stack direction="row">
               <DoNotDisturbIcon />
-              <Typography
-                marginX={0.5}
-                marginY={0.5}
-                lineHeight={'120%'}
-                fontSize={14}
-                fontWeight="bold"
-                noWrap
-                align="left"
-              >
+              <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={14} fontWeight="bold" align="left">
                 {event.deniedMembers.length > 0 &&
                   event.deniedMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
                 {event.deniedMembers.length === 0 && 'N/A'}
@@ -216,15 +200,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           {event.machinery.length > 0 && (
             <Stack direction="row">
               <ConstructionIcon />
-              <Typography
-                marginX={0.5}
-                marginY={0.5}
-                lineHeight={'120%'}
-                fontSize={14}
-                fontWeight="bold"
-                noWrap
-                align="left"
-              >
+              <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={14} fontWeight="bold" align="left">
                 {event.machinery.length > 0 && event.machinery.map((machine) => `${machine.name}`).join(', ')}
                 {event.machinery.length === 0 && 'N/A'}
               </Typography>
@@ -233,15 +209,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           {event.shops.length > 0 && (
             <Stack direction="row">
               <StorefrontIcon />
-              <Typography
-                marginX={0.5}
-                marginY={0.5}
-                lineHeight={'120%'}
-                fontSize={14}
-                fontWeight="bold"
-                noWrap
-                align="left"
-              >
+              <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={14} fontWeight="bold" align="left">
                 {event.shops.length > 0 && event.shops.map((shop) => `${shop.name}`).join(', ')}
                 {event.shops.length === 0 && 'N/A'}
               </Typography>
@@ -250,15 +218,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           {event.workPackages.length > 0 && (
             <Stack direction="row">
               <BusinessCenterIcon />
-              <Typography
-                marginX={0.5}
-                marginY={0.5}
-                lineHeight={'120%'}
-                fontSize={14}
-                fontWeight="bold"
-                noWrap
-                align="left"
-              >
+              <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={14} fontWeight="bold" align="left">
                 {event.workPackages.length > 0 && event.workPackages.map((wp) => `${wp.wbsElement.name}`).join(', ')}
                 {event.workPackages.length === 0 && 'N/A'}
               </Typography>
@@ -313,11 +273,83 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
               </Typography>
             </Stack>
           )}
+          {event.status && (
+            <Stack direction="row">
+              {<HelpIcon />}
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.status}
+              </Typography>
+            </Stack>
+          )}
         </Stack>
       </>
     );
   };
 
+  const MoreInfoEventContent = ({ event, onClick }: { event: Event; onClick: () => void }) => {
+    const name = event.workPackages[0]?.wbsElement?.name || event.title;
+    const convertedStartTime = getConvertedStart(event);
+    const convertedEndTime = getConvertedEnd(event);
+    const specificEventType = eventTypes?.find((eventType) => eventType.eventTypeId === event.eventTypeId);
+    const specificCalendar = calendars?.find((calendar) =>
+      calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)
+    );
+
+    return (
+      <Stack
+        direction="column"
+        spacing={2}
+        bgcolor={specificCalendar?.color ?? 'gray'}
+        margin={1}
+        borderRadius={2}
+        padding={1}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
+      >
+        <Stack direction="row" spacing={5}>
+          <Stack direction="row" sx={{ minWidth: 200 }}>
+            {getTeamTypeIcon(event.teamType?.name ?? '', false)}
+            <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
+              {name}
+            </Typography>
+          </Stack>
+          <Stack direction="row" sx={{ minWidth: 150 }}>
+            <AccessTimeIcon />
+            <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
+              {convertedStartTime} - {convertedEndTime}
+            </Typography>
+          </Stack>
+        </Stack>
+        <Stack direction="row" spacing={5}>
+          <Stack direction="row" sx={{ minWidth: 200 }}>
+            <LocationOnIcon />
+            <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
+              {event.location ?? 'N/A'}
+            </Typography>
+          </Stack>
+          <Stack direction="row" sx={{ minWidth: 150 }}>
+            <GroupIcon />
+            <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
+              {event.requiredMembers[0]
+                ? `${event.requiredMembers[0].firstName} ${event.requiredMembers[0].lastName}...`
+                : 'N/A '}
+            </Typography>
+          </Stack>
+        </Stack>
+      </Stack>
+    );
+  };
   const EventCard = ({ event }: { event: Event }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const [markedStatus, setMarkedStatus] = useState(event.status);
@@ -365,11 +397,24 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
               arrow
               title={<EventPopupInfo event={event} color={specificCalendar?.color ?? 'gray'} />}
               slotProps={{
+                popper: {
+                  sx: {
+                    zIndex: 1200
+                  }
+                },
                 tooltip: {
                   sx: {
                     maxWidth: 'none',
                     borderRadius: 4,
-                    p: 2
+                    p: 2,
+                    bgcolor: theme.palette.grey[900],
+                    boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
+                  }
+                },
+                arrow: {
+                  sx: {
+                    color: theme.palette.grey[900],
+                    fontSize: 16
                   }
                 }
               }}
@@ -410,45 +455,89 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
       </>
     );
   };
-
   const ExtraEventsCard = ({ extraEvents }: { extraEvents: Event[] }) => {
+    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+    const [markedStatus, setMarkedStatus] = useState<EventStatus | undefined>(undefined);
+
+    const handleEventClick = (event: Event) => {
+      setSelectedEvent(event);
+      setMarkedStatus(event.status);
+    };
+
+    const handleModalClose = () => {
+      setSelectedEvent(null);
+    };
+
     return (
-      <Box
-        marginLeft={0.5}
-        marginRight={0.5}
-        marginBottom={0.2}
-        sx={{
-          position: 'relative',
-          zIndex: 2
-        }}
-      >
-        <Card
+      <>
+        {selectedEvent && (
+          <DRCSummaryModal
+            open={!!selectedEvent}
+            onHide={handleModalClose}
+            event={selectedEvent}
+            teamTypes={teamTypes}
+            markedStatus={markedStatus}
+            setMarkedStatus={setMarkedStatus}
+          />
+        )}
+        <Box
+          marginLeft={0.5}
+          marginRight={0.5}
+          marginBottom={0.2}
           sx={{
-            backgroundColor: theme.palette.grey[800],
-            borderRadius: 1,
-            width: '100%',
-            minHeight: 30,
-            maxHeight: 30
+            position: 'relative',
+            zIndex: 2
           }}
         >
-          <Tooltip
-            id="tooltip"
-            placement="right"
-            arrow
-            title={
-              <Stack direction="column">
-                {extraEvents.map((event) => (
-                  <ExtraEventNote event={event} />
-                ))}
-              </Stack>
-            }
+          <Card
+            sx={{
+              backgroundColor: theme.palette.grey[800],
+              borderRadius: 1,
+              width: '100%',
+              minHeight: 30,
+              maxHeight: 30
+            }}
           >
-            <Typography marginLeft={0.5} marginBottom={0.3} align="center" fontSize={14} fontWeight="bold">
-              {'+' + extraEvents.length}
-            </Typography>
-          </Tooltip>
-        </Card>
-      </Box>
+            <Tooltip
+              placement="right"
+              arrow
+              title={
+                <Stack direction="column">
+                  {extraEvents.map((event) => (
+                    <MoreInfoEventContent key={event.eventId} event={event} onClick={() => handleEventClick(event)} />
+                  ))}
+                </Stack>
+              }
+              slotProps={{
+                popper: {
+                  sx: {
+                    zIndex: 1200
+                  }
+                },
+                tooltip: {
+                  sx: {
+                    maxWidth: 'none',
+                    borderRadius: 4,
+                    p: 2,
+                    bgcolor: theme.palette.grey[900],
+                    boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
+                  }
+                },
+                arrow: {
+                  sx: {
+                    color: theme.palette.grey[900],
+                    fontSize: 16
+                  }
+                }
+              }}
+            >
+              <Typography marginLeft={0.5} marginBottom={0.3} align="center" fontSize={14} fontWeight="bold">
+                {'+' + extraEvents.length}
+              </Typography>
+            </Tooltip>
+          </Card>
+        </Box>
+      </>
     );
   };
 
