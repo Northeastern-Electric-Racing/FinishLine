@@ -1,6 +1,6 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop, Machinery, AvailabilityCreateArgs, Event, EventStatus, Calendar } from 'shared';
+import { Shop, Machinery, EventType, AvailabilityCreateArgs, Event, EventStatus, Calendar } from 'shared';
 import { eventTransformer } from './transformers/calendar.transformer';
 
 export const getAllCalendars = () => {
@@ -96,6 +96,89 @@ export const postAddMachineryToShop = async (payload: {
 export const editShop = (shopId: string, payload: { name: string; description: string }) => {
   return axios.post<Shop>(apiUrls.calendarEditShop(shopId), payload, {
     transformResponse: (data) => JSON.parse(data) as Shop
+  });
+};
+
+export const markUserConfirmed = async (id: string, payload: { availability: AvailabilityCreateArgs[] }) => {
+  return axios.post<Event>(apiUrls.calendarEventMarkUserConfirmed(id), payload);
+};
+
+export const getSingleEvent = async (id: string) => {
+  return axios.get(apiUrls.calendarGetSingleEvent(id), {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
+};
+
+export const postCreateEventType = (payload: {
+  name: string;
+  calendarIds: string[];
+  initialDateScheduled: boolean;
+  allDay: boolean;
+  recurring: boolean;
+  requiredMembers: boolean;
+  optionalMembers: boolean;
+  teams: boolean;
+  teamType: boolean;
+  location: boolean;
+  zoomLink: boolean;
+  shop: boolean;
+  machinery: boolean;
+  workPackage: boolean;
+  questionDocument: boolean;
+  documents: boolean;
+  description: boolean;
+  onlyHeadsOrAbove: boolean;
+  requiresConfirmation: boolean;
+  sendSlackNotifications: boolean;
+}) => {
+  return axios.post<EventType>(apiUrls.calendarCreateEventType(), payload, {
+    transformResponse: (data) => JSON.parse(data) as EventType
+  });
+};
+
+export const postEditEventType = (
+  eventTypeId: string,
+  payload: {
+    name: string;
+    calendarIds: string[];
+    initialDateScheduled: boolean;
+    allDay: boolean;
+    recurring: boolean;
+    requiredMembers: boolean;
+    optionalMembers: boolean;
+    teams: boolean;
+    teamType: boolean;
+    location: boolean;
+    zoomLink: boolean;
+    shop: boolean;
+    machinery: boolean;
+    workPackage: boolean;
+    questionDocument: boolean;
+    documents: boolean;
+    description: boolean;
+    onlyHeadsOrAbove: boolean;
+    requiresConfirmation: boolean;
+    sendSlackNotifications: boolean;
+  }
+) => {
+  return axios.post<EventType>(apiUrls.calendarEditEventType(eventTypeId), payload, {
+    transformResponse: (data) => JSON.parse(data) as EventType
+  });
+};
+
+export const getAllEvents = () => {
+  return axios.get(apiUrls.calendarEvents(), {
+    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
+  });
+};
+
+export const deleteEvent = async (id: string) => {
+  return axios.delete(apiUrls.calendarDeleteEvent(id));
+};
+
+export const setEventStatus = async (id: string, payload: { status: EventStatus }) => {
+  return axios.post<Event>(apiUrls.calendarEventSetStatus(id), payload, {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
   });
 };
 
