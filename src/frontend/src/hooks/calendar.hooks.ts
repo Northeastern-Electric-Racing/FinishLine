@@ -1,5 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Shop, Machinery, EventType, Calendar, Event, EventTypeCreateArgs } from 'shared';
+import {
+  Shop,
+  Machinery,
+  EventType,
+  Calendar,
+  Event,
+  EventTypeCreateArgs,
+  AvailabilityCreateArgs,
+  EventStatus
+} from 'shared';
 import {
   getAllShops,
   postCreateShop,
@@ -23,7 +32,6 @@ import {
   setEventStatus
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
-import { AvailabilityCreateArgs, EventStatus } from 'shared';
 
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;
