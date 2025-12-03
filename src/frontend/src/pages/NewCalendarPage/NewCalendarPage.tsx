@@ -172,11 +172,7 @@ const NewCalendarPage = () => {
   };
 
   const paddingArrayStart = [...Array<number>(calendarPaddingDays(displayMonthYear)).keys()]
-    .map(
-      (day) =>
-        daysInMonth(new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, displayMonthYear.getDate())) -
-        day
-    )
+    .map((day) => daysInMonth(new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 1)) - day)
     .reverse();
   const paddingArrayEnd = [
     ...Array<number>(7 - ((daysInMonth(displayMonthYear) + calendarPaddingDays(displayMonthYear)) % 7)).keys()
