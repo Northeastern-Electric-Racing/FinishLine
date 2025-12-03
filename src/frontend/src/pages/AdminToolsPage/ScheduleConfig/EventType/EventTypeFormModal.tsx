@@ -1,4 +1,4 @@
-import { Box, FormHelperText, Typography, Checkbox, FormControl, Select, MenuItem, Chip } from '@mui/material';
+import { Box, FormHelperText, Typography, Checkbox, FormControl, Select, MenuItem } from '@mui/material';
 import NERFormModal from '../../../../components/NERFormModal';
 import ReactHookTextField from '../../../../components/ReactHookTextField';
 import { useToast } from '../../../../hooks/toasts.hooks';
@@ -221,8 +221,8 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
               control={control}
               render={({ field }) => (
                 <Select
-                  {...field}
-                  multiple
+                  value={field.value?.[0] || ''}
+                  onChange={(e) => field.onChange([e.target.value])}
                   displayEmpty
                   sx={{
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -241,26 +241,22 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
                     }
                   }}
                   renderValue={(selected) => {
-                    if (!selected || selected.length === 0) {
-                      return <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Select Calendars</span>;
+                    if (!selected || selected === '') {
+                      return <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Select Calendar</span>;
                     }
+                    const calendar = calendars?.find((c) => c.calendarId === selected);
                     return (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {(selected as string[]).map((calendarId) => {
-                          const calendar = calendars?.find((c) => c.calendarId === calendarId);
-                          return (
-                            <Chip
-                              key={calendarId}
-                              label={calendar?.name || calendarId}
-                              size="small"
-                              sx={{
-                                backgroundColor: calendar?.color || '#ef4345',
-                                color: 'white',
-                                height: 24
-                              }}
-                            />
-                          );
-                        })}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Box
+                          sx={{
+                            width: 16,
+                            height: 16,
+                            borderRadius: 1,
+                            backgroundColor: calendar?.color || '#ef4345',
+                            border: '1px solid rgba(255, 255, 255, 0.3)'
+                          }}
+                        />
+                        <Typography>{calendar?.name || selected}</Typography>
                       </Box>
                     );
                   }}
