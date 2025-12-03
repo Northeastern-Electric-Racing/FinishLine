@@ -23,8 +23,6 @@ import {
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 
-import { getAllCalendars, postEditCalendar, postCreateCalendar } from '../apis/calendar.api';
-
 export const FILTER_EVENTS_KEY = ['filter_events'] as const;
 
 export const MACHINERY_KEY = ['machinery'] as const;
