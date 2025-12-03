@@ -220,21 +220,6 @@ const NewCalendarPage = () => {
             >
               New Event
             </Button>
-            <NERButton variant="contained" id="filter-events-button" onClick={() => setOpenFilterModal(true)}>
-              More Filters
-            </NERButton>
-            <NERButton variant="contained" id="filter-events-button" onClick={() => {}}>
-              Show Invited Events: {String(showInvitedEvents)}
-            </NERButton>
-            <NERButton variant="contained" id="filter-events-button" onClick={() => {}}>
-              Show Team Events: {String(showTeamEvents)}
-            </NERButton>
-            <NERButton variant="contained" id="filter-events-button" onClick={() => {}}>
-              Track Members: {memberIds}
-            </NERButton>
-            <NERButton variant="contained" id="filter-events-button" onClick={() => {}}>
-              Track Teams: {teamIds}
-            </NERButton>
           </Stack>
         </Stack>
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -316,8 +301,25 @@ const NewCalendarPage = () => {
                 }
               }}
             />
+            <Button
+              variant="outlined"
+              id="filter-events-button"
+              onClick={() => setOpenFilterModal(true)}
+              sx={{
+                color: 'white',
+                borderColor: 'white',
+                backgroundColor: 'transparent',
+                '&:hover': {
+                  borderColor: 'white',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+            >
+              More Filters
+            </Button>
           </Box>
         </Box>
+
         <FilterModal
           open={openFilterModal}
           onClose={() => setOpenFilterModal(false)}
