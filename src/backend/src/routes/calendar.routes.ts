@@ -19,12 +19,10 @@ calendarRouter.post(
   nonEmptyString(body('name')),
   body('calendarIds').isArray(),
   body('calendarIds.*').isString(),
-  body('initialDateScheduled').isBoolean(),
-  body('allDay').isBoolean(),
-  body('recurring').isBoolean(),
   body('requiredMembers').isBoolean(),
   body('optionalMembers').isBoolean(),
   body('teams').isBoolean(),
+  body('teamType').isBoolean(),
   body('location').isBoolean(),
   body('zoomLink').isBoolean(),
   body('shop').isBoolean(),
@@ -35,6 +33,7 @@ calendarRouter.post(
   body('description').isBoolean(),
   body('onlyHeadsOrAbove').isBoolean(),
   body('requiresConfirmation').isBoolean(),
+  body('sendSlackNotifications').isBoolean(),
   validateInputs,
   CalendarController.createEventType
 );
@@ -44,12 +43,10 @@ calendarRouter.post(
   nonEmptyString(body('name')),
   body('calendarIds').isArray(),
   body('calendarIds.*').isString(),
-  body('initialDateScheduled').isBoolean(),
-  body('allDay').isBoolean(),
-  body('recurring').isBoolean(),
   body('requiredMembers').isBoolean(),
   body('optionalMembers').isBoolean(),
   body('teams').isBoolean(),
+  body('teamType').isBoolean(),
   body('location').isBoolean(),
   body('zoomLink').isBoolean(),
   body('shop').isBoolean(),
@@ -60,6 +57,7 @@ calendarRouter.post(
   body('description').isBoolean(),
   body('onlyHeadsOrAbove').isBoolean(),
   body('requiresConfirmation').isBoolean(),
+  body('sendSlackNotifications').isBoolean(),
   validateInputs,
   CalendarController.editEventType
 );
@@ -74,6 +72,7 @@ calendarRouter.post(
   nonEmptyString(body('optionalMemberIds.*')),
   body('teamIds').isArray(),
   body('teamIds.*').isString(),
+  body('teamTypeId').optional().isString(),
   body('location').optional().isString(),
   body('zoomLink').optional().isURL(),
   body('shopIds').isArray(),
@@ -107,6 +106,7 @@ calendarRouter.post(
   nonEmptyString(body('optionalMemberIds.*')),
   body('teamIds').isArray(),
   body('teamIds.*').isString(),
+  body('teamTypeId').optional().isString(),
   isEventStatus(body('status')),
   body('location').optional().isString(),
   body('zoomLink').optional().isURL(),
@@ -152,6 +152,10 @@ calendarRouter.post(
 );
 
 calendarRouter.post('/event/:eventId/delete', CalendarController.deleteEvent);
+
+calendarRouter.get('/event/:eventId', CalendarController.getSingleEvent);
+
+calendarRouter.get('/events', CalendarController.getAllEvents);
 
 calendarRouter.post('/machinery/create', nonEmptyString(body('name')), validateInputs, CalendarController.createMachinery);
 

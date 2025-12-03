@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import { Availability, DesignReview, getDayOfWeek, getNextSevenDays, User } from 'shared';
+import { Availability, Event, getDayOfWeek, getNextSevenDays, User } from 'shared';
 import {
   enumToArray,
   REVIEW_TIMES,
@@ -20,7 +20,7 @@ interface AvailabilityScheduleViewProps {
   setCurrentUnavailableUsers: (val: User[]) => void;
   onSelectedTimeslotChanged: (val: number | null, day: Date | null) => void;
   dateRangeTitle: string;
-  designReview: DesignReview;
+  event: Event;
 }
 
 const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
@@ -32,11 +32,12 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   setCurrentUnavailableUsers,
   dateRangeTitle,
   onSelectedTimeslotChanged,
-  designReview
+  event
 }) => {
   const totalUsers = usersToAvailabilities.size;
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
-  const potentialDays = getNextSevenDays(designReview.initialDate);
+  const initialDate = event.scheduledTimes[0]?.initialDateScheduled || new Date();
+  const potentialDays = getNextSevenDays(initialDate);
 
   const handleTimeslotClick = (index: number, day: Date) => {
     if (selectedTimeslot === index) {

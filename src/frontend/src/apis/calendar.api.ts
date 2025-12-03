@@ -1,7 +1,12 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+<<<<<<< HEAD
 import { filterEventsTransformer } from './transformers/calendar.transformer';
 import { Shop, Machinery, Calendar, FilterArgs, Event } from 'shared';
+=======
+import { Shop, Machinery, AvailabilityCreateArgs, Event, EventStatus, Calendar } from 'shared';
+import { eventTransformer } from './transformers/calendar.transformer';
+>>>>>>> feature/calendar-improvements
 
 export const getAllCalendars = () => {
   return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
@@ -102,5 +107,31 @@ export const postAddMachineryToShop = async (payload: {
 export const editShop = (shopId: string, payload: { name: string; description: string }) => {
   return axios.post<Shop>(apiUrls.calendarEditShop(shopId), payload, {
     transformResponse: (data) => JSON.parse(data) as Shop
+  });
+};
+
+export const markUserConfirmed = async (id: string, payload: { availability: AvailabilityCreateArgs[] }) => {
+  return axios.post<Event>(apiUrls.calendarEventMarkUserConfirmed(id), payload);
+};
+
+export const getSingleEvent = async (id: string) => {
+  return axios.get(apiUrls.calendarGetSingleEvent(id), {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
+};
+
+export const getAllEvents = () => {
+  return axios.get(apiUrls.calendarEvents(), {
+    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
+  });
+};
+
+export const deleteEvent = async (id: string) => {
+  return axios.delete(apiUrls.calendarDeleteEvent(id));
+};
+
+export const setEventStatus = async (id: string, payload: { status: EventStatus }) => {
+  return axios.post<Event>(apiUrls.calendarEventSetStatus(id), payload, {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
   });
 };

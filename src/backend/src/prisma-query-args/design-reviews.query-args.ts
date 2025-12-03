@@ -1,3 +1,4 @@
+/*
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs, getUserWithSettingsQueryArgs } from './user.query-args';
 
@@ -33,3 +34,4 @@ export const getDesignReviewPreviewQueryArgs = (organizationId: string) =>
       userCreated: getUserWithSettingsQueryArgs(organizationId)
     }
   });
+*/

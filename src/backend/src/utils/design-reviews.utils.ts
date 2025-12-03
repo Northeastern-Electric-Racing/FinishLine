@@ -1,12 +1,6 @@
-import { DesignReview } from 'shared';
+/*
 import { HttpException } from './errors.utils';
-import { User } from 'shared';
 
-/**
- * Validate meeting times
- * @param nums the meeting times
- * @returns the meeting times
- */
 export const validateMeetingTimes = (nums: number[]): number[] => {
   if (nums.length === 0) {
     throw new HttpException(400, 'There must be at least one meeting time');
@@ -23,12 +17,6 @@ export const validateMeetingTimes = (nums: number[]): number[] => {
   return nums;
 };
 
-export const isUserOnDesignReview = (user: User, designReview: DesignReview): boolean => {
-  const requiredMembers = designReview.requiredMembers.map((user) => user.userId);
-  const optionalMembers = designReview.optionalMembers.map((user) => user.userId);
-  return requiredMembers.includes(user.userId) || optionalMembers.includes(user.userId);
-};
-
 export const transformStartTime = (times: number[]) => {
   return (times[0] % 12) + 10;
 };
@@ -38,3 +26,4 @@ export const addHours = (date: Date, hours: number) => {
   date.setTime(date.getTime() + hoursToAdd);
   return date;
 };
+*/

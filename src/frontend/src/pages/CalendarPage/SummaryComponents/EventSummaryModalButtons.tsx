@@ -1,29 +1,30 @@
 import { Box } from '@mui/system';
-import { DesignReview, TeamType } from 'shared';
+import { Event, TeamType } from 'shared';
 import { NERButton } from '../../../components/NERButton';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
-import { DesignReviewCreateModal } from '../DesignReviewCreateModal';
 import { useState } from 'react';
 
-interface DesignReviewSummaryModalButtonsProps {
-  designReview: DesignReview;
+interface EventSummaryModalButtonsProps {
+  event: Event;
   handleStageGateClick: () => void;
   handleDelayClick: () => void;
   teamTypes: TeamType[];
 }
 
-const DesignReviewSummaryModalButtons: React.FC<DesignReviewSummaryModalButtonsProps> = ({
-  designReview,
+const EventSummaryModalButtons: React.FC<EventSummaryModalButtonsProps> = ({
+  event: _event,
   handleDelayClick,
   handleStageGateClick,
-  teamTypes
+  teamTypes: _teamTypes
 }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   return (
     <Box display="flex" flexDirection="column" rowGap={1}>
-      {isCreateModalOpen && (
+      {
+        isCreateModalOpen && isCreateModalOpen
+        /*
         <DesignReviewCreateModal
           showModal={isCreateModalOpen}
           handleClose={() => {
@@ -33,7 +34,8 @@ const DesignReviewSummaryModalButtons: React.FC<DesignReviewSummaryModalButtonsP
           defaultDate={new Date()}
           defaultWbsNum={designReview.wbsNum}
         />
-      )}
+        */
+      }
       <Box
         sx={{
           display: 'flex',
@@ -68,10 +70,10 @@ const DesignReviewSummaryModalButtons: React.FC<DesignReviewSummaryModalButtonsP
         whiteVariant
         onClick={() => setIsCreateModalOpen(true)}
       >
-        Schedule Another DR
+        Schedule Another Event
       </NERButton>
     </Box>
   );
 };
 
-export default DesignReviewSummaryModalButtons;
+export default EventSummaryModalButtons;

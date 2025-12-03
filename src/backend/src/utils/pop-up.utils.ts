@@ -1,23 +1,23 @@
-import { Change_Request, Design_Review } from '@prisma/client';
+import { Change_Request, Event } from '@prisma/client';
 import { User } from 'shared';
 import { PopUpService } from '../services/pop-up.services';
 
 /**
- * Sends a pop up that a design review was scheduled
- * @param designReview dr that was created
- * @param members optional and required members of the dr
- * @param submitter the user who created the dr
- * @param workPackageName the name of the work package associated witht the dr
- * @param organizationId  id of the organization of the dr
+ * Sends a pop up that a design review event was scheduled
+ * @param event event that was created
+ * @param members optional and required members of the event
+ * @param submitter the user who created the event
+ * @param workPackageName the name of the work package associated witht the event
+ * @param organizationId  id of the organization of the event
  */
-export const sendDrPopUp = async (
-  designReview: Design_Review,
+export const sendEventPopUp = async (
+  event: Event,
   members: User[],
   submitter: User,
   workPackageName: string,
   organizationId: string
 ) => {
-  const designReviewLink = `/settings/preferences?drId=${designReview.designReviewId}`;
+  const designReviewEventLink = `/settings/preferences?eventId=${event.eventId}`;
 
   const msg = `Design Review for ${workPackageName} is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
   await PopUpService.sendPopUpToUsers(
@@ -25,7 +25,7 @@ export const sendDrPopUp = async (
     'calendar_month',
     members.map((member) => member.userId),
     organizationId,
-    designReviewLink
+    designReviewEventLink
   );
 };
 
