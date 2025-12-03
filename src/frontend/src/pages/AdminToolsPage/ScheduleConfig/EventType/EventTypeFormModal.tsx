@@ -246,7 +246,7 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
                     }
                     const calendar = calendars?.find((c) => c.calendarId === selected);
                     return (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.49 }}>
                         <Box
                           sx={{
                             width: 16,
