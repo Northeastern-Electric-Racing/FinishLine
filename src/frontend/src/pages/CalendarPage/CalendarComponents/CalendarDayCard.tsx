@@ -42,9 +42,9 @@ interface CalendarDayCardProps {
   cardDate: Date;
   events: Event[];
   teamTypes: TeamType[];
-  eventTypes: EventType[];
-  calendars: Calendar[];
-  dayOfWeek: DayOfWeek;
+  eventTypes?: EventType[];
+  calendars?: Calendar[];
+  dayOfWeek?: DayOfWeek;
 }
 
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
@@ -53,7 +53,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   teamTypes,
   eventTypes,
   calendars,
-  dayOfWeek
+  dayOfWeek = ''
 }) => {
   const [, setIsCreateModalOpen] = useState(false);
   const theme = useTheme();
