@@ -22,7 +22,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
-import { Calendar, Shop } from 'shared';
+import CreateEventTypeModal from './EventType/CreateEventTypeModal';
+import EditEventTypeModal from './EventType/EditEventTypeModal';
+import { Calendar, Shop, EventType } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERDeleteModal from '../../../components/NERDeleteModal';
 
@@ -485,6 +487,14 @@ const AdminToolsScheduleConfig: React.FC = () => {
         dataType={`machine ${machineryToDelete?.machineName || ''}`}
         onFormSubmit={handleDeleteMachinery}
       />
+
+      {/* Create Event Type Modal */}
+      <CreateEventTypeModal open={openCreateEventType} onClose={() => setOpenCreateEventType(false)} />
+
+      {/* Edit Event Type Modal */}
+      {editingEventType && (
+        <EditEventTypeModal open={true} onClose={() => setEditingEventType(null)} eventType={editingEventType} />
+      )}
     </Box>
   );
 };
