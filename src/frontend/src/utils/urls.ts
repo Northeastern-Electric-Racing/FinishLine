@@ -458,6 +458,7 @@ const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
 const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
+const calendarFilterEvents = () => `${calendar()}/events/filter`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -763,6 +764,7 @@ export const apiUrls = {
 
   calendarShops,
   calendarCreateShop,
+  calendarFilterEvents,
   calendarMachinery,
   calendarCreateMachinery,
   calendarEditMachinery,

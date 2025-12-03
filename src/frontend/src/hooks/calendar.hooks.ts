@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Shop, Machinery, Calendar, AvailabilityCreateArgs, Event, EventStatus, EventType } from 'shared';
+import { Shop, Machinery, Calendar, AvailabilityCreateArgs, Event, EventStatus, EventType, FilterArgs } from 'shared';
 import {
   getAllShops,
   postCreateShop,
@@ -18,7 +18,8 @@ import {
   getAllEvents,
   deleteEvent,
   setEventStatus,
-  getAllEventTypes
+  getAllEventTypes,
+  postFilterEvents
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 
@@ -214,6 +215,19 @@ export const useAllEvents = () => {
     const { data } = await getAllEvents();
     return data;
   });
+};
+
+export const useFilterEvents = (filterArgs: FilterArgs) => {
+  return useQuery<Event[], Error>(
+    ['filter-events', filterArgs],
+    async () => {
+      const { data } = await postFilterEvents(filterArgs);
+      return data;
+    },
+    {
+      keepPreviousData: true
+    }
+  );
 };
 
 export const useAllEventTypes = () => {

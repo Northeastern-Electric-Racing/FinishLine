@@ -1,6 +1,6 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop, Machinery, AvailabilityCreateArgs, Event, EventStatus, Calendar } from 'shared';
+import { Shop, Machinery, AvailabilityCreateArgs, Event, EventStatus, Calendar, FilterArgs } from 'shared';
 import { eventTransformer } from './transformers/calendar.transformer';
 
 export const getAllCalendars = () => {
@@ -111,6 +111,12 @@ export const getSingleEvent = async (id: string) => {
 
 export const getAllEvents = () => {
   return axios.get(apiUrls.calendarEvents(), {
+    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
+  });
+};
+
+export const postFilterEvents = (payload: FilterArgs) => {
+  return axios.post<any>(apiUrls.calendarFilterEvents(), payload, {
     transformResponse: (data) => JSON.parse(data).map(eventTransformer)
   });
 };

@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowDropDown } from '@mui/icons-material';
 
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
@@ -11,7 +11,7 @@ import { DayOfWeek, Event } from 'shared';
 import MonthSelector from '../CalendarPage/CalendarComponents/MonthSelector';
 import CalendarDayCard from '../CalendarPage/CalendarComponents/CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useAllCalendars, useAllEvents, useAllEventTypes } from '../../hooks/calendar.hooks';
+import { useAllCalendars, useAllEvents, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -21,6 +21,8 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { NERButton } from '../../components/NERButton';
 import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
+import { useCurrentUser, useGetCurrentUser } from '../../hooks/users.hooks';
+import { useAllArchivedTeams, useAllTeams, useGetUsersTeams } from '../../hooks/teams.hooks';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -37,13 +39,48 @@ const NewCalendarPage = () => {
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
 
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
-  const { isLoading, isError, error, data: allEvents } = useAllEvents();
+  const {
+    isLoading,
+    isError,
+    error,
+    data: allEvents
+  } = useFilterEvents({ startPeriod: new Date(0), endPeriod: new Date(2099, 11, 31), memberIds, teamIds });
   const { data: allEventTypes } = useAllEventTypes();
   const { data: allCalendars } = useAllCalendars();
+  const { data: allTeams } = useGetUsersTeams();
+  const user = useCurrentUser();
   const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
+
+  useEffect(() => {
+    if (showInvitedEvents) {
+      if (!memberIds.includes(user.userId)) {
+        setMemberIds([...memberIds, user.userId]);
+      }
+    } else if (memberIds.includes(user.userId)) {
+      setMemberIds(memberIds.filter((id) => id !== user.userId));
+    }
+  }, [memberIds, showInvitedEvents, user.userId]);
+
+  useEffect(() => {
+    const teamList = allTeams?.map((team) => team.teamId) ?? [];
+
+    if (showTeamEvents) {
+      teamList.forEach((teamId) => {
+        if (!teamIds.includes(teamId)) {
+          setTeamIds([...teamIds, teamId]);
+        }
+      });
+    } else {
+      teamList.forEach((teamId) => {
+        if (teamIds.includes(teamId)) {
+          setTeamIds(teamIds.filter((id) => id !== teamId));
+        }
+      });
+    }
+  }, [allTeams, memberIds, showTeamEvents, teamIds, user.userId]);
 
   if (isLoading || !allEvents) return <LoadingIndicator />;
 
