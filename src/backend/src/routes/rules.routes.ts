@@ -87,6 +87,7 @@ rulesRouter.get('/ruleset/:rulesetId/team/:teamId/rules/unassigned', RulesContro
 
 rulesRouter.get('/ruleset/:rulesetId/project/:projectId/rules', RulesController.getProjectRules);
 
+rulesRouter.get('/:ruleId/subrules', RulesController.getChildRules);
 rulesRouter.get('/:rulesetId/parentRules', RulesController.getTopLevelRules);
 
 export default rulesRouter;

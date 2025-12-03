@@ -5,7 +5,9 @@ import {
   financeMember,
   wonderwomanGuest,
   batmanAppAdmin,
-  aquamanLeadership
+  aquamanLeadership,
+  alfred,
+  flashAdmin
 } from '../test-data/users.test-data';
 import {
   createTestOrganization,
@@ -398,6 +400,120 @@ describe('Create Rules Tests', () => {
     });
   });
 
+  describe('Get Child Rules', () => {
+    it('Successfully gets child rules for a parent rule', async () => {
+      const parentRule = await RulesService.createRule(batman, 'T.1', 'Parent Rule', rulesetId, organization);
+      await RulesService.createRule(batman, 'T.1.1', 'Child Rule 1', rulesetId, organization, parentRule.ruleId);
+      await RulesService.createRule(batman, 'T.1.2', 'Child Rule 2', rulesetId, organization, parentRule.ruleId);
+      const childRules = await RulesService.getChildRules(parentRule.ruleId, organization);
+      expect(childRules.length).toBe(2);
+      expect(childRules[0].ruleCode).toBe('T.1.1');
+      expect(childRules[1].ruleCode).toBe('T.1.2');
+    });
+
+    it('Successfully gets child rules after deleting child rule', async () => {
+      const parentRule = await RulesService.createRule(batman, 'T.2', 'Parent Rule', rulesetId, organization);
+      const childRule = await RulesService.createRule(
+        batman,
+        'T.2.1',
+        'Child Rule',
+        rulesetId,
+        organization,
+        parentRule.ruleId
+      );
+      await RulesService.deleteRule(childRule.ruleId, batman, organization);
+      const childRules = await RulesService.getChildRules(parentRule.ruleId, organization);
+      expect(childRules.length).toBe(0);
+    });
+
+    it('Successfully gets child rules after adding child rule', async () => {
+      const parentRule = await RulesService.createRule(batman, 'T.3', 'Parent Rule', rulesetId, organization);
+      await RulesService.createRule(batman, 'T.3.1', 'Child Rule 1', rulesetId, organization, parentRule.ruleId);
+      const childRulesAfterOne = await RulesService.getChildRules(parentRule.ruleId, organization);
+      expect(childRulesAfterOne.length).toBe(1);
+      await RulesService.createRule(batman, 'T.3.2', 'Child Rule 2', rulesetId, organization, parentRule.ruleId);
+      const childRulesAfterTwo = await RulesService.getChildRules(parentRule.ruleId, organization);
+      expect(childRulesAfterTwo.length).toBe(2);
+      expect(childRulesAfterTwo[0].ruleCode).toBe('T.3.1');
+      expect(childRulesAfterTwo[1].ruleCode).toBe('T.3.2');
+    });
+
+    it('Fails if parent rule does not exist', async () => {
+      await expect(async () => await RulesService.getChildRules('fake-rule-id', organization)).rejects.toThrow(
+        new NotFoundException('Rule', 'fake-rule-id')
+      );
+    });
+
+    it('Fails if parent rule is deleted', async () => {
+      const parentRule = await RulesService.createRule(batman, 'T.4', 'Parent Rule', rulesetId, organization);
+      await RulesService.deleteRule(parentRule.ruleId, batman, organization);
+      await expect(async () => await RulesService.getChildRules(parentRule.ruleId, organization)).rejects.toThrow(
+        new DeletedException('Rule', parentRule.ruleId)
+      );
+    });
+
+    it('Fails if parent rule is from another organization', async () => {
+      //manually create a user to avoid same googleAuthID as otherBatman
+      const otherUser = await prisma.user.create({
+        data: {
+          firstName: alfred.firstName,
+          lastName: alfred.lastName,
+          email: alfred.email,
+          googleAuthId: alfred.googleAuthId
+        }
+      });
+      const otherOrganization = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          description: 'Another organization',
+          applicationLink: '',
+          userCreated: {
+            connect: {
+              userId: otherUser.userId
+            }
+          }
+        }
+      });
+      const otherBatman = await createTestUser(flashAdmin, otherOrganization.organizationId);
+      const otherCar = await prisma.car.create({
+        data: {
+          wbsElement: {
+            create: {
+              name: 'Other Car',
+              carNumber: 2,
+              projectNumber: 0,
+              workPackageNumber: 0,
+              organizationId: otherOrganization.organizationId
+            }
+          }
+        },
+        include: { wbsElement: true }
+      });
+
+      const otherRuleset = await prisma.ruleset.create({
+        data: {
+          name: 'Other Ruleset',
+          fileId: 'other',
+          active: true,
+          carId: otherCar.carId,
+          createdByUserId: otherBatman.userId,
+          rulesetTypeId: rulesetType.rulesetTypeId
+        }
+      });
+      const otherParentRule = await prisma.rule.create({
+        data: {
+          ruleCode: 'O.1',
+          ruleContent: 'Other Parent',
+          imageFileIds: [],
+          rulesetId: otherRuleset.rulesetId,
+          createdByUserId: otherBatman.userId
+        }
+      });
+      await expect(async () => await RulesService.getChildRules(otherParentRule.ruleId, organization)).rejects.toThrow(
+        new InvalidOrganizationException('Rule')
+      );
+    });
+  });
   describe('Update ruleset status', () => {
     it('update ruleset status - successful', async () => {
       const ruleset1 = await RulesService.updateRuleset(batman, orgId, rulesetId, 'name1', false);

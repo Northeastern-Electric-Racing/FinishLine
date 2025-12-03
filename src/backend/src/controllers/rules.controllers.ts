@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services';
-import { ProjectRule, Ruleset } from 'shared';
+import { ProjectRule, Rule, Ruleset } from 'shared';
+
 export default class RulesController {
   static async getActiveRuleset(req: Request, res: Response, next: NextFunction) {
     try {
@@ -205,6 +206,17 @@ export default class RulesController {
       );
 
       res.status(200).json(ruleset);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getChildRules(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ruleId: parentRuleId } = req.params;
+      const childrenRules: Rule[] = await RulesService.getChildRules(parentRuleId, req.organization);
+
+      res.status(200).json(childrenRules);
     } catch (error: unknown) {
       next(error);
     }
