@@ -214,7 +214,6 @@ export const useDeleteCalendar = () => {
   );
 };
 
-
 export const useSingleEvent = (id?: string) => {
   return useQuery<Event, Error>(
     ['events', id],
