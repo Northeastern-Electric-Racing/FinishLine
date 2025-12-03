@@ -59,26 +59,17 @@ const getEarliestSchedule = (event: Event) => {
 };
 
 const YourEventsPage = () => {
-  const { mutateAsync: filterEventsMutate } = useFilterEvents();
   const user = useCurrentUser();
+  
+  const { data: events, isLoading: eventsLoading, isFetching: eventsFetching } = useFilterEvents({
+    memberIds: [user.userId],
+    startPeriod: new Date(0),
+    endPeriod: new Date(2099, 11, 31) // Adjust as needed
+  });
 
-  const [events, setEvents] = useState([] as Event[]);
-  const [eventsLoading, setEventsLoading] = useState(true);
+  const eventsReady = () => !eventsLoading && !eventsFetching;
+  
   const [, setUpdate] = useState(true); // Linting...
-
-  useEffect(() => {
-    // Example filter on mount
-    console.log('Filtering events...');
-    const filterArgs: FilterArgs = {
-      memberIds: [user.userId],
-      startPeriod: new Date(0),
-      endPeriod: new Date(2099, 11, 31) // Adjust as needed
-    };
-    filterEventsMutate(filterArgs).then((events) => {
-      setEvents(events);
-      setEventsLoading(false);
-    });
-  }, [filterEventsMutate, user.userId]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -110,20 +101,20 @@ const YourEventsPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {eventsLoading ? (
+            {eventsReady() ? (
               <TableRow>
                 <TableCell colSpan={headCells.length} align="center">
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : events.length === 0 ? (
+            ) : events?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={headCells.length} align="center">
                   No events found.
                 </TableCell>
               </TableRow>
             ) : (
-              events.map((event) => {
+              events?.map((event) => {
                 const earliestSchedule = getEarliestSchedule(event);
                 const now = new Date();
                 const diffMs = earliestSchedule.startTime.getTime() - now.getTime();

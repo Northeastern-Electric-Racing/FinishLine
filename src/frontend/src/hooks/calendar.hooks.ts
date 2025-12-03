@@ -175,17 +175,13 @@ export const useDeleteMachinery = () => {
   );
 };
 
-export const useFilterEvents = () => {
-  const qc = useQueryClient();
-  return useMutation<Event[], Error, FilterArgs>(
-    async (payload) => {
-      const { data } = await postFilterEvents(payload);
+export const useFilterEvents = (filterArgs: FilterArgs) => {
+  return useQuery<Event[], Error>({
+    queryKey: [FILTER_EVENTS_KEY, filterArgs],
+    queryFn: async () => {
+      const { data } = await postFilterEvents(filterArgs);
       return data;
     },
-    {
-      onSuccess: () => {
-        qc.invalidateQueries(FILTER_EVENTS_KEY);
-      }
-    }
-  );
+    staleTime: 1000 * 60,
+  });
 };
