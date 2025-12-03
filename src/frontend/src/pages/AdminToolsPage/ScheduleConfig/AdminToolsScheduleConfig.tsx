@@ -96,6 +96,9 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [openEditCalendar, setOpenEditCalendar] = useState(false);
   const [editingCalendar, setEditingCalendar] = useState<Calendar>();
 
+  const [openCreateEventType, setOpenCreateEventType] = useState(false);
+  const [editingEventType, setEditingEventType] = useState<EventType | null>(null);
+
   if (shopsLoading || machinesLoading || calendarsLoading) return <LoadingIndicator />;
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
   if (machinesError) return <ErrorPage message={(machinesErrorMsg as Error).message} />;

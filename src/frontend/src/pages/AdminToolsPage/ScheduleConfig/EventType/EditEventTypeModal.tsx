@@ -34,6 +34,7 @@ const EditEventTypeModal = ({ open, onClose, eventType }: EditEventTypeModalProp
     requiredMembers: eventType.requiredMembers,
     optionalMembers: eventType.optionalMembers,
     teams: eventType.teams,
+    teamType: eventType.teamType || false,
     location: eventType.location,
     zoomLink: eventType.zoomLink,
     shop: eventType.shop,
@@ -43,7 +44,8 @@ const EditEventTypeModal = ({ open, onClose, eventType }: EditEventTypeModalProp
     documents: eventType.documents,
     description: eventType.description,
     onlyHeadsOrAbove: eventType.onlyHeadsOrAboveForEventCreation,
-    requiresConfirmation: false
+    requiresConfirmation: eventType.requiresConfirmation || false,
+    sendSlackNotifications: eventType.sendSlackNotifications || false
   };
 
   if (isError) return <ErrorPage message={error?.message} />;

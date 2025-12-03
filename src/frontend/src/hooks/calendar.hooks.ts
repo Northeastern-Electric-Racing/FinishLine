@@ -1,9 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-<<<<<<< HEAD
-import { Shop, Machinery, Calendar, AvailabilityCreateArgs, Event, EventStatus } from 'shared';
-=======
-import { Shop, Machinery, EventType, Calendar, AvailabilityCreateArgs, Event, EventStatus } from 'shared';
->>>>>>> 9c6a0148d (#3636 merge fix)
+import { Shop, Machinery, EventType, Calendar, Event } from 'shared';
 import {
   getAllShops,
   postCreateShop,
@@ -27,6 +23,7 @@ import {
   setEventStatus
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
+import { AvailabilityCreateArgs, EventStatus } from 'shared';
 
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;
@@ -186,41 +183,7 @@ export const useDeleteMachinery = () => {
   );
 };
 
-export const useMarkUserConfirmed = (id: string) => {
-  const user = useCurrentUser();
-  const queryClient = useQueryClient();
-  return useMutation<Event, Error, { availability: AvailabilityCreateArgs[] }>(
-    ['events', 'mark-confirmed'],
-    async (eventPayload: { availability: AvailabilityCreateArgs[] }) => {
-      const { data } = await markUserConfirmed(id, eventPayload);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['events']);
-        queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
-      }
-    }
-  );
-};
-
-export const useSingleEvent = (id?: string) => {
-  return useQuery<Event, Error>(
-    ['events', id],
-    async () => {
-      const { data } = await getSingleEvent(id!);
-      return data;
-    },
-    { enabled: !!id }
-  );
-};
-
-export const useAllEvents = () => {
-  return useQuery<Event[], Error>(['events'], async () => {
-    const { data } = await getAllEvents();
-    return data;
-  });
-};
+export const EVENT_TYPE_KEY = ['event-types'] as const;
 
 export const useAllEventTypes = () =>
   useQuery<EventType[], Error>(EVENT_TYPE_KEY, async () => {
@@ -303,38 +266,6 @@ export const useEditEventType = (eventTypeId: string) => {
     {
       onSuccess: () => {
         qc.invalidateQueries(EVENT_TYPE_KEY);
-      }
-    }
-  );
-};
-
-export const useDeleteEvent = (id: string) => {
-  const queryClient = useQueryClient();
-  return useMutation<Event, Error>(
-    ['events', 'delete'],
-    async () => {
-      const { data } = await deleteEvent(id);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['events']);
-      }
-    }
-  );
-};
-
-export const useSetEventStatus = (id: string) => {
-  const queryClient = useQueryClient();
-  return useMutation<Event, Error, { status: EventStatus }>(
-    ['events', id],
-    async (payload: { status: EventStatus }) => {
-      const { data } = await setEventStatus(id, payload);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['events', id]);
       }
     }
   );

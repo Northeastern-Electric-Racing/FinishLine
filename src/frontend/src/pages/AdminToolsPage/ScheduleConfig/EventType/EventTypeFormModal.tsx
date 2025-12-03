@@ -33,6 +33,7 @@ export interface EventTypeFormValues {
   requiredMembers: boolean;
   optionalMembers: boolean;
   teams: boolean;
+  teamType: boolean;
   location: boolean;
   zoomLink: boolean;
   shop: boolean;
@@ -43,6 +44,7 @@ export interface EventTypeFormValues {
   description: boolean;
   onlyHeadsOrAbove: boolean;
   requiresConfirmation: boolean;
+  sendSlackNotifications: boolean;
 }
 
 const eventTypeSchema = yup.object({
@@ -54,6 +56,7 @@ const eventTypeSchema = yup.object({
   requiredMembers: yup.boolean().required(),
   optionalMembers: yup.boolean().required(),
   teams: yup.boolean().required(),
+  teamType: yup.boolean().required(),
   location: yup.boolean().required(),
   zoomLink: yup.boolean().required(),
   shop: yup.boolean().required(),
@@ -63,7 +66,8 @@ const eventTypeSchema = yup.object({
   documents: yup.boolean().required(),
   description: yup.boolean().required(),
   onlyHeadsOrAbove: yup.boolean().required(),
-  requiresConfirmation: yup.boolean().required()
+  requiresConfirmation: yup.boolean().required(),
+  sendSlackNotifications: yup.boolean().required()
 });
 
 interface EventTypeFormModalProps {
@@ -87,6 +91,7 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
       requiredMembers: false,
       optionalMembers: true,
       teams: false,
+      teamType: false,
       location: true,
       zoomLink: true,
       shop: false,
@@ -96,7 +101,8 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
       documents: false,
       description: true,
       onlyHeadsOrAbove: false,
-      requiresConfirmation: false
+      requiresConfirmation: false,
+      sendSlackNotifications: false
     }),
     []
   );

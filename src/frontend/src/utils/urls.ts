@@ -453,6 +453,9 @@ const calendarDeleteShop = (shopId: string) => `${calendar()}/shop/${shopId}/del
 const calendarCreateCalendar = () => `${calendar()}/create`;
 const calendarEditCalendar = (calendarId: string) => `${calendar()}/${calendarId}/edit`;
 const calendarCalendars = () => `${calendar()}/calendars`;
+const calendarEventTypes = () => `${calendar()}/event-types`;
+const calendarCreateEventType = () => `${calendar()}/event-type/create`;
+const calendarEditEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/edit`;
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
@@ -777,6 +780,9 @@ export const apiUrls = {
   calendarCreateCalendar,
   calendarEditCalendar,
   calendarCalendars,
+  calendarEventTypes,
+  calendarCreateEventType,
+  calendarEditEventType,
 
   version
 };
