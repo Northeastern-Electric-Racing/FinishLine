@@ -34,9 +34,15 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
   let schema;
 
   if (status === TaskStatus.IN_PROGRESS) {
-    console.log('here');
     schema = yup.object().shape({
-      notes: yup.string().optional(),
+      notes: yup
+        .string()
+        .optional()
+        .test((value) => {
+          if (!value) return true;
+          const wordCount = countWords(value);
+          return wordCount < 250;
+        }),
       startDate: yup.date().optional(),
       deadline: yup.date().required('Deadline is required for In Progress tasks'),
       priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
@@ -45,9 +51,15 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
       taskId: yup.string().required()
     });
   } else {
-    console.log('there');
     schema = yup.object().shape({
-      notes: yup.string().optional(),
+      notes: yup
+        .string()
+        .optional()
+        .test((value) => {
+          if (!value) return true;
+          const wordCount = countWords(value);
+          return wordCount < 250;
+        }),
       startDate: yup.date().optional(),
       deadline: yup.date().optional(),
       priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
