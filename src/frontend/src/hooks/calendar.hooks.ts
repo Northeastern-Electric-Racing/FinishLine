@@ -10,6 +10,10 @@ import {
   postDeleteMachinery,
   postAddMachineryToShop,
   editShop,
+  postDeleteCalendar,
+  getAllCalendars,
+  postEditCalendar,
+  postCreateCalendar,
   markUserConfirmed,
   getSingleEvent,
   getAllEvents,
@@ -25,6 +29,7 @@ export const FILTER_EVENTS_KEY = ['filter_events'] as const;
 
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;
+const CALENDAR_KEY = ['calendars'] as const;
 
 export const useAllCalendars = () =>
   useQuery<Calendar[], Error>(['calendars'], async () => {
@@ -194,6 +199,21 @@ export const useMarkUserConfirmed = (id: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['events']);
         queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+      }
+    }
+  );
+};
+
+export const useDeleteCalendar = () => {
+  const qc = useQueryClient();
+  return useMutation<{ calendarId: string }, Error, string>(
+    async (calendarId: string) => {
+      const { data } = await postDeleteCalendar(calendarId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(CALENDAR_KEY);
       }
     }
   );
