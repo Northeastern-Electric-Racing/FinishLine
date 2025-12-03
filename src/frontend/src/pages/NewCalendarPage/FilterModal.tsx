@@ -62,20 +62,18 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
                 <Box>
                   {user?.firstName ?? 'John'} {user?.lastName ?? 'Doe'} {user?.userId === currUser.userId && '(You)'}
                 </Box>
-                {user?.userId !== currUser.userId && (
-                  <Box
-                    onClick={() => {
-                      setMemberIds(memberIds.filter((mid) => mid !== id));
-                    }}
-                    style={{
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      lineHeight: 1
-                    }}
-                  >
-                    ×
-                  </Box>
-                )}
+                <Box
+                  onClick={() => {
+                    setMemberIds(memberIds.filter((mid) => mid !== id));
+                  }}
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    lineHeight: 1
+                  }}
+                >
+                  ×
+                </Box>
               </Box>
             );
           })}
@@ -106,9 +104,9 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
                 setDropDownMembersOpen(false);
               }
             }}
-            options={allUsers?.filter((user) => user.userId !== currUser.userId) ?? []}
+            options={allUsers ?? []}
             getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
-            value={allUsers?.filter((user) => memberIds.includes(user.userId) && user.userId !== currUser.userId) ?? []}
+            value={allUsers?.filter((user) => memberIds.includes(user.userId)) ?? []}
             onChange={(_, newValue) => setMemberIds(newValue.map((user) => user.userId))}
             filterSelectedOptions
             renderInput={(params) => (
@@ -176,20 +174,21 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
                 }}
               >
                 <Box>{team?.teamName ?? 'Default Team'}</Box> {teamList.includes(id) && '(You)'}
-                {!teamList.includes(id) && (
-                  <Box
-                    onClick={() => {
-                      setTeamIds(teamIds.filter((mid) => mid !== id));
-                    }}
-                    style={{
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      lineHeight: 1
-                    }}
-                  >
-                    ×
-                  </Box>
-                )}
+                <Box
+                  onClick={() => {
+                    setTeamIds(teamIds.filter((mid) => mid !== id));
+                    if (teamList.includes(id)) {
+                      setShowTeam(false);
+                    }
+                  }}
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    lineHeight: 1
+                  }}
+                >
+                  ×
+                </Box>
               </Box>
             );
           })}
@@ -220,12 +219,9 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
                 setDropDownTeamOpen(false);
               }
             }}
-            options={allTeams?.filter((team) => !teamList.includes(team.teamId)) ?? []}
+            options={allTeams ?? []}
             getOptionLabel={(team) => `${team.teamName}`}
-            value={
-              allTeams?.filter((team) => teamIds.includes(team.teamId)).filter((team) => !teamList.includes(team.teamId)) ??
-              []
-            }
+            value={allTeams?.filter((team) => teamIds.includes(team.teamId)) ?? []}
             onChange={(_, newValue) => setTeamIds(newValue.map((team) => team.teamId))}
             filterSelectedOptions
             renderInput={(params) => (

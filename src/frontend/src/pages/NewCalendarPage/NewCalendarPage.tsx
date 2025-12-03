@@ -35,6 +35,8 @@ const NewCalendarPage = () => {
 
   const [memberIds, setMemberIds] = useState<string[]>([]);
   const [teamIds, setTeamIds] = useState<string[]>([]);
+  const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([]);
+  const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>([]);
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
 
@@ -44,7 +46,12 @@ const NewCalendarPage = () => {
     isError,
     error,
     data: allEvents
-  } = useFilterEvents({ startPeriod: new Date(0), endPeriod: new Date(2099, 11, 31), memberIds, teamIds });
+  } = useFilterEvents({
+    startPeriod: new Date(0),
+    endPeriod: new Date(2099, 11, 31),
+    memberIds: memberIds.concat(additionalMemberIds),
+    teamIds: teamIds.concat(additionalTeamIds)
+  });
   const { data: allEventTypes } = useAllEventTypes();
   const { data: allCalendars } = useAllCalendars();
   const { data: allTeams } = useGetUsersTeams();
@@ -55,32 +62,22 @@ const NewCalendarPage = () => {
   const [openFilterModal, setOpenFilterModal] = useState(false);
 
   useEffect(() => {
-    if (showInvitedEvents) {
-      if (!memberIds.includes(user.userId)) {
-        setMemberIds([...memberIds, user.userId]);
-      }
-    } else if (memberIds.includes(user.userId)) {
-      setMemberIds(memberIds.filter((id) => id !== user.userId));
-    }
-  }, [memberIds, showInvitedEvents, user.userId]);
-
-  useEffect(() => {
     const teamList = allTeams?.map((team) => team.teamId) ?? [];
 
     if (showTeamEvents) {
-      teamList.forEach((teamId) => {
-        if (!teamIds.includes(teamId)) {
-          setTeamIds([...teamIds, teamId]);
-        }
-      });
+      setAdditionalTeamIds(teamList);
     } else {
-      teamList.forEach((teamId) => {
-        if (teamIds.includes(teamId)) {
-          setTeamIds(teamIds.filter((id) => id !== teamId));
-        }
-      });
+      setAdditionalTeamIds([]);
     }
-  }, [allTeams, memberIds, showTeamEvents, teamIds, user.userId]);
+  }, [showTeamEvents]);
+
+  useEffect(() => {
+    if (showInvitedEvents) {
+      setAdditionalMemberIds([user.userId]);
+    } else {
+      setAdditionalMemberIds([]);
+    }
+  }, [showInvitedEvents]);
 
   if (isLoading || !allEvents) return <LoadingIndicator />;
 
