@@ -325,26 +325,39 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
               control={control}
               name="recurring"
               render={({ field: { onChange, value } }) => (
-                <Box
+                <Select
+                  value={value ? 'recurring' : 'not-recurring'}
+                  onChange={(e) => onChange(e.target.value === 'recurring')}
                   sx={{
                     minWidth: 100,
                     height: 32,
-                    backgroundColor: value ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-                    border: value ? '1px solid rgba(255, 255, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.3)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
                     borderRadius: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    px: 1.5,
-                    color: value ? 'white' : 'rgba(255, 255, 255, 0.7)',
+                    color: 'rgba(255, 255, 255, 0.7)',
                     fontSize: '14px',
-                    cursor: 'pointer'
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      border: 'none'
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      border: 'none'
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      border: 'none'
+                    },
+                    '& .MuiSelect-icon': {
+                      color: 'white'
+                    },
+                    '& .MuiSelect-select': {
+                      padding: '4px 14px',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }
                   }}
-                  onClick={() => onChange(!value)}
                 >
-                  <span>Recurring</span>
-                  <span style={{ fontSize: '8px', color: 'white', marginTop: '3px' }}>▼</span>
-                </Box>
+                  <MenuItem value="not-recurring">Not Recurring</MenuItem>
+                  <MenuItem value="recurring">Recurring</MenuItem>
+                </Select>
               )}
             />
           </Box>
