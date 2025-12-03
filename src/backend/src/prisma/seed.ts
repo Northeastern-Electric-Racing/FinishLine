@@ -24,7 +24,7 @@ import ChangeRequestsService from '../services/change-requests.services';
 import TeamsService from '../services/teams.services';
 import {
   DayOfWeek,
-  DesignReviewStatus,
+  Review_Status,
   MaterialStatus,
   RoleEnum,
   StandardChangeRequest,
@@ -37,7 +37,6 @@ import { seedWorkPackage } from './seed-data/work-packages.seed';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import ProjectsService from '../services/projects.services';
 import { Decimal } from 'decimal.js';
-import DesignReviewsService from '../services/design-reviews.services';
 import BillOfMaterialsService from '../services/boms.services';
 import UsersService from '../services/users.services';
 import { transformDate } from '../utils/datetime.utils';
@@ -2345,6 +2344,7 @@ const performSeed: () => Promise<void> = async () => {
   const nextDay = new Date();
   nextDay.setDate(nextDay.getDate() + 1);
 
+  /*
   const designReview1 = await DesignReviewsService.createDesignReview(
     batman,
     nextDay.toDateString(),
@@ -2377,6 +2377,7 @@ const performSeed: () => Promise<void> = async () => {
     [1, 2, 3, 4, 5, 6, 7],
     ner
   );
+  */
 
   const newWorkPackageChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
     batman,
@@ -3174,14 +3175,13 @@ const performSeed: () => Promise<void> = async () => {
     'Meeting',
     [calendar.calendarId],
     ner,
-    true,
-    true,
-    true,
     false,
     false,
     true,
+    false,
     true,
     true,
+    false,
     false,
     false,
     false,
@@ -3201,13 +3201,12 @@ const performSeed: () => Promise<void> = async () => {
     true,
     true,
     true,
+    false,
+    true,
     true,
     true,
     false,
     true,
-    true,
-    false,
-    false,
     true,
     true,
     true,
@@ -3223,13 +3222,12 @@ const performSeed: () => Promise<void> = async () => {
     [],
     ner,
     true,
-    false,
-    false,
     true,
     true,
     false,
     false,
     false,
+    true,
     true,
     true,
     true,
@@ -3248,14 +3246,13 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     true,
     true,
-    true,
-    true,
     false,
     false,
     false,
     false,
     false,
     true,
+    false,
     false,
     false,
     false,
@@ -3286,6 +3283,7 @@ const performSeed: () => Promise<void> = async () => {
         allDay: false
       }
     ],
+    mechanical.teamTypeId,
     undefined,
     'Conference Room A',
     'https://zoom.us/j/123456789',
@@ -3314,6 +3312,7 @@ const performSeed: () => Promise<void> = async () => {
         allDay: false
       }
     ],
+    software.teamTypeId,
     'https://docs.google.com/document/d/2_example',
     'Conference Room B',
     'https://zoom.us/j/987654321',
@@ -3342,6 +3341,7 @@ const performSeed: () => Promise<void> = async () => {
         allDay: false
       }
     ],
+    electrical.teamTypeId,
     'https://docs.google.com/document/d/3_example',
     undefined,
     undefined,
@@ -3370,6 +3370,7 @@ const performSeed: () => Promise<void> = async () => {
         allDay: false
       }
     ],
+    mechanical.teamTypeId,
     undefined,
     undefined,
     undefined,

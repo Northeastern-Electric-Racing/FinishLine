@@ -1,40 +1,40 @@
 import { Typography } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
-import { Availability, DesignReview, DesignReviewStatus, User } from 'shared';
+import { Availability, Event, EventStatus, User } from 'shared';
 import { HeatmapColors } from '../../../utils/design-review.utils';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { useState } from 'react';
-import FinalizeDesignReviewDetailsModal from './FinalizeDesignReviewDetailsModal';
-import { FinalizeReviewInformation } from './DesignReviewDetailPage';
+import { FinalizeEventInformation } from './EventDetailPage';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
+import FinalizeEventDetailsModal from './FinalizeEventDetailsModal';
 
 interface UserAvailabilitiesProps {
   currentAvailableUsers: User[];
   currentUnavailableUsers: User[];
   usersToAvailabilities: Map<User, Availability[]>;
-  designReview: DesignReview;
-  conflictingDesignReviews: DesignReview[];
+  event: Event;
+  conflictingEvents: Event[];
   selectedDate: Date;
   startTime: number;
-  handleEdit: (data?: FinalizeReviewInformation) => void;
+  handleEdit: (data?: FinalizeEventInformation) => void;
 }
 
 const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   currentAvailableUsers,
   currentUnavailableUsers,
   usersToAvailabilities,
-  designReview,
-  conflictingDesignReviews,
+  event,
+  conflictingEvents,
   handleEdit,
   selectedDate,
   startTime
 }) => {
   const theme = useTheme();
   const history = useHistory();
-  const [showFinalizeDesignReviewDetailsModal, setShowFinalizeDesignReviewDetailsModal] = useState(false);
+  const [showFinalizeEventDetailsModal, setShowFinalizeEventDetailsModal] = useState(false);
   const totalUsers = usersToAvailabilities.size;
 
   const handleCancel = () => {
@@ -126,20 +126,20 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             Save
           </NERSuccessButton>
           <NERSuccessButton
-            disabled={designReview.status === DesignReviewStatus.DONE}
+            disabled={event.status === EventStatus.DONE}
             variant="contained"
             type="submit"
             sx={{ mr: 1 }}
-            onClick={() => setShowFinalizeDesignReviewDetailsModal(true)}
+            onClick={() => setShowFinalizeEventDetailsModal(true)}
           >
             Finalize
           </NERSuccessButton>
-          <FinalizeDesignReviewDetailsModal
-            open={showFinalizeDesignReviewDetailsModal}
-            setOpen={setShowFinalizeDesignReviewDetailsModal}
-            conflictingDesignReviews={conflictingDesignReviews}
-            designReview={designReview}
-            finalizeDesignReview={handleEdit}
+          <FinalizeEventDetailsModal
+            open={showFinalizeEventDetailsModal}
+            setOpen={setShowFinalizeEventDetailsModal}
+            conflictingEvents={conflictingEvents}
+            event={event}
+            finalizeEvent={handleEdit}
             selectedDate={selectedDate}
             startTime={startTime}
           />

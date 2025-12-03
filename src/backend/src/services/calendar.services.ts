@@ -45,6 +45,14 @@ import {
 } from '../utils/calendar.utils';
 import { UserWithSettings } from '../utils/auth.utils';
 import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
+import {
+  sendEventConfirmationToThread,
+  sendEventScheduledSlackNotif,
+  sendEventUserConfirmationToThread,
+  sendSlackEventNotifications,
+  sendSlackEventConfirmNotification
+} from '../utils/slack.utils';
+import { sendEventPopUp } from '../utils/pop-up.utils';
 
 export default class CalendarService {
   /**
@@ -54,12 +62,10 @@ export default class CalendarService {
    * @param name The name of the event type.
    * @param calendarIds An array of the calendars this event type is associated with.
    * @param organization The organization for which the event type is being created.
-   * @param initialDateScheduled Determines if a date is associated with this event type.
-   * @param recurring Determines if this event type is recurring.
-   * @param allDay Determines if this event type is all day.
    * @param requiredMembers Determines if this event type has required members.
    * @param optionalMembers Determines if this event type has optional members.
    * @param teams Determines if this event type has teams.
+   * @param teamType Determines if this event type has a team type.
    * @param location Determines if this event type has a location.
    * @param zoomLink Determines if this event type has a zoom link.
    * @param shop Determines if a shop is associated with this event type.
@@ -69,6 +75,8 @@ export default class CalendarService {
    * @param documents Determines if documents are associates with this event type.
    * @param description Determines if a description is associated with this event type.
    * @param onlyHeadsOrAbove Determines if events under this event type can only be created by heads or above.
+   * @param requiredConfirmation Determines if events under this event type need to be confirmed.
+   * @param sendSlackNotifications Determines if users will be notified via slack
    *
    * @returns The created event type.
    *
@@ -81,12 +89,10 @@ export default class CalendarService {
     name: string,
     calendarIds: string[],
     organization: Organization,
-    initialDateScheduled: boolean,
-    recurring: boolean,
-    allDay: boolean,
     requiredMembers: boolean,
     optionalMembers: boolean,
     teams: boolean,
+    teamType: boolean,
     location: boolean,
     zoomLink: boolean,
     shop: boolean,
@@ -96,7 +102,8 @@ export default class CalendarService {
     documents: boolean,
     description: boolean,
     onlyHeadsOrAbove: boolean,
-    requiresConfirmation: boolean
+    requiresConfirmation: boolean,
+    sendSlackNotifications: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create event type');
@@ -141,12 +148,10 @@ export default class CalendarService {
           connect: calendarIds.map((calendarId) => ({ calendarId }))
         },
         userCreatedId: submitter.userId,
-        initialDateScheduled,
-        recurring,
-        allDay,
         requiredMembers,
         optionalMembers,
         teams,
+        teamType,
         location,
         zoomLink,
         shop,
@@ -157,6 +162,7 @@ export default class CalendarService {
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
         requiresConfirmation,
+        sendSlackNotifications,
         organizationId: organization.organizationId
       },
       ...getEventTypeQueryArgs(organization.organizationId)
@@ -216,6 +222,8 @@ export default class CalendarService {
    * @param organization The organization for which the event type is being created.
    * @param requiredMemberIds An array of required member ids that are invited to the event.
    * @param optionalMemberIds An array of optional member ids that are invited to the event.
+   * @param teamIds An array of team ids that are invited to the event.
+   * @param teamTypeId The team type id invited to the event.
    * @param shopIds An array of shops associated with the event.
    * @param machineryIds An array of machinery associated with the event.
    * @param workPackageIds An array of work packages associated with the event.
@@ -244,6 +252,7 @@ export default class CalendarService {
     workPackageIds: string[],
     documentIds: string[],
     scheduleSlot: ScheduleSlotCreateArgs[],
+    teamTypeId?: string,
     questionDocument?: string,
     location?: string,
     zoomLink?: string,
@@ -277,6 +286,7 @@ export default class CalendarService {
       workPackageIds,
       documentIds,
       scheduleSlot,
+      teamTypeId,
       location,
       zoomLink,
       questionDocument,
@@ -380,6 +390,18 @@ export default class CalendarService {
       }
     }
 
+    if (teamTypeId) {
+      // Validate team type
+      const foundTeamType = await prisma.team_Type.findUnique({
+        where: {
+          teamTypeId
+        }
+      });
+      if (!foundTeamType) {
+        throw new NotFoundException('Team Type', teamTypeId);
+      }
+    }
+
     // Check for conflicts
     const { hasConflict, approverUserId } = await checkEventConflicts(scheduleSlot, organization, location, undefined);
 
@@ -415,6 +437,7 @@ export default class CalendarService {
         teams: {
           connect: teamIds.map((teamId) => ({ teamId }))
         },
+        teamTypeId,
         shops: {
           connect: shopIds.map((shopId) => ({ shopId }))
         },
@@ -447,6 +470,73 @@ export default class CalendarService {
       ...getEventQueryArgs(organization.organizationId)
     });
 
+    if (foundEventType.sendSlackNotifications) {
+      const members = await prisma.user.findMany({
+        where: { userId: { in: optionalMemberIds.concat(requiredMemberIds) } }
+      });
+
+      if (!members) {
+        throw new NotFoundException('User', 'Cannot find members who are invited to the design review');
+      }
+
+      // get the user settings for all the members invited, who are leaderingship
+      const memberUserSettings = await prisma.user_Settings.findMany({
+        where: { userId: { in: members.map((member) => member.userId) } }
+      });
+
+      if (!memberUserSettings) {
+        throw new NotFoundException('User Settings', 'Cannot find settings of members');
+      }
+
+      const workPackageNames = newEvent.workPackages.map((wp) => wp.wbsElement.name).join(', ');
+
+      const projects = newEvent.workPackages.map((wp) => wp.project);
+
+      // Send a slack message to all members invited to the event
+      for (const memberUserSetting of memberUserSettings) {
+        if (memberUserSetting.slackId) {
+          try {
+            // For each project associated with this event
+            for (const project of projects) {
+              await sendSlackEventConfirmNotification(
+                memberUserSetting.slackId,
+                newEvent.eventId,
+                newEvent.title,
+                project.wbsElement.name
+              );
+            }
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+              throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+            }
+          }
+        }
+      }
+
+      if (newEvent.status === Event_Status.CONFIRMED) {
+        await sendEventConfirmationToThread(newEvent.notificationSlackThreads, newEvent.userCreated);
+      }
+
+      // Send popup notification
+      await sendEventPopUp(newEvent, members, submitter, workPackageNames, organization.organizationId);
+
+      const createdEvent = eventTransformer(newEvent);
+
+      for (const project of projects) {
+        const projectTeams = project.teams;
+        if (projectTeams.length > 0) {
+          await sendSlackEventNotifications(
+            projectTeams,
+            createdEvent,
+            submitter,
+            workPackageNames,
+            project.wbsElement.name
+          );
+        }
+      }
+      return createdEvent;
+    }
+
     return eventTransformer(newEvent);
   }
 
@@ -460,6 +550,8 @@ export default class CalendarService {
    * @param requiredMemberIds An array of required member ids that are invited to the event.
    * @param optionalMemberIds An array of optional member ids that are invited to the event.
    * @param status see Event_Status enum
+   * @param teamIds An array of teams invited to the event.
+   * @param teamType Team type Id invited to the event.
    * @param shopIds An array of shops associated with the event.
    * @param machineryIds An array of machinery associated with the event.
    * @param workPackageIds An array of work packages associated with the event.
@@ -489,6 +581,7 @@ export default class CalendarService {
     workPackageIds: string[],
     documentIds: string[],
     scheduleSlot: ScheduleSlotCreateArgs[],
+    teamTypeId?: string,
     questionDocument?: string,
     location?: string,
     zoomLink?: string,
@@ -521,6 +614,7 @@ export default class CalendarService {
       workPackageIds,
       documentIds,
       scheduleSlot,
+      teamTypeId,
       location,
       zoomLink,
       questionDocument,
@@ -653,6 +747,18 @@ export default class CalendarService {
       }
     }
 
+    if (teamTypeId) {
+      // Validate team type
+      const foundTeamType = await prisma.team_Type.findMany({
+        where: {
+          teamTypeId
+        }
+      });
+      if (!foundTeamType) {
+        throw new NotFoundException('Team Type', teamTypeId);
+      }
+    }
+
     // Use transaction for the update
     const updatedEvent = await prisma.$transaction(async (tx) => {
       // Fetch existing schedule slots
@@ -765,6 +871,7 @@ export default class CalendarService {
           teams: {
             set: teamIds.map((teamId) => ({ teamId }))
           },
+          ...(teamTypeId !== undefined && { teamTypeId }),
           status: newStatus,
           shops: {
             set: shopIds.map((shopId) => ({ shopId }))
@@ -794,7 +901,17 @@ export default class CalendarService {
       });
     });
 
-    return eventTransformer(updatedEvent);
+    const edittedEvent = eventTransformer(updatedEvent);
+
+    if (status === Event_Status.SCHEDULED && foundEventType.sendSlackNotifications) {
+      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent);
+    }
+
+    if (status === Event_Status.CONFIRMED && foundEventType.sendSlackNotifications) {
+      await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
+    }
+
+    return edittedEvent;
   }
 
   /**
@@ -903,8 +1020,17 @@ export default class CalendarService {
         }
       });
 
-      // possibly want to do
-      //await sendDRUserConfirmationToThread(updatedDesignReview.notificationSlackThreads, submitter);
+      const { eventTypeId } = updatedEvent;
+      const foundEventType = await prisma.event_Type.findUnique({
+        where: { eventTypeId }
+      });
+
+      if (!foundEventType) throw new NotFoundException('Event Type', eventTypeId);
+      if (foundEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
+
+      if (foundEventType.sendSlackNotifications) {
+        await sendEventUserConfirmationToThread(updatedEvent.notificationSlackThreads, submitter);
+      }
 
       // If all required attendees have confirmed their schedule and this member was a required attendee, mark design review as confirmed
       if (
@@ -918,8 +1044,9 @@ export default class CalendarService {
             status: Event_Status.CONFIRMED
           }
         });
-
-        //await sendDRConfirmationToThread(updatedDesignReview.notificationSlackThreads, updatedDesignReview.userCreated);
+        if (foundEventType.sendSlackNotifications) {
+          await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
+        }
       }
 
       return eventTransformer(updatedEvent);
@@ -1629,12 +1756,11 @@ export default class CalendarService {
    * @param name The name of the event type.
    * @param calendarIds An array of the calendars this event type is associated with.
    * @param organization The organization for which the event type is being created.
-   * @param initialDateScheduled Determines if a date is associated with this event type.
-   * @param recurring Determines if this event type is recurring.
-   * @param allDay Determines if this event type is all day.
+   * @param schedule Determines if a date is associated with this event type.
    * @param requiredMembers Determines if this event type has required members.
    * @param optionalMembers Determines if this event type has optional members.
    * @param teams Determines if this event type has teams.
+   * @param teamType Determines if this event type has team types.
    * @param location Determines if this event type has a location.
    * @param zoomLink Determines if this event type has a zoom link.
    * @param shop Determines if a shop is associated with this event type.
@@ -1644,6 +1770,8 @@ export default class CalendarService {
    * @param documents Determines if documents are associates with this event type.
    * @param description Determines if a description is associated with this event type.
    * @param onlyHeadsOrAbove Determines if events associated with this event type can only be made by heads or above.
+   * @param requiredConfirmation Determines if events associated with this event type need to be confirmed.
+   * @param sendSlackNotifications Determines if events associated with this event type should receive slack notifications.
    *
    * @returns The created event type.
    *
@@ -1657,12 +1785,10 @@ export default class CalendarService {
     calendarIds: string[],
     organization: Organization,
     name: string,
-    initialDateScheduled: boolean,
-    recurring: boolean,
-    allDay: boolean,
     requiredMembers: boolean,
     optionalMembers: boolean,
     teams: boolean,
+    teamType: boolean,
     location: boolean,
     zoomLink: boolean,
     shop: boolean,
@@ -1672,7 +1798,8 @@ export default class CalendarService {
     documents: boolean,
     description: boolean,
     onlyHeadsOrAbove: boolean,
-    requiresConfirmation: boolean
+    requiresConfirmation: boolean,
+    sendSlackNotifications: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('edit event type');
@@ -1717,12 +1844,10 @@ export default class CalendarService {
         calendars: {
           connect: calendarIds.map((calendarId) => ({ calendarId }))
         },
-        initialDateScheduled,
-        recurring,
-        allDay,
         requiredMembers,
         optionalMembers,
         teams,
+        teamType,
         location,
         zoomLink,
         shop,
@@ -1732,7 +1857,8 @@ export default class CalendarService {
         documents,
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
-        requiresConfirmation
+        requiresConfirmation,
+        sendSlackNotifications
       },
       ...getEventTypeQueryArgs(organization.organizationId)
     });
@@ -2037,5 +2163,39 @@ export default class CalendarService {
     });
 
     return machineryTransformer(deleted);
+  }
+
+  /**
+   * Retrieves a single event
+   *
+   * @param submitter the user who is trying to retrieve the event
+   * @param designReviewId the id of the event to retrieve
+   * @param organizationId the organization that the user is currently in
+   * @returns the event
+   */
+  static async getSingleEvent(_submitter: User, eventId: string, organization: Organization): Promise<Event> {
+    const event = await prisma.event.findUnique({
+      where: { eventId },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    if (!event) throw new NotFoundException('Event', eventId);
+
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    return eventTransformer(event);
+  }
+
+  /**
+   * Gets all events in the database
+   * @param organizationId the organization id of the current user
+   * @returns All of the events
+   */
+  static async getAllEvents(organization: Organization): Promise<Event[]> {
+    const events = await prisma.event.findMany({
+      where: { dateDeleted: null },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+    return events.map(eventTransformer);
   }
 }

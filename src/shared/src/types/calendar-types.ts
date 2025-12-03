@@ -15,10 +15,18 @@ export interface TeamCalendarPreview {
   teamName: string;
 }
 
+export interface TeamTypeCalendarPreview {
+  teamTypeId: string;
+  name: string;
+}
+
 export interface WorkPackageCalendarPreview {
   workPackageId: string;
   wbsElement: {
     name: string;
+    carNumber: number;
+    projectNumber: number;
+    workPackageNumber: number;
   };
 }
 
@@ -29,16 +37,6 @@ export enum EventStatus {
   DONE = 'DONE'
 }
 
-export interface Calendar {
-  calendarId: string;
-  name: string;
-  description: string;
-  color: string;
-  userCreated: User;
-  dateCreated: Date;
-  eventTypes: EventType[];
-}
-
 export enum DayOfWeek {
   MONDAY = 'MONDAY',
   TUESDAY = 'TUESDAY',
@@ -47,6 +45,16 @@ export enum DayOfWeek {
   FRIDAY = 'FRIDAY',
   SATURDAY = 'SATURDAY',
   SUNDAY = 'SUNDAY'
+}
+
+export interface Calendar {
+  calendarId: string;
+  name: string;
+  description: string;
+  color: string;
+  userCreated: User;
+  dateCreated: Date;
+  eventTypes: EventType[];
 }
 
 export interface ScheduleSlot {
@@ -85,12 +93,10 @@ export interface EventType {
   name: string;
   userCreated: User;
   dateCreated: Date;
-  initialDateScheduled: boolean;
-  allDay: boolean;
-  recurring: boolean;
   requiredMembers: boolean;
   optionalMembers: boolean;
   teams: boolean;
+  teamType: boolean;
   location: boolean;
   zoomLink: boolean;
   shop: boolean;
@@ -100,6 +106,8 @@ export interface EventType {
   documents: boolean;
   description: boolean;
   onlyHeadsOrAboveForEventCreation: boolean;
+  requiresConfirmation: boolean;
+  sendSlackNotifications: boolean;
 }
 
 export interface Shop {
@@ -129,7 +137,7 @@ export interface Event {
   eventId: string;
   title: string;
   approved: boolean;
-  userCreated: User;
+  userCreated: UserWithScheduleSettings;
   dateCreated: Date;
   eventTypeId: string;
   approvalRequiredFrom?: User;
@@ -139,6 +147,7 @@ export interface Event {
   confirmedMembers: UserWithScheduleSettings[];
   deniedMembers: User[];
   teams: TeamCalendarPreview[];
+  teamType?: TeamTypeCalendarPreview;
   location?: string;
   zoomLink?: string;
   shops: ShopPreview[];
@@ -149,3 +158,12 @@ export interface Event {
   description?: string;
   status: EventStatus;
 }
+
+export type EventPreview = {
+  eventId: string;
+  title: string;
+  dateScheduled: Date;
+  status: EventStatus;
+  userCreated: User;
+  wbsName: string;
+};

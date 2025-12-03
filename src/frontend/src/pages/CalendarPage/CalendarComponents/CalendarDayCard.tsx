@@ -1,15 +1,14 @@
 import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { DesignReview, DesignReviewStatus, TeamType } from 'shared';
-import { meetingStartTimePipe } from '../../../utils/pipes';
+import { Event, EventStatus, TeamType } from 'shared';
+import { meetingStartTimePipeScheduleSlot } from '../../../utils/pipes';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import { useState } from 'react';
-import DRCSummaryModal from '../DesignReviewSummaryModal';
-import { DesignReviewCreateModal } from '../DesignReviewCreateModal';
+import DRCSummaryModal from '../EventSummaryModal';
 import DynamicTooltip from '../../../components/DynamicTooltip';
-import { designReviewStatusColor } from '../../../utils/design-review.utils';
+import { eventStatusColor } from '../../../utils/design-review.utils';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -23,12 +22,12 @@ export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
 
 interface CalendarDayCardProps {
   cardDate: Date;
-  events: DesignReview[];
+  events: Event[];
   teamTypes: TeamType[];
 }
 
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, teamTypes }) => {
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [, setIsCreateModalOpen] = useState(false);
   const theme = useTheme();
   const DayCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
@@ -47,17 +46,17 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
     </Grid>
   );
 
-  const EventCard = ({ event }: { event: DesignReview }) => {
+  const EventCard = ({ event }: { event: Event }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const [markedStatus, setMarkedStatus] = useState(event.status);
-    const name = event.wbsName;
+    const name = event.workPackages[0]?.wbsElement?.name || event.title;
 
     return (
       <>
         <DRCSummaryModal
           open={isSummaryModalOpen}
           onHide={() => setIsSummaryModalOpen(false)}
-          designReview={event}
+          event={event}
           teamTypes={teamTypes}
           markedStatus={markedStatus}
           setMarkedStatus={setMarkedStatus}
@@ -77,7 +76,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
         >
           <Card
             sx={{
-              backgroundColor: designReviewStatusColor(markedStatus),
+              backgroundColor: eventStatusColor(markedStatus),
               borderRadius: 1,
               width: '100%',
               minHeight: 20,
@@ -88,9 +87,9 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
               title={
                 name +
                 ' - ' +
-                (event.status !== DesignReviewStatus.UNCONFIRMED
-                  ? event.meetingTimes.length > 0
-                    ? meetingStartTimePipe(event.meetingTimes)
+                (event.status !== EventStatus.UNCONFIRMED
+                  ? event.scheduledTimes.length > 0
+                    ? meetingStartTimePipeScheduleSlot(event.scheduledTimes)
                     : ''
                   : 'UNCONFIRMED! THIS TIME IS SUBJECT TO CHANGE')
               }
@@ -105,7 +104,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
     );
   };
 
-  const ExtraEventNote = ({ event }: { event: DesignReview }) => {
+  const ExtraEventNote = ({ event }: { event: Event }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const [markedStatus, setMarkedStatus] = useState(event.status);
 
@@ -114,7 +113,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
         <DRCSummaryModal
           open={isSummaryModalOpen}
           onHide={() => setIsSummaryModalOpen(false)}
-          designReview={event}
+          event={event}
           teamTypes={teamTypes}
           markedStatus={markedStatus}
           setMarkedStatus={setMarkedStatus}
@@ -126,13 +125,14 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
             setIsSummaryModalOpen(true);
           }}
         >
-          {event.wbsName + (event.meetingTimes.length > 0 ? ' - ' + meetingStartTimePipe(event.meetingTimes) : '')}
+          {event.workPackages[0]?.wbsElement?.name ||
+            event.title + (event.scheduledTimes.length > 0 ? meetingStartTimePipeScheduleSlot(event.scheduledTimes) : '')}
         </Link>
       </>
     );
   };
 
-  const ExtraEventsCard = ({ extraEvents }: { extraEvents: DesignReview[] }) => {
+  const ExtraEventsCard = ({ extraEvents }: { extraEvents: Event[] }) => {
     const [showTooltip, setShowTooltip] = useState(false);
     return (
       <Box
@@ -204,14 +204,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
 
   return (
     <>
-      <DesignReviewCreateModal
-        showModal={isCreateModalOpen}
-        handleClose={() => {
-          setIsCreateModalOpen(false);
-        }}
-        teamTypes={teamTypes}
-        defaultDate={cardDate}
-      />
       <Card
         sx={{
           position: 'relative',

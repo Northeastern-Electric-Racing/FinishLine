@@ -18,7 +18,7 @@ import prisma from '../src/prisma/prisma';
 import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
-import { Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
+import { DayOfWeek, Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
 import {
   batmanAppAdmin,
   batmanScheduleSettings,
@@ -30,10 +30,10 @@ import {
   getProjectTemplateQueryArgs,
   getWorkPackageTemplateQueryArgs
 } from '../src/prisma-query-args/wbs-element-template.query-args';
-import DesignReviewsService from '../src/services/design-reviews.services';
 import TasksService from '../src/services/tasks.services';
 import ProjectsService from '../src/services/projects.services';
 import { SlackMessage } from '../src/services/slack.services';
+import CalendarService from '../src/services/calendar.services';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -151,7 +151,6 @@ export const resetUsers = async () => {
   await prisma.user_Secure_Settings.deleteMany();
   await prisma.schedule_Settings.deleteMany();
   await prisma.role.deleteMany();
-  await prisma.design_Review.deleteMany();
   await prisma.team_Type.deleteMany();
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
@@ -545,7 +544,7 @@ export const createTestReimbursementRequest = async () => {
 };
 
 // Always creates a new design review
-export const createTestDesignReview = async () => {
+export const createTestDesignReviewEvent = async () => {
   const organization = await createTestOrganization();
   const head = await createTestUser(
     { ...batmanAppAdmin, googleAuthId: 'financeHead', role: RoleEnum.APP_ADMIN },
@@ -566,34 +565,93 @@ export const createTestDesignReview = async () => {
 
   const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', 'Software team', organization);
 
-  const { designReviewId } = await DesignReviewsService.createDesignReview(
+  const designReviewEventType = await CalendarService.createEventType(
     lead,
-    '03/25/2027',
-    teamType.teamTypeId,
-    [lead.userId],
-    [],
-    {
-      carNumber: 0,
-      projectNumber: 0,
-      workPackageNumber: 0
-    },
-    [0, 1],
-    organization
+    'Design Review',
+    [], // No calendar IDs for now
+    organization,
+    true, // schedule
+    true, // requiredMembers
+    true, // optionalMembers
+    false, // teams
+    true, // team type
+    true, // location
+    true, // zoomLink
+    false, // shop
+    false, // machinery
+    true, // workPackage
+    true, // questionDocument
+    true, // documents
+    false, // description
+    true, // onlyHeadsOrAbove
+    true // requiresConfirmation
   );
 
-  const dr = await prisma.design_Review.findUnique({
+  const testWorkPackage = await prisma.work_Package.findFirst({
     where: {
-      designReviewId
+      wbsElement: {
+        carNumber: 1,
+        projectNumber: 1,
+        workPackageNumber: 1,
+        organizationId: organization.organizationId
+      }
+    }
+  });
+
+  if (!testWorkPackage) {
+    throw new Error('Test work package not found');
+  }
+
+  const { eventId } = await CalendarService.createEvent(
+    lead,
+    'Design Review - Impact Attenuator',
+    designReviewEventType.eventTypeId,
+    organization,
+    [lead.userId], // requiredMemberIds
+    [], // optionalMemberIds
+    [], // teamIds
+    [], // shopIds
+    [], // machineryIds
+    [testWorkPackage.workPackageId], // workPackageIds
+    [], // documentIds
+    [
+      {
+        days: [DayOfWeek.TUESDAY],
+        startTime: new Date('2027-03-25T10:00:00'),
+        endTime: new Date('2027-03-25T11:00:00'),
+        recurrenceNumber: 0,
+        initialDateScheduled: new Date('2027-03-25'),
+        allDay: false
+      },
+      {
+        days: [DayOfWeek.TUESDAY],
+        startTime: new Date('2027-03-25T11:00:00'),
+        endTime: new Date('2027-03-25T12:00:00'),
+        recurrenceNumber: 0,
+        initialDateScheduled: new Date('2027-03-25'),
+        allDay: false
+      }
+    ], // scheduleSlot - two 1-hour time slots
+    teamType.teamTypeId, // team type id
+    'https://docs.google.com/document/d/test-design-review-questions', // questionDocument
+    'Campus Center Room 101', // location
+    'https://zoom.us/j/123456789', // zoomLink
+    undefined // description
+  );
+
+  const event = await prisma.event.findUnique({
+    where: {
+      eventId
     },
     include: {
       userCreated: true
     }
   });
 
-  if (!dr) throw new Error('Failed to create design review');
+  if (!event) throw new Error('Failed to create design review');
 
   const orgId = organization.organizationId;
-  return { dr, organization, orgId };
+  return { event, organization, orgId };
 };
 
 export const createTestTeamType = async (name: string = 'aTeam', organizationId?: string) => {

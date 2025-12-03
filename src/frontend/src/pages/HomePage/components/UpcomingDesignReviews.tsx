@@ -3,20 +3,20 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import DesignReviewCard from './DesignReviewCard';
-import { useAllDesignReviews } from '../../../hooks/design-reviews.hooks';
+import DesignReviewCard from './EventCard';
+import { useAllEvents } from '../../../hooks/calendar.hooks';
 import ErrorPage from '../../ErrorPage';
-import { AuthenticatedUser, DesignReviewStatus, wbsPipe } from 'shared';
+import { AuthenticatedUser, EventStatus } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import { Error } from '@mui/icons-material';
 
-interface UpcomingDesignReviewProps {
+interface UpcomingEventProps {
   user: AuthenticatedUser;
 }
 
-const NoUpcomingDesignReviewsDisplay: React.FC = () => {
+const NoUpcomingEventsDisplay: React.FC = () => {
   return (
     <EmptyPageBlockDisplay
       icon={<Error sx={{ fontSize: 70 }} />}
@@ -26,37 +26,41 @@ const NoUpcomingDesignReviewsDisplay: React.FC = () => {
   );
 };
 
-const UpcomingDesignReviews: React.FC<UpcomingDesignReviewProps> = ({ user }) => {
-  const { data: designReviews, isLoading, isError, error } = useAllDesignReviews();
+const UpcomingEvents: React.FC<UpcomingEventProps> = ({ user }) => {
+  const { data: events, isLoading, isError, error } = useAllEvents();
 
-  if (isLoading || !designReviews) return <LoadingIndicator />;
+  if (isLoading || !events) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
-  const filteredDesignReviews = designReviews.filter((review) => {
-    const scheduledDate = review.dateScheduled;
+  const filteredEvents = events.filter((event) => {
+    // Get the first scheduled date
+    const scheduledDate = event.scheduledTimes[0]?.initialDateScheduled;
+    if (!scheduledDate) return false;
+
     const currentDate = new Date();
     const inTwoWeeks = new Date();
     inTwoWeeks.setDate(currentDate.getDate() + 14);
+
     const memberUserIds = [
-      ...review.requiredMembers.map((user) => user.userId),
-      ...review.optionalMembers.map((user) => user.userId)
+      ...event.requiredMembers.map((user) => user.userId),
+      ...event.optionalMembers.map((user) => user.userId)
     ];
-    // added in case the person who created the design review forgets to add their name onto the required members
-    memberUserIds.concat(review.userCreated.userId);
+
+    memberUserIds.push(event.userCreated.userId);
     return (
       scheduledDate >= currentDate &&
       scheduledDate <= inTwoWeeks &&
-      review.status !== DesignReviewStatus.DONE &&
+      event.status !== EventStatus.DONE &&
       memberUserIds.includes(user.userId)
     );
   });
 
   const fullDisplay = (
-    <ScrollablePageBlock title={`Upcoming Design Reviews (${filteredDesignReviews.length})`}>
-      {filteredDesignReviews.length === 0 ? (
-        <NoUpcomingDesignReviewsDisplay />
+    <ScrollablePageBlock title={`Upcoming Design Reviews (${filteredEvents.length})`}>
+      {filteredEvents.length === 0 ? (
+        <NoUpcomingEventsDisplay />
       ) : (
-        filteredDesignReviews.map((d) => <DesignReviewCard key={wbsPipe(d.wbsNum)} designReview={d} user={user} />)
+        filteredEvents.map((event) => <DesignReviewCard key={event.eventId} event={event} user={user} />)
       )}
     </ScrollablePageBlock>
   );
@@ -64,4 +68,4 @@ const UpcomingDesignReviews: React.FC<UpcomingDesignReviewProps> = ({ user }) =>
   return fullDisplay;
 };
 
-export default UpcomingDesignReviews;
+export default UpcomingEvents;
