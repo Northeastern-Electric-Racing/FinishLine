@@ -51,8 +51,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   cardDate,
   events,
   teamTypes,
-  eventTypes,
-  calendars,
+  eventTypes = [],
+  calendars = [],
   dayOfWeek = ''
 }) => {
   const [, setIsCreateModalOpen] = useState(false);
