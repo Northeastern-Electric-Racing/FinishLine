@@ -23,6 +23,7 @@ import {
   rulesetTypeTransformer,
   rulesetPreviewTransformer
 } from '../transformers/rules.transformer';
+import { downloadFile } from '../utils/google-integration.utils';
 
 export default class RulesService {
   /**
@@ -583,5 +584,55 @@ export default class RulesService {
     });
 
     return projectRuleTransformer(deletedProjectRule);
+  }
+
+  static async parseRuleset(
+    user: User,
+    organizationId: string,
+    fileId: string,
+    rulesetId: string,
+    parserType: 'FSAE' | 'FHE'
+  ) {
+    if (!(await userHasPermission(user.userId, organizationId, isLeadership))) {
+      throw new AccessDeniedException('You do not have permissions to upload and parse rulesets');
+    }
+
+    // Verify ruleset exists and belongs to organization
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      include: {
+        car: {
+          include: {
+            wbsElement: true
+          }
+        }
+      }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+    if (ruleset.deletedByUserId) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+    if (ruleset.car.wbsElement.organizationId !== organizationId) {
+      throw new AccessDeniedException('Cannot parse rules into a ruleset from another organization');
+    }
+
+    // get file from Google Drive
+    const { buffer, type } = await downloadFile(fileId);
+
+    // ensure the file is a PDF
+    if (type !== 'application/pdf') {
+      throw new HttpException(400, 'Ruleset File must be a PDF');
+    }
+
+    const parsedRules = await parseRulesFromPdf(buffer, parserType);
+
+    if (parsedRules.length === 0) {
+      throw new HttpException(400, 'No rules found in provided file');
+    }
+
+    return parsedRules.map(ruleTransformer);
   }
 }

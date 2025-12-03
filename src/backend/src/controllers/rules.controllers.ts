@@ -125,4 +125,22 @@ export default class RulesController {
       next(error);
     }
   }
+
+  static async parseRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { fileId, rulesetId, parserType } = req.body;
+
+      const parseResult = await RulesService.parseRuleset(
+        req.currentUser,
+        req.organization.organizationId,
+        fileId,
+        rulesetId,
+        parserType
+      );
+
+      res.status(200).json(parseResult);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
