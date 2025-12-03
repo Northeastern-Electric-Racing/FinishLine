@@ -15,7 +15,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import EventSummaryModal from '../CalendarPage/EventSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { NERButton } from '../../components/NERButton';
 import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -66,7 +65,7 @@ const NewCalendarPage = () => {
     } else {
       setAdditionalTeamIds([]);
     }
-  }, [showTeamEvents]);
+  }, [allTeams, showTeamEvents]);
 
   useEffect(() => {
     if (showInvitedEvents) {
@@ -74,7 +73,7 @@ const NewCalendarPage = () => {
     } else {
       setAdditionalMemberIds([]);
     }
-  }, [showInvitedEvents]);
+  }, [user.userId, showInvitedEvents]);
 
   if (isLoading || !allEvents) return <LoadingIndicator />;
 
