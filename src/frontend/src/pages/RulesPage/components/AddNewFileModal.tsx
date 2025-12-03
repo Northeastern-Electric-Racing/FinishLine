@@ -92,8 +92,6 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfi
     }
   });
 
-  const isActive = watch('isActive');
-
   // For file inputs
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const handleAddFileClick = () => {
