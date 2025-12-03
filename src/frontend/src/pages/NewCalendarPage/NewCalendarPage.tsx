@@ -3,15 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useEffect, useState } from 'react';
-import { ArrowDropDown } from '@mui/icons-material';
-
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DayOfWeek, Event } from 'shared';
-import MonthSelector from '../CalendarPage/CalendarComponents/MonthSelector';
 import CalendarDayCard from '../CalendarPage/CalendarComponents/CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useAllCalendars, useAllEvents, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
+import { useAllCalendars, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -21,8 +18,8 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { NERButton } from '../../components/NERButton';
 import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
-import { useCurrentUser, useGetCurrentUser } from '../../hooks/users.hooks';
-import { useAllArchivedTeams, useAllTeams, useGetUsersTeams } from '../../hooks/teams.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { useGetUsersTeams } from '../../hooks/teams.hooks';
 
 const NewCalendarPage = () => {
   const theme = useTheme();

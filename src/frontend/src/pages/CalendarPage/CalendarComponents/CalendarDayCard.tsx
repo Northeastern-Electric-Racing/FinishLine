@@ -1,14 +1,11 @@
 import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import { Calendar, DayOfWeek, Event, EventStatus, EventType, TeamType } from 'shared';
-import { datePipe, meetingStartTimePipeScheduleSlot } from '../../../utils/pipes';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import { useState } from 'react';
 import DRCSummaryModal from '../EventSummaryModal';
-import DynamicTooltip from '../../../components/DynamicTooltip';
-import { eventStatusColor } from '../../../utils/design-review.utils';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupIcon from '@mui/icons-material/Group';
@@ -29,6 +26,16 @@ export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
     ['Mechanical', <ConstructionIcon fontSize={isLarge ? 'large' : 'small'} />]
   ]);
   return teamIcons.get(teamTypeName);
+};
+
+export const getStatusIcon = (status: string, isLarge?: boolean) => {
+  const statusIcons: Map<string, JSX.Element> = new Map([
+    ['UNCONFIRMED', <HelpIcon fontSize={isLarge ? 'large' : 'small'} />],
+    ['CONFIRMED', <CheckCircleIcon fontSize={isLarge ? 'large' : 'small'} />],
+    ['SCHEDULED', <HelpIcon fontSize={isLarge ? 'large' : 'small'} />],
+    ['DONE', <CheckCircleIcon fontSize={isLarge ? 'large' : 'small'} />]
+  ]);
+  return statusIcons.get(status);
 };
 
 interface CalendarDayCardProps {
@@ -287,7 +294,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           )}
           {event.status && (
             <Stack direction="row">
-              {<HelpIcon />}
+              {getStatusIcon(event.status)}
               <Typography
                 marginX={0.5}
                 marginY={0.5}
@@ -362,6 +369,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
       </Stack>
     );
   };
+
   const EventCard = ({ event }: { event: Event }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const [markedStatus, setMarkedStatus] = useState(event.status);
@@ -450,24 +458,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     );
   };
 
-  const ExtraEventNote = ({ event }: { event: Event }) => {
-    const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
-    const [markedStatus, setMarkedStatus] = useState(event.status);
-
-    return (
-      <>
-        <DRCSummaryModal
-          open={isSummaryModalOpen}
-          onHide={() => setIsSummaryModalOpen(false)}
-          event={event}
-          teamTypes={teamTypes}
-          markedStatus={markedStatus}
-          setMarkedStatus={setMarkedStatus}
-        />
-        <EventCard event={event} />
-      </>
-    );
-  };
   const ExtraEventsCard = ({ extraEvents }: { extraEvents: Event[] }) => {
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [markedStatus, setMarkedStatus] = useState<EventStatus | undefined>(undefined);
