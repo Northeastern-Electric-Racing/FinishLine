@@ -3,6 +3,8 @@ import Checkbox from '@mui/material/Checkbox';
 import { useForm, Controller } from 'react-hook-form';
 import { Box, TextField, Typography } from '@mui/material';
 import { useState, useRef } from 'react';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 interface AddNewFileModalProps {
   open: boolean;
@@ -29,6 +31,16 @@ const sectionHeaderStyle = {
   textDecoration: 'underline',
   fontSize: '1rem'
 };
+
+const schema = yup.object({
+  file: yup
+    .mixed<File>()
+    .required('File is required')
+    .test('is-pdf', 'File must be a PDF', (file) => (file ? file.type === 'application/pdf' : false)),
+  name: yup.string().required('Name is required'),
+  car: yup.string().required('Car is required'),
+  isActive: yup.boolean().required()
+});
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({ options, onChange }) => {
   const [selected, setSelected] = useState('');
@@ -71,6 +83,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfi
     setValue,
     control
   } = useForm<NewFileFormData>({
+    resolver: yupResolver(schema),
     defaultValues: {
       file: undefined,
       name: '',
@@ -78,6 +91,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfi
       isActive: false
     }
   });
+
   const isActive = watch('isActive');
 
   // For file inputs
@@ -119,7 +133,6 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfi
             <Controller
               name="file"
               control={control}
-              rules={{ required: 'File is required' }}
               render={({ field: { onChange, ...field } }) => (
                 <input
                   type="file"
@@ -152,7 +165,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfi
               options={carOptions}
               onChange={(value) => setValue('car', value, { shouldValidate: true })}
             ></ButtonGroup>
-            <input type="hidden" {...register('car', { required: 'Car is required' })} />
+            <input type="hidden" {...register('car')} />
             {errors.car && (
               <Typography color="error" sx={{ fontSize: 12, mt: 0.5 }}>
                 {errors.car.message as string}
@@ -163,7 +176,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfi
             <Typography variant="h6" sx={{ ...sectionHeaderStyle, lineHeight: '27.5px' }}>
               Active:
             </Typography>
-            <Checkbox {...register('isActive')} checked={isActive} sx={{ mt: '-5.5px' }} />
+            <Checkbox {...register('isActive')} sx={{ mt: '-5.5px' }} />
           </Box>
         </Box>
       </Box>
@@ -175,7 +188,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfi
           inputProps={{ style: { fontSize: 13 } }}
           autoComplete="off"
           placeholder={'Name File'}
-          {...register('name', { required: 'Name is required' })}
+          {...register('name')}
         />
         {errors.name && (
           <Typography color="error" sx={{ fontSize: 12, mt: 0.5 }}>
