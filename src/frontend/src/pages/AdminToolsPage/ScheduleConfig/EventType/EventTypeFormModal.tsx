@@ -5,7 +5,6 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useMemo } from 'react';
 import { EventType } from 'shared';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../../utils/form';
@@ -81,31 +80,28 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
   const toast = useToast();
   const { data: calendars } = useAllCalendars();
 
-  const defaultValues: EventTypeFormValues = useMemo(
-    () => ({
-      name: '',
-      calendarIds: [],
-      initialDateScheduled: true,
-      allDay: false,
-      recurring: false,
-      requiredMembers: false,
-      optionalMembers: true,
-      teams: false,
-      teamType: false,
-      location: true,
-      zoomLink: true,
-      shop: false,
-      machinery: false,
-      workPackage: false,
-      questionDocument: false,
-      documents: false,
-      description: true,
-      onlyHeadsOrAbove: false,
-      requiresConfirmation: false,
-      sendSlackNotifications: false
-    }),
-    []
-  );
+  const defaultValues: EventTypeFormValues = {
+    name: '',
+    calendarIds: [],
+    initialDateScheduled: true,
+    allDay: false,
+    recurring: false,
+    requiredMembers: false,
+    optionalMembers: true,
+    teams: false,
+    teamType: false,
+    location: true,
+    zoomLink: true,
+    shop: false,
+    machinery: false,
+    workPackage: false,
+    questionDocument: false,
+    documents: false,
+    description: true,
+    onlyHeadsOrAbove: false,
+    requiresConfirmation: false,
+    sendSlackNotifications: false
+  };
 
   const {
     handleSubmit,
@@ -125,12 +121,6 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
     watch,
     setValue
   });
-
-  useEffect(() => {
-    if (initialValues) {
-      reset(initialValues);
-    }
-  }, [initialValues, reset]);
 
   const onFormSubmit = async (data: EventTypeFormValues) => {
     try {

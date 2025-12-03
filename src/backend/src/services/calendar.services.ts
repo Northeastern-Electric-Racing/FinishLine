@@ -1842,7 +1842,7 @@ export default class CalendarService {
       data: {
         name,
         calendars: {
-          connect: calendarIds.map((calendarId) => ({ calendarId }))
+          set: calendarIds.map((calendarId) => ({ calendarId }))
         },
         requiredMembers,
         optionalMembers,

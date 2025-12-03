@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Shop, Machinery, EventType, Calendar, Event } from 'shared';
+import { Shop, Machinery, EventType, Calendar, Event, EventTypeCreateArgs } from 'shared';
 import {
   getAllShops,
   postCreateShop,
@@ -193,32 +193,7 @@ export const useAllEventTypes = () =>
 
 export const useCreateEventType = () => {
   const qc = useQueryClient();
-  return useMutation<
-    EventType,
-    Error,
-    {
-      name: string;
-      calendarIds: string[];
-      initialDateScheduled: boolean;
-      allDay: boolean;
-      recurring: boolean;
-      requiredMembers: boolean;
-      optionalMembers: boolean;
-      teams: boolean;
-      teamType: boolean;
-      location: boolean;
-      zoomLink: boolean;
-      shop: boolean;
-      machinery: boolean;
-      workPackage: boolean;
-      questionDocument: boolean;
-      documents: boolean;
-      description: boolean;
-      onlyHeadsOrAbove: boolean;
-      requiresConfirmation: boolean;
-      sendSlackNotifications: boolean;
-    }
-  >(
+  return useMutation<EventType, Error, EventTypeCreateArgs>(
     async (payload) => {
       const { data } = await postCreateEventType(payload);
       return data;
@@ -233,32 +208,7 @@ export const useCreateEventType = () => {
 
 export const useEditEventType = (eventTypeId: string) => {
   const qc = useQueryClient();
-  return useMutation<
-    EventType,
-    Error,
-    {
-      name: string;
-      calendarIds: string[];
-      initialDateScheduled: boolean;
-      allDay: boolean;
-      recurring: boolean;
-      requiredMembers: boolean;
-      optionalMembers: boolean;
-      teams: boolean;
-      teamType: boolean;
-      location: boolean;
-      zoomLink: boolean;
-      shop: boolean;
-      machinery: boolean;
-      workPackage: boolean;
-      questionDocument: boolean;
-      documents: boolean;
-      description: boolean;
-      onlyHeadsOrAbove: boolean;
-      requiresConfirmation: boolean;
-      sendSlackNotifications: boolean;
-    }
-  >(
+  return useMutation<EventType, Error, EventTypeCreateArgs>(
     async (payload) => {
       const { data } = await postEditEventType(eventTypeId, payload);
       return data;

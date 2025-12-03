@@ -1,6 +1,15 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop, Machinery, EventType, AvailabilityCreateArgs, Event, EventStatus, Calendar } from 'shared';
+import {
+  Shop,
+  Machinery,
+  EventType,
+  AvailabilityCreateArgs,
+  Event,
+  EventStatus,
+  Calendar,
+  EventTypeCreateArgs
+} from 'shared';
 import { eventTransformer } from './transformers/calendar.transformer';
 
 export const getAllCalendars = () => {
@@ -109,58 +118,13 @@ export const getSingleEvent = async (id: string) => {
   });
 };
 
-export const postCreateEventType = (payload: {
-  name: string;
-  calendarIds: string[];
-  initialDateScheduled: boolean;
-  allDay: boolean;
-  recurring: boolean;
-  requiredMembers: boolean;
-  optionalMembers: boolean;
-  teams: boolean;
-  teamType: boolean;
-  location: boolean;
-  zoomLink: boolean;
-  shop: boolean;
-  machinery: boolean;
-  workPackage: boolean;
-  questionDocument: boolean;
-  documents: boolean;
-  description: boolean;
-  onlyHeadsOrAbove: boolean;
-  requiresConfirmation: boolean;
-  sendSlackNotifications: boolean;
-}) => {
+export const postCreateEventType = (payload: EventTypeCreateArgs) => {
   return axios.post<EventType>(apiUrls.calendarCreateEventType(), payload, {
     transformResponse: (data) => JSON.parse(data) as EventType
   });
 };
 
-export const postEditEventType = (
-  eventTypeId: string,
-  payload: {
-    name: string;
-    calendarIds: string[];
-    initialDateScheduled: boolean;
-    allDay: boolean;
-    recurring: boolean;
-    requiredMembers: boolean;
-    optionalMembers: boolean;
-    teams: boolean;
-    teamType: boolean;
-    location: boolean;
-    zoomLink: boolean;
-    shop: boolean;
-    machinery: boolean;
-    workPackage: boolean;
-    questionDocument: boolean;
-    documents: boolean;
-    description: boolean;
-    onlyHeadsOrAbove: boolean;
-    requiresConfirmation: boolean;
-    sendSlackNotifications: boolean;
-  }
-) => {
+export const postEditEventType = (eventTypeId: string, payload: EventTypeCreateArgs) => {
   return axios.post<EventType>(apiUrls.calendarEditEventType(eventTypeId), payload, {
     transformResponse: (data) => JSON.parse(data) as EventType
   });

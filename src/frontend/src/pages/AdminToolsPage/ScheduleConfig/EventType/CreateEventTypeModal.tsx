@@ -1,7 +1,7 @@
 import ErrorPage from '../../../ErrorPage';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { useCreateEventType, EVENT_TYPE_KEY } from '../../../../hooks/calendar.hooks';
-import { useQueryClient } from 'react-query';
+import { useCreateEventType } from '../../../../hooks/calendar.hooks';
+import { useToast } from '../../../../hooks/toasts.hooks';
 import EventTypeFormModal, { EventTypeFormValues } from './EventTypeFormModal';
 
 interface CreateEventTypeModalProps {
@@ -11,16 +11,24 @@ interface CreateEventTypeModalProps {
 
 const CreateEventTypeModal = ({ open, onClose }: CreateEventTypeModalProps) => {
   const { isLoading, isError, error, mutateAsync: createEventType } = useCreateEventType();
-  const queryClient = useQueryClient();
+  const toast = useToast();
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
   const onSubmit = async (data: EventTypeFormValues) => {
-    const result = await createEventType(data);
-    await queryClient.invalidateQueries(EVENT_TYPE_KEY);
-    await queryClient.refetchQueries(EVENT_TYPE_KEY);
-    return result;
+    try {
+      const result = await createEventType(data);
+      toast.success('Event type created successfully');
+      return result;
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('An error occurred while creating the event type');
+      }
+      throw error;
+    }
   };
 
   return <EventTypeFormModal open={open} onClose={onClose} onSubmit={onSubmit} />;

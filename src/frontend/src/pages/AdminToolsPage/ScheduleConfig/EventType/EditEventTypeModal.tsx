@@ -1,7 +1,7 @@
 import ErrorPage from '../../../ErrorPage';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { useEditEventType, EVENT_TYPE_KEY } from '../../../../hooks/calendar.hooks';
-import { useQueryClient } from 'react-query';
+import { useEditEventType } from '../../../../hooks/calendar.hooks';
+import { useToast } from '../../../../hooks/toasts.hooks';
 import { EventType } from 'shared';
 import EventTypeFormModal, { EventTypeFormValues } from './EventTypeFormModal';
 
@@ -12,14 +12,13 @@ interface EditEventTypeModalProps {
 }
 
 const EditEventTypeModal = ({ open, onClose, eventType }: EditEventTypeModalProps) => {
-  const queryClient = useQueryClient();
-
   const {
     isLoading: isEditing,
     isError: isEditError,
     error: editError,
     mutateAsync: editEventType
   } = useEditEventType(eventType.eventTypeId);
+  const toast = useToast();
 
   const isLoading = isEditing;
   const isError = isEditError;
@@ -52,10 +51,18 @@ const EditEventTypeModal = ({ open, onClose, eventType }: EditEventTypeModalProp
   if (isLoading) return <LoadingIndicator />;
 
   const onSubmit = async (data: EventTypeFormValues) => {
-    const result = await editEventType(data);
-    await queryClient.invalidateQueries(EVENT_TYPE_KEY);
-    await queryClient.refetchQueries(EVENT_TYPE_KEY);
-    return result;
+    try {
+      const result = await editEventType(data);
+      toast.success('Event type updated successfully');
+      return result;
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('An error occurred while updating the event type');
+      }
+      throw error;
+    }
   };
 
   return <EventTypeFormModal open={open} onClose={onClose} onSubmit={onSubmit} initialValues={eventTypeData} />;
