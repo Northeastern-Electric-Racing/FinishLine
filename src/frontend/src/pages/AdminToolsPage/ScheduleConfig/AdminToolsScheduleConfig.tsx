@@ -11,6 +11,7 @@ import {
   useAllMachines,
   useDeleteMachinery,
   useDeleteShop,
+  useDeleteCalendar,
   useAllCalendars,
   useCreateCalendar,
   useEditCalendar
@@ -39,6 +40,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
   } | null>(null);
   const { mutateAsync: deleteMachinery } = useDeleteMachinery();
   const { mutateAsync: deleteShop } = useDeleteShop();
+  const { mutateAsync: deleteCalendar } = useDeleteCalendar();
   const toast = useToast();
 
   const handleDeleteMachinery = async () => {
@@ -71,12 +73,28 @@ const AdminToolsScheduleConfig: React.FC = () => {
     }
   };
 
+  const handleCalendarDelete = async () => {
+    if (!calendarToDelete) return;
+    setCalendarToDelete(undefined);
+    try {
+      await deleteCalendar(calendarToDelete.calendarId);
+      toast.success('Calendar deleted successfully');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      } else {
+        toast.error('Failed to delete calendar', 3000);
+      }
+    }
+  };
+
   const [openCreate, setOpenCreate] = useState(false);
   const [openCreateMachinery, setOpenCreateMachinery] = useState(false);
   const [editMachinery, setEditMachinery] = useState<{ machineryId: string; shopId: string }>();
   const [openEdit, setOpenEdit] = useState(false);
-  const [editingShop, setEditingShop] = useState<Shop>();
-  const [shopToDelete, setShopToDelete] = useState<Shop>();
+  const [editingShop, setEditingShop] = useState<any>(null);
+  const [shopToDelete, setShopToDelete] = useState<Shop | undefined>(undefined);
+  const [calendarToDelete, setCalendarToDelete] = useState<Calendar | undefined>(undefined);
 
   const {
     data: calendars,
@@ -177,7 +195,12 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
                           <Tooltip title="Delete" arrow>
                             <span>
-                              <IconButton size="small" color="error" disabled aria-label="delete calendar">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                aria-label="delete calendar"
+                                onClick={() => setCalendarToDelete(calendar)}
+                              >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
                             </span>
@@ -369,6 +392,15 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Delete Calendars Modal */}
+      <NERDeleteModal
+        open={!!calendarToDelete}
+        onHide={() => setCalendarToDelete(undefined)}
+        formId="delete-calendar-form"
+        dataType={calendarToDelete?.name || ''}
+        onFormSubmit={handleCalendarDelete}
+      />
 
       {/* Add Shop Modal */}
       <ShopModal
