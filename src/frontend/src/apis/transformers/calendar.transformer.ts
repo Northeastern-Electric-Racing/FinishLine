@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { Event, Shop } from 'shared';
-=======
 import { Shop, Event, EventPreview } from 'shared';
->>>>>>> feature/calendar-improvements
 import { userTransformer } from './users.transformers';
 
 export const shopTransformer = (shop: Shop): Shop => {
@@ -13,9 +9,8 @@ export const shopTransformer = (shop: Shop): Shop => {
   };
 };
 
-<<<<<<< HEAD
-export const filterEventsTransformer = (events: Event[]): any => {
-  return events.map((event) => ({
+export const filterEventTransformer = (event: Event): Event => {
+  return {
     ...event,
     dateCreated: new Date(event.dateCreated),
     scheduledTimes: event.scheduledTimes.map((schedule) => ({
@@ -23,8 +18,9 @@ export const filterEventsTransformer = (events: Event[]): any => {
       startTime: schedule.startTime ? new Date(schedule.startTime) : undefined,
       endTime: schedule.endTime ? new Date(schedule.endTime) : undefined
     }))
-  }));
-=======
+  };
+}
+  
 export const eventTransformer = (event: Event): Event => {
   return {
     ...event
@@ -40,5 +36,4 @@ export const eventPreviewTransformer = (event: EventPreview): EventPreview => {
     userCreated: userTransformer(event.userCreated),
     wbsName: event.wbsName
   };
->>>>>>> feature/calendar-improvements
 };

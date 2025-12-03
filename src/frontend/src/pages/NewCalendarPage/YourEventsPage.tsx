@@ -8,7 +8,7 @@ import TableCellHuge from './YourEventsComponents/TableCellHuge';
 import { useFilterEvents } from '../../hooks/calendar.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useEffect, useState } from 'react';
-import { FilterArgs, ScheduleSlot } from 'shared';
+import { ScheduleSlot } from 'shared';
 import { Event } from 'shared';
 
 interface YourEventsHeadCells {
@@ -67,7 +67,7 @@ const YourEventsPage = () => {
     endPeriod: new Date(2099, 11, 31) // Adjust as needed
   });
 
-  const eventsReady = () => !eventsLoading && !eventsFetching;
+  const loading = () => eventsLoading || eventsFetching;
   
   const [, setUpdate] = useState(true); // Linting...
 
@@ -101,7 +101,7 @@ const YourEventsPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {eventsReady() ? (
+            {loading() ? (
               <TableRow>
                 <TableCell colSpan={headCells.length} align="center">
                   Loading...

@@ -1,12 +1,8 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-<<<<<<< HEAD
-import { filterEventsTransformer } from './transformers/calendar.transformer';
-import { Shop, Machinery, Calendar, FilterArgs, Event } from 'shared';
-=======
-import { Shop, Machinery, AvailabilityCreateArgs, Event, EventStatus, Calendar } from 'shared';
+import { filterEventTransformer } from './transformers/calendar.transformer';
+import { Shop, Machinery, AvailabilityCreateArgs, Event, EventStatus, Calendar, FilterArgs } from 'shared';
 import { eventTransformer } from './transformers/calendar.transformer';
->>>>>>> feature/calendar-improvements
 
 export const getAllCalendars = () => {
   return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
@@ -43,7 +39,7 @@ export const postCreateShop = (payload: { name: string; description: string }) =
 
 export const postFilterEvents = (payload: FilterArgs) => {
   return axios.post<any>(apiUrls.calendarFilterEvents(), payload, {
-    transformResponse: (data) => filterEventsTransformer(JSON.parse(data) as Event[])
+    transformResponse: (data) => JSON.parse(data).map(filterEventTransformer)
   });
 };
 
