@@ -512,6 +512,8 @@ describe('Create Rules Tests', () => {
       await expect(async () => await RulesService.getChildRules(otherParentRule.ruleId, organization)).rejects.toThrow(
         new InvalidOrganizationException('Rule')
       );
+    });
+  });
   describe('Update ruleset status', () => {
     it('update ruleset status - successful', async () => {
       const ruleset1 = await RulesService.updateRuleset(batman, orgId, rulesetId, 'name1', false);
