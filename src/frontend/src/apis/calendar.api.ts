@@ -1,6 +1,7 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop, Machinery, EventType, Calendar } from 'shared';
+import { Shop, Machinery, EventType, AvailabilityCreateArgs, Event, EventStatus, Calendar } from 'shared';
+import { eventTransformer } from './transformers/calendar.transformer';
 
 export const getAllCalendars = () => {
   return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
@@ -106,12 +107,14 @@ export const getAllEventTypes = () => {
 
 export const postCreateEventType = (payload: {
   name: string;
+  calendarIds: string[];
   initialDateScheduled: boolean;
   allDay: boolean;
   recurring: boolean;
   requiredMembers: boolean;
   optionalMembers: boolean;
   teams: boolean;
+  teamType: boolean;
   location: boolean;
   zoomLink: boolean;
   shop: boolean;
@@ -122,6 +125,7 @@ export const postCreateEventType = (payload: {
   description: boolean;
   onlyHeadsOrAbove: boolean;
   requiresConfirmation: boolean;
+  sendSlackNotifications: boolean;
 }) => {
   return axios.post<EventType>(apiUrls.calendarCreateEventType(), payload, {
     transformResponse: (data) => JSON.parse(data) as EventType
@@ -132,12 +136,14 @@ export const postEditEventType = (
   eventTypeId: string,
   payload: {
     name: string;
+    calendarIds: string[];
     initialDateScheduled: boolean;
     allDay: boolean;
     recurring: boolean;
     requiredMembers: boolean;
     optionalMembers: boolean;
     teams: boolean;
+    teamType: boolean;
     location: boolean;
     zoomLink: boolean;
     shop: boolean;
@@ -148,9 +154,36 @@ export const postEditEventType = (
     description: boolean;
     onlyHeadsOrAbove: boolean;
     requiresConfirmation: boolean;
+    sendSlackNotifications: boolean;
   }
 ) => {
   return axios.post<EventType>(apiUrls.calendarEditEventType(eventTypeId), payload, {
     transformResponse: (data) => JSON.parse(data) as EventType
+  });
+};
+
+export const markUserConfirmed = async (id: string, payload: { availability: AvailabilityCreateArgs[] }) => {
+  return axios.post<Event>(apiUrls.calendarEventMarkUserConfirmed(id), payload);
+};
+
+export const getSingleEvent = async (id: string) => {
+  return axios.get(apiUrls.calendarGetSingleEvent(id), {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
+};
+
+export const getAllEvents = () => {
+  return axios.get(apiUrls.calendarEvents(), {
+    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
+  });
+};
+
+export const deleteEvent = async (id: string) => {
+  return axios.delete(apiUrls.calendarDeleteEvent(id));
+};
+
+export const setEventStatus = async (id: string, payload: { status: EventStatus }) => {
+  return axios.post<Event>(apiUrls.calendarEventSetStatus(id), payload, {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
   });
 };

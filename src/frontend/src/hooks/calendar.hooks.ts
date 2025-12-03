@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Shop, Machinery, EventType, Calendar } from 'shared';
+import { Shop, Machinery, EventType, Calendar, AvailabilityCreateArgs, Event, EventStatus } from 'shared';
 import {
   getAllShops,
   postCreateShop,
@@ -15,8 +15,14 @@ import {
   postEditEventType,
   getAllCalendars,
   postCreateCalendar,
-  postEditCalendar
+  postEditCalendar,
+  markUserConfirmed,
+  getSingleEvent,
+  getAllEvents,
+  deleteEvent,
+  setEventStatus
 } from '../apis/calendar.api';
+import { useCurrentUser } from './users.hooks';
 
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;
@@ -197,6 +203,7 @@ export const useCreateEventType = () => {
       requiredMembers: boolean;
       optionalMembers: boolean;
       teams: boolean;
+      teamType: boolean;
       location: boolean;
       zoomLink: boolean;
       shop: boolean;
@@ -207,6 +214,7 @@ export const useCreateEventType = () => {
       description: boolean;
       onlyHeadsOrAbove: boolean;
       requiresConfirmation: boolean;
+      sendSlackNotifications: boolean;
     }
   >(
     async (payload) => {
@@ -235,6 +243,7 @@ export const useEditEventType = (eventTypeId: string) => {
       requiredMembers: boolean;
       optionalMembers: boolean;
       teams: boolean;
+      teamType: boolean;
       location: boolean;
       zoomLink: boolean;
       shop: boolean;
@@ -245,6 +254,7 @@ export const useEditEventType = (eventTypeId: string) => {
       description: boolean;
       onlyHeadsOrAbove: boolean;
       requiresConfirmation: boolean;
+      sendSlackNotifications: boolean;
     }
   >(
     async (payload) => {
@@ -254,6 +264,74 @@ export const useEditEventType = (eventTypeId: string) => {
     {
       onSuccess: () => {
         qc.invalidateQueries(EVENT_TYPE_KEY);
+      }
+    }
+  );
+};
+
+export const useMarkUserConfirmed = (id: string) => {
+  const user = useCurrentUser();
+  const queryClient = useQueryClient();
+  return useMutation<Event, Error, { availability: AvailabilityCreateArgs[] }>(
+    ['events', 'mark-confirmed'],
+    async (eventPayload: { availability: AvailabilityCreateArgs[] }) => {
+      const { data } = await markUserConfirmed(id, eventPayload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['events']);
+        queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+      }
+    }
+  );
+};
+
+export const useSingleEvent = (id?: string) => {
+  return useQuery<Event, Error>(
+    ['events', id],
+    async () => {
+      const { data } = await getSingleEvent(id!);
+      return data;
+    },
+    { enabled: !!id }
+  );
+};
+
+export const useAllEvents = () => {
+  return useQuery<Event[], Error>(['events'], async () => {
+    const { data } = await getAllEvents();
+    return data;
+  });
+};
+
+export const useDeleteEvent = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Event, Error>(
+    ['events', 'delete'],
+    async () => {
+      const { data } = await deleteEvent(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['events']);
+      }
+    }
+  );
+};
+
+export const useSetEventStatus = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Event, Error, { status: EventStatus }>(
+    ['events', id],
+    async (payload: { status: EventStatus }) => {
+      const { data } = await setEventStatus(id, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['events', id]);
       }
     }
   );

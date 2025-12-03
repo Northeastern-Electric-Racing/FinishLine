@@ -1,5 +1,16 @@
-import { Prisma } from '@prisma/client';
-import { Machinery, Shop, ShopMachinery, EventType, Calendar, Event, ScheduleSlot, DayOfWeek, EventStatus } from 'shared';
+import { Prisma, DayOfWeek as PrismaDayOfWeek, Event_Status as PrismaEventStatus } from '@prisma/client';
+import {
+  Machinery,
+  Shop,
+  ShopMachinery,
+  EventType,
+  Calendar,
+  Event,
+  ScheduleSlot,
+  EventStatus,
+  EventPreview,
+  DayOfWeek
+} from 'shared';
 import { MachineryQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
@@ -23,8 +34,7 @@ export const shopMachineryTransformer = (
   return {
     shopMachineryId: shopMachinery.shopMachineryId,
     shop: shopTransformer(shopMachinery.shop),
-    quantity: shopMachinery.quantity,
-    description: shopMachinery.description ?? undefined
+    quantity: shopMachinery.quantity
   };
 };
 
@@ -45,12 +55,13 @@ export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<Even
     userCreated: userTransformer(eventType.userCreated),
     dateCreated: eventType.dateCreated,
     calendarIds: eventType.calendars?.map((c) => c.calendarId) || [],
-    initialDateScheduled: eventType.initialDateScheduled,
-    allDay: eventType.allDay,
-    recurring: eventType.recurring,
+    initialDateScheduled: (eventType as any).initialDateScheduled ?? false,
+    allDay: (eventType as any).allDay ?? false,
+    recurring: (eventType as any).recurring ?? false,
     requiredMembers: eventType.requiredMembers,
     optionalMembers: eventType.optionalMembers,
     teams: eventType.teams,
+    teamType: eventType.teamType,
     location: eventType.location,
     zoomLink: eventType.zoomLink,
     shop: eventType.shop,
@@ -59,7 +70,9 @@ export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<Even
     questionDocument: eventType.questionDocument,
     documents: eventType.documents,
     description: eventType.description,
-    onlyHeadsOrAboveForEventCreation: eventType.onlyHeadsOrAboveForEventCreation
+    onlyHeadsOrAboveForEventCreation: eventType.onlyHeadsOrAboveForEventCreation,
+    requiresConfirmation: eventType.requiresConfirmation,
+    sendSlackNotifications: eventType.sendSlackNotifications
   };
 };
 
@@ -78,7 +91,7 @@ export const calendarTransformer = (calendar: Prisma.CalendarGetPayload<Calendar
 export const scheduleTimesTransformer = (scheduleTimes: Prisma.Schedule_SlotGetPayload<null>): ScheduleSlot => {
   return {
     scheduleSlotId: scheduleTimes.scheduleSlotId,
-    days: scheduleTimes.days.map((d) => d as DayOfWeek),
+    days: scheduleTimes.days.map(dayOfWeekTransformer),
     startTime: scheduleTimes.startTime ?? undefined,
     endTime: scheduleTimes.endTime ?? undefined,
     recurrenceNumber: scheduleTimes.recurrenceNumber,
@@ -100,6 +113,7 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     confirmedMembers: event.confirmedMembers.map(userWithScheduleSettingsTransformer),
     deniedMembers: event.deniedMembers.map(userTransformer),
     teams: event.teams,
+    teamType: event.teamType ?? undefined,
     shops: event.shops,
     machinery: event.machinery,
     workPackages: event.workPackages,
@@ -111,6 +125,43 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     zoomLink: event.zoomLink ?? undefined,
     questionDocument: event.questionDocument ?? undefined,
     description: event.description ?? undefined,
-    status: event.status as EventStatus
+    status: eventStatusTransformer(event.status)
   };
+};
+
+export const eventPreviewTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>, wbsName: string): EventPreview => {
+  // Get the earliest scheduled date from scheduledTimes
+  const dateScheduled = event.scheduledTimes.length > 0 ? event.scheduledTimes[0].initialDateScheduled : new Date();
+
+  return {
+    eventId: event.eventId,
+    title: event.title,
+    dateScheduled,
+    status: event.status as EventStatus,
+    userCreated: userTransformer(event.userCreated),
+    wbsName
+  };
+};
+
+export const dayOfWeekTransformer = (day: PrismaDayOfWeek): DayOfWeek => {
+  const mapping: Record<PrismaDayOfWeek, DayOfWeek> = {
+    MONDAY: DayOfWeek.MONDAY,
+    TUESDAY: DayOfWeek.TUESDAY,
+    WEDNESDAY: DayOfWeek.WEDNESDAY,
+    THURSDAY: DayOfWeek.THURSDAY,
+    FRIDAY: DayOfWeek.FRIDAY,
+    SATURDAY: DayOfWeek.SATURDAY,
+    SUNDAY: DayOfWeek.SUNDAY
+  };
+  return mapping[day];
+};
+
+export const eventStatusTransformer = (status: PrismaEventStatus): EventStatus => {
+  const mapping: Record<PrismaEventStatus, EventStatus> = {
+    UNCONFIRMED: EventStatus.UNCONFIRMED,
+    CONFIRMED: EventStatus.CONFIRMED,
+    SCHEDULED: EventStatus.SCHEDULED,
+    DONE: EventStatus.DONE
+  };
+  return mapping[status];
 };
