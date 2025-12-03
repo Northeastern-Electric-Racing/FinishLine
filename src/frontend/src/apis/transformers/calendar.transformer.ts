@@ -19,8 +19,8 @@ export const filterEventTransformer = (event: Event): Event => {
       endTime: schedule.endTime ? new Date(schedule.endTime) : undefined
     }))
   };
-}
-  
+};
+
 export const eventTransformer = (event: Event): Event => {
   return {
     ...event

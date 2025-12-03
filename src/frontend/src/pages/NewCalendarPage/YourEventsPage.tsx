@@ -60,15 +60,19 @@ const getEarliestSchedule = (event: Event) => {
 
 const YourEventsPage = () => {
   const user = useCurrentUser();
-  
-  const { data: events, isLoading: eventsLoading, isFetching: eventsFetching } = useFilterEvents({
+
+  const {
+    data: events,
+    isLoading: eventsLoading,
+    isFetching: eventsFetching
+  } = useFilterEvents({
     memberIds: [user.userId],
     startPeriod: new Date(0),
     endPeriod: new Date(2099, 11, 31) // Adjust as needed
   });
 
   const loading = () => eventsLoading || eventsFetching;
-  
+
   const [, setUpdate] = useState(true); // Linting...
 
   useEffect(() => {

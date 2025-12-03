@@ -274,6 +274,6 @@ export const useFilterEvents = (filterArgs: FilterArgs) => {
       const { data } = await postFilterEvents(filterArgs);
       return data;
     },
-    staleTime: 1000 * 60,
+    staleTime: 1000 * 60
   });
 };
