@@ -5,6 +5,8 @@ import { body } from 'express-validator';
 
 const rulesRouter = express.Router();
 
+rulesRouter.get('/rulesetType/:rulesetTypeId/active', RulesController.getActiveRuleset);
+
 rulesRouter.post(
   '/rule/create',
   nonEmptyString(body('ruleCode')),
@@ -66,6 +68,10 @@ rulesRouter.post(
   RulesController.createRuleset
 );
 rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
+
+rulesRouter.get('/ruleset/:rulesetId/team/:teamId/rules/unassigned', RulesController.getUnassignedRulesForRuleset);
+
+rulesRouter.get('/ruleset/:rulesetId/project/:projectId/rules', RulesController.getProjectRules);
 
 rulesRouter.get('/:ruleId/subrules', RulesController.getChildRules);
 

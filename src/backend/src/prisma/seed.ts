@@ -3082,9 +3082,17 @@ const performSeed: () => Promise<void> = async () => {
     data: ruleSeedData.rulesetType1(batman.userId, ner.organizationId)
   });
 
+  const emptyRulesetType = await prisma.ruleset_Type.create({
+    data: ruleSeedData.emptyRulesetType(batman.userId, ner.organizationId)
+  });
+
   // rulesets
   const ruleset1 = await prisma.ruleset.create({
     data: ruleSeedData.ruleset1(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
+  });
+
+  const secondActiveRuleset = await prisma.ruleset.create({
+    data: ruleSeedData.secondActiveRuleset(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
   });
 
   // rules
