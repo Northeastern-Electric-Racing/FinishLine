@@ -58,6 +58,13 @@ rulesRouter.post(
 );
 
 rulesRouter.post(
+  '/rule/:ruleId/toggle-team',
+  nonEmptyString(body('teamId')),
+  validateInputs,
+  RulesController.toggleRuleTeam
+);
+
+rulesRouter.post(
   '/ruleset/create',
   nonEmptyString(body('name')),
   nonEmptyString(body('rulesetTypeId')),

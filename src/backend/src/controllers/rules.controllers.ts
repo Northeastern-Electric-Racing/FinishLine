@@ -146,6 +146,19 @@ export default class RulesController {
     }
   }
 
+  static async toggleRuleTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ruleId } = req.params;
+      const { teamId } = req.body;
+
+      const changedRule = await RulesService.toggleRuleTeam(ruleId, teamId, req.currentUser, req.organization);
+
+      res.status(200).json(changedRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createRuleset(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, rulesetTypeId, carNumber, active, fileId } = req.body;

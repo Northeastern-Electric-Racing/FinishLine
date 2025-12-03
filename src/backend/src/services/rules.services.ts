@@ -13,6 +13,7 @@ import {
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
+  AccessDeniedGuestException,
   AccessDeniedException,
   DeletedException,
   HttpException,
@@ -586,6 +587,85 @@ export default class RulesService {
     });
 
     return projectRuleTransformer(updatedProjectRule);
+  }
+
+  /**
+   * Assigns a rule to a team. If the team already is assigned to the
+   * rule, removes the team from the rule.
+   * @param ruleId The ruleId of the rule to be added to
+   * @param teamIds The team to be added to the rule
+   * @param user The user adding the team to the rule
+   * @param org The organization the rule belongs to
+   * @returns the updated rule
+   * @throws If the user is a guest, the rule does not exist or
+   *         is deleted, or a team does not exist, is in the wrong
+   *         organization, or is archived.
+   *
+   */
+  static async toggleRuleTeam(ruleId: string, teamId: string, user: User, org: Organization) {
+    // Checks that the user is not a guest
+    if (!(await userHasPermission(user.userId, org.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('Toggle Rule Team');
+    }
+
+    // Checks that the rule exists and is not deleted
+    const rule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: {
+        teams: true,
+        ruleset: { select: { car: { include: { wbsElement: { select: { organizationId: true } } } } } }
+      }
+    });
+    if (!rule) {
+      throw new NotFoundException('Rule', ruleId);
+    }
+    if (rule.deletedByUserId) {
+      throw new DeletedException('Rule', ruleId);
+    }
+    if (rule.ruleset.car.wbsElement.organizationId !== org.organizationId) {
+      throw new InvalidOrganizationException('Rule');
+    }
+
+    // Checks based on the team
+    const team = await prisma.team.findUnique({ where: { teamId } });
+    if (!team) throw new NotFoundException('Team', teamId);
+    if (team.organizationId !== org.organizationId) throw new InvalidOrganizationException('Rule');
+    if (team.dateArchived) throw new HttpException(400, 'Cannot toggle an archived team.');
+
+    // We add the team to the rule if it is not already in the rule
+    // If the rule is not in this team, add the team to the rule
+    // If the rule is already in this team, remove the team from the rule
+    if (!rule.teams.some((currTeam) => currTeam.teamId === teamId)) {
+      await prisma.rule.update({
+        where: { ruleId: rule.ruleId },
+        data: {
+          teams: {
+            connect: {
+              teamId
+            }
+          }
+        }
+      });
+    } else {
+      await prisma.rule.update({
+        where: { ruleId: rule.ruleId },
+        data: {
+          teams: {
+            disconnect: {
+              teamId
+            }
+          }
+        }
+      });
+    }
+
+    // retrieve and return the updated rule
+    const newRule = await prisma.rule.findUnique({
+      where: { ruleId },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return ruleTransformer(newRule!);
   }
 
   static async createRuleset(

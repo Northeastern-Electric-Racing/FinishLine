@@ -18,12 +18,14 @@ import {
 import prisma from '../../src/prisma/prisma';
 import {
   AccessDeniedException,
+  AccessDeniedGuestException,
   DeletedException,
   HttpException,
   NotFoundException,
   AccessDeniedAdminOnlyException,
   InvalidOrganizationException
 } from '../../src/utils/errors.utils';
+import TeamsService from '../../src/services/teams.services';
 
 describe('Create Rules Tests', () => {
   let orgId: string;
@@ -974,6 +976,106 @@ describe('Rule Tests', () => {
 
       expect(activeRuleset.name).toBe('FSAE Rules 2025');
       expect(activeRuleset.active).toBe(true);
+    });
+  });
+
+  describe('Toggle Rule Team', () => {
+    it('Fails if user is a guest', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      await expect(
+        async () => await RulesService.toggleRuleTeam(topLevelRule.ruleId, '', guest, organization)
+      ).rejects.toThrow(new AccessDeniedGuestException('Toggle Rule Team'));
+    });
+    it('Fails if rule does not exist', async () => {
+      await expect(async () => await RulesService.toggleRuleTeam('fake-rule-id', '', admin, organization)).rejects.toThrow(
+        new NotFoundException('Rule', 'fake-rule-id')
+      );
+    });
+    it('Fails if rule is deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      await RulesService.deleteRule(topLevelRule.ruleId, admin, organization);
+      await expect(
+        async () => await RulesService.toggleRuleTeam(topLevelRule.ruleId, '', admin, organization)
+      ).rejects.toThrow(new DeletedException('Rule', topLevelRule.ruleId));
+    });
+    it('Fails if a team does not exist', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      await expect(
+        async () => await RulesService.toggleRuleTeam(topLevelRule.ruleId, 'fake-team-id', admin, organization)
+      ).rejects.toThrow(new NotFoundException('Team', 'fake-team-id'));
+    });
+    it('Fails if a team is not in the correct organization', async () => {
+      const user = await prisma.user.create({
+        data: {
+          firstName: 'Admin',
+          lastName: 'Admin',
+          email: 'testemail@hotmail.com',
+          googleAuthId: 'orgCreator1'
+        }
+      });
+      const org2 = await prisma.organization.create({
+        data: {
+          name: 'Joe mama',
+          description: 'Joe mama`s organization',
+          applicationLink: '',
+          userCreated: {
+            connect: {
+              userId: user.userId
+            }
+          }
+        }
+      });
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const teamType = await createTestTeamType('electrical', org2.organizationId);
+      const team = await createTestTeam(admin.userId, teamType.teamTypeId, org2.organizationId);
+      await expect(RulesService.toggleRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization)).rejects.toThrow(
+        new InvalidOrganizationException('Rule')
+      );
+    });
+    it('Fails if a team is archived', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const teamType = await createTestTeamType('electrical', organization.organizationId);
+      const team = await createTestTeam(admin.userId, teamType.teamTypeId, organization.organizationId);
+      await TeamsService.archiveTeam(admin, team.teamId, organization);
+      await expect(RulesService.toggleRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization)).rejects.toThrow(
+        new HttpException(400, 'Cannot toggle an archived team.')
+      );
+    });
+    it('Successfully adds a team to a rule', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const teamType = await createTestTeamType('electrical', organization.organizationId);
+      const team = await createTestTeam(admin.userId, teamType.teamTypeId, organization.organizationId);
+      const updRule = await RulesService.toggleRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization);
+      const ruleWithTeams = await prisma.rule.findUnique({
+        where: { ruleId: topLevelRule.ruleId },
+        include: { teams: true }
+      });
+      expect(updRule).toBeDefined();
+      expect(ruleWithTeams?.teams.length).toBe(1);
+      expect(ruleWithTeams?.teams[0].teamId).toBe(team.teamId);
+    });
+    it('Successfully removes a team from a rule', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const teamType = await createTestTeamType('electrical', organization.organizationId);
+      const team = await createTestTeam(admin.userId, teamType.teamTypeId, organization.organizationId);
+      const teamAddedRule = await RulesService.toggleRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization);
+      expect(teamAddedRule).toBeDefined();
+
+      const teamRemovedRule = await RulesService.toggleRuleTeam(topLevelRule.ruleId, team.teamId, admin, organization);
+      const ruleWithTeams = await prisma.rule.findUnique({
+        where: { ruleId: topLevelRule.ruleId },
+        include: { teams: true }
+      });
+      expect(teamRemovedRule).toBeDefined();
+      expect(ruleWithTeams?.teams.length).toBe(0);
+      expect(ruleWithTeams?.teams[0]).toBeUndefined();
     });
   });
 
