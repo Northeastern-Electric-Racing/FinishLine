@@ -47,8 +47,8 @@ const NewCalendarPage = () => {
     error,
     data: allEvents
   } = useFilterEvents({
-    startPeriod: new Date(0),
-    endPeriod: new Date(2099, 11, 31),
+    startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
+    endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds)
   });
