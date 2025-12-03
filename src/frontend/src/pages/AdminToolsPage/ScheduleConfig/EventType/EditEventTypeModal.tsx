@@ -60,4 +60,3 @@ const EditEventTypeModal = ({ open, onClose, eventType }: EditEventTypeModalProp
 };
 
 export default EditEventTypeModal;
-

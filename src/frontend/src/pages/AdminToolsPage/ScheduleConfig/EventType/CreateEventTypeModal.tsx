@@ -27,4 +27,3 @@ const CreateEventTypeModal = ({ open, onClose }: CreateEventTypeModalProps) => {
 };
 
 export default CreateEventTypeModal;
-
