@@ -5,7 +5,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
 import { useAllTeams } from '../../hooks/teams.hooks';
 
-export interface FilterFormValues {
+export interface FilterArgs {
   memberIds: string[];
   teamIds: string[];
   showInvited: boolean;
@@ -15,7 +15,7 @@ export interface FilterFormValues {
 export interface BaseFilterModalProps {
   open: boolean;
   onClose: () => void;
-  filterValues?: FilterFormValues;
+  filterValues?: FilterArgs;
   setMemberIds: React.Dispatch<React.SetStateAction<string[]>>;
   setTeamIds: React.Dispatch<React.SetStateAction<string[]>>;
   setShowInvited: React.Dispatch<React.SetStateAction<boolean>>;
