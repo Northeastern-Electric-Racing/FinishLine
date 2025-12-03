@@ -1,8 +1,19 @@
 import { Organization, Rule, Rule_Completion } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview, Rule as SharedRule, User } from 'shared';
+import {
+  isAdmin,
+  isLeadership,
+  ProjectRule,
+  RulesetType,
+  notGuest,
+  RulesetPreview,
+  User,
+  Rule as SharedRule,
+  isHead
+} from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
+  AccessDeniedGuestException,
   AccessDeniedException,
   DeletedException,
   HttpException,
@@ -578,6 +589,85 @@ export default class RulesService {
     return projectRuleTransformer(updatedProjectRule);
   }
 
+  /**
+   * Assigns a rule to a team. If the team already is assigned to the
+   * rule, removes the team from the rule.
+   * @param ruleId The ruleId of the rule to be added to
+   * @param teamIds The team to be added to the rule
+   * @param user The user adding the team to the rule
+   * @param org The organization the rule belongs to
+   * @returns the updated rule
+   * @throws If the user is a guest, the rule does not exist or
+   *         is deleted, or a team does not exist, is in the wrong
+   *         organization, or is archived.
+   *
+   */
+  static async toggleRuleTeam(ruleId: string, teamId: string, user: User, org: Organization) {
+    // Checks that the user is not a guest
+    if (!(await userHasPermission(user.userId, org.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('Toggle Rule Team');
+    }
+
+    // Checks that the rule exists and is not deleted
+    const rule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: {
+        teams: true,
+        ruleset: { select: { car: { include: { wbsElement: { select: { organizationId: true } } } } } }
+      }
+    });
+    if (!rule) {
+      throw new NotFoundException('Rule', ruleId);
+    }
+    if (rule.deletedByUserId) {
+      throw new DeletedException('Rule', ruleId);
+    }
+    if (rule.ruleset.car.wbsElement.organizationId !== org.organizationId) {
+      throw new InvalidOrganizationException('Rule');
+    }
+
+    // Checks based on the team
+    const team = await prisma.team.findUnique({ where: { teamId } });
+    if (!team) throw new NotFoundException('Team', teamId);
+    if (team.organizationId !== org.organizationId) throw new InvalidOrganizationException('Rule');
+    if (team.dateArchived) throw new HttpException(400, 'Cannot toggle an archived team.');
+
+    // We add the team to the rule if it is not already in the rule
+    // If the rule is not in this team, add the team to the rule
+    // If the rule is already in this team, remove the team from the rule
+    if (!rule.teams.some((currTeam) => currTeam.teamId === teamId)) {
+      await prisma.rule.update({
+        where: { ruleId: rule.ruleId },
+        data: {
+          teams: {
+            connect: {
+              teamId
+            }
+          }
+        }
+      });
+    } else {
+      await prisma.rule.update({
+        where: { ruleId: rule.ruleId },
+        data: {
+          teams: {
+            disconnect: {
+              teamId
+            }
+          }
+        }
+      });
+    }
+
+    // retrieve and return the updated rule
+    const newRule = await prisma.rule.findUnique({
+      where: { ruleId },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return ruleTransformer(newRule!);
+  }
+
   static async createRuleset(
     submitter: User,
     organization: Organization,
@@ -693,7 +783,7 @@ export default class RulesService {
    * @returns The deleted project rule
    */
   static async deleteProjectRule(projectRuleId: string, deleter: User, organization: Organization): Promise<ProjectRule> {
-    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedAdminOnlyException('delete project rules');
     }
 
@@ -737,23 +827,76 @@ export default class RulesService {
       throw new DeletedException('Project Rule', projectRuleId);
     }
 
-    const deletedProjectRule = await prisma.$transaction(async (tx) => {
-      await tx.rule_Status_Change.updateMany({
-        where: { projectRuleId, dateDeleted: null },
-        data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
-      });
-
-      return await tx.project_Rule.update({
-        where: { projectRuleId },
-        data: {
-          dateDeleted: new Date(),
-          deletedByUserId: deleter.userId
-        },
-        ...getProjectRuleQueryArgs()
-      });
+    const deletedProjectRule = await prisma.project_Rule.update({
+      where: { projectRuleId },
+      data: {
+        dateDeleted: new Date(),
+        deletedByUserId: deleter.userId
+      },
+      ...getProjectRuleQueryArgs()
     });
 
     return projectRuleTransformer(deletedProjectRule);
+  }
+
+  /**
+   * Updates a rulesets status
+   * @param submitter user updating the ruleset
+   * @param organizationId organization of ruleset being updated
+   * @param rulesetId id of ruleset being updated
+   * @param status new status of ruleset
+   * @returns
+   */
+  static async updateRuleset(submitter: User, organizationId: string, rulesetId: string, name: string, isActive: boolean) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isHead))) {
+      throw new AccessDeniedException('You do not have permissions to update ruleset status');
+    }
+
+    const rulesetExists = await prisma.ruleset.findUnique({
+      where: {
+        rulesetId,
+        rulesetType: {
+          organizationId
+        },
+        deletedByUserId: null
+      }
+    });
+
+    if (!rulesetExists) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (!rulesetExists.active && isActive) {
+      const activeRuleset = await prisma.ruleset.findFirst({
+        where: {
+          active: true,
+          rulesetType: {
+            rulesetTypeId: rulesetExists.rulesetTypeId,
+            organizationId
+          },
+          dateDeleted: null
+        }
+      });
+
+      if (activeRuleset) {
+        throw new HttpException(400, 'There is already an active ruleset for this ruleset type');
+      }
+    }
+    const ruleset = await prisma.ruleset.update({
+      where: {
+        rulesetId,
+        rulesetType: {
+          organizationId
+        }
+      },
+      data: {
+        name,
+        active: isActive
+      },
+      ...getRulesetQueryArgs(organizationId)
+    });
+
+    return rulesetTransformer(ruleset);
   }
 
   /**
@@ -859,6 +1002,7 @@ export default class RulesService {
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
+        dateDeleted: true,
         rulesetType: {
           select: {
             organizationId: true
@@ -869,6 +1013,10 @@ export default class RulesService {
 
     if (!ruleset) {
       throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.dateDeleted) {
+      throw new DeletedException('Ruleset', rulesetId);
     }
 
     if (ruleset.rulesetType.organizationId !== organizationId) {
@@ -975,5 +1123,47 @@ export default class RulesService {
     });
 
     return projectRules.map(projectRuleTransformer);
+  }
+
+  /**
+   * Gets all rules with no parent id
+   * @param rulesetId id of ruleset
+   * @returns an array of rules with no parent Id
+   */
+  static async getTopLevelRules(rulesetId: string, organizationId: string) {
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      select: {
+        dateDeleted: true,
+        rulesetType: {
+          select: {
+            organizationId: true
+          }
+        }
+      }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.dateDeleted) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.rulesetType.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const rules = await prisma.rule.findMany({
+      where: {
+        rulesetId,
+        dateDeleted: null,
+        parentRuleId: null
+      },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return rules.map(ruleTransformer);
   }
 }

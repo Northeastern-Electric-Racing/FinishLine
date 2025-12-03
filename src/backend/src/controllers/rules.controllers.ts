@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services';
-import { ProjectRule, Rule } from 'shared';
+import { ProjectRule, Rule, Ruleset } from 'shared';
 
 export default class RulesController {
   static async getActiveRuleset(req: Request, res: Response, next: NextFunction) {
@@ -147,6 +147,19 @@ export default class RulesController {
     }
   }
 
+  static async toggleRuleTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ruleId } = req.params;
+      const { teamId } = req.body;
+
+      const changedRule = await RulesService.toggleRuleTeam(ruleId, teamId, req.currentUser, req.organization);
+
+      res.status(200).json(changedRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createRuleset(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, rulesetTypeId, carNumber, active, fileId } = req.body;
@@ -179,10 +192,28 @@ export default class RulesController {
     }
   }
 
+  static async updateRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const { name, isActive } = req.body;
+
+      const ruleset: Ruleset = await RulesService.updateRuleset(
+        req.currentUser,
+        req.organization.organizationId,
+        rulesetId,
+        name,
+        isActive
+      );
+
+      res.status(200).json(ruleset);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getChildRules(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleId: parentRuleId } = req.params;
-
       const childrenRules: Rule[] = await RulesService.getChildRules(parentRuleId, req.organization);
 
       res.status(200).json(childrenRules);
@@ -218,6 +249,16 @@ export default class RulesController {
       const projectRules = await RulesService.getProjectRules(rulesetId, projectId, req.organization);
 
       res.status(200).json(projectRules);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getTopLevelRules(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const rules = await RulesService.getTopLevelRules(rulesetId, req.organization.organizationId);
+      res.status(200).json(rules);
     } catch (error: unknown) {
       next(error);
     }
