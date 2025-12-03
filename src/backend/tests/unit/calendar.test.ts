@@ -1356,7 +1356,11 @@ describe('Calendar Tests', () => {
       );
 
       const result = await CalendarService.getFilteredEvents(
-        { startPeriod: new Date('2020-10-01T09:00:00Z'), endPeriod: new Date('2027-11-01T09:00:00Z') },
+        {
+          startPeriod: new Date('2020-10-01T09:00:00Z'),
+          endPeriod: new Date('2027-11-01T09:00:00Z'),
+          memberIds: [member.userId]
+        },
         organization
       );
       expect(result).toStrictEqual([event1, event2]);
