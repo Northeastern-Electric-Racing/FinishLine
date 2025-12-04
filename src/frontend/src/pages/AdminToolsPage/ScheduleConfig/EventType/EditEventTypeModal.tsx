@@ -27,9 +27,6 @@ const EditEventTypeModal = ({ open, onClose, eventType }: EditEventTypeModalProp
   const eventTypeData: EventTypeFormValues = {
     name: eventType.name,
     calendarIds: eventType.calendarIds || [],
-    initialDateScheduled: eventType.initialDateScheduled,
-    allDay: eventType.allDay,
-    recurring: eventType.recurring,
     requiredMembers: eventType.requiredMembers,
     optionalMembers: eventType.optionalMembers,
     teams: eventType.teams,
@@ -55,13 +52,13 @@ const EditEventTypeModal = ({ open, onClose, eventType }: EditEventTypeModalProp
       const result = await editEventType(data);
       toast.success('Event type updated successfully');
       return result;
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message);
       } else {
         toast.error('An error occurred while updating the event type');
       }
-      throw error;
+      throw e;
     }
   };
 

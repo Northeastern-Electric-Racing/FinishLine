@@ -5,6 +5,7 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import React from 'react';
 import { EventType } from 'shared';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../../utils/form';
@@ -22,13 +23,12 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 
 export interface EventTypeFormValues {
   name: string;
   calendarIds: string[];
-  initialDateScheduled: boolean;
-  allDay: boolean;
-  recurring: boolean;
   requiredMembers: boolean;
   optionalMembers: boolean;
   teams: boolean;
@@ -49,9 +49,6 @@ export interface EventTypeFormValues {
 const eventTypeSchema = yup.object({
   name: yup.string().required('Event Type name is required'),
   calendarIds: yup.array().of(yup.string()).required(),
-  initialDateScheduled: yup.boolean().required(),
-  allDay: yup.boolean().required(),
-  recurring: yup.boolean().required(),
   requiredMembers: yup.boolean().required(),
   optionalMembers: yup.boolean().required(),
   teams: yup.boolean().required(),
@@ -83,9 +80,6 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
   const defaultValues: EventTypeFormValues = {
     name: '',
     calendarIds: [],
-    initialDateScheduled: true,
-    allDay: false,
-    recurring: false,
     requiredMembers: false,
     optionalMembers: true,
     teams: false,
@@ -215,10 +209,14 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
             <Controller
               name="calendarIds"
               control={control}
-              render={({ field }) => (
+              render={({ field: { onChange, value, ...field } }) => (
                 <Select
-                  value={field.value?.[0] || ''}
-                  onChange={(e) => field.onChange([e.target.value])}
+                  {...field}
+                  value={value && value.length > 0 ? value[0] : ''}
+                  onChange={(e) => {
+                    const selectedValue = e.target.value as string;
+                    onChange(selectedValue ? [selectedValue] : []);
+                  }}
                   displayEmpty
                   sx={{
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -242,7 +240,7 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
                     }
                     const calendar = calendars?.find((c) => c.calendarId === selected);
                     return (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.49 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Box
                           sx={{
                             width: 16,
@@ -283,75 +281,53 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
         <Typography color="red" variant="body2" sx={{ fontSize: 14, mt: -1 }}>
           Select the fields from this template to be included in the new event type.
         </Typography>
+
+        {/* Initial Date Scheduled Field - Always checked */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Controller
-            control={control}
-            name="initialDateScheduled"
-            render={({ field: { onChange, value } }) => (
-              <Checkbox checked={value} onChange={onChange} sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />
-            )}
-          />
+          <Checkbox checked={true} disabled sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />
           <AccessTimeIcon sx={{ color: 'white', mr: 1 }} />
           <Box sx={{ flex: 1, display: 'flex', gap: 2, alignItems: 'center' }}>
             <Typography variant="body2" sx={{ color: 'white' }}>
               Monday, March 17 2:00pm - 3:00pm
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Controller
-                control={control}
-                name="allDay"
-                render={({ field: { onChange, value } }) => (
-                  <Checkbox
-                    checked={value}
-                    onChange={onChange}
-                    size="small"
-                    sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }}
-                  />
-                )}
-              />
+              <Checkbox checked={false} disabled sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />
               <Typography variant="body2" sx={{ fontSize: 12, color: 'white' }}>
                 All Day
               </Typography>
             </Box>
-            <Controller
-              control={control}
-              name="recurring"
-              render={({ field: { onChange, value } }) => (
-                <Select
-                  value={value ? 'recurring' : 'not-recurring'}
-                  onChange={(e) => onChange(e.target.value === 'recurring')}
-                  sx={{
-                    minWidth: 100,
-                    height: 32,
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    borderRadius: '4px',
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: '14px',
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      border: 'none'
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      border: 'none'
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      border: 'none'
-                    },
-                    '& .MuiSelect-icon': {
-                      color: 'white'
-                    },
-                    '& .MuiSelect-select': {
-                      padding: '4px 14px',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }
-                  }}
-                >
-                  <MenuItem value="not-recurring">Not Recurring</MenuItem>
-                  <MenuItem value="recurring">Recurring</MenuItem>
-                </Select>
-              )}
-            />
+            <Select
+              value="recurring"
+              disabled
+              sx={{
+                minWidth: 100,
+                height: 32,
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '4px',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '14px',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 'none'
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  border: 'none'
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  border: 'none'
+                },
+                '& .MuiSelect-icon': {
+                  color: 'white'
+                },
+                '& .MuiSelect-select': {
+                  padding: '4px 14px',
+                  display: 'flex',
+                  alignItems: 'center'
+                }
+              }}
+            >
+              <MenuItem value="recurring">Recurring</MenuItem>
+            </Select>
           </Box>
         </Box>
 
@@ -476,6 +452,37 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
               }}
             >
               <span>Select Team</span>
+              <span style={{ fontSize: '8px', color: 'white', marginTop: '3px' }}>▼</span>
+            </Box>
+          </Box>
+        </Box>
+
+        {/*Team Types Field */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Controller
+            control={control}
+            name="teamType"
+            render={({ field: { onChange, value } }) => (
+              <Checkbox checked={value} onChange={onChange} sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />
+            )}
+          />
+          <GroupsIcon sx={{ color: 'white', mr: 1 }} />
+          <Box sx={{ flex: 1 }}>
+            <Box
+              sx={{
+                width: '100%',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '4px',
+                padding: '8.5px 14px',
+                fontSize: '14px',
+                color: 'rgba(255, 255, 255, 0.7)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}
+            >
+              <span>Select Team Type</span>
               <span style={{ fontSize: '8px', color: 'white', marginTop: '3px' }}>▼</span>
             </Box>
           </Box>
@@ -794,7 +801,41 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
           <SupervisorAccountIcon sx={{ color: 'white', mr: 1 }} />
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2" sx={{ color: 'white' }}>
-              Only Heads Or Above
+              Only Heads Or Above Can Create Events
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Requires Confirmation Field */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Controller
+            control={control}
+            name="requiresConfirmation"
+            render={({ field: { onChange, value } }) => (
+              <Checkbox checked={value} onChange={onChange} sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />
+            )}
+          />
+          <CheckCircleIcon sx={{ color: 'white', mr: 1 }} />
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body2" sx={{ color: 'white' }}>
+              Requires Confirmation
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Send Slack Notifications Field */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Controller
+            control={control}
+            name="sendSlackNotifications"
+            render={({ field: { onChange, value } }) => (
+              <Checkbox checked={value} onChange={onChange} sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />
+            )}
+          />
+          <NotificationsIcon sx={{ color: 'white', mr: 1 }} />
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body2" sx={{ color: 'white' }}>
+              Send Slack Notifications
             </Typography>
           </Box>
         </Box>

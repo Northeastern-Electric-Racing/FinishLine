@@ -21,13 +21,13 @@ const CreateEventTypeModal = ({ open, onClose }: CreateEventTypeModalProps) => {
       const result = await createEventType(data);
       toast.success('Event type created successfully');
       return result;
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message);
       } else {
         toast.error('An error occurred while creating the event type');
       }
-      throw error;
+      throw e;
     }
   };
 
