@@ -166,7 +166,7 @@ const RulesetPage: React.FC = () => {
   const defaultTab = 'edit-rules';
 
   const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
-  const { mutateAsync: deleteRuleMutation, isLoading: isDeleting } = useDeleteRule();
+  const { mutateAsync: deleteRuleMutation } = useDeleteRule();
 
   const tabs = [
     { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
