@@ -151,3 +151,7 @@ export const setEventStatus = async (id: string, payload: { status: EventStatus 
     transformResponse: (data) => eventTransformer(JSON.parse(data))
   });
 };
+
+export const postDeleteCalendar = async (id: string) => {
+  return axios.post<Calendar>(apiUrls.calendarDeleteCalendar(id));
+};
