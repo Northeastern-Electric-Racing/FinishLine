@@ -9,9 +9,10 @@ import { NERButton } from '../../components/NERButton';
 
 // FSAE or FHE page
 const RulesetTypePage: React.FC = () => {
-  // testing for modal
+  // testing for AddNewFileModal
   const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
     setAddFileModalShow(false);
+    console.log('Added data: ' + data); // delete this later, once data is used properly
   };
 
   const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
