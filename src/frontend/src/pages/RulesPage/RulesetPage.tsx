@@ -14,6 +14,9 @@ import RuleActions from './RuleActions';
 import { Rule } from 'shared';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import DeleteRuleModal from './RulesComponents/DeleteRuleModal';
+import { useDeleteRule } from '../../hooks/rules.hooks';
+import { countRulesToDelete } from '../../utils/rules.utils';
 
 /**
  * Placeholder hook to fetch a single ruleset.
@@ -158,9 +161,12 @@ const useSingleRuleset = (rulesetId: string) => {
 const RulesetPage: React.FC = () => {
   const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>();
   const [tabValue, setTabValue] = useState(0);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [ruleToDelete, setRuleToDelete] = useState<Rule | null>(null);
   const defaultTab = 'edit-rules';
 
   const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
+  const { mutateAsync: deleteRuleMutation, isLoading: isDeleting } = useDeleteRule();
 
   const tabs = [
     { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
@@ -185,14 +191,36 @@ const RulesetPage: React.FC = () => {
   };
 
   const handleRemoveRule = (ruleId: string) => {
-    // Placeholder
-    console.log('Remove rule:', ruleId);
+    const rule = ruleset.rules.find((r) => r.ruleId === ruleId);
+    if (rule) {
+      setRuleToDelete(rule);
+      setDeleteModalOpen(true);
+    }
   };
 
   const handleEditRule = (ruleId: string) => {
     // Placeholder
     console.log('Edit rule:', ruleId);
   };
+
+  const handleDeleteConfirm = async () => {
+    if (!ruleToDelete) return;
+
+    try {
+      await deleteRuleMutation(ruleToDelete.ruleId);
+      setDeleteModalOpen(false);
+      setRuleToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete rule:', error);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalOpen(false);
+    setRuleToDelete(null);
+  };
+
+  const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, ruleset.rules) : 0;
 
   // Filter to only show top-level rules
   const topLevelRules = ruleset.rules.filter((rule) => !rule.parentRule);
@@ -286,6 +314,16 @@ const RulesetPage: React.FC = () => {
           <Box>{/* Assign Rules tab content will be added in a future ticket */}</Box>
         )}
       </Box>
+
+      {ruleToDelete && (
+        <DeleteRuleModal
+          open={deleteModalOpen}
+          onHide={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+          rule={ruleToDelete}
+          totalRulesToDelete={totalRulesToDelete}
+        />
+      )}
     </PageLayout>
   );
 };
