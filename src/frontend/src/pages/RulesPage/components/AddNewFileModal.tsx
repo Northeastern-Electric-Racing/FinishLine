@@ -79,7 +79,6 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onConfi
     register,
     handleSubmit,
     reset,
-    watch,
     setValue,
     control
   } = useForm<NewFileFormData>({
