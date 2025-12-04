@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
+import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, IconButton } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { Event } from 'shared';
 import MonthSelector from '../CalendarPage/CalendarComponents/MonthSelector';
@@ -11,11 +11,14 @@ import CalendarDayCard from '../CalendarPage/CalendarComponents/CalendarDayCard'
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import { useAllEvents } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { datePipe } from '../../utils/pipes';
+import { useToast } from '../../hooks/toasts.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import EventSummaryModal from '../CalendarPage/EventSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import NERModal from '../../components/NERModal';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -26,10 +29,39 @@ const NewCalendarPage = () => {
     error: allTeamTypesError
   } = useAllTeamTypes();
 
+  const DeleteModal = () => {
+    return (
+      <NERModal
+        open={showDeleteModal}
+        onHide={() => setDeleteModal(false)}
+        title="Warning!"
+        cancelText="No"
+        submitText="Yes"
+        onSubmit={() => handleDelete}
+      >
+        <Typography>Are you sure you want to delete this event?</Typography>
+      </NERModal>
+    );
+  };
+
+  const handleDelete = () => {
+    try {
+      // deleteEvent();
+      // history.push(routes.CALENDAR);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+    setDeleteModal(false);
+  };
+
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
   const { isLoading, isError, error, data: allEvents } = useAllEvents();
   const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
+  const [showDeleteModal, setDeleteModal] = useState(false);
+  const toast = useToast();
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
 
   if (isLoading || !allEvents) return <LoadingIndicator />;
@@ -100,6 +132,7 @@ const NewCalendarPage = () => {
         />
       )}
       <PageLayout hidePageTitle>
+        <DeleteModal />
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
           <Typography variant="h4"></Typography>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', columnGap: 1, rowGap: 1 }}>
@@ -126,6 +159,9 @@ const NewCalendarPage = () => {
             >
               New Event
             </Button>
+            <IconButton onClick={() => setDeleteModal(true)}>
+              <DeleteIcon />
+            </IconButton>
           </Stack>
         </Stack>
         <Box sx={{ display: 'flex', gap: 2 }}>
