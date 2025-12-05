@@ -683,9 +683,8 @@ describe('Rule Tests', () => {
     await resetUsers();
   });
 
+  let carCounter = 1;
   const createUniqueCar = async (orgId: string) => {
-    let carCounter = 1;
-
     const car = await prisma.car.create({
       data: {
         wbsElement: {
@@ -1663,6 +1662,162 @@ describe('Rule Tests', () => {
       await expect(
         async () => await RulesService.getProjectRules(topLevelRule.rulesetId, project.projectId, organization)
       ).rejects.toThrow(new DeletedException('Ruleset', topLevelRule.rulesetId));
+    });
+  });
+
+  describe('Get Team Rules in Ruleset Type', () => {
+    let team: Team;
+    let otherTeam: Team;
+    let activeRuleset: Ruleset;
+    let inactiveRuleset: Ruleset;
+
+    beforeEach(async () => {
+      const car = await createUniqueCar(orgId);
+
+      activeRuleset = await prisma.ruleset.create({
+        data: {
+          name: 'FSAE Rules 2025',
+          fileId: 'fsae-rules-2025',
+          active: true,
+          car: { connect: { carId: car.carId } },
+          createdBy: { connect: { userId: admin.userId } },
+          rulesetType: { connect: { rulesetTypeId: fsaeRulesetType.rulesetTypeId } }
+        }
+      });
+
+      inactiveRuleset = await prisma.ruleset.create({
+        data: {
+          name: 'FSAE Rules 2024',
+          fileId: 'fsae-rules-2024',
+          active: false,
+          car: { connect: { carId: car.carId } },
+          createdBy: { connect: { userId: admin.userId } },
+          rulesetType: { connect: { rulesetTypeId: fsaeRulesetType.rulesetTypeId } }
+        }
+      });
+
+      const teamType = await createTestTeamType(undefined, orgId);
+      team = await createTestTeam(admin.userId, teamType.teamTypeId, orgId);
+      const otherTeamHead = await createTestUser(batmanAppAdmin, orgId);
+      otherTeam = await createTestTeam(otherTeamHead.userId, teamType.teamTypeId, orgId);
+    });
+
+    it('Succeeds and returns rules assigned to team in active ruleset', async () => {
+      const rule1 = await RulesService.createRule(admin, 'T.1.1', 'Rule 1', activeRuleset.rulesetId, organization);
+      const rule2 = await RulesService.createRule(admin, 'T.1.2', 'Rule 2', activeRuleset.rulesetId, organization);
+      const rule3 = await RulesService.createRule(admin, 'T.1.3', 'Rule 3', activeRuleset.rulesetId, organization);
+
+      await prisma.rule.update({
+        where: { ruleId: rule1.ruleId },
+        data: { teams: { connect: { teamId: team.teamId } } }
+      });
+      await prisma.rule.update({
+        where: { ruleId: rule2.ruleId },
+        data: { teams: { connect: { teamId: team.teamId } } }
+      });
+
+      const rules = await RulesService.getTeamRulesInRulesetType(team.teamId, fsaeRulesetType.rulesetTypeId, organization);
+
+      expect(rules.length).toBe(2);
+      expect(rules.map((r) => r.ruleId)).toContain(rule1.ruleId);
+      expect(rules.map((r) => r.ruleId)).toContain(rule2.ruleId);
+      expect(rules.map((r) => r.ruleId)).not.toContain(rule3.ruleId);
+    });
+
+    it('Fails when no active ruleset exists', async () => {
+      await prisma.ruleset.update({
+        where: { rulesetId: activeRuleset.rulesetId },
+        data: { active: false }
+      });
+
+      await expect(
+        RulesService.getTeamRulesInRulesetType(team.teamId, fsaeRulesetType.rulesetTypeId, organization)
+      ).rejects.toThrow(new NotFoundException('Active Ruleset for given Ruleset Type', activeRuleset.rulesetTypeId));
+    });
+
+    it('Only returns rules from active ruleset, not inactive', async () => {
+      const activeRule = await RulesService.createRule(admin, 'T.1.1', 'Active Rule', activeRuleset.rulesetId, organization);
+      const inactiveRule = await RulesService.createRule(
+        admin,
+        'T.2.1',
+        'Inactive Rule',
+        inactiveRuleset.rulesetId,
+        organization
+      );
+
+      await prisma.rule.update({
+        where: { ruleId: activeRule.ruleId },
+        data: { teams: { connect: { teamId: team.teamId } } }
+      });
+      await prisma.rule.update({
+        where: { ruleId: inactiveRule.ruleId },
+        data: { teams: { connect: { teamId: team.teamId } } }
+      });
+
+      const rules = await RulesService.getTeamRulesInRulesetType(team.teamId, fsaeRulesetType.rulesetTypeId, organization);
+
+      expect(rules.length).toBe(1);
+      expect(rules[0].ruleId).toBe(activeRule.ruleId);
+    });
+
+    it('Does not return deleted rules', async () => {
+      const rule1 = await RulesService.createRule(admin, 'T.1.1', 'Rule 1', activeRuleset.rulesetId, organization);
+      const rule2 = await RulesService.createRule(admin, 'T.1.2', 'Rule 2', activeRuleset.rulesetId, organization);
+
+      await prisma.rule.update({
+        where: { ruleId: rule1.ruleId },
+        data: { teams: { connect: { teamId: team.teamId } } }
+      });
+      await prisma.rule.update({
+        where: { ruleId: rule2.ruleId },
+        data: { teams: { connect: { teamId: team.teamId } } }
+      });
+
+      await RulesService.deleteRule(rule1.ruleId, admin, organization);
+
+      const rules = await RulesService.getTeamRulesInRulesetType(team.teamId, fsaeRulesetType.rulesetTypeId, organization);
+
+      expect(rules.length).toBe(1);
+      expect(rules[0].ruleId).toBe(rule2.ruleId);
+    });
+
+    it('Only returns rules assigned to the specified team', async () => {
+      const rule1 = await RulesService.createRule(admin, 'T.1.1', 'Rule 1', activeRuleset.rulesetId, organization);
+      const rule2 = await RulesService.createRule(admin, 'T.1.2', 'Rule 2', activeRuleset.rulesetId, organization);
+
+      await prisma.rule.update({
+        where: { ruleId: rule1.ruleId },
+        data: { teams: { connect: { teamId: team.teamId } } }
+      });
+      await prisma.rule.update({
+        where: { ruleId: rule2.ruleId },
+        data: { teams: { connect: { teamId: otherTeam.teamId } } }
+      });
+
+      const rules = await RulesService.getTeamRulesInRulesetType(team.teamId, fsaeRulesetType.rulesetTypeId, organization);
+
+      expect(rules.length).toBe(1);
+      expect(rules[0].ruleId).toBe(rule1.ruleId);
+    });
+
+    it('Fails if ruleset type does not exist', async () => {
+      await expect(
+        RulesService.getTeamRulesInRulesetType(team.teamId, 'fake-ruleset-type-id', organization)
+      ).rejects.toThrow(new NotFoundException('Ruleset Type', 'fake-ruleset-type-id'));
+    });
+
+    it('Fails if ruleset type is deleted', async () => {
+      await RulesService.deleteRulesetType(admin, fsaeRulesetType.rulesetTypeId, organization);
+
+      await expect(
+        RulesService.getTeamRulesInRulesetType(team.teamId, fsaeRulesetType.rulesetTypeId, organization)
+      ).rejects.toThrow(new DeletedException('Ruleset Type', fsaeRulesetType.rulesetTypeId));
+    });
+
+    it('Fails if team does not exist', async () => {
+      await expect(
+        RulesService.getTeamRulesInRulesetType('fake-team-id', fsaeRulesetType.rulesetTypeId, organization)
+      ).rejects.toThrow(new NotFoundException('Team', 'fake-team-id'));
     });
   });
 

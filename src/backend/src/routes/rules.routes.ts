@@ -75,6 +75,7 @@ rulesRouter.post(
   RulesController.createRuleset
 );
 rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
+rulesRouter.get('/:rulesetTypeId/team/:teamId', RulesController.getTeamRulesInRulesetType);
 
 rulesRouter.post(
   '/ruleset/:rulesetId/update',
