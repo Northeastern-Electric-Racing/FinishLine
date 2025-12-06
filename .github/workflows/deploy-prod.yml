@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - multitenancy
+      - cloudwatch-dashboard
 
 jobs:
   deploy:
