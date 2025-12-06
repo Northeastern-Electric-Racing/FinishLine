@@ -6,16 +6,61 @@ import React from 'react';
 import PageLayout from '../../components/PageLayout';
 import AddNewFileModal from './components/AddNewFileModal';
 import { NERButton } from '../../components/NERButton';
+import { useToast } from '../../hooks/toasts.hooks';
+import { useCreateRuleset, useParseRuleset } from '../../hooks/rules.hooks';
 
 // FSAE or FHE page
 const RulesetTypePage: React.FC = () => {
-  // testing for AddNewFileModal
-  const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
+  const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
+  const { mutateAsync: createRuleset } = useCreateRuleset();
+  const { mutateAsync: parseRuleset } = useParseRuleset();
+  const toast = useToast();
+
+  const handleFileConfirm = async (data: {
+    fileId: string;
+    name: string;
+    car: string;
+    isActive: boolean;
+    parserType: string;
+  }) => {
     setAddFileModalShow(false);
-    console.log('Added data: ' + data); // delete this later, once data is used properly
+    try {
+      console.log('Creating ruleset...');
+      const ruleset = await createRuleset({
+        fileId: data.fileId,
+        name: data.name,
+        rulesetTypeId: data.car,
+        carNumber: parseInt(data.car),
+        active: data.isActive
+      });
+
+      console.log('Full ruleset response:', ruleset);
+      console.log('Ruleset type:', typeof ruleset);
+      console.log('Ruleset keys:', Object.keys(ruleset));
+      console.log('Ruleset.rulesetId:', ruleset.rulesetId);
+      console.log('Ruleset.id:', ruleset.rulesetId);
+
+      const rulesetId = ruleset.rulesetId || ruleset.rulesetId;
+
+      if (!rulesetId) {
+        console.error('No rulesetId found in response!');
+        throw new Error('No rulesetId returned from createRuleset');
+      }
+
+      console.log('Parsing ruleset with ID:', rulesetId);
+      const parsedRules = await parseRuleset({
+        rulesetId: rulesetId,
+        fileId: data.fileId,
+        parserType: data.parserType as 'FSAE' | 'FHE'
+      });
+      console.log('Rules parsed:', parsedRules.length);
+      toast.success(`Successfully parsed ${parsedRules.length} rules!`);
+    } catch (e) {
+      console.error('Error in handleFileConfirm:', e);
+      toast.error('Error uploading file: ' + (e instanceof Error ? e.message : 'Unknown error'));
+    }
   };
 
-  const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
   return (
     <PageLayout title="Rules">
       <NERButton variant="contained" onClick={() => setAddFileModalShow(!AddFileModalShow)}>
@@ -24,7 +69,7 @@ const RulesetTypePage: React.FC = () => {
       <AddNewFileModal
         open={AddFileModalShow}
         onHide={() => setAddFileModalShow(false)}
-        onConfirm={handleFileConfirm}
+        onFormSubmit={handleFileConfirm}
         carOptions={['1', '2']}
       />
     </PageLayout>
