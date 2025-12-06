@@ -160,6 +160,47 @@ resource "aws_cloudwatch_dashboard" "main" {
           region = var.aws_region
           title  = "RDS Freeable Memory (Bytes)"
         }
+      },
+      # RDS Read/Write Latency
+      {
+        type = "metric"
+        properties = {
+          metrics = [
+            ["AWS/RDS", "ReadLatency", "DBInstanceIdentifier", var.rds_instance_id, { stat = "Average", label = "Read Latency" }],
+            [".", "WriteLatency", ".", ".", { stat = "Average", label = "Write Latency" }]
+          ]
+          period = 300
+          stat   = "Average"
+          region = var.aws_region
+          title  = "RDS Read/Write Latency (ms)"
+        }
+      },
+      # RDS Queue Depth
+      {
+        type = "metric"
+        properties = {
+          metrics = [
+            ["AWS/RDS", "DiskQueueDepth", "DBInstanceIdentifier", var.rds_instance_id, { stat = "Average" }]
+          ]
+          period = 300
+          stat   = "Average"
+          region = var.aws_region
+          title  = "RDS Disk Queue Depth"
+        }
+      },
+      # RDS Throughput (MB/s)
+      {
+        type = "metric"
+        properties = {
+          metrics = [
+            ["AWS/RDS", "ReadThroughput", "DBInstanceIdentifier", var.rds_instance_id, { stat = "Average", label = "Read Throughput" }],
+            [".", "WriteThroughput", ".", ".", { stat = "Average", label = "Write Throughput" }]
+          ]
+          period = 300
+          stat   = "Average"
+          region = var.aws_region
+          title  = "RDS Disk Throughput (Bytes/sec)"
+        }
       }
     ]
   })
@@ -208,6 +249,108 @@ resource "aws_cloudwatch_metric_alarm" "alb_http_5xx_errors" {
 
   dimensions = {
     LoadBalancer = var.alb_arn_suffix
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+#############
+# RDS CloudWatch Alarms
+#############
+
+# High RDS CPU Alarm
+resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
+  alarm_name          = "${var.project_name}-${var.environment}-rds-cpu-high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/RDS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 75
+  alarm_description   = "RDS CPU utilization is high - may need optimization or larger instance"
+  alarm_actions       = [var.sns_topic_arn]
+
+  dimensions = {
+    DBInstanceIdentifier = var.rds_instance_id
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+# High RDS Read Latency Alarm
+resource "aws_cloudwatch_metric_alarm" "rds_read_latency_high" {
+  alarm_name          = "${var.project_name}-${var.environment}-rds-read-latency-high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "ReadLatency"
+  namespace           = "AWS/RDS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 0.01  # 10ms in seconds
+  alarm_description   = "RDS read latency is high - may indicate I/O bottleneck or need for indexing"
+  alarm_actions       = [var.sns_topic_arn]
+
+  dimensions = {
+    DBInstanceIdentifier = var.rds_instance_id
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+# Low RDS Freeable Memory Alarm
+resource "aws_cloudwatch_metric_alarm" "rds_memory_low" {
+  alarm_name          = "${var.project_name}-${var.environment}-rds-memory-low"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "FreeableMemory"
+  namespace           = "AWS/RDS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 524288000  # 500MB in bytes
+  alarm_description   = "RDS freeable memory is low - may need larger instance or query optimization"
+  alarm_actions       = [var.sns_topic_arn]
+
+  dimensions = {
+    DBInstanceIdentifier = var.rds_instance_id
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+# High Memory Alarm
+resource "aws_cloudwatch_metric_alarm" "eb_memory_high" {
+  alarm_name          = "${var.project_name}-${var.environment}-eb-memory-high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  threshold           = 75
+  alarm_description   = "This metric monitors EC2 memory utilization"
+  alarm_actions       = [var.sns_topic_arn]
+
+  metric_query {
+    id          = "m1"
+    return_data = true
+    metric {
+      namespace   = "CWAgent"
+      metric_name = "MemoryUtilization"
+      period      = 300
+      stat        = "Average"
+      dimensions = {
+        AutoScalingGroupName = var.eb_autoscaling_group_name
+      }
+    }
   }
 
   tags = {
