@@ -1,18 +1,12 @@
 import pdf from 'pdf-parse-new';
 
-export interface RuleData {
+export interface ParsedRule {
   ruleCode: string;
   ruleContent: string;
   parentRuleCode?: string;
-  pageNumber: string;
 }
 
-export interface RuleString {
-  ruleCode: string;
-  ruleContent: string;
-}
-
-export const parseRulesFromPdf = async (buffer: Buffer, parserType: 'FSAE' | 'FHE') => {
+export const parseRulesFromPdf = async (buffer: Buffer, parserType: 'FSAE' | 'FHE'): Promise<ParsedRule[]> => {
   const options = {
     // max page number to parse, 0 = all pages
     max: 0,
@@ -23,56 +17,70 @@ export const parseRulesFromPdf = async (buffer: Buffer, parserType: 'FSAE' | 'FH
   return parserType === 'FSAE' ? parseFSAERules(pdfData.text) : parseFHERules(pdfData.text);
 };
 
-const saveToDatabase = async (parsedRules: RuleData[]) => {
-  // Placeholder for saving to database
-}
-
-
-const extractSubRules = (ruleCode: string, content: string, pageNumber: string): RuleData[] => {
-  const subRules: RuleData[] = [];
-
-  // Pattern for lettered bullets like "a. Some text" or "b. Some text"
+/**
+ * Extracts lettered sub-rules from rule content (a, b, c, etc.)
+ * "EV.5.2 Main text a. Sub-rule" becomes:
+ * - EV.5.2 Main text
+ * - EV.5.2.a Sub-rule
+ * If no subrules exist, returns the original rule
+ * @param ruleCode parent rule code
+ * @param content rule content to extract from
+ * @returns array of parsed rules including main rule and any subrules
+ */
+const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
   const letterPattern = /\s+([a-z])\.\s+/g;
   const matches = [...content.matchAll(letterPattern)];
 
   if (matches.length === 0) {
-    // No sub-rules found
-    return [];
+    // no subrules found, return original rule
+    return [
+      {
+        ruleCode,
+        ruleContent: content.trim(),
+        parentRuleCode: findParentRuleCode(ruleCode)
+      }
+    ];
   }
+  const subRules: ParsedRule[] = [];
 
   // Extract the main rule content (everything before the first lettered item)
   const firstMatchIndex = matches[0].index!;
   const mainContent = content.substring(0, firstMatchIndex).trim();
 
-  // Add the main rule
+  // add main rule
   subRules.push({
     ruleCode,
     ruleContent: mainContent,
-    parentRuleCode: findParentRuleCode(ruleCode),
-    pageNumber
+    parentRuleCode: findParentRuleCode(ruleCode)
   });
 
-  // Extract the lettered sub-rules
+  // Extract lettered sub-rules
   for (let i = 0; i < matches.length; i++) {
-    const letter = matches[i][1];
+    const [, letter] = matches[i];
     const startIndex = matches[i].index! + matches[i][0].length;
 
     // Find where this sub-rule ends (either at next letter or end of rule content)
     const endIndex = i < matches.length - 1 ? matches[i + 1].index! : content.length;
-
     const subRuleContent = content.substring(startIndex, endIndex).trim();
     const subRuleCode = `${ruleCode}.${letter}`;
 
     subRules.push({
       ruleCode: subRuleCode,
       ruleContent: subRuleContent,
-      parentRuleCode: ruleCode,
-      pageNumber
+      parentRuleCode: ruleCode
     });
   }
   return subRules;
 };
 
+/**
+ * Determines parent rule code by removing last value.
+ * Top level rules return undefined.
+ * EV.5.2.2 -> EV.5.2
+ * GR -> undefined
+ * @param ruleCode rule code to find a parent for
+ * @returns Parent rule code, or undefined if top level
+ */
 const findParentRuleCode = (ruleCode: string): string | undefined => {
   const parts = ruleCode.split('.');
   if (parts.length <= 1) {
@@ -82,61 +90,52 @@ const findParentRuleCode = (ruleCode: string): string | undefined => {
 };
 
 /**
- * Looks for page indicators like "Page 5 of 143"
- * @param line current rule line being observed
- * @returns the page number if found, otherwise null
+ * Fixes rules with duplicate rule code by appending .duplicate suffix
+ * @param rules array of parsed rules
+ * @returns array of rules without duplicate rule codes
  */
-const extractPageNumber = (line: string): string | null => {
-  const pagePattern = /Page\s+(\d+)\s+of\s+\d+/i;
-  const match = line.match(pagePattern);
-  return match ? match[1] : null;
+const handleDuplicateCodes = (rules: ParsedRule[]): ParsedRule[] => {
+  const seenRuleCodes = new Map<string, number>();
+
+  return rules.map((rule) => {
+    const originalCode = rule.ruleCode;
+
+    if (seenRuleCodes.has(originalCode)) {
+      // duplicate found
+      const count = seenRuleCodes.get(originalCode)!;
+      seenRuleCodes.set(originalCode, count + 1);
+      const suffix = count === 1 ? '.duplicate' : `.duplicate${count}`;
+
+      return {
+        ...rule,
+        ruleCode: `${originalCode}${suffix}`
+      };
+    }
+    seenRuleCodes.set(originalCode, 1);
+    return rule;
+  });
 };
 
 /**************** FSAE ****************/
 
-const parseFSAERules = (text: string) => {
-  const rules: RuleData[] = [];
+const parseFSAERules = (text: string): ParsedRule[] => {
+  const rules: ParsedRule[] = [];
   const lines = text.split('\n');
-  const seenRuleCodes = new Map<string, number>();
 
-  let currentRule: { code: string; text: string; pageNumber: string } | null = null;
-  let currentPageNumber = '1';
+  let currentRule: { code: string; text: string } | null = null;
 
   const saveCurrentRule = () => {
-    if (currentRule) {
-      // Check if the rule has lettered sub-items
-      const subRules = extractSubRules(currentRule.code, currentRule.text, currentRule.pageNumber);
-
-      if (subRules.length > 0) {
-        // Fixes unique ruleCode issue
-        for (const subRule of subRules) {
-          rules.push(handleDuplicateCodesFSAE(subRule, seenRuleCodes));
-        }
-      } else {
-        // No sub-rules, just add the main rule
-        const rule: RuleData = {
-          ruleCode: currentRule.code,
-          ruleContent: currentRule.text.trim(),
-          parentRuleCode: findParentRuleCode(currentRule.code),
-          pageNumber: currentRule.pageNumber
-        };
-        rules.push(handleDuplicateCodesFSAE(rule, seenRuleCodes));
-      }
-    }
+    if (!currentRule) return;
+    const parsedRules = extractSubRules(currentRule.code, currentRule.text);
+    rules.push(...parsedRules);
   };
+
   for (const line of lines) {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
 
-    // Update page number if found
-    const pageMatch = extractPageNumber(trimmedLine);
-    if (pageMatch) {
-      currentPageNumber = pageMatch;
-      continue;
-    }
-
-    // skip table of contents
-    if (isTocFSAE(trimmedLine)) {
+    // Skip table of contents
+    if (/\.{4,}\s+\d+\s*$/.test(trimmedLine)) {
       continue;
     }
 
@@ -144,76 +143,25 @@ const parseFSAERules = (text: string) => {
     const rule = parseRuleNumberFSAE(trimmedLine);
     if (rule) {
       saveCurrentRule();
-
       currentRule = {
         code: rule.ruleCode,
-        text: rule.ruleContent,
-        pageNumber: currentPageNumber
+        text: rule.ruleContent
       };
     } else if (currentRule) {
-      // Append to existing rule
-      currentRule.text += ' ' + trimmedLine;
+      currentRule.text += ' ' + trimmedLine; // else append to existing rule
     }
   }
   saveCurrentRule();
-  return rules;
+  return handleDuplicateCodes(rules);
 };
 
-const extractTocFSAE = (text: string): RuleData[] => {
-  const tocEntries: RuleData[] = [];
-  const lines = text.split('\n');
-  let currentPageNumber = '1';
-
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    if (!trimmedLine) continue;
-
-    // Update page number if found
-    const pageMatch = extractPageNumber(trimmedLine);
-    if (pageMatch) {
-      currentPageNumber = pageMatch;
-      continue;
-    }
-
-    if (isTocFSAE(trimmedLine)) {
-      const rule = parseRuleNumberFSAE(trimmedLine);
-      if (rule) {
-        // removing excessive dots from table of contents
-        const cleanContent = rule.ruleContent.replace(/\.{3,}/g, '...');
-        tocEntries.push({
-          ruleCode: rule.ruleCode,
-          ruleContent: cleanContent,
-          parentRuleCode: findParentRuleCode(rule.ruleCode),
-          pageNumber: currentPageNumber
-        });
-      }
-    }
-  }
-  return tocEntries;
-};
-
-const handleDuplicateCodesFSAE = (rule: RuleData, seenRuleCodes: Map<string, number>): RuleData => {
-  const originalCode = rule.ruleCode;
-  const count = seenRuleCodes.get(originalCode) || 0;
-  seenRuleCodes.set(originalCode, count + 1);
-
-  if (count > 0) {
-    const suffix = count === 1 ? '.duplicate' : `.duplicate${count}`;
-    console.log(`Duplicate rule found: ${originalCode} -> ${originalCode}${suffix}`);
-    return {
-      ...rule,
-      ruleCode: `${originalCode}${suffix}`
-    };
-  }
-  return rule;
-};
-
-const isTocFSAE = (line: string): Boolean => {
-  // multiple dots and a number at the end
-  return /\.{4,}\s+\d+\s*$/.test(line);
-};
-
-const parseRuleNumberFSAE = (line: string): RuleString | null => {
+/**
+ * Extracts code and content of a rule from a line of text
+ * Catches rule pattern (e.g. GR.1.1 some text) and section pattern (e.g. GR - TEXT)
+ * @param line
+ * @returns
+ */
+const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
   // Match rule patterns like "GR.1.1" followed by text
   const rulePattern = /^([A-Z]{1,4}(?:\.[\d]+)+)\s+(.+)$/;
   // Match section patterns like "GR - GENERAL REGULATIONS"
@@ -221,43 +169,27 @@ const parseRuleNumberFSAE = (line: string): RuleString | null => {
 
   const match = line.match(rulePattern) || line.match(sectionPattern);
   if (match) {
+    const cleanContent = match[2].replace(/\.{3,}/g, '...');
     return {
       ruleCode: match[1],
-      ruleContent: match[2]
+      ruleContent: cleanContent
     };
   }
-
   return null;
 };
 
 /**************** FHE *****************/
 
-const parseFHERules = (text: string) => {
-  const rules: RuleData[] = [];
+const parseFHERules = (text: string): ParsedRule[] => {
+  const rules: ParsedRule[] = [];
   const lines = text.split('\n');
-
   let inRulesSection = false;
-  let currentRule: { code: string; text: string; pageNumber: string } | null = null;
-  let currentPageNumber = '0';
+  let currentRule: { code: string; text: string } | null = null;
 
   const saveCurrentRule = () => {
-    if (currentRule) {
-      // Check if the rule has lettered sub-items
-      const subRules = extractSubRules(currentRule.code, currentRule.text, currentRule.pageNumber);
-
-      if (subRules.length > 0) {
-        // Add the main rule and all sub-rules
-        rules.push(...subRules);
-      } else {
-        // No sub-rules, just add the main rule
-        rules.push({
-          ruleCode: currentRule.code,
-          ruleContent: currentRule.text.trim(),
-          parentRuleCode: findParentRuleCode(currentRule.code),
-          pageNumber: currentRule.pageNumber
-        });
-      }
-    }
+    if (!currentRule) return;
+    const parsedRules = extractSubRules(currentRule.code, currentRule.text);
+    rules.push(...parsedRules);
   };
 
   for (const line of lines) {
@@ -274,22 +206,13 @@ const parseFHERules = (text: string) => {
         continue;
       }
 
-      // Update page number if found
-      const pageMatch = extractPageNumber(trimmedLine);
-      if (pageMatch) {
-        currentPageNumber = pageMatch;
-        continue;
-      }
-
       // Check if this line starts a new rule
       const rule = parseRuleNumberFHE(trimmedLine);
       if (rule) {
         saveCurrentRule();
-
         currentRule = {
           code: rule.ruleCode,
-          text: rule.ruleContent,
-          pageNumber: currentPageNumber
+          text: rule.ruleContent
         };
       } else if (currentRule) {
         // Append to existing rule
@@ -297,12 +220,11 @@ const parseFHERules = (text: string) => {
       }
     }
   }
-
   saveCurrentRule();
-  return rules;
+  return handleDuplicateCodes(rules);
 };
 
-const parseRuleNumberFHE = (line: string): RuleString | null => {
+const parseRuleNumberFHE = (line: string): ParsedRule | null => {
   // Match FHE rule patterns like "1T3.17.1" followed by text
   const rulePattern = /^(\d+[A-Z]+\d+(?:\.\d+)*)\s+(.+)$/;
 
