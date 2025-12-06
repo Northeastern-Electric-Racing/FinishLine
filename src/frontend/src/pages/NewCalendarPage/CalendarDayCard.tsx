@@ -5,7 +5,7 @@ import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import { useState } from 'react';
-import DRCSummaryModal from '../EventSummaryModal';
+import DRCSummaryModal from '../CalendarPage/EventSummaryModal';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupIcon from '@mui/icons-material/Group';

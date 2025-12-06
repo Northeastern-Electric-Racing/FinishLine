@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DayOfWeek, Event } from 'shared';
-import CalendarDayCard from '../CalendarPage/CalendarComponents/CalendarDayCard';
+import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import { useAllCalendars, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
