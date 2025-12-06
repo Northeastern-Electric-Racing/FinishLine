@@ -48,6 +48,7 @@ const NewCalendarPage = () => {
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds)
   });
+
   const { data: allEventTypes } = useAllEventTypes();
   const { data: allCalendars } = useAllCalendars();
   const { data: allTeams } = useGetUsersTeams();
