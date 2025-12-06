@@ -5,6 +5,8 @@ import { body } from 'express-validator';
 
 const rulesRouter = express.Router();
 
+rulesRouter.get('/rulesetType/:rulesetTypeId/active', RulesController.getActiveRuleset);
+
 rulesRouter.post(
   '/rule/create',
   nonEmptyString(body('ruleCode')),
@@ -18,6 +20,17 @@ rulesRouter.post(
   validateInputs,
   RulesController.createRule
 );
+rulesRouter.post(
+  '/rule/:ruleId/edit',
+  nonEmptyString(body('ruleContent')),
+  nonEmptyString(body('ruleCode')),
+  body('imageFileIds').isArray(),
+  nonEmptyString(body('imageFileIds.*')),
+  body('parentRuleId').optional().isString(),
+  validateInputs,
+  RulesController.editRule
+);
+rulesRouter.post('/rule/:ruleId/delete', RulesController.deleteRule);
 
 rulesRouter.post('/rulesetType/create', nonEmptyString(body('name')), validateInputs, RulesController.createRulesetType);
 
@@ -32,6 +45,7 @@ rulesRouter.post(
 );
 
 rulesRouter.get('/rulesetTypes', RulesController.getAllRulesetTypes);
+rulesRouter.get('/ruleset/:rulesetId/rules/unassigned', RulesController.getUnassignedRules);
 rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
 rulesRouter.post('/projectRule/:projectRuleId/delete', RulesController.deleteProjectRule);
 
@@ -43,7 +57,39 @@ rulesRouter.post(
   RulesController.editProjectRuleStatus
 );
 
+rulesRouter.post(
+  '/rule/:ruleId/toggle-team',
+  nonEmptyString(body('teamId')),
+  validateInputs,
+  RulesController.toggleRuleTeam
+);
+
+rulesRouter.post(
+  '/ruleset/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('rulesetTypeId')),
+  body('carNumber').isInt(),
+  body('active').isBoolean(),
+  nonEmptyString(body('fileId')),
+  validateInputs,
+  RulesController.createRuleset
+);
 rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
+rulesRouter.get('/:rulesetTypeId/team/:teamId', RulesController.getTeamRulesInRulesetType);
+
+rulesRouter.post(
+  '/ruleset/:rulesetId/update',
+  body('isActive').isBoolean(),
+  nonEmptyString(body('name')),
+  validateInputs,
+  RulesController.updateRuleset
+);
+rulesRouter.get('/ruleset/:rulesetId/team/:teamId/rules/unassigned', RulesController.getUnassignedRulesForRuleset);
+
+rulesRouter.get('/ruleset/:rulesetId/project/:projectId/rules', RulesController.getProjectRules);
+
+rulesRouter.get('/:ruleId/subrules', RulesController.getChildRules);
+rulesRouter.get('/:rulesetId/parentRules', RulesController.getTopLevelRules);
 
 rulesRouter.post(
   '/ruleset/:rulesetId/parse',

@@ -13,8 +13,6 @@ import { mockAuth, mockUseMutationResult, mockUseQueryResult } from '../../test-
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { ToastProvider } from '../../../components/Toast/ToastProvider';
 import * as authHooks from '../../../hooks/auth.hooks';
-import { exampleAdminUser } from '../../test-support/test-data/users.stub';
-import AppContextUser from '../../../app/AppContextUser';
 import { useAllUsers, useLogUserIn } from '../../../hooks/users.hooks';
 import * as userHooks from '../../../hooks/users.hooks';
 import {
@@ -22,6 +20,7 @@ import {
   mockLogUserInDevReturnValue,
   mockGetCurrentUserValue
 } from '../../test-support/mock-hooks';
+import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../hooks/projects.hooks');
 vi.mock('../../../hooks/users.hooks');
@@ -47,18 +46,16 @@ const mockUseLogUserInHook = (isLoading: boolean, isError: boolean, error?: Erro
 const renderComponent = (cr: ChangeRequest, allowed: boolean = false) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <AppContextUser>
-      <ToastProvider>
-        <RouterWrapper>
-          <ChangeRequestDetailsView
-            changeRequest={cr}
-            isUserAllowedToReview={allowed}
-            isUserAllowedToImplement={allowed}
-            isUserAllowedToDelete={allowed}
-          />
-        </RouterWrapper>
-      </ToastProvider>
-    </AppContextUser>
+    <ToastProvider>
+      <RouterWrapper>
+        <ChangeRequestDetailsView
+          changeRequest={cr}
+          isUserAllowedToReview={allowed}
+          isUserAllowedToImplement={allowed}
+          isUserAllowedToDelete={allowed}
+        />
+      </RouterWrapper>
+    </ToastProvider>
   );
 };
 
@@ -66,8 +63,8 @@ describe('Implement change request permission tests', () => {
   beforeEach(() => {
     vi.spyOn(userHooks, 'useLogUserIn').mockReturnValue(mockLogUserInReturnValue);
     vi.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
     vi.spyOn(userHooks, 'useGetCurrentUser').mockReturnValue(mockGetCurrentUserValue);
   });
 

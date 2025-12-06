@@ -1,10 +1,11 @@
-import { Box, Card, CardContent, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Theme, Typography } from '@mui/material';
 import { WorkPackage } from 'shared';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import OverdueWorkPackageCard from './OverdueWorkPackageCard';
 
 interface OverdueWorkPackagesViewProps {
+  theme: Theme;
   workPackages: WorkPackage[];
 }
 
@@ -18,8 +19,7 @@ const NoOverdueWPsDisplay: React.FC = () => {
   );
 };
 
-const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workPackages }) => {
-  const theme = useTheme();
+const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ theme, workPackages }) => {
   const isEmpty = workPackages.length === 0;
   return (
     <Box sx={{ position: 'relative', mt: 5, height: '90%' }}>
