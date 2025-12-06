@@ -32,10 +32,9 @@ resource "aws_cloudwatch_dashboard" "main" {
         type = "metric"
         properties = {
           metrics = [
-            ["CWAgent", "MemoryUtilization", "AutoScalingGroupName", var.eb_autoscaling_group_name, { stat = "Average" }]
+            [{ expression = "SELECT AVG(MemoryUtilization) FROM \"CWAgent\"", id = "m1" }]
           ]
           period = 300
-          stat   = "Average"
           region = var.aws_region
           title  = "EC2 Memory Utilization (%)"
           yAxis = {
@@ -46,17 +45,16 @@ resource "aws_cloudwatch_dashboard" "main" {
           }
         }
       },
-      # EC2 Disk Utilization (Custom Metric)
+      # EC2 Disk Utilization (Custom Metric) - Root filesystem
       {
         type = "metric"
         properties = {
           metrics = [
-            ["CWAgent", "DiskUtilization", "AutoScalingGroupName", var.eb_autoscaling_group_name, { stat = "Average" }]
+            [{ expression = "SELECT AVG(DiskUtilization) FROM \"CWAgent\" WHERE path = '/'", id = "m1" }]
           ]
           period = 300
-          stat   = "Average"
           region = var.aws_region
-          title  = "EC2 Disk Utilization (%)"
+          title  = "EC2 Disk Utilization (%) - Root"
           yAxis = {
             left = {
               min = 0
