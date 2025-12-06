@@ -99,6 +99,12 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request,
     return next(error);
   }
 
+  if (error instanceof multer.MulterError) {
+    const httpError = handleMulterError(error);
+    res.status(httpError.status).json({ message: httpError.message });
+    return;
+  }
+
   if (error instanceof HttpException) {
     res.status(error.status).json({ message: error.message });
   } else {

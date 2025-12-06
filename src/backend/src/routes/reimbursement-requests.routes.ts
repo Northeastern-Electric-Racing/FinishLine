@@ -16,7 +16,6 @@ import {
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
 import multer, { memoryStorage } from 'multer';
 import { MAX_FILE_SIZE } from 'shared';
-import { Request, Response, NextFunction } from 'express';
 
 const reimbursementRequestsRouter = express.Router();
 
@@ -26,21 +25,6 @@ const upload = multer({
     fileSize: MAX_FILE_SIZE
   }
 });
-
-const uploadReceiptMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  upload.single('image')(req, res, (err: any) => {
-    if (err) {
-      if (err instanceof multer.MulterError) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-          return res.status(400).json({ message: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB` });
-        }
-        return res.status(400).json({ message: `File upload error: ${err.message}` });
-      }
-      return res.status(500).json({ message: 'Unknown upload error' });
-    }
-    next();
-  });
-};
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
@@ -237,7 +221,7 @@ reimbursementRequestsRouter.post(
 
 reimbursementRequestsRouter.post(
   '/:requestId/upload-receipt',
-  uploadReceiptMiddleware,
+  upload.single('image'),
   ReimbursementRequestController.uploadReceipt
 );
 
