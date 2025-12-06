@@ -442,7 +442,7 @@ const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
 const calendarEvents = () => `${calendar()}/events`;
-const calendarEventTypes = () => `${calendar()}/eventTypes`;
+const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
 const calendarMachinery = () => `${calendar()}/machinery`;
 const calendarCreateMachinery = () => `${calendar()}/machinery/create`;

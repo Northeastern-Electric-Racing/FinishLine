@@ -116,7 +116,7 @@ export const getAllEvents = () => {
 };
 
 export const postFilterEvents = (payload: FilterArgs) => {
-  return axios.post<any>(apiUrls.calendarFilterEvents(), payload, {
+  return axios.post<Event[]>(apiUrls.calendarFilterEvents(), payload, {
     transformResponse: (data) => JSON.parse(data).map(eventTransformer)
   });
 };
