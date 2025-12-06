@@ -27,31 +27,11 @@ resource "aws_cloudwatch_dashboard" "main" {
           }
         }
       },
-      # EC2 Memory Utilization
       {
         type = "metric"
         properties = {
           metrics = [
-            ["CWAgent", "mem_used_percent", "AutoScalingGroupName", var.eb_autoscaling_group_name, { stat = "Average" }]
-          ]
-          period = 300
-          stat   = "Average"
-          region = var.aws_region
-          title  = "EC2 Memory Utilization (%)"
-          yAxis = {
-            left = {
-              min = 0
-              max = 100
-            }
-          }
-        }
-      },
-      # EB Request Count
-      {
-        type = "metric"
-        properties = {
-          metrics = [
-            ["AWS/ElasticBeanstalk", "RequestCount", "EnvironmentName", var.eb_environment_name, { stat = "Sum" }]
+            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", var.alb_arn_suffix, { stat = "Sum" }]
           ]
           period = 300
           stat   = "Sum"
@@ -59,12 +39,12 @@ resource "aws_cloudwatch_dashboard" "main" {
           title  = "Request Count"
         }
       },
-      # HTTP 5xx Errors
+      # HTTP 5xx Errors (Target Responses)
       {
         type = "metric"
         properties = {
           metrics = [
-            ["AWS/ElasticBeanstalk", "ApplicationRequests5xx", "EnvironmentName", var.eb_environment_name, { stat = "Sum" }]
+            ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", var.alb_arn_suffix, { stat = "Sum" }]
           ]
           period = 300
           stat   = "Sum"
@@ -176,60 +156,14 @@ resource "aws_cloudwatch_metric_alarm" "eb_cpu_high" {
   }
 }
 
-# High Memory Alarm
-resource "aws_cloudwatch_metric_alarm" "eb_memory_high" {
-  alarm_name          = "${var.project_name}-${var.environment}-eb-memory-high"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 2
-  metric_name         = "mem_used_percent"
-  namespace           = "CWAgent"
-  period              = 300
-  statistic           = "Average"
-  threshold           = 80
-  alarm_description   = "This metric monitors EC2 memory utilization"
-  alarm_actions       = [var.sns_topic_arn]
-
-  dimensions = {
-    AutoScalingGroupName = var.eb_autoscaling_group_name
-  }
-
-  tags = {
-    Environment = var.environment
-    Project     = var.project_name
-  }
-}
-
-# Critical Memory Alarm
-resource "aws_cloudwatch_metric_alarm" "eb_memory_critical" {
-  alarm_name          = "${var.project_name}-${var.environment}-eb-memory-critical"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 2
-  metric_name         = "mem_used_percent"
-  namespace           = "CWAgent"
-  period              = 300
-  statistic           = "Average"
-  threshold           = 90
-  alarm_description   = "This metric monitors EC2 memory utilization - CRITICAL"
-  alarm_actions       = [var.sns_topic_arn]
-
-  dimensions = {
-    AutoScalingGroupName = var.eb_autoscaling_group_name
-  }
-
-  tags = {
-    Environment = var.environment
-    Project     = var.project_name
-  }
-}
-
 # HTTP 5xx Error Rate Alarm
 # This monitors server errors which indicate application health issues
-resource "aws_cloudwatch_metric_alarm" "eb_http_5xx_errors" {
-  alarm_name          = "${var.project_name}-${var.environment}-eb-http-5xx-high"
+resource "aws_cloudwatch_metric_alarm" "alb_http_5xx_errors" {
+  alarm_name          = "${var.project_name}-${var.environment}-alb-http-5xx-high"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 2
-  metric_name         = "ApplicationRequests5xx"
-  namespace           = "AWS/ElasticBeanstalk"
+  metric_name         = "HTTPCode_Target_5XX_Count"
+  namespace           = "AWS/ApplicationELB"
   period              = 300
   statistic           = "Sum"
   threshold           = 10  # Alert if more than 10 5xx errors in 5 minutes
@@ -237,7 +171,7 @@ resource "aws_cloudwatch_metric_alarm" "eb_http_5xx_errors" {
   alarm_actions       = [var.sns_topic_arn]
 
   dimensions = {
-    EnvironmentName = var.eb_environment_name
+    LoadBalancer = var.alb_arn_suffix
   }
 
   tags = {

@@ -80,7 +80,7 @@ resource "aws_cloudwatch_metric_alarm" "database_cpu" {
   alarm_actions       = var.alarm_actions
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.main.id
+    DBInstanceIdentifier = aws_db_instance.main.identifier
   }
 
   tags = {
@@ -102,7 +102,7 @@ resource "aws_cloudwatch_metric_alarm" "database_memory" {
   alarm_actions       = var.alarm_actions
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.main.id
+    DBInstanceIdentifier = aws_db_instance.main.identifier
   }
 
   tags = {
@@ -124,7 +124,7 @@ resource "aws_cloudwatch_metric_alarm" "database_storage" {
   alarm_actions       = var.alarm_actions
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.main.id
+    DBInstanceIdentifier = aws_db_instance.main.identifier
   }
 
   tags = {
@@ -146,7 +146,7 @@ resource "aws_cloudwatch_metric_alarm" "database_connections" {
   alarm_actions       = var.alarm_actions
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.main.id
+    DBInstanceIdentifier = aws_db_instance.main.identifier
   }
 
   tags = {
