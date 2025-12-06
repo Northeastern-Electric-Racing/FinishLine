@@ -48,7 +48,6 @@ rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRul
 rulesRouter.post(
   '/ruleset/:rulesetId/parse',
   nonEmptyString(body('fileId')),
-  nonEmptyString(body('rulesetId')),
   nonEmptyString(body('parserType')), // 'FSAE' or 'FHE'
   validateInputs,
   RulesController.parseRuleset

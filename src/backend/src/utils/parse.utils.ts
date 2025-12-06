@@ -7,14 +7,18 @@ export interface ParsedRule {
 }
 
 export const parseRulesFromPdf = async (buffer: Buffer, parserType: 'FSAE' | 'FHE'): Promise<ParsedRule[]> => {
-  const options = {
-    // max page number to parse, 0 = all pages
-    max: 0,
-    // errors: 0, warnings: 1, infos: 5
-    verbosityLevel: 0 as const
-  };
-  const pdfData = await pdf(buffer, options);
-  return parserType === 'FSAE' ? parseFSAERules(pdfData.text) : parseFHERules(pdfData.text);
+  try {
+    const options = {
+      // max page number to parse, 0 = all pages
+      max: 0,
+      // errors: 0, warnings: 1, infos: 5
+      verbosityLevel: 0 as const
+    };
+    const pdfData = await pdf(buffer, options);
+    return parserType === 'FSAE' ? parseFSAERules(pdfData.text) : parseFHERules(pdfData.text);
+  } catch (error) {
+    throw error;
+  }
 };
 
 /**
@@ -90,7 +94,7 @@ const findParentRuleCode = (ruleCode: string): string | undefined => {
 };
 
 /**
- * Fixes rules with duplicate rule code by appending .duplicate suffix
+ * Updates rules with duplicate rule codes by appending .duplicate suffix
  * @param rules array of parsed rules
  * @returns array of rules without duplicate rule codes
  */
@@ -156,10 +160,10 @@ const parseFSAERules = (text: string): ParsedRule[] => {
 };
 
 /**
- * Extracts code and content of a rule from a line of text
- * Catches rule pattern (e.g. GR.1.1 some text) and section pattern (e.g. GR - TEXT)
- * @param line
- * @returns
+ * Determines if this line starts a new rule, if so extracts code and content of the rule
+ * Matches rule pattern (e.g. GR.1.1 some text) or section pattern (e.g. GR - TEXT)
+ * @param line single line in the extracted text from the ruleset pdf
+ * @returns rule code and content, or null if this line does not start a new rule
  */
 const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
   // Match rule patterns like "GR.1.1" followed by text
@@ -224,6 +228,12 @@ const parseFHERules = (text: string): ParsedRule[] => {
   return handleDuplicateCodes(rules);
 };
 
+/**
+ * Determines if this line starts a new rule, if so extracts code and content of the rule
+ * Matches three patterns: rule ("1T3.17.1 Text"), part ("PART A1 - Text"), and article ("ARTICLE A1 Text")
+ * @param line single line in the extracted text from the ruleset pdf
+ * @returns rule code and content, or null if this line does not start a new rule
+ */
 const parseRuleNumberFHE = (line: string): ParsedRule | null => {
   // Match FHE rule patterns like "1T3.17.1" followed by text
   const rulePattern = /^(\d+[A-Z]+\d+(?:\.\d+)*)\s+(.+)$/;

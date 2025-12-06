@@ -1,5 +1,5 @@
 import { Organization, Rule, User, Rule_Completion } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview } from 'shared';
+import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview, Rule as SharedRule } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -24,6 +24,7 @@ import {
   rulesetPreviewTransformer
 } from '../transformers/rules.transformer';
 import { downloadFile } from '../utils/google-integration.utils';
+import { ParsedRule, parseRulesFromPdf } from '../utils/parse.utils';
 
 export default class RulesService {
   /**
@@ -586,13 +587,22 @@ export default class RulesService {
     return projectRuleTransformer(deletedProjectRule);
   }
 
+  /**
+   *
+   * @param user
+   * @param organizationId
+   * @param fileId
+   * @param rulesetId
+   * @param parserType
+   * @returns
+   */
   static async parseRuleset(
     user: User,
     organizationId: string,
     fileId: string,
     rulesetId: string,
     parserType: 'FSAE' | 'FHE'
-  ) {
+  ): Promise<SharedRule[]> {
     if (!(await userHasPermission(user.userId, organizationId, isLeadership))) {
       throw new AccessDeniedException('You do not have permissions to upload and parse rulesets');
     }
@@ -626,13 +636,64 @@ export default class RulesService {
     if (type !== 'application/pdf') {
       throw new HttpException(400, 'Ruleset File must be a PDF');
     }
-
-    const parsedRules = await parseRulesFromPdf(buffer, parserType);
-
-    if (parsedRules.length === 0) {
-      throw new HttpException(400, 'No rules found in provided file');
+    let parsedRules: ParsedRule[];
+    try {
+      parsedRules = await parseRulesFromPdf(buffer, parserType);
+      if (parsedRules.length === 0) {
+        throw new HttpException(400, 'No rules found in provided file');
+      }
+    } catch (error) {
+      throw new HttpException(500, 'Error parsing rules from PDF file');
     }
 
-    return parsedRules.map(ruleTransformer);
+    await prisma.$transaction(async (tx) => {
+      await tx.rule.createMany({
+        data: parsedRules.map((rule) => ({
+          ruleCode: rule.ruleCode,
+          ruleContent: rule.ruleContent,
+          imageFileIds: [],
+          rulesetId,
+          createdByUserId: user.userId
+        }))
+      });
+
+      const createdRules = await tx.rule.findMany({
+        where: { rulesetId },
+        select: {
+          ruleId: true,
+          ruleCode: true
+        }
+      });
+
+      const ruleMap = new Map<string, string>();
+      createdRules.forEach((rule) => {
+        ruleMap.set(rule.ruleCode, rule.ruleId);
+      });
+
+      // update parent relationships
+      const parentUpdates = parsedRules
+        .filter((rule) => rule.parentRuleCode)
+        .map((rule) => {
+          const parentId = ruleMap.get(rule.parentRuleCode!);
+          const ruleId = ruleMap.get(rule.ruleCode);
+
+          if (!parentId || !ruleId) return null;
+
+          return tx.rule.update({
+            where: { ruleId },
+            data: { parentRuleId: parentId }
+          });
+        })
+        .filter(Boolean);
+
+      await Promise.all(parentUpdates);
+    });
+
+    const savedRules = await prisma.rule.findMany({
+      where: { rulesetId },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return savedRules.map(ruleTransformer);
   }
 }
