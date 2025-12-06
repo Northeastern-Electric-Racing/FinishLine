@@ -27,6 +27,44 @@ resource "aws_cloudwatch_dashboard" "main" {
           }
         }
       },
+      # EC2 Memory Utilization (Custom Metric)
+      {
+        type = "metric"
+        properties = {
+          metrics = [
+            ["CWAgent", "MemoryUtilization", "AutoScalingGroupName", var.eb_autoscaling_group_name, { stat = "Average" }]
+          ]
+          period = 300
+          stat   = "Average"
+          region = var.aws_region
+          title  = "EC2 Memory Utilization (%)"
+          yAxis = {
+            left = {
+              min = 0
+              max = 100
+            }
+          }
+        }
+      },
+      # EC2 Disk Utilization (Custom Metric)
+      {
+        type = "metric"
+        properties = {
+          metrics = [
+            ["CWAgent", "DiskUtilization", "AutoScalingGroupName", var.eb_autoscaling_group_name, { stat = "Average" }]
+          ]
+          period = 300
+          stat   = "Average"
+          region = var.aws_region
+          title  = "EC2 Disk Utilization (%)"
+          yAxis = {
+            left = {
+              min = 0
+              max = 100
+            }
+          }
+        }
+      },
       {
         type = "metric"
         properties = {
