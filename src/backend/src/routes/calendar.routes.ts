@@ -151,7 +151,7 @@ calendarRouter.post(
   CalendarController.setStatus
 );
 
-calendarRouter.post('/event/:eventId/delete', CalendarController.deleteEvent);
+calendarRouter.delete('/event/:eventId', CalendarController.deleteEvent);
 
 calendarRouter.get('/event/:eventId', CalendarController.getSingleEvent);
 

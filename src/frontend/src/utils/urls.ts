@@ -456,7 +456,7 @@ const calendarEditCalendar = (calendarId: string) => `${calendar()}/${calendarId
 const calendarCalendars = () => `${calendar()}/calendars`;
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
-const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
+const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}`;
 const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
 
 /**************** Other Endpoints ****************/

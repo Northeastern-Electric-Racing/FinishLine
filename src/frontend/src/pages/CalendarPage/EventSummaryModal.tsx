@@ -45,10 +45,10 @@ const EventSummaryModal: React.FC<EventSummaryModalProps> = ({
 
   const isScheduled = event.status === EventStatus.SCHEDULED || event.status === EventStatus.DONE;
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     try {
-      deleteEvent();
-      history.push(routes.CALENDAR);
+      await deleteEvent();
+      toast.success('Deleted Successfully');
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
