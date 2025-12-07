@@ -207,7 +207,9 @@ describe('useGlobalCarFilter', () => {
     // Clear selection
     result.current.setSelectedCar(null);
 
-    expect(sessionStorage.getItem('selectedCarId')).toBeNull();
-    expect(result.current.selectedCar).toBeNull();
+    await waitFor(() => {
+      expect(sessionStorage.getItem('selectedCarId')).toBeNull();
+      expect(result.current.selectedCar).toBeNull();
+    });
   });
 });

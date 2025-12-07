@@ -23,6 +23,7 @@ interface GlobalCarFilterProviderProps {
 
 export const GlobalCarFilterProvider: React.FC<GlobalCarFilterProviderProps> = ({ children }) => {
   const [selectedCar, setSelectedCarState] = useState<Car | null>(null);
+  const [hasBeenManuallyCleared, setHasBeenManuallyCleared] = useState(false);
 
   const { data: currentCar, isLoading: currentCarLoading, error: currentCarError } = useGetCurrentCar();
   const { data: allCars = [], isLoading: allCarsLoading, error: allCarsError } = useGetAllCars();
@@ -31,7 +32,7 @@ export const GlobalCarFilterProvider: React.FC<GlobalCarFilterProviderProps> = (
   const error = currentCarError || allCarsError;
 
   useEffect(() => {
-    if (!isLoading && allCars.length > 0) {
+    if (!isLoading && allCars.length > 0 && !hasBeenManuallyCleared) {
       const savedCarId = sessionStorage.getItem('selectedCarId');
 
       if (savedCarId) {
@@ -51,9 +52,12 @@ export const GlobalCarFilterProvider: React.FC<GlobalCarFilterProviderProps> = (
         setSelectedCarState(mostRecentCar);
       }
     }
-  }, [currentCar, allCars, isLoading]);
+  }, [currentCar, allCars, isLoading, hasBeenManuallyCleared]);
 
   const setSelectedCar = (car: Car | null) => {
+    if (car === null) {
+      setHasBeenManuallyCleared(true);
+    }
     setSelectedCarState(car);
 
     if (car) {
