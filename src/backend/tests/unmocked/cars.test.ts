@@ -1,6 +1,6 @@
 import { Organization, User } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers, createTestCar } from '../test-utils';
-import { supermanAdmin, batmanAppAdmin } from '../test-data/users.test-data';
+import { supermanAdmin, member } from '../test-data/users.test-data';
 import CarsService from '../../src/services/car.services';
 import { AccessDeniedAdminOnlyException } from '../../src/utils/errors.utils';
 import prisma from '../../src/prisma/prisma';
@@ -13,7 +13,7 @@ describe('Cars Tests', () => {
   beforeEach(async () => {
     org = await createTestOrganization();
     adminUser = await createTestUser(supermanAdmin, org.organizationId);
-    nonAdminUser = await createTestUser(batmanAppAdmin, org.organizationId);
+    nonAdminUser = await createTestUser(member, org.organizationId);
   });
 
   afterEach(async () => {
@@ -27,9 +27,38 @@ describe('Cars Tests', () => {
     });
 
     test('getAllCars returns all cars for organization', async () => {
-      // Create test cars
-      await createTestCar(org.organizationId, adminUser.userId);
-      await createTestCar(org.organizationId, adminUser.userId);
+      // Create test cars manually with unique car numbers
+      await prisma.car.create({
+        data: {
+          wbsElement: {
+            create: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0,
+              name: 'Car 1',
+              organizationId: org.organizationId,
+              leadId: adminUser.userId,
+              managerId: adminUser.userId
+            }
+          }
+        }
+      });
+
+      await prisma.car.create({
+        data: {
+          wbsElement: {
+            create: {
+              carNumber: 1,
+              projectNumber: 0,
+              workPackageNumber: 0,
+              name: 'Car 2',
+              organizationId: org.organizationId,
+              leadId: adminUser.userId,
+              managerId: adminUser.userId
+            }
+          }
+        }
+      });
 
       const cars = await CarsService.getAllCars(org);
       expect(cars).toHaveLength(2);
@@ -37,12 +66,67 @@ describe('Cars Tests', () => {
 
     test('getAllCars only returns cars for specified organization', async () => {
       // Create car in our org
-      await createTestCar(org.organizationId, adminUser.userId);
+      await prisma.car.create({
+        data: {
+          wbsElement: {
+            create: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0,
+              name: 'Our Car',
+              organizationId: org.organizationId,
+              leadId: adminUser.userId,
+              managerId: adminUser.userId
+            }
+          }
+        }
+      });
 
       // Create car in different org
-      const otherOrg = await createTestOrganization();
-      const otherUser = await createTestUser(supermanAdmin, otherOrg.organizationId);
-      await createTestCar(otherOrg.organizationId, otherUser.userId);
+      const uniqueId = `${Date.now()}-${Math.random()}`;
+      const orgCreator = await prisma.user.create({
+        data: {
+          firstName: 'Org',
+          lastName: 'Creator',
+          email: `org-${uniqueId}@test.com`,
+          googleAuthId: `org-${uniqueId}`
+        }
+      });
+
+      const otherOrg = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          description: 'Other organization',
+          applicationLink: '',
+          userCreatedId: orgCreator.userId
+        }
+      });
+
+      const otherUser = await createTestUser(
+        {
+          ...supermanAdmin,
+          googleAuthId: `admin-${uniqueId}`,
+          email: `admin-${uniqueId}@test.com`,
+          emailId: `admin-${uniqueId}`
+        },
+        otherOrg.organizationId
+      );
+
+      await prisma.car.create({
+        data: {
+          wbsElement: {
+            create: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0,
+              name: 'Other Car',
+              organizationId: otherOrg.organizationId,
+              leadId: otherUser.userId,
+              managerId: otherUser.userId
+            }
+          }
+        }
+      });
 
       const cars = await CarsService.getAllCars(org);
       expect(cars).toHaveLength(1);
@@ -137,8 +221,35 @@ describe('Cars Tests', () => {
       });
 
       // Create car in different org with higher car number
-      const otherOrg = await createTestOrganization();
-      const otherUser = await createTestUser(supermanAdmin, otherOrg.organizationId);
+      const uniqueId = `${Date.now()}-${Math.random()}`;
+      const orgCreator = await prisma.user.create({
+        data: {
+          firstName: 'Org',
+          lastName: 'Creator',
+          email: `org-${uniqueId}@test.com`,
+          googleAuthId: `org-${uniqueId}`
+        }
+      });
+
+      const otherOrg = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          description: 'Other organization',
+          applicationLink: '',
+          userCreatedId: orgCreator.userId
+        }
+      });
+
+      const otherUser = await createTestUser(
+        {
+          ...supermanAdmin,
+          googleAuthId: `admin-${uniqueId}`,
+          email: `admin-${uniqueId}@test.com`,
+          emailId: `admin-${uniqueId}`
+        },
+        otherOrg.organizationId
+      );
+
       await prisma.car.create({
         data: {
           wbsElement: {
@@ -193,8 +304,34 @@ describe('Cars Tests', () => {
       const firstCar = await CarsService.createCar(org, adminUser, 'First Org Car');
 
       // Create different org and admin
-      const otherOrg = await createTestOrganization();
-      const otherAdmin = await createTestUser(supermanAdmin, otherOrg.organizationId);
+      const uniqueId = `${Date.now()}-${Math.random()}`;
+      const orgCreator = await prisma.user.create({
+        data: {
+          firstName: 'Org',
+          lastName: 'Creator',
+          email: `org2-${uniqueId}@test.com`,
+          googleAuthId: `org2-${uniqueId}`
+        }
+      });
+
+      const otherOrg = await prisma.organization.create({
+        data: {
+          name: 'Second Org',
+          description: 'Second organization',
+          applicationLink: '',
+          userCreatedId: orgCreator.userId
+        }
+      });
+
+      const otherAdmin = await createTestUser(
+        {
+          ...supermanAdmin,
+          googleAuthId: `admin2-${uniqueId}`,
+          email: `admin2-${uniqueId}@test.com`,
+          emailId: `admin2-${uniqueId}`
+        },
+        otherOrg.organizationId
+      );
 
       // Create car in second org
       const secondCar = await CarsService.createCar(otherOrg, otherAdmin, 'Second Org Car');
