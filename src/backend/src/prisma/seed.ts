@@ -293,6 +293,40 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
+  const car24 = await prisma.car.create({
+    data: {
+      wbsElement: {
+        create: {
+          name: 'NER-24',
+          carNumber: 24,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          organizationId
+        }
+      }
+    },
+    include: {
+      wbsElement: true
+    }
+  });
+
+  const car25 = await prisma.car.create({
+    data: {
+      wbsElement: {
+        create: {
+          name: 'NER-25',
+          carNumber: 25,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          organizationId
+        }
+      }
+    },
+    include: {
+      wbsElement: true
+    }
+  });
+
   /**
    * Make an initial change request for car 1 using the wbs of the genesis project
    */

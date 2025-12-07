@@ -53,11 +53,7 @@ const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compa
 
   const sortedCars = [...allCars].sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber);
 
-  const currentCarLabel = selectedCar
-    ? selectedCar.wbsNum.carNumber === 0
-      ? selectedCar.name
-      : `Car ${selectedCar.wbsNum.carNumber}`
-    : 'Select Car';
+  const currentCarLabel = selectedCar ? selectedCar.name : 'Select Car';
 
   if (compact) {
     return (
@@ -107,7 +103,7 @@ const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compa
             }}
           >
             {sortedCars.map((car) => {
-              const carLabel = car.wbsNum.carNumber === 0 ? car.name : `Car ${car.wbsNum.carNumber}`;
+              const carLabel = car.name;
               const isSelected = selectedCar ? car.id === selectedCar.id : false;
               return (
                 <Chip

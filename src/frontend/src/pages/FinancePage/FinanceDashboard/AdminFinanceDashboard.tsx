@@ -23,6 +23,7 @@ import { HelpOutline as HelpIcon } from '@mui/icons-material';
 import { isAdmin } from 'shared';
 import { useGetAllCars } from '../../../hooks/cars.hooks';
 import NERAutocomplete from '../../../components/NERAutocomplete';
+import { useGlobalCarFilter } from '../../../app/AppGlobalCarFilterContext';
 
 interface AdminFinanceDashboardProps {
   startDate?: Date;
@@ -32,6 +33,7 @@ interface AdminFinanceDashboardProps {
 
 const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate, endDate, carNumber }) => {
   const user = useCurrentUser();
+  const { selectedCar } = useGlobalCarFilter();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -62,11 +64,19 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
 
   const { data: allCars, isLoading: allCarsIsLoading, isError: allCarsIsError, error: allCarsError } = useGetAllCars();
 
+  // Sync with global car filter from sidebar
   useEffect(() => {
-    if (carNumberState === undefined && allCars && allCars.length > 0) {
+    if (selectedCar) {
+      setCarNumberState(selectedCar.wbsNum.carNumber);
+    }
+  }, [selectedCar]);
+
+  // Set default car if none selected
+  useEffect(() => {
+    if (carNumberState === undefined && allCars && allCars.length > 0 && !selectedCar) {
       setCarNumberState(allCars[allCars.length - 1].wbsNum.carNumber);
     }
-  }, [allCars, carNumberState]);
+  }, [allCars, carNumberState, selectedCar]);
 
   if (allCarsIsError) {
     return <ErrorPage error={allCarsError} />;

@@ -10,12 +10,14 @@ import { useCurrentUser, useUsersFavoriteProjects } from '../../hooks/users.hook
 import ProjectsOverviewCards from './ProjectsOverviewCards';
 import { useGetUsersLeadingProjects, useGetUsersTeamsProjects } from '../../hooks/projects.hooks';
 import { WbsElementStatus } from 'shared';
+import { useGlobalCarFilter } from '../../app/AppGlobalCarFilterContext';
 
 /**
  * Cards of all projects this user has favorited
  */
 const ProjectsOverview: React.FC = () => {
   const user = useCurrentUser();
+  const { selectedCar } = useGlobalCarFilter();
 
   const { isLoading, data: favoriteProjects, isError, error } = useUsersFavoriteProjects(user.userId);
   const {
@@ -48,18 +50,28 @@ const ProjectsOverview: React.FC = () => {
 
   const favoriteProjectsSet: Set<string> = new Set(favoriteProjects.map((project) => project.id));
 
+  const carFilteredFavorites = selectedCar
+    ? favoriteProjects.filter((project) => project.wbsNum.carNumber === selectedCar.wbsNum.carNumber)
+    : favoriteProjects;
+  const carFilteredTeams = selectedCar
+    ? teamsProjects.filter((project) => project.wbsNum.carNumber === selectedCar.wbsNum.carNumber)
+    : teamsProjects;
+  const carFilteredLeading = selectedCar
+    ? leadingProjects.filter((project) => project.wbsNum.carNumber === selectedCar.wbsNum.carNumber)
+    : leadingProjects;
+
   // Keeps only favorite team/leading projects (even when completed) or incomplete projects
-  const filteredTeamsProjects = teamsProjects.filter(
+  const filteredTeamsProjects = carFilteredTeams.filter(
     (project) => project.status !== WbsElementStatus.Complete || favoriteProjectsSet.has(project.id)
   );
-  const filteredLeadingProjects = leadingProjects.filter(
+  const filteredLeadingProjects = carFilteredLeading.filter(
     (project) => project.status !== WbsElementStatus.Complete || favoriteProjectsSet.has(project.id)
   );
 
   return (
     <Box>
       <ProjectsOverviewCards
-        projects={favoriteProjects}
+        projects={carFilteredFavorites}
         title="My Favorites"
         favoriteProjectsSet={favoriteProjectsSet}
         emptyMessage="You have no favorite projects. Click the star on a project's page to add one!"
