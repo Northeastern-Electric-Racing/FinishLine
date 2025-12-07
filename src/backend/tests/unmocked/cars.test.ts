@@ -181,7 +181,7 @@ describe('Cars Tests', () => {
         }
       });
 
-      const car2 = await prisma.car.create({
+      await prisma.car.create({
         data: {
           wbsElement: {
             create: {
