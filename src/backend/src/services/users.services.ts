@@ -1,4 +1,4 @@
-import { User_Settings, Organization } from '@prisma/client';
+import { User_Settings, Organization, Role_Type } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import {
   Role,
@@ -52,6 +52,28 @@ export default class UsersService {
   static async getAllOrgUsers(organizationId: string): Promise<User[]> {
     const users = await prisma.user.findMany({
       where: { organizations: { some: { organizationId } } },
+      ...getUserQueryArgs(organizationId),
+      orderBy: { firstName: 'asc' }
+    });
+
+    return users.map(userTransformer);
+  }
+
+  static async getAllOrgMembers(organizationId: string): Promise<User[]> {
+    const users = await prisma.user.findMany({
+      where: {
+        organizations: {
+          some: {
+            organizationId,
+            roles: {}
+          }
+        },
+        roles: {
+          some: {
+            AND: [{ NOT: { roleType: Role_Type.GUEST } }, { organizationId }]
+          }
+        }
+      },
       ...getUserQueryArgs(organizationId),
       orderBy: { firstName: 'asc' }
     });

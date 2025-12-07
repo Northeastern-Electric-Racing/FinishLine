@@ -45,6 +45,16 @@ export const getAllOrgUsers = () => {
 };
 
 /**
+ * All users in the current organization that are member or higher in role
+ * @returns the members in the current organization with their roles
+ */
+export const getAllOrgMembers = () => {
+  return axios.get<UserWithRole[]>(apiUrls.orgMembers(), {
+    transformResponse: (data) => JSON.parse(data).map(userTransformer)
+  });
+};
+
+/**
  * Fetch a single user.
  *
  * @param id User ID of the requested user.

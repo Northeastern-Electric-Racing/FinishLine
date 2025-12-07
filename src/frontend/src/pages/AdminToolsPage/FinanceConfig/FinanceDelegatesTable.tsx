@@ -16,7 +16,7 @@ import React, { useState } from 'react';
 import { NERButton } from '../../../components/NERButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useGetFinanceDelegates, useSetFinanceDelegates } from '../../../hooks/organizations.hooks';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { fullNamePipe } from '../../../utils/pipes';
 
@@ -28,14 +28,14 @@ const FinanceDelegatesTable = () => {
     error: delegatesError
   } = useGetFinanceDelegates();
 
-  const { data: allUsers, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  const { data: allMembers, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
 
   const { mutateAsync: setFinanceDelegates, isLoading: isUpdating } = useSetFinanceDelegates();
   const toast = useToast();
 
   const [selectedUserId, setSelectedUserId] = useState<string>();
 
-  if (!financeDelegates || delegatesIsLoading || !allUsers || usersIsLoading) {
+  if (!financeDelegates || delegatesIsLoading || !allMembers || usersIsLoading) {
     return <LoadingIndicator />;
   }
 
@@ -71,7 +71,7 @@ const FinanceDelegatesTable = () => {
   };
 
   const availableUsers =
-    allUsers?.filter((user) => !financeDelegates.some((delegate) => delegate.userId === user.userId)) || [];
+    allMembers?.filter((user) => !financeDelegates.some((delegate) => delegate.userId === user.userId)) || [];
 
   const userAutocompleteOptions = availableUsers.map((user) => ({
     label: `${fullNamePipe(user)} (${user.email})`,

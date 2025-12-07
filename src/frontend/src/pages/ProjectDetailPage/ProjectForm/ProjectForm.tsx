@@ -80,7 +80,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 
   const toast = useToast();
 
-  const allUsers = useAllUsers();
+  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     register,
     handleSubmit,
@@ -156,15 +156,13 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     setValue
   ]);
 
-  if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
-  if (allUsers.isError) {
-    return <ErrorPage message={allUsers.error?.message} />;
+  if (usersIsLoading || !users) return <LoadingIndicator />;
+  if (usersIsError) {
+    return <ErrorPage message={usersError?.message} />;
   }
 
   const crWatch = watch('crId');
   const changeRequestInputExists = !!crWatch && crWatch !== 'null' && crWatch !== '';
-
-  const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const handleCreateChangeRequest = async (data: ProjectFormInput) => {
     if (onSubmitChangeRequest && changeRequestFormInput) {

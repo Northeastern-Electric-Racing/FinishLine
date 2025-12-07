@@ -5,7 +5,7 @@ import { ReimbursementRequest, User } from 'shared';
 import { useEffect, useState } from 'react';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import NERModal from '../../../components/NERModal';
 import { fullNamePipe } from '../../../utils/pipes';
 
@@ -18,7 +18,7 @@ interface AssignFinanceMemberModalProps {
 const AssignFinanceMemberModal = ({ modalShow, onHide, reimbursementRequest }: AssignFinanceMemberModalProps) => {
   const toast = useToast();
   const { mutateAsync: assignMember } = useAssignMemberToRR(reimbursementRequest.reimbursementRequestId);
-  const { data: users, isLoading: usersLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  const { data: users, isLoading: usersLoading, isError: usersIsError, error: usersError } = useAllMembers();
 
   const [userId, setUserId] = useState<string>();
 
