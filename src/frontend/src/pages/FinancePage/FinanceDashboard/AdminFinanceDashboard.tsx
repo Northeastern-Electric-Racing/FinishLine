@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -13,14 +13,16 @@ import { useAllReimbursementRequests, useGetPendingAdvisorList } from '../../../
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { NERButton } from '../../../components/NERButton';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers/icons';
-import { ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { ListItemIcon, Menu, MenuItem, Tooltip } from '@mui/material';
 import PendingAdvisorModal from '../FinanceComponents/PendingAdvisorListModal';
 import TotalAmountSpentModal from '../FinanceComponents/TotalAmountSpentModal';
+import { DatePicker } from '@mui/x-date-pickers';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import WorkIcon from '@mui/icons-material/Work';
+import { HelpOutline as HelpIcon } from '@mui/icons-material';
 import { isAdmin } from 'shared';
-import FinanceDashboardCarFilter from '../../../components/FinanceDashboardCarFilter';
-import { useFinanceDashboardCarFilter } from '../../../hooks/finance-car-filter.hooks';
+import { useGetAllCars } from '../../../hooks/cars.hooks';
+import NERAutocomplete from '../../../components/NERAutocomplete';
 
 interface AdminFinanceDashboardProps {
   startDate?: Date;
@@ -35,8 +37,9 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
   const [tabIndex, setTabIndex] = useState<number>(0);
   const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
   const [showTotalAmountSpent, setShowTotalAmountSpent] = useState(false);
-
-  const filter = useFinanceDashboardCarFilter(startDate, endDate, carNumber);
+  const [startDateState, setStartDateState] = useState<Date | undefined>(startDate);
+  const [endDateState, setEndDateState] = useState<Date | undefined>(endDate);
+  const [carNumberState, setCarNumberState] = useState<number | undefined>(carNumber);
 
   const {
     data: allTeamTypes,
@@ -57,8 +60,16 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     error: allPendingAdvisorListError
   } = useGetPendingAdvisorList();
 
-  if (filter.error) {
-    return <ErrorPage error={filter.error} />;
+  const { data: allCars, isLoading: allCarsIsLoading, isError: allCarsIsError, error: allCarsError } = useGetAllCars();
+
+  useEffect(() => {
+    if (carNumberState === undefined && allCars && allCars.length > 0) {
+      setCarNumberState(allCars[allCars.length - 1].wbsNum.carNumber);
+    }
+  }, [allCars, carNumberState]);
+
+  if (allCarsIsError) {
+    return <ErrorPage error={allCarsError} />;
   }
 
   if (allTeamTypesIsError) {
@@ -80,10 +91,16 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     allReimbursementRequestsIsLoading ||
     !allPendingAdvisorList ||
     allPendingAdvisorListIsLoading ||
-    filter.isLoading
+    !allCars ||
+    allCarsIsLoading
   ) {
     return <LoadingIndicator />;
   }
+
+  const carAutocompleteOptions = allCars.map((car) => ({
+    label: car.name,
+    id: car.wbsNum.carNumber.toString()
+  }));
 
   const tabs = [];
 
@@ -108,13 +125,83 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     setAnchorEl(null);
   };
 
+  const datePickerStyle = {
+    width: 150,
+    height: 36,
+    color: 'white',
+    fontSize: '13px',
+    textTransform: 'none',
+    fontWeight: 400,
+    borderRadius: '4px',
+    boxShadow: 'none',
+
+    '.MuiInputBase-root': {
+      height: '36px',
+      padding: '0 8px',
+      backgroundColor: '#ef4345',
+      color: 'white',
+      fontSize: '13px',
+      borderRadius: '4px',
+      '&:hover': {
+        backgroundColor: '#ef4345'
+      },
+      '&.Mui-focused': {
+        backgroundColor: '#ef4345',
+        color: 'white'
+      }
+    },
+
+    '.MuiInputLabel-root': {
+      color: 'white',
+      fontSize: '14px',
+      transform: 'translate(15px, 7px) scale(1)',
+      '&.Mui-focused': {
+        color: 'white'
+      }
+    },
+
+    '.MuiInputLabel-shrink': {
+      transform: 'translate(14px, -6px) scale(0.75)',
+      color: 'white'
+    },
+
+    '& .MuiInputBase-input': {
+      color: 'white',
+      paddingTop: '8px',
+      cursor: 'pointer',
+      '&:focus': {
+        color: 'white'
+      }
+    },
+
+    '& .MuiOutlinedInput-notchedOutline': {
+      border: '1px solid #fff',
+      '&:hover': {
+        borderColor: '#fff'
+      },
+      '&.Mui-focused': {
+        borderColor: '#fff'
+      }
+    },
+
+    '& .MuiSvgIcon-root': {
+      color: 'white',
+      '&:hover': {
+        color: 'white'
+      },
+      '&.Mui-focused': {
+        color: 'white'
+      }
+    }
+  };
+
   const dateAndActionsDropdown = (
     <Box
       sx={{
         display: 'flex',
         flexDirection: 'row',
-        alignItems: 'flex-end',
-        gap: 2,
+        alignItems: 'center',
+        gap: 1,
         flexWrap: 'nowrap',
         width: 'auto',
         maxWidth: '100%',
@@ -123,15 +210,81 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
         ml: 'auto'
       }}
     >
-      <FinanceDashboardCarFilter filter={filter} size="small" />
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <NERAutocomplete
+          id="finance-admin-car-number"
+          onChange={(_event, newValue) => setCarNumberState(newValue ? Number(newValue.id) : undefined)}
+          options={carAutocompleteOptions}
+          size="small"
+          placeholder="Select A Car"
+          value={
+            carNumberState !== undefined ? carAutocompleteOptions.find((car) => car.id === carNumberState.toString()) : null
+          }
+          sx={datePickerStyle}
+        />
+        <Tooltip
+          title="Select a car to filter finance data. When you select a car, dates will help you view data for that car's timeline."
+          placement="top"
+        >
+          <HelpIcon fontSize="small" sx={{ color: 'white', cursor: 'pointer' }} />
+        </Tooltip>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <DatePicker
+          label="Start Date"
+          value={startDateState}
+          maxDate={endDateState || undefined}
+          shouldDisableDate={(date) => (endDateState ? date > endDateState : false)}
+          slotProps={{
+            textField: {
+              size: 'small',
+              sx: datePickerStyle
+            },
+            field: { clearable: true }
+          }}
+          onChange={(newValue: Date | null) => setStartDateState(newValue ?? undefined)}
+        />
+        <Tooltip
+          title="Start date filters for car-specific data and non-car/category data (e.g., competitions, food, etc.)."
+          placement="top"
+        >
+          <HelpIcon fontSize="small" sx={{ color: 'white', cursor: 'pointer' }} />
+        </Tooltip>
+      </Box>
+
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontSize: '24px', margin: '0 8px' }}>-</span>
+      </Box>
+
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <DatePicker
+          label="End Date"
+          value={endDateState}
+          minDate={startDateState || undefined}
+          shouldDisableDate={(date) => (startDateState ? date < startDateState : false)}
+          slotProps={{
+            textField: {
+              size: 'small',
+              sx: datePickerStyle
+            },
+            field: { clearable: true }
+          }}
+          onChange={(newValue: Date | null) => setEndDateState(newValue ?? undefined)}
+        />
+        <Tooltip
+          title="End date filters for car-specific data and non-car/category data. Use this with start date to define your data range."
+          placement="top"
+        >
+          <HelpIcon fontSize="small" sx={{ color: 'white', cursor: 'pointer' }} />
+        </Tooltip>
+      </Box>
+      <Box sx={{ ml: 0 }}></Box>
       <NERButton
         endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
         variant="contained"
         id="project-actions-dropdown"
         onClick={handleClick}
-        sx={{
-          color: 'white'
-        }}
+        sx={{ flexShrink: 0 }}
       >
         Actions
       </NERButton>
@@ -192,16 +345,16 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
         />
       )}
       {tabIndex === 0 ? (
-        <FinanceDashboardAllView startDate={filter.startDate} endDate={filter.endDate} carNumber={filter.carNumber} />
+        <FinanceDashboardAllView startDate={startDateState} endDate={endDateState} carNumber={carNumberState} />
       ) : tabIndex === tabs.length - 1 ? (
-        <FinanceDashboardCategoriesView startDate={filter.startDate} endDate={filter.endDate} carNumber={filter.carNumber} />
+        <FinanceDashboardCategoriesView startDate={startDateState} endDate={endDateState} carNumber={carNumberState} />
       ) : (
         selectedTab && (
           <FinanceDashboardTeamTypeView
             teamTypeId={selectedTab.tabUrlValue}
-            startDate={filter.startDate}
-            endDate={filter.endDate}
-            carNumber={filter.carNumber}
+            startDate={startDateState}
+            endDate={endDateState}
+            carNumber={carNumberState}
           />
         )
       )}
