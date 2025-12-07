@@ -135,79 +135,19 @@ const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compa
     );
   }
 
+  // Non-compact mode (not used in current implementation)
   return (
-    <Paper
-      elevation={1}
-      sx={{
-        p: 2,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        ...sx
-      }}
-    >
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, ...sx }}>
+      <Typography variant="caption" sx={{ fontWeight: 500 }}>
+        Working with:
+      </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <CarIcon color="primary" />
-        <Box>
-          <Typography variant="subtitle2" fontWeight="bold">
-            Global Car Filter
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {selectedCar.name}
-          </Typography>
-        </Box>
-        <Tooltip
-          title="Filter data across all pages by selecting a car. This will only last for your current session."
-          placement="top"
-        >
-          <HelpIcon fontSize="small" color="action" />
-        </Tooltip>
+        <CarIcon fontSize="small" />
+        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+          {currentCarLabel}
+        </Typography>
       </Box>
-
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Chip
-          label={currentCarLabel}
-          onClick={handleClick}
-          onDelete={handleClick}
-          deleteIcon={<ExpandMoreIcon />}
-          color="primary"
-          variant="outlined"
-        />
-
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-          PaperProps={{
-            style: {
-              maxHeight: 400,
-              minWidth: 250
-            }
-          }}
-        >
-          {sortedCars.map((car) => (
-            <MenuItem
-              key={car.id}
-              selected={car.id === selectedCar.id}
-              onClick={() => handleCarSelect(car)}
-              sx={{ py: 1.5 }}
-            >
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
-                <Typography variant="body1" fontWeight="bold">
-                  {car.wbsNum.carNumber === 0 ? car.name : `Car ${car.wbsNum.carNumber}`}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {car.name}
-                </Typography>
-                <Typography variant="caption" color="text.disabled">
-                  Created: {car.dateCreated.toLocaleDateString()}
-                </Typography>
-              </Box>
-            </MenuItem>
-          ))}
-        </Menu>
-      </Box>
-    </Paper>
+    </Box>
   );
 };
 
