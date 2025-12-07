@@ -4,8 +4,8 @@
  */
 
 import React, { useState } from 'react';
-import { Box, Typography, Menu, MenuItem, Chip, Tooltip, Paper, useTheme } from '@mui/material';
-import { ExpandMore as ExpandMoreIcon, DirectionsCar as CarIcon, HelpOutline as HelpIcon } from '@mui/icons-material';
+import { Box, Typography, Chip, Collapse, IconButton } from '@mui/material';
+import { ExpandMore as ExpandMoreIcon, DirectionsCar as CarIcon } from '@mui/icons-material';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 import LoadingIndicator from './LoadingIndicator';
 
@@ -15,21 +15,16 @@ interface GlobalCarFilterDropdownProps {
 }
 
 const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compact = false, sx = {} }) => {
-  const theme = useTheme();
   const { selectedCar, allCars, setSelectedCar, isLoading, error } = useGlobalCarFilter();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [expanded, setExpanded] = useState(false);
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleToggle = () => {
+    setExpanded(!expanded);
   };
 
   const handleCarSelect = (car: any) => {
     setSelectedCar(car);
-    handleClose();
+    setExpanded(false);
   };
 
   if (isLoading) {
@@ -67,56 +62,75 @@ const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compa
   if (compact) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, ...sx }}>
-        <Typography variant="caption" sx={{ fontWeight: 500, color: 'white' }}>
-          Working with:
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CarIcon fontSize="small" sx={{ color: 'white' }} />
-          <Chip
-            label={currentCarLabel}
-            onClick={handleClick}
-            onDelete={handleClick}
-            deleteIcon={<ExpandMoreIcon />}
-            variant="outlined"
-            size="small"
-            sx={{
-              borderColor: 'white',
-              color: 'white',
-              '& .MuiChip-deleteIcon': {
-                color: 'white'
-              },
-              flex: 1
-            }}
-          />
-        </Box>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-          PaperProps={{
-            style: {
-              maxHeight: 300,
-              minWidth: 200
-            }
+        <Box
+          onClick={handleToggle}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            cursor: 'pointer',
+            '&:hover': { opacity: 0.8 }
           }}
         >
-          {sortedCars.map((car) => (
-            <MenuItem
-              key={car.id}
-              selected={selectedCar ? car.id === selectedCar.id : false}
-              onClick={() => handleCarSelect(car)}
-            >
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <Typography variant="body2" fontWeight="bold">
-                  {car.wbsNum.carNumber === 0 ? car.name : `Car ${car.wbsNum.carNumber}`}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {car.name}
-                </Typography>
-              </Box>
-            </MenuItem>
-          ))}
-        </Menu>
+          <CarIcon fontSize="small" sx={{ color: 'white' }} />
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="caption" sx={{ fontWeight: 500, color: 'white' }}>
+              Working with:
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'white', fontWeight: 'bold' }}>
+              {currentCarLabel}
+            </Typography>
+          </Box>
+          <IconButton size="small" sx={{ color: 'white' }}>
+            <ExpandMoreIcon
+              sx={{
+                transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s'
+              }}
+            />
+          </IconButton>
+        </Box>
+        <Collapse in={expanded}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              overflowX: 'auto',
+              py: 1,
+              '&::-webkit-scrollbar': {
+                height: 6
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: 'rgba(255,255,255,0.3)',
+                borderRadius: 3
+              }
+            }}
+          >
+            {sortedCars.map((car) => {
+              const carLabel = car.wbsNum.carNumber === 0 ? car.name : `Car ${car.wbsNum.carNumber}`;
+              const isSelected = selectedCar ? car.id === selectedCar.id : false;
+              return (
+                <Chip
+                  key={car.id}
+                  label={carLabel}
+                  onClick={() => handleCarSelect(car)}
+                  variant="outlined"
+                  sx={{
+                    borderColor: 'white',
+                    color: 'white',
+                    backgroundColor: 'transparent',
+                    fontWeight: isSelected ? 'bold' : 'normal',
+                    borderWidth: isSelected ? 2 : 1,
+                    '&:hover': {
+                      backgroundColor: 'rgba(255,255,255,0.1)'
+                    },
+                    whiteSpace: 'nowrap'
+                  }}
+                />
+              );
+            })}
+          </Box>
+        </Collapse>
       </Box>
     );
   }
