@@ -129,6 +129,9 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
         variant="contained"
         id="project-actions-dropdown"
         onClick={handleClick}
+        sx={{
+          color: 'white'
+        }}
       >
         Actions
       </NERButton>

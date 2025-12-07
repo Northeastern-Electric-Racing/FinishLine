@@ -36,11 +36,21 @@ const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compa
     return <LoadingIndicator />;
   }
 
-  if (error || !selectedCar) {
+  if (error) {
     return (
       <Box sx={{ p: 1, ...sx }}>
         <Typography variant="body2" color="error">
-          {error?.message || 'No car selected'}
+          {error.message}
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (allCars.length === 0) {
+    return (
+      <Box sx={{ p: 1, ...sx }}>
+        <Typography variant="body2" color="text.secondary">
+          No cars available
         </Typography>
       </Box>
     );
@@ -48,27 +58,37 @@ const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compa
 
   const sortedCars = [...allCars].sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber);
 
-  const currentCarLabel = selectedCar.wbsNum.carNumber === 0 ? selectedCar.name : `Car ${selectedCar.wbsNum.carNumber}`;
+  const currentCarLabel = selectedCar
+    ? selectedCar.wbsNum.carNumber === 0
+      ? selectedCar.name
+      : `Car ${selectedCar.wbsNum.carNumber}`
+    : 'Select Car';
 
   if (compact) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ...sx }}>
-        <CarIcon fontSize="small" />
-        <Chip
-          label={currentCarLabel}
-          onClick={handleClick}
-          onDelete={handleClick}
-          deleteIcon={<ExpandMoreIcon />}
-          variant="outlined"
-          size="small"
-          sx={{
-            borderColor: theme.palette.primary.main,
-            color: theme.palette.primary.main,
-            '& .MuiChip-deleteIcon': {
-              color: theme.palette.primary.main
-            }
-          }}
-        />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, ...sx }}>
+        <Typography variant="caption" sx={{ fontWeight: 500, color: 'white' }}>
+          Working with:
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CarIcon fontSize="small" sx={{ color: 'white' }} />
+          <Chip
+            label={currentCarLabel}
+            onClick={handleClick}
+            onDelete={handleClick}
+            deleteIcon={<ExpandMoreIcon />}
+            variant="outlined"
+            size="small"
+            sx={{
+              borderColor: 'white',
+              color: 'white',
+              '& .MuiChip-deleteIcon': {
+                color: 'white'
+              },
+              flex: 1
+            }}
+          />
+        </Box>
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
@@ -81,7 +101,11 @@ const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compa
           }}
         >
           {sortedCars.map((car) => (
-            <MenuItem key={car.id} selected={car.id === selectedCar.id} onClick={() => handleCarSelect(car)}>
+            <MenuItem
+              key={car.id}
+              selected={selectedCar ? car.id === selectedCar.id : false}
+              onClick={() => handleCarSelect(car)}
+            >
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                 <Typography variant="body2" fontWeight="bold">
                   {car.wbsNum.carNumber === 0 ? car.name : `Car ${car.wbsNum.carNumber}`}

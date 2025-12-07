@@ -142,7 +142,7 @@ const FinanceDashboardCarFilterComponent: React.FC<FinanceDashboardCarFilterProp
           </Typography>
           {startDate && endDate && (
             <Typography variant="caption" color="primary">
-              {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
+              {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()}
             </Typography>
           )}
         </Box>

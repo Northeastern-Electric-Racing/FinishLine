@@ -157,6 +157,10 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
         <IconButton onClick={() => handleMoveContent()}>{moveContent ? <ChevronLeft /> : <ChevronRight />}</IconButton>
       </DrawerHeader>
       <Divider />
+      <Box sx={{ px: 2, py: 2 }}>
+        <GlobalCarFilterDropdown compact />
+      </Box>
+      <Divider />
       <Box
         overflow={'auto'}
         sx={{ overflowX: 'hidden' }}
@@ -176,9 +180,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
             />
           ))}
           <Divider sx={{ mx: 1, my: 2 }} />
-          <Box sx={{ px: 1 }}>
-            <GlobalCarFilterDropdown compact />
-          </Box>
           <NavUserMenu open={drawerOpen} />
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
