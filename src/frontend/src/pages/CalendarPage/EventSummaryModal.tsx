@@ -48,6 +48,7 @@ const EventSummaryModal: React.FC<EventSummaryModalProps> = ({
   const handleDelete = async () => {
     try {
       await deleteEvent();
+      setShowDeleteModal(false);
       toast.success('Deleted Successfully');
     } catch (e: unknown) {
       if (e instanceof Error) {
