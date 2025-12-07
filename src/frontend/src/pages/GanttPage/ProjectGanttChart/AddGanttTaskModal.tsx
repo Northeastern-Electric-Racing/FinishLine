@@ -63,8 +63,7 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
   if (!users || usersIsLoading) return <LoadingIndicator />;
   if (usersIsError) return <ErrorPage message={usersError?.message} />;
 
-  const options: { label: string; id: string }[] = users
-    .map(taskUserToAutocompleteOption);
+  const options: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
 
   const onSubmit = async (data: CreateTaskFormData) => {
     addTask(data);

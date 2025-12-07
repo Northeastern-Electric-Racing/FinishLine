@@ -65,8 +65,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
   if (isError) return <ErrorPage error={error} />;
   if (isLoading || !users) return <LoadingIndicator />;
 
-  const options: { label: string; id: string }[] = users
-    .map(taskUserToAutocompleteOption);
+  const options: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
 
   const unUpperCase = (str: string) => str.charAt(0) + str.slice(1).toLowerCase();
 
