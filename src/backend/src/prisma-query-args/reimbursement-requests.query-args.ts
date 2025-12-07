@@ -31,6 +31,7 @@ export const getReimbursementRequestQueryArgs = (organizationId: string) =>
           dateDeleted: null
         },
         ...getReimbursementRequestCommentQueryArgs(organizationId)
-      }
+      },
+      assignee: getUserQueryArgs(organizationId)
     }
   });

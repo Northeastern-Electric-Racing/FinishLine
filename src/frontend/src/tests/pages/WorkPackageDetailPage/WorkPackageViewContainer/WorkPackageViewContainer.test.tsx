@@ -11,6 +11,7 @@ import AppContextUser from '../../../../app/AppContextUser';
 import * as userHooks from '../../../../hooks/users.hooks';
 import { mockManyWorkPackages } from '../../../test-support/mock-hooks';
 import { exampleAuthenticatedAdminUser } from '../../../test-support/test-data/authenticated-user.stub';
+import ClarityProvider from '../../../../app/ClarityProvider';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = (
@@ -24,17 +25,19 @@ const renderComponent = (
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <AppContextUser>
-        <WorkPackageViewContainer
-          workPackage={workPackage}
-          enterEditMode={() => null}
-          allowEdit={allowEdit}
-          allowActivate={allowActivate}
-          allowStageGate={allowStageGate}
-          allowRequestChange={allowRequestChange}
-          allowDelete={allowDelete}
-        />
-      </AppContextUser>
+      <ClarityProvider>
+        <AppContextUser>
+          <WorkPackageViewContainer
+            workPackage={workPackage}
+            enterEditMode={() => null}
+            allowEdit={allowEdit}
+            allowActivate={allowActivate}
+            allowStageGate={allowStageGate}
+            allowRequestChange={allowRequestChange}
+            allowDelete={allowDelete}
+          />
+        </AppContextUser>
+      </ClarityProvider>
     </RouterWrapper>
   );
 };
