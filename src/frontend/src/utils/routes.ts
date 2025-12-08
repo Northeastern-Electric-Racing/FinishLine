@@ -83,6 +83,7 @@ const RETROSPECTIVE = `/retrospective`;
 /**************** Rules ****************/
 const RULES = `/rules`;
 const RULESET_BY_ID = RULES + `/:rulesetId`;
+const RULESET = RULES + `/:rulesetId/view`;
 
 export const routes = {
   BASE,
@@ -152,5 +153,6 @@ export const routes = {
   RETROSPECTIVE,
 
   RULES,
-  RULESET_BY_ID
+  RULESET_BY_ID,
+  RULESET
 };
