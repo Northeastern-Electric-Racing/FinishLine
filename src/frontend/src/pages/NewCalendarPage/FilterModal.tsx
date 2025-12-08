@@ -16,10 +16,10 @@ export interface BaseFilterModalProps {
   open: boolean;
   onClose: () => void;
   filterValues?: FilterArgs;
-  setMemberIds: React.Dispatch<React.SetStateAction<string[]>>;
-  setTeamIds: React.Dispatch<React.SetStateAction<string[]>>;
-  setShowInvited: React.Dispatch<React.SetStateAction<boolean>>;
-  setShowTeam: React.Dispatch<React.SetStateAction<boolean>>;
+  setMemberIds: (ids: string[]) => void;
+  setTeamIds: (ids: string[]) => void;
+  setShowInvited: (changed: boolean) => void;
+  setShowTeam: (changed: boolean) => void;
 }
 
 const FilterModal: React.FC<BaseFilterModalProps> = ({

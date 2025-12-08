@@ -31,12 +31,19 @@ const NewCalendarPage = () => {
 
   const [memberIds, setMemberIds] = useState<string[]>([]);
   const [teamIds, setTeamIds] = useState<string[]>([]);
-  const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([]);
-  const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>([]);
+
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
 
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
+  const { data: allTeams, isLoading: allTeamsLoading, isError: allTeamsIsError, error: allTeamsError } = useGetUsersTeams();
+
+  const teamList = allTeams?.map((team) => team.teamId) ?? [];
+  const user = useCurrentUser();
+
+  const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
+  const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>(teamList);
+
   const {
     isLoading,
     isError,
@@ -55,36 +62,38 @@ const NewCalendarPage = () => {
     isError: allEventTypesIsError,
     error: allEventTypesError
   } = useAllEventTypes();
+
   const {
     data: allCalendars,
     isLoading: allCalendarsLoading,
     isError: allCalendarsIsError,
     error: allCalendarsError
   } = useAllCalendars();
-  const { data: allTeams, isLoading: allTeamsLoading, isError: allTeamsIsError, error: allTeamsError } = useGetUsersTeams();
-  const user = useCurrentUser();
+
   const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
 
-  useEffect(() => {
-    const teamList = allTeams?.map((team) => team.teamId) ?? [];
+  const updateAdditionalTeamIds = (changed: boolean) => {
+    setShowTeamEvents(changed);
 
-    if (showTeamEvents) {
+    if (changed) {
       setAdditionalTeamIds(teamList);
     } else {
       setAdditionalTeamIds([]);
     }
-  }, [allTeams, showTeamEvents]);
+  };
 
-  useEffect(() => {
-    if (showInvitedEvents) {
+  const updateAdditionalMemberIds = (changed: boolean) => {
+    setShowInvitedEvents(changed);
+
+    if (changed) {
       setAdditionalMemberIds([user.userId]);
     } else {
       setAdditionalMemberIds([]);
     }
-  }, [user.userId, showInvitedEvents]);
+  };
 
   if (isLoading || !allEvents) return <LoadingIndicator />;
 
@@ -345,10 +354,10 @@ const NewCalendarPage = () => {
           open={openFilterModal}
           onClose={() => setOpenFilterModal(false)}
           filterValues={{ memberIds, teamIds, showInvited: showInvitedEvents, showTeam: showTeamEvents }}
-          setMemberIds={setMemberIds}
-          setTeamIds={setTeamIds}
-          setShowInvited={setShowInvitedEvents}
-          setShowTeam={setShowTeamEvents}
+          setMemberIds={(ids: string[]) => setMemberIds(ids)}
+          setTeamIds={(ids: string[]) => setTeamIds(ids)}
+          setShowInvited={(changed: boolean) => updateAdditionalMemberIds(changed)}
+          setShowTeam={(changed: boolean) => updateAdditionalTeamIds(changed)}
         />
       </PageLayout>
     </>
