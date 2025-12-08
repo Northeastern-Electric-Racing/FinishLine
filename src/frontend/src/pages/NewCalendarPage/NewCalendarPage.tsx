@@ -49,9 +49,19 @@ const NewCalendarPage = () => {
     teamIds: teamIds.concat(additionalTeamIds)
   });
 
-  const { data: allEventTypes } = useAllEventTypes();
-  const { data: allCalendars } = useAllCalendars();
-  const { data: allTeams } = useGetUsersTeams();
+  const {
+    data: allEventTypes,
+    isLoading: allEventTypesLoading,
+    isError: allEventTypesIsError,
+    error: allEventTypesError
+  } = useAllEventTypes();
+  const {
+    data: allCalendars,
+    isLoading: allCalendarsLoading,
+    isError: allCalendarsIsError,
+    error: allCalendarsError
+  } = useAllCalendars();
+  const { data: allTeams, isLoading: allTeamsLoading, isError: allTeamsIsError, error: allTeamsError } = useGetUsersTeams();
   const user = useCurrentUser();
   const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
@@ -89,23 +99,24 @@ const NewCalendarPage = () => {
   });
 
   const convertDayToInt = (day: DayOfWeek) => {
-    if (day === DayOfWeek.MONDAY) {
-      return 1;
-    } else if (day === DayOfWeek.TUESDAY) {
-      return 2;
-    } else if (day === DayOfWeek.WEDNESDAY) {
-      return 3;
-    } else if (day === DayOfWeek.THURSDAY) {
-      return 4;
-    } else if (day === DayOfWeek.FRIDAY) {
-      return 5;
-    } else if (day === DayOfWeek.SATURDAY) {
-      return 6;
-    } else if (day === DayOfWeek.SUNDAY) {
-      return 0;
+    switch (day) {
+      case DayOfWeek.MONDAY:
+        return 1;
+      case DayOfWeek.TUESDAY:
+        return 2;
+      case DayOfWeek.WEDNESDAY:
+        return 3;
+      case DayOfWeek.THURSDAY:
+        return 4;
+      case DayOfWeek.FRIDAY:
+        return 5;
+      case DayOfWeek.SATURDAY:
+        return 6;
+      case DayOfWeek.SUNDAY:
+        return 0;
+      default:
+        return -1;
     }
-
-    return -1;
   };
 
   const eventDict = new Map<string, Event[]>();
@@ -118,7 +129,9 @@ const NewCalendarPage = () => {
       // startTime is already a full timestamp, just use it directly
       const startTimeDate = new Date(slot.initialDateScheduled);
 
-      const convertedStartTime = new Date(startTimeDate.getTime() - startTimeDate.getTimezoneOffset() * -60000);
+      // Accessing the date actually converts it to local time, which causes the date to be off. This is a workaround.
+      // 60000 is for millisecond conversion
+      const convertedStartTime = new Date(startTimeDate.getTime() + startTimeDate.getTimezoneOffset() * 60000);
 
       const dayInt = convertedStartTime.getDay();
 
@@ -180,6 +193,15 @@ const NewCalendarPage = () => {
 
   if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
   if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
+
+  if (!allEventTypes || allEventTypesLoading) return <LoadingIndicator />;
+  if (allEventTypesIsError) return <ErrorPage error={allEventTypesError} message={allEventTypesError?.message} />;
+
+  if (!allCalendars || allCalendarsLoading) return <LoadingIndicator />;
+  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
+
+  if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
+  if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
 
   return (
     <>
@@ -253,16 +275,15 @@ const NewCalendarPage = () => {
                               cardDate={cardDate}
                               events={
                                 eventDict.get(
-                                  datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))
+                                  datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
                                 ) ?? []
                               }
                               teamTypes={allTeamTypes}
                               eventTypes={allEventTypes ?? []}
                               calendars={allCalendars ?? []}
                               dayOfWeek={
-                                dayDict.get(
-                                  datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))
-                                ) ?? DayOfWeek.SUNDAY
+                                dayDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
+                                DayOfWeek.SUNDAY
                               }
                             />
                           </Box>

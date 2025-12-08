@@ -41,8 +41,11 @@ export const getStatusIcon = (status: string, isLarge?: boolean) => {
 
 export const getConvertedStart = (event: Event, dayOfWeek: DayOfWeek) => {
   const specificSlot = event.scheduledTimes.find((slot) => slot.days.find((day) => day === dayOfWeek));
+  const initialTime = specificSlot?.startTime ? new Date(specificSlot.startTime) : new Date(Date.now());
   const startTime = new Date(
-    specificSlot?.startTime ?? Date.now() - (specificSlot?.startTime?.getTimezoneOffset() ?? Date.now()) * -60000
+    // getTimezoneOffset() is based on UTC (in minutes), and we need to inverse it and multiply by milliseconds to get the proper date
+    // for instance, if we were in UTC+3, it would return -180, which we need to invert and multiply to
+    initialTime.getTime()
   );
 
   const convertedStartTime = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -53,11 +56,13 @@ export const getConvertedStart = (event: Event, dayOfWeek: DayOfWeek) => {
 export const getConvertedEnd = (event: Event, dayOfWeek: DayOfWeek) => {
   const specificSlot = event.scheduledTimes.find((slot) => slot.days.find((day) => day === dayOfWeek));
 
-  const endTime = new Date(
-    specificSlot?.endTime ?? Date.now() - (specificSlot?.endTime?.getTimezoneOffset() ?? Date.now()) * -60000
-  );
+  const endTime = new Date(specificSlot?.endTime ?? Date.now());
 
-  const convertedEndTime = endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const convertedEndTime = endTime.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short'
+  });
 
   return convertedEndTime;
 };
