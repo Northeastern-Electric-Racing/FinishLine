@@ -3,8 +3,9 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { Calendar, DayOfWeek, Event, EventType } from 'shared';
 import GroupIcon from '@mui/icons-material/Group';
 import { Stack } from '@mui/system';
-import { getConvertedEnd, getConvertedStart, getTeamTypeIcon } from './CalendarDayCard';
+import { getTeamTypeIcon } from './CalendarDayCard';
 import { Typography } from '@mui/material';
+import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
 
 interface EventInfoProps {
   event: Event;
