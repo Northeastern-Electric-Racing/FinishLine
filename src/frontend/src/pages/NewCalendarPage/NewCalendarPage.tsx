@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DayOfWeek, Event } from 'shared';
@@ -19,6 +19,7 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
+import { convertDayToInt } from '../../utils/calendar.utils';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -106,27 +107,6 @@ const NewCalendarPage = () => {
     const time2 = event2.scheduledTimes[0]?.startTime ? new Date(event2.scheduledTimes[0].startTime).getTime() : 0;
     return time1 - time2;
   });
-
-  const convertDayToInt = (day: DayOfWeek) => {
-    switch (day) {
-      case DayOfWeek.MONDAY:
-        return 1;
-      case DayOfWeek.TUESDAY:
-        return 2;
-      case DayOfWeek.WEDNESDAY:
-        return 3;
-      case DayOfWeek.THURSDAY:
-        return 4;
-      case DayOfWeek.FRIDAY:
-        return 5;
-      case DayOfWeek.SATURDAY:
-        return 6;
-      case DayOfWeek.SUNDAY:
-        return 0;
-      default:
-        return -1;
-    }
-  };
 
   const eventDict = new Map<string, Event[]>();
   const dayDict = new Map<string, DayOfWeek>();
