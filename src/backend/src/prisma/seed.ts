@@ -1379,7 +1379,7 @@ const performSeed: () => Promise<void> = async () => {
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, project3WP1ActivationCrId, 'Approved!', true, ner, null);
 
   /** Work Package 2 */
-  await seedWorkPackage(
+  const { workPackage: project3WP2 } = await seedWorkPackage(
     lexLuther,
     'Laser Canon Research',
     changeRequestProject7Id,
@@ -1404,7 +1404,7 @@ const performSeed: () => Promise<void> = async () => {
     WorkPackageStage.Testing,
     weeksFromNow(3).toISOString().split('T')[0],
     4,
-    [],
+    [project3WP1.wbsNum, project3WP2.wbsNum],
     [],
     zatanna,
     WbsElementStatus.Active,
