@@ -366,7 +366,7 @@ export default class CalendarController {
     try {
       const { eventId } = req.params;
 
-      const event = await CalendarService.approveEvent(req.currentUser, eventId, req.organization);
+      const event = await CalendarService.denyEvent(req.currentUser, eventId, req.organization);
       res.status(200).json(event);
     } catch (error: unknown) {
       next(error);

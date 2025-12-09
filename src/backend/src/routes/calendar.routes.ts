@@ -134,7 +134,7 @@ calendarRouter.post(
 
 calendarRouter.post('/event/:eventId/approve', CalendarController.approveEvent);
 
-calendarRouter.post('/event/:eventId/deny', CalendarController.approveEvent);
+calendarRouter.post('/event/:eventId/deny', CalendarController.denyEvent);
 
 calendarRouter.post(
   '/event/:eventId/confirm-schedule',
