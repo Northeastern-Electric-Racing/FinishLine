@@ -1,6 +1,6 @@
 import { calendarTransformer, eventTransformer, machineryTransformer } from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
-import { Event_Status, Organization } from '@prisma/client';
+import { ConflictStatus, Event_Status, Organization } from '@prisma/client';
 import {
   isAdmin,
   isHead,
@@ -460,7 +460,7 @@ export default class CalendarService {
           }))
         },
         status: foundEventType.requiresConfirmation ? Event_Status.UNCONFIRMED : Event_Status.CONFIRMED,
-        approved: !hasConflict,
+        approved: hasConflict ? ConflictStatus.UNCONFIRMED : null,
         approvalRequiredFromUserId: hasConflict ? approverUserId : null,
         location,
         zoomLink,
@@ -884,7 +884,8 @@ export default class CalendarService {
           },
           // If schedule/location changed and there's a conflict, set approved=false and track who needs to approve
           // Otherwise keep existing approval state
-          approved: scheduleChanged || locationChanged ? !hasConflict : foundEvent.approved,
+          approved:
+            scheduleChanged || locationChanged ? (hasConflict ? ConflictStatus.UNCONFIRMED : null) : foundEvent.approved,
           approvalRequiredFromUserId:
             scheduleChanged || locationChanged
               ? hasConflict
@@ -940,19 +941,47 @@ export default class CalendarService {
       event.approvalRequiredFromUserId === submitter.userId;
 
     if (!hasPermission) {
-      throw new AccessDeniedException('Only admins or heads or the owner of the conflicting event can this approve event!');
+      throw new AccessDeniedException('Only admins or heads or the owner of the conflicting event can approve this event!');
     }
 
     const approvedEvent = await prisma.event.update({
       where: { eventId },
       data: {
-        approved: true,
+        approved: ConflictStatus.CONFIRMED,
         approvalRequiredFromUserId: submitter.userId
       },
       ...getEventQueryArgs(organization.organizationId)
     });
 
     return eventTransformer(approvedEvent);
+  }
+
+  static async denyEvent(submitter: User, eventId: string, organization: Organization): Promise<Event> {
+    const event = await prisma.event.findUnique({
+      where: { eventId }
+    });
+
+    if (!event) throw new NotFoundException('Event', eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isHead)) ||
+      event.approvalRequiredFromUserId === submitter.userId;
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only admins or heads or the owner of the conflicting event can deny this event!');
+    }
+
+    const deniedEvent = await prisma.event.update({
+      where: { eventId },
+      data: {
+        approved: ConflictStatus.DENIED,
+        approvalRequiredFromUserId: submitter.userId
+      },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    return eventTransformer(deniedEvent);
   }
 
   /**
@@ -2068,7 +2097,7 @@ export default class CalendarService {
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
         teams: teamIds?.length ? { some: { teamId: { in: teamIds } } } : undefined,
-        approved: approvalStatus !== undefined ? { equals: approvalStatus } : undefined,
+        approved: undefined,
         scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
         ...memberOrCreator,
         ...fromCalendar

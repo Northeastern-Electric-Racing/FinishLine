@@ -47,6 +47,12 @@ export enum DayOfWeek {
   SUNDAY = 'SUNDAY'
 }
 
+export enum ConflictStatus {
+  UNCONFIRMED = 'UNCOMFIRMED',
+  CONFIRMED = 'CONFIRMED',
+  DENIED = 'DENIED'
+}
+
 export interface Calendar {
   calendarId: string;
   name: string;
@@ -136,7 +142,7 @@ export interface Machinery {
 export interface Event {
   eventId: string;
   title: string;
-  approved: boolean;
+  approved?: ConflictStatus;
   userCreated: UserWithScheduleSettings;
   dateCreated: Date;
   eventTypeId: string;

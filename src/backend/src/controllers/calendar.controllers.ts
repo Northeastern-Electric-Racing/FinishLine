@@ -362,6 +362,17 @@ export default class CalendarController {
     }
   }
 
+  static async denyEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+
+      const event = await CalendarService.approveEvent(req.currentUser, eventId, req.organization);
+      res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   // Mark the current user as confirmed for the given event
   static async markUserConfirmed(req: Request, res: Response, next: NextFunction) {
     try {

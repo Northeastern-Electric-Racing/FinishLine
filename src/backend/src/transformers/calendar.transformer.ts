@@ -1,4 +1,9 @@
-import { Prisma, DayOfWeek as PrismaDayOfWeek, Event_Status as PrismaEventStatus } from '@prisma/client';
+import {
+  Prisma,
+  DayOfWeek as PrismaDayOfWeek,
+  Event_Status as PrismaEventStatus,
+  ConflictStatus as PrismaConflictStatus
+} from '@prisma/client';
 import {
   Machinery,
   Shop,
@@ -9,7 +14,8 @@ import {
   ScheduleSlot,
   EventStatus,
   EventPreview,
-  DayOfWeek
+  DayOfWeek,
+  ConflictStatus
 } from 'shared';
 import { MachineryQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer';
@@ -115,7 +121,7 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     workPackages: event.workPackages,
     documentIds: event.documentIds,
     scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer),
-    approved: event.approved,
+    approved: event.approved ? conflictStatusTransformer(event.approved) : undefined,
     approvalRequiredFrom: event.approvalRequiredBy ?? undefined,
     location: event.location ?? undefined,
     zoomLink: event.zoomLink ?? undefined,
@@ -148,6 +154,15 @@ export const dayOfWeekTransformer = (day: PrismaDayOfWeek): DayOfWeek => {
     FRIDAY: DayOfWeek.FRIDAY,
     SATURDAY: DayOfWeek.SATURDAY,
     SUNDAY: DayOfWeek.SUNDAY
+  };
+  return mapping[day];
+};
+
+export const conflictStatusTransformer = (day: PrismaConflictStatus): ConflictStatus => {
+  const mapping: Record<PrismaConflictStatus, ConflictStatus> = {
+    CONFIRMED: ConflictStatus.CONFIRMED,
+    UNCONFIRMED: ConflictStatus.UNCONFIRMED,
+    DENIED: ConflictStatus.DENIED
   };
   return mapping[day];
 };

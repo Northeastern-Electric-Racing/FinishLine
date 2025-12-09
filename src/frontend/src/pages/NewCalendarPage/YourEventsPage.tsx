@@ -8,7 +8,7 @@ import TableCellHuge from './YourEventsComponents/TableCellHuge';
 import { useFilterEvents } from '../../hooks/calendar.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useEffect, useState } from 'react';
-import { ScheduleSlot } from 'shared';
+import { ConflictStatus, ScheduleSlot } from 'shared';
 import { Event } from 'shared';
 
 interface YourEventsHeadCells {
@@ -148,7 +148,10 @@ const YourEventsPage = () => {
                       {!timeAway.passed ? ` - In ${timeAway.months}m : ${timeAway.days}d` : '- Passed'}
                     </TableCell>
                     <TableCell align="center">
-                      {new Date(earliestSchedule.startTime).toLocaleTimeString()}{' '}
+                      {new Date(earliestSchedule.startTime).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit'
+                      })}{' '}
                       {!timeAway.passed ? ` - In ${timeAway.hours}h ${timeAway.minutes}m ${timeAway.seconds}s` : '- Passed'}
                     </TableCell>
                     <TableCell align="center">
@@ -165,11 +168,19 @@ const YourEventsPage = () => {
                       )}
                     </TableCell>
                     <TableCell align="center">
-                      {!event.approved
-                        ? `${event.approvalRequiredFrom?.firstName} ${event.approvalRequiredFrom?.lastName}`
+                      {event.approvalRequiredFrom
+                        ? `${event.approvalRequiredFrom.firstName} ${event.approvalRequiredFrom.lastName}`
                         : 'N/A'}
                     </TableCell>
-                    <TableCell align="center">{event.approved ? 'Approved' : 'Pending'}</TableCell>
+                    <TableCell align="center">
+                      {event.approved === ConflictStatus.CONFIRMED
+                        ? 'Approved'
+                        : event.approved === ConflictStatus.UNCONFIRMED
+                          ? 'PENDING'
+                          : event.approved === ConflictStatus.DENIED
+                            ? 'DENIED'
+                            : 'N/A'}
+                    </TableCell>
                   </TableRow>
                 );
               })
