@@ -34,6 +34,11 @@ provider "aws" {
 locals {
   project_name = "finishline"
   environment  = "production"
+  
+  # Extract ALB ARN suffix for CloudWatch metrics
+  # Full ARN: arn:aws:elasticloadbalancing:region:account:loadbalancer/app/name/id
+  # Suffix needed: app/name/id
+  alb_arn_suffix = try(split("loadbalancer/", data.aws_lb.eb_alb.arn)[1], "")
 }
 
 #############
@@ -254,6 +259,31 @@ resource "aws_sns_topic" "alerts" {
 }
 
 #############
+# Data Source: Fetch Autoscaling Group Name
+#############
+# Query AWS directly to get the actual autoscaling group name
+data "aws_autoscaling_groups" "eb_asg" {
+  filter {
+    name   = "tag:elasticbeanstalk:environment-name"
+    values = [module.elasticbeanstalk.environment_name]
+  }
+
+  depends_on = [module.elasticbeanstalk]
+}
+
+#############
+# Data Source: Fetch Application Load Balancer
+#############
+# Query AWS directly to get the actual ALB for metrics
+data "aws_lb" "eb_alb" {
+  tags = {
+    "elasticbeanstalk:environment-name" = module.elasticbeanstalk.environment_name
+  }
+
+  depends_on = [module.elasticbeanstalk]
+}
+
+#############
 # Monitoring Module
 #############
 module "monitoring" {
@@ -263,7 +293,8 @@ module "monitoring" {
   environment                = local.environment
   aws_region                 = var.aws_region
   eb_environment_name        = module.elasticbeanstalk.environment_name
-  eb_autoscaling_group_name  = module.elasticbeanstalk.autoscaling_groups[0]
+  eb_autoscaling_group_name  = data.aws_autoscaling_groups.eb_asg.names[0]
+  alb_arn_suffix             = local.alb_arn_suffix
   rds_instance_id            = module.rds.db_instance_id
   log_retention_days         = 30
   sns_topic_arn              = aws_sns_topic.alerts.arn
