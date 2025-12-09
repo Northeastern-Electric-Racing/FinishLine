@@ -227,7 +227,7 @@ calendarRouter.post(
   body('eventTypeIds.*').optional().isString(),
   body('eventIds').isArray().optional(),
   body('eventIds.*').isString().optional(),
-  body('approvalStatus').isBoolean().optional(),
+  body('approvedEvents').isBoolean().optional(),
   isDate(body('startPeriod')),
   isDate(body('endPeriod')),
   validateInputs,

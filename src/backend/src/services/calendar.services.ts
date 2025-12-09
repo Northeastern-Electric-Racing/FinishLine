@@ -1988,7 +1988,7 @@ export default class CalendarService {
    * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
    */
   static async getFilteredEvents(filters: FilterArgs, organization: Organization): Promise<Event[]> {
-    const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, startPeriod, endPeriod } = filters;
+    const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvedEvents, startPeriod, endPeriod } = filters;
 
     // validate memberIds
     if (memberIds?.length) {
@@ -2097,7 +2097,7 @@ export default class CalendarService {
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
         teams: teamIds?.length ? { some: { teamId: { in: teamIds } } } : undefined,
-        approved: undefined,
+        OR: approvedEvents ? [{ approved: 'CONFIRMED' }, { approved: null }] : undefined,
         scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
         ...memberOrCreator,
         ...fromCalendar
