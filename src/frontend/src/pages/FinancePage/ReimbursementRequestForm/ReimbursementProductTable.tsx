@@ -162,8 +162,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
     if (refundSources.length > 1) {
       reimbursementProducts.forEach((product, index) => {
-        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, product.refundSources[0]?.amount ?? 0 / 100);
-        setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, product.refundSources[1]?.amount ?? 0 / 100);
+        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, (product.refundSources[0]?.amount ?? 0) / 100);
+        setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, (product.refundSources[1]?.amount ?? 0) / 100);
       });
       hasPreFilledData.current = true;
     }

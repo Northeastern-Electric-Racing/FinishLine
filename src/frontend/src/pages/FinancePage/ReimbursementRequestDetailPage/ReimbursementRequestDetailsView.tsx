@@ -72,7 +72,6 @@ import AssignFinanceMemberModal from './AssignFinanceMemberModal';
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
   onCloseSidePage: () => void;
-  onCloseEditPage: () => void;
 }
 
 const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({

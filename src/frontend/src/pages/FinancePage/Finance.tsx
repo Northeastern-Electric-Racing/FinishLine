@@ -18,7 +18,6 @@ const Finance: React.FC = () => {
     <Switch>
       <Route path={routes.NEW_REIMBURSEMENT_REQUEST} component={CreateReimbursementRequestPage} />
       <Route path={routes.REIMBURSEMENT_REQUEST_EDIT} component={EditReimbursementRequestPage} />
-      <Route path={routes.NEW_REIMBURSEMENT_REQUEST} component={ReimbursmentRequests} />
       <Route path={routes.REIMBURSEMENT_REQUEST_BY_ID} component={ReimbursmentRequests} />
       <Route path={routes.FINANCE_DASHBOARD} component={FinanceDashboard} />
       <Route

@@ -259,12 +259,7 @@ const ReimbursementRequestInfo = ({
           flexDirection: 'column'
         }}
       />
-      <SidePage
-        showPage={showSidePage}
-        handleClose={closeSidePage}
-        title={''}
-        component={<ReimbursementRequestDetails onCloseEditPage={closeSidePage} />}
-      />
+      <SidePage showPage={showSidePage} handleClose={closeSidePage} title={''} component={<ReimbursementRequestDetails />} />
     </>
   );
 };
