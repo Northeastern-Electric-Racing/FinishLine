@@ -99,7 +99,6 @@ const schema = yup.object().shape({
     .of(
       yup.object().shape({
         name: yup.string().required('Description is required'),
-        reason: yup.mixed().required(),
         refundSources: yup.array().of(
           yup.object({
             amount: yup

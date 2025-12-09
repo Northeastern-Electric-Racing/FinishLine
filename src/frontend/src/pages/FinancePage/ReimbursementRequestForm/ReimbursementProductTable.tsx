@@ -86,7 +86,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       cost: number;
       index: number;
       id?: string;
-      reason: WbsNumber | OtherProductReason;
     }[]
   >();
 
@@ -106,9 +105,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as OtherProductReason).name;
     if (uniqueWbsElementsWithProducts.has(productReason)) {
       const products = uniqueWbsElementsWithProducts.get(productReason);
-      products?.push({ ...product, index, id: product.id, reason: product.reason });
+      products?.push({ ...product, index, id: product.id });
     } else {
-      uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index, id: product.id, reason: product.reason }]);
+      uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index, id: product.id }]);
     }
   });
 
@@ -706,15 +705,12 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       />
                     }
                     onClick={(e) => {
-                      const existingProducts = uniqueWbsElementsWithProducts.get(key);
-                      if (existingProducts && existingProducts.length > 0) {
-                        appendProduct({
-                          reason: existingProducts[0].reason,
-                          name: '',
-                          cost: 0,
-                          refundSources: []
-                        });
-                      }
+                      appendProduct({
+                        reason: key.includes('.') ? validateWBS(key) : ({ name: key } as OtherProductReason),
+                        name: '',
+                        cost: 0,
+                        refundSources: []
+                      });
                       e.currentTarget.blur();
                     }}
                   >

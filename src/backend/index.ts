@@ -33,26 +33,13 @@ const isProd = process.env.NODE_ENV === 'production';
 
 // cors options
 const allowedHeaders = isProd ? prodHeaders : '*';
-
-// Build list of allowed origins
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  'https://finishlinebyner.com',
-  'https://qa.finishlinebyner.com'
-];
-
 const options: cors.CorsOptions = {
-  origin: (origin, callback) => {
-    // allow requests with no origin like postman or curl requests
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    callback(new Error('Not allowed by CORS'));
-  },
+  origin: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://finishlinebyner.com',
+    'https://qa.finishlinebyner.com'
+  ],
   methods: 'GET, POST, DELETE',
   credentials: true,
   preflightContinue: true,
@@ -64,9 +51,6 @@ const options: cors.CorsOptions = {
 // so we can listen to slack messages
 // NOTE: must be done before using json
 app.use('/slack', slackEvents.requestListener());
-app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'healthy' });
-});
 
 // so that we can use cookies and json
 app.use(cookieParser());
