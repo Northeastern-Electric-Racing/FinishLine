@@ -348,7 +348,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   control={control}
                   render={({ field: { onChange, value } }) => {
                     const mappedVendors = allVendors.sort((a, b) => a.name.localeCompare(b.name)).map(vendorsToAutocomplete);
-                    // Removed synthetic 'Create Vendor' option; creation handled solely by button toggle.
                     return (
                       <Box>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>

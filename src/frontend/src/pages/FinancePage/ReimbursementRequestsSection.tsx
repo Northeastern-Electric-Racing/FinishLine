@@ -32,8 +32,6 @@ const ReimbursementRequestTable = ({
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
   const canViewAllReimbursementRequests = user.isFinance || isAtLeastRank(RoleEnum.LEADERSHIP, user.role);
-  console.log('Comparing roles: (current, compare)', user.role, RoleEnum.LEADERSHIP);
-  console.log('canViewAllReimbursementRequests:', canViewAllReimbursementRequests);
   const tabs = [{ tabUrlValue: 'my-requests', tabName: 'My Requests' }];
 
   if (canViewAllReimbursementRequests) tabs.push({ tabUrlValue: 'all-requests', tabName: 'All Requests' });

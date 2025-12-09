@@ -153,7 +153,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     new Set(reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0))
   );
 
-  // in the event the data was from a prior refund request (editing mode)
+  // in the event the data was from a prior refund request
   const hasPreFilledData = useRef(false);
   const hasInitializedRefundSources = useRef(false);
 
