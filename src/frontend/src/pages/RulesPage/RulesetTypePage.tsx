@@ -16,6 +16,7 @@ import {
   Typography,
   Stack
 } from '@mui/material';
+import { datePipe } from '../../utils/pipes';
 
 type RulesetTypeColumnId = 'id' | 'name' | 'lastUpdated' | 'revisions' | 'actions';
 
@@ -49,8 +50,8 @@ const RulesetTypePage: React.FC = () => {
 
   // Mock data for now - will be replaced with ruleset type data
   const mockRulesets = [
-    { id: '1', name: 'Ruleset 1', lastUpdated: '2024-01-15', revisions: 5, actions: 'Edit' },
-    { id: '2', name: 'Ruleset 2', lastUpdated: '2024-01-14', revisions: 3, actions: 'Edit' }
+    { id: '1', name: 'Ruleset 1', lastUpdated: new Date('2024-01-15'), revisions: 5, actions: 'Edit' },
+    { id: '2', name: 'Ruleset 2', lastUpdated: new Date('2024-01-14'), revisions: 3, actions: 'Edit' }
   ];
 
   return (
@@ -78,7 +79,7 @@ const RulesetTypePage: React.FC = () => {
                           Last Updated:
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#ededed' }}>
-                          {ruleset.lastUpdated}
+                          {datePipe(ruleset.lastUpdated)}
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
