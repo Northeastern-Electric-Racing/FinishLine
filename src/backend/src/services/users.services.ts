@@ -75,7 +75,7 @@ export default class UsersService {
         }
       },
       ...getUserQueryArgs(organizationId),
-      orderBy: { firstName: 'asc' }
+      orderBy: { lastName: 'asc' }
     });
 
     return users.map(userTransformer);

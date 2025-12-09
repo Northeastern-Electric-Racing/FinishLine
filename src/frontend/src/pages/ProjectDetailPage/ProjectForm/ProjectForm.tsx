@@ -14,7 +14,7 @@ import NERFailButton from '../../../components/NERFailButton';
 import LinksEditView from '../../../components/LinksEditView';
 import PageLayout from '../../../components/PageLayout';
 import ProjectFormDetails from './ProjectFormDetails';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
@@ -80,7 +80,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 
   const toast = useToast();
 
-  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const {
     register,
     handleSubmit,
