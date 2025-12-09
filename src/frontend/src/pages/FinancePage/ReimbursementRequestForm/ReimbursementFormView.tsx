@@ -1,7 +1,6 @@
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import HelpIcon from '@mui/icons-material/Help';
-import AddIcon from '@mui/icons-material/Add';
 import {
   FormControl,
   FormHelperText,
@@ -17,7 +16,6 @@ import {
   Alert,
   Button,
   useTheme,
-  Autocomplete,
   TextField
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
@@ -54,13 +52,12 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
-import { codeAndRefundSourceName, accountCodePipe, fullNamePipe } from '../../../utils/pipes';
+import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
 import { useCreateVendor } from '../../../hooks/finance.hooks';
 import { useGetFinanceDelegates } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import PageLayout from '../../../components/PageLayout';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 
 interface ReimbursementRequestFormViewProps {

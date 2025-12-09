@@ -64,30 +64,31 @@ const schema = yup.object().shape({
     }
 
     const products = this.parent.reimbursementProducts || [];
-    for (const product of this.parent.reimbursementProducts) {
-      if (product.refundSources[0].amount === undefined) {
-        return this.createError({
-          message: 'Amount is required',
-          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${0}.amount`
-        });
-      } else if (product.refundSources[0].amount < 0.01) {
-        return this.createError({
-          message: 'Amount must be positive',
-          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${0}.amount`
-        });
-      }
+    
+    // Check that at least one product uses the first refund source
+    const firstSourceUsed = products.some((product: any) => {
+      const amount = product.refundSources?.[0]?.amount;
+      return amount !== undefined && amount !== null && Number(amount) > 0;
+    });
 
-      if (product.refundSources[1].amount === undefined) {
-        return this.createError({
-          message: 'Amount is required',
-          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${1}.amount`
-        });
-      } else if (product.refundSources[1].amount < 0.01) {
-        return this.createError({
-          message: 'Amount must be positive',
-          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${1}.amount`
-        });
-      }
+    if (!firstSourceUsed) {
+      return this.createError({
+        message: 'At least one product must use the first refund source',
+        path: 'indexCodeId'
+      });
+    }
+
+    // Check that at least one product uses the second refund source
+    const secondSourceUsed = products.some((product: any) => {
+      const amount = product.refundSources?.[1]?.amount;
+      return amount !== undefined && amount !== null && Number(amount) > 0;
+    });
+
+    if (!secondSourceUsed) {
+      return this.createError({
+        message: 'At least one product must use the second refund source',
+        path: 'secondaryAccount'
+      });
     }
 
     return true;
@@ -104,9 +105,12 @@ const schema = yup.object().shape({
           yup.object({
             amount: yup
               .number()
+              .transform((value, originalValue) => {
+                // Treat empty string or undefined as 0
+                return originalValue === '' || originalValue === undefined ? 0 : value;
+              })
               .typeError('Amount must be a number')
               .min(0, 'Amount cannot be negative')
-              .required('Amount is required')
           })
         ),
         cost: yup

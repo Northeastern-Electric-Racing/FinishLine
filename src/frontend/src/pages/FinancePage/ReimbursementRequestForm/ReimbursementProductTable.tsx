@@ -8,7 +8,6 @@ import {
   FormControl,
   FormHelperText,
   IconButton,
-  InputAdornment,
   Table,
   TableBody,
   TableCell,
@@ -34,7 +33,6 @@ import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue, Use
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
 import { useEffect, useState, useRef } from 'react';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';

@@ -22,7 +22,8 @@ import {
   IndexCode,
   OtherProductReason,
   notGuest,
-  User
+  User,
+  RoleEnum
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -242,7 +243,7 @@ export default class ReimbursementRequestService {
     dateOfExpense?: Date
   ): Promise<ReimbursementRequest> {
     if (await userHasPermission(recipient.userId, organization.organizationId, isGuest))
-      throw new AccessDeniedGuestException('Guests cannot create a reimbursement request');
+      throw new AccessDeniedGuestException('create a reimbursement request');
 
     if (!recipient.userSecureSettings) throw new HttpException(500, 'User does not have their finance settings set up');
 

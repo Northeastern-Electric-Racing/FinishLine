@@ -241,7 +241,7 @@ const ReimbursementRequestInfo = ({
         rowsPerPageOptions={[10, 25, 50, 100]}
         addLabel="CREATE"
         onAdd={() => {
-          if (!isGuest(user.role) && (!canViewAllReimbursementRequests || currentTab === 0)) {
+          if (!isGuest(user.role)) {
             history.push(routes.NEW_REIMBURSEMENT_REQUEST);
           }
         }}

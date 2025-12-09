@@ -1,6 +1,6 @@
 import { Box, useTheme } from '@mui/material';
 import { useState } from 'react';
-import { ReimbursementRequest, isHead, isLead } from 'shared';
+import { ReimbursementRequest, RoleEnum, isAtLeastRank } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
@@ -31,8 +31,9 @@ const ReimbursementRequestTable = ({
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
-  const canViewAllReimbursementRequests = user.isFinance || isHead(user.role) || isLead(user.role);
-
+  const canViewAllReimbursementRequests = user.isFinance || isAtLeastRank(RoleEnum.LEADERSHIP, user.role);
+  console.log('Comparing roles: (current, compare)', user.role, RoleEnum.LEADERSHIP);
+  console.log('canViewAllReimbursementRequests:', canViewAllReimbursementRequests);
   const tabs = [{ tabUrlValue: 'my-requests', tabName: 'My Requests' }];
 
   if (canViewAllReimbursementRequests) tabs.push({ tabUrlValue: 'all-requests', tabName: 'All Requests' });
