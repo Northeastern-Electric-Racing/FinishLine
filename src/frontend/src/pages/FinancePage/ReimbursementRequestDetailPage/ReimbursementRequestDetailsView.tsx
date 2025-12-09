@@ -64,7 +64,6 @@ import CheckList from '../../../components/CheckList';
 import MarkDeliveredModal from './MarkDeliveredModal';
 import ReimbursementRequestTimeline from '../FinanceComponents/ReimbursementRequestTimeline';
 import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
-import { ReimbursementRequestDataSubmission } from '../ReimbursementRequestForm/ReimbursementRequestForm';
 import { useGetFinanceDelegates } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -477,42 +476,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
 
   const { id } = useParams<{ id: string }>();
 
-  const { isLoading: editReimbursementRequestIsLoading, mutateAsync: editReimbursementRequest } =
-    useEditReimbursementRequest(id);
-  const { isLoading: uploadReceiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
+  const { isLoading: editReimbursementRequestIsLoading } = useEditReimbursementRequest(id);
+  const { isLoading: uploadReceiptsIsLoading } = useUploadManyReceipts();
   const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();
 
   if (editReimbursementRequestIsLoading || uploadReceiptsIsLoading || !reimbursementRequest) return <LoadingIndicator />;
-
-  const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
-    const filesToKeep = data.receiptFiles.filter((file) => file.googleFileId !== '');
-
-    await editReimbursementRequest({ ...data, receiptPictures: filesToKeep, indexCodeId: data.indexCodeId! });
-    await uploadReceipts({
-      id: reimbursementRequest.reimbursementRequestId,
-      files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file!)
-    });
-
-    closeSidePage();
-    return reimbursementRequest.reimbursementRequestId;
-  };
-
-  const onSubmitToFinance = async (data: ReimbursementRequestDataSubmission): Promise<void> => {
-    const filesToKeep = data.receiptFiles.filter((file) => file.googleFileId !== '');
-
-    await editReimbursementRequest({ ...data, receiptPictures: filesToKeep, indexCodeId: data.indexCodeId! });
-    await uploadReceipts({
-      id: reimbursementRequest.reimbursementRequestId,
-      files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file!)
-    });
-
-    if (isHead(user.role) && !isReimbursementRequestLeadershipApproved(reimbursementRequest)) {
-      await leadershipApproveReimbursementRequest();
-    }
-
-    await markPendingFinance();
-    closeSidePage();
-  };
 
   if (isLoading || !financeDelegates) {
     return <LoadingIndicator />;

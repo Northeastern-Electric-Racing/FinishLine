@@ -64,7 +64,7 @@ const schema = yup.object().shape({
     }
 
     const products = this.parent.reimbursementProducts || [];
-    
+
     // Check that at least one product uses the first refund source
     const firstSourceUsed = products.some((product: any) => {
       const amount = product.refundSources?.[0]?.amount;

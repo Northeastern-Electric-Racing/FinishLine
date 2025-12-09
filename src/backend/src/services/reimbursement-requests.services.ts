@@ -22,8 +22,7 @@ import {
   IndexCode,
   OtherProductReason,
   notGuest,
-  User,
-  RoleEnum
+  User
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
