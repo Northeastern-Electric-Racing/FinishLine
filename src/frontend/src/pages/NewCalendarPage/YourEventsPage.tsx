@@ -198,7 +198,7 @@ const YourEventsPage = () => {
                                 : 'Denied'
                             : 'N/A'}
                         </Typography>
-                        {event.approved && (
+                        {event.approved && event.approved === ConflictStatus.DENIED && (
                           <Tooltip
                             placement="bottom-end"
                             arrow
