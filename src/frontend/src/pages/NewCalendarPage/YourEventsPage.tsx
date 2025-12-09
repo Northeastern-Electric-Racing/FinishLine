@@ -2,14 +2,29 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { Box, Link, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import {
+  Box,
+  Button,
+  Link,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import TableCellHuge from './YourEventsComponents/TableCellHuge';
 import { useFilterEvents } from '../../hooks/calendar.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ConflictStatus, ScheduleSlot } from 'shared';
 import { Event } from 'shared';
+import WarningIcon from '@mui/icons-material/Warning';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 interface YourEventsHeadCells {
   id: string;
@@ -173,13 +188,88 @@ const YourEventsPage = () => {
                         : 'N/A'}
                     </TableCell>
                     <TableCell align="center">
-                      {event.approved === ConflictStatus.CONFIRMED
-                        ? 'Approved'
-                        : event.approved === ConflictStatus.UNCONFIRMED
-                          ? 'PENDING'
-                          : event.approved === ConflictStatus.DENIED
-                            ? 'DENIED'
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                        <Typography component="span">
+                          {event.approved
+                            ? event.approved === ConflictStatus.CONFIRMED
+                              ? 'Approved'
+                              : event.approved === ConflictStatus.UNCONFIRMED
+                                ? 'Pending'
+                                : 'Denied'
                             : 'N/A'}
+                        </Typography>
+                        {event.approved && (
+                          <Tooltip
+                            placement="bottom-end"
+                            arrow
+                            PopperProps={{
+                              modifiers: [
+                                {
+                                  name: 'offset',
+                                  options: {
+                                    offset: [10, 0]
+                                  }
+                                }
+                              ]
+                            }}
+                            slotProps={{
+                              tooltip: {
+                                sx: {
+                                  bgcolor: '#ef5350',
+                                  color: 'white',
+                                  padding: 2,
+                                  borderRadius: 2,
+                                  maxWidth: 600,
+                                  fontSize: '14px',
+                                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                                }
+                              },
+                              arrow: {
+                                sx: {
+                                  color: '#ef5350'
+                                }
+                              }
+                            }}
+                            title={
+                              <Stack direction="row" alignItems="center" spacing={2}>
+                                <WarningIcon sx={{ fontSize: 40 }} />
+                                <Typography fontSize={14}>
+                                  Your meeting approval has been denied, please reschedule or change your meeting location.
+                                </Typography>
+                                <Button
+                                  variant="outlined"
+                                  sx={{
+                                    color: 'white',
+                                    borderColor: 'white',
+                                    whiteSpace: 'nowrap',
+                                    textTransform: 'none',
+                                    flexShrink: 0,
+                                    px: 2,
+                                    '&:hover': {
+                                      borderColor: 'white',
+                                      bgcolor: 'rgba(255,255,255,0.1)'
+                                    }
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                  }}
+                                >
+                                  Click Here to Edit Meeting
+                                </Button>
+                              </Stack>
+                            }
+                          >
+                            <ErrorOutlineIcon
+                              fontSize="small"
+                              sx={{
+                                color: 'error.main',
+                                ml: 1,
+                                cursor: 'pointer'
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                      </Box>
                     </TableCell>
                   </TableRow>
                 );

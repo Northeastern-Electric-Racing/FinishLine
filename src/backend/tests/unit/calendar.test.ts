@@ -913,7 +913,7 @@ describe('Calendar Tests', () => {
       expect(result.scheduledTimes).toHaveLength(1);
       expect(result.scheduledTimes[0].days).toEqual([DayOfWeek.MONDAY, DayOfWeek.TUESDAY]);
       expect(result.teamType).toBe(undefined);
-      expect(result.approved).toBe(true);
+      expect(result.approved).toBe(undefined);
       expect(result.approvalRequiredFrom).toBe(undefined);
       expect(result.questionDocument).toBe('https://example.com/questions.pdf');
       expect(result.location).toBe('Conference Room A');
@@ -1025,7 +1025,7 @@ describe('Calendar Tests', () => {
       expect(result.documentIds).toHaveLength(1);
       expect(result.scheduledTimes).toHaveLength(1);
       expect(result.teamType).toBe(undefined);
-      expect(result.approved).toBe(true);
+      expect(result.approved).toBe(undefined);
       expect(result.approvalRequiredFrom).toBeUndefined();
       expect(result.questionDocument).toBe('https://example.com/questions.pdf');
       expect(result.location).toBe('Conference Room A');
@@ -1952,7 +1952,7 @@ describe('Calendar Tests', () => {
       expect(result.optionalMembers).toHaveLength(1);
       expect(result.optionalMembers[0].userId).toBe(adminUser.userId);
       expect(result.documentIds).toEqual(['doc2', 'doc3']);
-      expect(result.approved).toBe(true);
+      expect(result.approved).toBe(undefined);
       expect(result.approvalRequiredFrom).toBe(undefined);
       expect(result.questionDocument).toBe('https://updated.com/questions.pdf');
       expect(result.location).toBe('Updated Location');
