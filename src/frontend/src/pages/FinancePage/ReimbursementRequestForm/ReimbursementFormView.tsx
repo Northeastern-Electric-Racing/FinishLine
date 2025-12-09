@@ -488,7 +488,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                         fontWeight: 'bold'
                       }}
                     >
-                      Date of Expense
+                      Date of Expense{isLeadershipApproved ? '*' : ''}
                     </FormLabel>
                     <Tooltip
                       title="Reimbursements with Different Purchase Dates Should be on Different Requests. Leave Empty for Not Yet Purchased Items"
@@ -554,7 +554,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     fontWeight: 'bold'
                   }}
                 >
-                  Upload Receipts
+                  Upload Receipts{isLeadershipApproved ? '*' : ''}
                 </FormLabel>
                 <Box>
                   <ReceiptFileInput />
