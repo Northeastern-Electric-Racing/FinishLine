@@ -49,11 +49,15 @@ export const machineryTransformer = (machinery: Prisma.MachineryGetPayload<Machi
 };
 
 export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<EventTypeQueryArgs>): EventType => {
+  const eventTypeWithCalendars = eventType as typeof eventType & {
+    calendars?: { calendarId: string }[];
+  };
   return {
     eventTypeId: eventType.eventTypeId,
     name: eventType.name,
     userCreated: userTransformer(eventType.userCreated),
     dateCreated: eventType.dateCreated,
+    calendarIds: eventTypeWithCalendars.calendars?.map((c: { calendarId: string }) => c.calendarId) || [],
     requiredMembers: eventType.requiredMembers,
     optionalMembers: eventType.optionalMembers,
     teams: eventType.teams,
@@ -69,7 +73,7 @@ export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<Even
     onlyHeadsOrAboveForEventCreation: eventType.onlyHeadsOrAboveForEventCreation,
     requiresConfirmation: eventType.requiresConfirmation,
     sendSlackNotifications: eventType.sendSlackNotifications
-  };
+  } as EventType;
 };
 
 export const calendarTransformer = (calendar: Prisma.CalendarGetPayload<CalendarQueryArgs>): Calendar => {
