@@ -27,7 +27,6 @@ import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
 import CreateEventTypeModal from './EventType/CreateEventTypeModal';
 import EditEventTypeModal from './EventType/EditEventTypeModal';
-import DeleteEventTypeModal from './EventType/DeleteEventTypeModal';
 import { Shop, EventType, Calendar } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERDeleteModal from '../../../components/NERDeleteModal';
@@ -608,10 +607,11 @@ const AdminToolsScheduleConfig: React.FC = () => {
       )}
 
       {/* Delete Event Type Modal */}
-      <DeleteEventTypeModal
+      <NERDeleteModal
         open={!!eventTypeToDelete}
         onHide={() => setEventTypeToDelete(undefined)}
-        eventType={eventTypeToDelete}
+        formId="delete-event-type-form"
+        dataType={`event type "${eventTypeToDelete?.name || ''}"`}
         onFormSubmit={handleEventTypeDelete}
       />
     </Box>
