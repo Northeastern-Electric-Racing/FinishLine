@@ -1,5 +1,5 @@
 import React from 'react';
-import { FieldValues, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { Typography } from '@mui/material';
 import NERFormModal from '../../../../components/NERFormModal';
 import { EventType } from 'shared';
@@ -41,4 +41,3 @@ const DeleteEventTypeModal: React.FC<DeleteEventTypeModalProps> = ({
 };
 
 export default DeleteEventTypeModal;
-
