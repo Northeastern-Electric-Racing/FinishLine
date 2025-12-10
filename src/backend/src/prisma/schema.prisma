@@ -1030,7 +1030,7 @@ model Schedule_Slot {
   @@index([initialDateScheduled, endDate])
 }
 
-enum ConflictStatus {
+enum Conflict_Status {
   PENDING
   APPROVED
   DENIED
@@ -1048,7 +1048,7 @@ model Event {
   userDeleted                User?           @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
   eventTypeId                String
   eventType                  Event_Type      @relation(fields: [eventTypeId], references: [eventTypeId])
-  approved                   ConflictStatus
+  approved                   Conflict_Status
   // when approval is false, approved by holds who needs to approve the event
   // when approval is true, approved by holds who actually approved the event
   approvalRequiredFromUserId String?

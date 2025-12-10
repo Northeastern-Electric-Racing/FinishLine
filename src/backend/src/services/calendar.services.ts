@@ -1,6 +1,6 @@
 import { calendarTransformer, eventTransformer, machineryTransformer } from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
-import { ConflictStatus, Event_Status, Organization } from '@prisma/client';
+import { Conflict_Status, Event_Status, Organization } from '@prisma/client';
 import {
   isAdmin,
   isHead,
@@ -460,7 +460,7 @@ export default class CalendarService {
           }))
         },
         status: foundEventType.requiresConfirmation ? Event_Status.UNCONFIRMED : Event_Status.CONFIRMED,
-        approved: hasConflict ? ConflictStatus.PENDING : ConflictStatus.NO_CONFLICT,
+        approved: hasConflict ? Conflict_Status.PENDING : Conflict_Status.NO_CONFLICT,
         approvalRequiredFromUserId: hasConflict ? approverUserId : null,
         location,
         zoomLink,
@@ -887,8 +887,8 @@ export default class CalendarService {
           approved:
             scheduleChanged || locationChanged
               ? hasConflict
-                ? ConflictStatus.PENDING
-                : ConflictStatus.NO_CONFLICT
+                ? Conflict_Status.PENDING
+                : Conflict_Status.NO_CONFLICT
               : foundEvent.approved,
           approvalRequiredFromUserId:
             scheduleChanged || locationChanged
@@ -951,7 +951,7 @@ export default class CalendarService {
     const approvedEvent = await prisma.event.update({
       where: { eventId },
       data: {
-        approved: ConflictStatus.APPROVED,
+        approved: Conflict_Status.APPROVED,
         approvalRequiredFromUserId: submitter.userId
       },
       ...getEventQueryArgs(organization.organizationId)
@@ -979,7 +979,7 @@ export default class CalendarService {
     const deniedEvent = await prisma.event.update({
       where: { eventId },
       data: {
-        approved: ConflictStatus.DENIED,
+        approved: Conflict_Status.DENIED,
         approvalRequiredFromUserId: submitter.userId
       },
       ...getEventQueryArgs(organization.organizationId)

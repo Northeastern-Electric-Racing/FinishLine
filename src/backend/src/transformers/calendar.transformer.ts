@@ -2,7 +2,7 @@ import {
   Prisma,
   DayOfWeek as PrismaDayOfWeek,
   Event_Status as PrismaEventStatus,
-  ConflictStatus as PrismaConflictStatus
+  Conflict_Status as PrismaConflictStatus
 } from '@prisma/client';
 import {
   Machinery,

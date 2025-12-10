@@ -1,6 +1,9 @@
 -- CreateEnum
 CREATE TYPE "public"."DayOfWeek" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
 
+-- CreateEnum
+CREATE TYPE "Conflict_Status" AS ENUM ('PENDING', 'APPROVED', 'DENIED', 'NO_CONFLICT');
+
 -- CreateTable
 CREATE TABLE "public"."Shop" (
     "shopId" TEXT NOT NULL,
@@ -61,7 +64,7 @@ CREATE TABLE "public"."Event" (
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
     "eventTypeId" TEXT NOT NULL,
-    "approved" BOOLEAN NOT NULL DEFAULT false,
+    "approved" "public"."Conflict_Status" NOT NULL,
     "approvalRequiredFromUserId" TEXT,
     "location" TEXT,
     "zoomLink" TEXT,
@@ -488,7 +491,7 @@ SELECT
      WHERE et."name" = 'Design Review' 
      AND et."organizationId" = w."organizationId" 
      LIMIT 1),
-    CASE WHEN dr."status" IN ('CONFIRMED', 'SCHEDULED', 'DONE') THEN true ELSE false END,
+    'NO_CONFLICT'::public."Conflict_Status" ,
     NULL, -- approvalRequiredFromUserId (not in Design_Review)
     dr."location",
     dr."zoomLink",
@@ -602,7 +605,7 @@ SELECT
      WHERE et."name" = 'Meeting' 
      AND et."organizationId" = t."organizationId"
      LIMIT 1),
-    false, -- Meetings aren't pre-approved
+    'NO_CONFLICT'::public."Conflict_Status" , 
     'UNCONFIRMED'::public."Event_Status"
 FROM "public"."Meeting" m
 JOIN "public"."Team" t ON m."teamId" = t."teamId";
@@ -701,10 +704,3 @@ DROP TABLE "public"."Design_Review" CASCADE;
 
 -- DropEnum
 DROP TYPE "public"."Design_Review_Status";
-
--- CreateEnum
-CREATE TYPE "ConflictStatus" AS ENUM ('PENDING', 'APPROVED', 'DENIED', 'NO_CONFLICT');
-
--- AlterTable
-ALTER TABLE "Event" DROP COLUMN "approved",
-ADD COLUMN     "approved" "ConflictStatus" NOT NULL;
