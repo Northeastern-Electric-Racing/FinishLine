@@ -190,15 +190,15 @@ const YourEventsPage = () => {
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                         <Typography component="span">
-                          {event.approved
-                            ? event.approved === ConflictStatus.CONFIRMED
-                              ? 'Approved'
-                              : event.approved === ConflictStatus.UNCONFIRMED
-                                ? 'Pending'
-                                : 'Denied'
-                            : 'N/A'}
+                          {event.approved === ConflictStatus.APPROVED
+                            ? 'Approved'
+                            : event.approved === ConflictStatus.PENDING
+                              ? 'Pending'
+                              : event.approved === ConflictStatus.DENIED
+                                ? 'Denied'
+                                : 'N/A'}
                         </Typography>
-                        {event.approved && event.approved === ConflictStatus.DENIED && (
+                        {event.approved === ConflictStatus.DENIED && (
                           <Tooltip
                             placement="bottom-end"
                             arrow

@@ -460,7 +460,7 @@ export default class CalendarService {
           }))
         },
         status: foundEventType.requiresConfirmation ? Event_Status.UNCONFIRMED : Event_Status.CONFIRMED,
-        approved: hasConflict ? ConflictStatus.UNCONFIRMED : null,
+        approved: hasConflict ? ConflictStatus.PENDING : ConflictStatus.NO_CONFLICT,
         approvalRequiredFromUserId: hasConflict ? approverUserId : null,
         location,
         zoomLink,
@@ -885,7 +885,11 @@ export default class CalendarService {
           // If schedule/location changed and there's a conflict, set approved=false and track who needs to approve
           // Otherwise keep existing approval state
           approved:
-            scheduleChanged || locationChanged ? (hasConflict ? ConflictStatus.UNCONFIRMED : null) : foundEvent.approved,
+            scheduleChanged || locationChanged
+              ? hasConflict
+                ? ConflictStatus.PENDING
+                : ConflictStatus.NO_CONFLICT
+              : foundEvent.approved,
           approvalRequiredFromUserId:
             scheduleChanged || locationChanged
               ? hasConflict
@@ -947,7 +951,7 @@ export default class CalendarService {
     const approvedEvent = await prisma.event.update({
       where: { eventId },
       data: {
-        approved: ConflictStatus.CONFIRMED,
+        approved: ConflictStatus.APPROVED,
         approvalRequiredFromUserId: submitter.userId
       },
       ...getEventQueryArgs(organization.organizationId)
@@ -2097,7 +2101,7 @@ export default class CalendarService {
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
         teams: teamIds?.length ? { some: { teamId: { in: teamIds } } } : undefined,
-        OR: approvedEvents ? [{ approved: 'CONFIRMED' }, { approved: null }] : undefined,
+        OR: approvedEvents ? [{ approved: 'APPROVED' }, { approved: 'NO_CONFLICT' }] : undefined,
         scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
         ...memberOrCreator,
         ...fromCalendar

@@ -121,7 +121,7 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     workPackages: event.workPackages,
     documentIds: event.documentIds,
     scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer),
-    approved: event.approved ? conflictStatusTransformer(event.approved) : undefined,
+    approved: conflictStatusTransformer(event.approved),
     approvalRequiredFrom: event.approvalRequiredBy ?? undefined,
     location: event.location ?? undefined,
     zoomLink: event.zoomLink ?? undefined,
@@ -160,9 +160,10 @@ export const dayOfWeekTransformer = (day: PrismaDayOfWeek): DayOfWeek => {
 
 export const conflictStatusTransformer = (day: PrismaConflictStatus): ConflictStatus => {
   const mapping: Record<PrismaConflictStatus, ConflictStatus> = {
-    CONFIRMED: ConflictStatus.CONFIRMED,
-    UNCONFIRMED: ConflictStatus.UNCONFIRMED,
-    DENIED: ConflictStatus.DENIED
+    APPROVED: ConflictStatus.APPROVED,
+    PENDING: ConflictStatus.PENDING,
+    DENIED: ConflictStatus.DENIED,
+    NO_CONFLICT: ConflictStatus.NO_CONFLICT
   };
   return mapping[day];
 };

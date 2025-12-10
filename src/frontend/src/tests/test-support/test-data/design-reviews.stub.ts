@@ -20,7 +20,7 @@ export const teamType1: TeamType = {
 export const exampleDesignReviewEvent1: Event = {
   eventId: '1',
   title: 'Design Review - Impact Attenuator',
-  approved: ConflictStatus.CONFIRMED,
+  approved: ConflictStatus.APPROVED,
   userCreated: exampleAdminUser,
   dateCreated: new Date('2024-03-10'),
   eventTypeId: 'design-review-event-type-id',
@@ -96,7 +96,7 @@ export const exampleDesignReviewEvent1: Event = {
 export const exampleDesignReviewEvent2: Event = {
   eventId: '2',
   title: 'Design Review - Bodywork',
-  approved: ConflictStatus.CONFIRMED,
+  approved: ConflictStatus.APPROVED,
   userCreated: exampleAppAdminUser,
   dateCreated: new Date('2024-03-10'),
   eventTypeId: 'design-review-event-type-id',
