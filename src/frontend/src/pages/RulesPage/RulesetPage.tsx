@@ -1,30 +1,3 @@
-<<<<<<< HEAD
-import React from 'react';
-import PageLayout from '../../components/PageLayout';
-import AddNewFileModal from './components/AddNewFileModal';
-import { NERButton } from '../../components/NERButton';
-
-// Edit Rules/Assign Rules Page
-const RulesetPage: React.FC = () => {
-  // testing for AddNewFileModal
-  const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
-    setAddFileModalShow(false);
-    console.log('Added data: ' + data); // delete this later, once data is used properly
-  };
-
-  const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
-  return (
-    <PageLayout title="Rules">
-      <NERButton variant="contained" onClick={() => setAddFileModalShow(!AddFileModalShow)}>
-        Add New File
-      </NERButton>
-      <AddNewFileModal
-        open={AddFileModalShow}
-        onHide={() => setAddFileModalShow(false)}
-        onConfirm={handleFileConfirm}
-        carOptions={['1', '2']}
-      />
-=======
 /*
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
@@ -41,7 +14,9 @@ import RuleActions from './RuleActions';
 import { Rule } from 'shared';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-
+import React from 'react';
+import AddNewFileModal from './components/AddNewFileModal';
+import { NERButton } from '../../components/NERButton';
 /**
  * Placeholder hook to fetch a single ruleset.
  * @param rulesetId - The ID of the ruleset to fetch.
@@ -183,6 +158,13 @@ const useSingleRuleset = (rulesetId: string) => {
  * Supports editing and assigning rules to projects and teams.
  */
 const RulesetPage: React.FC = () => {
+  // testing for AddNewFileModal
+  const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
+    setAddFileModalShow(false);
+    console.log('Added data: ' + data); // delete this later, once data is used properly
+  };
+
+  const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
   const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>();
   const [tabValue, setTabValue] = useState(0);
   const defaultTab = 'edit-rules';
@@ -306,6 +288,15 @@ const RulesetPage: React.FC = () => {
                 >
                   Add Rule Section
                 </Button>
+                <NERButton variant="contained" onClick={() => setAddFileModalShow(!AddFileModalShow)}>
+                  Add New File
+                </NERButton>
+                <AddNewFileModal
+                  open={AddFileModalShow}
+                  onHide={() => setAddFileModalShow(false)}
+                  onConfirm={handleFileConfirm}
+                  carOptions={['1', '2']}
+                />
               </Box>
             </Box>
           </Box>
@@ -313,7 +304,6 @@ const RulesetPage: React.FC = () => {
           <Box>{/* Assign Rules tab content will be added in a future ticket */}</Box>
         )}
       </Box>
->>>>>>> bb2039d0cdac3b40b9fc39d5a4b66777e7588a3d
     </PageLayout>
   );
 };
