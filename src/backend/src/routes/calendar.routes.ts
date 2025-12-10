@@ -2,8 +2,12 @@ import express from 'express';
 import { body, param } from 'express-validator';
 import { intMinZero, isDate, nonEmptyString, validateInputs, isDayOfWeek, isEventStatus } from '../utils/validation.utils';
 import CalendarController from '../controllers/calendar.controllers';
+import multer, { memoryStorage } from 'multer';
+import { MAX_FILE_SIZE } from 'shared';
 
 const calendarRouter = express.Router();
+
+const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 calendarRouter.post(
   '/create',
@@ -81,9 +85,7 @@ calendarRouter.post(
   body('machineryIds.*').isString(),
   body('workPackageIds').isArray(),
   body('workPackageIds.*').isString(),
-  body('documentIds').isArray(),
-  body('documentIds.*').isString(),
-  body('questionDocument').optional().isString(),
+  body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),
   body('scheduleSlot').isArray(),
   body('scheduleSlot.*.days').isArray(),
@@ -116,9 +118,10 @@ calendarRouter.post(
   body('machineryIds.*').isString(),
   body('workPackageIds').isArray(),
   body('workPackageIds.*').isString(),
-  body('documentIds').isArray(),
-  body('documentIds.*').isString(),
-  body('questionDocument').optional().isString(),
+  body('documents').isArray(),
+  nonEmptyString(body('documents.*.name')),
+  nonEmptyString(body('documents.*.googleFileId')),
+  body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),
   body('scheduleSlot').isArray(),
   body('scheduleSlot.*.days').isArray(),
@@ -131,6 +134,10 @@ calendarRouter.post(
   validateInputs,
   CalendarController.editEvent
 );
+
+calendarRouter.get('/document/:fileId', CalendarController.downloadDocument);
+
+calendarRouter.post('/event/:eventId/upload-document', upload.single('pdf'), CalendarController.uploadDocument);
 
 calendarRouter.post('/event/:eventId/approve', CalendarController.approveEvent);
 
@@ -156,6 +163,8 @@ calendarRouter.post('/event/:eventId/delete', CalendarController.deleteEvent);
 calendarRouter.get('/event/:eventId', CalendarController.getSingleEvent);
 
 calendarRouter.get('/events', CalendarController.getAllEvents);
+
+calendarRouter.get('/event-types', CalendarController.getAllEventTypes);
 
 calendarRouter.post('/machinery/create', nonEmptyString(body('name')), validateInputs, CalendarController.createMachinery);
 

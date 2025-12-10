@@ -442,6 +442,7 @@ const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
 const calendarEvents = () => `${calendar()}/events`;
+const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
 const calendarMachinery = () => `${calendar()}/machinery`;
 const calendarCreateMachinery = () => `${calendar()}/machinery/create`;
@@ -458,6 +459,9 @@ const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
 const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
+const calendarCreateEvent = () => `${calendar()}/event/create`;
+const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
+const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -772,6 +776,7 @@ export const apiUrls = {
   calendarEventMarkUserConfirmed,
   calendarGetSingleEvent,
   calendarEvents,
+  calendarEventTypes,
   calendarDeleteEvent,
   calendarEventSetStatus,
   calendarDeleteShop,
@@ -779,6 +784,9 @@ export const apiUrls = {
   calendarCreateCalendar,
   calendarEditCalendar,
   calendarCalendars,
+  calendarCreateEvent,
+  calendarUploadDocument,
+  calendarPDFById,
 
   version
 };

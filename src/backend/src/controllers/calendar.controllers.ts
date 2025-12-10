@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import CalendarService from '../services/calendar.services';
 import { getCurrentUserWithUserSettings } from '../utils/auth.utils';
+import { HttpException } from '../utils/errors.utils';
 
 export default class CalendarController {
   static async createEventType(req: Request, res: Response, next: NextFunction) {
@@ -266,34 +267,41 @@ export default class CalendarController {
       const {
         title,
         eventTypeId,
-        memberIds,
+        requiredMemberIds,
+        optionalMemberIds,
         teamIds,
         teamTypeId,
         shopIds,
         machineryIds,
         workPackageIds,
-        documentIds,
         scheduleSlot,
-        questionDocument,
+        questionDocumentLink,
         location,
         zoomLink,
         description
       } = req.body;
+
+      const parsedScheduleSlot = scheduleSlot.map((slot: any) => ({
+        ...slot,
+        startTime: slot.startTime ? new Date(slot.startTime) : undefined,
+        endTime: slot.endTime ? new Date(slot.endTime) : undefined,
+        initialDateScheduled: new Date(slot.initialDateScheduled)
+      }));
 
       const event = await CalendarService.createEvent(
         req.currentUser,
         title,
         eventTypeId,
         req.organization,
-        memberIds,
+        requiredMemberIds,
+        optionalMemberIds,
         shopIds,
         machineryIds,
         teamIds,
         workPackageIds,
-        documentIds,
-        scheduleSlot,
+        parsedScheduleSlot,
         teamTypeId,
-        questionDocument,
+        questionDocumentLink,
         location,
         zoomLink,
         description
@@ -318,12 +326,19 @@ export default class CalendarController {
         shopIds,
         machineryIds,
         workPackageIds,
-        documentIds,
+        documents,
         scheduleSlot,
-        questionDocument,
+        questionDocumentLink,
         location,
         zoomLink
       } = req.body;
+
+      const parsedScheduleSlot = scheduleSlot.map((slot: any) => ({
+        ...slot,
+        startTime: slot.startTime ? new Date(slot.startTime) : undefined,
+        endTime: slot.endTime ? new Date(slot.endTime) : undefined,
+        initialDateScheduled: new Date(slot.initialDateScheduled)
+      }));
 
       const event = await CalendarService.editEvent(
         req.currentUser,
@@ -338,14 +353,47 @@ export default class CalendarController {
         machineryIds,
         teamIds,
         workPackageIds,
-        documentIds,
-        scheduleSlot,
+        documents,
+        parsedScheduleSlot,
         teamTypeId,
-        questionDocument,
+        questionDocumentLink,
         location,
         zoomLink
       );
       res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async uploadDocument(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { file } = req;
+      const { eventId } = req.params;
+      if (!file) throw new HttpException(400, 'Invalid or undefined document data');
+      const receipt = await CalendarService.uploadDocument(eventId, file, req.currentUser, req.organization);
+      const isProd = process.env.NODE_ENV === 'production';
+      const origin = isProd ? 'https://finishlinebyner.com' : 'http://localhost:3000';
+
+      res.header('Access-Control-Allow-Origin', origin);
+      res.status(200).json(receipt);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async downloadDocument(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { fileId } = req.params;
+
+      const imageData = await CalendarService.downloadDocument(fileId);
+
+      // Set the appropriate headers for the HTTP response
+      res.setHeader('content-type', String(imageData.type));
+      res.setHeader('content-length', imageData.buffer.length);
+
+      // Send the Buffer as the response body
+      res.status(200).send(imageData.buffer);
     } catch (error: unknown) {
       next(error);
     }
@@ -446,6 +494,15 @@ export default class CalendarController {
   static async getAllEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const events = await CalendarService.getAllEvents(req.organization);
+      res.status(200).json(events);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllEventTypes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const events = await CalendarService.getAllEventTypes(req.organization);
       res.status(200).json(events);
     } catch (error: unknown) {
       next(error);

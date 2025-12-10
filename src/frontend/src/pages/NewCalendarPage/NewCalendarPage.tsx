@@ -9,15 +9,19 @@ import { Event } from 'shared';
 import MonthSelector from '../CalendarPage/CalendarComponents/MonthSelector';
 import CalendarDayCard from '../CalendarPage/CalendarComponents/CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useAllEvents } from '../../hooks/calendar.hooks';
+import { useAllEvents, useAllEventTypes, useCreateEvent, useUploadManyDocuments } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import EventSummaryModal from '../CalendarPage/EventSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import CreateEventModal from './Components/CreateEventModal';
+import { EventRoutePayload } from './Components/EventModal';
+import { useToast } from '../../hooks/toasts.hooks';
 
 const NewCalendarPage = () => {
+  const toast = useToast();
   const theme = useTheme();
   const {
     data: allTeamTypes,
@@ -26,14 +30,28 @@ const NewCalendarPage = () => {
     error: allTeamTypesError
   } = useAllTeamTypes();
 
+  const {
+    data: eventTypes,
+    isLoading: eventTypesLoading,
+    isError: eventTypesIsError,
+    error: eventTypesError
+  } = useAllEventTypes();
+
+  const { mutateAsync: createEvent } = useCreateEvent();
+  const { isLoading: documentsIsLoading, mutateAsync: uploadDocuments } = useUploadManyDocuments();
+
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
   const { isLoading, isError, error, data: allEvents } = useAllEvents();
   const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   if (isLoading || !allEvents) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
+  if (eventTypesLoading || !eventTypes) return <LoadingIndicator />;
+  if (eventTypesIsError) return <ErrorPage message={eventTypesError?.message} />;
+  if (documentsIsLoading) return <LoadingIndicator />;
 
   // Sort events by their first occurrence's start time
   const sortedEvents = [...allEvents].sort((event1, event2) => {
@@ -86,6 +104,53 @@ const NewCalendarPage = () => {
 
   if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
   if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
+  if (documentsIsLoading) return <LoadingIndicator />;
+
+  const handleCreateEvent = async (data: EventRoutePayload) => {
+    try {
+      const { scheduleSlot, documentFiles, ...eventData } = data;
+
+      const [slot] = scheduleSlot;
+
+      if (!slot) throw new Error('Missing scheduleSlot');
+
+      const { days, startTime, endTime, recurrenceNumber, initialDateScheduled, allDay } = slot;
+
+      // Create the event first WITHOUT documents
+      const createArgs = {
+        ...eventData,
+        documentIds: [], // Empty array initially
+        scheduleSlot: [
+          {
+            days,
+            startTime,
+            endTime,
+            recurrenceNumber,
+            initialDateScheduled,
+            allDay
+          }
+        ]
+      };
+
+      const createdEvent = await createEvent(createArgs);
+
+      const filesToUpload = documentFiles.map((doc) => doc.file).filter((file): file is File => file !== undefined);
+
+      if (filesToUpload.length > 0) {
+        await uploadDocuments({
+          id: createdEvent.eventId,
+          files: filesToUpload
+        });
+      }
+
+      toast.success('Event created successfully!');
+      setIsCreateModalOpen(false);
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    }
+  };
 
   return (
     <>
@@ -99,15 +164,23 @@ const NewCalendarPage = () => {
           teamTypes={allTeamTypes}
         />
       )}
+      {isCreateModalOpen && (
+        <CreateEventModal
+          open={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={handleCreateEvent}
+          eventTypes={eventTypes}
+          defaultDate={displayMonthYear}
+        />
+      )}
       <PageLayout hidePageTitle>
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
           <Typography variant="h4"></Typography>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', columnGap: 1, rowGap: 1 }}>
-            {/* New Event Button (does not do anything yet) */}
             <Button
               variant="contained"
               disableElevation
-              onClick={() => {}}
+              onClick={() => setIsCreateModalOpen(true)}
               endIcon={<AddCircleOutlineIcon sx={{ fontSize: { xs: 24, sm: 30 } }} />}
               sx={{
                 flexShrink: 0,

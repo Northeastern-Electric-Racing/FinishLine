@@ -831,7 +831,6 @@ describe('Calendar Tests', () => {
     let otherOrgUser: User;
     let otherOrgShop: Shop;
     let otherOrgMachinery: Machinery;
-    let document: string;
 
     beforeEach(async () => {
       member = await createTestUser(supermanAdmin, orgId);
@@ -862,8 +861,6 @@ describe('Calendar Tests', () => {
         1,
         otherOrg
       );
-
-      document = 'Test Document';
     });
 
     it('succeeds for admin with valid inputs', async () => {
@@ -889,7 +886,6 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        [document],
         scheduleSlots,
         undefined,
         'https://example.com/questions.pdf',
@@ -909,13 +905,12 @@ describe('Calendar Tests', () => {
       expect(result.machinery).toHaveLength(1);
       expect(result.machinery[0].machineryId).toBe(machinery.machineryId);
       expect(result.workPackages).toHaveLength(0);
-      expect(result.documentIds).toHaveLength(1);
       expect(result.scheduledTimes).toHaveLength(1);
       expect(result.scheduledTimes[0].days).toEqual([DayOfWeek.MONDAY, DayOfWeek.TUESDAY]);
       expect(result.teamType).toBe(undefined);
       expect(result.approved).toBe(true);
       expect(result.approvalRequiredFrom).toBe(undefined);
-      expect(result.questionDocument).toBe('https://example.com/questions.pdf');
+      expect(result.questionDocumentLink).toBe('https://example.com/questions.pdf');
       expect(result.location).toBe('Conference Room A');
       expect(result.zoomLink).toBe('https://zoom.us/j/123456789');
       expect(result.description).toBe('Weekly team synchronization meeting');
@@ -940,7 +935,6 @@ describe('Calendar Tests', () => {
           'non-existent-event-type-id',
           organization,
           [member.userId],
-          [],
           [],
           [],
           [],
@@ -975,7 +969,6 @@ describe('Calendar Tests', () => {
           [shop.shopId],
           [],
           [],
-          [],
           scheduleSlots
         )
       ).rejects.toThrow(new InvalidOrganizationException('Event Type'));
@@ -1004,7 +997,6 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        [document],
         scheduleSlots,
         undefined,
         'https://example.com/questions.pdf',
@@ -1022,12 +1014,11 @@ describe('Calendar Tests', () => {
       expect(result.shops).toHaveLength(1);
       expect(result.machinery).toHaveLength(1);
       expect(result.workPackages).toHaveLength(0);
-      expect(result.documentIds).toHaveLength(1);
       expect(result.scheduledTimes).toHaveLength(1);
       expect(result.teamType).toBe(undefined);
       expect(result.approved).toBe(true);
       expect(result.approvalRequiredFrom).toBeUndefined();
-      expect(result.questionDocument).toBe('https://example.com/questions.pdf');
+      expect(result.questionDocumentLink).toBe('https://example.com/questions.pdf');
       expect(result.location).toBe('Conference Room A');
       expect(result.zoomLink).toBe('https://zoom.us/j/123456789');
       expect(result.description).toBe('Weekly team synchronization meeting');
@@ -1057,7 +1048,6 @@ describe('Calendar Tests', () => {
           [shop.shopId],
           [machinery.machineryId],
           [],
-          [document],
           scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
@@ -1092,7 +1082,6 @@ describe('Calendar Tests', () => {
           [shop.shopId],
           [machinery.machineryId],
           [],
-          [document],
           scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
@@ -1127,7 +1116,6 @@ describe('Calendar Tests', () => {
           ['non-existent-shop-id'],
           [machinery.machineryId],
           [],
-          [document],
           scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
@@ -1162,7 +1150,6 @@ describe('Calendar Tests', () => {
           [otherOrgShop.shopId],
           [machinery.machineryId],
           [],
-          [document],
           scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
@@ -1197,7 +1184,6 @@ describe('Calendar Tests', () => {
           [shop.shopId],
           [otherOrgMachinery.machineryId],
           [],
-          [document],
           scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
@@ -1238,7 +1224,6 @@ describe('Calendar Tests', () => {
           [deletedShop.shopId],
           [machinery.machineryId],
           [],
-          [document],
           scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
@@ -1286,7 +1271,6 @@ describe('Calendar Tests', () => {
           [shop.shopId],
           [deletedMachinery.machineryId],
           [],
-          [document],
           scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
@@ -1301,8 +1285,6 @@ describe('Calendar Tests', () => {
   describe('Get Events', () => {
     it('Succeeds and gets all events', async () => {
       const member = await createTestUser(supermanAdmin, orgId);
-
-      const document = 'Test Document';
 
       const scheduleSlots = [
         {
@@ -1326,7 +1308,6 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        [document],
         scheduleSlots,
         undefined,
         'https://example.com/questions.pdf',
@@ -1346,7 +1327,6 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        [document],
         scheduleSlots,
         undefined,
         'https://example.com/questions.pdf',
@@ -1365,8 +1345,6 @@ describe('Calendar Tests', () => {
     it('Succeeds and gets all events within a timeframe', async () => {
       const member = await createTestUser(supermanAdmin, orgId);
 
-      const document = 'Test Document';
-
       const scheduleSlots = [
         {
           days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
@@ -1389,7 +1367,6 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        [document],
         scheduleSlots,
         undefined,
         'https://example.com/questions.pdf',
@@ -1409,7 +1386,6 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        [document],
         scheduleSlots,
         undefined,
         'https://example.com/questions.pdf',
@@ -1441,7 +1417,6 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        [document],
         scheduleSlots2,
         undefined,
         'https://example.com/questions.pdf',
@@ -1461,8 +1436,6 @@ describe('Calendar Tests', () => {
       const member = await createTestUser(supermanAdmin, orgId);
       const member2 = await createTestUser(wonderwomanGuest, orgId);
 
-      const document = 'Test Document';
-
       const scheduleSlots = [
         {
           days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
@@ -1485,7 +1458,6 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        [document],
         scheduleSlots,
         undefined,
         'https://example.com/questions.pdf',
@@ -1505,7 +1477,6 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        [document],
         scheduleSlots,
         undefined,
         'https://example.com/questions.pdf',
@@ -1537,7 +1508,6 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        [document],
         scheduleSlots2,
         undefined,
         'https://example.com/questions.pdf',
@@ -1720,7 +1690,6 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        ['document'],
         scheduleSlots,
         undefined,
         'https://example.com/questions.pdf',
@@ -1789,7 +1758,7 @@ describe('Calendar Tests', () => {
           [shop.shopId],
           [machinery.machineryId],
           [],
-          ['document'],
+          [],
           scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
@@ -1814,7 +1783,7 @@ describe('Calendar Tests', () => {
           ['non-existent-shop-id'],
           [machinery.machineryId],
           [],
-          ['document'],
+          [],
           scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
@@ -1845,7 +1814,7 @@ describe('Calendar Tests', () => {
           [deletedShop.shopId],
           [machinery.machineryId],
           [],
-          ['document'],
+          [],
           scheduleSlots,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1869,7 +1838,7 @@ describe('Calendar Tests', () => {
           [shop.shopId],
           ['non-existent-machinery-id'],
           [],
-          ['document'],
+          [],
           scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
@@ -1900,7 +1869,7 @@ describe('Calendar Tests', () => {
           [shop.shopId],
           [deletedMachinery.machineryId],
           [],
-          ['document'],
+          [],
           scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
@@ -1936,7 +1905,7 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        ['doc2', 'doc3'],
+        [],
         newScheduleSlots,
         undefined,
         'https://updated.com/questions.pdf',
@@ -1951,10 +1920,9 @@ describe('Calendar Tests', () => {
       expect(result.requiredMembers[0].userId).toBe(newMember.userId);
       expect(result.optionalMembers).toHaveLength(1);
       expect(result.optionalMembers[0].userId).toBe(adminUser.userId);
-      expect(result.documentIds).toEqual(['doc2', 'doc3']);
       expect(result.approved).toBe(true);
       expect(result.approvalRequiredFrom).toBe(undefined);
-      expect(result.questionDocument).toBe('https://updated.com/questions.pdf');
+      expect(result.questionDocumentLink).toBe('https://updated.com/questions.pdf');
       expect(result.location).toBe('Updated Location');
       expect(result.zoomLink).toBe('https://zoom.us/updated');
       expect(result.description).toBe('Updated description');
@@ -1989,12 +1957,11 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        ['doc2', 'doc3'],
         scheduleSlots,
         undefined,
         'https://updated.com/questions.pdf',
         'Updated Location',
-        'https://zoom.us/updated',
+        undefined,
         'Updated description'
       );
     });

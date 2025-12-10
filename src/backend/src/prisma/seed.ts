@@ -3272,7 +3272,6 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [],
     [],
-    [],
     [
       {
         days: [DayOfWeek.MONDAY],
@@ -3301,7 +3300,6 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [],
     [workPackage1.id],
-    ['doc1', 'doc2'],
     [
       {
         days: [DayOfWeek.TUESDAY],
@@ -3330,7 +3328,6 @@ const performSeed: () => Promise<void> = async () => {
     [electronicsLab.shopId],
     [printer.machineryId],
     [workPackage3.id],
-    [],
     [
       {
         days: [DayOfWeek.WEDNESDAY],
@@ -3358,7 +3355,6 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [],
     [ironMachine.machineryId],
-    [],
     [],
     [
       {

@@ -100,9 +100,9 @@ const EventSummaryModalDetails: React.FC<EventSummaryModalDetailsProps> = ({
           <Box display="flex" gap={8} alignItems={'center'}>
             <Box display="flex" gap={1} alignItems={'center'}>
               <DescriptionIcon />
-              <Link target="_blank" href={event.questionDocument ?? ''} paddingLeft="4px">
+              <Link target="_blank" href={event.questionDocumentLink ?? ''} paddingLeft="4px">
                 <Typography fontSize={18}>
-                  {event.questionDocument ? 'Question Document' : 'No Question Document'}
+                  {event.questionDocumentLink ? 'Question Document' : 'No Question Document'}
                 </Typography>
               </Link>
             </Box>
