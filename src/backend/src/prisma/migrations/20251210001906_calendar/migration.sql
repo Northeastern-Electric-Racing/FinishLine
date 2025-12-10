@@ -52,9 +52,6 @@ CREATE TABLE "public"."Schedule_Slot" (
     CONSTRAINT "Schedule_Slot_pkey" PRIMARY KEY ("scheduleSlotId")
 );
 
--- CreateEnum
-CREATE TYPE "ConflictStatus" AS ENUM ('PENDING', 'APPROVED', 'DENIED', 'NO_CONFLICT');
-
 -- CreateTable
 CREATE TABLE "public"."Event" (
     "eventId" TEXT NOT NULL,
@@ -64,7 +61,7 @@ CREATE TABLE "public"."Event" (
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
     "eventTypeId" TEXT NOT NULL,
-    "approved" "public"."ConflictStatus" NOT NULL,
+    "approved" BOOLEAN NOT NULL DEFAULT false,
     "approvalRequiredFromUserId" TEXT,
     "location" TEXT,
     "zoomLink" TEXT,
@@ -704,3 +701,10 @@ DROP TABLE "public"."Design_Review" CASCADE;
 
 -- DropEnum
 DROP TYPE "public"."Design_Review_Status";
+
+-- CreateEnum
+CREATE TYPE "ConflictStatus" AS ENUM ('PENDING', 'APPROVED', 'DENIED', 'NO_CONFLICT');
+
+-- AlterTable
+ALTER TABLE "Event" DROP COLUMN "approved",
+ADD COLUMN     "approved" "ConflictStatus" NOT NULL;
