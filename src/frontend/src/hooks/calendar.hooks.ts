@@ -319,12 +319,14 @@ export const useSetEventStatus = (id: string) => {
 };
 
 export const useFilterEvents = (filterArgs: FilterArgs) => {
-  return useQuery<Event[], Error>({
-    queryKey: [FILTER_EVENTS_KEY, filterArgs],
-    queryFn: async () => {
+  return useQuery<Event[], Error>(
+    ['filter-events', filterArgs],
+    async () => {
       const { data } = await postFilterEvents(filterArgs);
       return data;
     },
-    staleTime: 1000 * 60
-  });
+    {
+      keepPreviousData: true
+    }
+  );
 };

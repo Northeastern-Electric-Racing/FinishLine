@@ -48,8 +48,8 @@ export const postCreateShop = (payload: { name: string; description: string }) =
 };
 
 export const postFilterEvents = (payload: FilterArgs) => {
-  return axios.post<any>(apiUrls.calendarFilterEvents(), payload, {
-    transformResponse: (data) => JSON.parse(data).map(filterEventTransformer)
+  return axios.post<Event[]>(apiUrls.calendarFilterEvents(), payload, {
+    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
   });
 };
 
