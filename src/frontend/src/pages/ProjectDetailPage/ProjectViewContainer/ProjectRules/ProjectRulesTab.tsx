@@ -6,6 +6,6 @@
 import { Box } from '@mui/material';
 import { Project } from 'shared';
 
-export const ProjectRulesTab = ({ project }: { project: Project }) => {
+export const ProjectRulesTab = ({ project: _project }: { project: Project }) => {
   return <Box />;
 };
