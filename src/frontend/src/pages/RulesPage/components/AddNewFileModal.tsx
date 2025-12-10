@@ -157,7 +157,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
                     hidden
                     onChange={async (e) => {
                       if (e.target.files && e.target.files[0]) {
-                        const selectedFile = e.target.files[0];
+                        const [selectedFile] = e.target.files;
 
                         if (!isPdf(selectedFile.name)) {
                           toast.error('File must be a PDF');

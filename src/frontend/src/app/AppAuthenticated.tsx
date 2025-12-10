@@ -11,7 +11,7 @@ import { PageNotFound } from '../pages/PageNotFound';
 import Home from '../pages/HomePage/Home';
 import Settings from '../pages/SettingsPage/SettingsPage';
 import InfoPage from '../pages/InfoPage';
-import RulesPage from '../pages/RulesPage/RulesPage';
+import Rules from '../pages/RulesPage/Rules';
 import GanttChartPage from '../pages/GanttPage/ProjectGanttChart/ProjectGanttChartPage';
 import Teams from '../pages/TeamsPage/Teams';
 import AdminTools from '../pages/AdminToolsPage/AdminTools';
@@ -131,7 +131,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.STATISTICS} component={Statistics} />
             <Route path={routes.HOME} component={Home} />
             <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
-            <Route path={routes.RULES} component={RulesPage} />
+            <Route path={routes.RULES} component={Rules} />
             <Redirect from={routes.BASE} to={routes.HOME} />
             <Route path="*" component={PageNotFound} />
           </Switch>
