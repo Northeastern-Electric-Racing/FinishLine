@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TextField, FormControl, FormLabel, TableCell, TableRow, Grid, Typography } from '@mui/material';
-import AdminToolTable from './AdminToolTable';
+import NERTable from '../../components/NERTable';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -86,7 +86,7 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
         <FormLabel htmlFor="search-by-name">Search by team member name</FormLabel>
         <TextField id="search-by-name" variant="outlined" value={searchQuery} onChange={handleSearchChange} fullWidth />
       </FormControl>
-      <AdminToolTable
+      <NERTable
         columns={[
           { name: 'Team Member Name', width: '33%' },
           { name: 'No. Of Design Reviews Attended', width: '33%' },

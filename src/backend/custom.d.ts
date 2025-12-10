@@ -1,9 +1,10 @@
-import { Organization, User as PrismaUser } from '@prisma/client';
+import { Organization } from '@prisma/client';
+import { User as SharedUser } from 'shared';
 
 declare global {
   namespace Express {
     export interface Request {
-      currentUser: PrismaUser;
+      currentUser: SharedUser;
       organization: Organization;
     }
   }

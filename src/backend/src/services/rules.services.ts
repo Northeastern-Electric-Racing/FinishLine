@@ -1,8 +1,19 @@
-import { Organization, Rule, User, Rule_Completion } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview } from 'shared';
+import { Organization, Rule, Rule_Completion } from '@prisma/client';
+import {
+  isAdmin,
+  isLeadership,
+  ProjectRule,
+  RulesetType,
+  notGuest,
+  RulesetPreview,
+  User,
+  Rule as SharedRule,
+  isHead
+} from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
+  AccessDeniedGuestException,
   AccessDeniedException,
   DeletedException,
   HttpException,
@@ -25,6 +36,41 @@ import {
 } from '../transformers/rules.transformer';
 
 export default class RulesService {
+  /**
+   * Gets the active ruleset for the given ruleset type ID
+   * @param user a user who is requesting for the active ruleset
+   * @param rulesetTypeId the given ruleset type id
+   * @param organization the organization for permission check
+   * @returns a ruleset with the given id if it exists, otherwise throws an error
+   */
+  static async getActiveRuleset(user: User, rulesetTypeId: string, organization: Organization) {
+    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest)))
+      throw new AccessDeniedException('only members and above can view ruleset types!');
+
+    const rulesetType = await prisma.ruleset_Type.findUnique({
+      where: { rulesetTypeId, organizationId: organization.organizationId }
+    });
+
+    if (!rulesetType) {
+      throw new NotFoundException('Ruleset Type', rulesetTypeId);
+    }
+
+    if (rulesetType?.deletedByUserId != null) {
+      throw new DeletedException('Ruleset Type', rulesetTypeId);
+    }
+
+    const activeRuleset = await prisma.ruleset.findFirst({
+      where: { rulesetTypeId, deletedByUserId: null, active: true },
+      ...getRulesetQueryArgs(organization.organizationId)
+    });
+
+    if (!activeRuleset) {
+      throw new NotFoundException('Active Ruleset for given Ruleset Type', rulesetTypeId);
+    }
+
+    return rulesetTransformer(activeRuleset);
+  }
+
   /**
    * Creates a new rule in the database
    *
@@ -328,6 +374,87 @@ export default class RulesService {
   }
 
   /**
+   * Edits a rule with the given id
+   * @param submitter a user who is making this request
+   * @param ruleContent the rule content to edit
+   * @param ruleId The rule ID being edited
+   * @param ruleCode The rule code to update
+   * @param imageFileIds The image files to update
+   * @param parentRuleId The parent rule ID to update
+   * @param organizationId the organization Id
+   * @returns the edited rule
+   */
+  static async editRule(
+    submitter: User,
+    ruleContent: string,
+    ruleId: string,
+    ruleCode: string,
+    imageFileIds: string[],
+    organization: Organization,
+    parentRuleId?: string
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit a rule');
+
+    const currentRule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: {
+        ruleset: {
+          include: {
+            car: {
+              include: {
+                wbsElement: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!currentRule) {
+      throw new NotFoundException('Rule', ruleId);
+    }
+
+    if (currentRule.dateDeleted) {
+      throw new DeletedException('Rule', ruleId);
+    }
+
+    if (currentRule.ruleset?.car?.wbsElement?.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Rule');
+
+    if (parentRuleId) {
+      const parentRule = await prisma.rule.findUnique({
+        where: { ruleId: parentRuleId }
+      });
+
+      if (!parentRule) {
+        throw new NotFoundException('Parent Rule', parentRuleId);
+      }
+
+      if (parentRule.dateDeleted) {
+        throw new DeletedException('Parent Rule', parentRuleId);
+      }
+    }
+
+    const updatedRule = await prisma.rule.update({
+      where: {
+        ruleId
+      },
+      data: {
+        ruleContent,
+        ruleCode,
+        imageFileIds,
+        ...(parentRuleId && { parentRuleId }),
+        dateUpdated: new Date(),
+        updatedByUserId: submitter.userId
+      },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return ruleTransformer(updatedRule);
+  }
+
+  /**
    * Given a ruleset id, retrieves the ruleset and throws errors if
    * it does not exist or is already deleted
    * @param rulesetId the id of the ruleset
@@ -402,6 +529,71 @@ export default class RulesService {
   }
 
   /**
+   * Gets all rules assigned to a team that are in the active ruleset of a given ruleset type
+   * @param teamId id of the team
+   * @param rulesetTypeId id of ruleset type
+   * @param organization the organization
+   * @returns array of rule previews
+   */
+  static async getTeamRulesInRulesetType(teamId: string, rulesetTypeId: string, organization: Organization) {
+    const team = await prisma.team.findUnique({
+      where: { teamId, dateArchived: null }
+    });
+
+    if (!team) {
+      throw new NotFoundException('Team', teamId);
+    }
+
+    if (team.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Team');
+    }
+
+    const rulesetType = await prisma.ruleset_Type.findUnique({
+      where: { rulesetTypeId }
+    });
+
+    if (!rulesetType) {
+      throw new NotFoundException('Ruleset Type', rulesetTypeId);
+    }
+
+    if (rulesetType.deletedByUserId) {
+      throw new DeletedException('Ruleset Type', rulesetTypeId);
+    }
+
+    if (rulesetType.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Ruleset Type');
+    }
+
+    const activeRuleset = await prisma.ruleset.findFirst({
+      where: {
+        rulesetTypeId,
+        active: true,
+        deletedBy: null
+      },
+      ...getRulesetQueryArgs(organization.organizationId)
+    });
+
+    if (!activeRuleset) {
+      throw new NotFoundException('Active Ruleset for given Ruleset Type', rulesetTypeId);
+    }
+
+    const rules = await prisma.rule.findMany({
+      where: {
+        rulesetId: activeRuleset.rulesetId,
+        dateDeleted: null,
+        teams: {
+          some: {
+            teamId
+          }
+        }
+      },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return rules.map(ruleTransformer);
+  }
+
+  /**
    * Updates the status of a project rule
    * Such as changing a project rule from INCOMPLETE to COMPLETED
    * @param submitter the user updating the status
@@ -460,6 +652,85 @@ export default class RulesService {
     });
 
     return projectRuleTransformer(updatedProjectRule);
+  }
+
+  /**
+   * Assigns a rule to a team. If the team already is assigned to the
+   * rule, removes the team from the rule.
+   * @param ruleId The ruleId of the rule to be added to
+   * @param teamIds The team to be added to the rule
+   * @param user The user adding the team to the rule
+   * @param org The organization the rule belongs to
+   * @returns the updated rule
+   * @throws If the user is a guest, the rule does not exist or
+   *         is deleted, or a team does not exist, is in the wrong
+   *         organization, or is archived.
+   *
+   */
+  static async toggleRuleTeam(ruleId: string, teamId: string, user: User, org: Organization) {
+    // Checks that the user is not a guest
+    if (!(await userHasPermission(user.userId, org.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('Toggle Rule Team');
+    }
+
+    // Checks that the rule exists and is not deleted
+    const rule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: {
+        teams: true,
+        ruleset: { select: { car: { include: { wbsElement: { select: { organizationId: true } } } } } }
+      }
+    });
+    if (!rule) {
+      throw new NotFoundException('Rule', ruleId);
+    }
+    if (rule.deletedByUserId) {
+      throw new DeletedException('Rule', ruleId);
+    }
+    if (rule.ruleset.car.wbsElement.organizationId !== org.organizationId) {
+      throw new InvalidOrganizationException('Rule');
+    }
+
+    // Checks based on the team
+    const team = await prisma.team.findUnique({ where: { teamId } });
+    if (!team) throw new NotFoundException('Team', teamId);
+    if (team.organizationId !== org.organizationId) throw new InvalidOrganizationException('Rule');
+    if (team.dateArchived) throw new HttpException(400, 'Cannot toggle an archived team.');
+
+    // We add the team to the rule if it is not already in the rule
+    // If the rule is not in this team, add the team to the rule
+    // If the rule is already in this team, remove the team from the rule
+    if (!rule.teams.some((currTeam) => currTeam.teamId === teamId)) {
+      await prisma.rule.update({
+        where: { ruleId: rule.ruleId },
+        data: {
+          teams: {
+            connect: {
+              teamId
+            }
+          }
+        }
+      });
+    } else {
+      await prisma.rule.update({
+        where: { ruleId: rule.ruleId },
+        data: {
+          teams: {
+            disconnect: {
+              teamId
+            }
+          }
+        }
+      });
+    }
+
+    // retrieve and return the updated rule
+    const newRule = await prisma.rule.findUnique({
+      where: { ruleId },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return ruleTransformer(newRule!);
   }
 
   static async createRuleset(
@@ -577,7 +848,7 @@ export default class RulesService {
    * @returns The deleted project rule
    */
   static async deleteProjectRule(projectRuleId: string, deleter: User, organization: Organization): Promise<ProjectRule> {
-    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedAdminOnlyException('delete project rules');
     }
 
@@ -621,22 +892,343 @@ export default class RulesService {
       throw new DeletedException('Project Rule', projectRuleId);
     }
 
-    const deletedProjectRule = await prisma.$transaction(async (tx) => {
-      await tx.rule_Status_Change.updateMany({
-        where: { projectRuleId, dateDeleted: null },
-        data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
-      });
-
-      return await tx.project_Rule.update({
-        where: { projectRuleId },
-        data: {
-          dateDeleted: new Date(),
-          deletedByUserId: deleter.userId
-        },
-        ...getProjectRuleQueryArgs()
-      });
+    const deletedProjectRule = await prisma.project_Rule.update({
+      where: { projectRuleId },
+      data: {
+        dateDeleted: new Date(),
+        deletedByUserId: deleter.userId
+      },
+      ...getProjectRuleQueryArgs()
     });
 
     return projectRuleTransformer(deletedProjectRule);
+  }
+
+  /**
+   * Updates a rulesets status
+   * @param submitter user updating the ruleset
+   * @param organizationId organization of ruleset being updated
+   * @param rulesetId id of ruleset being updated
+   * @param status new status of ruleset
+   * @returns
+   */
+  static async updateRuleset(submitter: User, organizationId: string, rulesetId: string, name: string, isActive: boolean) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isHead))) {
+      throw new AccessDeniedException('You do not have permissions to update ruleset status');
+    }
+
+    const rulesetExists = await prisma.ruleset.findUnique({
+      where: {
+        rulesetId,
+        rulesetType: {
+          organizationId
+        },
+        deletedByUserId: null
+      }
+    });
+
+    if (!rulesetExists) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (!rulesetExists.active && isActive) {
+      const activeRuleset = await prisma.ruleset.findFirst({
+        where: {
+          active: true,
+          rulesetType: {
+            rulesetTypeId: rulesetExists.rulesetTypeId,
+            organizationId
+          },
+          dateDeleted: null
+        }
+      });
+
+      if (activeRuleset) {
+        throw new HttpException(400, 'There is already an active ruleset for this ruleset type');
+      }
+    }
+    const ruleset = await prisma.ruleset.update({
+      where: {
+        rulesetId,
+        rulesetType: {
+          organizationId
+        }
+      },
+      data: {
+        name,
+        active: isActive
+      },
+      ...getRulesetQueryArgs(organizationId)
+    });
+
+    return rulesetTransformer(ruleset);
+  }
+
+  /**
+   * Gets all subrules of a specific rule.
+   * @param ruleId the ID of the parent rule
+   * @param organization the organization the rule belongs to
+   * @returns an array of all child rules (the Rule object)
+   */
+  static async getChildRules(ruleId: string, organization: Organization): Promise<SharedRule[]> {
+    // Verify the parent rule exists and belongs to the organization
+    const parentRule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: {
+        ruleset: {
+          include: {
+            car: {
+              include: {
+                wbsElement: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!parentRule) {
+      throw new NotFoundException('Rule', ruleId);
+    }
+
+    if (parentRule.dateDeleted) {
+      throw new DeletedException('Rule', ruleId);
+    }
+
+    if (parentRule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Rule');
+    }
+
+    const subRules = await prisma.rule.findMany({
+      where: {
+        parentRuleId: ruleId,
+        dateDeleted: null
+      },
+      ...getRulePreviewQueryArgs()
+    });
+    return subRules.map((rule) => ruleTransformer(rule));
+  }
+
+  /**
+   * Gets all unassigned rules (rules with no team assignments) for a given ruleset
+   * @param rulesetId the id of the ruleset
+   * @param organization the organization the ruleset belongs to
+   * @returns an array of rules with no team assignments, ordered by ruleCode ascending
+   */
+  static async getUnassignedRules(rulesetId: string, organization: Organization): Promise<SharedRule[]> {
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      include: {
+        car: {
+          include: {
+            wbsElement: true
+          }
+        }
+      }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.deletedByUserId) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const rules = await prisma.rule.findMany({
+      where: {
+        rulesetId,
+        dateDeleted: null,
+        teams: {
+          none: {}
+        }
+      },
+      orderBy: {
+        ruleCode: 'asc'
+      },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return rules.map(ruleTransformer);
+  }
+
+  /**
+   * Gets team rules that are unassigned to a project
+   * @param rulesetId ruleset the rules are in
+   * @param teamId team that rules are assigned to
+   * @param organizationId the organization id
+   * @returns the rules in this team that do not have an associated project rule
+   */
+  static async getUnassignedRulesForRuleset(rulesetId: string, teamId: string, organizationId: string) {
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      select: {
+        dateDeleted: true,
+        rulesetType: {
+          select: {
+            organizationId: true
+          }
+        }
+      }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.dateDeleted) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.rulesetType.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const team = await prisma.team.findUnique({
+      where: { teamId },
+      select: {
+        organizationId: true
+      }
+    });
+
+    if (!team) {
+      throw new NotFoundException('Team', teamId);
+    }
+
+    if (team.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Team');
+    }
+
+    const rules = await prisma.rule.findMany({
+      where: {
+        rulesetId,
+        teams: {
+          some: {
+            teamId,
+            organizationId
+          }
+        },
+        projects: {
+          none: {}
+        },
+        deletedBy: null
+      },
+      ...getRulePreviewQueryArgs(),
+      orderBy: {
+        ruleCode: 'asc'
+      }
+    });
+    return rules.map(ruleTransformer);
+  }
+
+  /**
+   * Gets all rules associated with a specific project and ruleset
+   * @param rulesetId the id of the ruleset
+   * @param projectId the id of the project
+   * @param organization the organization the project and ruleset belong to
+   * @returns Array of ProjectRule objects
+   */
+  static async getProjectRules(rulesetId: string, projectId: string, organization: Organization): Promise<ProjectRule[]> {
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      include: {
+        car: {
+          include: {
+            wbsElement: true
+          }
+        }
+      }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.deletedByUserId) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const project = await prisma.project.findUnique({
+      where: { projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project', projectId);
+    }
+
+    if (project.wbsElement.dateDeleted) {
+      throw new DeletedException('Project', projectId);
+    }
+
+    if (project.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Project');
+    }
+
+    const projectRules = await prisma.project_Rule.findMany({
+      where: {
+        projectId,
+        rule: {
+          rulesetId,
+          dateDeleted: null
+        },
+        dateDeleted: null
+      },
+      ...getProjectRuleQueryArgs()
+    });
+
+    return projectRules.map(projectRuleTransformer);
+  }
+
+  /**
+   * Gets all rules with no parent id
+   * @param rulesetId id of ruleset
+   * @returns an array of rules with no parent Id
+   */
+  static async getTopLevelRules(rulesetId: string, organizationId: string) {
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      select: {
+        dateDeleted: true,
+        rulesetType: {
+          select: {
+            organizationId: true
+          }
+        }
+      }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.dateDeleted) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.rulesetType.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const rules = await prisma.rule.findMany({
+      where: {
+        rulesetId,
+        dateDeleted: null,
+        parentRuleId: null
+      },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return rules.map(ruleTransformer);
   }
 }

@@ -9,6 +9,7 @@ tasksRouter.post(
   '/:wbsNum',
   nonEmptyString(body('title')),
   isOptionalDate(body('deadline')),
+  isOptionalDate(body('startDate')),
   body('notes').isString(),
   isTaskPriority(body('priority')),
   isTaskStatus(body('status')),
@@ -23,6 +24,7 @@ tasksRouter.post(
   nonEmptyString(body('title')),
   nonEmptyString(body('notes')),
   isOptionalDate(body('deadline')),
+  isOptionalDate(body('startDate')),
   isTaskPriority(body('priority')),
   TasksController.editTask
 );
@@ -37,5 +39,7 @@ tasksRouter.post(
 );
 
 tasksRouter.post('/:taskId/delete', TasksController.deleteTask);
+
+tasksRouter.get('/overdue-by-team-member/:userId', TasksController.getOverdueTasksByTeamLeadership);
 
 export default tasksRouter;
