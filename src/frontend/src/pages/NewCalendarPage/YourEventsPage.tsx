@@ -25,6 +25,7 @@ import { ConflictStatus, ScheduleSlot } from 'shared';
 import { Event } from 'shared';
 import WarningIcon from '@mui/icons-material/Warning';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 
 interface YourEventsHeadCells {
   id: string;
@@ -77,7 +78,7 @@ const YourEventsPage = () => {
   const user = useCurrentUser();
 
   const {
-    data: events,
+    data: untransformedEvents,
     isLoading: eventsLoading,
     isFetching: eventsFetching
   } = useFilterEvents({
@@ -85,6 +86,11 @@ const YourEventsPage = () => {
     startPeriod: new Date(0),
     endPeriod: new Date(2099, 11, 31) // Adjust as needed
   });
+
+  // Convert to include proper dates
+  // Done this way to allow the old events transformer to function properly
+  // but provide better utility to this file (without breaking other files that may rely on eventTransformer)
+  const events = untransformedEvents?.map(filterEventTransformer);
 
   const loading = () => eventsLoading || eventsFetching;
 
