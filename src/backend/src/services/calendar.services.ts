@@ -1875,7 +1875,7 @@ export default class CalendarService {
       data: {
         name,
         calendars: {
-          connect: calendarIds.map((calendarId) => ({ calendarId }))
+          set: calendarIds.map((calendarId) => ({ calendarId }))
         },
         requiredMembers,
         optionalMembers,
@@ -2230,5 +2230,21 @@ export default class CalendarService {
       ...getEventQueryArgs(organization.organizationId)
     });
     return events.map(eventTransformer);
+  }
+
+  /**
+   * Gets all event types in the database
+   * @param organization the organization the user is currently in
+   * @returns All of the event types
+   */
+  static async getAllEventTypes(organization: Organization): Promise<EventType[]> {
+    const eventTypes = await prisma.event_Type.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null
+      },
+      ...getEventTypeQueryArgs(organization.organizationId)
+    });
+    return eventTypes.map(eventTypeTransformer);
   }
 }

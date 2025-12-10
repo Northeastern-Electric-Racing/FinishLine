@@ -1,6 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Shop, Machinery, Calendar, AvailabilityCreateArgs, Event, EventStatus, FilterArgs } from 'shared';
 import {
+  Shop,
+  Machinery,
+  EventType,
+  Calendar,
+  Event,
+  EventTypeCreateArgs,
+  AvailabilityCreateArgs,
+  EventStatus
+} from 'shared';
+import {
   getAllShops,
   postCreateShop,
   postDeleteShop,
@@ -14,6 +24,9 @@ import {
   getAllCalendars,
   postEditCalendar,
   postCreateCalendar,
+  getAllEventTypes,
+  postCreateEventType,
+  postEditEventType,
   markUserConfirmed,
   getSingleEvent,
   getAllEvents,
@@ -179,6 +192,44 @@ export const useDeleteMachinery = () => {
     {
       onSuccess: () => {
         qc.invalidateQueries(MACHINERY_KEY);
+      }
+    }
+  );
+};
+
+export const EVENT_TYPE_KEY = ['event-types'] as const;
+
+export const useAllEventTypes = () =>
+  useQuery<EventType[], Error>(EVENT_TYPE_KEY, async () => {
+    const res = await getAllEventTypes();
+    return res.data;
+  });
+
+export const useCreateEventType = () => {
+  const qc = useQueryClient();
+  return useMutation<EventType, Error, EventTypeCreateArgs>(
+    async (payload) => {
+      const { data } = await postCreateEventType(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(EVENT_TYPE_KEY);
+      }
+    }
+  );
+};
+
+export const useEditEventType = (eventTypeId: string) => {
+  const qc = useQueryClient();
+  return useMutation<EventType, Error, EventTypeCreateArgs>(
+    async (payload) => {
+      const { data } = await postEditEventType(eventTypeId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(EVENT_TYPE_KEY);
       }
     }
   );
