@@ -1,7 +1,6 @@
 import prisma from '../prisma/prisma';
 import {
   Scope_CR_Why_Type,
-  User,
   Prisma,
   Change_Request,
   Change,
@@ -20,7 +19,8 @@ import {
   WbsNumber,
   wbsPipe,
   WorkPackageProposedChangesCreateArgs,
-  WorkPackageStage
+  WorkPackageStage,
+  User
 } from 'shared';
 import { DeletedException, HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';

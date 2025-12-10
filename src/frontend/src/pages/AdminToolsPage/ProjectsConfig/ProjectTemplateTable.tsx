@@ -8,7 +8,7 @@ import { isAdmin, ProjectTemplate } from 'shared';
 import { NERButton } from '../../../components/NERButton';
 import NERModal from '../../../components/NERModal';
 import { routes } from '../../../utils/routes';
-import AdminToolTable from '../AdminToolTable';
+import NERTable from '../../../components/NERTable';
 import { useState } from 'react';
 import { Delete } from '@mui/icons-material';
 import { useAllProjectTemplates, useDeleteProjectTemplate } from '../../../hooks/wbs-templates.hooks';
@@ -63,7 +63,7 @@ const ProjectTemplateTable: React.FC = () => {
 
   return (
     <Box>
-      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }, { name: '' }]} rows={projectTemplateRows} />
+      <NERTable columns={[{ name: 'Name' }, { name: 'Description' }, { name: '' }]} rows={projectTemplateRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         {isAdmin(currentUser.role) && (
           <NERButton variant="contained" size="small" onClick={() => history.push(routes.PROJECT_TEMPLATE_NEW)}>
