@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, IconButton } from '@mui/material';
+import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { Event } from 'shared';
 import MonthSelector from '../CalendarPage/CalendarComponents/MonthSelector';
@@ -12,12 +12,10 @@ import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../
 import { useAllEvents } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
-import { useToast } from '../../hooks/toasts.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import EventSummaryModal from '../CalendarPage/EventSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import NERModal from '../../components/NERModal';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -32,7 +30,6 @@ const NewCalendarPage = () => {
   const { isLoading, isError, error, data: allEvents } = useAllEvents();
   const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
-  const toast = useToast();
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
 
   if (isLoading || !allEvents) return <LoadingIndicator />;

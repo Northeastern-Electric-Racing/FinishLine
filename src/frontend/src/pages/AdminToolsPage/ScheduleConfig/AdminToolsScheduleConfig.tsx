@@ -15,7 +15,8 @@ import {
   useAllCalendars,
   useCreateCalendar,
   useEditCalendar,
-  useAllEventTypes
+  useAllEventTypes,
+  useDeleteEventType
 } from '../../../hooks/calendar.hooks';
 import ShopModal from './Shop/ShopModal';
 import CreateCalendarModal from './Calendar/CreateCalendarModal';
@@ -26,6 +27,7 @@ import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
 import CreateEventTypeModal from './EventType/CreateEventTypeModal';
 import EditEventTypeModal from './EventType/EditEventTypeModal';
+import DeleteEventTypeModal from './EventType/DeleteEventTypeModal';
 import { Shop, EventType, Calendar } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERDeleteModal from '../../../components/NERDeleteModal';
@@ -59,6 +61,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const { mutateAsync: deleteMachinery } = useDeleteMachinery();
   const { mutateAsync: deleteShop } = useDeleteShop();
   const { mutateAsync: deleteCalendar } = useDeleteCalendar();
+  const { mutateAsync: deleteEventType } = useDeleteEventType();
   const toast = useToast();
 
   const handleDeleteMachinery = async () => {
@@ -106,6 +109,21 @@ const AdminToolsScheduleConfig: React.FC = () => {
     }
   };
 
+  const handleEventTypeDelete = async () => {
+    if (!eventTypeToDelete) return;
+    setEventTypeToDelete(undefined);
+    try {
+      await deleteEventType(eventTypeToDelete.eventTypeId);
+      toast.success('Event type deleted successfully');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      } else {
+        toast.error('Failed to delete event type', 3000);
+      }
+    }
+  };
+
   const [openCreate, setOpenCreate] = useState(false);
   const [openCreateMachinery, setOpenCreateMachinery] = useState(false);
   const [editMachinery, setEditMachinery] = useState<{ machineryId: string; shopId: string } | null>(null);
@@ -114,6 +132,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [shopToDelete, setShopToDelete] = useState<Shop | undefined>(undefined);
   const [openCreateEventType, setOpenCreateEventType] = useState(false);
   const [editingEventType, setEditingEventType] = useState<EventType | null>(null);
+  const [eventTypeToDelete, setEventTypeToDelete] = useState<EventType | undefined>(undefined);
   const [calendarToDelete, setCalendarToDelete] = useState<Calendar | undefined>(undefined);
   const [openCreateCalendar, setOpenCreateCalendar] = useState(false);
   const [openEditCalendar, setOpenEditCalendar] = useState(false);
@@ -270,14 +289,9 @@ const AdminToolsScheduleConfig: React.FC = () => {
                             <span>
                               <IconButton
                                 size="small"
+                                color="error"
                                 aria-label="delete event type"
-                                disabled
-                                sx={{
-                                  color: 'white',
-                                  '&.Mui-disabled': {
-                                    color: 'white'
-                                  }
-                                }}
+                                onClick={() => setEventTypeToDelete(eventType)}
                               >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
@@ -592,6 +606,14 @@ const AdminToolsScheduleConfig: React.FC = () => {
       {editingEventType && (
         <EditEventTypeModal open={true} onClose={() => setEditingEventType(null)} eventType={editingEventType} />
       )}
+
+      {/* Delete Event Type Modal */}
+      <DeleteEventTypeModal
+        open={!!eventTypeToDelete}
+        onHide={() => setEventTypeToDelete(undefined)}
+        eventType={eventTypeToDelete}
+        onFormSubmit={handleEventTypeDelete}
+      />
     </Box>
   );
 };

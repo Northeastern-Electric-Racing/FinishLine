@@ -130,6 +130,10 @@ export const postEditEventType = (eventTypeId: string, payload: EventTypeCreateA
   });
 };
 
+export const postDeleteEventType = async (eventTypeId: string) => {
+  return axios.post<EventType>(apiUrls.calendarDeleteEventType(eventTypeId));
+};
+
 export const getAllEvents = () => {
   return axios.get(apiUrls.calendarEvents(), {
     transformResponse: (data) => JSON.parse(data).map(eventTransformer)

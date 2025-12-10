@@ -26,6 +26,7 @@ import {
   getAllEventTypes,
   postCreateEventType,
   postEditEventType,
+  postDeleteEventType,
   markUserConfirmed,
   getSingleEvent,
   getAllEvents,
@@ -221,6 +222,21 @@ export const useEditEventType = (eventTypeId: string) => {
   return useMutation<EventType, Error, EventTypeCreateArgs>(
     async (payload) => {
       const { data } = await postEditEventType(eventTypeId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(EVENT_TYPE_KEY);
+      }
+    }
+  );
+};
+
+export const useDeleteEventType = () => {
+  const qc = useQueryClient();
+  return useMutation<EventType, Error, string>(
+    async (eventTypeId: string) => {
+      const { data } = await postDeleteEventType(eventTypeId);
       return data;
     },
     {
