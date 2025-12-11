@@ -300,7 +300,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const EventCard = ({ event }: { event: Event }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const [markedStatus, setMarkedStatus] = useState(event.status);
-    const name = event.workPackages[0]?.wbsElement?.name || event.title;
+    const name = event.title || event.workPackages[0]?.wbsElement?.name;
     const specificEventType = eventTypes?.find((eventType) => eventType.eventTypeId === event.eventTypeId);
     const specificCalendar = calendars?.find((calendar) =>
       calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)

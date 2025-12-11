@@ -12,7 +12,7 @@ import {
   FilterArgs
 } from 'shared';
 import { eventTransformer } from './transformers/calendar.transformer';
-import { EventCreateArgs } from '../hooks/calendar.hooks';
+import { EditEventArgs, EventCreateArgs } from '../hooks/calendar.hooks';
 
 export const getAllCalendars = () => {
   return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
@@ -170,6 +170,12 @@ export const postDeleteCalendar = async (id: string) => {
 
 export const postCreateEvent = async (payload: EventCreateArgs) => {
   return axios.post<Event>(apiUrls.calendarCreateEvent(), payload, {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
+};
+
+export const postEditEvent = async (eventId: string, payload: EditEventArgs) => {
+  return axios.post<Event>(apiUrls.calendarEditEvent(eventId), payload, {
     transformResponse: (data) => eventTransformer(JSON.parse(data))
   });
 };

@@ -37,7 +37,8 @@ import {
   postFilterEvents,
   postCreateEvent,
   uploadSingleDocument,
-  downloadDocumentPdf
+  downloadDocumentPdf,
+  postEditEvent
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 import { PDFDocument } from 'pdf-lib';
@@ -47,6 +48,7 @@ export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;
 const CALENDAR_KEY = ['calendars'] as const;
 export const EVENT_TYPE_KEY = ['event-types'] as const;
+export const EVENT_KEY = ['events'] as const;
 
 export interface EventCreateArgs {
   title: string;
@@ -62,6 +64,24 @@ export interface EventCreateArgs {
   workPackageIds: string[];
   documentIds: string[];
   questionDocument?: string;
+  description?: string;
+  scheduleSlot: ScheduleSlotCreateArgs[];
+}
+
+export interface EditEventArgs {
+  title: string;
+  requiredMemberIds: string[];
+  optionalMemberIds: string[];
+  teamIds: string[];
+  teamTypeId?: string;
+  status: EventStatus;
+  location?: string;
+  zoomLink?: string;
+  shopIds: string[];
+  machineryIds: string[];
+  workPackageIds: string[];
+  documents: Array<{ name: string; googleFileId: string }>;
+  questionDocumentLink?: string;
   description?: string;
   scheduleSlot: ScheduleSlotCreateArgs[];
 }
@@ -284,7 +304,7 @@ export const useMarkUserConfirmed = (id: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['events']);
+        queryClient.invalidateQueries(EVENT_KEY);
         queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
       }
     }
@@ -318,7 +338,7 @@ export const useSingleEvent = (id?: string) => {
 };
 
 export const useAllEvents = () => {
-  return useQuery<Event[], Error>(['events'], async () => {
+  return useQuery<Event[], Error>(EVENT_KEY, async () => {
     const { data } = await getAllEvents();
     return data;
   });
@@ -354,7 +374,7 @@ export const useDeleteEvent = (id: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['events']);
+        queryClient.invalidateQueries(EVENT_KEY);
       }
     }
   );
@@ -385,7 +405,23 @@ export const useCreateEvent = () => {
     },
     {
       onSuccess: () => {
-        qc.invalidateQueries('events');
+        qc.invalidateQueries(EVENT_KEY);
+      }
+    }
+  );
+};
+
+export const useEditEvent = (eventId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Event, Error, EditEventArgs>(
+    ['events', 'edit', eventId],
+    async (payload) => {
+      const { data } = await postEditEvent(eventId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(EVENT_KEY);
       }
     }
   );

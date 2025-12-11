@@ -295,9 +295,9 @@ export default class CalendarController {
         req.organization,
         requiredMemberIds,
         optionalMemberIds,
+        teamIds,
         shopIds,
         machineryIds,
-        teamIds,
         workPackageIds,
         parsedScheduleSlot,
         teamTypeId,
@@ -330,7 +330,8 @@ export default class CalendarController {
         scheduleSlot,
         questionDocumentLink,
         location,
-        zoomLink
+        zoomLink,
+        description
       } = req.body;
 
       const parsedScheduleSlot = scheduleSlot.map((slot: any) => ({
@@ -351,14 +352,14 @@ export default class CalendarController {
         teamIds,
         shopIds,
         machineryIds,
-        teamIds,
         workPackageIds,
         documents,
         parsedScheduleSlot,
         teamTypeId,
         questionDocumentLink,
         location,
-        zoomLink
+        zoomLink,
+        description
       );
       res.status(200).json(event);
     } catch (error: unknown) {

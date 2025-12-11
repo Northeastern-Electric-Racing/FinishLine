@@ -26,10 +26,11 @@ import {
   wbsNamePipe,
   wbsNumComparator,
   wbsPipe,
-  EventType
+  EventType,
+  isHead
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
 import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
 import { useAllTeams } from '../../../hooks/teams.hooks';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
@@ -148,6 +149,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   defaultDate = new Date()
 }) => {
   const toast = useToast();
+  const user = useCurrentUser();
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [startTimePickerOpen, setStartTimePickerOpen] = useState(false);
   const [endTimePickerOpen, setEndTimePickerOpen] = useState(false);
@@ -204,6 +206,13 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     [initialValues, defaultDate]
   );
 
+  const allowedEventTypes = useMemo(() => {
+    return eventTypes.filter((et) => {
+      if (!et.onlyHeadsOrAboveForEventCreation) return true;
+      return isHead(user.role);
+    });
+  }, [eventTypes, user]);
+
   const {
     handleSubmit,
     control,
@@ -217,6 +226,30 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   });
 
   const frozenValuesRef = React.useRef<Partial<EventFormValues>>(defaultFormData);
+
+  const shopIds = watch('shopIds');
+  const selectedEventTypeId = watch('eventTypeId');
+  const documentFiles = watch('documentFiles');
+
+  // Filter machinery based on selected shops
+  const filteredMachineryOptions = useMemo(() => {
+    if (!machinery || !shops) {
+      return [];
+    }
+
+    const allMachineryOptions = machinery.map((m) => ({ id: m.machineryId, label: m.name }));
+
+    if (shops.length == 0) {
+      return allMachineryOptions;
+    }
+
+    return allMachineryOptions.filter((machineOption) => {
+      const machine = machinery.find((m) => m.machineryId === machineOption.id);
+      if (!machine) return false;
+
+      return machine.shops.some((shopMachinery) => shopIds.includes(shopMachinery.shop.shopId));
+    });
+  }, [machinery, shops, shopIds]);
 
   useEffect(() => {
     if (open) {
@@ -251,13 +284,10 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     }
   }, [open, defaultFormData, reset, initialValues, users, teams]);
 
-  const selectedEventTypeId = watch('eventTypeId');
   const selectedEventType = useMemo(
-    () => eventTypes.find((et) => et.eventTypeId === selectedEventTypeId),
-    [eventTypes, selectedEventTypeId]
+    () => allowedEventTypes.find((et) => et.eventTypeId === selectedEventTypeId),
+    [allowedEventTypes, selectedEventTypeId]
   );
-
-  const documentFiles = watch('documentFiles');
 
   const isEditMode = !!frozenValuesRef.current.eventTypeId;
   const computedTitle = isEditMode ? 'Edit Event' : 'Add Event';
@@ -359,13 +389,12 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const memberOptions = users.map(userToAutocompleteOption);
   const teamOptions = teams.map((t) => ({ id: t.teamId, label: t.teamName }));
   const shopOptions = shops.map((s) => ({ id: s.shopId, label: s.name }));
-  const machineryOptions = machinery.map((m) => ({ id: m.machineryId, label: m.name }));
 
   const workPackageOptions = allWorkPackages
     .filter((wp) => wp.status === WbsElementStatus.Active)
     .map((wp) => ({
       label: wbsNamePipe(wp),
-      id: wbsPipe(wp.wbsNum)
+      id: wp.id
     }))
     .sort((a, b) => wbsNumComparator(b.id, a.id));
 
@@ -410,10 +439,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             />
           )}
         />
-
         {/* Event Type Tabs */}
         <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-          {eventTypes.map((et) => (
+          {allowedEventTypes.map((et) => (
             <Controller
               key={et.eventTypeId}
               name="eventTypeId"
@@ -439,7 +467,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             />
           ))}
         </Stack>
-
         {/* Date and Time Section */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
@@ -576,7 +603,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   )}
                 />
                 <Typography variant="body2" color="#000">
-                  time(s)
+                  more time(s)
                 </Typography>
               </Box>
 
@@ -654,106 +681,99 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             </Box>
           )}
         </Box>
-
         {/* Required Members Section */}
         {selectedEventType?.requiredMembers && (
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
             <PeopleIcon sx={{ color: 'text.secondary', mt: 1 }} />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="body2" fontWeight={600} mb={1}>
-                Required Members
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                {requiredMembers.map((member) => (
-                  <Chip
-                    key={member.id}
-                    label={member.label}
-                    onDelete={() => setRequiredMembers((prev) => prev.filter((m) => m.id !== member.id))}
-                    sx={{ bgcolor: 'grey.300' }}
+            <Box sx={{ flex: 1, width: '100%' }}>
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                  {requiredMembers.map((member) => (
+                    <Chip
+                      key={member.id}
+                      label={member.label}
+                      onDelete={() => setRequiredMembers((prev) => prev.filter((m) => m.id !== member.id))}
+                      sx={{ bgcolor: 'grey.700' }}
+                    />
+                  ))}
+                  <Autocomplete
+                    options={memberOptions.filter((m) => !requiredMembers.find((rm) => rm.id === m.id))}
+                    onChange={(_, newValue) => {
+                      if (newValue) setRequiredMembers((prev) => [...prev, newValue]);
+                    }}
+                    getOptionLabel={(option) => option.label}
+                    renderInput={(params) => (
+                      <TextField {...params} variant="standard" placeholder="Add Required Member" sx={{ minWidth: 150 }} />
+                    )}
+                    sx={{ flex: 1, minWidth: 150 }}
                   />
-                ))}
-                <Autocomplete
-                  options={memberOptions.filter((m) => !requiredMembers.find((rm) => rm.id === m.id))}
-                  onChange={(_, newValue) => {
-                    if (newValue) setRequiredMembers((prev) => [...prev, newValue]);
-                  }}
-                  getOptionLabel={(option) => option.label}
-                  renderInput={(params) => (
-                    <TextField {...params} variant="standard" placeholder="Add Required Member" sx={{ minWidth: 150 }} />
-                  )}
-                  sx={{ display: 'inline-flex', minWidth: 150 }}
-                />
+                </Box>
               </Box>
             </Box>
           </Box>
         )}
-
         {/* Optional Members Section */}
         {selectedEventType?.optionalMembers && (
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
             <PeopleIcon sx={{ color: 'text.secondary', mt: 1, opacity: 0.7 }} />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="body2" fontWeight={600} mb={1}>
-                Optional Members
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                {optionalMembers.map((member) => (
-                  <Chip
-                    key={member.id}
-                    label={member.label}
-                    onDelete={() => setOptionalMembers((prev) => prev.filter((m) => m.id !== member.id))}
-                    sx={{ bgcolor: 'grey.200', opacity: 0.7 }}
+            <Box sx={{ flex: 1, width: '100%' }}>
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                  {optionalMembers.map((member) => (
+                    <Chip
+                      key={member.id}
+                      label={member.label}
+                      onDelete={() => setOptionalMembers((prev) => prev.filter((m) => m.id !== member.id))}
+                      sx={{ bgcolor: 'grey.700', opacity: 0.7 }}
+                    />
+                  ))}
+                  <Autocomplete
+                    options={memberOptions.filter((m) => !optionalMembers.find((om) => om.id === m.id))}
+                    onChange={(_, newValue) => {
+                      if (newValue) setOptionalMembers((prev) => [...prev, newValue]);
+                    }}
+                    getOptionLabel={(option) => option.label}
+                    renderInput={(params) => (
+                      <TextField {...params} variant="standard" placeholder="Add Optional Member" sx={{ minWidth: 150 }} />
+                    )}
+                    sx={{ flex: 1, minWidth: 150 }}
                   />
-                ))}
-                <Autocomplete
-                  options={memberOptions.filter((m) => !optionalMembers.find((om) => om.id === m.id))}
-                  onChange={(_, newValue) => {
-                    if (newValue) setOptionalMembers((prev) => [...prev, newValue]);
-                  }}
-                  getOptionLabel={(option) => option.label}
-                  renderInput={(params) => (
-                    <TextField {...params} variant="standard" placeholder="Add Optional Member" sx={{ minWidth: 150 }} />
-                  )}
-                  sx={{ display: 'inline-flex', minWidth: 150 }}
-                />
+                </Box>
               </Box>
             </Box>
           </Box>
         )}
-
         {/* Teams Section */}
         {selectedEventType?.teams && (
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
             <BusinessIcon sx={{ color: 'text.secondary', mt: 1 }} />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="body2" fontWeight={600} mb={1}>
-                Teams
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                {selectedTeams.map((team) => (
-                  <Chip
-                    key={team.id}
-                    label={team.label}
-                    onDelete={() => setSelectedTeams((prev) => prev.filter((t) => t.id !== team.id))}
-                    sx={{ bgcolor: 'primary.light', color: 'white' }}
+            <Box sx={{ flex: 1, width: '100%' }}>
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                  {selectedTeams.map((team) => (
+                    <Chip
+                      key={team.id}
+                      label={team.label}
+                      onDelete={() => setSelectedTeams((prev) => prev.filter((t) => t.id !== team.id))}
+                      sx={{ bgcolor: 'grey.700', opacity: 0.7 }}
+                    />
+                  ))}
+                  <Autocomplete
+                    options={teamOptions.filter((t) => !selectedTeams.find((st) => st.id === t.id))}
+                    onChange={(_, newValue) => {
+                      if (newValue) setSelectedTeams((prev) => [...prev, newValue]);
+                    }}
+                    getOptionLabel={(option) => option.label}
+                    renderInput={(params) => (
+                      <TextField {...params} variant="standard" placeholder="Add Team" sx={{ minWidth: 120 }} />
+                    )}
+                    sx={{ flex: 1, minWidth: 150 }}
                   />
-                ))}
-                <Autocomplete
-                  options={teamOptions.filter((t) => !selectedTeams.find((st) => st.id === t.id))}
-                  onChange={(_, newValue) => {
-                    if (newValue) setSelectedTeams((prev) => [...prev, newValue]);
-                  }}
-                  getOptionLabel={(option) => option.label}
-                  renderInput={(params) => (
-                    <TextField {...params} variant="standard" placeholder="Add Team" sx={{ minWidth: 120 }} />
-                  )}
-                  sx={{ display: 'inline-flex', minWidth: 120 }}
-                />
+                </Box>
               </Box>
             </Box>
           </Box>
         )}
-
         {/* Team Type */}
         {selectedEventType?.teamType && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -782,7 +802,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             />
           </Box>
         )}
-
         {/* Location */}
         {selectedEventType?.location && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -803,7 +822,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             />
           </Box>
         )}
-
         {/* Zoom Link */}
         {selectedEventType?.zoomLink && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -826,30 +844,53 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             />
           </Box>
         )}
-
-        {/* Shops */}
         {selectedEventType?.shop && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <StoreIcon sx={{ color: 'text.secondary' }} />
-            <Controller
-              name="shopIds"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Autocomplete
-                  multiple
-                  options={shopOptions}
-                  value={shopOptions.filter((s) => value?.includes(s.id))}
-                  onChange={(_, newValue) => onChange(newValue.map((v) => v.id))}
-                  getOptionLabel={(option) => option.label}
-                  renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Shops" />}
-                  sx={{ flex: 1 }}
-                />
-              )}
-            />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <StoreIcon sx={{ color: 'text.secondary' }} />
+              <Controller
+                name="shopIds"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Autocomplete
+                    options={shopOptions}
+                    value={shopOptions.find((s) => value?.[0] === s.id) || null}
+                    onChange={(_, newValue) => onChange(newValue ? [newValue.id] : [])}
+                    getOptionLabel={(option) => option.label}
+                    renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Shop" />}
+                    sx={{ flex: 1 }}
+                  />
+                )}
+              />
+            </Box>
+            {shopIds.length > 0 && (
+              <Box sx={{ ml: 5 }}>
+                {(() => {
+                  const shop = shops.find((s) => s.shopId === shopIds[0]);
+                  if (!shop || !shop.description) return null;
+                  return (
+                    <Box
+                      sx={{
+                        p: 1.5,
+                        bgcolor: 'rgba(239, 67, 69, 0.1)',
+                        borderRadius: 1,
+                        border: '1px solid',
+                        borderColor: 'rgba(239, 67, 69, 0.3)'
+                      }}
+                    >
+                      <Typography variant="caption" fontWeight={600} color="#EF4345">
+                        Reserve on Robin:
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                        {shop.description}
+                      </Typography>
+                    </Box>
+                  );
+                })()}
+              </Box>
+            )}
           </Box>
         )}
-
-        {/* Machinery */}
         {selectedEventType?.machinery && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <PrecisionManufacturingIcon sx={{ color: 'text.secondary' }} />
@@ -858,10 +899,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
               control={control}
               render={({ field: { onChange, value } }) => (
                 <Autocomplete
-                  multiple
-                  options={machineryOptions}
-                  value={machineryOptions.filter((m) => value?.includes(m.id))}
-                  onChange={(_, newValue) => onChange(newValue.map((v) => v.id))}
+                  options={filteredMachineryOptions}
+                  value={filteredMachineryOptions.find((m) => value?.[0] === m.id) || null}
+                  onChange={(_, newValue) => onChange(newValue ? [newValue.id] : [])}
                   getOptionLabel={(option) => option.label}
                   renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Machinery" />}
                   sx={{ flex: 1 }}
@@ -870,8 +910,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             />
           </Box>
         )}
-
-        {/* Work Packages */}
         {selectedEventType?.workPackage && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <WorkIcon sx={{ color: 'text.secondary' }} />
@@ -880,10 +918,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
               control={control}
               render={({ field: { onChange, value } }) => (
                 <Autocomplete
-                  multiple
                   options={workPackageOptions}
-                  value={workPackageOptions.filter((wp) => value?.includes(wp.id))}
-                  onChange={(_, newValue) => onChange(newValue.map((v) => v.id))}
+                  value={workPackageOptions.find((wp) => value?.[0] === wp.id) || null}
+                  onChange={(_, newValue) => onChange(newValue ? [newValue.id] : [])}
                   getOptionLabel={(option) => option.label}
                   renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Work Package" />}
                   sx={{ flex: 1 }}
@@ -892,7 +929,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             />
           </Box>
         )}
-
         {/* Question Document Link */}
         {selectedEventType?.questionDocument && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -915,7 +951,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             />
           </Box>
         )}
-
         {/* Documents */}
         {selectedEventType?.documents && (
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
@@ -1003,7 +1038,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 <TextField
                   value={value || ''}
                   onChange={onChange}
-                  placeholder="Add a description or attachment"
+                  placeholder="Add a description"
                   variant="standard"
                   fullWidth
                   multiline

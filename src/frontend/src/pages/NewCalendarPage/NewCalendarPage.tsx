@@ -214,10 +214,10 @@ const NewCalendarPage = () => {
 
       const { days, startTime, endTime, recurrenceNumber, initialDateScheduled, allDay } = slot;
 
-      // Create the event first WITHOUT documents
+      // Create the event first without documents
       const createArgs = {
         ...eventData,
-        documentIds: [], // Empty array initially
+        documentIds: [],
         scheduleSlot: [
           {
             days,
