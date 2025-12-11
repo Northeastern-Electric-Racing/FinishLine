@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   Shop,
   Machinery,
-  EventType,
   Calendar,
   AvailabilityCreateArgs,
   Event,
@@ -25,7 +24,6 @@ import {
   getAllCalendars,
   postEditCalendar,
   postCreateCalendar,
-  getAllEventTypes,
   postCreateEventType,
   postEditEventType,
   markUserConfirmed,
@@ -297,13 +295,6 @@ export const useFilterEvents = (filterArgs: FilterArgs) => {
       keepPreviousData: true
     }
   );
-};
-
-export const useAllEventTypes = () => {
-  return useQuery<EventType[], Error>(['eventTypes'], async () => {
-    const { data } = await getAllEventTypes();
-    return data;
-  });
 };
 
 export const useDeleteEvent = (id: string) => {

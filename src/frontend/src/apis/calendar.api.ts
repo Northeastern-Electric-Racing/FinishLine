@@ -143,12 +143,6 @@ export const postFilterEvents = (payload: FilterArgs) => {
   });
 };
 
-export const getAllEventTypes = () => {
-  return axios.get(apiUrls.calendarEventTypes(), {
-    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
-  });
-};
-
 export const deleteEvent = async (id: string) => {
   return axios.delete(apiUrls.calendarDeleteEvent(id));
 };
