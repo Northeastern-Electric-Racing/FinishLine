@@ -25,7 +25,6 @@ import {
   WbsElementStatus,
   wbsNamePipe,
   wbsNumComparator,
-  wbsPipe,
   EventType,
   isHead
 } from 'shared';
@@ -239,7 +238,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
 
     const allMachineryOptions = machinery.map((m) => ({ id: m.machineryId, label: m.name }));
 
-    if (shops.length == 0) {
+    if (shops.length === 0) {
       return allMachineryOptions;
     }
 
