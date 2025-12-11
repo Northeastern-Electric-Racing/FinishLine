@@ -276,4 +276,3 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
 };
 
 export default AssignRulesTab;
-
