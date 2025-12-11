@@ -11,6 +11,7 @@ import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
 import RuleRow from './RuleRow';
 import RuleActions from './RuleActions';
+import AssignRulesTab from './AssignRulesTab';
 import { Rule } from 'shared';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -144,7 +145,12 @@ const useSingleRuleset = (rulesetId: string) => {
   ];
 
   return {
-    data: { name: 'FSAE Original Version', rulesetId, rules: placeholderRules },
+    data: {
+      name: 'FSAE Original Version',
+      rulesetId,
+      rulesetTypeId: 'placeholder-ruleset-type-id',
+      rules: placeholderRules
+    },
     isLoading: false,
     isError: false,
     error: undefined
@@ -283,7 +289,7 @@ const RulesetPage: React.FC = () => {
             </Box>
           </Box>
         ) : (
-          <Box>{/* Assign Rules tab content will be added in a future ticket */}</Box>
+          <AssignRulesTab rules={ruleset.rules} />
         )}
       </Box>
     </PageLayout>
