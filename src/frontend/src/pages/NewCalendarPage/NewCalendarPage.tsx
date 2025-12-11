@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
+import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, Checkbox, FormControlLabel, FormGroup, Divider, ButtonBase } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DayOfWeek, Event } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
@@ -20,6 +20,15 @@ import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
 import { convertDayToInt } from '../../utils/calendar.utils';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+
+type CalendarWithColor = Calendar & { 
+  id?: string;
+  calendarId?: string;
+  color?: string;
+  colorHexCode?: string;
+};
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -72,6 +81,8 @@ const NewCalendarPage = () => {
   } = useAllCalendars();
 
   const [selectedEvent, setSelectedEvent] = useState<Event>();
+  const [selectedCalendarIds, setSelectedCalendarIds] = useState<string[]>([]);
+
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
@@ -98,11 +109,54 @@ const NewCalendarPage = () => {
 
   if (isLoading || !allEvents) return <LoadingIndicator />;
 
+  const {
+    data: allCalendars = [],
+    isLoading: calendarsLoading,
+    isError: calendarsIsError,
+    error: calendarsError
+  } = useAllCalendars();
+
+  const calendars = (allCalendars ?? []) as CalendarWithColor[];
+
+  const toggleCalendar = (calendarId: string) => {
+    setSelectedCalendarIds((prev) =>
+      prev.includes(calendarId)
+        ? prev.filter((id) => id !== calendarId)
+        : [...prev, calendarId]
+    );  
+  };
+
+  const monthStart = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), 1);
+  const nextMonthStart = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 1);
+
   if (isLoading || !allEvents) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
+  const getEventCalendarId = (event: any): string | undefined =>
+    event.calendarId ??
+    event.calendar?.id ??
+    event.calendar?.calendarId;
+  
+  const baseEvents = allEvents.filter((event) => {
+    const inRange = event.scheduledTimes.some((slot) => {
+      if (!slot.startTime) return false;
+      const t = new Date(slot.startTime).getTime();
+      return t >= monthStart.getTime() && t < nextMonthStart.getTime(); 
+    });
+
+    if (!inRange) return false;
+
+    if (selectedCalendarIds.length === 0) return true;
+
+    const calId = getEventCalendarId(event);
+
+    if (!calId) return true;
+
+    return selectedCalendarIds.includes(calId);
+  });
+
   // Sort events by their first occurrence's start time
-  const sortedEvents = [...allEvents].sort((event1, event2) => {
+  const sortedEvents = [...baseEvents].sort((event1, event2) => {
     const time1 = event1.scheduledTimes[0]?.startTime ? new Date(event1.scheduledTimes[0].startTime).getTime() : 0;
     const time2 = event2.scheduledTimes[0]?.startTime ? new Date(event2.scheduledTimes[0].startTime).getTime() : 0;
     return time1 - time2;
@@ -284,9 +338,14 @@ const NewCalendarPage = () => {
               </Grid>
             </Box>
           </Box>
+
+          {/* Calendars Selector */}
           <Box
             sx={{
-              width: 320
+              width: 320,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2
             }}
           >
             <DateCalendar
