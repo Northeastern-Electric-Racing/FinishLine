@@ -2,12 +2,12 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   Shop,
   Machinery,
-  EventType,
   Calendar,
   AvailabilityCreateArgs,
   EventTypeCreateArgs,
   Event,
   EventStatus,
+  EventType,
   FilterArgs
 } from 'shared';
 import {
@@ -24,14 +24,15 @@ import {
   getAllCalendars,
   postEditCalendar,
   postCreateCalendar,
-  getAllEventTypes,
   postCreateEventType,
   postEditEventType,
+  postDeleteEventType,
   markUserConfirmed,
   getSingleEvent,
   getAllEvents,
   deleteEvent,
   setEventStatus,
+  getAllEventTypes,
   postFilterEvents
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
@@ -235,6 +236,21 @@ export const useEditEventType = (eventTypeId: string) => {
   );
 };
 
+export const useDeleteEventType = () => {
+  const qc = useQueryClient();
+  return useMutation<EventType, Error, string>(
+    async (eventTypeId: string) => {
+      const { data } = await postDeleteEventType(eventTypeId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(EVENT_TYPE_KEY);
+      }
+    }
+  );
+};
+
 export const useMarkUserConfirmed = (id: string) => {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
@@ -286,6 +302,19 @@ export const useAllEvents = () => {
   });
 };
 
+export const useFilterEvents = (filterArgs: FilterArgs) => {
+  return useQuery<Event[], Error>(
+    ['filter-events', filterArgs],
+    async () => {
+      const { data } = await postFilterEvents(filterArgs);
+      return data;
+    },
+    {
+      keepPreviousData: true
+    }
+  );
+};
+
 export const useDeleteEvent = (id: string) => {
   const queryClient = useQueryClient();
   return useMutation<Event, Error>(
@@ -314,19 +343,6 @@ export const useSetEventStatus = (id: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['events', id]);
       }
-    }
-  );
-};
-
-export const useFilterEvents = (filterArgs: FilterArgs) => {
-  return useQuery<Event[], Error>(
-    ['filter-events', filterArgs],
-    async () => {
-      const { data } = await postFilterEvents(filterArgs);
-      return data;
-    },
-    {
-      keepPreviousData: true
     }
   );
 };

@@ -7,9 +7,9 @@ import {
   AvailabilityCreateArgs,
   Event,
   EventStatus,
+  EventTypeCreateArgs,
   Calendar,
-  FilterArgs,
-  EventTypeCreateArgs
+  FilterArgs
 } from 'shared';
 import { eventTransformer } from './transformers/calendar.transformer';
 
@@ -135,6 +135,10 @@ export const postEditEventType = (eventTypeId: string, payload: EventTypeCreateA
   return axios.post<EventType>(apiUrls.calendarEditEventType(eventTypeId), payload, {
     transformResponse: (data) => JSON.parse(data) as EventType
   });
+};
+
+export const postDeleteEventType = async (eventTypeId: string) => {
+  return axios.post<EventType>(apiUrls.calendarDeleteEventType(eventTypeId));
 };
 
 export const getAllEvents = () => {

@@ -5,17 +5,21 @@
 import { useState } from 'react';
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { Event } from 'shared';
-import MonthSelector from '../CalendarPage/CalendarComponents/MonthSelector';
-import CalendarDayCard from '../CalendarPage/CalendarComponents/CalendarDayCard';
+import { DayOfWeek, Event } from 'shared';
+import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useAllEvents } from '../../hooks/calendar.hooks';
+import { useAllCalendars, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import EventSummaryModal from '../CalendarPage/EventSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import FilterModal from './FilterModal';
+import { DateCalendar } from '@mui/x-date-pickers';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { useGetUsersTeams } from '../../hooks/teams.hooks';
+import { convertDayToInt } from '../../utils/calendar.utils';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -26,11 +30,73 @@ const NewCalendarPage = () => {
     error: allTeamTypesError
   } = useAllTeamTypes();
 
+  const [memberIds, setMemberIds] = useState<string[]>([]);
+  const [teamIds, setTeamIds] = useState<string[]>([]);
+
+  const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
+  const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
+
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
-  const { isLoading, isError, error, data: allEvents } = useAllEvents();
+  const { data: allTeams, isLoading: allTeamsLoading, isError: allTeamsIsError, error: allTeamsError } = useGetUsersTeams();
+
+  const teamList = allTeams?.map((team) => team.teamId) ?? [];
+  const user = useCurrentUser();
+
+  const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
+  const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>(teamList);
+
+  const {
+    isLoading,
+    isError,
+    error,
+    data: allEvents
+  } = useFilterEvents({
+    startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
+    endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
+    memberIds: memberIds.concat(additionalMemberIds),
+    teamIds: teamIds.concat(additionalTeamIds)
+  });
+
+  const {
+    data: allEventTypes,
+    isLoading: allEventTypesLoading,
+    isError: allEventTypesIsError,
+    error: allEventTypesError
+  } = useAllEventTypes();
+
+  const {
+    data: allCalendars,
+    isLoading: allCalendarsLoading,
+    isError: allCalendarsIsError,
+    error: allCalendarsError
+  } = useAllCalendars();
+
   const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
+  const [openFilterModal, setOpenFilterModal] = useState(false);
+
+  const updateAdditionalTeamIds = (changed: boolean) => {
+    setShowTeamEvents(changed);
+
+    if (changed) {
+      setAdditionalTeamIds(teamList);
+    } else {
+      setAdditionalTeamIds([]);
+    }
+  };
+
+  const updateAdditionalMemberIds = (changed: boolean) => {
+    setShowInvitedEvents(changed);
+
+    if (changed) {
+      setAdditionalMemberIds([user.userId]);
+    } else {
+      setAdditionalMemberIds([]);
+    }
+  };
+
+  if (isLoading || !allEvents) return <LoadingIndicator />;
 
   if (isLoading || !allEvents) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
@@ -43,24 +109,58 @@ const NewCalendarPage = () => {
   });
 
   const eventDict = new Map<string, Event[]>();
+  const dayDict = new Map<string, DayOfWeek>();
 
   sortedEvents.forEach((event) => {
     event.scheduledTimes.forEach((slot) => {
-      if (!slot.startTime) return;
+      if (!slot.initialDateScheduled) return;
 
       // startTime is already a full timestamp, just use it directly
-      const startTimeDate = new Date(slot.startTime);
-      const date = datePipe(new Date(startTimeDate.getTime() - startTimeDate.getTimezoneOffset() * -60000));
+      const startTimeDate = new Date(slot.initialDateScheduled);
 
-      if (eventDict.has(date)) {
-        // Check if this event is already in this date's array to avoid duplicates
-        const existingEvents = eventDict.get(date)!;
-        if (!existingEvents.find((e) => e.eventId === event.eventId)) {
-          existingEvents.push(event);
+      // Accessing the date actually converts it to local time, which causes the date to be off. This is a workaround.
+      // 60000 is for millisecond conversion
+      const convertedStartTime = new Date(startTimeDate.getTime() + startTimeDate.getTimezoneOffset() * 60000);
+
+      const dayInt = convertedStartTime.getDay();
+
+      slot.days.forEach((day) => {
+        const eventDate = new Date(convertedStartTime);
+        eventDate.setHours(0, 0, 0, 0);
+        const offset = dayInt - convertDayToInt(day);
+
+        eventDate.setDate(eventDate.getDate() - offset);
+        const date = datePipe(new Date(eventDate.getTime()));
+
+        dayDict.set(date, day);
+
+        if (eventDict.has(date)) {
+          // Check if this event is already in this date's array to avoid duplicates
+          const existingEvents = eventDict.get(date)!;
+          if (!existingEvents.find((e) => e.eventId === event.eventId)) {
+            existingEvents.push(event);
+          }
+        } else {
+          eventDict.set(date, [event]);
         }
-      } else {
-        eventDict.set(date, [event]);
-      }
+
+        for (let i = 1; i <= slot.recurrenceNumber; i++) {
+          const nextDate = new Date(eventDate);
+          nextDate.setDate(nextDate.getDate() + 7 * i);
+
+          const date = datePipe(new Date(nextDate.getTime()));
+          dayDict.set(date, day);
+
+          if (eventDict.has(date)) {
+            const existingEvents = eventDict.get(date)!;
+            if (!existingEvents.find((e) => e.eventId === event.eventId)) {
+              existingEvents.push(event);
+            }
+          } else {
+            eventDict.set(date, [event]);
+          }
+        }
+      });
     });
   });
 
@@ -71,11 +171,7 @@ const NewCalendarPage = () => {
   };
 
   const paddingArrayStart = [...Array<number>(calendarPaddingDays(displayMonthYear)).keys()]
-    .map(
-      (day) =>
-        daysInMonth(new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, displayMonthYear.getDate())) -
-        day
-    )
+    .map((day) => daysInMonth(new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 1)) - day)
     .reverse();
   const paddingArrayEnd = [
     ...Array<number>(7 - ((daysInMonth(displayMonthYear) + calendarPaddingDays(displayMonthYear)) % 7)).keys()
@@ -86,6 +182,15 @@ const NewCalendarPage = () => {
 
   if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
   if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
+
+  if (!allEventTypes || allEventTypesLoading) return <LoadingIndicator />;
+  if (allEventTypesIsError) return <ErrorPage error={allEventTypesError} message={allEventTypesError?.message} />;
+
+  if (!allCalendars || allCalendarsLoading) return <LoadingIndicator />;
+  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
+
+  if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
+  if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
 
   return (
     <>
@@ -142,7 +247,7 @@ const NewCalendarPage = () => {
                 </Grid>
               ))}
             </Grid>
-            <Box sx={{ border: '2px solid grey', borderRadius: 2, bgcolor: theme.palette.background.paper }}>
+            <Box sx={{ border: '2px solid white', borderRadius: 2, bgcolor: '#1a1a1a', p: 1 }}>
               <Grid container marginBottom={2}>
                 {startOfEachWeek.map((week, weekIndex) => (
                   <Grid container key={weekIndex}>
@@ -154,15 +259,21 @@ const NewCalendarPage = () => {
                       );
                       return (
                         <Grid item xs={12 / 7} key={dayIndex}>
-                          <Box marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
+                          <Box marginTop={6} sx={{ justifyContent: 'center', display: 'flex' }}>
                             <CalendarDayCard
                               cardDate={cardDate}
                               events={
                                 eventDict.get(
-                                  datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))
+                                  datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
                                 ) ?? []
                               }
                               teamTypes={allTeamTypes}
+                              eventTypes={allEventTypes ?? []}
+                              calendars={allCalendars ?? []}
+                              dayOfWeek={
+                                dayDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
+                                DayOfWeek.SUNDAY
+                              }
                             />
                           </Box>
                         </Grid>
@@ -178,9 +289,56 @@ const NewCalendarPage = () => {
               width: 320
             }}
           >
-            <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
+            <DateCalendar
+              value={displayMonthYear}
+              onMonthChange={(newDate) => setDisplayMonthYear(newDate)}
+              onChange={(newDate) => {
+                if (newDate) setDisplayMonthYear(newDate);
+              }}
+              slotProps={{
+                day: {
+                  sx: {
+                    '&.Mui-selected': {
+                      bgcolor: 'red',
+                      '&:hover': {
+                        bgcolor: 'darkred'
+                      },
+                      '&:focus': {
+                        bgcolor: 'red'
+                      }
+                    }
+                  }
+                }
+              }}
+            />
+            <Button
+              variant="outlined"
+              id="filter-events-button"
+              onClick={() => setOpenFilterModal(true)}
+              sx={{
+                color: 'white',
+                borderColor: 'white',
+                backgroundColor: 'transparent',
+                '&:hover': {
+                  borderColor: 'white',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+            >
+              More Filters
+            </Button>
           </Box>
         </Box>
+
+        <FilterModal
+          open={openFilterModal}
+          onClose={() => setOpenFilterModal(false)}
+          filterValues={{ memberIds, teamIds, showInvited: showInvitedEvents, showTeam: showTeamEvents }}
+          setMemberIds={(ids: string[]) => setMemberIds(ids)}
+          setTeamIds={(ids: string[]) => setTeamIds(ids)}
+          setShowInvited={(changed: boolean) => updateAdditionalMemberIds(changed)}
+          setShowTeam={(changed: boolean) => updateAdditionalTeamIds(changed)}
+        />
       </PageLayout>
     </>
   );

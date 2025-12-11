@@ -442,6 +442,7 @@ const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
 const calendarEvents = () => `${calendar()}/events`;
+const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
 const calendarFilterEvents = () => `${calendar()}/events/filter`;
 const calendarMachinery = () => `${calendar()}/machinery`;
@@ -455,13 +456,14 @@ const calendarDeleteCalendar = (calendarId: string) => `${calendar()}/${calendar
 const calendarCreateCalendar = () => `${calendar()}/create`;
 const calendarEditCalendar = (calendarId: string) => `${calendar()}/${calendarId}/edit`;
 const calendarCalendars = () => `${calendar()}/calendars`;
-const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateEventType = () => `${calendar()}/event-type/create`;
 const calendarEditEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/edit`;
+const calendarDeleteEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/delete`;
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
 const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
+const calendarFilterEvents = () => `${calendar()}/events/filter`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -787,6 +789,7 @@ export const apiUrls = {
   calendarEventTypes,
   calendarCreateEventType,
   calendarEditEventType,
+  calendarDeleteEventType,
 
   version
 };
