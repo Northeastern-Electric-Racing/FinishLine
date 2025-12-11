@@ -1,14 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Shop, Machinery, Calendar, AvailabilityCreateArgs, Event, EventStatus, EventType, FilterArgs } from 'shared';
 import {
   Shop,
   Machinery,
   EventType,
   Calendar,
+  AvailabilityCreateArgs,
   Event,
   EventTypeCreateArgs,
-  AvailabilityCreateArgs,
-  EventStatus
+  EventStatus,
+  EventType,
+  FilterArgs
 } from 'shared';
 import {
   getAllShops,

@@ -1,6 +1,5 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop, Machinery, AvailabilityCreateArgs, Event, EventStatus, Calendar, FilterArgs } from 'shared';
 import {
   Shop,
   Machinery,
@@ -8,8 +7,9 @@ import {
   AvailabilityCreateArgs,
   Event,
   EventStatus,
+  EventTypeCreateArgs,
   Calendar,
-  EventTypeCreateArgs
+  FilterArgs
 } from 'shared';
 import { eventTransformer } from './transformers/calendar.transformer';
 
