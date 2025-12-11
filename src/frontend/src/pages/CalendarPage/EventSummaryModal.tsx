@@ -45,9 +45,9 @@ const EventSummaryModal: React.FC<EventSummaryModalProps> = ({
 
   const isScheduled = event.status === EventStatus.SCHEDULED || event.status === EventStatus.DONE;
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     try {
-      deleteEvent();
+      await deleteEvent();
       history.push(routes.CALENDAR);
     } catch (e: unknown) {
       if (e instanceof Error) {
