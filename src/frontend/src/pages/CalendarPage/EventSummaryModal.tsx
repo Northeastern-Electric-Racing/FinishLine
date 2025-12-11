@@ -3,7 +3,7 @@ import NERModal from '../../components/NERModal';
 import { Box, Chip, IconButton, Link, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
-import { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
+import { getTeamTypeIcon } from '../NewCalendarPage/CalendarDayCard';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useCurrentUser } from '../../hooks/users.hooks';
