@@ -7,7 +7,7 @@ import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import RulesetTypePage from './RulesetTypePage';
 import RulesetPage from './RulesetPage';
-import RulesetViewPage from './RulesetView';
+import RulesetViewPage from './RulesetViewPage';
 
 const RulesPage: React.FC = () => {
   return (

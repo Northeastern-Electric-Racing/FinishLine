@@ -33,7 +33,7 @@ const RulesetViewPage = () => {
       <PageLayout
         title={ruleset.name}
         tabs={
-          <Box borderBottom={1} borderColor={'divider'} width={'100%'}>
+          <Box borderBottom={1} borderColor={'divider'}>
             <FullPageTabs
               noUnderline
               setTab={setTabIndex}
