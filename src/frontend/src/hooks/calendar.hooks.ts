@@ -2,12 +2,13 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   Shop,
   Machinery,
+  EventType,
   Calendar,
-  AvailabilityCreateArgs,
   Event,
+  EventTypeCreateArgs,
+  AvailabilityCreateArgs,
   EventStatus,
-  ScheduleSlotCreateArgs,
-  EventType
+  ScheduleSlotCreateArgs
 } from 'shared';
 import {
   getAllShops,
@@ -23,6 +24,8 @@ import {
   getAllCalendars,
   postEditCalendar,
   postCreateCalendar,
+  postCreateEventType,
+  postEditEventType,
   markUserConfirmed,
   getSingleEvent,
   getAllEvents,
@@ -40,6 +43,7 @@ import saveAs from 'file-saver';
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;
 const CALENDAR_KEY = ['calendars'] as const;
+export const EVENT_TYPE_KEY = ['event-types'] as const;
 
 export interface EventCreateArgs {
   title: string;
@@ -221,6 +225,36 @@ export const useDeleteMachinery = () => {
   );
 };
 
+export const useCreateEventType = () => {
+  const qc = useQueryClient();
+  return useMutation<EventType, Error, EventTypeCreateArgs>(
+    async (payload) => {
+      const { data } = await postCreateEventType(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(EVENT_TYPE_KEY);
+      }
+    }
+  );
+};
+
+export const useEditEventType = (eventTypeId: string) => {
+  const qc = useQueryClient();
+  return useMutation<EventType, Error, EventTypeCreateArgs>(
+    async (payload) => {
+      const { data } = await postEditEventType(eventTypeId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(EVENT_TYPE_KEY);
+      }
+    }
+  );
+};
+
 export const useMarkUserConfirmed = (id: string) => {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
@@ -273,7 +307,7 @@ export const useAllEvents = () => {
 };
 
 export const useAllEventTypes = () => {
-  return useQuery<EventType[], Error>(['eventTypes'], async () => {
+  return useQuery<EventType[], Error>([EVENT_TYPE_KEY], async () => {
     const { data } = await getAllEventTypes();
     return data;
   });

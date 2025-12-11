@@ -1,6 +1,15 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop, Machinery, AvailabilityCreateArgs, Event, EventStatus, Calendar } from 'shared';
+import {
+  Shop,
+  Machinery,
+  EventType,
+  AvailabilityCreateArgs,
+  Event,
+  EventStatus,
+  Calendar,
+  EventTypeCreateArgs
+} from 'shared';
 import { eventTransformer } from './transformers/calendar.transformer';
 import { EventCreateArgs } from '../hooks/calendar.hooks';
 
@@ -107,6 +116,18 @@ export const markUserConfirmed = async (id: string, payload: { availability: Ava
 export const getSingleEvent = async (id: string) => {
   return axios.get(apiUrls.calendarGetSingleEvent(id), {
     transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
+};
+
+export const postCreateEventType = (payload: EventTypeCreateArgs) => {
+  return axios.post<EventType>(apiUrls.calendarCreateEventType(), payload, {
+    transformResponse: (data) => JSON.parse(data) as EventType
+  });
+};
+
+export const postEditEventType = (eventTypeId: string, payload: EventTypeCreateArgs) => {
+  return axios.post<EventType>(apiUrls.calendarEditEventType(eventTypeId), payload, {
+    transformResponse: (data) => JSON.parse(data) as EventType
   });
 };
 

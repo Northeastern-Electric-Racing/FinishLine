@@ -108,6 +108,7 @@ export interface EventType {
   name: string;
   userCreated: User;
   dateCreated: Date;
+  calendarIds: string[];
   requiredMembers: boolean;
   optionalMembers: boolean;
   teams: boolean;
@@ -121,6 +122,26 @@ export interface EventType {
   documents: boolean;
   description: boolean;
   onlyHeadsOrAboveForEventCreation: boolean;
+  requiresConfirmation: boolean;
+  sendSlackNotifications: boolean;
+}
+
+export interface EventTypeCreateArgs {
+  name: string;
+  calendarIds: string[];
+  requiredMembers: boolean;
+  optionalMembers: boolean;
+  teams: boolean;
+  teamType: boolean;
+  location: boolean;
+  zoomLink: boolean;
+  shop: boolean;
+  machinery: boolean;
+  workPackage: boolean;
+  questionDocument: boolean;
+  documents: boolean;
+  description: boolean;
+  onlyHeadsOrAbove: boolean;
   requiresConfirmation: boolean;
   sendSlackNotifications: boolean;
 }
