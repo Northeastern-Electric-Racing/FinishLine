@@ -236,6 +236,4 @@ calendarRouter.post(
 
 calendarRouter.get('/calendars', CalendarController.getAllCalendars);
 
-calendarRouter.get('/event-types', CalendarController.getAllEventTypes);
-
 export default calendarRouter;
