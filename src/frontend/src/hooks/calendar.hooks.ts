@@ -1,6 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Shop, Machinery, Calendar, AvailabilityCreateArgs, Event, EventStatus, EventType, FilterArgs } from 'shared';
 import {
+  Shop,
+  Machinery,
+  EventType,
+  Calendar,
+  Event,
+  EventTypeCreateArgs,
+  AvailabilityCreateArgs,
+  EventStatus
+} from 'shared';
+import {
   getAllShops,
   postCreateShop,
   postDeleteShop,
@@ -10,9 +20,13 @@ import {
   postDeleteMachinery,
   postAddMachineryToShop,
   editShop,
+  postDeleteCalendar,
   getAllCalendars,
   postEditCalendar,
   postCreateCalendar,
+  getAllEventTypes,
+  postCreateEventType,
+  postEditEventType,
   markUserConfirmed,
   getSingleEvent,
   getAllEvents,
@@ -25,6 +39,7 @@ import { useCurrentUser } from './users.hooks';
 
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;
+const CALENDAR_KEY = ['calendars'] as const;
 
 export const useAllCalendars = () =>
   useQuery<Calendar[], Error>(['calendars'], async () => {
@@ -181,6 +196,44 @@ export const useDeleteMachinery = () => {
   );
 };
 
+export const EVENT_TYPE_KEY = ['event-types'] as const;
+
+export const useAllEventTypes = () =>
+  useQuery<EventType[], Error>(EVENT_TYPE_KEY, async () => {
+    const res = await getAllEventTypes();
+    return res.data;
+  });
+
+export const useCreateEventType = () => {
+  const qc = useQueryClient();
+  return useMutation<EventType, Error, EventTypeCreateArgs>(
+    async (payload) => {
+      const { data } = await postCreateEventType(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(EVENT_TYPE_KEY);
+      }
+    }
+  );
+};
+
+export const useEditEventType = (eventTypeId: string) => {
+  const qc = useQueryClient();
+  return useMutation<EventType, Error, EventTypeCreateArgs>(
+    async (payload) => {
+      const { data } = await postEditEventType(eventTypeId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(EVENT_TYPE_KEY);
+      }
+    }
+  );
+};
+
 export const useMarkUserConfirmed = (id: string) => {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
@@ -194,6 +247,21 @@ export const useMarkUserConfirmed = (id: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['events']);
         queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+      }
+    }
+  );
+};
+
+export const useDeleteCalendar = () => {
+  const qc = useQueryClient();
+  return useMutation<{ calendarId: string }, Error, string>(
+    async (calendarId: string) => {
+      const { data } = await postDeleteCalendar(calendarId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(CALENDAR_KEY);
       }
     }
   );

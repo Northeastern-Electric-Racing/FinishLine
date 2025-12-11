@@ -1,6 +1,16 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { Shop, Machinery, AvailabilityCreateArgs, Event, EventStatus, Calendar, FilterArgs } from 'shared';
+import {
+  Shop,
+  Machinery,
+  EventType,
+  AvailabilityCreateArgs,
+  Event,
+  EventStatus,
+  Calendar,
+  EventTypeCreateArgs
+} from 'shared';
 import { eventTransformer } from './transformers/calendar.transformer';
 
 export const getAllCalendars = () => {
@@ -109,6 +119,18 @@ export const getSingleEvent = async (id: string) => {
   });
 };
 
+export const postCreateEventType = (payload: EventTypeCreateArgs) => {
+  return axios.post<EventType>(apiUrls.calendarCreateEventType(), payload, {
+    transformResponse: (data) => JSON.parse(data) as EventType
+  });
+};
+
+export const postEditEventType = (eventTypeId: string, payload: EventTypeCreateArgs) => {
+  return axios.post<EventType>(apiUrls.calendarEditEventType(eventTypeId), payload, {
+    transformResponse: (data) => JSON.parse(data) as EventType
+  });
+};
+
 export const getAllEvents = () => {
   return axios.get(apiUrls.calendarEvents(), {
     transformResponse: (data) => JSON.parse(data).map(eventTransformer)
@@ -131,8 +153,18 @@ export const deleteEvent = async (id: string) => {
   return axios.delete(apiUrls.calendarDeleteEvent(id));
 };
 
+export const getAllEventTypes = () => {
+  return axios.get<EventType[]>(apiUrls.calendarEventTypes(), {
+    transformResponse: (data) => JSON.parse(data) as EventType[]
+  });
+};
+
 export const setEventStatus = async (id: string, payload: { status: EventStatus }) => {
   return axios.post<Event>(apiUrls.calendarEventSetStatus(id), payload, {
     transformResponse: (data) => eventTransformer(JSON.parse(data))
   });
+};
+
+export const postDeleteCalendar = async (id: string) => {
+  return axios.post<Calendar>(apiUrls.calendarDeleteCalendar(id));
 };

@@ -11,9 +11,11 @@ import {
   useAllMachines,
   useDeleteMachinery,
   useDeleteShop,
+  useDeleteCalendar,
   useAllCalendars,
   useCreateCalendar,
-  useEditCalendar
+  useEditCalendar,
+  useAllEventTypes
 } from '../../../hooks/calendar.hooks';
 import ShopModal from './Shop/ShopModal';
 import CreateCalendarModal from './Calendar/CreateCalendarModal';
@@ -22,23 +24,41 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
-import { Calendar, Shop } from 'shared';
+import CreateEventTypeModal from './EventType/CreateEventTypeModal';
+import EditEventTypeModal from './EventType/EditEventTypeModal';
+import { Shop, EventType, Calendar } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERDeleteModal from '../../../components/NERDeleteModal';
 
 const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading: shopsLoading, isError: shopsError, error: shopsErrorMsg } = useAllShops();
   const { data: machines, isLoading: machinesLoading, isError: machinesError, error: machinesErrorMsg } = useAllMachines();
+  const {
+    data: eventTypes,
+    isLoading: eventTypesLoading,
+    isError: eventTypesError,
+    error: eventTypesErrorMsg
+  } = useAllEventTypes();
+  const {
+    data: calendars,
+    isLoading: calendarsLoading,
+    isError: calendarsError,
+    error: calendarsErrorMsg
+  } = useAllCalendars();
   const { mutateAsync: createShopMutate } = useCreateShop();
+  const { mutateAsync: createCalendarMutate } = useCreateCalendar();
 
   const [editingShopId, setEditingShopId] = useState<string | undefined>();
   const editShopMutation = useEditShop(editingShopId ?? '');
+  const [editingCalendarId, setEditingCalendarId] = useState<string | undefined>();
+  const editCalendarMutation = useEditCalendar(editingCalendarId ?? '');
   const [machineryToDelete, setMachineryToDelete] = useState<{
     machineryId: string;
     machineName: string;
   } | null>(null);
   const { mutateAsync: deleteMachinery } = useDeleteMachinery();
   const { mutateAsync: deleteShop } = useDeleteShop();
+  const { mutateAsync: deleteCalendar } = useDeleteCalendar();
   const toast = useToast();
 
   const handleDeleteMachinery = async () => {
@@ -71,32 +91,38 @@ const AdminToolsScheduleConfig: React.FC = () => {
     }
   };
 
+  const handleCalendarDelete = async () => {
+    if (!calendarToDelete) return;
+    setCalendarToDelete(undefined);
+    try {
+      await deleteCalendar(calendarToDelete.calendarId);
+      toast.success('Calendar deleted successfully');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      } else {
+        toast.error('Failed to delete calendar', 3000);
+      }
+    }
+  };
+
   const [openCreate, setOpenCreate] = useState(false);
   const [openCreateMachinery, setOpenCreateMachinery] = useState(false);
-  const [editMachinery, setEditMachinery] = useState<{ machineryId: string; shopId: string }>();
+  const [editMachinery, setEditMachinery] = useState<{ machineryId: string; shopId: string } | null>(null);
   const [openEdit, setOpenEdit] = useState(false);
-  const [editingShop, setEditingShop] = useState<Shop>();
-  const [shopToDelete, setShopToDelete] = useState<Shop>();
-
-  const {
-    data: calendars,
-    isLoading: calendarsLoading,
-    isError: calendarsError,
-    error: calendarsErrorMsg
-  } = useAllCalendars();
-
-  const { mutateAsync: createCalendarMutate } = useCreateCalendar();
-
-  const [editingCalendarId, setEditingCalendarId] = useState<string>();
-  const editCalendarMutation = useEditCalendar(editingCalendarId ?? '');
-
+  const [editingShop, setEditingShop] = useState<any>(null);
+  const [shopToDelete, setShopToDelete] = useState<Shop | undefined>(undefined);
+  const [openCreateEventType, setOpenCreateEventType] = useState(false);
+  const [editingEventType, setEditingEventType] = useState<EventType | null>(null);
+  const [calendarToDelete, setCalendarToDelete] = useState<Calendar | undefined>(undefined);
   const [openCreateCalendar, setOpenCreateCalendar] = useState(false);
   const [openEditCalendar, setOpenEditCalendar] = useState(false);
-  const [editingCalendar, setEditingCalendar] = useState<Calendar>();
+  const [editingCalendar, setEditingCalendar] = useState<Calendar | undefined>(undefined);
 
-  if (shopsLoading || machinesLoading || calendarsLoading) return <LoadingIndicator />;
+  if (shopsLoading || machinesLoading || eventTypesLoading || calendarsLoading) return <LoadingIndicator />;
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
   if (machinesError) return <ErrorPage message={(machinesErrorMsg as Error).message} />;
+  if (eventTypesError) return <ErrorPage message={(eventTypesErrorMsg as Error).message} />;
   if (calendarsError) return <ErrorPage message={(calendarsErrorMsg as Error).message} />;
 
   return (
@@ -119,7 +145,6 @@ const AdminToolsScheduleConfig: React.FC = () => {
                 Add Calendar
               </Button>
             </Box>
-
             <Table size="small">
               <TableHead>
                 <TableRow>
@@ -131,9 +156,8 @@ const AdminToolsScheduleConfig: React.FC = () => {
                   <TableCell sx={{ width: 100 }} />
                 </TableRow>
               </TableHead>
-
               <TableBody>
-                {!calendars || calendars.length === 0 ? (
+                {!calendars || !Array.isArray(calendars) || calendars.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} align="center">
                       No calendars yet.
@@ -144,7 +168,6 @@ const AdminToolsScheduleConfig: React.FC = () => {
                     <TableRow key={calendar.calendarId} hover>
                       <TableCell>{calendar.name}</TableCell>
                       <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{calendar.description ?? '—'}</TableCell>
-
                       <TableCell align="center">
                         <Box
                           sx={{
@@ -177,7 +200,12 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
                           <Tooltip title="Delete" arrow>
                             <span>
-                              <IconButton size="small" color="error" disabled aria-label="delete calendar">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                aria-label="delete calendar"
+                                onClick={() => setCalendarToDelete(calendar)}
+                              >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
                             </span>
@@ -192,14 +220,76 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
+        {/* Event Types Table */}
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
-            <Typography variant="h6" gutterBottom>
-              Event Types
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              ...
-            </Typography>
+            <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+              <Typography variant="h6">Event Type</Typography>
+              <Button variant="contained" onClick={() => setOpenCreateEventType(true)}>
+                Add Event Type
+              </Button>
+            </Box>
+
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
+                  <TableCell sx={{ fontWeight: 600, width: 160 }} align="center">
+                    Actions
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {!eventTypes || !Array.isArray(eventTypes) || eventTypes.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={2} align="center">
+                      No event types yet.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  eventTypes.map((eventType) => (
+                    <TableRow key={eventType.eventTypeId} hover>
+                      <TableCell>{eventType.name}</TableCell>
+                      <TableCell align="center">
+                        <Box display="flex" gap={1} justifyContent="center">
+                          <Tooltip title="Edit" arrow>
+                            <span>
+                              <IconButton
+                                size="small"
+                                aria-label="edit event type"
+                                onClick={() => {
+                                  setEditingEventType(eventType);
+                                }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+
+                          <Tooltip title="Delete" arrow>
+                            <span>
+                              <IconButton
+                                size="small"
+                                aria-label="delete event type"
+                                disabled
+                                sx={{
+                                  color: 'white',
+                                  '&.Mui-disabled': {
+                                    color: 'white'
+                                  }
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </Paper>
         </Grid>
 
@@ -299,7 +389,6 @@ const AdminToolsScheduleConfig: React.FC = () => {
                   </TableCell>
                 </TableRow>
               </TableHead>
-
               <TableBody>
                 {!machines || !Array.isArray(machines) || machines.length === 0 ? (
                   <TableRow>
@@ -370,24 +459,13 @@ const AdminToolsScheduleConfig: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Add Shop Modal */}
-      <ShopModal
-        open={openCreate}
-        onClose={() => setOpenCreate(false)}
-        onSubmit={async ({ name, description }) => {
-          const result = await createShopMutate({ name, description });
-          setOpenCreate(false);
-          return result;
-        }}
-      />
-
-      {/* Delete Shop Modal */}
+      {/* Delete Calendars Modal */}
       <NERDeleteModal
-        open={!!shopToDelete}
-        onHide={() => setShopToDelete(undefined)}
-        formId="delete-shop-form"
-        dataType={shopToDelete?.name || ''}
-        onFormSubmit={handleShopDelete}
+        open={!!calendarToDelete}
+        onHide={() => setCalendarToDelete(undefined)}
+        formId="delete-calendar-form"
+        dataType={calendarToDelete?.name || ''}
+        onFormSubmit={handleCalendarDelete}
       />
 
       {/* Create Calendar Modal */}
@@ -432,6 +510,27 @@ const AdminToolsScheduleConfig: React.FC = () => {
           }}
         />
       )}
+
+      {/* Add Shop Modal */}
+      <ShopModal
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        onSubmit={async ({ name, description }) => {
+          const result = await createShopMutate({ name, description });
+          setOpenCreate(false);
+          return result;
+        }}
+      />
+
+      {/* Delete Shop Modal */}
+      <NERDeleteModal
+        open={!!shopToDelete}
+        onHide={() => setShopToDelete(undefined)}
+        formId="delete-shop-form"
+        dataType={shopToDelete?.name || ''}
+        onFormSubmit={handleShopDelete}
+      />
+
       {/* Create Machine Modal */}
       <CreateMachineryModal open={openCreateMachinery} onClose={() => setOpenCreateMachinery(false)} />
 
@@ -453,7 +552,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
             shops: [selectedShopMachinery]
           };
 
-          return <EditMachineryModal open={true} onClose={() => setEditMachinery(undefined)} machinery={machineryForEdit} />;
+          return <EditMachineryModal open={true} onClose={() => setEditMachinery(null)} machinery={machineryForEdit} />;
         })()}
 
       {/* Edit Shop Modal */}
@@ -461,7 +560,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
         open={openEdit}
         onClose={() => {
           setOpenEdit(false);
-          setEditingShop(undefined);
+          setEditingShop(null);
           setEditingShopId(undefined);
         }}
         initialValues={{
@@ -472,7 +571,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           if (!editingShopId) return;
           await editShopMutation.mutateAsync({ name, description });
           setOpenEdit(false);
-          setEditingShop(undefined);
+          setEditingShop(null);
           setEditingShopId(undefined);
         }}
       />
@@ -485,6 +584,14 @@ const AdminToolsScheduleConfig: React.FC = () => {
         dataType={`machine ${machineryToDelete?.machineName || ''}`}
         onFormSubmit={handleDeleteMachinery}
       />
+
+      {/* Create Event Type Modal */}
+      <CreateEventTypeModal open={openCreateEventType} onClose={() => setOpenCreateEventType(false)} />
+
+      {/* Edit Event Type Modal */}
+      {editingEventType && (
+        <EditEventTypeModal open={true} onClose={() => setEditingEventType(null)} eventType={editingEventType} />
+      )}
     </Box>
   );
 };

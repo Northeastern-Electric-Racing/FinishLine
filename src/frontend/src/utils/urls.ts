@@ -451,9 +451,13 @@ const calendarDeleteMachinery = (machineryId: string) => `${calendar()}/machiner
 const calendarAddMachineryToShop = (machineryId: string) => `${calendar()}/machinery/${machineryId}/add-to-shop`;
 const calendarEditShop = (shopId: string) => `${calendar()}/shop/${shopId}/edit`;
 const calendarDeleteShop = (shopId: string) => `${calendar()}/shop/${shopId}/delete`;
+const calendarDeleteCalendar = (calendarId: string) => `${calendar()}/${calendarId}/delete`;
 const calendarCreateCalendar = () => `${calendar()}/create`;
 const calendarEditCalendar = (calendarId: string) => `${calendar()}/${calendarId}/edit`;
 const calendarCalendars = () => `${calendar()}/calendars`;
+const calendarEventTypes = () => `${calendar()}/event-types`;
+const calendarCreateEventType = () => `${calendar()}/event-type/create`;
+const calendarEditEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/edit`;
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
@@ -778,9 +782,13 @@ export const apiUrls = {
   calendarDeleteEvent,
   calendarEventSetStatus,
   calendarDeleteShop,
+  calendarDeleteCalendar,
   calendarCreateCalendar,
   calendarEditCalendar,
   calendarCalendars,
+  calendarEventTypes,
+  calendarCreateEventType,
+  calendarEditEventType,
 
   version
 };
