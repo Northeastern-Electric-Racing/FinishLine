@@ -16,7 +16,7 @@ interface EventInfoProps {
 }
 
 const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, calendars, dayOfWeek, onClick }) => {
-  const name = event.workPackages[0]?.wbsElement?.name || event.title;
+  const name = event.title;
   const convertedStartTime = getConvertedStart(event, dayOfWeek);
   const convertedEndTime = getConvertedEnd(event, dayOfWeek);
   const specificEventType = eventTypes?.find((eventType) => eventType.eventTypeId === event.eventTypeId);
