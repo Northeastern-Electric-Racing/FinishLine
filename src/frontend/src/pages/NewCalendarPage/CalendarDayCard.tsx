@@ -12,10 +12,24 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ArticleIcon from '@mui/icons-material/Article';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
+import TerminalIcon from '@mui/icons-material/Terminal';
 
 import EventPartialInfoView from './EventPartialInfoView';
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
-import { EventClickPopup, getTeamTypeIcon, getStatusIcon } from './EventClickPopup';
+import { EventClickPopup, getStatusIcon } from './EventClickPopup';
+
+export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
+  const teamIcons: Map<string, JSX.Element> = new Map([
+    ['Software', <TerminalIcon fontSize={isLarge ? 'large' : 'small'} />],
+    ['Business', <WorkOutlineIcon fontSize={isLarge ? 'large' : 'small'} />],
+    ['Electrical', <ElectricalServicesIcon fontSize={isLarge ? 'large' : 'small'} />],
+    ['Mechanical', <ConstructionIcon fontSize={isLarge ? 'large' : 'small'} />]
+  ]);
+
+  return teamIcons.get(teamTypeName);
+};
 
 interface CalendarDayCardProps {
   cardDate: Date;

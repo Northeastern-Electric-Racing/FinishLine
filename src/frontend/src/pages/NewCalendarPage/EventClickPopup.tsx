@@ -1,11 +1,9 @@
 import React from 'react';
 import { Box, Button, IconButton, Popover, Stack, Typography, useTheme } from '@mui/material';
 import { Calendar, DayOfWeek, Event, EventType } from 'shared';
-
+import { getTeamTypeIcon } from './CalendarDayCard';
 import ConstructionIcon from '@mui/icons-material/Construction';
-import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
-import TerminalIcon from '@mui/icons-material/Terminal';
+
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -17,16 +15,7 @@ import PeopleIcon from '@mui/icons-material/People';
 
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
 
-export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
-  const teamIcons: Map<string, JSX.Element> = new Map([
-    ['Software', <TerminalIcon fontSize={isLarge ? 'large' : 'small'} />],
-    ['Business', <WorkOutlineIcon fontSize={isLarge ? 'large' : 'small'} />],
-    ['Electrical', <ElectricalServicesIcon fontSize={isLarge ? 'large' : 'small'} />],
-    ['Mechanical', <ConstructionIcon fontSize={isLarge ? 'large' : 'small'} />]
-  ]);
 
-  return teamIcons.get(teamTypeName);
-};
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
