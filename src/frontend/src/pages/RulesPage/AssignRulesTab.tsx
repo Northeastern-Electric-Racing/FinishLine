@@ -82,6 +82,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
   const toast = useToast();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<Set<string>>(new Set());
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [originalAssignments, setOriginalAssignments] = useState<Set<string>>(new Set());
 
   const { data: teams, isLoading: teamsLoading, isError: teamsError, error: teamsErrorData } = useAllTeams();
@@ -275,3 +276,4 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
 };
 
 export default AssignRulesTab;
+
