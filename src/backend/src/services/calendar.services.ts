@@ -2103,16 +2103,20 @@ export default class CalendarService {
       }
     }
 
-    // filters for members
-    const memberOrCreator = memberIds?.length
-      ? {
-          OR: [
-            { requiredMembers: { some: { userId: { in: memberIds } } } }, // attendee
-            { optionalMembers: { some: { userId: { in: memberIds } } } },
-            { userCreatedId: { in: memberIds } } // creator
-          ]
-        }
-      : undefined;
+    // filters for members/teams
+    const memberOrTeamFilter = [];
+
+    if (memberIds?.length) {
+      memberOrTeamFilter.push(
+        { requiredMembers: { some: { userId: { in: memberIds } } } },
+        { optionalMembers: { some: { userId: { in: memberIds } } } },
+        { userCreatedId: { in: memberIds } }
+      );
+    }
+
+    if (teamIds?.length) {
+      memberOrTeamFilter.push({ teams: { some: { teamId: { in: teamIds } } } });
+    }
 
     // filters for selected calendars
     const fromCalendar = calendarIds?.length
@@ -2137,10 +2141,9 @@ export default class CalendarService {
         dateDeleted: null,
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
-        teams: teamIds?.length ? { some: { teamId: { in: teamIds } } } : undefined,
+        ...(memberOrTeamFilter ? { OR: memberOrTeamFilter } : undefined),
         approved: approvalStatus !== undefined ? { equals: approvalStatus } : undefined,
         scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
-        ...memberOrCreator,
         ...fromCalendar
       },
       ...getEventQueryArgs(organization.organizationId),

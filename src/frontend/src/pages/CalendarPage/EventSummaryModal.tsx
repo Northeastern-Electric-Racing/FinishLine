@@ -3,7 +3,7 @@ import NERModal from '../../components/NERModal';
 import { Box, Chip, IconButton, Link, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
-import { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
+import { getTeamTypeIcon } from '../NewCalendarPage/CalendarDayCard';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -45,9 +45,9 @@ const EventSummaryModal: React.FC<EventSummaryModalProps> = ({
 
   const isScheduled = event.status === EventStatus.SCHEDULED || event.status === EventStatus.DONE;
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     try {
-      deleteEvent();
+      await deleteEvent();
       history.push(routes.CALENDAR);
     } catch (e: unknown) {
       if (e instanceof Error) {

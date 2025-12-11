@@ -2,12 +2,13 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   Shop,
   Machinery,
-  EventType,
   Calendar,
+  AvailabilityCreateArgs,
   Event,
   EventTypeCreateArgs,
-  AvailabilityCreateArgs,
   EventStatus,
+  EventType,
+  FilterArgs,
   ScheduleSlotCreateArgs
 } from 'shared';
 import {
@@ -26,13 +27,15 @@ import {
   postCreateCalendar,
   postCreateEventType,
   postEditEventType,
+  postDeleteEventType,
   markUserConfirmed,
   getSingleEvent,
   getAllEvents,
   deleteEvent,
   setEventStatus,
-  postCreateEvent,
   getAllEventTypes,
+  postFilterEvents,
+  postCreateEvent,
   uploadSingleDocument,
   downloadDocumentPdf
 } from '../apis/calendar.api';
@@ -255,6 +258,21 @@ export const useEditEventType = (eventTypeId: string) => {
   );
 };
 
+export const useDeleteEventType = () => {
+  const qc = useQueryClient();
+  return useMutation<{ eventTypeId: string }, Error, string>(
+    async (eventTypeId: string) => {
+      const { data } = await postDeleteEventType(eventTypeId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(EVENT_TYPE_KEY);
+      }
+    }
+  );
+};
+
 export const useMarkUserConfirmed = (id: string) => {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
@@ -306,8 +324,21 @@ export const useAllEvents = () => {
   });
 };
 
+export const useFilterEvents = (filterArgs: FilterArgs) => {
+  return useQuery<Event[], Error>(
+    ['filter-events', filterArgs],
+    async () => {
+      const { data } = await postFilterEvents(filterArgs);
+      return data;
+    },
+    {
+      keepPreviousData: true
+    }
+  );
+};
+
 export const useAllEventTypes = () => {
-  return useQuery<EventType[], Error>([EVENT_TYPE_KEY], async () => {
+  return useQuery<EventType[], Error>(EVENT_TYPE_KEY, async () => {
     const { data } = await getAllEventTypes();
     return data;
   });

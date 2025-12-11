@@ -3186,7 +3186,7 @@ const performSeed: () => Promise<void> = async () => {
     false,
     false,
     false,
-    false,
+    true,
     false,
     false,
     false
@@ -3286,7 +3286,155 @@ const performSeed: () => Promise<void> = async () => {
     undefined,
     'Conference Room A',
     'https://zoom.us/j/123456789',
-    undefined
+    'Test meeting'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync Late',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        days: [DayOfWeek.MONDAY],
+        startTime: new Date('2025-12-21T10:00:00.000Z'),
+        endTime: new Date('2025-12-21T11:00:00.000Z'),
+        recurrenceNumber: 2,
+        initialDateScheduled: new Date('2025-12-21T00:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'December Cheer'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 2',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        days: [DayOfWeek.MONDAY],
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        recurrenceNumber: 2,
+        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
+        allDay: false
+      },
+      {
+        days: [DayOfWeek.WEDNESDAY],
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        recurrenceNumber: 2,
+        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'This is the second Weekly Sync in our database. Please come and join to get vital information! Thank you for reading.'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 3',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        days: [DayOfWeek.MONDAY],
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        recurrenceNumber: 2,
+        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'This is the third test meeting! Glad to say hi.'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 4',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        days: [DayOfWeek.MONDAY],
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        recurrenceNumber: 7,
+        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'This is the fourth meeting! Please come anyway, we have a lot to say.'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 5',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        days: [DayOfWeek.MONDAY],
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        recurrenceNumber: 2,
+        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    "This one is optional, up to you if you want to show up, we won't judge"
   );
 
   await CalendarService.createEvent(

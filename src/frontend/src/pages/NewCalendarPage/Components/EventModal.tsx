@@ -45,6 +45,9 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import BusinessIcon from '@mui/icons-material/Business';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
 import { ClearIcon } from '@mui/x-date-pickers';
+import { useAllMachines, useAllShops } from '../../../hooks/calendar.hooks';
+import StoreIcon from '@mui/icons-material/Store';
+import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 
 export interface EventFormValues {
   title: string;
@@ -123,7 +126,7 @@ const schema = yup.object().shape({
     otherwise: (schema) => schema.optional()
   }),
   allDay: yup.boolean().required(),
-  recurrenceNumber: yup.number().min(1, 'Must be at least 1').required('Recurrence is required'),
+  recurrenceNumber: yup.number().min(0).required('Recurrence is required'),
   days: yup.array().of(yup.mixed<DayOfWeek>().required()).default([])
 });
 
@@ -154,6 +157,13 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const [selectedTeams, setSelectedTeams] = useState<Array<{ id: string; label: string }>>([]);
 
   const { isLoading: usersLoading, isError: usersError, error: usersErrorMsg, data: users } = useAllUsers();
+  const { isLoading: shopsLoading, isError: shopsError, error: shopsErrorMsg, data: shops } = useAllShops();
+  const {
+    isLoading: machineryLoading,
+    isError: machineryError,
+    error: machineryErrorMsg,
+    data: machinery
+  } = useAllMachines();
   const {
     isLoading: workPackagesLoading,
     isError: workPackagesError,
@@ -188,7 +198,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       startTime: initialValues?.startTime,
       endTime: initialValues?.endTime,
       allDay: initialValues?.allDay ?? false,
-      recurrenceNumber: initialValues?.recurrenceNumber ?? 1,
+      recurrenceNumber: initialValues?.recurrenceNumber ?? 0,
       days: initialValues?.days ?? []
     }),
     [initialValues, defaultDate]
@@ -326,6 +336,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   if (workPackagesError) return <ErrorPage error={workPackagesErrorMsg} message={workPackagesErrorMsg?.message} />;
   if (teamsError) return <ErrorPage error={teamsErrorMsg} message={teamsErrorMsg?.message} />;
   if (teamTypesError) return <ErrorPage error={teamTypesErrorMsg} message={teamTypesErrorMsg?.message} />;
+  if (shopsError) return <ErrorPage error={shopsErrorMsg} message={shopsErrorMsg?.message} />;
+  if (machineryError) return <ErrorPage error={machineryErrorMsg} message={machineryErrorMsg?.message} />;
+
   if (
     usersLoading ||
     workPackagesLoading ||
@@ -334,13 +347,19 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     !users ||
     !allWorkPackages ||
     !teams ||
-    !teamTypes
+    !teamTypes ||
+    shopsLoading ||
+    machineryLoading ||
+    !shops ||
+    !machinery
   ) {
     return <LoadingIndicator />;
   }
 
   const memberOptions = users.map(userToAutocompleteOption);
   const teamOptions = teams.map((t) => ({ id: t.teamId, label: t.teamName }));
+  const shopOptions = shops.map((s) => ({ id: s.shopId, label: s.name }));
+  const machineryOptions = machinery.map((m) => ({ id: m.machineryId, label: m.name }));
 
   const workPackageOptions = allWorkPackages
     .filter((wp) => wp.status === WbsElementStatus.Active)
@@ -527,7 +546,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             <Box sx={{ ml: 5, p: 2, bgcolor: 'grey.50', borderRadius: 2, border: '1px solid', borderColor: 'grey.300' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                 <Typography variant="body2" color="#000">
-                  Repeat every
+                  Repeat
                 </Typography>
                 <Controller
                   name="recurrenceNumber"
@@ -557,7 +576,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   )}
                 />
                 <Typography variant="body2" color="#000">
-                  week(s)
+                  time(s)
                 </Typography>
               </Box>
 
@@ -636,29 +655,23 @@ const EventModal: React.FC<BaseEventModalProps> = ({
           )}
         </Box>
 
-        {/* Required/Optional Members Section */}
-        {(selectedEventType?.requiredMembers || selectedEventType?.optionalMembers) && (
+        {/* Required Members Section */}
+        {selectedEventType?.requiredMembers && (
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
             <PeopleIcon sx={{ color: 'text.secondary', mt: 1 }} />
-            <Box sx={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-              {requiredMembers.map((member) => (
-                <Chip
-                  key={member.id}
-                  label={member.label}
-                  onDelete={() => setRequiredMembers((prev) => prev.filter((m) => m.id !== member.id))}
-                  sx={{ bgcolor: 'grey.300' }}
-                />
-              ))}
-              {optionalMembers.map((member) => (
-                <Chip
-                  key={member.id}
-                  label={member.label}
-                  onDelete={() => setOptionalMembers((prev) => prev.filter((m) => m.id !== member.id))}
-                  sx={{ bgcolor: 'grey.200', opacity: 0.7 }}
-                />
-              ))}
-
-              {selectedEventType?.requiredMembers && (
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="body2" fontWeight={600} mb={1}>
+                Required Members
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                {requiredMembers.map((member) => (
+                  <Chip
+                    key={member.id}
+                    label={member.label}
+                    onDelete={() => setRequiredMembers((prev) => prev.filter((m) => m.id !== member.id))}
+                    sx={{ bgcolor: 'grey.300' }}
+                  />
+                ))}
                 <Autocomplete
                   options={memberOptions.filter((m) => !requiredMembers.find((rm) => rm.id === m.id))}
                   onChange={(_, newValue) => {
@@ -666,13 +679,65 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   }}
                   getOptionLabel={(option) => option.label}
                   renderInput={(params) => (
-                    <TextField {...params} variant="standard" placeholder="Add Member" sx={{ minWidth: 120 }} />
+                    <TextField {...params} variant="standard" placeholder="Add Required Member" sx={{ minWidth: 150 }} />
                   )}
-                  sx={{ display: 'inline-flex', minWidth: 120 }}
+                  sx={{ display: 'inline-flex', minWidth: 150 }}
                 />
-              )}
+              </Box>
+            </Box>
+          </Box>
+        )}
 
-              {selectedEventType?.teams && (
+        {/* Optional Members Section */}
+        {selectedEventType?.optionalMembers && (
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+            <PeopleIcon sx={{ color: 'text.secondary', mt: 1, opacity: 0.7 }} />
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="body2" fontWeight={600} mb={1}>
+                Optional Members
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                {optionalMembers.map((member) => (
+                  <Chip
+                    key={member.id}
+                    label={member.label}
+                    onDelete={() => setOptionalMembers((prev) => prev.filter((m) => m.id !== member.id))}
+                    sx={{ bgcolor: 'grey.200', opacity: 0.7 }}
+                  />
+                ))}
+                <Autocomplete
+                  options={memberOptions.filter((m) => !optionalMembers.find((om) => om.id === m.id))}
+                  onChange={(_, newValue) => {
+                    if (newValue) setOptionalMembers((prev) => [...prev, newValue]);
+                  }}
+                  getOptionLabel={(option) => option.label}
+                  renderInput={(params) => (
+                    <TextField {...params} variant="standard" placeholder="Add Optional Member" sx={{ minWidth: 150 }} />
+                  )}
+                  sx={{ display: 'inline-flex', minWidth: 150 }}
+                />
+              </Box>
+            </Box>
+          </Box>
+        )}
+
+        {/* Teams Section */}
+        {selectedEventType?.teams && (
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+            <BusinessIcon sx={{ color: 'text.secondary', mt: 1 }} />
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="body2" fontWeight={600} mb={1}>
+                Teams
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                {selectedTeams.map((team) => (
+                  <Chip
+                    key={team.id}
+                    label={team.label}
+                    onDelete={() => setSelectedTeams((prev) => prev.filter((t) => t.id !== team.id))}
+                    sx={{ bgcolor: 'primary.light', color: 'white' }}
+                  />
+                ))}
                 <Autocomplete
                   options={teamOptions.filter((t) => !selectedTeams.find((st) => st.id === t.id))}
                   onChange={(_, newValue) => {
@@ -684,8 +749,37 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   )}
                   sx={{ display: 'inline-flex', minWidth: 120 }}
                 />
-              )}
+              </Box>
             </Box>
+          </Box>
+        )}
+
+        {/* Team Type */}
+        {selectedEventType?.teamType && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <BusinessIcon sx={{ color: 'text.secondary' }} />
+            <Controller
+              name="teamTypeId"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Select
+                  value={value || ''}
+                  onChange={(e) => onChange(e.target.value)}
+                  variant="standard"
+                  displayEmpty
+                  sx={{ flex: 1 }}
+                >
+                  <MenuItem value="">
+                    <em>Select Team Type</em>
+                  </MenuItem>
+                  {teamTypes.map((tt) => (
+                    <MenuItem key={tt.teamTypeId} value={tt.teamTypeId}>
+                      {tt.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
+            />
           </Box>
         )}
 
@@ -733,6 +827,50 @@ const EventModal: React.FC<BaseEventModalProps> = ({
           </Box>
         )}
 
+        {/* Shops */}
+        {selectedEventType?.shop && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <StoreIcon sx={{ color: 'text.secondary' }} />
+            <Controller
+              name="shopIds"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Autocomplete
+                  multiple
+                  options={shopOptions}
+                  value={shopOptions.filter((s) => value?.includes(s.id))}
+                  onChange={(_, newValue) => onChange(newValue.map((v) => v.id))}
+                  getOptionLabel={(option) => option.label}
+                  renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Shops" />}
+                  sx={{ flex: 1 }}
+                />
+              )}
+            />
+          </Box>
+        )}
+
+        {/* Machinery */}
+        {selectedEventType?.machinery && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <PrecisionManufacturingIcon sx={{ color: 'text.secondary' }} />
+            <Controller
+              name="machineryIds"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Autocomplete
+                  multiple
+                  options={machineryOptions}
+                  value={machineryOptions.filter((m) => value?.includes(m.id))}
+                  onChange={(_, newValue) => onChange(newValue.map((v) => v.id))}
+                  getOptionLabel={(option) => option.label}
+                  renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Machinery" />}
+                  sx={{ flex: 1 }}
+                />
+              )}
+            />
+          </Box>
+        )}
+
         {/* Work Packages */}
         {selectedEventType?.workPackage && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -750,35 +888,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Work Package" />}
                   sx={{ flex: 1 }}
                 />
-              )}
-            />
-          </Box>
-        )}
-
-        {/* Team Type */}
-        {selectedEventType?.teamType && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <BusinessIcon sx={{ color: 'text.secondary' }} />
-            <Controller
-              name="teamTypeId"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Select
-                  value={value || ''}
-                  onChange={(e) => onChange(e.target.value)}
-                  variant="standard"
-                  displayEmpty
-                  sx={{ flex: 1 }}
-                >
-                  <MenuItem value="">
-                    <em>Select Team Type</em>
-                  </MenuItem>
-                  {teamTypes.map((tt) => (
-                    <MenuItem key={tt.teamTypeId} value={tt.teamTypeId}>
-                      {tt.name}
-                    </MenuItem>
-                  ))}
-                </Select>
               )}
             />
           </Box>

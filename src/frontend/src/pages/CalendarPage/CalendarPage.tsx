@@ -7,7 +7,7 @@ import { Box, Grid, Stack, Tooltip, Typography, useMediaQuery, useTheme } from '
 import PageLayout from '../../components/PageLayout';
 import { Event, EventStatus } from 'shared';
 import MonthSelector from '../CalendarPage/CalendarComponents/MonthSelector';
-import CalendarDayCard, { getTeamTypeIcon } from '../CalendarPage/CalendarComponents/CalendarDayCard';
+import CalendarDayCard, { getTeamTypeIcon } from '../NewCalendarPage/CalendarDayCard';
 import { DAY_NAMES, enumToArray } from '../../utils/design-review.utils';
 import ActionsMenu from '../../components/ActionsMenu';
 import { useAllEvents } from '../../hooks/calendar.hooks';
