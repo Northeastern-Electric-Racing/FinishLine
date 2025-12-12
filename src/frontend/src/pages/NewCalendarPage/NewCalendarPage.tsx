@@ -3,7 +3,18 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import {
+  Box,
+  Grid,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  FormGroup
+} from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { Calendar, DayOfWeek, Event } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
@@ -346,7 +357,7 @@ const NewCalendarPage = () => {
                 }
               }}
             />
-            
+
             <Box
               sx={{
                 width: 320,
@@ -356,21 +367,15 @@ const NewCalendarPage = () => {
               }}
             >
               {/* Calendar Selector */}
-              <Box sx={{ p:2, borderRadius: 2 }}>
-                <Stack 
-                direction="row" 
-                spacing={1}
-                alignItems="center" 
-                justifyContent="space-between"
-                sx={{ mb: 1}}
-                >
-                  <Typography 
-                  variant="h6"
-                  sx={{
-                    fontFamily: (t) => t.typography.h4.fontFamily,
-                    fontWeight: 400,
-                    fontSize: 22
-                  }}
+              <Box sx={{ p: 2, borderRadius: 2 }}>
+                <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontFamily: (t) => t.typography.h4.fontFamily,
+                      fontWeight: 400,
+                      fontSize: 22
+                    }}
                   >
                     Calendars:
                   </Typography>
@@ -398,9 +403,9 @@ const NewCalendarPage = () => {
                     More Filters
                   </Button>
                 </Stack>
-                
+
                 {allCalendarsLoading && <Typography variant="body2">Loading...</Typography>}
-                
+
                 {allCalendarsIsError && (
                   <Typography variant="body2" color="error">
                     {(allCalendarsError as Error | undefined)?.message ?? 'Failed to load calendars'}
