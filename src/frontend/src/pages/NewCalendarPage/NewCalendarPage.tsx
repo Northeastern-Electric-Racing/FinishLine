@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, Checkbox, FormControlLabel, FormGroup, Divider, ButtonBase } from '@mui/material';
+import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { DayOfWeek, Event } from 'shared';
+import { Calendar, DayOfWeek, Event } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import { useAllCalendars, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
@@ -23,7 +23,7 @@ import { convertDayToInt } from '../../utils/calendar.utils';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 
-type CalendarWithColor = Calendar & { 
+type CalendarWithColor = Calendar & {
   id?: string;
   calendarId?: string;
   color?: string;
@@ -80,12 +80,19 @@ const NewCalendarPage = () => {
     error: allCalendarsError
   } = useAllCalendars();
 
-  const [selectedEvent, setSelectedEvent] = useState<Event>();
-  const [selectedCalendarIds, setSelectedCalendarIds] = useState<string[]>([]);
+  const calendars = (allCalendars ?? []) as CalendarWithColor[];
 
+  const [selectedCalendarIds, setSelectedCalendarIds] = useState<string[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
+
+  const toggleCalendar = (calendarId: string) => {
+    setSelectedCalendarIds((prev) =>
+      prev.includes(calendarId) ? prev.filter((id) => id !== calendarId) : [...prev, calendarId]
+    );
+  };
 
   const updateAdditionalTeamIds = (changed: boolean) => {
     setShowTeamEvents(changed);
@@ -108,49 +115,20 @@ const NewCalendarPage = () => {
   };
 
   if (isLoading || !allEvents) return <LoadingIndicator />;
-
-  const {
-    data: allCalendars = [],
-    isLoading: calendarsLoading,
-    isError: calendarsIsError,
-    error: calendarsError
-  } = useAllCalendars();
-
-  const calendars = (allCalendars ?? []) as CalendarWithColor[];
-
-  const toggleCalendar = (calendarId: string) => {
-    setSelectedCalendarIds((prev) =>
-      prev.includes(calendarId)
-        ? prev.filter((id) => id !== calendarId)
-        : [...prev, calendarId]
-    );  
-  };
-
-  const monthStart = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), 1);
-  const nextMonthStart = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 1);
-
-  if (isLoading || !allEvents) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
   const getEventCalendarId = (event: any): string | undefined =>
-    event.calendarId ??
-    event.calendar?.id ??
-    event.calendar?.calendarId;
-  
+    event.calendarId ?? event.calendar?.id ?? event.calendar?.calendarId;
+
   const baseEvents = allEvents.filter((event) => {
-    const inRange = event.scheduledTimes.some((slot) => {
-      if (!slot.startTime) return false;
-      const t = new Date(slot.startTime).getTime();
-      return t >= monthStart.getTime() && t < nextMonthStart.getTime(); 
-    });
-
-    if (!inRange) return false;
-
-    if (selectedCalendarIds.length === 0) return true;
+    if (selectedCalendarIds.length === 0) {
+      return true;
+    }
 
     const calId = getEventCalendarId(event);
-
-    if (!calId) return true;
+    if (!calId) {
+      return false;
+    }
 
     return selectedCalendarIds.includes(calId);
   });
@@ -338,8 +316,6 @@ const NewCalendarPage = () => {
               </Grid>
             </Box>
           </Box>
-
-          {/* Calendars Selector */}
           <Box
             sx={{
               width: 320,
@@ -386,6 +362,62 @@ const NewCalendarPage = () => {
             >
               More Filters
             </Button>
+
+            {/* Calendar Selector */}
+            <Box sx={{ p:2, borderRadius: 2 }}>
+              <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+                <Typography variant="h6">Calendars:</Typography>
+              </Stack>
+              
+              {allCalendarsLoading && <Typography variant="body2">Loading...</Typography>}
+              
+              {allCalendarsIsError && (
+                <Typography variant="body2" color="error">
+                  {allCalendarsError?.message || 'Failed to load calendars'}
+                </Typography>
+              )}
+
+              {!allCalendarsLoading && !allCalendarsIsError && calendars.length > 0 && (
+                <FormGroup>
+                  {calendars.map((cal) => {
+                    const calendarId = cal.calendarId ?? cal.id!;
+                    const checked = selectedCalendarIds.includes(calendarId);
+                    const color = cal.color ?? cal.colorHexCode ?? '#999';
+                    return (
+                      <FormControlLabel
+                        key={calendarId}
+                        control={
+                          <Checkbox
+                            checked={checked}
+                            onChange={() => toggleCalendar(calendarId)}
+                            icon={<RadioButtonUncheckedIcon />}
+                            checkedIcon={<CheckCircleOutlineIcon />}
+                            sx={{
+                              p: 0.5,
+                              color,
+                              '&.Mui-checked': { color }
+                            }}
+                          />
+                        }
+                        label={
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontFamily: (t) => t.typography.h6.fontFamily,
+                              fontSize: 16,
+                              color,
+                              fontWeight: 500
+                            }}
+                          >
+                            {cal.name}
+                          </Typography>
+                        }
+                      />
+                    );
+                  })}
+                </FormGroup>
+              )}
+            </Box>
           </Box>
         </Box>
 
