@@ -69,6 +69,7 @@ CREATE TABLE "public"."Event" (
     "questionDocument" TEXT,
     "description" TEXT,
     "teamTypeId" TEXT,
+    "calendarEventIds" TEXT[],
 
     CONSTRAINT "Event_pkey" PRIMARY KEY ("eventId")
 );
@@ -474,7 +475,8 @@ INSERT INTO "public"."Event" (
     "questionDocument",
     "description",
     "status",
-    "teamTypeId"
+    "teamTypeId",
+    "calendarEventIds"
 )
 SELECT 
     dr."designReviewId",
@@ -496,7 +498,8 @@ SELECT
     dr."docTemplateLink", -- questionDocument uses docTemplateLink
     NULL, -- description (not in Design_Review)
     dr."status"::"text"::"public"."Event_Status",
-    dr."teamTypeId"
+    dr."teamTypeId",
+    CASE WHEN dr."calendarEventId" IS NOT NULL THEN ARRAY[dr."calendarEventId"] ELSE ARRAY[]::TEXT[] END
 FROM "public"."Design_Review" dr
 JOIN "public"."WBS_Element" w ON dr."wbsElementId" = w."wbsElementId";
 
