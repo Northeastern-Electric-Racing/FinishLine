@@ -35,7 +35,6 @@ import {
   isHead,
   MAX_FILE_SIZE,
   ReimbursementProductFormArgs,
-  ReimbursementReceiptCreateArgs,
   ReimbursementReceiptUploadArgs,
   Vendor,
   WbsNumber,
@@ -63,7 +62,7 @@ import NERAutocomplete from '../../../components/NERAutocomplete';
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
   allAccountCodes: AccountCode[];
-  receiptFiles: ReimbursementReceiptCreateArgs[];
+  receiptFiles: ReimbursementReceiptUploadArgs[];
   allWbsElements: {
     wbsNum: WbsNumber;
     wbsName: string;
@@ -242,53 +241,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     return <ErrorPage message={error.message} />;
   }
 
-  const ReceiptFileInput = () => (
-    <FormControl>
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-        {receiptFiles.map((receiptFile, index) => (
-          <li key={index}>
-            <Stack
-              key={index}
-              direction="row"
-              justifyContent="space-between"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: '#4c4c4c',
-                borderRadius: '20px',
-                padding: '2px 0px 2px 10px',
-                marginBottom: '3px'
-              }}
-            >
-              <Typography
-                sx={{
-                  marginBottom: '4px',
-                  fontSize: 'medium'
-                }}
-              >
-                {receiptFile.name}
-              </Typography>
-              <IconButton
-                onClick={() => receiptRemove(index)}
-                sx={{
-                  padding: '0px',
-                  marginLeft: '2px'
-                }}
-              >
-                <ClearIcon
-                  sx={{
-                    color: 'grey',
-                    transform: 'scale(0.7)'
-                  }}
-                />
-              </IconButton>
-            </Stack>
-          </li>
-        ))}
-      </ul>
-    </FormControl>
-  );
-
   const accountCodesToAutocomplete = (accountCode: AccountCode): { label: string; id: string } => {
     return {
       label: accountCodePipe(accountCode),
@@ -325,468 +277,545 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           <Typography variant="h5" sx={{ mb: 2 }}>
             Reimbursement Details
           </Typography>
-          <Grid container spacing={3}>
+          <Grid container spacing={3} alignItems="flex-start">
+            {/* Left Column */}
             <Grid item xs={12} md={6}>
-              <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
-                <FormLabel
-                  sx={{
-                    color: '#dd524c',
-                    textShadow: '1.5px 0 #dd524c',
-                    letterSpacing: '0.5px',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: '3.5px',
-                    textDecorationThickness: '0.6px',
-                    paddingBottom: '2px',
-                    fontSize: 'x-large',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  Purchased From*
-                </FormLabel>
-                <Controller
-                  name="vendorId"
-                  control={control}
-                  render={({ field: { onChange, value } }) => {
-                    const mappedVendors = allVendors.sort((a, b) => a.name.localeCompare(b.name)).map(vendorsToAutocomplete);
-                    return (
-                      <Box>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                          <Box sx={{ flex: 1 }}>
-                            <NERAutocomplete
-                              id="vendor-autocomplete"
-                              options={mappedVendors}
-                              value={mappedVendors.find((v) => v.id === value) || null}
-                              onChange={(_, newValue) => {
-                                if (newValue) {
-                                  onChange(newValue.id);
-                                }
-                              }}
-                              size="small"
-                              placeholder="Select Existing Vendor"
-                              errorMessage={errors.vendorId}
-                            />
-                          </Box>
-                          <Typography fontWeight="bold" sx={{ whiteSpace: 'nowrap', lineHeight: 1 }}>
-                            OR
-                          </Typography>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() => setShowCreateVendorField((prev) => !prev)}
-                            sx={{ whiteSpace: 'nowrap' }}
-                          >
-                            {showCreateVendorField ? 'Cancel' : 'Create Vendor'}
-                          </Button>
-                        </Box>
-                        {showCreateVendorField && (
-                          <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                            <TextField
-                              value={newVendorName}
-                              onChange={(e) => setNewVendorName(e.target.value)}
-                              placeholder="New Vendor Name"
+              <Stack spacing={3}>
+                {/* Vendor */}
+                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                  <FormLabel
+                    sx={{
+                      color: '#dd524c',
+                      textShadow: '1.5px 0 #dd524c',
+                      letterSpacing: '0.5px',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3.5px',
+                      textDecorationThickness: '0.6px',
+                      paddingBottom: '2px',
+                      fontSize: 'x-large',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Purchased From*
+                  </FormLabel>
+                  <Controller
+                    name="vendorId"
+                    control={control}
+                    render={({ field: { onChange, value } }) => {
+                      const mappedVendors = allVendors
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map(vendorsToAutocomplete);
+                      return (
+                        <Box>
+                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Box sx={{ flex: 1 }}>
+                              <NERAutocomplete
+                                id="vendor-autocomplete"
+                                options={mappedVendors}
+                                value={mappedVendors.find((v) => v.id === value) || null}
+                                onChange={(_, newValue) => {
+                                  if (newValue) {
+                                    onChange(newValue.id);
+                                  }
+                                }}
+                                size="small"
+                                placeholder="Select Existing Vendor"
+                                errorMessage={errors.vendorId}
+                              />
+                            </Box>
+                            <Typography fontWeight="bold" sx={{ whiteSpace: 'nowrap', lineHeight: 1 }}>
+                              OR
+                            </Typography>
+                            <Button
                               variant="outlined"
                               size="small"
-                              fullWidth
-                            />
-                            <Button
-                              variant="contained"
-                              size="small"
-                              disabled={!newVendorName.trim()}
-                              onClick={async () => {
-                                try {
-                                  const created = await createVendor({ name: newVendorName.trim() });
-                                  setValue('vendorId', created.vendorId);
-                                  onChange(created.vendorId);
-                                  setNewVendorName('');
-                                  setShowCreateVendorField(false);
-                                  toast.success(`Vendor '${created.name}' created.`);
-                                } catch (err: any) {
-                                  toast.error(err.message || 'Failed to create vendor');
-                                }
-                              }}
+                              onClick={() => setShowCreateVendorField((prev) => !prev)}
                               sx={{ whiteSpace: 'nowrap' }}
                             >
-                              Save
+                              {showCreateVendorField ? 'Cancel' : 'Create Vendor'}
                             </Button>
                           </Box>
-                        )}
-                      </Box>
-                    );
-                  }}
-                />
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
-                <FormLabel
-                  sx={{
-                    color: '#dd524c',
-                    textShadow: '1.5px 0 #dd524c',
-                    letterSpacing: '0.5px',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: '3.5px',
-                    textDecorationThickness: '0.6px',
-                    paddingBottom: '2px',
-                    fontSize: 'x-large',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  Account Code*
-                </FormLabel>
-                <Controller
-                  name="accountCodeId"
-                  control={control}
-                  render={({ field: { onChange, value } }) => {
-                    const mappedAccountCodes = allAccountCodes
-                      .filter((accountCode) => accountCode.allowed)
-                      .map(accountCodesToAutocomplete);
-                    return (
+                          {showCreateVendorField && (
+                            <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                              <TextField
+                                value={newVendorName}
+                                onChange={(e) => setNewVendorName(e.target.value)}
+                                placeholder="New Vendor Name"
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                              />
+                              <Button
+                                variant="contained"
+                                size="small"
+                                disabled={!newVendorName.trim()}
+                                onClick={async () => {
+                                  try {
+                                    const created = await createVendor({ name: newVendorName.trim() });
+                                    setValue('vendorId', created.vendorId);
+                                    onChange(created.vendorId);
+                                    setNewVendorName('');
+                                    setShowCreateVendorField(false);
+                                    toast.success(`Vendor '${created.name}' created.`);
+                                  } catch (err: any) {
+                                    toast.error(err.message || 'Failed to create vendor');
+                                  }
+                                }}
+                                sx={{ whiteSpace: 'nowrap' }}
+                              >
+                                Save
+                              </Button>
+                            </Box>
+                          )}
+                        </Box>
+                      );
+                    }}
+                  />
+                </FormControl>
+
+                {/* Date of Expense */}
+                {(isHead(user.role) || (isEditing && isLeadershipApproved)) && (
+                  <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                    <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
+                      <FormLabel
+                        sx={{
+                          color: '#dd524c',
+                          textShadow: '1.5px 0 #dd524c',
+                          letterSpacing: '0.5px',
+                          textDecoration: 'underline',
+                          textUnderlineOffset: '3.5px',
+                          textDecorationThickness: '0.6px',
+                          paddingBottom: '2px',
+                          fontSize: 'x-large',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Date of Expense{isLeadershipApproved ? '*' : ''}
+                      </FormLabel>
+                      <Tooltip
+                        title="Reimbursements with Different Purchase Dates Should be on Different Requests. Leave Empty for Not Yet Purchased Items"
+                        placement="right"
+                      >
+                        <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px' }} />
+                      </Tooltip>
+                    </Box>
+                    <Controller
+                      name="dateOfExpense"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <DatePicker
+                          value={value}
+                          open={datePickerOpen}
+                          onClose={() => setDatePickerOpen(false)}
+                          onOpen={() => setDatePickerOpen(true)}
+                          onChange={(newValue) => {
+                            onChange(newValue ?? new Date());
+                          }}
+                          slotProps={{
+                            textField: {
+                              error: !!errors.dateOfExpense,
+                              helperText: errors.dateOfExpense?.message,
+                              variant: 'outlined',
+                              fullWidth: true,
+                              size: 'small',
+                              InputProps: {
+                                onClick: (e) => {
+                                  const target = e.target as HTMLElement;
+                                  if (target.closest('button')) {
+                                    setDatePickerOpen(true);
+                                  }
+                                }
+                              }
+                            }
+                          }}
+                        />
+                      )}
+                    />
+                  </FormControl>
+                )}
+
+                {/* Refund Sources */}
+                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                  <FormLabel
+                    sx={{
+                      color: '#dd524c',
+                      textShadow: '1.5px 0 #dd524c',
+                      letterSpacing: '0.5px',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3.5px',
+                      textDecorationThickness: '0.6px',
+                      fontSize: 'x-large',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Select Budget/Cash*
+                  </FormLabel>
+                  <Controller
+                    name="indexCodeId"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
                       <Select
-                        value={value}
+                        IconComponent={KeyboardArrowDownIcon}
                         onChange={(e) => {
                           onChange(e.target.value);
                         }}
+                        value={value}
+                        disabled={!selectedAccountCode}
+                        error={!!errors.indexCodeId}
                         displayEmpty
                         variant="outlined"
                         fullWidth
                         size="small"
-                        IconComponent={KeyboardArrowDownIcon}
                         renderValue={(selected) => {
                           if (!selected) {
-                            return <Typography style={{ color: 'gray' }}>Select Account Code</Typography>;
+                            return (
+                              <Typography style={{ color: 'gray' }}>
+                                {hasConfirmedFinance ? 'Select First Refund Source' : 'Select Refund Source'}
+                              </Typography>
+                            );
                           }
-                          return mappedAccountCodes.find((accountCode) => accountCode.id === selected)?.label;
-                        }}
-                      >
-                        {mappedAccountCodes.map((accountCode) => (
-                          <MenuItem key={accountCode.id} value={accountCode.id}>
-                            {accountCode.label}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    );
-                  }}
-                />
-                <FormHelperText error>{errors.accountCodeId?.message}</FormHelperText>
-              </FormControl>
-            </Grid>
-            {(isHead(user.role) || (isEditing && isLeadershipApproved)) && (
-              <Grid item xs={12} md={6}>
-                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
-                  <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
-                    <FormLabel
-                      sx={{
-                        color: '#dd524c',
-                        textShadow: '1.5px 0 #dd524c',
-                        letterSpacing: '0.5px',
-                        textDecoration: 'underline',
-                        textUnderlineOffset: '3.5px',
-                        textDecorationThickness: '0.6px',
-                        paddingBottom: '2px',
-                        fontSize: 'x-large',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      Date of Expense{isLeadershipApproved ? '*' : ''}
-                    </FormLabel>
-                    <Tooltip
-                      title="Reimbursements with Different Purchase Dates Should be on Different Requests. Leave Empty for Not Yet Purchased Items"
-                      placement="right"
-                    >
-                      <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px' }} />
-                    </Tooltip>
-                  </Box>
-                  <Controller
-                    name="dateOfExpense"
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <DatePicker
-                        value={value}
-                        open={datePickerOpen}
-                        onClose={() => setDatePickerOpen(false)}
-                        onOpen={() => setDatePickerOpen(true)}
-                        onChange={(newValue) => {
-                          onChange(newValue ?? new Date());
-                        }}
-                        slotProps={{
-                          textField: {
-                            error: !!errors.dateOfExpense,
-                            helperText: errors.dateOfExpense?.message,
-                            variant: 'outlined',
-                            fullWidth: true,
-                            size: 'small',
-                            InputProps: {
-                              onClick: (e) => {
-                                const target = e.target as HTMLElement;
-                                if (target.closest('button')) {
-                                  setDatePickerOpen(true);
-                                }
-                              }
-                            }
-                          }
-                        }}
-                      />
-                    )}
-                  />
-                </FormControl>
-              </Grid>
-            )}
-          </Grid>
-        </Box>
-        <Box>
-          <Typography variant="h5" sx={{ mb: 2 }}>
-            Receipts
-          </Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <FormControl sx={{ display: 'flex', borderRadius: '25px', width: '100%' }}>
-                <FormLabel
-                  sx={{
-                    color: '#dd524c',
-                    textShadow: '1.5px 0 #dd524c',
-                    letterSpacing: '0.5px',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: '3.5px',
-                    textDecorationThickness: '0.6px',
-                    paddingBottom: '2px',
-                    fontSize: 'x-large',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  Upload Receipts{isLeadershipApproved ? '*' : ''}
-                </FormLabel>
-                <Box>
-                  <ReceiptFileInput />
-                  <NERButton
-                    variant="contained"
-                    color="success"
-                    component="label"
-                    sx={{
-                      width: 'fit-content',
-                      textTransform: 'none',
-                      color: 'white',
-                      marginLeft: '10px'
-                    }}
-                  >
-                    Upload
-                    <input
-                      onChange={(e) => {
-                        if (e.target.files) {
-                          [...e.target.files].forEach((file) => {
-                            if (file.size >= MAX_FILE_SIZE) {
-                              toast.error(
-                                `Error uploading ${file.name}; file must be less than ${MAX_FILE_SIZE / 1024 / 1024} MB`,
-                                5000
-                              );
-                              document.getElementById('receipt-image')!.innerHTML = '';
-                            } else {
-                              receiptPrepend({
-                                file,
-                                name: file.name,
-                                googleFileId: ''
-                              });
-                            }
-                          });
-                        }
-                      }}
-                      type="file"
-                      id="receipt-image"
-                      accept="image/png, image/jpeg, application/pdf"
-                      name="receiptFiles"
-                      multiple
-                      hidden
-                    />
-                  </NERButton>
-                </Box>
-                <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
-              </FormControl>
-            </Grid>
-          </Grid>
-        </Box>
-        <Box>
-          <Typography variant="h5" sx={{ mb: 2 }}>
-            Refund Sources
-          </Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
-                <FormLabel
-                  sx={{
-                    color: '#dd524c',
-                    textShadow: '1.5px 0 #dd524c',
-                    letterSpacing: '0.5px',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: '3.5px',
-                    textDecorationThickness: '0.6px',
-                    fontSize: 'x-large',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  Select Budget/Cash*
-                </FormLabel>
-                <Controller
-                  name="indexCodeId"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <Select
-                      IconComponent={KeyboardArrowDownIcon}
-                      onChange={(e) => {
-                        onChange(e.target.value);
-                      }}
-                      value={value}
-                      disabled={!selectedAccountCode}
-                      error={!!errors.indexCodeId}
-                      displayEmpty
-                      variant="outlined"
-                      fullWidth
-                      size="small"
-                      renderValue={(selected) => {
-                        if (!selected) {
-                          return (
+                          const selectedIndexCode = indexCodes.find((code) => code.indexCodeId === selected);
+                          return selectedIndexCode ? (
+                            <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
+                          ) : (
                             <Typography style={{ color: 'gray' }}>
                               {hasConfirmedFinance ? 'Select First Refund Source' : 'Select Refund Source'}
                             </Typography>
                           );
-                        }
-                        const selectedIndexCode = indexCodes.find((code) => code.indexCodeId === selected);
-                        return selectedIndexCode ? (
-                          <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
-                        ) : (
-                          <Typography style={{ color: 'gray' }}>
-                            {hasConfirmedFinance ? 'Select First Refund Source' : 'Select Refund Source'}
+                        }}
+                      >
+                        {indexCodes.map((code) => (
+                          <MenuItem key={code.indexCodeId} value={code.indexCodeId}>
+                            {codeAndRefundSourceName(code)}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
+                  />
+                  <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
+
+                  {/* Warning Text / Confirmation Modal Trigger */}
+                  {!hasConfirmedFinance && (
+                    <Box sx={{ my: 1 }}>
+                      {showAddRefundSourceModal ? (
+                        <Box
+                          sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%', gap: 1 }}
+                        >
+                          <Typography
+                            sx={{
+                              color: '#dd524c',
+                              textShadow: '0.5px 0 #dd524c',
+                              letterSpacing: '0.5px'
+                            }}
+                          >
+                            Have you confirmed using more than one refund source with Finance?
                           </Typography>
-                        );
-                      }}
-                    >
-                      {indexCodes.map((code) => (
-                        <MenuItem key={code.indexCodeId} value={code.indexCodeId}>
-                          {codeAndRefundSourceName(code)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
-                />
-                <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
-                {!hasConfirmedFinance && (
-                  <Button
-                    sx={{
-                      alignSelf: 'flex-start',
-                      width: 'auto',
-                      marginTop: '5px'
-                    }}
-                    startIcon={<AddCircleOutline />}
-                    onClick={() => setShowAddRefundSourceModal(true)}
-                  >
-                    Add Refund Source
-                  </Button>
-                )}
-                {hasConfirmedFinance && (
-                  <>
-                    <Controller
-                      name="secondaryAccount"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          {...field}
-                          IconComponent={KeyboardArrowDownIcon}
-                          value={field.value ?? ''}
-                          disabled={!selectedAccountCode || !firstRefundSourceId}
-                          error={!!errors.secondaryAccount}
-                          displayEmpty
-                          variant="outlined"
-                          fullWidth
-                          size="small"
-                          sx={{ marginTop: '10px' }}
-                          renderValue={(selected) => {
-                            if (!selected) {
-                              return <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>;
-                            }
-                            const selectedIndexCode = indexCodes.find((code) => code.indexCodeId === selected);
-                            return selectedIndexCode ? (
-                              <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
-                            ) : (
-                              <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>
-                            );
+                          <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Button
+                              variant="contained"
+                              sx={{
+                                backgroundColor: '#dd524c',
+                                color: 'white',
+                                borderRadius: '10px',
+                                padding: '0px 10px 0px 10px'
+                              }}
+                              onClick={handleConfirmAddRefundSource}
+                            >
+                              Yes
+                            </Button>
+                            <Button
+                              variant="contained"
+                              sx={{
+                                backgroundColor: '#dd524c',
+                                color: 'white',
+                                borderRadius: '10px',
+                                padding: '5px 10px 5px 10px'
+                              }}
+                              onClick={() => setShowAddRefundSourceModal(false)}
+                            >
+                              No
+                            </Button>
+                          </Box>
+                        </Box>
+                      ) : (
+                        <Typography
+                          sx={{
+                            color: '#dd524c',
+                            textShadow: '0.5px 0 #dd524c',
+                            letterSpacing: '0.5px',
+                            width: '100%'
                           }}
                         >
-                          {remainingRefundSources.map((refundSource) => (
-                            <MenuItem key={refundSource.indexCodeId} value={refundSource.indexCodeId}>
-                              {codeAndRefundSourceName(refundSource)}
-                            </MenuItem>
-                          ))}
-                        </Select>
+                          Please confirm using multiple refund sources with Finance before submitting!
+                        </Typography>
                       )}
-                    />
-                    <FormHelperText error>{errors.secondaryAccount?.message}</FormHelperText>
+                    </Box>
+                  )}
+
+                  {!hasConfirmedFinance && (
                     <Button
                       sx={{
                         alignSelf: 'flex-start',
                         width: 'auto',
                         marginTop: '5px'
                       }}
-                      startIcon={<RemoveCircleOutline />}
-                      onClick={handleRemoveSecondRefundSource}
+                      startIcon={<AddCircleOutline />}
+                      onClick={() => setShowAddRefundSourceModal(true)}
                     >
-                      Remove Refund Source
+                      Add Refund Source
                     </Button>
-                  </>
-                )}
-              </FormControl>
+                  )}
+                  {hasConfirmedFinance && (
+                    <>
+                      <Controller
+                        name="secondaryAccount"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            {...field}
+                            IconComponent={KeyboardArrowDownIcon}
+                            value={field.value ?? ''}
+                            disabled={!selectedAccountCode || !firstRefundSourceId}
+                            error={!!errors.secondaryAccount}
+                            displayEmpty
+                            variant="outlined"
+                            fullWidth
+                            size="small"
+                            sx={{ marginTop: '10px' }}
+                            renderValue={(selected) => {
+                              if (!selected) {
+                                return <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>;
+                              }
+                              const selectedIndexCode = indexCodes.find((code) => code.indexCodeId === selected);
+                              return selectedIndexCode ? (
+                                <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
+                              ) : (
+                                <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>
+                              );
+                            }}
+                          >
+                            {remainingRefundSources.map((refundSource) => (
+                              <MenuItem key={refundSource.indexCodeId} value={refundSource.indexCodeId}>
+                                {codeAndRefundSourceName(refundSource)}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        )}
+                      />
+                      <FormHelperText error>{errors.secondaryAccount?.message}</FormHelperText>
+                      <Button
+                        sx={{
+                          alignSelf: 'flex-start',
+                          width: 'auto',
+                          marginTop: '5px'
+                        }}
+                        startIcon={<RemoveCircleOutline />}
+                        onClick={handleRemoveSecondRefundSource}
+                      >
+                        Remove Refund Source
+                      </Button>
+                    </>
+                  )}
+                </FormControl>
+              </Stack>
             </Grid>
+
+            {/* Right Column */}
             <Grid item xs={12} md={6}>
-              {showAddRefundSourceModal ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 1 }}>
-                  <Typography
+              <Stack spacing={3}>
+                {/* Account Code */}
+                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                  <FormLabel
                     sx={{
                       color: '#dd524c',
-                      textShadow: '0.5px 0 #dd524c',
+                      textShadow: '1.5px 0 #dd524c',
                       letterSpacing: '0.5px',
-                      textAlign: 'center'
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3.5px',
+                      textDecorationThickness: '0.6px',
+                      paddingBottom: '2px',
+                      fontSize: 'x-large',
+                      fontWeight: 'bold'
                     }}
                   >
-                    Have you confirmed using more than one refund source with Finance?
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button
+                    Account Code*
+                  </FormLabel>
+                  <Controller
+                    name="accountCodeId"
+                    control={control}
+                    render={({ field: { onChange, value } }) => {
+                      const mappedAccountCodes = allAccountCodes
+                        .filter((accountCode) => accountCode.allowed)
+                        .map(accountCodesToAutocomplete);
+                      return (
+                        <Select
+                          value={value}
+                          onChange={(e) => {
+                            onChange(e.target.value);
+                          }}
+                          displayEmpty
+                          variant="outlined"
+                          fullWidth
+                          size="small"
+                          IconComponent={KeyboardArrowDownIcon}
+                          renderValue={(selected) => {
+                            if (!selected) {
+                              return <Typography style={{ color: 'gray' }}>Select Account Code</Typography>;
+                            }
+                            return mappedAccountCodes.find((accountCode) => accountCode.id === selected)?.label;
+                          }}
+                        >
+                          {mappedAccountCodes.map((accountCode) => (
+                            <MenuItem key={accountCode.id} value={accountCode.id}>
+                              {accountCode.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      );
+                    }}
+                  />
+                  <FormHelperText error>{errors.accountCodeId?.message}</FormHelperText>
+                </FormControl>
+
+                {/* Upload Receipts */}
+                <FormControl sx={{ display: 'flex', borderRadius: '25px', width: '100%' }}>
+                  <FormLabel
+                    sx={{
+                      color: '#dd524c',
+                      textShadow: '1.5px 0 #dd524c',
+                      letterSpacing: '0.5px',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3.5px',
+                      textDecorationThickness: '0.6px',
+                      paddingBottom: '2px',
+                      fontSize: 'x-large',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Upload Receipts{isLeadershipApproved ? '*' : ''}
+                  </FormLabel>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                    <NERButton
                       variant="contained"
+                      color="success"
+                      component="label"
                       sx={{
-                        backgroundColor: '#dd524c',
-                        color: 'white',
-                        borderRadius: '10px',
-                        padding: '0px 10px 0px 10px'
+                        width: 'fit-content',
+                        textTransform: 'none',
+                        color: 'white'
                       }}
-                      onClick={handleConfirmAddRefundSource}
                     >
-                      Yes
-                    </Button>
-                    <Button
-                      variant="contained"
-                      sx={{
-                        backgroundColor: '#dd524c',
-                        color: 'white',
-                        borderRadius: '10px',
-                        padding: '5px 10px 5px 10px'
-                      }}
-                      onClick={() => setShowAddRefundSourceModal(false)}
-                    >
-                      No
-                    </Button>
+                      Upload
+                      <input
+                        onChange={(e) => {
+                          if (e.target.files) {
+                            [...e.target.files].forEach((file) => {
+                              if (file.size >= MAX_FILE_SIZE) {
+                                toast.error(
+                                  `Error uploading ${file.name}; file must be less than ${MAX_FILE_SIZE / 1024 / 1024} MB`,
+                                  5000
+                                );
+                                document.getElementById('receipt-image')!.innerHTML = '';
+                              } else {
+                                receiptPrepend({
+                                  file,
+                                  name: file.name,
+                                  googleFileId: ''
+                                });
+                              }
+                            });
+                          }
+                        }}
+                        type="file"
+                        id="receipt-image"
+                        accept="image/png, image/jpeg, application/pdf"
+                        name="receiptFiles"
+                        multiple
+                        hidden
+                      />
+                    </NERButton>
                   </Box>
-                </Box>
-              ) : (
-                <Typography
-                  sx={{
-                    color: '#dd524c',
-                    textShadow: '0.5px 0 #dd524c',
-                    letterSpacing: '0.5px',
-                    textAlign: 'center',
-                    paddingBottom: { md: '10px' },
-                    width: '100%'
-                  }}
-                >
-                  {hasConfirmedFinance ? '' : 'Please confirm using multiple refund sources with Finance before submitting!'}
-                </Typography>
-              )}
+                  <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
+
+                  {/* Receipt Previews */}
+                  <Box sx={{ mt: 2 }}>
+                    <Grid container spacing={2}>
+                      {receiptFiles.map((receiptFile, index) => {
+                        let previewUrl = '';
+                        if (receiptFile.file) {
+                          previewUrl = URL.createObjectURL(receiptFile.file);
+                        }
+
+                        return (
+                          <Grid item xs={6} key={index}>
+                            <Stack
+                              direction="column"
+                              spacing={1}
+                              sx={{
+                                background: '#4c4c4c',
+                                borderRadius: '10px',
+                                padding: '10px',
+                                height: '100%'
+                              }}
+                            >
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography
+                                  sx={{
+                                    fontSize: 'small',
+                                    wordBreak: 'break-all',
+                                    lineHeight: 1.2
+                                  }}
+                                >
+                                  {receiptFile.name}
+                                </Typography>
+                                <IconButton
+                                  onClick={() => receiptRemove(index)}
+                                  size="small"
+                                  sx={{
+                                    padding: '2px'
+                                  }}
+                                >
+                                  <ClearIcon
+                                    sx={{
+                                      color: 'grey',
+                                      fontSize: 'small'
+                                    }}
+                                  />
+                                </IconButton>
+                              </Box>
+                              {previewUrl &&
+                                (receiptFile.name.toLowerCase().endsWith('.png') ||
+                                  receiptFile.name.toLowerCase().endsWith('.jpg') ||
+                                  receiptFile.name.toLowerCase().endsWith('.jpeg')) && (
+                                  <Box
+                                    component="img"
+                                    src={previewUrl}
+                                    alt={receiptFile.name}
+                                    sx={{
+                                      maxWidth: '100%',
+                                      maxHeight: '150px',
+                                      width: 'auto',
+                                      height: 'auto',
+                                      objectFit: 'contain',
+                                      borderRadius: '4px',
+                                      alignSelf: 'center',
+                                      bgcolor: 'rgba(0,0,0,0.2)'
+                                    }}
+                                  />
+                                )}
+                              {!previewUrl && !receiptFile.googleFileId && (
+                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                  Preview not available
+                                </Typography>
+                              )}
+                            </Stack>
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  </Box>
+                </FormControl>
+              </Stack>
             </Grid>
           </Grid>
         </Box>
