@@ -79,7 +79,6 @@ CREATE TABLE "public"."Event" (
     "approvalRequiredFromUserId" TEXT,
     "location" TEXT,
     "zoomLink" TEXT,
-    "documentIds" TEXT[],
     "questionDocumentLink" TEXT,
     "description" TEXT,
     "teamTypeId" TEXT,
@@ -499,7 +498,6 @@ INSERT INTO "public"."Event" (
     "approvalRequiredFromUserId",
     "location",
     "zoomLink",
-    "documentIds",
     "questionDocumentLink",
     "description",
     "status",
@@ -521,7 +519,6 @@ SELECT
     NULL, -- approvalRequiredFromUserId (not in Design_Review)
     dr."location",
     dr."zoomLink",
-    CASE WHEN dr."docTemplateLink" IS NOT NULL THEN ARRAY[dr."docTemplateLink"] ELSE ARRAY[]::TEXT[] END,
     dr."docTemplateLink", -- questionDocument uses docTemplateLink
     NULL, -- description (not in Design_Review)
     dr."status"::"text"::"public"."Event_Status",
