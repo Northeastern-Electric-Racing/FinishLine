@@ -375,6 +375,7 @@ export const useDeleteEvent = (id: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(EVENT_KEY);
+        queryClient.invalidateQueries(['filter-events']);
       }
     }
   );
@@ -405,6 +406,7 @@ export const useCreateEvent = () => {
     },
     {
       onSuccess: () => {
+        qc.invalidateQueries(['filter-events']);
         qc.invalidateQueries(EVENT_KEY);
       }
     }
@@ -421,6 +423,7 @@ export const useEditEvent = (eventId: string) => {
     },
     {
       onSuccess: () => {
+        queryClient.invalidateQueries(['filter-events']);
         queryClient.invalidateQueries(EVENT_KEY);
       }
     }
