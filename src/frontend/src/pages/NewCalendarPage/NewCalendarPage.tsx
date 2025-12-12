@@ -346,77 +346,112 @@ const NewCalendarPage = () => {
                 }
               }}
             />
-            <Button
-              variant="outlined"
-              id="filter-events-button"
-              onClick={() => setOpenFilterModal(true)}
+            
+            <Box
               sx={{
-                color: 'white',
-                borderColor: 'white',
-                backgroundColor: 'transparent',
-                '&:hover': {
-                  borderColor: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                }
+                width: 320,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2
               }}
             >
-              More Filters
-            </Button>
+              {/* Calendar Selector */}
+              <Box sx={{ p:2, borderRadius: 2 }}>
+                <Stack 
+                direction="row" 
+                spacing={1}
+                alignItems="center" 
+                justifyContent="space-between"
+                sx={{ mb: 1}}
+                >
+                  <Typography 
+                  variant="h6"
+                  sx={{
+                    fontFamily: (t) => t.typography.h4.fontFamily,
+                    fontWeight: 400,
+                    fontSize: 22
+                  }}
+                  >
+                    Calendars:
+                  </Typography>
 
-            {/* Calendar Selector */}
-            <Box sx={{ p:2, borderRadius: 2 }}>
-              <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-                <Typography variant="h6">Calendars:</Typography>
-              </Stack>
-              
-              {allCalendarsLoading && <Typography variant="body2">Loading...</Typography>}
-              
-              {allCalendarsIsError && (
-                <Typography variant="body2" color="error">
-                  {allCalendarsError?.message || 'Failed to load calendars'}
-                </Typography>
-              )}
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    id="filter-events-button"
+                    onClick={() => setOpenFilterModal(true)}
+                    sx={{
+                      px: 1,
+                      py: 0,
+                      color: 'white',
+                      borderColor: 'white',
+                      backgroundColor: 'transparent',
+                      textTransform: 'none',
+                      fontSize: 14,
+                      fontFamily: (t) => t.typography.h4.fontFamily,
+                      '&:hover': {
+                        borderColor: 'white',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
+                  >
+                    More Filters
+                  </Button>
+                </Stack>
+                
+                {allCalendarsLoading && <Typography variant="body2">Loading...</Typography>}
+                
+                {allCalendarsIsError && (
+                  <Typography variant="body2" color="error">
+                    {(allCalendarsError as Error | undefined)?.message ?? 'Failed to load calendars'}
+                  </Typography>
+                )}
 
-              {!allCalendarsLoading && !allCalendarsIsError && calendars.length > 0 && (
-                <FormGroup>
-                  {calendars.map((cal) => {
-                    const calendarId = cal.calendarId ?? cal.id!;
-                    const checked = selectedCalendarIds.includes(calendarId);
-                    const color = cal.color ?? cal.colorHexCode ?? '#999';
-                    return (
-                      <FormControlLabel
-                        key={calendarId}
-                        control={
-                          <Checkbox
-                            checked={checked}
-                            onChange={() => toggleCalendar(calendarId)}
-                            icon={<RadioButtonUncheckedIcon />}
-                            checkedIcon={<CheckCircleOutlineIcon />}
-                            sx={{
-                              p: 0.5,
-                              color,
-                              '&.Mui-checked': { color }
-                            }}
-                          />
-                        }
-                        label={
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              fontFamily: (t) => t.typography.h6.fontFamily,
-                              fontSize: 16,
-                              color,
-                              fontWeight: 500
-                            }}
-                          >
-                            {cal.name}
-                          </Typography>
-                        }
-                      />
-                    );
-                  })}
-                </FormGroup>
-              )}
+                {!allCalendarsLoading && !allCalendarsIsError && calendars.length > 0 && (
+                  <FormGroup>
+                    {calendars.map((cal) => {
+                      const calendarId = cal.calendarId ?? cal.id!;
+                      const checked = selectedCalendarIds.includes(calendarId);
+                      const color = cal.color ?? cal.colorHexCode ?? '#999';
+                      return (
+                        <FormControlLabel
+                          key={calendarId}
+                          sx={{
+                            ml: -1,
+                            mb: 1.5
+                          }}
+                          control={
+                            <Checkbox
+                              checked={checked}
+                              onChange={() => toggleCalendar(calendarId)}
+                              icon={<RadioButtonUncheckedIcon />}
+                              checkedIcon={<CheckCircleOutlineIcon />}
+                              sx={{
+                                p: 0.5,
+                                color,
+                                '&.Mui-checked': { color }
+                              }}
+                            />
+                          }
+                          label={
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontFamily: (t) => t.typography.h6.fontFamily,
+                                fontSize: 16,
+                                color,
+                                fontWeight: 500
+                              }}
+                            >
+                              {cal.name}
+                            </Typography>
+                          }
+                        />
+                      );
+                    })}
+                  </FormGroup>
+                )}
+              </Box>
             </Box>
           </Box>
         </Box>
