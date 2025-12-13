@@ -23,7 +23,6 @@ export const getStatusIcon = (status: string, isLarge?: boolean) => {
   ]);
   return statusIcons.get(status);
 };
-
 interface EventClickContentProps {
   event: Event;
   eventTypes: EventType[];

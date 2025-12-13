@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { Calendar, DayOfWeek, Event, EventStatus, EventType, TeamType } from 'shared';
-
+import { Calendar, DayOfWeek, Event, EventType, TeamType } from 'shared';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import TerminalIcon from '@mui/icons-material/Terminal';
-
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupIcon from '@mui/icons-material/Group';
@@ -20,7 +18,7 @@ import ArticleIcon from '@mui/icons-material/Article';
 import HelpIcon from '@mui/icons-material/Help';
 import GroupsIcon from '@mui/icons-material/Groups';
 
-import DRCSummaryModal from '../CalendarPage/EventSummaryModal';
+import { EventClickPopup } from './EventClickPopup';
 import EventPartialInfoView from './EventPartialInfoView';
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
 
@@ -58,7 +56,7 @@ interface CalendarDayCardProps {
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   cardDate,
   events,
-  teamTypes,
+  teamTypes: _teamTypes,
   eventTypes = [],
   calendars = [],
   dayOfWeek = DayOfWeek.MONDAY
@@ -69,6 +67,26 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const today = new Date().toDateString();
   const isCurrentDay = cardDate.toDateString() === today;
   const isFutureDay = cardDate >= new Date();
+
+  const [clickedEvent, setClickedEvent] = useState<Event | null>(null);
+  const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(null);
+
+  const handleOpenClickPopup = (event: Event) => {
+    setClickedEvent(event);
+    if (typeof window !== 'undefined') {
+      setAnchorPosition({
+        top: window.innerHeight / 2,
+        left: window.innerWidth / 2
+      });
+    } else {
+      setAnchorPosition({ top: 0, left: 0 });
+    }
+  };
+
+  const handleCloseClickPopup = () => {
+    setClickedEvent(null);
+    setAnchorPosition(null);
+  };
 
   const DayCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
@@ -261,9 +279,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   };
 
   const EventCard = ({ event }: { event: Event }) => {
-    const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
-    const [markedStatus, setMarkedStatus] = useState(event.status);
-
     const specificEventType = eventTypes.find((eventType) => eventType.eventTypeId === event.eventTypeId);
     const specificCalendar = calendars.find((calendar) =>
       calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)
@@ -272,124 +287,33 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     const bgColor = specificCalendar?.color ?? 'gray';
 
     return (
-      <>
-        <DRCSummaryModal
-          open={isSummaryModalOpen}
-          onHide={() => setIsSummaryModalOpen(false)}
-          event={event}
-          teamTypes={teamTypes}
-          markedStatus={markedStatus}
-          setMarkedStatus={setMarkedStatus}
-        />
-
-        <Box
-          marginLeft={0.5}
-          marginBottom={0.5}
-          marginRight={0.5}
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsSummaryModalOpen(true);
-          }}
+      <Box
+        marginLeft={0.5}
+        marginBottom={0.5}
+        marginRight={0.5}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleOpenClickPopup(event);
+        }}
+        sx={{
+          position: 'relative',
+          zIndex: 2,
+          cursor: 'pointer'
+        }}
+      >
+        <Card
           sx={{
-            position: 'relative',
-            zIndex: 2,
-            cursor: 'pointer'
+            backgroundColor: bgColor,
+            borderRadius: 1,
+            width: '100%',
+            minHeight: 30,
+            maxHeight: 30
           }}
         >
-          <Card
-            sx={{
-              backgroundColor: bgColor,
-              borderRadius: 1,
-              width: '100%',
-              minHeight: 30,
-              maxHeight: 30
-            }}
-          >
-            <Tooltip
-              placement="right"
-              arrow
-              title={<EventPopupInfo event={event} color={bgColor} />}
-              slotProps={{
-                popper: { sx: { zIndex: 1200 } },
-                tooltip: {
-                  sx: {
-                    maxWidth: 'none',
-                    borderRadius: 4,
-                    p: 2,
-                    cursor: 'pointer',
-                    bgcolor: theme.palette.grey[900],
-                    boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
-                  }
-                },
-                arrow: {
-                  sx: {
-                    color: theme.palette.grey[900],
-                    fontSize: 16
-                  }
-                }
-              }}
-            >
-              <Typography
-                marginX={0.5}
-                marginY={0.6}
-                lineHeight="120%"
-                fontSize={14}
-                fontWeight="bold"
-                noWrap
-                align="left"
-                sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-              >
-                {getTeamTypeIcon(event.teamType?.name ?? '')} {event.title}
-              </Typography>
-            </Tooltip>
-          </Card>
-        </Box>
-      </>
-    );
-  };
-
-  const ExtraEventsCard = ({ extraEvents }: { extraEvents: Event[] }) => {
-    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-    const [markedStatus, setMarkedStatus] = useState<EventStatus | undefined>(undefined);
-
-    const handleEventClick = (event: Event) => {
-      setSelectedEvent(event);
-      setMarkedStatus(event.status);
-    };
-
-    const handleModalClose = () => setSelectedEvent(null);
-
-    return (
-      <>
-        {selectedEvent && (
-          <DRCSummaryModal
-            open={!!selectedEvent}
-            onHide={handleModalClose}
-            event={selectedEvent}
-            teamTypes={teamTypes}
-            markedStatus={markedStatus}
-            setMarkedStatus={setMarkedStatus}
-          />
-        )}
-
-        <Box marginLeft={0.5} marginRight={0.5} marginBottom={0.2} sx={{ position: 'relative', zIndex: 2 }}>
           <Tooltip
             placement="right"
             arrow
-            title={
-              <Stack direction="column">
-                {extraEvents.map((event) => (
-                  <EventPartialInfoView
-                    key={event.eventId}
-                    event={event}
-                    onClick={() => handleEventClick(event)}
-                    dayOfWeek={dayOfWeek}
-                    calendars={calendars}
-                    eventTypes={eventTypes}
-                  />
-                ))}
-              </Stack>
-            }
+            title={<EventPopupInfo event={event} color={bgColor} />}
             slotProps={{
               popper: { sx: { zIndex: 1200 } },
               tooltip: {
@@ -397,6 +321,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                   maxWidth: 'none',
                   borderRadius: 4,
                   p: 2,
+                  cursor: 'pointer',
                   bgcolor: theme.palette.grey[900],
                   boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
                 }
@@ -409,68 +334,135 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
               }
             }}
           >
-            <Card
-              sx={{
-                backgroundColor: theme.palette.grey[800],
-                borderRadius: 1,
-                width: '100%',
-                minHeight: 30,
-                maxHeight: 30,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
+            <Typography
+              marginX={0.5}
+              marginY={0.6}
+              lineHeight="120%"
+              fontSize={14}
+              fontWeight="bold"
+              noWrap
+              align="left"
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
             >
-              <Typography fontSize={14} fontWeight="bold">
-                {'+' + extraEvents.length}
-              </Typography>
-            </Card>
+              {getTeamTypeIcon(event.teamType?.name ?? '')} {event.title}
+            </Typography>
           </Tooltip>
-        </Box>
-      </>
+        </Card>
+      </Box>
+    );
+  };
+
+  const ExtraEventsCard = ({ extraEvents }: { extraEvents: Event[] }) => {
+    return (
+      <Box marginLeft={0.5} marginRight={0.5} marginBottom={0.2} sx={{ position: 'relative', zIndex: 2 }}>
+        <Tooltip
+          placement="right"
+          arrow
+          title={
+            <Stack direction="column">
+              {extraEvents.map((event) => (
+                <EventPartialInfoView
+                  key={event.eventId}
+                  event={event}
+                  onClick={() => handleOpenClickPopup(event)}
+                  dayOfWeek={dayOfWeek}
+                  calendars={calendars}
+                  eventTypes={eventTypes}
+                />
+              ))}
+            </Stack>
+          }
+          slotProps={{
+            popper: { sx: { zIndex: 1200 } },
+            tooltip: {
+              sx: {
+                maxWidth: 'none',
+                borderRadius: 4,
+                p: 2,
+                bgcolor: theme.palette.grey[900],
+                boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
+              }
+            },
+            arrow: {
+              sx: {
+                color: theme.palette.grey[900],
+                fontSize: 16
+              }
+            }
+          }}
+        >
+          <Card
+            sx={{
+              backgroundColor: theme.palette.grey[800],
+              borderRadius: 1,
+              width: '100%',
+              minHeight: 30,
+              maxHeight: 30,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <Typography fontSize={14} fontWeight="bold">
+              {'+' + extraEvents.length}
+            </Typography>
+          </Card>
+        </Tooltip>
+      </Box>
     );
   };
 
   return (
-    <Card
-      sx={{
-        position: 'relative',
-        backgroundColor: !(isFutureDay || isCurrentDay) ? theme.palette.grey[900] : 'inherit',
-        borderRadius: 2,
-        width: { xs: '95%', md: '80%' },
-        height: { xs: '10vh', sm: '12vh' },
-        border: isCurrentDay ? '2px solid gray' : 'none',
-        cursor: isFutureDay || isCurrentDay ? 'pointer' : 'default',
-        transition: 'background 0.2s',
-        '&:hover': isFutureDay || isCurrentDay ? { background: '#232323' } : {}
-      }}
-    >
-      <Box
-        onClick={() => {
-          if (isFutureDay || isCurrentDay) setIsCreateModalOpen(true);
-        }}
+    <>
+      <Card
         sx={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          zIndex: 1,
-          pointerEvents: 'auto'
+          position: 'relative',
+          backgroundColor: !(isFutureDay || isCurrentDay) ? theme.palette.grey[900] : 'inherit',
+          borderRadius: 2,
+          width: { xs: '95%', md: '80%' },
+          height: { xs: '10vh', sm: '12vh' },
+          border: isCurrentDay ? '2px solid gray' : 'none',
+          cursor: isFutureDay || isCurrentDay ? 'pointer' : 'default',
+          transition: 'background 0.2s',
+          '&:hover': isFutureDay || isCurrentDay ? { background: '#232323' } : {}
         }}
-      />
+      >
+        <Box
+          onClick={() => {
+            if (isFutureDay || isCurrentDay) setIsCreateModalOpen(true);
+          }}
+          sx={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            zIndex: 1,
+            pointerEvents: 'auto'
+          }}
+        />
 
-      <CardContent sx={{ padding: 0 }}>
-        <DayCardTitle />
-        {events.length < 3 ? (
-          events.map((event) => <EventCard key={event.eventId} event={event} />)
-        ) : (
-          <>
-            <EventCard event={events[0]} />
-            <EventCard event={events[1]} />
-            <ExtraEventsCard extraEvents={events.slice(2)} />
-          </>
-        )}
-      </CardContent>
-    </Card>
+        <CardContent sx={{ padding: 0 }}>
+          <DayCardTitle />
+          {events.length < 3 ? (
+            events.map((event) => <EventCard key={event.eventId} event={event} />)
+          ) : (
+            <>
+              <EventCard event={events[0]} />
+              <EventCard event={events[1]} />
+              <ExtraEventsCard extraEvents={events.slice(2)} />
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <EventClickPopup
+        clickedEvent={clickedEvent}
+        anchorPosition={anchorPosition}
+        onClose={handleCloseClickPopup}
+        eventTypes={eventTypes}
+        calendars={calendars}
+        dayOfWeek={dayOfWeek}
+      />
+    </>
   );
 };
 
