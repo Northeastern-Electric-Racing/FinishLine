@@ -1071,6 +1071,7 @@ model Event {
   questionDocument           String?
   description                String?
   notificationSlackThreads   Message_Info[]
+  calendarEventIds           String[]
 }
 
 model Calendar {

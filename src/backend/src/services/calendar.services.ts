@@ -53,6 +53,7 @@ import {
   sendSlackEventConfirmNotification
 } from '../utils/slack.utils';
 import { sendEventPopUp } from '../utils/pop-up.utils';
+import { createCalendarEvent, deleteCalendarEvents, updateCalendarEvent } from '../utils/google-integration.utils';
 
 export default class CalendarService {
   /**
@@ -470,6 +471,32 @@ export default class CalendarService {
       ...getEventQueryArgs(organization.organizationId)
     });
 
+    let calendarEventIds: string[] = [];
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        const allMemberIds = [...requiredMemberIds, ...optionalMemberIds];
+        const isInPerson = !!location;
+
+        calendarEventIds = await createCalendarEvent(
+          process.env.GOOGLE_CALENDAR_ID!,
+          allMemberIds,
+          newEvent.scheduledTimes,
+          isInPerson,
+          zoomLink ?? null,
+          location ?? null,
+          title
+        );
+
+        // Update event with calendar IDs
+        await prisma.event.update({
+          where: { eventId: newEvent.eventId },
+          data: { calendarEventIds }
+        });
+      } catch (error) {
+        console.error('Failed to create Google Calendar events:', error);
+      }
+    }
+
     if (foundEventType.sendSlackNotifications) {
       const members = await prisma.user.findMany({
         where: { userId: { in: optionalMemberIds.concat(requiredMemberIds) } }
@@ -836,6 +863,34 @@ export default class CalendarService {
         );
       }
 
+      let calendarEventIds = foundEvent.calendarEventIds || [];
+
+      // If schedule changed, update Google Calendar events
+      if (scheduleChanged && process.env.NODE_ENV === 'production') {
+        try {
+          const allMemberIds = [...requiredMemberIds, ...optionalMemberIds];
+          const isInPerson = !!location;
+
+          // Get the newly created schedule slots
+          const updatedSlots = await tx.schedule_Slot.findMany({
+            where: { ScheduledEvents: { some: { eventId } } }
+          });
+
+          calendarEventIds = await updateCalendarEvent(
+            process.env.GOOGLE_CALENDAR_ID!,
+            foundEvent.calendarEventIds || [],
+            allMemberIds,
+            updatedSlots,
+            isInPerson,
+            zoomLink ?? null,
+            location ?? null,
+            title
+          );
+        } catch (error) {
+          console.error('Failed to update Google Calendar events:', error);
+        }
+      }
+
       // throw if a user isn't found, then build prisma queries for connecting userIds
       const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMemberIds));
       const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
@@ -900,7 +955,8 @@ export default class CalendarService {
           location,
           zoomLink,
           questionDocument,
-          description
+          description,
+          calendarEventIds
         },
         ...getEventQueryArgs(organization.organizationId)
       });
@@ -1150,6 +1206,15 @@ export default class CalendarService {
 
     if (!hasPermission) {
       throw new AccessDeniedException('Only admins can delete events!');
+    }
+
+    // Delete from Google Calendar
+    if (event.calendarEventIds && event.calendarEventIds.length > 0 && process.env.NODE_ENV === 'production') {
+      try {
+        await deleteCalendarEvents(process.env.GOOGLE_CALENDAR_ID!, event.calendarEventIds);
+      } catch (error) {
+        console.error('Failed to delete Google Calendar events:', error);
+      }
     }
 
     const deletedEvent = await prisma.event.update({
