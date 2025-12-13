@@ -5,7 +5,7 @@
 
 import { Box, Button, Paper, Table, TableBody, TableContainer } from '@mui/material';
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
 import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
@@ -14,13 +14,14 @@ import RuleActions from './RuleActions';
 import { Rule } from 'shared';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import { NERButton } from '../../components/NERButton';
 
 /**
  * Placeholder hook to fetch a single ruleset.
  * @param rulesetId - The ID of the ruleset to fetch.
  * @returns The ruleset data.
  */
-const useSingleRuleset = (rulesetId: string) => {
+export const useSingleRuleset = (rulesetId: string) => {
   const placeholderRules: Rule[] = [
     {
       ruleId: '1',
@@ -156,6 +157,7 @@ const useSingleRuleset = (rulesetId: string) => {
  * Supports editing and assigning rules to projects and teams.
  */
 const RulesetPage: React.FC = () => {
+  const history = useHistory();
   const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>();
   const [tabValue, setTabValue] = useState(0);
   const defaultTab = 'edit-rules';
@@ -197,9 +199,14 @@ const RulesetPage: React.FC = () => {
   // Filter to only show top-level rules
   const topLevelRules = ruleset.rules.filter((rule) => !rule.parentRule);
 
+  const headerRight = (
+    <NERButton onClick={() => history.push(`${routes.RULES}/${rulesetId}/view`)}>MOCK View Rules</NERButton>
+  );
+
   return (
     <PageLayout
       title={`${ruleset.name} Rules`}
+      headerRight={headerRight}
       tabs={
         <Box sx={{ width: 'fit-content', mt: 2 }}>
           <FullPageTabs
