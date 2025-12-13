@@ -497,6 +497,25 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async setVendorTaxExemptStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { vendorId } = req.params;
+
+      const { taxExempt } = req.body;
+
+      const updatedVendor = await ReimbursementRequestService.setVendorTaxExemptStatus(
+        vendorId,
+        taxExempt,
+        req.currentUser,
+        req.organization
+      );
+
+      res.status(200).json(updatedVendor);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async deleteVendor(req: Request, res: Response, next: NextFunction) {
     try {
       const { vendorId } = req.params;

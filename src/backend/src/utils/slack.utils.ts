@@ -214,11 +214,14 @@ export const sendReimbursementRequestLeadershipApprovedNotification = async (
   threads: SlackMessageThread[],
   approverId: string,
   recipientId: string
-) =>
+) => {
+  // Only notify parties if the recipient is different from the approver
+  if (approverId === recipientId) return;
   await sendThreadResponse(
     threads,
     `${await getUserSlackMentionOrName(approverId)} has approved this reimbursement request. ${await getUserSlackMentionOrName(recipientId)} you may now purchase the items, add the receipts, and mark the reimbursement request as pending finance.`
   );
+};
 
 export const sendReimbursementRequestChangesRequestedNotification = async (threads: SlackMessageThread[], userId: string) =>
   await sendThreadResponse(

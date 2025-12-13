@@ -1,5 +1,5 @@
 import { Box, TableCell, TableRow, Typography } from '@mui/material';
-import AdminToolTable from '../AdminToolTable';
+import NERTable from '../../../components/NERTable';
 import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -59,7 +59,7 @@ const IndexCodesTable: React.FC = () => {
           indexCode={indexCodeToEdit}
         />
       )}
-      <AdminToolTable
+      <NERTable
         columns={[
           { name: 'Name', width: '50%' },
           { name: 'Code', width: '50%' }
