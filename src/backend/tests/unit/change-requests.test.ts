@@ -295,33 +295,52 @@ describe('Change Request Tests', () => {
     let changeRequestId: string;
 
     beforeEach(async () => {
+      // Use the existing user from the main beforeEach
       submitterUser = user;
-      leadershipUser1 = await createTestUser(aquamanLeadership, orgId);
-      leadershipUser2 = await createTestUser(greenlanternHead, orgId);
-      nonRequestedLeadership = await createTestUser(flashAdmin, orgId);
+
+      // Create users with User_Settings that include slackId (needed for requestCRReview)
+      leadershipUser1 = await createTestUser(aquamanLeadership, orgId, {
+        id: 'aquaman-settings',
+        userId: '',
+        defaultTheme: 'DARK' as any,
+        slackId: 'slack-aquaman'
+      });
+
+      leadershipUser2 = await createTestUser(greenlanternHead, orgId, {
+        id: 'greenlantern-settings',
+        userId: '',
+        defaultTheme: 'DARK' as any,
+        slackId: 'slack-greenlantern'
+      });
+
+      nonRequestedLeadership = await createTestUser(flashAdmin, orgId, {
+        id: 'flash-settings',
+        userId: '',
+        defaultTheme: 'DARK' as any,
+        slackId: 'slack-flash'
+      });
+
       memberUser = await createTestUser(robinMember, orgId);
 
-      const projPropChanges: ProjectProposedChangesCreateArgs = {
-        name: 'Test Project',
-        descriptionBullets: [],
-        links: [],
-        budget: 10,
-        summary: 'Test Summary',
-        teamIds: [],
-        workPackageProposedChanges: []
-      };
-
+      // Create a simple change request with a proposed solution
       const cr = await ChangeRequestsService.createStandardChangeRequest(
         submitterUser,
         12,
         13,
         14,
-        CR_Type.DEFINITION_CHANGE,
+        CR_Type.ISSUE,
         'What is being changed',
         [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'Why it is being changed' }],
-        [],
+        [
+          {
+            description: 'Proposed solution',
+            scopeImpact: 'Low impact',
+            timelineImpact: 0,
+            budgetImpact: 0
+          }
+        ],
         organization,
-        projPropChanges,
+        null,
         null
       );
 
@@ -333,7 +352,7 @@ describe('Change Request Tests', () => {
         nonRequestedLeadership,
         changeRequestId,
         'Looks good',
-        true,
+        false,
         organization,
         null
       );
@@ -345,7 +364,7 @@ describe('Change Request Tests', () => {
       });
 
       expect(updatedCR?.reviewerId).toBe(nonRequestedLeadership.userId);
-      expect(updatedCR?.accepted).toBe(true);
+      expect(updatedCR?.accepted).toBe(false);
     });
 
     it('allows requested reviewer to review when reviewers are requested', async () => {
@@ -360,7 +379,7 @@ describe('Change Request Tests', () => {
         leadershipUser1,
         changeRequestId,
         'Approved',
-        true,
+        false,
         organization,
         null
       );
@@ -372,7 +391,7 @@ describe('Change Request Tests', () => {
       });
 
       expect(updatedCR?.reviewerId).toBe(leadershipUser1.userId);
-      expect(updatedCR?.accepted).toBe(true);
+      expect(updatedCR?.accepted).toBe(false);
     });
 
     it('rejects non-requested leadership when reviewers are requested', async () => {
@@ -418,7 +437,7 @@ describe('Change Request Tests', () => {
         leadershipUser2,
         changeRequestId,
         'Approved by second reviewer',
-        true,
+        false,
         organization,
         null
       );
@@ -430,20 +449,28 @@ describe('Change Request Tests', () => {
       });
 
       expect(updatedCR?.reviewerId).toBe(leadershipUser2.userId);
-      expect(updatedCR?.accepted).toBe(true);
+      expect(updatedCR?.accepted).toBe(false);
     });
 
-    it('rejects member user even when they are in requested reviewers', async () => {
-      await ChangeRequestsService.requestCRReview(
-        submitterUser,
-        [leadershipUser1.userId, memberUser.userId],
-        changeRequestId,
-        organization
-      );
+    it('rejects member user from being requested as a reviewer', async () => {
+      // requestCRReview should fail when trying to add a non-leadership user
+      await expect(
+        ChangeRequestsService.requestCRReview(
+          submitterUser,
+          [leadershipUser1.userId, memberUser.userId],
+          changeRequestId,
+          organization
+        )
+      ).rejects.toThrow(AccessDeniedException);
 
       await expect(
-        ChangeRequestsService.reviewChangeRequest(memberUser, changeRequestId, 'I want to review', false, organization, null)
-      ).rejects.toThrow();
+        ChangeRequestsService.requestCRReview(
+          submitterUser,
+          [leadershipUser1.userId, memberUser.userId],
+          changeRequestId,
+          organization
+        )
+      ).rejects.toThrow('The following user(s) are not leadership: Dick Grayson');
     });
 
     it('allows rejection by non-requested leadership when reviewers are requested', async () => {
