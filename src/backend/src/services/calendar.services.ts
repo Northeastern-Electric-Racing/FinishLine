@@ -1,6 +1,6 @@
 import { calendarTransformer, eventTransformer, machineryTransformer } from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
-import { Event_Status, Organization } from '@prisma/client';
+import { Conflict_Status, Event_Status, Organization } from '@prisma/client';
 import {
   isAdmin,
   isHead,
@@ -53,6 +53,7 @@ import {
   sendSlackEventConfirmNotification
 } from '../utils/slack.utils';
 import { sendEventPopUp } from '../utils/pop-up.utils';
+import { createCalendarEvent, deleteCalendarEvents, updateCalendarEvent } from '../utils/google-integration.utils';
 
 export default class CalendarService {
   /**
@@ -460,7 +461,7 @@ export default class CalendarService {
           }))
         },
         status: foundEventType.requiresConfirmation ? Event_Status.UNCONFIRMED : Event_Status.CONFIRMED,
-        approved: !hasConflict,
+        approved: hasConflict ? Conflict_Status.PENDING : Conflict_Status.NO_CONFLICT,
         approvalRequiredFromUserId: hasConflict ? approverUserId : null,
         location,
         zoomLink,
@@ -469,6 +470,32 @@ export default class CalendarService {
       },
       ...getEventQueryArgs(organization.organizationId)
     });
+
+    let calendarEventIds: string[] = [];
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        const allMemberIds = [...requiredMemberIds, ...optionalMemberIds];
+        const isInPerson = !!location;
+
+        calendarEventIds = await createCalendarEvent(
+          process.env.GOOGLE_CALENDAR_ID!,
+          allMemberIds,
+          newEvent.scheduledTimes,
+          isInPerson,
+          zoomLink ?? null,
+          location ?? null,
+          title
+        );
+
+        // Update event with calendar IDs
+        await prisma.event.update({
+          where: { eventId: newEvent.eventId },
+          data: { calendarEventIds }
+        });
+      } catch (error) {
+        console.error('Failed to create Google Calendar events:', error);
+      }
+    }
 
     if (foundEventType.sendSlackNotifications) {
       const members = await prisma.user.findMany({
@@ -836,6 +863,34 @@ export default class CalendarService {
         );
       }
 
+      let calendarEventIds = foundEvent.calendarEventIds || [];
+
+      // If schedule changed, update Google Calendar events
+      if (scheduleChanged && process.env.NODE_ENV === 'production') {
+        try {
+          const allMemberIds = [...requiredMemberIds, ...optionalMemberIds];
+          const isInPerson = !!location;
+
+          // Get the newly created schedule slots
+          const updatedSlots = await tx.schedule_Slot.findMany({
+            where: { ScheduledEvents: { some: { eventId } } }
+          });
+
+          calendarEventIds = await updateCalendarEvent(
+            process.env.GOOGLE_CALENDAR_ID!,
+            foundEvent.calendarEventIds || [],
+            allMemberIds,
+            updatedSlots,
+            isInPerson,
+            zoomLink ?? null,
+            location ?? null,
+            title
+          );
+        } catch (error) {
+          console.error('Failed to update Google Calendar events:', error);
+        }
+      }
+
       // throw if a user isn't found, then build prisma queries for connecting userIds
       const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMemberIds));
       const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
@@ -884,7 +939,12 @@ export default class CalendarService {
           },
           // If schedule/location changed and there's a conflict, set approved=false and track who needs to approve
           // Otherwise keep existing approval state
-          approved: scheduleChanged || locationChanged ? !hasConflict : foundEvent.approved,
+          approved:
+            scheduleChanged || locationChanged
+              ? hasConflict
+                ? Conflict_Status.PENDING
+                : Conflict_Status.NO_CONFLICT
+              : foundEvent.approved,
           approvalRequiredFromUserId:
             scheduleChanged || locationChanged
               ? hasConflict
@@ -895,7 +955,8 @@ export default class CalendarService {
           location,
           zoomLink,
           questionDocument,
-          description
+          description,
+          calendarEventIds
         },
         ...getEventQueryArgs(organization.organizationId)
       });
@@ -918,7 +979,7 @@ export default class CalendarService {
    * Approve event in the database
    * @param submitter The user submitting the request who must be a head or above.
    * @param eventId The id of the given event.
-   * @param organization The organization for which the event is being deleted.
+   * @param organization The organization for which the event is being approved.
    *
    * @returns The approved event.
    *
@@ -940,19 +1001,60 @@ export default class CalendarService {
       event.approvalRequiredFromUserId === submitter.userId;
 
     if (!hasPermission) {
-      throw new AccessDeniedException('Only admins or heads or the owner of the conflicting event can this approve event!');
+      throw new AccessDeniedException('Only admins or heads or the owner of the conflicting event can approve this event!');
     }
 
     const approvedEvent = await prisma.event.update({
       where: { eventId },
       data: {
-        approved: true,
+        approved: Conflict_Status.APPROVED,
         approvalRequiredFromUserId: submitter.userId
       },
       ...getEventQueryArgs(organization.organizationId)
     });
 
     return eventTransformer(approvedEvent);
+  }
+
+  /**
+   * Denies an event in the database
+   * @param submitter The user submitting the request who must be a head or above.
+   * @param eventId The id of the given event.
+   * @param organization The organization for which the event is being denied.
+   *
+   * @returns The denied event.
+   *
+   * @throws NotFoundException If the given eventId is not found.
+   * @throws InvalidOrganizationException If the given eventId is not part of the same organization.
+   * @throws DeletedException If the event has already been deleted.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin or head.
+   */
+  static async denyEvent(submitter: User, eventId: string, organization: Organization): Promise<Event> {
+    const event = await prisma.event.findUnique({
+      where: { eventId }
+    });
+
+    if (!event) throw new NotFoundException('Event', eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isHead)) ||
+      event.approvalRequiredFromUserId === submitter.userId;
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only admins or heads or the owner of the conflicting event can deny this event!');
+    }
+
+    const deniedEvent = await prisma.event.update({
+      where: { eventId },
+      data: {
+        approved: Conflict_Status.DENIED,
+        approvalRequiredFromUserId: submitter.userId
+      },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    return eventTransformer(deniedEvent);
   }
 
   /**
@@ -1117,6 +1219,15 @@ export default class CalendarService {
 
     if (!hasPermission) {
       throw new AccessDeniedException('Only admins can delete events!');
+    }
+
+    // Delete from Google Calendar
+    if (event.calendarEventIds && event.calendarEventIds.length > 0 && process.env.NODE_ENV === 'production') {
+      try {
+        await deleteCalendarEvents(process.env.GOOGLE_CALENDAR_ID!, event.calendarEventIds);
+      } catch (error) {
+        console.error('Failed to delete Google Calendar events:', error);
+      }
     }
 
     const deletedEvent = await prisma.event.update({
@@ -1959,7 +2070,7 @@ export default class CalendarService {
    * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
    */
   static async getFilteredEvents(filters: FilterArgs, organization: Organization): Promise<Event[]> {
-    const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalStatus, startPeriod, endPeriod } = filters;
+    const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvedEvents, startPeriod, endPeriod } = filters;
 
     // validate memberIds
     if (memberIds?.length) {
@@ -2071,8 +2182,10 @@ export default class CalendarService {
         dateDeleted: null,
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
-        ...(memberOrTeamFilter ? { OR: memberOrTeamFilter } : undefined),
-        approved: approvalStatus !== undefined ? { equals: approvalStatus } : undefined,
+        AND: [
+          memberOrTeamFilter.length ? { OR: memberOrTeamFilter } : {},
+          approvedEvents ? { OR: [{ approved: 'APPROVED' }, { approved: 'NO_CONFLICT' }] } : {}
+        ],
         scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
         ...fromCalendar
       },

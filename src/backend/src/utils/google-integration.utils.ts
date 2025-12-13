@@ -190,7 +190,7 @@ export const createCalendar = async (name: string) => {
 };
 
 /**
- * Creates A Google Calendar Event on the NER Google Calendar
+ * Creates Google Calendar Events on the NER Google Calendar for all schedule slot occurrences
  * @param calendarId the id of the calendar to add the event
  * @param memberIds required and optional members
  * @param scheduledSlots the scheduled time slots for the event
@@ -198,7 +198,7 @@ export const createCalendar = async (name: string) => {
  * @param zoomLink zoom link if online
  * @param location physical location if in person
  * @param eventTitle the title of the event
- * @returns the id of the calendar event
+ * @returns an array of calendar event ids
  */
 export const createCalendarEvent = async (
   calendarId: string,
@@ -209,11 +209,10 @@ export const createCalendarEvent = async (
   location: string | null,
   eventTitle: string
 ) => {
-  if (process.env.NODE_ENV !== 'production') return;
+  if (process.env.NODE_ENV !== 'production') return [];
 
-  const [firstSlot] = scheduledSlots;
-  if (!firstSlot?.startTime || !firstSlot?.endTime) {
-    throw new Error('Event must have a valid start and end time');
+  if (scheduledSlots.length === 0) {
+    throw new Error('Event must have at least one schedule slot');
   }
 
   try {
@@ -222,58 +221,73 @@ export const createCalendarEvent = async (
     });
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-    const startDateTime = new Date(firstSlot.startTime);
-    const endDateTime = new Date(firstSlot.endTime);
+    const attendees = (await getUsers(memberIds)).map((user) => ({
+      email: user.email
+    }));
 
-    const eventInput = {
-      location: isInPerson ? location : zoomLink,
-      summary: eventTitle,
-      start: {
-        dateTime: startDateTime.toISOString(),
-        timeZone: 'America/New_York'
-      },
-      end: {
-        dateTime: endDateTime.toISOString(),
-        timeZone: 'America/New_York'
-      },
-      attendees: (await getUsers(memberIds)).map((user) => {
-        return { email: user.email };
-      }),
-      reminders: {
-        useDefault: false,
-        overrides: [
-          { method: 'email', minutes: 24 * 60 },
-          { method: 'popup', minutes: 10 }
-        ]
+    const calendarEventIds: string[] = [];
+
+    for (const slot of scheduledSlots) {
+      const occurrences = generateOccurrences(slot);
+
+      for (const occurrence of occurrences) {
+        const eventInput = {
+          location: isInPerson ? location : zoomLink,
+          summary: eventTitle,
+          start: slot.allDay
+            ? { date: occurrence.date }
+            : {
+                dateTime: occurrence.startDateTime.toISOString(),
+                timeZone: 'America/New_York'
+              },
+          end: slot.allDay
+            ? { date: occurrence.date }
+            : {
+                dateTime: occurrence.endDateTime.toISOString(),
+                timeZone: 'America/New_York'
+              },
+          attendees,
+          reminders: {
+            useDefault: false,
+            overrides: [
+              { method: 'email', minutes: 24 * 60 },
+              { method: 'popup', minutes: 10 }
+            ]
+          }
+        };
+
+        const calendarEvent = await calendar.events.insert({
+          calendarId,
+          requestBody: eventInput
+        });
+
+        if (calendarEvent.data.id) {
+          calendarEventIds.push(calendarEvent.data.id);
+        }
       }
-    };
+    }
 
-    const calendarEvent = await calendar.events.insert({
-      calendarId,
-      requestBody: eventInput
-    });
-
-    return calendarEvent.data.id;
+    return calendarEventIds;
   } catch (error: unknown) {
     throw error;
   }
 };
 
 /**
- * Updates a Google Calendar Event
+ * Updates Google Calendar Events by deleting old ones and creating new ones
  * @param calendarId Id of the calendar the event is on
- * @param eventId Id of the calendar event
+ * @param oldEventIds Array of old calendar event ids to delete
  * @param memberIds required and optional members
  * @param scheduledSlots the scheduled time slots for the event
  * @param isInPerson whether the event is in person
  * @param zoomLink zoom link if online
  * @param location physical location if in person
  * @param eventTitle the title of the event
- * @returns the id of the updated calendar event
+ * @returns an array of new calendar event ids
  */
 export const updateCalendarEvent = async (
   calendarId: string,
-  eventId: string,
+  oldEventIds: string[],
   memberIds: string[],
   scheduledSlots: Schedule_Slot[],
   isInPerson: boolean,
@@ -281,9 +295,8 @@ export const updateCalendarEvent = async (
   location: string | null,
   eventTitle: string
 ) => {
-  const [firstSlot] = scheduledSlots;
-  if (!firstSlot?.startTime || !firstSlot?.endTime) {
-    throw new Error('Event must have a valid start and end time');
+  if (scheduledSlots.length === 0) {
+    throw new Error('Event must have at least one schedule slot');
   }
 
   try {
@@ -292,39 +305,109 @@ export const updateCalendarEvent = async (
     });
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-    const startDateTime = new Date(firstSlot.startTime);
-    const endDateTime = new Date(firstSlot.endTime);
-
-    const eventInput = {
-      location: isInPerson ? location : zoomLink,
-      summary: eventTitle,
-      start: {
-        dateTime: startDateTime.toISOString(),
-        timeZone: 'America/New_York'
-      },
-      end: {
-        dateTime: endDateTime.toISOString(),
-        timeZone: 'America/New_York'
-      },
-      attendees: (await getUsers(memberIds)).map((user) => {
-        return { email: user.email };
-      }),
-      reminders: {
-        useDefault: false,
-        overrides: [
-          { method: 'email', minutes: 24 * 60 },
-          { method: 'popup', minutes: 10 }
-        ]
+    // Delete old calendar events
+    for (const eventId of oldEventIds) {
+      try {
+        await calendar.events.delete({
+          calendarId,
+          eventId
+        });
+      } catch (error) {
+        console.error(`Failed to delete calendar event ${eventId}:`, error);
       }
-    };
+    }
 
-    const calendarEvent = await calendar.events.update({
-      calendarId,
-      eventId,
-      requestBody: eventInput
+    // Create new calendar events
+    return await createCalendarEvent(calendarId, memberIds, scheduledSlots, isInPerson, zoomLink, location, eventTitle);
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+/**
+ * Helper function to generate all occurrences for a schedule slot
+ */
+const generateOccurrences = (slot: Schedule_Slot) => {
+  const occurrences: Array<{
+    date: string;
+    startDateTime: Date;
+    endDateTime: Date;
+  }> = [];
+
+  const startDate = new Date(slot.initialDateScheduled);
+  const endDate = new Date(slot.endDate);
+  const currentDate = new Date(startDate);
+
+  const dayOfWeekMap: Record<string, number> = {
+    SUNDAY: 0,
+    MONDAY: 1,
+    TUESDAY: 2,
+    WEDNESDAY: 3,
+    THURSDAY: 4,
+    FRIDAY: 5,
+    SATURDAY: 6
+  };
+
+  const targetDays = slot.days.map((day) => dayOfWeekMap[day]);
+
+  while (currentDate <= endDate) {
+    const currentDayOfWeek = currentDate.getDay();
+
+    if (targetDays.includes(currentDayOfWeek)) {
+      const [dateStr] = currentDate.toISOString().split('T');
+
+      if (slot.startTime && slot.endTime) {
+        const startTime = new Date(slot.startTime);
+        const endTime = new Date(slot.endTime);
+
+        const startDateTime = new Date(currentDate);
+        startDateTime.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
+
+        const endDateTime = new Date(currentDate);
+        endDateTime.setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
+
+        occurrences.push({ date: dateStr, startDateTime, endDateTime });
+      } else {
+        occurrences.push({
+          date: dateStr,
+          startDateTime: currentDate,
+          endDateTime: currentDate
+        });
+      }
+    }
+
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return occurrences;
+};
+
+/**
+ * Deletes multiple Google Calendar Events
+ * @param calendarId Id of the calendar the events are on
+ * @param eventIds Array of calendar event IDs to delete
+ */
+export const deleteCalendarEvents = async (calendarId: string, eventIds: string[]) => {
+  if (process.env.NODE_ENV !== 'production') return;
+
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
     });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-    return calendarEvent.data.id;
+    await Promise.all(
+      eventIds.map(async (eventId) => {
+        try {
+          await calendar.events.delete({
+            calendarId,
+            eventId
+          });
+        } catch (error) {
+          console.error(`Failed to delete calendar event ${eventId}:`, error);
+        }
+      })
+    );
   } catch (error: unknown) {
     throw error;
   }

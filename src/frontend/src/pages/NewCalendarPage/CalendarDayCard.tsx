@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Tooltip, Typography, useTheme } from '@mui/material';
 import { Calendar, DayOfWeek, Event, EventType, TeamType } from 'shared';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import { useState } from 'react';
@@ -12,9 +12,11 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ArticleIcon from '@mui/icons-material/Article';
+import GroupsIcon from '@mui/icons-material/Groups';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import TerminalIcon from '@mui/icons-material/Terminal';
+import { Stack } from '@mui/system';
 
 import EventPartialInfoView from './EventPartialInfoView';
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
@@ -76,171 +78,153 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   };
 
   const DayCardTitle = () => (
-    <Grid container alignItems="center" margin={0} padding={0}>
-      <Grid item xs display="flex" justifyContent="flex-end">
-        <Typography
-          variant="h5"
-          margin={1}
-          noWrap
-          sx={{
-            color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[100] : theme.palette.grey[600]
-          }}
-        >
-          {cardDate.getDate()}
-        </Typography>
-      </Grid>
-    </Grid>
+    <Stack direction="row" justifyContent="flex-end">
+      <Typography
+        variant="h5"
+        margin={1}
+        noWrap
+        sx={{
+          color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[100] : theme.palette.grey[600]
+        }}
+      >
+        {cardDate.getDate()}
+      </Typography>
+    </Stack>
   );
 
   const EventPopupInfo = ({ event, color }: { event: Event; color: string }) => {
     const name = event.workPackages[0]?.wbsElement?.name || event.title;
-
     const convertedStartTime = getConvertedStart(event, dayOfWeek);
     const convertedEndTime = getConvertedEnd(event, dayOfWeek);
-    return (
-      <Stack direction="column" spacing={2}>
-        <Stack direction="row">
-          <Typography marginX={0.5} marginY={0.1} lineHeight="120%" fontSize={24} fontWeight="bold" noWrap align="left">
-            {getTeamTypeIcon(event.teamType?.name ?? '', true)}
-          </Typography>
 
-          <Typography
-            marginX={0.5}
-            marginY={0.5}
-            lineHeight="120%"
-            fontSize={24}
-            fontWeight="bold"
-            noWrap
-            align="left"
-            color={color}
-          >
+    return (
+      <Stack direction="column" spacing={1.25}>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          {getTeamTypeIcon(event.teamType?.name ?? '', true)}
+          <Typography lineHeight="120%" fontSize={24} fontWeight="bold" noWrap align="left" color={color}>
             {name}
           </Typography>
         </Stack>
 
-        <Stack direction="row">
-          <AccessTimeIcon />
-          <Typography
-            marginX={0.5}
-            marginY={0.5}
-            marginRight={8}
-            lineHeight="120%"
-            fontSize={14}
-            fontWeight="bold"
-            noWrap
-            align="left"
-          >
+        <Stack direction="row" alignItems="center" flexWrap="wrap" spacing={1}>
+          <AccessTimeIcon fontSize="small" />
+          <Typography lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
             {convertedStartTime} - {convertedEndTime}
           </Typography>
-          <LocationOnIcon />
-          <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+
+          <LocationOnIcon fontSize="small" />
+          <Typography lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
             {event.location ?? 'N/A'}
           </Typography>
         </Stack>
 
         {event.requiredMembers.length > 0 && (
-          <Stack direction="row">
-            <GroupIcon />
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              Required :
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
+            <GroupIcon fontSize="small" />
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+              Required:
             </Typography>
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-              {event.requiredMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+              {event.requiredMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
             </Typography>
           </Stack>
         )}
 
         {event.optionalMembers.length > 0 && (
-          <Stack direction="row">
-            <GroupIcon />
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              Optional :
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
+            <GroupIcon fontSize="small" />
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+              Optional:
             </Typography>
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-              {event.optionalMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+              {event.optionalMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
             </Typography>
           </Stack>
         )}
 
         {event.confirmedMembers.length > 0 && (
-          <Stack direction="row">
-            <CheckCircleIcon />
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.confirmedMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
+            <CheckCircleIcon fontSize="small" />
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+              {event.confirmedMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
             </Typography>
           </Stack>
         )}
 
         {event.deniedMembers.length > 0 && (
-          <Stack direction="row">
-            <DoNotDisturbIcon />
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.deniedMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
+            <DoNotDisturbIcon fontSize="small" />
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+              {event.deniedMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
+            </Typography>
+          </Stack>
+        )}
+
+        {event.teams.length > 0 && (
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
+            <GroupsIcon fontSize="small" />
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+              Teams:
+            </Typography>
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+              {event.teams.map((t) => t.teamName).join(', ')}
             </Typography>
           </Stack>
         )}
 
         {event.machinery.length > 0 && (
-          <Stack direction="row">
-            <ConstructionIcon />
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.machinery.map((machine) => machine.name).join(', ')}
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
+            <ConstructionIcon fontSize="small" />
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+              {event.machinery.map((m) => m.name).join(', ')}
             </Typography>
           </Stack>
         )}
 
         {event.shops.length > 0 && (
-          <Stack direction="row">
-            <StorefrontIcon />
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.shops.map((shop) => shop.name).join(', ')}
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
+            <StorefrontIcon fontSize="small" />
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+              {event.shops.map((s) => s.name).join(', ')}
             </Typography>
           </Stack>
         )}
 
         {event.workPackages.length > 0 && (
-          <Stack direction="row">
-            <BusinessCenterIcon />
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
+            <BusinessCenterIcon fontSize="small" />
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
               {event.workPackages.map((wp) => wp.wbsElement.name).join(', ')}
             </Typography>
           </Stack>
         )}
 
         {event.zoomLink && (
-          <Stack direction="row">
-            <LinkIcon />
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-              {event.zoomLink ? (
-                <Link href={event.zoomLink} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener">
-                  Zoom Link
-                </Link>
-              ) : (
-                'N/A'
-              )}
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
+            <LinkIcon fontSize="small" />
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+              <Link href={event.zoomLink} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener">
+                Zoom Link
+              </Link>
             </Typography>
           </Stack>
         )}
 
         {event.questionDocument && (
-          <Stack direction="row">
-            <ArticleIcon />
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-              {event.questionDocument ? (
-                <Link href={event.questionDocument} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener">
-                  Question Document Link
-                </Link>
-              ) : (
-                'N/A'
-              )}
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
+            <ArticleIcon fontSize="small" />
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+              <Link href={event.questionDocument} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener">
+                Question Document Link
+              </Link>
             </Typography>
           </Stack>
         )}
 
         {event.description && (
-          <Stack direction="row">
-            <DescriptionIcon />
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
+            <DescriptionIcon fontSize="small" />
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
               {event.description.substring(0, name.length * 2)}
               {event.description.length > name.length * 2 && '...'}
             </Typography>
@@ -248,9 +232,9 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         )}
 
         {event.status && (
-          <Stack direction="row">
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
             {getStatusIcon(event.status)}
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
               {event.status}
             </Typography>
           </Stack>
@@ -261,9 +245,10 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
 
   const EventCard = ({ event }: { event: Event }) => {
     const name = event.workPackages[0]?.wbsElement?.name || event.title;
-    const specificEventType = eventTypes.find((eventType) => eventType.eventTypeId === event.eventTypeId);
+
+    const specificEventType = eventTypes.find((et) => et.eventTypeId === event.eventTypeId);
     const specificCalendar = calendars.find((calendar) =>
-      calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)
+      calendar.eventTypes.some((et) => et.eventTypeId === specificEventType?.eventTypeId)
     );
 
     const bgColor = specificCalendar?.color ?? 'gray';

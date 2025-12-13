@@ -4,8 +4,8 @@ import {
   Machinery,
   Calendar,
   AvailabilityCreateArgs,
-  Event,
   EventTypeCreateArgs,
+  Event,
   EventStatus,
   EventType,
   FilterArgs
@@ -36,6 +36,8 @@ import {
   postFilterEvents
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
+
+export const FILTER_EVENTS_KEY = ['filter_events'] as const;
 
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;

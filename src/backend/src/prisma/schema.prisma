@@ -1030,6 +1030,13 @@ model Schedule_Slot {
   @@index([initialDateScheduled, endDate])
 }
 
+enum Conflict_Status {
+  PENDING
+  APPROVED
+  DENIED
+  NO_CONFLICT
+}
+
 model Event {
   eventId                    String          @id @default(uuid())
   dateCreated                DateTime        @default(now())
@@ -1041,7 +1048,7 @@ model Event {
   userDeleted                User?           @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
   eventTypeId                String
   eventType                  Event_Type      @relation(fields: [eventTypeId], references: [eventTypeId])
-  approved                   Boolean         @default(false)
+  approved                   Conflict_Status
   // when approval is false, approved by holds who needs to approve the event
   // when approval is true, approved by holds who actually approved the event
   approvalRequiredFromUserId String?
@@ -1064,6 +1071,7 @@ model Event {
   questionDocument           String?
   description                String?
   notificationSlackThreads   Message_Info[]
+  calendarEventIds           String[]
 }
 
 model Calendar {
