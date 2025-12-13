@@ -17,6 +17,7 @@ import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ArticleIcon from '@mui/icons-material/Article';
 import HelpIcon from '@mui/icons-material/Help';
+import GroupsIcon from '@mui/icons-material/Groups';
 import EventPartialInfoView from './EventPartialInfoView';
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
 
@@ -180,6 +181,26 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                 {event.deniedMembers.length > 0 &&
                   event.deniedMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
                 {event.deniedMembers.length === 0 && 'N/A'}
+              </Typography>
+            </Stack>
+          )}
+          {event.teams.length > 0 && (
+            <Stack direction="row">
+              <GroupsIcon />
+              <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={14} fontWeight="bold" align="left">
+                Teams :
+              </Typography>
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.teams.length > 0 && event.teams.map((team) => `${team.teamName}`).join(', ')}
+                {event.teams.length === 0 && 'N/A'}
               </Typography>
             </Stack>
           )}
