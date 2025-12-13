@@ -1,7 +1,12 @@
-import { Box, Card, CardContent, Tooltip, Typography, useTheme } from '@mui/material';
-import { Calendar, DayOfWeek, Event, EventType, TeamType } from 'shared';
-import ConstructionIcon from '@mui/icons-material/Construction';
 import { useState } from 'react';
+import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
+import { Calendar, DayOfWeek, Event, EventStatus, EventType, TeamType } from 'shared';
+
+import ConstructionIcon from '@mui/icons-material/Construction';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
+import TerminalIcon from '@mui/icons-material/Terminal';
+
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupIcon from '@mui/icons-material/Group';
@@ -12,14 +17,12 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ArticleIcon from '@mui/icons-material/Article';
+import HelpIcon from '@mui/icons-material/Help';
 import GroupsIcon from '@mui/icons-material/Groups';
-import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
-import TerminalIcon from '@mui/icons-material/Terminal';
 
+import DRCSummaryModal from '../CalendarPage/EventSummaryModal';
 import EventPartialInfoView from './EventPartialInfoView';
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
-import { EventClickPopup, getStatusIcon } from './EventClickPopup';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -30,6 +33,17 @@ export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   ]);
 
   return teamIcons.get(teamTypeName);
+};
+
+export const getStatusIcon = (status: string, isLarge?: boolean) => {
+  const statusIcons: Map<string, JSX.Element> = new Map([
+    ['UNCONFIRMED', <HelpIcon fontSize={isLarge ? 'large' : 'small'} />],
+    ['CONFIRMED', <CheckCircleIcon fontSize={isLarge ? 'large' : 'small'} />],
+    ['SCHEDULED', <HelpIcon fontSize={isLarge ? 'large' : 'small'} />],
+    ['DONE', <CheckCircleIcon fontSize={isLarge ? 'large' : 'small'} />]
+  ]);
+
+  return statusIcons.get(status);
 };
 
 interface CalendarDayCardProps {
@@ -44,7 +58,7 @@ interface CalendarDayCardProps {
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   cardDate,
   events,
-  teamTypes: _teamTypes,
+  teamTypes,
   eventTypes = [],
   calendars = [],
   dayOfWeek = DayOfWeek.MONDAY
@@ -56,237 +70,333 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const isCurrentDay = cardDate.toDateString() === today;
   const isFutureDay = cardDate >= new Date();
 
-  const [clickedEvent, setClickedEvent] = useState<Event | null>(null);
-  const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(null);
-
-  const handleOpenClickPopup = (event: Event) => {
-    setClickedEvent(event);
-    if (typeof window !== 'undefined') {
-      setAnchorPosition({
-        top: window.innerHeight / 2,
-        left: window.innerWidth / 2
-      });
-    } else {
-      setAnchorPosition({ top: 0, left: 0 });
-    }
-  };
-
-  const handleCloseClickPopup = () => {
-    setClickedEvent(null);
-    setAnchorPosition(null);
-  };
-
   const DayCardTitle = () => (
-    <Typography
-      variant="h5"
-      margin={1}
-      noWrap
-      sx={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-        color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[100] : theme.palette.grey[600]
-      }}
-    >
-      {cardDate.getDate()}
-    </Typography>
+    <Grid container alignItems="center" margin={0} padding={0}>
+      <Grid item xs display="flex" justifyContent="flex-end">
+        <Typography
+          variant="h5"
+          margin={1}
+          noWrap
+          sx={{
+            color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[100] : theme.palette.grey[600]
+          }}
+        >
+          {cardDate.getDate()}
+        </Typography>
+      </Grid>
+    </Grid>
   );
 
   const EventPopupInfo = ({ event, color }: { event: Event; color: string }) => {
-    const name = event.workPackages?.[0]?.wbsElement?.name || event.title;
+    const name = event.title;
     const convertedStartTime = getConvertedStart(event, dayOfWeek);
     const convertedEndTime = getConvertedEnd(event, dayOfWeek);
 
     return (
-      <Box>
-        <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 24, fontWeight: 'bold' }}>
-          {getTeamTypeIcon(event.teamType?.name ?? '', true)}
-          <span style={{ color }}>{name}</span>
-        </Typography>
+      <>
+        <Stack direction="column" spacing={2}>
+          <Stack direction="row">
+            <Typography marginX={0.5} marginY={0.1} lineHeight="120%" fontSize={24} fontWeight="bold" noWrap align="left">
+              {getTeamTypeIcon(event.teamType?.name ?? '', true)}
+            </Typography>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-          <AccessTimeIcon fontSize="small" />
-          <Typography fontSize={14} fontWeight="bold">
-            {convertedStartTime} - {convertedEndTime}
-          </Typography>
-          <LocationOnIcon fontSize="small" />
-          <Typography fontSize={14} fontWeight="bold">
-            {event.location ?? 'N/A'}
-          </Typography>
-        </Box>
+            <Typography
+              marginX={0.5}
+              marginY={0.5}
+              lineHeight="120%"
+              fontSize={24}
+              fontWeight="bold"
+              noWrap
+              align="left"
+              color={color}
+            >
+              {name}
+            </Typography>
+          </Stack>
 
-        <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.6 }}>
+          <Stack direction="row">
+            <AccessTimeIcon />
+            <Typography
+              marginX={0.5}
+              marginY={0.5}
+              marginRight={8}
+              lineHeight="120%"
+              fontSize={14}
+              fontWeight="bold"
+              noWrap
+              align="left"
+            >
+              {convertedStartTime} - {convertedEndTime}
+            </Typography>
+            <LocationOnIcon />
+            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+              {event.location ?? 'N/A'}
+            </Typography>
+          </Stack>
+
           {event.requiredMembers.length > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <GroupIcon fontSize="small" />
-              <Typography fontSize={14} fontWeight="bold">
-                Required:
+            <Stack direction="row">
+              <GroupIcon />
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+                Required :
               </Typography>
-              <Typography fontSize={14} fontWeight="bold" noWrap>
-                {event.requiredMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+                {event.requiredMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
               </Typography>
-            </Box>
+            </Stack>
           )}
 
           {event.optionalMembers.length > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <GroupIcon fontSize="small" />
-              <Typography fontSize={14} fontWeight="bold">
-                Optional:
+            <Stack direction="row">
+              <GroupIcon />
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+                Optional :
               </Typography>
-              <Typography fontSize={14} fontWeight="bold" noWrap>
-                {event.optionalMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+                {event.optionalMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
               </Typography>
-            </Box>
+            </Stack>
           )}
 
           {event.confirmedMembers.length > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CheckCircleIcon fontSize="small" />
-              <Typography fontSize={14} fontWeight="bold" noWrap>
-                {event.confirmedMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
+            <Stack direction="row">
+              <CheckCircleIcon />
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+                {event.confirmedMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
               </Typography>
-            </Box>
+            </Stack>
           )}
 
           {event.deniedMembers.length > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <DoNotDisturbIcon fontSize="small" />
-              <Typography fontSize={14} fontWeight="bold" noWrap>
-                {event.deniedMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
+            <Stack direction="row">
+              <DoNotDisturbIcon />
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+                {event.deniedMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
               </Typography>
-            </Box>
+            </Stack>
           )}
 
           {event.teams.length > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <GroupsIcon fontSize="small" />
-              <Typography fontSize={14} fontWeight="bold">
-                Teams:
+            <Stack direction="row">
+              <GroupsIcon />
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+                Teams :
               </Typography>
-              <Typography fontSize={14} fontWeight="bold" noWrap>
-                {event.teams.map((t) => t.teamName).join(', ')}
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+                {event.teams.map((team) => team.teamName).join(', ')}
               </Typography>
-            </Box>
+            </Stack>
           )}
 
           {event.machinery.length > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ConstructionIcon fontSize="small" />
-              <Typography fontSize={14} fontWeight="bold" noWrap>
-                {event.machinery.map((m) => m.name).join(', ')}
+            <Stack direction="row">
+              <ConstructionIcon />
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+                {event.machinery.map((machine) => machine.name).join(', ')}
               </Typography>
-            </Box>
+            </Stack>
           )}
 
           {event.shops.length > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <StorefrontIcon fontSize="small" />
-              <Typography fontSize={14} fontWeight="bold" noWrap>
-                {event.shops.map((s) => s.name).join(', ')}
+            <Stack direction="row">
+              <StorefrontIcon />
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+                {event.shops.map((shop) => shop.name).join(', ')}
               </Typography>
-            </Box>
+            </Stack>
           )}
 
           {event.workPackages.length > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <BusinessCenterIcon fontSize="small" />
-              <Typography fontSize={14} fontWeight="bold" noWrap>
-                {event.workPackages.map((wp) => wp.wbsElement?.name ?? 'Work package').join(', ')}
+            <Stack direction="row">
+              <BusinessCenterIcon />
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
+                {event.workPackages.map((wp) => wp.wbsElement.name).join(', ')}
               </Typography>
-            </Box>
+            </Stack>
           )}
 
           {event.zoomLink && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <LinkIcon fontSize="small" />
-              <Typography fontSize={14} fontWeight="bold" noWrap>
-                Zoom Link
+            <Stack direction="row">
+              <LinkIcon />
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+                <Link href={event.zoomLink} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener">
+                  Zoom Link
+                </Link>
               </Typography>
-            </Box>
+            </Stack>
           )}
 
           {event.questionDocument && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ArticleIcon fontSize="small" />
-              <Typography fontSize={14} fontWeight="bold" noWrap>
-                Question Document Link
+            <Stack direction="row">
+              <ArticleIcon />
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+                <Link href={event.questionDocument} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener">
+                  Question Document Link
+                </Link>
               </Typography>
-            </Box>
+            </Stack>
           )}
 
           {event.description && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <DescriptionIcon fontSize="small" />
-              <Typography fontSize={14} fontWeight="bold" noWrap>
+            <Stack direction="row">
+              <DescriptionIcon />
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
                 {event.description.substring(0, name.length * 2)}
                 {event.description.length > name.length * 2 && '...'}
               </Typography>
-            </Box>
+            </Stack>
           )}
 
           {event.status && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Stack direction="row">
               {getStatusIcon(event.status)}
-              <Typography fontSize={14} fontWeight="bold" noWrap>
+              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
                 {event.status}
               </Typography>
-            </Box>
+            </Stack>
           )}
-        </Box>
-      </Box>
+        </Stack>
+      </>
     );
   };
 
   const EventCard = ({ event }: { event: Event }) => {
-    const name = event.workPackages?.[0]?.wbsElement?.name || event.title;
+    const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+    const [markedStatus, setMarkedStatus] = useState(event.status);
 
-    const specificEventType = eventTypes.find((et) => et.eventTypeId === event.eventTypeId);
+    const specificEventType = eventTypes.find((eventType) => eventType.eventTypeId === event.eventTypeId);
     const specificCalendar = calendars.find((calendar) =>
-      calendar.eventTypes.some((et) => et.eventTypeId === specificEventType?.eventTypeId)
+      calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)
     );
 
     const bgColor = specificCalendar?.color ?? 'gray';
 
     return (
-      <Box
-        marginLeft={0.5}
-        marginBottom={0.5}
-        marginRight={0.5}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleOpenClickPopup(event);
-        }}
-        sx={{
-          position: 'relative',
-          zIndex: 2,
-          cursor: 'pointer'
-        }}
-      >
-        <Card
+      <>
+        <DRCSummaryModal
+          open={isSummaryModalOpen}
+          onHide={() => setIsSummaryModalOpen(false)}
+          event={event}
+          teamTypes={teamTypes}
+          markedStatus={markedStatus}
+          setMarkedStatus={setMarkedStatus}
+        />
+
+        <Box
+          marginLeft={0.5}
+          marginBottom={0.5}
+          marginRight={0.5}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsSummaryModalOpen(true);
+          }}
           sx={{
-            backgroundColor: bgColor,
-            borderRadius: 1,
-            width: '100%',
-            minHeight: 30,
-            maxHeight: 30
+            position: 'relative',
+            zIndex: 2,
+            cursor: 'pointer'
           }}
         >
+          <Card
+            sx={{
+              backgroundColor: bgColor,
+              borderRadius: 1,
+              width: '100%',
+              minHeight: 30,
+              maxHeight: 30
+            }}
+          >
+            <Tooltip
+              placement="right"
+              arrow
+              title={<EventPopupInfo event={event} color={bgColor} />}
+              slotProps={{
+                popper: { sx: { zIndex: 1200 } },
+                tooltip: {
+                  sx: {
+                    maxWidth: 'none',
+                    borderRadius: 4,
+                    p: 2,
+                    cursor: 'pointer',
+                    bgcolor: theme.palette.grey[900],
+                    boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
+                  }
+                },
+                arrow: {
+                  sx: {
+                    color: theme.palette.grey[900],
+                    fontSize: 16
+                  }
+                }
+              }}
+            >
+              <Typography
+                marginX={0.5}
+                marginY={0.6}
+                lineHeight="120%"
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+                sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+              >
+                {getTeamTypeIcon(event.teamType?.name ?? '')} {event.title}
+              </Typography>
+            </Tooltip>
+          </Card>
+        </Box>
+      </>
+    );
+  };
+
+  const ExtraEventsCard = ({ extraEvents }: { extraEvents: Event[] }) => {
+    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+    const [markedStatus, setMarkedStatus] = useState<EventStatus | undefined>(undefined);
+
+    const handleEventClick = (event: Event) => {
+      setSelectedEvent(event);
+      setMarkedStatus(event.status);
+    };
+
+    const handleModalClose = () => setSelectedEvent(null);
+
+    return (
+      <>
+        {selectedEvent && (
+          <DRCSummaryModal
+            open={!!selectedEvent}
+            onHide={handleModalClose}
+            event={selectedEvent}
+            teamTypes={teamTypes}
+            markedStatus={markedStatus}
+            setMarkedStatus={setMarkedStatus}
+          />
+        )}
+
+        <Box marginLeft={0.5} marginRight={0.5} marginBottom={0.2} sx={{ position: 'relative', zIndex: 2 }}>
           <Tooltip
             placement="right"
             arrow
-            title={<EventPopupInfo event={event} color={bgColor} />}
+            title={
+              <Stack direction="column">
+                {extraEvents.map((event) => (
+                  <EventPartialInfoView
+                    key={event.eventId}
+                    event={event}
+                    onClick={() => handleEventClick(event)}
+                    dayOfWeek={dayOfWeek}
+                    calendars={calendars}
+                    eventTypes={eventTypes}
+                  />
+                ))}
+              </Stack>
+            }
             slotProps={{
-              popper: {
-                sx: {
-                  zIndex: 1200
-                }
-              },
+              popper: { sx: { zIndex: 1200 } },
               tooltip: {
                 sx: {
                   maxWidth: 'none',
                   borderRadius: 4,
                   p: 2,
-                  cursor: 'pointer',
                   bgcolor: theme.palette.grey[900],
                   boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
                 }
@@ -299,160 +409,68 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
               }
             }}
           >
-            <Typography
-              marginX={0.5}
-              marginY={0.6}
-              lineHeight="120%"
-              fontSize={14}
-              fontWeight="bold"
-              noWrap
-              align="left"
+            <Card
               sx={{
+                backgroundColor: theme.palette.grey[800],
+                borderRadius: 1,
+                width: '100%',
+                minHeight: 30,
+                maxHeight: 30,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 0.5
+                justifyContent: 'center'
               }}
             >
-              {getTeamTypeIcon(event.teamType?.name ?? '')} {name}
-            </Typography>
+              <Typography fontSize={14} fontWeight="bold">
+                {'+' + extraEvents.length}
+              </Typography>
+            </Card>
           </Tooltip>
-        </Card>
-      </Box>
-    );
-  };
-
-  interface ExtraEventsCardProps {
-    extraEvents: Event[];
-  }
-
-  const ExtraEventsCard: React.FC<ExtraEventsCardProps> = ({ extraEvents }) => {
-    const handleEventClick = (event: Event) => {
-      handleOpenClickPopup(event);
-    };
-
-    return (
-      <Box
-        marginLeft={0.5}
-        marginRight={0.5}
-        marginBottom={0.2}
-        sx={{
-          position: 'relative',
-          zIndex: 2
-        }}
-      >
-        <Tooltip
-          placement="right"
-          arrow
-          title={
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {extraEvents.map((event) => (
-                <EventPartialInfoView
-                  key={event.eventId}
-                  event={event}
-                  onClick={() => handleEventClick(event)}
-                  dayOfWeek={dayOfWeek}
-                  calendars={calendars}
-                  eventTypes={eventTypes}
-                />
-              ))}
-            </Box>
-          }
-          slotProps={{
-            popper: {
-              sx: {
-                zIndex: 1200
-              }
-            },
-            tooltip: {
-              sx: {
-                maxWidth: 'none',
-                borderRadius: 4,
-                p: 2,
-                bgcolor: theme.palette.grey[900],
-                boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
-              }
-            },
-            arrow: {
-              sx: {
-                color: theme.palette.grey[900],
-                fontSize: 16
-              }
-            }
-          }}
-        >
-          <Card
-            sx={{
-              backgroundColor: theme.palette.grey[800],
-              borderRadius: 1,
-              width: '100%',
-              minHeight: 30,
-              maxHeight: 30,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <Typography fontSize={14} fontWeight="bold">
-              {'+' + extraEvents.length}
-            </Typography>
-          </Card>
-        </Tooltip>
-      </Box>
+        </Box>
+      </>
     );
   };
 
   return (
-    <>
-      <Card
-        sx={{
-          position: 'relative',
-          backgroundColor: !(isFutureDay || isCurrentDay) ? theme.palette.grey[900] : 'inherit',
-          borderRadius: 2,
-          width: { xs: '95%', md: '80%' },
-          height: { xs: '10vh', sm: '12vh' },
-          border: isCurrentDay ? '2px solid gray' : 'none',
-          cursor: isFutureDay || isCurrentDay ? 'pointer' : 'default',
-          transition: 'background 0.2s',
-          '&:hover': isFutureDay || isCurrentDay ? { background: '#232323' } : {}
+    <Card
+      sx={{
+        position: 'relative',
+        backgroundColor: !(isFutureDay || isCurrentDay) ? theme.palette.grey[900] : 'inherit',
+        borderRadius: 2,
+        width: { xs: '95%', md: '80%' },
+        height: { xs: '10vh', sm: '12vh' },
+        border: isCurrentDay ? '2px solid gray' : 'none',
+        cursor: isFutureDay || isCurrentDay ? 'pointer' : 'default',
+        transition: 'background 0.2s',
+        '&:hover': isFutureDay || isCurrentDay ? { background: '#232323' } : {}
+      }}
+    >
+      <Box
+        onClick={() => {
+          if (isFutureDay || isCurrentDay) setIsCreateModalOpen(true);
         }}
-      >
-        <Box
-          onClick={() => {
-            if (isFutureDay || isCurrentDay) {
-              setIsCreateModalOpen(true);
-            }
-          }}
-          sx={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            zIndex: 1,
-            pointerEvents: 'auto'
-          }}
-        />
-        <CardContent sx={{ padding: 0 }}>
-          <DayCardTitle />
-          {events.length < 3 ? (
-            events.map((event) => <EventCard key={event.eventId} event={event} />)
-          ) : (
-            <>
-              <EventCard event={events[0]} />
-              <EventCard event={events[1]} />
-              <ExtraEventsCard extraEvents={events.slice(2)} />
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      <EventClickPopup
-        clickedEvent={clickedEvent}
-        anchorPosition={anchorPosition}
-        onClose={handleCloseClickPopup}
-        eventTypes={eventTypes}
-        calendars={calendars}
-        dayOfWeek={dayOfWeek}
+        sx={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          zIndex: 1,
+          pointerEvents: 'auto'
+        }}
       />
-    </>
+
+      <CardContent sx={{ padding: 0 }}>
+        <DayCardTitle />
+        {events.length < 3 ? (
+          events.map((event) => <EventCard key={event.eventId} event={event} />)
+        ) : (
+          <>
+            <EventCard event={events[0]} />
+            <EventCard event={events[1]} />
+            <ExtraEventsCard extraEvents={events.slice(2)} />
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
