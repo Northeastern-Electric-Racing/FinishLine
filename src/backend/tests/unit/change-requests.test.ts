@@ -1,13 +1,7 @@
 import { CR_Type, Organization, Scope_CR_Why_Type, User, WBS_Element_Status } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import ChangeRequestsService from '../../src/services/change-requests.services';
-import {
-  supermanAdmin,
-  aquamanLeadership,
-  greenlanternHead,
-  flashAdmin,
-  robinMember
-} from '../test-data/users.test-data';
+import { supermanAdmin, aquamanLeadership, greenlanternHead, flashAdmin, robinMember } from '../test-data/users.test-data';
 import { ProjectProposedChangesCreateArgs, WorkPackageProposedChangesCreateArgs } from 'shared';
 import prisma from '../../src/prisma/prisma';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
@@ -301,7 +295,7 @@ describe('Change Request Tests', () => {
     let changeRequestId: string;
 
     beforeEach(async () => {
-      submitterUser = await createTestUser(supermanAdmin, orgId);
+      submitterUser = user;
       leadershipUser1 = await createTestUser(aquamanLeadership, orgId);
       leadershipUser2 = await createTestUser(greenlanternHead, orgId);
       nonRequestedLeadership = await createTestUser(flashAdmin, orgId);
@@ -448,24 +442,12 @@ describe('Change Request Tests', () => {
       );
 
       await expect(
-        ChangeRequestsService.reviewChangeRequest(
-          memberUser,
-          changeRequestId,
-          'I want to review',
-          false,
-          organization,
-          null
-        )
+        ChangeRequestsService.reviewChangeRequest(memberUser, changeRequestId, 'I want to review', false, organization, null)
       ).rejects.toThrow();
     });
 
     it('allows rejection by non-requested leadership when reviewers are requested', async () => {
-      await ChangeRequestsService.requestCRReview(
-        submitterUser,
-        [leadershipUser1.userId],
-        changeRequestId,
-        organization
-      );
+      await ChangeRequestsService.requestCRReview(submitterUser, [leadershipUser1.userId], changeRequestId, organization);
 
       await expect(
         ChangeRequestsService.reviewChangeRequest(
