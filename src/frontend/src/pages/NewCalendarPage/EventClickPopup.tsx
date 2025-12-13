@@ -140,7 +140,7 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
               startIcon={<PeopleIcon fontSize="small" />}
               onClick={(e) => {
                 e.stopPropagation();
-                // availability page 
+                // availability page
               }}
               sx={{
                 textTransform: 'none',
