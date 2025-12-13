@@ -12,7 +12,6 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ArticleIcon from '@mui/icons-material/Article';
-import HelpIcon from '@mui/icons-material/Help';
 import GroupsIcon from '@mui/icons-material/Groups';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
@@ -245,7 +244,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     const specificCalendar = calendars.find((calendar) =>
       calendar.eventTypes.some((et) => et.eventTypeId === specificEventType?.eventTypeId)
     );
-    
+
     const bgColor = specificCalendar?.color ?? 'gray';
 
     return (
