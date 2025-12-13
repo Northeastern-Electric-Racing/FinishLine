@@ -1,4 +1,4 @@
-import { Box, Card, Link, CardContent, Tooltip, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Tooltip, Typography, useTheme } from '@mui/material';
 import { Calendar, DayOfWeek, Event, EventType, TeamType } from 'shared';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import { useState } from 'react';
@@ -12,11 +12,11 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ArticleIcon from '@mui/icons-material/Article';
+import HelpIcon from '@mui/icons-material/Help';
 import GroupsIcon from '@mui/icons-material/Groups';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import TerminalIcon from '@mui/icons-material/Terminal';
-import { Stack } from '@mui/system';
 
 import EventPartialInfoView from './EventPartialInfoView';
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
@@ -45,7 +45,7 @@ interface CalendarDayCardProps {
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   cardDate,
   events,
-  teamTypes,
+  teamTypes: _teamTypes,
   eventTypes = [],
   calendars = [],
   dayOfWeek = DayOfWeek.MONDAY
@@ -78,179 +78,174 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   };
 
   const DayCardTitle = () => (
-    <Stack direction="row" justifyContent="flex-end">
-      <Typography
-        variant="h5"
-        margin={1}
-        noWrap
-        sx={{
-          color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[100] : theme.palette.grey[600]
-        }}
-      >
-        {cardDate.getDate()}
-      </Typography>
-    </Stack>
+    <Typography
+      variant="h5"
+      margin={1}
+      noWrap
+      sx={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[100] : theme.palette.grey[600]
+      }}
+    >
+      {cardDate.getDate()}
+    </Typography>
   );
 
   const EventPopupInfo = ({ event, color }: { event: Event; color: string }) => {
-    const name = event.workPackages[0]?.wbsElement?.name || event.title;
+    const name = event.workPackages?.[0]?.wbsElement?.name || event.title;
     const convertedStartTime = getConvertedStart(event, dayOfWeek);
     const convertedEndTime = getConvertedEnd(event, dayOfWeek);
 
     return (
-      <Stack direction="column" spacing={1.25}>
-        <Stack direction="row" alignItems="center" spacing={1}>
+      <Box>
+        <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 24, fontWeight: 'bold' }}>
           {getTeamTypeIcon(event.teamType?.name ?? '', true)}
-          <Typography lineHeight="120%" fontSize={24} fontWeight="bold" noWrap align="left" color={color}>
-            {name}
-          </Typography>
-        </Stack>
+          <span style={{ color }}>{name}</span>
+        </Typography>
 
-        <Stack direction="row" alignItems="center" flexWrap="wrap" spacing={1}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
           <AccessTimeIcon fontSize="small" />
-          <Typography lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+          <Typography fontSize={14} fontWeight="bold">
             {convertedStartTime} - {convertedEndTime}
           </Typography>
-
           <LocationOnIcon fontSize="small" />
-          <Typography lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
+          <Typography fontSize={14} fontWeight="bold">
             {event.location ?? 'N/A'}
           </Typography>
-        </Stack>
+        </Box>
 
-        {event.requiredMembers.length > 0 && (
-          <Stack direction="row" alignItems="flex-start" spacing={1}>
-            <GroupIcon fontSize="small" />
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              Required:
-            </Typography>
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.requiredMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
-            </Typography>
-          </Stack>
-        )}
+        <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.6 }}>
+          {event.requiredMembers.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <GroupIcon fontSize="small" />
+              <Typography fontSize={14} fontWeight="bold">
+                Required:
+              </Typography>
+              <Typography fontSize={14} fontWeight="bold" noWrap>
+                {event.requiredMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
+              </Typography>
+            </Box>
+          )}
 
-        {event.optionalMembers.length > 0 && (
-          <Stack direction="row" alignItems="flex-start" spacing={1}>
-            <GroupIcon fontSize="small" />
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              Optional:
-            </Typography>
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.optionalMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
-            </Typography>
-          </Stack>
-        )}
+          {event.optionalMembers.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <GroupIcon fontSize="small" />
+              <Typography fontSize={14} fontWeight="bold">
+                Optional:
+              </Typography>
+              <Typography fontSize={14} fontWeight="bold" noWrap>
+                {event.optionalMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
+              </Typography>
+            </Box>
+          )}
 
-        {event.confirmedMembers.length > 0 && (
-          <Stack direction="row" alignItems="flex-start" spacing={1}>
-            <CheckCircleIcon fontSize="small" />
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.confirmedMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
-            </Typography>
-          </Stack>
-        )}
+          {event.confirmedMembers.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CheckCircleIcon fontSize="small" />
+              <Typography fontSize={14} fontWeight="bold" noWrap>
+                {event.confirmedMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
+              </Typography>
+            </Box>
+          )}
 
-        {event.deniedMembers.length > 0 && (
-          <Stack direction="row" alignItems="flex-start" spacing={1}>
-            <DoNotDisturbIcon fontSize="small" />
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.deniedMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
-            </Typography>
-          </Stack>
-        )}
+          {event.deniedMembers.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <DoNotDisturbIcon fontSize="small" />
+              <Typography fontSize={14} fontWeight="bold" noWrap>
+                {event.deniedMembers.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
+              </Typography>
+            </Box>
+          )}
 
-        {event.teams.length > 0 && (
-          <Stack direction="row" alignItems="flex-start" spacing={1}>
-            <GroupsIcon fontSize="small" />
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              Teams:
-            </Typography>
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.teams.map((t) => t.teamName).join(', ')}
-            </Typography>
-          </Stack>
-        )}
+          {event.teams.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <GroupsIcon fontSize="small" />
+              <Typography fontSize={14} fontWeight="bold">
+                Teams:
+              </Typography>
+              <Typography fontSize={14} fontWeight="bold" noWrap>
+                {event.teams.map((t) => t.teamName).join(', ')}
+              </Typography>
+            </Box>
+          )}
 
-        {event.machinery.length > 0 && (
-          <Stack direction="row" alignItems="flex-start" spacing={1}>
-            <ConstructionIcon fontSize="small" />
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.machinery.map((m) => m.name).join(', ')}
-            </Typography>
-          </Stack>
-        )}
+          {event.machinery.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ConstructionIcon fontSize="small" />
+              <Typography fontSize={14} fontWeight="bold" noWrap>
+                {event.machinery.map((m) => m.name).join(', ')}
+              </Typography>
+            </Box>
+          )}
 
-        {event.shops.length > 0 && (
-          <Stack direction="row" alignItems="flex-start" spacing={1}>
-            <StorefrontIcon fontSize="small" />
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.shops.map((s) => s.name).join(', ')}
-            </Typography>
-          </Stack>
-        )}
+          {event.shops.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <StorefrontIcon fontSize="small" />
+              <Typography fontSize={14} fontWeight="bold" noWrap>
+                {event.shops.map((s) => s.name).join(', ')}
+              </Typography>
+            </Box>
+          )}
 
-        {event.workPackages.length > 0 && (
-          <Stack direction="row" alignItems="flex-start" spacing={1}>
-            <BusinessCenterIcon fontSize="small" />
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.workPackages.map((wp) => wp.wbsElement.name).join(', ')}
-            </Typography>
-          </Stack>
-        )}
+          {event.workPackages.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <BusinessCenterIcon fontSize="small" />
+              <Typography fontSize={14} fontWeight="bold" noWrap>
+                {event.workPackages.map((wp) => wp.wbsElement?.name ?? 'Work package').join(', ')}
+              </Typography>
+            </Box>
+          )}
 
-        {event.zoomLink && (
-          <Stack direction="row" alignItems="flex-start" spacing={1}>
-            <LinkIcon fontSize="small" />
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-              <Link href={event.zoomLink} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener">
+          {event.zoomLink && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <LinkIcon fontSize="small" />
+              <Typography fontSize={14} fontWeight="bold" noWrap>
                 Zoom Link
-              </Link>
-            </Typography>
-          </Stack>
-        )}
+              </Typography>
+            </Box>
+          )}
 
-        {event.questionDocument && (
-          <Stack direction="row" alignItems="flex-start" spacing={1}>
-            <ArticleIcon fontSize="small" />
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-              <Link href={event.questionDocument} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener">
+          {event.questionDocument && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ArticleIcon fontSize="small" />
+              <Typography fontSize={14} fontWeight="bold" noWrap>
                 Question Document Link
-              </Link>
-            </Typography>
-          </Stack>
-        )}
+              </Typography>
+            </Box>
+          )}
 
-        {event.description && (
-          <Stack direction="row" alignItems="flex-start" spacing={1}>
-            <DescriptionIcon fontSize="small" />
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-              {event.description.substring(0, name.length * 2)}
-              {event.description.length > name.length * 2 && '...'}
-            </Typography>
-          </Stack>
-        )}
+          {event.description && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <DescriptionIcon fontSize="small" />
+              <Typography fontSize={14} fontWeight="bold" noWrap>
+                {event.description.substring(0, name.length * 2)}
+                {event.description.length > name.length * 2 && '...'}
+              </Typography>
+            </Box>
+          )}
 
-        {event.status && (
-          <Stack direction="row" alignItems="flex-start" spacing={1}>
-            {getStatusIcon(event.status)}
-            <Typography lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-              {event.status}
-            </Typography>
-          </Stack>
-        )}
-      </Stack>
+          {event.status && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {getStatusIcon(event.status)}
+              <Typography fontSize={14} fontWeight="bold" noWrap>
+                {event.status}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      </Box>
     );
   };
 
   const EventCard = ({ event }: { event: Event }) => {
-    const name = event.workPackages[0]?.wbsElement?.name || event.title;
+    const name = event.workPackages?.[0]?.wbsElement?.name || event.title;
 
     const specificEventType = eventTypes.find((et) => et.eventTypeId === event.eventTypeId);
     const specificCalendar = calendars.find((calendar) =>
       calendar.eventTypes.some((et) => et.eventTypeId === specificEventType?.eventTypeId)
     );
-
+    
     const bgColor = specificCalendar?.color ?? 'gray';
 
     return (
@@ -350,7 +345,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           placement="right"
           arrow
           title={
-            <Stack direction="column">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               {extraEvents.map((event) => (
                 <EventPartialInfoView
                   key={event.eventId}
@@ -361,7 +356,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                   eventTypes={eventTypes}
                 />
               ))}
-            </Stack>
+            </Box>
           }
           slotProps={{
             popper: {
