@@ -3,7 +3,6 @@ import { Box, Button, IconButton, Popover, Stack, Typography, useTheme } from '@
 import { Calendar, DayOfWeek, Event, EventType } from 'shared';
 import { getTeamTypeIcon } from './CalendarDayCard';
 import ConstructionIcon from '@mui/icons-material/Construction';
-
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -14,8 +13,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import PeopleIcon from '@mui/icons-material/People';
 
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
-
-
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
@@ -46,6 +43,8 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
     calendar.eventTypes.some((et) => et.eventTypeId === specificEventType?.eventTypeId)
   );
   const calendarColor = specificCalendar?.color ?? 'gray';
+
+  const showAvailabilityButton = Boolean(specificEventType?.requiresConfirmation);
 
   const allPeople = [...event.requiredMembers, ...event.optionalMembers, ...event.confirmedMembers];
   const seenIds = new Set<string>();
@@ -83,7 +82,6 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
         maxWidth: 520
       }}
     >
-      {/* Header row with edit icon */}
       <Box sx={{ position: 'relative', mb: 2 }}>
         <IconButton
           size="small"
@@ -124,16 +122,43 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
           <Typography variant="body2">{event.location || 'N/A'}</Typography>
         </Stack>
       </Box>
-
-      {/* Body sections */}
       <Stack spacing={1.25}>
-        {/* People */}
+        {/* Members */}
         <Stack direction="row" spacing={1.25} alignItems="flex-start">
           <PeopleIcon fontSize="small" sx={{ mt: 0.3 }} />
           <Typography variant="body2" sx={{ flex: 1 }}>
             {peopleText}
           </Typography>
         </Stack>
+
+        {/* View availability */}
+        {showAvailabilityButton && (
+          <Box sx={{ pl: 3.25, mt: -0.5 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<PeopleIcon fontSize="small" />}
+              onClick={(e) => {
+                e.stopPropagation();
+                // availability page 
+              }}
+              sx={{
+                textTransform: 'none',
+                borderRadius: 999,
+                px: 1.5,
+                py: 0.4,
+                color: theme.palette.common.white,
+                borderColor: theme.palette.grey[700],
+                '&:hover': {
+                  borderColor: theme.palette.grey[500],
+                  bgcolor: 'transparent'
+                }
+              }}
+            >
+              View availability
+            </Button>
+          </Box>
+        )}
 
         {/* Machinery */}
         {hasMachinery && (
@@ -145,7 +170,7 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
           </Stack>
         )}
 
-        {/* Work package */}
+        {/* Work packages */}
         {hasWorkPackages && (
           <Stack direction="row" spacing={1.25} alignItems="flex-start">
             <BusinessCenterIcon fontSize="small" sx={{ mt: 0.3 }} />
@@ -163,8 +188,6 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
           </Typography>
         </Stack>
       </Stack>
-
-      {/* reminder button */}
       <Box mt={2} display="flex" justifyContent="flex-end">
         <Button
           variant="contained"
