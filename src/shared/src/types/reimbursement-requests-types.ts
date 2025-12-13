@@ -21,6 +21,7 @@ export interface ReimbursementRequestRow {
   vendor: Vendor;
   refundSource: IndexCode;
   financeMemberAssigned: User | undefined;
+  reimbursementProducts: ReimbursementProduct[];
 }
 
 export enum ReimbursementStatusType {
