@@ -23,11 +23,9 @@ const EditReimbursementRequestPage: React.FC<{}> = () => {
   const { id } = useParams<{ id: string }>();
   const history = useHistory();
 
-  const { isLoading: editReimbursementRequestIsLoading } = useEditReimbursementRequest(id);
-  const { isLoading: uploadReceiptsIsLoading } = useUploadManyReceipts();
+  const { isLoading: editReimbursementRequestIsLoading, mutateAsync: editReimbursementRequest } = useEditReimbursementRequest(id);
+  const { isLoading: uploadReceiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
   const { isLoading: getIsLoading, isError, error, data: reimbursementRequest } = useSingleReimbursementRequest(id);
-  const { mutateAsync: editReimbursementRequest } = useEditReimbursementRequest(id);
-  const { mutateAsync: uploadReceipts } = useUploadManyReceipts();
   const { mutateAsync: markPendingFinance } = useMarkPendingFinance(id);
   const { mutateAsync: leadershipApproveReimbursementRequest } = useLeadershipApproveReimbursementRequest(id);
   const user = useCurrentUser();
@@ -35,8 +33,9 @@ const EditReimbursementRequestPage: React.FC<{}> = () => {
 
   if (isError) return <ErrorPage error={error} />;
 
-  if (getIsLoading || editReimbursementRequestIsLoading || uploadReceiptsIsLoading || !reimbursementRequest)
-    return <LoadingIndicator />;
+  if (getIsLoading || !reimbursementRequest) return <LoadingIndicator />;
+
+  const isSubmitting = editReimbursementRequestIsLoading || uploadReceiptsIsLoading;
 
   const onCancel = () => {
     history.goBack();
@@ -90,6 +89,7 @@ const EditReimbursementRequestPage: React.FC<{}> = () => {
       onSubmitData={onSubmitEditData}
       onExitEditPage={onCancel}
       onSubmitToFinance={onSubmitToFinance}
+      isSubmitting={isSubmitting}
     />
   );
 };

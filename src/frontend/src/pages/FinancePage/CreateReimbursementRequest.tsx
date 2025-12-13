@@ -11,8 +11,9 @@ import ReimbursementRequestForm, {
 } from './ReimbursementRequestForm/ReimbursementRequestForm';
 
 const CreateReimbursementRequestPage: React.FC = () => {
-  const { mutateAsync: createReimbursementRequest } = useCreateReimbursementRequest();
-  const { mutateAsync: uploadReceipts } = useUploadManyReceipts();
+  const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
+    useCreateReimbursementRequest();
+  const { isLoading: receiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
   const history = useHistory();
 
   const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
@@ -28,12 +29,19 @@ const CreateReimbursementRequestPage: React.FC = () => {
     history.goBack();
   };
 
+  const isSubmitting = createReimbursementRequestIsLoading || receiptsIsLoading;
+
   return (
     <PageLayout
       title="Create Reimbursement Request"
       previousPages={[{ name: 'Reimbursement Requests', route: routes.REIMBURSEMENT_REQUESTS }]}
     >
-      <ReimbursementRequestForm onFormExit={onCancel} submitText="Submit" submitData={onSubmit} />
+      <ReimbursementRequestForm
+        onFormExit={onCancel}
+        submitText="Submit"
+        submitData={onSubmit}
+        isSubmitting={isSubmitting}
+      />
     </PageLayout>
   );
 };

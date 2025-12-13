@@ -52,6 +52,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
+import { imagePreviewUrl } from '../../../utils/reimbursement-request.utils';
 import { useCreateVendor } from '../../../hooks/finance.hooks';
 import { useGetFinanceDelegates } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -85,6 +86,7 @@ interface ReimbursementRequestFormViewProps {
   isEditing?: boolean;
   isLeadershipApproved?: boolean;
   onSubmitToFinance?: (data: ReimbursementRequestFormInput) => void;
+  isSubmitting?: boolean;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -109,7 +111,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   onFormExit,
   isEditing = false,
   isLeadershipApproved = false,
-  onSubmitToFinance
+  onSubmitToFinance,
+  isSubmitting = false
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [showAddRefundSourceModal, setShowAddRefundSourceModal] = useState(false);
@@ -742,8 +745,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     <Grid container spacing={2}>
                       {receiptFiles.map((receiptFile, index) => {
                         let previewUrl = '';
+                        // if file is newly uploaded, show local preview, else show google drive preview
                         if (receiptFile.file) {
                           previewUrl = URL.createObjectURL(receiptFile.file);
+                        } else if (receiptFile.googleFileId) {
+                          previewUrl = imagePreviewUrl(receiptFile.googleFileId);
                         }
 
                         return (
@@ -784,6 +790,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                                 </IconButton>
                               </Box>
                               {previewUrl &&
+                                receiptFile.file &&
                                 (receiptFile.name.toLowerCase().endsWith('.png') ||
                                   receiptFile.name.toLowerCase().endsWith('.jpg') ||
                                   receiptFile.name.toLowerCase().endsWith('.jpeg')) && (
@@ -803,7 +810,21 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                                     }}
                                   />
                                 )}
-                              {!previewUrl && !receiptFile.googleFileId && (
+                              {previewUrl && receiptFile.googleFileId && (
+                                <Box
+                                  component="iframe"
+                                  src={previewUrl}
+                                  title={receiptFile.name}
+                                  sx={{
+                                    width: '100%',
+                                    height: '150px',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    bgcolor: 'rgba(0,0,0,0.2)'
+                                  }}
+                                />
+                              )}
+                              {!previewUrl && (
                                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                                   Preview not available
                                 </Typography>
@@ -871,19 +892,19 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           <NERSuccessButton
             variant="contained"
             type="submit"
-            disabled={!hasSecureSettingsSet}
+            disabled={!hasSecureSettingsSet || isSubmitting}
             sx={{ background: '#dd524c', color: 'white', borderRadius: '10px' }}
           >
-            {submitText}
+            {isSubmitting ? 'Submitting...' : submitText}
           </NERSuccessButton>
           {(isHead(user.role) || (isEditing && isLeadershipApproved)) && onSubmitToFinance && (
             <NERSuccessButton
               variant="contained"
               onClick={handleSubmit(onSubmitToFinance)}
-              disabled={!hasSecureSettingsSet}
+              disabled={!hasSecureSettingsSet || isSubmitting}
               sx={{ background: '#dd524c', color: 'white', borderRadius: '10px' }}
             >
-              Save and Submit to Finance
+              {isSubmitting ? 'Submitting...' : 'Save and Submit to Finance'}
             </NERSuccessButton>
           )}
         </Box>

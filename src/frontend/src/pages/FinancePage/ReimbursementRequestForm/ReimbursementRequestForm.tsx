@@ -48,6 +48,7 @@ interface ReimbursementRequestFormProps {
   defaultValues?: ReimbursementRequestFormInput;
   isLeadershipApproved?: boolean;
   onSubmitToFinance?: (data: ReimbursementRequestDataSubmission) => Promise<void>;
+  isSubmitting?: boolean;
 }
 
 const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabled';
@@ -138,7 +139,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   submitData,
   onFormExit,
   isLeadershipApproved = false,
-  onSubmitToFinance
+  onSubmitToFinance,
+  isSubmitting = false
 }) => {
   const {
     handleSubmit,
@@ -363,6 +365,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       isEditing={!!defaultValues}
       isLeadershipApproved={isLeadershipApproved}
       onSubmitToFinance={onSubmitToFinanceWrapper}
+      isSubmitting={isSubmitting}
     />
   );
 };
