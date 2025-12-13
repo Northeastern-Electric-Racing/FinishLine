@@ -22,6 +22,7 @@ import { taskUserToAutocompleteOption } from '../../utils/task.utils';
 
 interface ChangeRequestActionMenuProps {
   isUserAllowedToReview: boolean;
+  reviewDisabledTooltip?: string;
   isUserAllowedToImplement: boolean;
   isUserAllowedToDelete: boolean;
   changeRequest: ChangeRequest;
@@ -31,6 +32,7 @@ interface ChangeRequestActionMenuProps {
 
 const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   isUserAllowedToReview,
+  reviewDisabledTooltip,
   isUserAllowedToImplement,
   isUserAllowedToDelete,
   changeRequest,
@@ -77,7 +79,8 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
             title: 'Review',
             onClick: handleReviewOpen,
             disabled: !isUserAllowedToReview,
-            icon: <ContentPasteIcon fontSize="small" />
+            icon: <ContentPasteIcon fontSize="small" />,
+            tooltip: reviewDisabledTooltip
           },
           {
             title: 'Delete',
