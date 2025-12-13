@@ -2169,8 +2169,10 @@ export default class CalendarService {
         dateDeleted: null,
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
-        ...(memberOrTeamFilter ? { OR: memberOrTeamFilter } : undefined),
-        OR: approvedEvents ? [{ approved: 'APPROVED' }, { approved: 'NO_CONFLICT' }] : undefined,
+        AND: [
+          memberOrTeamFilter.length ? { OR: memberOrTeamFilter } : {},
+          approvedEvents ? { OR: [{ approved: 'APPROVED' }, { approved: 'NO_CONFLICT' }] } : {}
+        ],
         scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
         ...fromCalendar
       },
