@@ -979,7 +979,7 @@ export default class CalendarService {
    * Approve event in the database
    * @param submitter The user submitting the request who must be a head or above.
    * @param eventId The id of the given event.
-   * @param organization The organization for which the event is being deleted.
+   * @param organization The organization for which the event is being approved.
    *
    * @returns The approved event.
    *
@@ -1016,6 +1016,19 @@ export default class CalendarService {
     return eventTransformer(approvedEvent);
   }
 
+  /**
+   * Denies an event in the database
+   * @param submitter The user submitting the request who must be a head or above.
+   * @param eventId The id of the given event.
+   * @param organization The organization for which the event is being denied.
+   *
+   * @returns The denied event.
+   *
+   * @throws NotFoundException If the given eventId is not found.
+   * @throws InvalidOrganizationException If the given eventId is not part of the same organization.
+   * @throws DeletedException If the event has already been deleted.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin or head.
+   */
   static async denyEvent(submitter: User, eventId: string, organization: Organization): Promise<Event> {
     const event = await prisma.event.findUnique({
       where: { eventId }
