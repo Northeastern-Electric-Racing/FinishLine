@@ -68,7 +68,7 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
   );
   const calendarColor = specificCalendar?.color ?? 'gray';
 
-  const showAvailabilityButton = true;
+  const showAvailabilityButton = Boolean(specificEventType?.requiresConfirmation);
 
   const availabilityUrl = `${routes.SETTINGS_PREFERENCES}?eventId=${event.eventId}`;
 
