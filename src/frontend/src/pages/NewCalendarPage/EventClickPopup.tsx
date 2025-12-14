@@ -262,12 +262,11 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
         {hasValue(event.zoomLink) && (
           <Stack direction="row" spacing={1.25} alignItems="flex-start">
             <LinkIcon fontSize="small" sx={{ mt: 0.3 }} />
-            <Typography variant="body2">
-              <b>Zoom:</b>{' '}
+            
               <Link href={event.zoomLink!} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
                 Zoom Link
               </Link>
-            </Typography>
+            
           </Stack>
         )}
 
