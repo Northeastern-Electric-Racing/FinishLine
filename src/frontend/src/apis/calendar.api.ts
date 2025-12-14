@@ -47,6 +47,12 @@ export const postCreateShop = (payload: { name: string; description: string }) =
   });
 };
 
+export const postFilterEvents = (payload: FilterArgs) => {
+  return axios.post<Event[]>(apiUrls.calendarFilterEvents(), payload, {
+    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
+  });
+};
+
 export const postDeleteShop = async (id: string) => {
   return axios.post<Shop>(apiUrls.calendarDeleteShop(id));
 };
@@ -138,12 +144,6 @@ export const postDeleteEventType = async (eventTypeId: string) => {
 
 export const getAllEvents = () => {
   return axios.get(apiUrls.calendarEvents(), {
-    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
-  });
-};
-
-export const postFilterEvents = (payload: FilterArgs) => {
-  return axios.post<Event[]>(apiUrls.calendarFilterEvents(), payload, {
     transformResponse: (data) => JSON.parse(data).map(eventTransformer)
   });
 };

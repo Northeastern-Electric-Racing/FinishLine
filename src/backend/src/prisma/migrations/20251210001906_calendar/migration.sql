@@ -1,6 +1,9 @@
 -- CreateEnum
 CREATE TYPE "public"."DayOfWeek" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
 
+-- CreateEnum
+CREATE TYPE "Conflict_Status" AS ENUM ('PENDING', 'APPROVED', 'DENIED', 'NO_CONFLICT');
+
 -- CreateTable
 CREATE TABLE "public"."Shop" (
     "shopId" TEXT NOT NULL,
@@ -75,13 +78,14 @@ CREATE TABLE "public"."Event" (
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
     "eventTypeId" TEXT NOT NULL,
-    "approved" BOOLEAN NOT NULL DEFAULT false,
+    "approved" "public"."Conflict_Status" NOT NULL,
     "approvalRequiredFromUserId" TEXT,
     "location" TEXT,
     "zoomLink" TEXT,
     "questionDocumentLink" TEXT,
     "description" TEXT,
     "teamTypeId" TEXT,
+    "calendarEventIds" TEXT[],
 
     CONSTRAINT "Event_pkey" PRIMARY KEY ("eventId")
 );
@@ -501,7 +505,8 @@ INSERT INTO "public"."Event" (
     "questionDocumentLink",
     "description",
     "status",
-    "teamTypeId"
+    "teamTypeId",
+    "calendarEventIds"
 )
 SELECT 
     dr."designReviewId",
@@ -515,14 +520,15 @@ SELECT
      WHERE et."name" = 'Design Review' 
      AND et."organizationId" = w."organizationId" 
      LIMIT 1),
-    CASE WHEN dr."status" IN ('CONFIRMED', 'SCHEDULED', 'DONE') THEN true ELSE false END,
+    'NO_CONFLICT'::public."Conflict_Status" ,
     NULL, -- approvalRequiredFromUserId (not in Design_Review)
     dr."location",
     dr."zoomLink",
     dr."docTemplateLink", -- questionDocument uses docTemplateLink
     NULL, -- description (not in Design_Review)
     dr."status"::"text"::"public"."Event_Status",
-    dr."teamTypeId"
+    dr."teamTypeId",
+    CASE WHEN dr."calendarEventId" IS NOT NULL THEN ARRAY[dr."calendarEventId"] ELSE ARRAY[]::TEXT[] END
 FROM "public"."Design_Review" dr
 JOIN "public"."WBS_Element" w ON dr."wbsElementId" = w."wbsElementId";
 
@@ -628,7 +634,7 @@ SELECT
      WHERE et."name" = 'Meeting' 
      AND et."organizationId" = t."organizationId"
      LIMIT 1),
-    false, -- Meetings aren't pre-approved
+    'NO_CONFLICT'::public."Conflict_Status" , 
     'UNCONFIRMED'::public."Event_Status"
 FROM "public"."Meeting" m
 JOIN "public"."Team" t ON m."teamId" = t."teamId";

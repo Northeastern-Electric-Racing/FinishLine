@@ -9,10 +9,8 @@ export interface EditEventModalProps {
   eventTypes: EventType[];
 }
 
-const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, onSubmit, initialValues, eventTypes }) => {
-  return (
-    <EventModal open={open} onClose={onClose} onSubmit={onSubmit} initialValues={initialValues} eventTypes={eventTypes} />
-  );
+const EditEventModal: React.FC<EditEventModalProps> = (props) => {
+  return <EventModal {...props} />;
 };
 
 export default EditEventModal;

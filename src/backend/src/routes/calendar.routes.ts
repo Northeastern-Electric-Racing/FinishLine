@@ -141,6 +141,8 @@ calendarRouter.post('/event/:eventId/upload-document', upload.single('pdf'), Cal
 
 calendarRouter.post('/event/:eventId/approve', CalendarController.approveEvent);
 
+calendarRouter.post('/event/:eventId/deny', CalendarController.denyEvent);
+
 calendarRouter.post(
   '/event/:eventId/confirm-schedule',
   body('availability').isArray(),
@@ -234,7 +236,7 @@ calendarRouter.post(
   body('eventTypeIds.*').optional().isString(),
   body('eventIds').isArray().optional(),
   body('eventIds.*').isString().optional(),
-  body('approvalStatus').isBoolean().optional(),
+  body('approvedEvents').isBoolean().optional(),
   isDate(body('startPeriod')),
   isDate(body('endPeriod')),
   validateInputs,

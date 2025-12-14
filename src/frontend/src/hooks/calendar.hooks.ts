@@ -4,8 +4,8 @@ import {
   Machinery,
   Calendar,
   AvailabilityCreateArgs,
-  Event,
   EventTypeCreateArgs,
+  Event,
   EventStatus,
   EventType,
   FilterArgs,
@@ -43,6 +43,8 @@ import {
 import { useCurrentUser } from './users.hooks';
 import { PDFDocument } from 'pdf-lib';
 import saveAs from 'file-saver';
+
+export const FILTER_EVENTS_KEY = ['filter_events'] as const;
 
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;

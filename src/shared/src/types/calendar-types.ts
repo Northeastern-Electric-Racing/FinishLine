@@ -62,6 +62,13 @@ export enum DayOfWeek {
   SUNDAY = 'SUNDAY'
 }
 
+export enum ConflictStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  DENIED = 'DENIED',
+  NO_CONFLICT = 'NO_CONFLICT'
+}
+
 export interface Calendar {
   calendarId: string;
   name: string;
@@ -98,9 +105,9 @@ export interface FilterArgs {
   calendarIds?: string[];
   eventTypeIds?: string[];
   eventIds?: string[];
-  approvalStatus?: boolean;
-  startPeriod?: Date;
-  endPeriod?: Date;
+  approvedEvents?: boolean;
+  startPeriod: Date;
+  endPeriod: Date;
 }
 
 export interface EventType {
@@ -172,7 +179,7 @@ export interface Machinery {
 export interface Event {
   eventId: string;
   title: string;
-  approved: boolean;
+  approved: ConflictStatus;
   userCreated: UserWithScheduleSettings;
   dateCreated: Date;
   eventTypeId: string;

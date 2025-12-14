@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DayOfWeek, Event, EventStatus, TeamType } from 'shared';
+import { ConflictStatus, DayOfWeek, Event, EventStatus, TeamType } from 'shared';
 import { exampleAdminUser, exampleAppAdminUser } from './users.stub';
 
 export const teamType1: TeamType = {
@@ -20,7 +20,7 @@ export const teamType1: TeamType = {
 export const exampleDesignReviewEvent1: Event = {
   eventId: '1',
   title: 'Design Review - Impact Attenuator',
-  approved: true,
+  approved: ConflictStatus.APPROVED,
   userCreated: exampleAdminUser,
   dateCreated: new Date('2024-03-10'),
   eventTypeId: 'design-review-event-type-id',
@@ -96,7 +96,7 @@ export const exampleDesignReviewEvent1: Event = {
 export const exampleDesignReviewEvent2: Event = {
   eventId: '2',
   title: 'Design Review - Bodywork',
-  approved: true,
+  approved: ConflictStatus.APPROVED,
   userCreated: exampleAppAdminUser,
   dateCreated: new Date('2024-03-10'),
   eventTypeId: 'design-review-event-type-id',
