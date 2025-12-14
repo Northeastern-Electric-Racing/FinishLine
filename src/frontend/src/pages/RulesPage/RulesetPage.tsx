@@ -6,12 +6,12 @@
 // List of rulesets for a specific ruleset type
 import React from 'react';
 import PageLayout from '../../components/PageLayout';
+import { useHistory } from 'react-router-dom';
 import AddNewFileModal from './components/AddNewFileModal';
 import { NERButton } from '../../components/NERButton';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCreateRuleset, useParseRuleset } from '../../hooks/rules.hooks';
 import { routes } from '../../utils/routes';
-import { useHistory } from 'react-router-dom';
 
 // FSAE ruleset versions or FHE ruleset versions
 const RulesetPage: React.FC = () => {
@@ -68,7 +68,7 @@ const RulesetPage: React.FC = () => {
 
   return (
     <PageLayout title="Ruleset">
-      <NERButton variant="contained" onClick={() => setAddFileModalShow(!AddFileModalShow)}>
+     <NERButton variant="contained" onClick={() => setAddFileModalShow(!AddFileModalShow)}>
         Add New File
       </NERButton>
       <AddNewFileModal
