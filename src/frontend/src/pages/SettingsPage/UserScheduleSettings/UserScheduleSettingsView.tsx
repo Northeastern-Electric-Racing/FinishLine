@@ -28,7 +28,9 @@ const UserScheduleSettingsView = ({
   const { mutateAsync } = useMarkUserConfirmed(event?.eventId || '');
 
   // Get the first scheduled date from the event
-  const firstScheduledDate = event?.scheduledTimes[0]?.initialDateScheduled;
+  const firstScheduledDate = event?.scheduledTimes?.[0]?.initialDateScheduled
+    ? new Date(event.scheduledTimes[0].initialDateScheduled as any)
+    : undefined;
 
   // Get work package names for the event title
   const workPackageNames = event?.workPackages.map((wp) => wp.wbsElement.name).join(', ') || 'Event';
@@ -53,8 +55,8 @@ const UserScheduleSettingsView = ({
   };
 
   const firstDate = useMemo(() => {
-    const firstSlot = event?.scheduledTimes[0];
-    return firstSlot?.initialDateScheduled ?? new Date();
+    const raw = event?.scheduledTimes?.[0]?.initialDateScheduled;
+    return raw ? new Date(raw as any) : new Date();
   }, [event?.scheduledTimes]);
 
   useEffect(() => {

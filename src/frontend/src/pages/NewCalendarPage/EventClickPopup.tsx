@@ -1,12 +1,23 @@
 import React from 'react';
-import { Box, Button, IconButton, Popover, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
 import { Calendar, DayOfWeek, Event, EventType } from 'shared';
+
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../../utils/routes';
+
 import { getTeamTypeIcon } from './CalendarDayCard';
-import ConstructionIcon from '@mui/icons-material/Construction';
+
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import GroupIcon from '@mui/icons-material/Group';
+import GroupsIcon from '@mui/icons-material/Groups';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
+import LinkIcon from '@mui/icons-material/Link';
+import ArticleIcon from '@mui/icons-material/Article';
 import DescriptionIcon from '@mui/icons-material/Description';
 import HelpIcon from '@mui/icons-material/Help';
 import EditIcon from '@mui/icons-material/Edit';
@@ -23,6 +34,11 @@ export const getStatusIcon = (status: string, isLarge?: boolean) => {
   ]);
   return statusIcons.get(status);
 };
+
+const stopClick: React.MouseEventHandler<HTMLElement> = (e) => {
+  e.stopPropagation();
+};
+
 interface EventClickContentProps {
   event: Event;
   eventTypes: EventType[];
@@ -30,10 +46,19 @@ interface EventClickContentProps {
   dayOfWeek: DayOfWeek;
 }
 
+const joinPeople = (members: { firstName: string; lastName: string }[]) =>
+  members.map((m) => `${m.firstName} ${m.lastName}`).join(', ');
+
+// Hide if empty OR literally "N/A" (case-insensitive), just in case backend ever sends that string
+const hasValue = (v?: string | null) => {
+  const s = (v ?? '').trim();
+  return s.length > 0 && s.toLowerCase() !== 'n/a';
+};
+
 const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes, calendars, dayOfWeek }) => {
   const theme = useTheme();
 
-  const name = event.workPackages[0]?.wbsElement?.name || event.title;
+  const name = event.workPackages?.[0]?.wbsElement?.name || event.title;
   const startTime = getConvertedStart(event, dayOfWeek);
   const endTime = getConvertedEnd(event, dayOfWeek);
 
@@ -43,32 +68,24 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
   );
   const calendarColor = specificCalendar?.color ?? 'gray';
 
-  const showAvailabilityButton = Boolean(specificEventType?.requiresConfirmation);
+  const showAvailabilityButton = true;
 
-  const allPeople = [...event.requiredMembers, ...event.optionalMembers, ...event.confirmedMembers];
-  const seenIds = new Set<string>();
-  const peopleNames: string[] = [];
+  const availabilityUrl = `${routes.SETTINGS_PREFERENCES}?eventId=${event.eventId}`;
 
-  allPeople.forEach((person) => {
-    if (!seenIds.has(person.userId)) {
-      seenIds.add(person.userId);
-      peopleNames.push(`${person.firstName} ${person.lastName}`);
-    }
-  });
+  // Build strings, but do NOT default to "N/A" anymore
+  const requiredText = event.requiredMembers.length > 0 ? joinPeople(event.requiredMembers) : '';
+  const optionalText = event.optionalMembers.length > 0 ? joinPeople(event.optionalMembers) : '';
+  const confirmedText = event.confirmedMembers.length > 0 ? joinPeople(event.confirmedMembers) : '';
+  const deniedText = event.deniedMembers.length > 0 ? joinPeople(event.deniedMembers) : '';
 
-  const peopleText = peopleNames.length > 0 ? peopleNames.join(', ') : 'No attendees yet';
+  const teamsText = event.teams.length > 0 ? event.teams.map((t) => t.teamName).join(', ') : '';
+  const machineryText = event.machinery.length > 0 ? event.machinery.map((m) => m.name || 'Machinery').join(', ') : '';
+  const shopsText = event.shops.length > 0 ? event.shops.map((s) => s.name).join(', ') : '';
+  const workPackagesText =
+    event.workPackages.length > 0 ? event.workPackages.map((wp) => wp.wbsElement?.name || 'Work package').join(', ') : '';
 
-  const hasMachinery = event.machinery.length > 0;
-  const machineryText = hasMachinery
-    ? event.machinery.map((m) => m.name || 'Machinery').join(', ')
-    : 'No machinery specified';
-
-  const hasWorkPackages = event.workPackages.length > 0;
-  const workPackageText = hasWorkPackages
-    ? event.workPackages.map((wp) => wp.wbsElement?.name || 'Work package').join(', ')
-    : 'No work packages specified';
-
-  const descriptionText = event.description || 'No description provided';
+  const descriptionText = (event.description ?? '').trim();
+  const locationText = (event.location ?? '').trim();
 
   return (
     <Box
@@ -82,8 +99,12 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
       }}
     >
       <Box sx={{ position: 'relative', mb: 2 }}>
+        {/* Edit -> availability page */}
         <IconButton
           size="small"
+          component={RouterLink}
+          to={availabilityUrl}
+          onClick={stopClick}
           sx={{
             position: 'absolute',
             top: 0,
@@ -117,35 +138,73 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
           <Typography variant="body2">
             {startTime} – {endTime}
           </Typography>
-          <LocationOnIcon fontSize="small" sx={{ ml: 2 }} />
-          <Typography variant="body2">{event.location || 'N/A'}</Typography>
+
+          {hasValue(locationText) && (
+            <>
+              <LocationOnIcon fontSize="small" sx={{ ml: 2 }} />
+              <Typography variant="body2">{locationText}</Typography>
+            </>
+          )}
         </Stack>
       </Box>
-      <Stack spacing={1.25}>
-        {/* Members */}
-        <Stack direction="row" spacing={1.25} alignItems="flex-start">
-          <PeopleIcon fontSize="small" sx={{ mt: 0.3 }} />
-          <Typography variant="body2" sx={{ flex: 1 }}>
-            {peopleText}
-          </Typography>
-        </Stack>
 
-        {/* View availability */}
+      <Stack spacing={1.25}>
+        {/* Required */}
+        {hasValue(requiredText) && (
+          <Stack direction="row" spacing={1.25} alignItems="flex-start">
+            <GroupIcon fontSize="small" sx={{ mt: 0.3 }} />
+            <Typography variant="body2" sx={{ flex: 1 }}>
+              <b>Required:</b> {requiredText}
+            </Typography>
+          </Stack>
+        )}
+
+        {/* Optional */}
+        {hasValue(optionalText) && (
+          <Stack direction="row" spacing={1.25} alignItems="flex-start">
+            <GroupIcon fontSize="small" sx={{ mt: 0.3 }} />
+            <Typography variant="body2" sx={{ flex: 1 }}>
+              <b>Optional:</b> {optionalText}
+            </Typography>
+          </Stack>
+        )}
+
+        {/* Confirmed */}
+        {hasValue(confirmedText) && (
+          <Stack direction="row" spacing={1.25} alignItems="flex-start">
+            <CheckCircleIcon fontSize="small" sx={{ mt: 0.3 }} />
+            <Typography variant="body2" sx={{ flex: 1 }}>
+              <b>Confirmed:</b> {confirmedText}
+            </Typography>
+          </Stack>
+        )}
+
+        {/* Denied */}
+        {hasValue(deniedText) && (
+          <Stack direction="row" spacing={1.25} alignItems="flex-start">
+            <DoNotDisturbIcon fontSize="small" sx={{ mt: 0.3 }} />
+            <Typography variant="body2" sx={{ flex: 1 }}>
+              <b>Denied:</b> {deniedText}
+            </Typography>
+          </Stack>
+        )}
+
         {showAvailabilityButton && (
-          <Box sx={{ pl: 3.25, mt: -0.5 }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <PeopleIcon fontSize="small" sx={{ mt: 0.1 }} />
             <Button
               size="small"
               variant="outlined"
-              startIcon={<PeopleIcon fontSize="small" />}
-              onClick={(e) => {
-                e.stopPropagation();
-                // availability page
-              }}
+              component={RouterLink}
+              to={availabilityUrl}
+              onClick={stopClick}
               sx={{
                 textTransform: 'none',
                 borderRadius: 999,
                 px: 1.5,
-                py: 0.4,
+                py: 0.25,
+                minHeight: 24,
+                fontSize: 12,
                 color: theme.palette.common.white,
                 borderColor: theme.palette.grey[700],
                 '&:hover': {
@@ -156,41 +215,101 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
             >
               View availability
             </Button>
-          </Box>
+          </Stack>
+        )}
+
+        {/* Teams */}
+        {hasValue(teamsText) && (
+          <Stack direction="row" spacing={1.25} alignItems="flex-start">
+            <GroupsIcon fontSize="small" sx={{ mt: 0.3 }} />
+            <Typography variant="body2" sx={{ flex: 1 }}>
+              <b>Teams:</b> {teamsText}
+            </Typography>
+          </Stack>
         )}
 
         {/* Machinery */}
-        {hasMachinery && (
+        {hasValue(machineryText) && (
           <Stack direction="row" spacing={1.25} alignItems="flex-start">
             <ConstructionIcon fontSize="small" sx={{ mt: 0.3 }} />
             <Typography variant="body2" sx={{ flex: 1 }}>
-              {machineryText}
+              <b>Machinery:</b> {machineryText}
+            </Typography>
+          </Stack>
+        )}
+
+        {/* Shops */}
+        {hasValue(shopsText) && (
+          <Stack direction="row" spacing={1.25} alignItems="flex-start">
+            <StorefrontIcon fontSize="small" sx={{ mt: 0.3 }} />
+            <Typography variant="body2" sx={{ flex: 1 }}>
+              <b>Shops:</b> {shopsText}
             </Typography>
           </Stack>
         )}
 
         {/* Work packages */}
-        {hasWorkPackages && (
+        {hasValue(workPackagesText) && (
           <Stack direction="row" spacing={1.25} alignItems="flex-start">
             <BusinessCenterIcon fontSize="small" sx={{ mt: 0.3 }} />
             <Typography variant="body2" sx={{ flex: 1 }}>
-              {workPackageText}
+              <b>Work packages:</b> {workPackagesText}
+            </Typography>
+          </Stack>
+        )}
+
+        {/* Zoom link */}
+        {hasValue(event.zoomLink) && (
+          <Stack direction="row" spacing={1.25} alignItems="flex-start">
+            <LinkIcon fontSize="small" sx={{ mt: 0.3 }} />
+            <Typography variant="body2">
+              <b>Zoom:</b>{' '}
+              <Link href={event.zoomLink!} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
+                Zoom Link
+              </Link>
+            </Typography>
+          </Stack>
+        )}
+
+        {/* Question document */}
+        {hasValue(event.questionDocument) && (
+          <Stack direction="row" spacing={1.25} alignItems="flex-start">
+            <ArticleIcon fontSize="small" sx={{ mt: 0.3 }} />
+            <Typography variant="body2">
+              <b>Question doc:</b>{' '}
+              <Link href={event.questionDocument!} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
+                Question Document Link
+              </Link>
             </Typography>
           </Stack>
         )}
 
         {/* Description */}
-        <Stack direction="row" spacing={1.25} alignItems="flex-start">
-          <DescriptionIcon fontSize="small" sx={{ mt: 0.3 }} />
-          <Typography variant="body2" sx={{ flex: 1, whiteSpace: 'pre-wrap' }}>
-            {descriptionText}
-          </Typography>
-        </Stack>
+        {hasValue(descriptionText) && (
+          <Stack direction="row" spacing={1.25} alignItems="flex-start">
+            <DescriptionIcon fontSize="small" sx={{ mt: 0.3 }} />
+            <Typography variant="body2" sx={{ flex: 1, whiteSpace: 'pre-wrap' }}>
+              <b>Description:</b> {descriptionText}
+            </Typography>
+          </Stack>
+        )}
+
+        {/* Status */}
+        {hasValue(event.status) && (
+          <Stack direction="row" spacing={1.25} alignItems="flex-start">
+            {getStatusIcon(event.status!, false) ?? <HelpIcon fontSize="small" sx={{ mt: 0.3 }} />}
+            <Typography variant="body2" sx={{ flex: 1 }}>
+              <b>Status:</b> {event.status}
+            </Typography>
+          </Stack>
+        )}
       </Stack>
+
       <Box mt={2} display="flex" justifyContent="flex-end">
         <Button
           variant="contained"
           size="small"
+          onClick={(e) => e.stopPropagation()}
           sx={{
             textTransform: 'none',
             borderRadius: 999,
