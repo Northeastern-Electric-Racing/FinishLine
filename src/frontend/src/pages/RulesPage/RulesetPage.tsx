@@ -5,7 +5,7 @@
 
 import { Box, Button, Paper, Table, TableBody, TableContainer } from '@mui/material';
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
 import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
@@ -22,7 +22,7 @@ import { NERButton } from '../../components/NERButton';
  * @param rulesetId - The ID of the ruleset to fetch.
  * @returns The ruleset data.
  */
-const useSingleRuleset = (rulesetId: string) => {
+export const useSingleRuleset = (rulesetId: string) => {
   const placeholderRules: Rule[] = [
     {
       ruleId: '1',
@@ -158,6 +158,7 @@ const useSingleRuleset = (rulesetId: string) => {
  * Supports editing and assigning rules to projects and teams.
  */
 const RulesetPage: React.FC = () => {
+  const history = useHistory();
   // testing for AddNewFileModal
   const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
     setAddFileModalShow(false);
@@ -206,9 +207,14 @@ const RulesetPage: React.FC = () => {
   // Filter to only show top-level rules
   const topLevelRules = ruleset.rules.filter((rule) => !rule.parentRule);
 
+  const headerRight = (
+    <NERButton onClick={() => history.push(`${routes.RULES}/${rulesetId}/view`)}>MOCK View Rules</NERButton>
+  );
+
   return (
     <PageLayout
       title={`${ruleset.name} Rules`}
+      headerRight={headerRight}
       tabs={
         <Box sx={{ width: 'fit-content', mt: 2 }}>
           <FullPageTabs
