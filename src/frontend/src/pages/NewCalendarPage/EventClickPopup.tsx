@@ -49,7 +49,7 @@ interface EventClickContentProps {
 const joinPeople = (members: { firstName: string; lastName: string }[]) =>
   members.map((m) => `${m.firstName} ${m.lastName}`).join(', ');
 
-// Hide if empty OR literally "N/A" (case-insensitive), just in case backend ever sends that string
+
 const hasValue = (v?: string | null) => {
   const s = (v ?? '').trim();
   return s.length > 0 && s.toLowerCase() !== 'n/a';
