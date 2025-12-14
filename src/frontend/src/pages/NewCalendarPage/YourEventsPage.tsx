@@ -2,64 +2,18 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import {
-  Box,
-  Button,
-  Link,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tooltip,
-  Typography
-} from '@mui/material';
+import { Box, Link, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import TableCellHuge from './YourEventsComponents/TableCellHuge';
-import { useFilterEvents } from '../../hooks/calendar.hooks';
-import { useCurrentUser } from '../../hooks/users.hooks';
 import React, { useEffect, useState } from 'react';
 import { ConflictStatus, ScheduleSlot } from 'shared';
 import { Event } from 'shared';
-import WarningIcon from '@mui/icons-material/Warning';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
+import WarningTooltip from './YourEventsComponents/WarningTooltip';
 
 interface YourEventsHeadCells {
   id: string;
   label: string;
 }
-
-const headCells: readonly YourEventsHeadCells[] = [
-  {
-    id: 'eventsName',
-    label: 'Events Name'
-  },
-  {
-    id: 'date',
-    label: 'Date'
-  },
-  {
-    id: 'time',
-    label: 'Time'
-  },
-  {
-    id: 'location',
-    label: 'Location'
-  },
-  {
-    id: 'approvalBy',
-    label: 'Approval By'
-  },
-  {
-    id: 'approvalStatus',
-    label: 'Approval Status'
-  }
-];
 
 const earliestSchedules = new Map<string, ScheduleSlot & { startTime: Date }>();
 
@@ -76,24 +30,77 @@ const getEarliestSchedule = (event: Event) => {
   return result;
 };
 
-const YourEventsPage = () => {
-  const user = useCurrentUser();
+export interface EventTableArgs {
+  yourEvents: Event[];
+  reviewEvents: Event[];
+  tab: number;
+}
 
-  const {
-    data: untransformedEvents,
-    isLoading: eventsLoading,
-    isError: eventsIsError,
-    error: eventsError
-  } = useFilterEvents({
-    memberIds: [user.userId],
-    startPeriod: new Date(0),
-    endPeriod: new Date(2099, 11, 31) // Adjust as needed
-  });
-
+const YourEventsPage: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents }) => {
   // Convert to include proper dates
   // Done this way to allow the old events transformer to function properly
   // but provide better utility to this file (without breaking other files that may rely on eventTransformer)
-  const events = untransformedEvents?.map(filterEventTransformer);
+
+  const headCells: readonly YourEventsHeadCells[] = [
+    {
+      id: 'eventsName',
+      label: 'Events Name'
+    },
+    {
+      id: 'date',
+      label: 'Date'
+    },
+    {
+      id: 'time',
+      label: 'Time'
+    },
+    {
+      id: 'location',
+      label: 'Location'
+    },
+    ...(tab === 2
+      ? [
+          {
+            id: 'attendees',
+            label: 'Attendees'
+          }
+        ]
+      : []),
+    ...(tab === 1
+      ? [
+          {
+            id: 'approvalBy',
+            label: 'Approval By'
+          }
+        ]
+      : []),
+    ...(tab === 2
+      ? [
+          {
+            id: 'seekingApproval',
+            label: 'Seeking Approval'
+          }
+        ]
+      : []),
+    ...(tab === 1
+      ? [
+          {
+            id: 'approvalStatus',
+            label: 'Approval Status'
+          }
+        ]
+      : []),
+    ...(tab === 2
+      ? [
+          {
+            id: 'approveEvent',
+            label: 'Approve?'
+          }
+        ]
+      : [])
+  ];
+
+  const events = tab === 1 ? yourEvents : reviewEvents;
 
   const [, setUpdate] = useState(true); // Linting...
 
@@ -103,9 +110,6 @@ const YourEventsPage = () => {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  if (!events || eventsLoading) return <LoadingIndicator />;
-  if (eventsIsError) return <ErrorPage error={eventsError} message={eventsError?.message} />;
 
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
@@ -152,6 +156,9 @@ const YourEventsPage = () => {
                 seconds: seconds % 60
               };
 
+              const attendeeNumber =
+                event.requiredMembers.length + event.optionalMembers.length - event.deniedMembers.length + 1;
+
               return (
                 <TableRow key={event.eventId} hover>
                   <TableCell align="center">{event.title}</TableCell>
@@ -179,95 +186,55 @@ const YourEventsPage = () => {
                       'N/A'
                     )}
                   </TableCell>
-                  <TableCell align="center">
-                    {event.approvalRequiredFrom
-                      ? `${event.approvalRequiredFrom.firstName} ${event.approvalRequiredFrom.lastName}`
-                      : 'N/A'}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                      <Typography component="span">
-                        {event.approved === ConflictStatus.APPROVED
-                          ? 'Approved'
-                          : event.approved === ConflictStatus.PENDING
-                            ? 'Pending'
-                            : event.approved === ConflictStatus.DENIED
-                              ? 'Denied'
-                              : 'N/A'}
-                      </Typography>
-                      {event.approved === ConflictStatus.DENIED && (
-                        <Tooltip
-                          placement="bottom-end"
-                          arrow
-                          PopperProps={{
-                            modifiers: [
-                              {
-                                name: 'offset',
-                                options: {
-                                  offset: [10, 0]
-                                }
-                              }
-                            ]
-                          }}
-                          slotProps={{
-                            tooltip: {
-                              sx: {
-                                bgcolor: '#ef5350',
-                                color: 'white',
-                                padding: 2,
-                                borderRadius: 2,
-                                maxWidth: 600,
-                                fontSize: '14px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-                              }
-                            },
-                            arrow: {
-                              sx: {
-                                color: '#ef5350'
-                              }
-                            }
-                          }}
-                          title={
-                            <Stack direction="row" alignItems="center" spacing={2}>
-                              <WarningIcon sx={{ fontSize: 40 }} />
-                              <Typography fontSize={14}>
-                                Your meeting approval has been denied, please reschedule or change your meeting location.
-                              </Typography>
-                              <Button
-                                variant="outlined"
-                                sx={{
-                                  color: 'white',
-                                  borderColor: 'white',
-                                  whiteSpace: 'nowrap',
-                                  textTransform: 'none',
-                                  flexShrink: 0,
-                                  px: 2,
-                                  '&:hover': {
-                                    borderColor: 'white',
-                                    bgcolor: 'rgba(255,255,255,0.1)'
-                                  }
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                }}
-                              >
-                                Click Here to Edit Meeting
-                              </Button>
-                            </Stack>
-                          }
-                        >
-                          <ErrorOutlineIcon
-                            fontSize="small"
-                            sx={{
-                              color: 'error.main',
-                              ml: 1,
-                              cursor: 'pointer'
-                            }}
+                  {tab === 2 && <TableCell align="center">{attendeeNumber}</TableCell>}
+                  {tab === 1 && (
+                    <TableCell align="center">
+                      {event.approvalRequiredFrom
+                        ? `${event.approvalRequiredFrom.firstName} ${event.approvalRequiredFrom.lastName}`
+                        : 'N/A'}
+                    </TableCell>
+                  )}
+                  {tab === 2 && (
+                    <TableCell align="center">{`${event.userCreated.firstName} ${event.userCreated.lastName}`}</TableCell>
+                  )}
+                  {tab === 1 && (
+                    <TableCell align="center">
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                        <Typography component="span">
+                          {event.approved === ConflictStatus.APPROVED
+                            ? 'Approved'
+                            : event.approved === ConflictStatus.PENDING
+                              ? 'Pending'
+                              : event.approved === ConflictStatus.DENIED
+                                ? 'Denied'
+                                : 'N/A'}
+                        </Typography>
+                        {event.approved === ConflictStatus.DENIED && (
+                          <WarningTooltip
+                            warning="Your meeting approval has been denied, please reschedule or change your meeting location."
+                            buttonText="Click Here to Edit Meeting"
+                            onClick={() => {}}
                           />
-                        </Tooltip>
+                        )}
+                      </Box>
+                    </TableCell>
+                  )}
+                  {tab === 2 && (
+                    <TableCell align="center">
+                      {event.approved === ConflictStatus.PENDING
+                        ? '...'
+                        : event.approved === ConflictStatus.APPROVED
+                          ? 'Yes'
+                          : 'No'}
+                      {event.approved === ConflictStatus.PENDING && (
+                        <WarningTooltip
+                          warning="This meeting is awaiting your approval. Please review the booking."
+                          buttonText="View More Meeting Details"
+                          onClick={() => {}}
+                        />
                       )}
-                    </Box>
-                  </TableCell>
+                    </TableCell>
+                  )}
                 </TableRow>
               );
             })}
