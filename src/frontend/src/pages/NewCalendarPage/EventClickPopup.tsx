@@ -49,7 +49,6 @@ interface EventClickContentProps {
 const joinPeople = (members: { firstName: string; lastName: string }[]) =>
   members.map((m) => `${m.firstName} ${m.lastName}`).join(', ');
 
-
 const hasValue = (v?: string | null) => {
   const s = (v ?? '').trim();
   return s.length > 0 && s.toLowerCase() !== 'n/a';
@@ -72,7 +71,6 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
 
   const availabilityUrl = `${routes.SETTINGS_PREFERENCES}?eventId=${event.eventId}`;
 
-  
   const requiredText = event.requiredMembers.length > 0 ? joinPeople(event.requiredMembers) : '';
   const optionalText = event.optionalMembers.length > 0 ? joinPeople(event.optionalMembers) : '';
   const confirmedText = event.confirmedMembers.length > 0 ? joinPeople(event.confirmedMembers) : '';
