@@ -69,7 +69,8 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
 
   const showAvailabilityButton = Boolean(specificEventType?.requiresConfirmation);
 
-  const availabilityUrl = `${routes.SETTINGS_PREFERENCES}?eventId=${event.eventId}`;
+  const editUrl = `${routes.SETTINGS_PREFERENCES}?eventId=${event.eventId}`;
+  const availabilityUrl = `${routes.SETTINGS_PREFERENCES}?openAvailability=true`;
 
   const requiredText = event.requiredMembers.length > 0 ? joinPeople(event.requiredMembers) : '';
   const optionalText = event.optionalMembers.length > 0 ? joinPeople(event.optionalMembers) : '';
@@ -101,7 +102,7 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
         <IconButton
           size="small"
           component={RouterLink}
-          to={availabilityUrl}
+          to={editUrl}
           onClick={stopClick}
           sx={{
             position: 'absolute',
@@ -260,7 +261,6 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
         {hasValue(event.zoomLink) && (
           <Stack direction="row" spacing={1.25} alignItems="flex-start">
             <LinkIcon fontSize="small" sx={{ mt: 0.3 }} />
-
             <Link href={event.zoomLink!} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
               Zoom Link
             </Link>
@@ -300,26 +300,6 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
           </Stack>
         )}
       </Stack>
-
-      <Box mt={2} display="flex" justifyContent="flex-end">
-        <Button
-          variant="contained"
-          size="small"
-          onClick={(e) => e.stopPropagation()}
-          sx={{
-            textTransform: 'none',
-            borderRadius: 999,
-            px: 2,
-            py: 0.4,
-            bgcolor: '#F44336',
-            '&:hover': {
-              bgcolor: '#FF0000'
-            }
-          }}
-        >
-          Send reminder
-        </Button>
-      </Box>
     </Box>
   );
 };
