@@ -12,7 +12,6 @@ import SingleAvailabilityModal from './Availability/SingleAvailabilityModal';
 import AvailabilityEditModal from './Availability/AvailabilityEditModal';
 import { useMarkUserConfirmed } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useHistory, useLocation } from 'react-router-dom';
 
 const UserScheduleSettingsView = ({
   scheduleSettings,
@@ -28,13 +27,12 @@ const UserScheduleSettingsView = ({
   const [confirmedAvailabilities, setConfirmedAvailabilities] = useState(new Map());
   const { mutateAsync } = useMarkUserConfirmed(event?.eventId || '');
 
-  const history = useHistory();
-  const location = useLocation();
-
+  // Get the first scheduled date from the event
   const firstScheduledDate = event?.scheduledTimes?.[0]?.initialDateScheduled
     ? new Date(event.scheduledTimes[0].initialDateScheduled as any)
     : undefined;
 
+  // Get work package names for the event title
   const workPackageNames = event?.workPackages.map((wp) => wp.wbsElement.name).join(', ') || 'Event';
 
   const confirmModalTitle =
@@ -67,15 +65,6 @@ const UserScheduleSettingsView = ({
       setConfirmedAvailabilities(new Map(confirmed.map((availability) => [availability.dateSet.getTime(), availability])));
     }
   }, [confirmedAvailabilities.size, scheduleSettings.availabilities, firstDate]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.get('openAvailability') === 'true') {
-      setAvailabilityOpen(true);
-      params.delete('openAvailability');
-      history.replace({ ...location, search: params.toString() ? `?${params.toString()}` : '' });
-    }
-  }, [location, history]);
 
   return (
     <Grid container rowSpacing={1} columnSpacing={4}>

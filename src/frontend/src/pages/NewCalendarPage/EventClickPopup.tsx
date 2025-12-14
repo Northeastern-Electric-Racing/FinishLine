@@ -67,10 +67,11 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
   );
   const calendarColor = specificCalendar?.color ?? 'gray';
 
-  const showAvailabilityButton = Boolean(specificEventType?.requiresConfirmation);
+  const showAvailabilityButton = true;
 
   const editUrl = `${routes.SETTINGS_PREFERENCES}?eventId=${event.eventId}`;
-  const availabilityUrl = `${routes.SETTINGS_PREFERENCES}?openAvailability=true`;
+  const availabilityUrl = `${routes.CALENDAR}/${event.eventId}`;
+
 
   const requiredText = event.requiredMembers.length > 0 ? joinPeople(event.requiredMembers) : '';
   const optionalText = event.optionalMembers.length > 0 ? joinPeople(event.optionalMembers) : '';
