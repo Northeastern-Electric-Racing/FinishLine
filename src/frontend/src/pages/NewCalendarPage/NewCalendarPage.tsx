@@ -54,7 +54,8 @@ const NewCalendarPage = () => {
     startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
     endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
     memberIds: memberIds.concat(additionalMemberIds),
-    teamIds: teamIds.concat(additionalTeamIds)
+    teamIds: teamIds.concat(additionalTeamIds),
+    approvedEvents: true
   });
 
   const {
