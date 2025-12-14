@@ -323,6 +323,89 @@ const EventModal: React.FC<BaseEventModalProps> = ({
 
   const onFormSubmit = async (data: EventFormValues) => {
     try {
+      const scheduleSlots: Array<{
+        days: DayOfWeek[];
+        startTime?: Date;
+        endTime?: Date;
+        recurrenceNumber: number;
+        initialDateScheduled: Date;
+        allDay: boolean;
+      }> = [];
+
+      // If recurrence is 0, automatically determine the day from the initial date
+      if (data.recurrenceNumber === 0) {
+        const dayOfWeek = data.scheduleDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const dayOfWeekEnum = [
+          DayOfWeek.SUNDAY,
+          DayOfWeek.MONDAY,
+          DayOfWeek.TUESDAY,
+          DayOfWeek.WEDNESDAY,
+          DayOfWeek.THURSDAY,
+          DayOfWeek.FRIDAY,
+          DayOfWeek.SATURDAY
+        ][dayOfWeek];
+
+        // Create a schedule slot with just the initial date's day
+        scheduleSlots.push({
+          days: [dayOfWeekEnum],
+          startTime: data.startTime,
+          endTime: data.endTime,
+          recurrenceNumber: 0,
+          initialDateScheduled: data.scheduleDate,
+          allDay: data.allDay
+        });
+      } else {
+        // If there are recurring days selected
+        const dayOfWeek = data.scheduleDate.getDay();
+        const dayOfWeekEnum = [
+          DayOfWeek.SUNDAY,
+          DayOfWeek.MONDAY,
+          DayOfWeek.TUESDAY,
+          DayOfWeek.WEDNESDAY,
+          DayOfWeek.THURSDAY,
+          DayOfWeek.FRIDAY,
+          DayOfWeek.SATURDAY
+        ][dayOfWeek];
+
+        const selectedDays = data.days.length > 0 ? data.days : [];
+        const initialDayMatchesSelected = selectedDays.includes(dayOfWeekEnum);
+
+        // If the initial date's day is NOT in the selected recurring days,
+        // create a separate slot for just the initial occurrence
+        if (!initialDayMatchesSelected && selectedDays.length > 0) {
+          scheduleSlots.push({
+            days: [dayOfWeekEnum],
+            startTime: data.startTime,
+            endTime: data.endTime,
+            recurrenceNumber: 0,
+            initialDateScheduled: data.scheduleDate,
+            allDay: data.allDay
+          });
+        }
+
+        // Create the recurring schedule slot
+        if (selectedDays.length > 0) {
+          scheduleSlots.push({
+            days: selectedDays,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            recurrenceNumber: data.recurrenceNumber,
+            initialDateScheduled: data.scheduleDate,
+            allDay: data.allDay
+          });
+        } else {
+          // If no days selected, use the initial date's day for recurring
+          scheduleSlots.push({
+            days: [dayOfWeekEnum],
+            startTime: data.startTime,
+            endTime: data.endTime,
+            recurrenceNumber: data.recurrenceNumber,
+            initialDateScheduled: data.scheduleDate,
+            allDay: data.allDay
+          });
+        }
+      }
+
       const submitData: EventRoutePayload = {
         title: data.title,
         eventTypeId: data.eventTypeId,
@@ -338,16 +421,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
         documentFiles: data.documentFiles,
         questionDocumentLink: data.questionDocumentLink,
         description: data.description,
-        scheduleSlot: [
-          {
-            days: data.days,
-            startTime: data.startTime,
-            endTime: data.endTime,
-            recurrenceNumber: data.recurrenceNumber,
-            initialDateScheduled: data.scheduleDate,
-            allDay: data.allDay
-          }
-        ]
+        scheduleSlot: scheduleSlots
       };
 
       await onSubmit(submitData);
@@ -486,6 +560,19 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       error: !!errors.scheduleDate,
                       onClick: () => setDatePickerOpen(true),
                       sx: { minWidth: 150 }
+                    },
+                    day: {
+                      sx: {
+                        '&.Mui-selected': {
+                          backgroundColor: '#EF4345 !important',
+                          '&:hover': {
+                            backgroundColor: '#d32f2f !important'
+                          },
+                          '&:focus': {
+                            backgroundColor: '#EF4345 !important'
+                          }
+                        }
+                      }
                     }
                   }}
                 />
@@ -510,6 +597,31 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                           error: !!errors.startTime,
                           onClick: () => setStartTimePickerOpen(true),
                           sx: { width: 100 }
+                        },
+                        layout: {
+                          sx: {
+                            '& .MuiPickersLayout-contentWrapper .MuiClock-pin': {
+                              backgroundColor: '#EF4345'
+                            },
+                            '& .MuiPickersLayout-contentWrapper .MuiClockPointer-root': {
+                              backgroundColor: '#EF4345'
+                            },
+                            '& .MuiPickersLayout-contentWrapper .MuiClockPointer-thumb': {
+                              backgroundColor: '#EF4345',
+                              borderColor: '#EF4345'
+                            },
+                            '& .MuiPickersLayout-contentWrapper .MuiClockNumber-root.Mui-selected': {
+                              backgroundColor: '#EF4345 !important'
+                            },
+                            '& .MuiPickersLayout-contentWrapper .MuiPickersArrowSwitcher-button.Mui-selected': {
+                              backgroundColor: '#EF4345 !important',
+                              color: 'white'
+                            },
+                            '& .MuiMultiSectionDigitalClock-root .MuiMenuItem-root.Mui-selected': {
+                              backgroundColor: '#EF4345 !important',
+                              color: 'white'
+                            }
+                          }
                         }
                       }}
                     />
@@ -532,6 +644,31 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                           error: !!errors.endTime,
                           onClick: () => setEndTimePickerOpen(true),
                           sx: { width: 100 }
+                        },
+                        layout: {
+                          sx: {
+                            '& .MuiPickersLayout-contentWrapper .MuiClock-pin': {
+                              backgroundColor: '#EF4345'
+                            },
+                            '& .MuiPickersLayout-contentWrapper .MuiClockPointer-root': {
+                              backgroundColor: '#EF4345'
+                            },
+                            '& .MuiPickersLayout-contentWrapper .MuiClockPointer-thumb': {
+                              backgroundColor: '#EF4345',
+                              borderColor: '#EF4345'
+                            },
+                            '& .MuiPickersLayout-contentWrapper .MuiClockNumber-root.Mui-selected': {
+                              backgroundColor: '#EF4345 !important'
+                            },
+                            '& .MuiPickersLayout-contentWrapper .MuiPickersArrowSwitcher-button.Mui-selected': {
+                              backgroundColor: '#EF4345 !important',
+                              color: 'white'
+                            },
+                            '& .MuiMultiSectionDigitalClock-root .MuiMenuItem-root.Mui-selected': {
+                              backgroundColor: '#EF4345 !important',
+                              color: 'white'
+                            }
+                          }
                         }
                       }}
                     />
@@ -648,11 +785,11 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                               height: 40,
                               borderRadius: '50%',
                               p: 0,
-                              bgcolor: isSelected ? 'primary.main' : 'transparent',
+                              bgcolor: isSelected ? '#EF4345' : 'transparent',
                               color: isSelected ? 'white' : '#000',
                               borderColor: '#9e9e9e',
                               '&:hover': {
-                                bgcolor: isSelected ? 'primary.dark' : '#e0e0e0'
+                                bgcolor: isSelected ? '#d32f2f' : '#e0e0e0'
                               }
                             }}
                           >

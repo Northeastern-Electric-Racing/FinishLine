@@ -208,26 +208,22 @@ const NewCalendarPage = () => {
     try {
       const { scheduleSlot, documentFiles, ...eventData } = data;
 
-      const [slot] = scheduleSlot;
-
-      if (!slot) throw new Error('Missing scheduleSlot');
-
-      const { days, startTime, endTime, recurrenceNumber, initialDateScheduled, allDay } = slot;
+      if (!scheduleSlot || scheduleSlot.length === 0) {
+        throw new Error('Missing scheduleSlot');
+      }
 
       // Create the event first without documents
       const createArgs = {
         ...eventData,
         documentIds: [],
-        scheduleSlot: [
-          {
-            days,
-            startTime,
-            endTime,
-            recurrenceNumber,
-            initialDateScheduled,
-            allDay
-          }
-        ]
+        scheduleSlot: scheduleSlot.map((slot) => ({
+          days: slot.days,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          recurrenceNumber: slot.recurrenceNumber,
+          initialDateScheduled: slot.initialDateScheduled,
+          allDay: slot.allDay
+        }))
       };
 
       const createdEvent = await createEvent(createArgs);

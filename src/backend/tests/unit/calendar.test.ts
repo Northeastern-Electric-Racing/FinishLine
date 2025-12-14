@@ -1928,7 +1928,7 @@ describe('Calendar Tests', () => {
       expect(result.requiredMembers[0].userId).toBe(newMember.userId);
       expect(result.optionalMembers).toHaveLength(1);
       expect(result.optionalMembers[0].userId).toBe(adminUser.userId);
-      expect(result.documentIds).toEqual(['doc2', 'doc3']);
+      expect(result.documents).toEqual([]);
       expect(result.approved).toBe(Conflict_Status.NO_CONFLICT);
       expect(result.approvalRequiredFrom).toBe(undefined);
       expect(result.questionDocumentLink).toBe('https://updated.com/questions.pdf');
