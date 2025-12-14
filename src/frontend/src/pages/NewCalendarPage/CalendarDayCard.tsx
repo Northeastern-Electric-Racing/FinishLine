@@ -1,10 +1,10 @@
-import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import { Calendar, DayOfWeek, Event, EventStatus, EventType, TeamType } from 'shared';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import TerminalIcon from '@mui/icons-material/Terminal';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import DRCSummaryModal from '../CalendarPage/EventSummaryModal';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -20,6 +20,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import GroupsIcon from '@mui/icons-material/Groups';
 import EventPartialInfoView from './EventPartialInfoView';
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
+import { useAllEventTypes } from '../../hooks/calendar.hooks';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -77,11 +78,12 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     </Grid>
   );
 
-  const EventPopupInfo = ({ event, color }: { event: Event; color: string }) => {
+  const EventPopupInfo = ({ event, color, eventType }: { event: Event; color: string, eventType: EventType | undefined }) => {
     const name = event.title;
 
     const convertedStartTime = getConvertedStart(event, dayOfWeek);
     const convertedEndTime = getConvertedEnd(event, dayOfWeek);
+
     return (
       <>
         <Stack direction="column" spacing={2}>
@@ -162,6 +164,28 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                   event.optionalMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
                 {event.optionalMembers.length === 0 && 'N/A'}
               </Typography>
+            </Stack>
+          )}
+          {eventType?.name === 'Design Review' && (
+            <Stack direction="row">
+              <GroupIcon />
+              <Button size="small"
+              variant="outlined"
+              id="filter-events-button"
+              onClick={() => console.log("eee")}
+              sx={{
+                color: 'white',
+                borderColor: 'white',
+                backgroundColor: 'transparent',
+                '&:hover': {
+                  borderColor: 'white',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                },
+                marginX: 1,
+              }}
+            >
+              View Availibility
+            </Button>
             </Stack>
           )}
           {event.confirmedMembers.length > 0 && (
@@ -336,10 +360,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           marginLeft={0.5}
           marginBottom={0.5}
           marginRight={0.5}
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsSummaryModalOpen(true);
-          }}
           sx={{
             position: 'relative',
             zIndex: 2,
@@ -358,7 +378,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
             <Tooltip
               placement="right"
               arrow
-              title={<EventPopupInfo event={event} color={specificCalendar?.color ?? 'gray'} />}
+              title={<EventPopupInfo event={event} color={specificCalendar?.color ?? 'gray'} eventType={specificEventType} />}
               slotProps={{
                 popper: {
                   sx: {
@@ -384,6 +404,10 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
               }}
             >
               <Typography
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsSummaryModalOpen(true);
+                }}
                 marginX={0.5}
                 marginY={0.6}
                 lineHeight={'120%'}
