@@ -6,27 +6,29 @@ import { Box, Link, Table, TableBody, TableCell, TableContainer, TableHead, Tabl
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import TableCellHuge from './YourEventsComponents/TableCellHuge';
 import React, { useEffect, useState } from 'react';
-import { ConflictStatus, ScheduleSlot } from 'shared';
+import { ConflictStatus } from 'shared';
 import { Event } from 'shared';
 import WarningTooltip from './YourEventsComponents/WarningTooltip';
+import { getMeetingDates } from '../../utils/calendar.utils';
 
 interface YourEventsHeadCells {
   id: string;
   label: string;
 }
 
-const earliestSchedules = new Map<string, ScheduleSlot & { startTime: Date }>();
+const getNextMeetingTime = (event: Event) => {
+  const times: Date[] = getMeetingDates(event);
 
-const getEarliestSchedule = (event: Event) => {
-  if (earliestSchedules.has(event.eventId)) {
-    return earliestSchedules.get(event.eventId)!;
-  }
+  times.sort((a, b) => a.getUTCSeconds() - b.getUTCSeconds());
+  let result = times[times.length - 1];
+  times.forEach((date) => {
+    const now = new Date();
+    const diffMs = date.getTime() - now.getTime();
+    if (diffMs > 0 && date.getTime() < result.getTime()) {
+      result = date;
+    }
+  });
 
-  const [result] = event.scheduledTimes
-    .filter((schedule): schedule is ScheduleSlot & { startTime: Date } => schedule.startTime !== undefined)
-    .sort((a, b) => a.startTime.getUTCSeconds() - b.startTime.getUTCSeconds());
-
-  earliestSchedules.set(event.eventId, result);
   return result;
 };
 
@@ -135,22 +137,18 @@ const YourEventsPage: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvent
           </TableHead>
           <TableBody>
             {events?.map((event) => {
-              const earliestSchedule = getEarliestSchedule(event);
+              const earliestSchedule = new Date(getNextMeetingTime(event));
               const now = new Date();
-              const diffMs = earliestSchedule.startTime.getTime() - now.getTime();
+              const diffMs = earliestSchedule.getTime() - now.getTime();
 
               const seconds = Math.floor(diffMs / 1000);
               const minutes = Math.floor(seconds / 60);
               const hours = Math.floor(minutes / 60);
               const days = Math.floor(hours / 24);
 
-              // Rough month estimate (30 days)
-              const months = Math.floor(days / 30);
-
               const timeAway = {
                 passed: diffMs <= 0,
-                months,
-                days: days % 30,
+                days,
                 hours: hours % 24,
                 minutes: minutes % 60,
                 seconds: seconds % 60
@@ -163,11 +161,11 @@ const YourEventsPage: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvent
                 <TableRow key={event.eventId} hover>
                   <TableCell align="center">{event.title}</TableCell>
                   <TableCell align="center">
-                    {new Date(earliestSchedule.startTime).toLocaleDateString()}{' '}
-                    {!timeAway.passed ? ` - In ${timeAway.months}m : ${timeAway.days}d` : '- Passed'}
+                    {new Date(earliestSchedule).toLocaleDateString()}{' '}
+                    {!timeAway.passed ? ` - In ${timeAway.days}d` : '- Passed'}
                   </TableCell>
                   <TableCell align="center">
-                    {new Date(earliestSchedule.startTime).toLocaleTimeString('en-US', {
+                    {new Date(earliestSchedule).toLocaleTimeString('en-US', {
                       hour: 'numeric',
                       minute: '2-digit'
                     })}{' '}
