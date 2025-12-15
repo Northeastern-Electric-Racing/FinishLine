@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { Event } from 'shared';
 import { Typography } from '@mui/material';
 
+const fadeTime = 150;
+
 const AvailabilityPanel = ({ event, closePanel }: { event: Event; closePanel: () => void }) => {
   const [visible, setVisible] = useState(false);
 
@@ -16,20 +18,20 @@ const AvailabilityPanel = ({ event, closePanel }: { event: Event; closePanel: ()
     setVisible(false);
     setTimeout(() => {
       closePanel();
-    }, 150);
+    }, fadeTime);
   };
 
   return (
     <Box
       sx={{
-        position: 'fixed', // 🔑 key part
-        inset: 0, // top:0 right:0 bottom:0 left:0
-        zIndex: 1300, // higher than app content
-        bgcolor: 'rgba(0, 0, 0, 0.5)', // semi-transparent background
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1300,
+        bgcolor: 'rgba(0, 0, 0, 0.5)',
         justifyContent: 'flex',
         display: 'flex',
         opacity: visible ? 1 : 0,
-        transition: 'opacity 150ms ease-in-out'
+        transition: `opacity ${fadeTime}ms ease-in-out`
       }}
     >
       <Box
@@ -65,7 +67,9 @@ const AvailabilityPanel = ({ event, closePanel }: { event: Event; closePanel: ()
         >
           {event.title} Availability
         </Typography>
-        <Typography></Typography>
+        <Typography>
+          Mon, Tues, Wed
+        </Typography>
       </Box>
     </Box>
   );
