@@ -82,10 +82,6 @@ const RulesetPage: React.FC = () => {
     console.log('Added data: ' + data); // delete this later, once data is used properly
   };
 
-  const headerRight = (
-    <NERButton onClick={() => history.push(`${routes.RULES}/placeholder_ruleset_id/edit`)}>MOCK edit/assign rules</NERButton>
-  );
-
   return (
     <>
       {/* Breadcrumb Placeholder */}

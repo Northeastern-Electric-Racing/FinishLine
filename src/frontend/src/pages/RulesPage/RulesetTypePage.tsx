@@ -3,7 +3,7 @@ import {
   Box,
   Button,
   Paper,
-  Table, 
+  Table,
   TableBody,
   TableCell,
   TableContainer,
