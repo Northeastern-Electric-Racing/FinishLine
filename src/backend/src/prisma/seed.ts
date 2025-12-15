@@ -15,11 +15,12 @@ import {
   Task_Priority,
   Task_Status,
   Team,
-  Part_Tag
+  Part_Tag,
+  Prisma,
+  Ruleset_Type
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
-import { seedReimbursementRequests } from './seed-data/reimbursement-requests.seed';
 import ChangeRequestsService from '../services/change-requests.services';
 import TeamsService from '../services/teams.services';
 import {
@@ -28,7 +29,6 @@ import {
   RoleEnum,
   SpecialPermission,
   StandardChangeRequest,
-  User,
   WbsElementStatus,
   WorkPackageStage
 } from 'shared';
@@ -46,10 +46,15 @@ import { writeFileSync } from 'fs';
 import WbsElementTemplatesService from '../services/wbs-element-templates.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
+import { seedGraph } from './seed-data/statistics.seed';
 import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
+import { ruleSeedData } from './seed-data/rules.seed';
+import RulesService from '../services/rules.services';
+import { seedRulesetType } from './seed-data/rules.seed';
 
 const prisma = new PrismaClient();
 
@@ -272,7 +277,7 @@ const performSeed: () => Promise<void> = async () => {
   const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.MEMBER, organizationId);
   const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.MEMBER, organizationId);
   const patrick = await createUser(dbSeedAllUsers.patrick, RoleEnum.MEMBER, organizationId);
-  const spongebob = await createUser(dbSeedAllUsers.spongebob, RoleEnum.MEMBER, organizationId);
+  const spongebob = await createUser(dbSeedAllUsers.spongebob, RoleEnum.GUEST, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', ner);
 
@@ -425,14 +430,6 @@ const performSeed: () => Promise<void> = async () => {
     [mrKrabs, richieRich].map((user) => user.userId),
     ner
   );
-
-  // Set finance delegates for the organization
-  await OrganizationsService.setFinanceDelegates(thomasEmrax, organizationId, [
-    monopolyMan.userId,
-    mrKrabs.userId,
-    richieRich.userId,
-    johnBoddy.userId
-  ]);
 
   await TeamsService.setTeamMembers(
     aang,
@@ -811,6 +808,16 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /**
+   * Ruleset Types
+   */
+
+  /** FSAE ruleset type */
+  const rulesetTypeFSAE = await seedRulesetType(joeShmoe, 'FSAE', ner);
+
+  /** FHE ruleset type */
+  const rulesetTypeFHE = await seedRulesetType(joeBlow, 'FHE', ner);
+
+  /**
    * Graphs
    */
 
@@ -1121,8 +1128,8 @@ const performSeed: () => Promise<void> = async () => {
     'Bodywork Concept of Design',
     changeRequestProject1Id,
     WorkPackageStage.Design,
-    weeksAgo(12).toISOString().split('T')[0],
-    6,
+    '01/01/2023',
+    3,
     [],
     [],
     thomasEmrax,
@@ -1141,7 +1148,7 @@ const performSeed: () => Promise<void> = async () => {
     'ACTIVATION',
     thomasEmrax.userId,
     joeShmoe.userId,
-    weeksAgo(12),
+    new Date('2024-03-25T04:00:00.000Z'),
     true,
     ner
   );
@@ -1167,7 +1174,7 @@ const performSeed: () => Promise<void> = async () => {
     'Adhesive Shear Strength Test',
     changeRequestProject1Id,
     WorkPackageStage.Research,
-    weeksAgo(10).toISOString().split('T')[0],
+    '01/22/2023',
     5,
     [],
     [],
@@ -1185,8 +1192,8 @@ const performSeed: () => Promise<void> = async () => {
     'Manufacture Wiring Harness',
     changeRequestProject5Id,
     WorkPackageStage.Manufacturing,
-    weeksAgo(9).toISOString().split('T')[0],
-    4,
+    '02/01/2023',
+    3,
     [],
     [],
     thomasEmrax,
@@ -1205,7 +1212,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     regina.userId,
     janis.userId,
-    weeksAgo(9),
+    new Date('2023-08-21T04:00:00.000Z'),
     true,
     ner
   );
@@ -1218,8 +1225,8 @@ const performSeed: () => Promise<void> = async () => {
     'Install Wiring Harness',
     changeRequestProject5Id,
     WorkPackageStage.Install,
-    weeksAgo(5).toISOString().split('T')[0],
-    6,
+    '04/01/2023',
+    7,
     [],
     [],
     thomasEmrax,
@@ -1238,7 +1245,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     joeShmoe.userId,
     thomasEmrax.userId,
-    weeksAgo(5),
+    new Date('2023-10-02T04:00:00.000Z'),
     true,
     ner
   );
@@ -1251,7 +1258,7 @@ const performSeed: () => Promise<void> = async () => {
     'Design Plush',
     changeRequestProject6Id,
     WorkPackageStage.Design,
-    weeksAgo(16).toISOString().split('T')[0],
+    '04/02/2023',
     7,
     [],
     [],
@@ -1271,7 +1278,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     katara.userId,
     aang.userId,
-    weeksAgo(16),
+    new Date('2023-05-08T04:00:00.000Z'),
     true,
     ner
   );
@@ -1284,8 +1291,8 @@ const performSeed: () => Promise<void> = async () => {
     'Put Plush Together',
     changeRequestProject6Id,
     WorkPackageStage.Manufacturing,
-    weeksAgo(9).toISOString().split('T')[0],
-    5,
+    '04/02/2023',
+    7,
     [],
     [],
     aang,
@@ -1304,7 +1311,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     katara.userId,
     aang.userId,
-    weeksAgo(9),
+    new Date('2023-07-31T04:00:00.000Z'),
     true,
     ner
   );
@@ -1317,8 +1324,8 @@ const performSeed: () => Promise<void> = async () => {
     'Plush Testing',
     changeRequestProject6Id,
     WorkPackageStage.Testing,
-    weeksAgo(4).toISOString().split('T')[0],
-    4,
+    '04/02/2023',
+    3,
     [],
     [],
     aang,
@@ -1337,7 +1344,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     katara.userId,
     aang.userId,
-    weeksAgo(4),
+    new Date('2023-10-09T04:00:00.000Z'),
     true,
     ner
   );
@@ -1351,8 +1358,8 @@ const performSeed: () => Promise<void> = async () => {
     'Design Laser Canon',
     changeRequestProject7Id,
     WorkPackageStage.Design,
-    weeksAgo(8).toISOString().split('T')[0],
-    5,
+    '01/01/2023',
+    3,
     [],
     [],
     zatanna,
@@ -1371,7 +1378,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     zatanna.userId,
     lexLuther.userId,
-    weeksAgo(8),
+    new Date('2024-03-25T04:00:00.000Z'),
     true,
     ner
   );
@@ -1384,8 +1391,8 @@ const performSeed: () => Promise<void> = async () => {
     'Laser Canon Research',
     changeRequestProject7Id,
     WorkPackageStage.Research,
-    weeksAgo(3).toISOString().split('T')[0],
-    6,
+    '01/22/2023',
+    5,
     [],
     [],
     zatanna,
@@ -1402,8 +1409,8 @@ const performSeed: () => Promise<void> = async () => {
     'Laser Canon Testing',
     changeRequestProject7Id,
     WorkPackageStage.Testing,
-    weeksFromNow(3).toISOString().split('T')[0],
-    4,
+    '02/15/2023',
+    3,
     [],
     [],
     zatanna,
@@ -1421,8 +1428,8 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Research',
     changeRequestProject8Id,
     WorkPackageStage.Research,
-    weeksAgo(14).toISOString().split('T')[0],
-    7,
+    '02/01/2023',
+    5,
     [],
     [],
     mikeMacdonald,
@@ -1441,7 +1448,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     mikeMacdonald.userId,
     ryanGiggs.userId,
-    weeksAgo(14),
+    new Date('2023-08-21T04:00:00.000Z'),
     true,
     ner
   );
@@ -1454,8 +1461,8 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Install',
     changeRequestProject8Id,
     WorkPackageStage.Install,
-    weeksAgo(7).toISOString().split('T')[0],
-    6,
+    '03/01/2023',
+    8,
     [],
     [],
     mikeMacdonald,
@@ -1472,8 +1479,8 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Testing',
     changeRequestProject8Id,
     WorkPackageStage.Testing,
-    weeksAgo(1).toISOString().split('T')[0],
-    5,
+    '06/01/2023',
+    3,
     [],
     [],
     mikeMacdonald,
@@ -1536,7 +1543,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     thomasEmrax.userId,
     joeShmoe.userId,
-    weeksAgo(9),
+    new Date('02/01/2023'),
     true,
     ner
   );
@@ -1816,7 +1823,7 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Reimbursements
    */
-  const vendorTesla = await ReimbursementRequestService.createVendor(
+  const vendor = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Tesla',
     ner,
@@ -1827,7 +1834,7 @@ const performSeed: () => Promise<void> = async () => {
     'racecar228!',
     'SAVE50!'
   );
-  const vendorAmazon = await ReimbursementRequestService.createVendor(
+  await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Amazon',
     ner,
@@ -1838,7 +1845,7 @@ const performSeed: () => Promise<void> = async () => {
     'racecare228!',
     'SAVE20!'
   );
-  const vendorGoogle = await ReimbursementRequestService.createVendor(
+  await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Google',
     ner,
@@ -1849,7 +1856,7 @@ const performSeed: () => Promise<void> = async () => {
     'racecar228!',
     'SAVE50!'
   );
-  const vendorMicrosoft = await ReimbursementRequestService.createVendor(
+  await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Microsoft',
     ner,
@@ -1860,7 +1867,7 @@ const performSeed: () => Promise<void> = async () => {
     'secure123!',
     'WELCOME10'
   );
-  const vendorApple = await ReimbursementRequestService.createVendor(
+  await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Apple',
     ner,
@@ -1871,7 +1878,7 @@ const performSeed: () => Promise<void> = async () => {
     'appl3Secure!',
     'APPLE30'
   );
-  const vendorCostco = await ReimbursementRequestService.createVendor(
+  await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Costco',
     ner,
@@ -1882,7 +1889,7 @@ const performSeed: () => Promise<void> = async () => {
     'bulkBuy22!',
     'BULKDEAL'
   );
-  const vendorWalmart = await ReimbursementRequestService.createVendor(
+  await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Walmart',
     ner,
@@ -1893,7 +1900,7 @@ const performSeed: () => Promise<void> = async () => {
     'WalMartP@ss1',
     'ROLLBACK15'
   );
-  const vendorTarget = await ReimbursementRequestService.createVendor(
+  await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Target',
     ner,
@@ -2103,107 +2110,120 @@ const performSeed: () => Promise<void> = async () => {
     3010
   );
 
-  // Add userSecureSettings for users who will create reimbursement requests
-  const usersNeedingSecureSettings = [
-    { user: joeShmoe, varName: 'joeShmoe' },
-    { user: batman, varName: 'batman' },
-    { user: superman, varName: 'superman' },
-    { user: flash, varName: 'flash' },
-    { user: aquaman, varName: 'aquaman' },
-    { user: wonderwoman, varName: 'wonderwoman' },
-    { user: greenLantern, varName: 'greenLantern' },
-    { user: cyborg, varName: 'cyborg' },
-    { user: martianManhunter, varName: 'martianManhunter' },
-    { user: nightwing, varName: 'nightwing' },
-    { user: aang, varName: 'aang' },
-    { user: katara, varName: 'katara' },
-    { user: sokka, varName: 'sokka' },
-    { user: toph, varName: 'toph' },
-    { user: zuko, varName: 'zuko' },
-    { user: regina, varName: 'regina' },
-    { user: cady, varName: 'cady' },
-    { user: gretchen, varName: 'gretchen' },
-    { user: karen, varName: 'karen' },
-    { user: spongebob, varName: 'spongebob' },
-    { user: patrick, varName: 'patrick' }
-  ];
-
-  const updatedUsers: any = {};
-
-  for (let i = 0; i < usersNeedingSecureSettings.length; i++) {
-    const { user, varName } = usersNeedingSecureSettings[i];
-    await prisma.user_Secure_Settings.create({
-      data: {
-        userSecureSettingsId: `secure-${user.userId}`,
-        userId: user.userId,
-        nuid: `00123456${i.toString().padStart(2, '0')}`,
-        phoneNumber: `123456${i.toString().padStart(4, '0')}`,
-        street: `${100 + i} Main St`,
-        city: 'Boston',
-        state: 'MA',
-        zipcode: '02115'
+  const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
+    thomasEmrax,
+    vendor.vendorId,
+    indexCodeCash.indexCodeId,
+    [],
+    [
+      {
+        name: 'GLUE',
+        reason: {
+          carNumber: 0,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 150000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 50000
+          }
+        ]
       }
-    });
-
-    // Re-fetch user with secure settings
-    const updatedUser = await prisma.user.findUnique({
-      where: { userId: user.userId },
-      include: { userSettings: true, userSecureSettings: true, roles: true }
-    });
-    updatedUsers[varName] = updatedUser;
-  }
-
-  // Seed comprehensive reimbursement requests with various statuses and assignees
-  const seededReimbursementRequests = await seedReimbursementRequests(
-    {
-      thomasEmrax,
-      joeShmoe: updatedUsers.joeShmoe,
-      batman: updatedUsers.batman,
-      superman: updatedUsers.superman,
-      flash: updatedUsers.flash,
-      aquaman: updatedUsers.aquaman,
-      wonderwoman: updatedUsers.wonderwoman,
-      greenLantern: updatedUsers.greenLantern,
-      cyborg: updatedUsers.cyborg,
-      martianManhunter: updatedUsers.martianManhunter,
-      robin: updatedUsers.nightwing, // Using nightwing as robin since robin wasn't stored in a variable
-      nightwing: updatedUsers.nightwing,
-      aang: updatedUsers.aang,
-      katara: updatedUsers.katara,
-      sokka: updatedUsers.sokka,
-      toph: updatedUsers.toph,
-      zuko: updatedUsers.zuko,
-      monopolyMan,
-      mrKrabs,
-      richieRich,
-      johnBoddy,
-      regina: updatedUsers.regina,
-      cady: updatedUsers.cady,
-      gretchen: updatedUsers.gretchen,
-      karen: updatedUsers.karen,
-      spongebob: updatedUsers.spongebob,
-      patrick: updatedUsers.patrick
-    },
-    {
-      tesla: vendorTesla,
-      amazon: vendorAmazon,
-      google: vendorGoogle,
-      microsoft: vendorMicrosoft,
-      apple: vendorApple,
-      costco: vendorCostco,
-      walmart: vendorWalmart,
-      target: vendorTarget
-    },
-    {
-      cash: indexCodeCash,
-      budget: indexCodeBudget
-    },
-    {
-      equipment: accountCode,
-      things: accountCode2,
-      stuff: accountCode3
-    },
+    ],
+    accountCode.accountCodeId,
+    100,
     ner
+  );
+
+  const reimbursement3 = await ReimbursementRequestService.createReimbursementRequest(
+    thomasEmrax,
+    vendor.vendorId,
+    indexCodeBudget.indexCodeId,
+    [],
+    [
+      {
+        name: 'BOX',
+        reason: {
+          carNumber: 0,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 150000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 50000
+          }
+        ]
+      }
+    ],
+    accountCode.accountCodeId,
+    200,
+    ner,
+    new Date()
+  );
+
+  const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
+    thomasEmrax,
+    vendor.vendorId,
+    indexCodeBudget.indexCodeId,
+    [],
+    [
+      {
+        name: 'BOX',
+        reason: {
+          carNumber: 0,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        cost: 10000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 7000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 3000
+          }
+        ]
+      }
+    ],
+    accountCode.accountCodeId,
+    20000,
+    ner,
+    new Date()
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    thomasEmrax,
+    ner,
+    'Thomas Followed up - "Please upload reciept"',
+    reimbursement1.reimbursementRequestId
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    batman,
+    ner,
+    'Batman Uploaded Receipt',
+    reimbursement1.reimbursementRequestId
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    thomasEmrax,
+    ner,
+    'Thomas Submmited to SABO',
+    reimbursement1.reimbursementRequestId
   );
 
   const otherProductReasonConsumables = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
@@ -2337,7 +2357,7 @@ const performSeed: () => Promise<void> = async () => {
     undefined,
     undefined,
     undefined,
-    seededReimbursementRequests[0]?.reimbursementRequestId
+    reimbursement1.reimbursementRequestId
   );
 
   // Need to do this because the design review cannot be scheduled for a past day
@@ -2407,7 +2427,7 @@ const performSeed: () => Promise<void> = async () => {
     'Slim and Light Car',
     newWorkPackageChangeRequest.crId,
     WorkPackageStage.Design,
-    weeksAgo(2).toISOString().split('T')[0],
+    '01/22/2024',
     5,
     [],
     [],
@@ -2529,10 +2549,10 @@ const performSeed: () => Promise<void> = async () => {
     { userId: regina.userId, title: 'Chief Electrical Engineer' }
   ]);
 
-  await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', daysAgo(120), ner);
-  await RecruitmentServices.createMilestone(batman, 'Applications Open', '', daysAgo(70), ner);
-  await RecruitmentServices.createMilestone(batman, 'Applications Close', '', daysAgo(56), ner);
-  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', daysAgo(49), ner);
+  await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', new Date('9/3/24'), ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Open', '', new Date('11/13/24'), ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Close', '', new Date('11/27/24'), ner);
+  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', new Date('12/4/24'), ner);
 
   await RecruitmentServices.createOrganizationFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
   await RecruitmentServices.createOrganizationFaq(
@@ -3053,6 +3073,43 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
+  /**
+   * Rules
+   */
+
+  // ruleset types
+  const fsaeRulesetType = await prisma.ruleset_Type.create({
+    data: ruleSeedData.rulesetType1(batman.userId, ner.organizationId)
+  });
+
+  const emptyRulesetType = await prisma.ruleset_Type.create({
+    data: ruleSeedData.emptyRulesetType(batman.userId, ner.organizationId)
+  });
+
+  // rulesets
+  const ruleset1 = await prisma.ruleset.create({
+    data: ruleSeedData.ruleset1(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
+  });
+
+  const secondActiveRuleset = await prisma.ruleset.create({
+    data: ruleSeedData.secondActiveRuleset(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
+  });
+
+  // rules
+  const ruleT = await prisma.rule.create({ data: ruleSeedData.topLevelRule(ruleset1.rulesetId, batman.userId) });
+  const ruleT2 = await prisma.rule.create({
+    data: ruleSeedData.secondLevelRule(ruleset1.rulesetId, batman.userId, ruleT.ruleId)
+  });
+  const ruleT21 = await prisma.rule.create({
+    data: ruleSeedData.thirdLevelRule(ruleset1.rulesetId, batman.userId, ruleT2.ruleId)
+  });
+  const ruleT211 = await prisma.rule.create({
+    data: ruleSeedData.leafRule(ruleset1.rulesetId, batman.userId, ruleT21.ruleId)
+  });
+
+  // project rules
+  await RulesService.createProjectRule(batman, ner, ruleT211.ruleId, project1Id);
+
   const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156', 3000);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32', 10);
@@ -3062,7 +3119,7 @@ const performSeed: () => Promise<void> = async () => {
     'Google',
     true,
     5000,
-    daysAgo(90),
+    new Date(12, 1, 24),
     [2024, 2025],
     goldSponsorTier.sponsorTierId,
     true,
@@ -3075,12 +3132,410 @@ const performSeed: () => Promise<void> = async () => {
   await FinanceServices.createSponsorTask(
     thomasEmrax,
     ner,
-    daysFromNow(30),
+    new Date(12, 1, 25),
     'notes...',
     sponsor.sponsorId,
-    daysAgo(60),
+    new Date(7, 5, 25),
     thomasEmrax.userId
   );
+
+  /**
+   * RULESET TYPES AND RULESETS
+   */
+
+  const formulaStudentRulesetType = await prisma.ruleset_Type.create({
+    data: {
+      name: 'Formula Student Rules',
+      createdByUserId: superman.userId,
+      organizationId: ner.organizationId
+    }
+  });
+
+  // Create rulesets
+  const fsae2025Ruleset = await prisma.ruleset.create({
+    data: {
+      fileId: 'fsae-2025-rules-file-id',
+      name: '2025 FSAE Electric Rules',
+      active: true,
+      rulesetTypeId: fsaeRulesetType.rulesetTypeId,
+      carId: fergus.carId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const fsae2024Ruleset = await prisma.ruleset.create({
+    data: {
+      fileId: 'fsae-2024-rules-file-id',
+      name: '2024 FSAE Electric Rules',
+      active: false,
+      rulesetTypeId: fsaeRulesetType.rulesetTypeId,
+      carId: fergus.carId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  /**
+   * RULES
+   */
+  // Technical Rules Section
+  const techRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1',
+      ruleContent: 'Technical Rules - All technical requirements for the vehicle must be met to compete',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const vehicleConfigRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.1',
+      ruleContent: 'Vehicle Configuration - The vehicle must be a four-wheeled, open-wheel, open-cockpit vehicle',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: techRule.ruleId,
+      createdByUserId: thomasEmrax.userId,
+      imageFileIds: []
+    }
+  });
+
+  const wheelRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.1.1',
+      ruleContent: 'All four wheels must be visible when viewed from above. Wheels must not exceed 13 inches in diameter',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: vehicleConfigRule.ruleId,
+      createdByUserId: joeShmoe.userId
+    }
+  });
+
+  const wheelbaseRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.1.2',
+      ruleContent: 'The wheelbase must be at least 1525 mm (60 inches)',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: vehicleConfigRule.ruleId,
+      createdByUserId: joeShmoe.userId
+    }
+  });
+
+  const trackWidthRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.1.3',
+      ruleContent: 'The smaller track width must be no less than 75% of the wheelbase',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: vehicleConfigRule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+  const rulesetType = await prisma.ruleset_Type.create({
+    data: {
+      name: 'FSAE',
+      createdByUserId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
+
+  // Powertrain Rules
+  const powertrainRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.2',
+      ruleContent: 'Powertrain - Electric powertrain systems must comply with all electrical safety requirements',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: techRule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  const motorRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.2.1',
+      ruleContent: 'The maximum nominal voltage of the accumulator must not exceed 600 VDC',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: powertrainRule.ruleId,
+      createdByUserId: joeShmoe.userId
+    }
+  });
+
+  const motorPowerRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.2.2',
+      ruleContent: 'The maximum continuous power delivered by the accumulator must not exceed 80 kW',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: powertrainRule.ruleId,
+      createdByUserId: joeBlow.userId
+    }
+  });
+
+  // Chassis Rules
+  const chassisRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.3',
+      ruleContent: 'Chassis and Frame - The chassis must provide adequate driver protection',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: techRule.ruleId,
+      createdByUserId: batman.userId,
+      imageFileIds: ['chassis-spec-drawing-1', 'chassis-spec-drawing-2']
+    }
+  });
+
+  const chassisMaterialRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.3.1',
+      ruleContent: 'The frame must be a space frame design or a carbon fiber monocoque meeting specific standards',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: chassisRule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  // Safety Rules Section
+  const safetyRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.1',
+      ruleContent: 'Safety Rules - All safety requirements must be met before the vehicle is allowed to compete',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const frameRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.1.1',
+      ruleContent:
+        'Frame Requirements - The main hoop must be directly behind the driver and be the tallest part of the car',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: safetyRule.ruleId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const rollHoopRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.1.1.1',
+      ruleContent: 'The main roll hoop must extend from the lowest chassis frame members on one side to the other',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: frameRule.ruleId,
+      createdByUserId: superman.userId
+    }
+  });
+
+  const harnessRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.1.2',
+      ruleContent: 'Harness - A 5-point or 6-point harness must be used, meeting SFI 16.1 or FIA 8853/98 standards',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: safetyRule.ruleId,
+      createdByUserId: superman.userId
+    }
+  });
+
+  const fireExtinguisherRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.1.3',
+      ruleContent: 'Fire Extinguisher - An onboard fire extinguisher system must be installed and accessible',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: safetyRule.ruleId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  // Braking System Rules with Cross-References
+  const brakingRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.2.1',
+      ruleContent:
+        'Braking System - The vehicle must have a braking system that acts on all four wheels and operates on two independent hydraulic circuits',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: thomasEmrax.userId,
+      referencedRule: {
+        connect: [{ ruleId: vehicleConfigRule.ruleId }, { ruleId: wheelRule.ruleId }]
+      }
+    }
+  });
+
+  const brakePedalRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.2.1.1',
+      ruleContent: 'The brake pedal must be capable of locking all four wheels in both dry and wet conditions',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: brakingRule.ruleId,
+      createdByUserId: joeShmoe.userId
+    }
+  });
+
+  // Electrical System Rules with References
+  const electricalSystemRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.3.1',
+      ruleContent: 'Electrical System - All high voltage components must be protected and isolated per safety requirements',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: thomasEmrax.userId,
+      imageFileIds: ['electrical-diagram-1', 'electrical-diagram-2', 'electrical-diagram-3'],
+      referencedRule: {
+        connect: [{ ruleId: powertrainRule.ruleId }, { ruleId: safetyRule.ruleId }]
+      }
+    }
+  });
+
+  const shutdownCircuitRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.3.1.1',
+      ruleContent: 'A shutdown circuit must be installed that disables the tractive system when activated',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: electricalSystemRule.ruleId,
+      createdByUserId: joeBlow.userId
+    }
+  });
+
+  const shutdownButtonRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.3.1.2',
+      ruleContent: 'Shutdown buttons must be located on both sides of the vehicle and be easily accessible',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: electricalSystemRule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  // Accumulator Container Rules
+  const accumulatorRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.3.2',
+      ruleContent: 'Accumulator Container - The accumulator container must protect the cells from impact and debris',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: batman.userId,
+      referencedRule: {
+        connect: [{ ruleId: safetyRule.ruleId }]
+      }
+    }
+  });
+
+  const accumulatorMountingRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.3.2.1',
+      ruleContent: 'The accumulator container must be rigidly mounted to the frame',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: accumulatorRule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  // General Rules (Orphan - no parent)
+  const generalRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'G.1',
+      ruleContent:
+        'General - All rules are subject to interpretation by competition officials. When in doubt, contact the rules committee',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const competitionEligibilityRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'G.2',
+      ruleContent: 'Competition Eligibility - Teams must register before the deadline and submit all required documentation',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: superman.userId
+    }
+  });
+
+  // Driver Requirements
+  const driverRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.2',
+      ruleContent: 'Driver Requirements - All drivers must meet safety equipment and training requirements',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: superman.userId
+    }
+  });
+
+  const helmetRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.2.1',
+      ruleContent: 'Helmet - Driver must wear a helmet meeting Snell SA2020, FIA 8859-2015, or equivalent standards',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: driverRule.ruleId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const suitRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'S.2.2',
+      ruleContent: 'Suit - Driver must wear a driving suit meeting SFI 3.2A/1 or FIA 8856-2000 standards',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: driverRule.ruleId,
+      createdByUserId: superman.userId
+    }
+  });
+
+  // Suspension Rules
+  const suspensionRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.4.1',
+      ruleContent: 'Suspension - All vehicles must have a fully operational suspension system on all wheels',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      createdByUserId: thomasEmrax.userId,
+      referencedRule: {
+        connect: [{ ruleId: wheelRule.ruleId }]
+      }
+    }
+  });
+
+  const suspensionTravelRule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.4.1.1',
+      ruleContent: 'The suspension must have at least 50.8 mm (2 inches) of travel',
+      rulesetId: fsae2025Ruleset.rulesetId,
+      parentRuleId: suspensionRule.ruleId,
+      createdByUserId: joeShmoe.userId
+    }
+  });
+
+  // Adding some rules to the 2024 ruleset as well
+  const tech2024Rule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1',
+      ruleContent: 'Technical Rules - 2024 Edition',
+      rulesetId: fsae2024Ruleset.rulesetId,
+      createdByUserId: batman.userId
+    }
+  });
+
+  const vehicle2024Rule = await prisma.rule.create({
+    data: {
+      ruleCode: 'T.1.1',
+      ruleContent: 'Vehicle must be four-wheeled (2024 rules)',
+      rulesetId: fsae2024Ruleset.rulesetId,
+      parentRuleId: tech2024Rule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  const ruleset = await prisma.ruleset.create({
+    data: {
+      name: 'FSAE Rules 2025',
+      fileId: 'fsae-rules-2025',
+      active: true,
+      dateCreated: new Date('2025-01-01T10:00:00Z'),
+      rulesetTypeId: rulesetType.rulesetTypeId,
+      createdByUserId: thomasEmrax.userId,
+      carId: fergus.carId
+    }
+  });
+
+  await prisma.rule.create({
+    data: {
+      ruleCode: 'T2.1.1',
+      ruleContent:
+        'The vehicle must be open-wheeled and open-cockpit (a formula style body) with four (4) wheels that are not in a straight line.',
+      imageFileIds: [],
+      dateCreated: new Date('2025-09-01T10:00:00Z'),
+      ruleset: { connect: { rulesetId: ruleset.rulesetId } },
+      createdBy: { connect: { userId: thomasEmrax.userId } }
+    }
+  });
 };
 
 performSeed()

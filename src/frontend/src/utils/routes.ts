@@ -80,6 +80,11 @@ const GRAPH_COLLECTION_BY_ID = '/statistics/graph-collections/:graphCollectionId
 /**************** Retrospective ****************/
 const RETROSPECTIVE = `/retrospective`;
 
+/**************** Rules ****************/
+const RULES = `/rules`;
+const RULESET_BY_ID = RULES + `/:rulesetId`;
+const RULESET = RULES + `/:rulesetId/view`;
+
 export const routes = {
   BASE,
   LOGIN,
@@ -145,5 +150,9 @@ export const routes = {
   EDIT_GRAPH,
   GRAPH_COLLECTION_BY_ID,
 
-  RETROSPECTIVE
+  RETROSPECTIVE,
+
+  RULES,
+  RULESET_BY_ID,
+  RULESET
 };
