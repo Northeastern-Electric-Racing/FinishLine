@@ -90,7 +90,7 @@ const NewCalendarPage = () => {
     endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds),
-    calendarIds: selectedCalendarIds.length ? selectedCalendarIds: undefined
+    calendarIds: selectedCalendarIds.length ? selectedCalendarIds : undefined
   });
 
   const toggleCalendar = (calendarId: string) => {
@@ -208,16 +208,8 @@ const NewCalendarPage = () => {
     .concat([...Array(daysInMonth(displayMonthYear)).keys()].map((day) => day + 1))
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
 
-
-  if (
-    isLoading ||
-    !allEvents ||
-    allTeamTypesLoading ||
-    allEventTypesLoading ||
-    allCalendarsLoading ||
-    allTeamsLoading
-  ) return <LoadingIndicator />;
-
+  if (isLoading || !allEvents || allTeamTypesLoading || allEventTypesLoading || allCalendarsLoading || allTeamsLoading)
+    return <LoadingIndicator />;
 
   if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
   if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
@@ -400,12 +392,11 @@ const NewCalendarPage = () => {
                   </Button>
                 </Stack>
 
-                { (calendars.length > 0) && (
+                {calendars.length > 0 && (
                   <FormGroup>
                     {calendars.map((cal) => {
-                      const calendarId = cal.calendarId;
+                      const { calendarId, color, name } = cal;
                       const checked = selectedCalendarIds.includes(calendarId);
-                      const color = cal.color;
                       return (
                         <FormControlLabel
                           key={calendarId}
