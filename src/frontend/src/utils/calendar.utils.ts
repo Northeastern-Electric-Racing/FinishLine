@@ -21,7 +21,29 @@ export const convertDayToInt = (day: DayOfWeek) => {
   }
 };
 
+export const convertIntToDay = (num: number) => {
+  switch (num) {
+    case 1:
+      return DayOfWeek.MONDAY;
+    case 2:
+      return DayOfWeek.TUESDAY;
+    case 3:
+      return DayOfWeek.WEDNESDAY;
+    case 4:
+      return DayOfWeek.THURSDAY;
+    case 5:
+      return DayOfWeek.FRIDAY;
+    case 6:
+      return DayOfWeek.SATURDAY;
+    case 0:
+      return DayOfWeek.SUNDAY;
+    default:
+      return DayOfWeek.MONDAY;
+  }
+};
+
 // Get a list of dates for user viewing purposes (formatted to their timezone)
+// Should be used when events need to be populated/displayed
 export const getMeetingDates = (event: Event) => {
   const times: Date[] = [];
   event.scheduledTimes.forEach((schedule) => {
@@ -38,7 +60,9 @@ export const getMeetingDates = (event: Event) => {
 
       // adjust for the users time
       const startDateAdjusted = new Date(startDate.getTime() - timezoneOffset);
-      times.push(startDateAdjusted);
+
+      // potentially needed to prevent extra events from showing up before the initial date
+      if (new Date(schedule.initialDateScheduled).getTime() >= startDateAdjusted.getTime()) times.push(startDateAdjusted);
 
       for (let i = 1; i <= schedule.recurrenceNumber; i++) {
         const nextDate = new Date(startDateAdjusted);

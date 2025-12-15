@@ -19,7 +19,8 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
-import { convertDayToInt } from '../../utils/calendar.utils';
+import { convertIntToDay, getMeetingDates } from '../../utils/calendar.utils';
+import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -102,8 +103,10 @@ const NewCalendarPage = () => {
   if (isLoading || !allEvents) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
+  const transformedEvents = allEvents.map(filterEventTransformer);
+
   // Sort events by their first occurrence's start time
-  const sortedEvents = [...allEvents].sort((event1, event2) => {
+  const sortedEvents = [...transformedEvents].sort((event1, event2) => {
     const time1 = event1.scheduledTimes[0]?.startTime ? new Date(event1.scheduledTimes[0].startTime).getTime() : 0;
     const time2 = event2.scheduledTimes[0]?.startTime ? new Date(event2.scheduledTimes[0].startTime).getTime() : 0;
     return time1 - time2;
@@ -113,55 +116,23 @@ const NewCalendarPage = () => {
   const dayDict = new Map<string, DayOfWeek>();
 
   sortedEvents.forEach((event) => {
-    event.scheduledTimes.forEach((slot) => {
-      if (!slot.initialDateScheduled) return;
+    const times: Date[] = getMeetingDates(event);
 
-      // startTime is already a full timestamp, just use it directly
-      const startTimeDate = new Date(slot.initialDateScheduled);
-
-      // Accessing the date actually converts it to local time, which causes the date to be off. This is a workaround.
-      // 60000 is for millisecond conversion
-      const convertedStartTime = new Date(startTimeDate.getTime() + startTimeDate.getTimezoneOffset() * 60000);
-
-      const dayInt = convertedStartTime.getDay();
-
-      slot.days.forEach((day) => {
-        const eventDate = new Date(convertedStartTime);
-        eventDate.setHours(0, 0, 0, 0);
-        const offset = dayInt - convertDayToInt(day);
-
-        eventDate.setDate(eventDate.getDate() - offset);
-        const date = datePipe(new Date(eventDate.getTime()));
-
-        dayDict.set(date, day);
-
-        if (eventDict.has(date)) {
-          // Check if this event is already in this date's array to avoid duplicates
-          const existingEvents = eventDict.get(date)!;
-          if (!existingEvents.find((e) => e.eventId === event.eventId)) {
-            existingEvents.push(event);
-          }
-        } else {
-          eventDict.set(date, [event]);
+    times.forEach((date) => {
+      const eventDate = new Date(date);
+      const dateString = datePipe(eventDate);
+      eventDate.setHours(0, 0, 0, 0);
+      const day = convertIntToDay(eventDate.getDay());
+      dayDict.set(dateString, day);
+      if (eventDict.has(dateString)) {
+        // Check if this event is already in this date's array to avoid duplicates
+        const existingEvents = eventDict.get(dateString)!;
+        if (!existingEvents.find((e) => e.eventId === event.eventId)) {
+          existingEvents.push(event);
         }
-
-        for (let i = 1; i <= slot.recurrenceNumber; i++) {
-          const nextDate = new Date(eventDate);
-          nextDate.setDate(nextDate.getDate() + 7 * i);
-
-          const date = datePipe(new Date(nextDate.getTime()));
-          dayDict.set(date, day);
-
-          if (eventDict.has(date)) {
-            const existingEvents = eventDict.get(date)!;
-            if (!existingEvents.find((e) => e.eventId === event.eventId)) {
-              existingEvents.push(event);
-            }
-          } else {
-            eventDict.set(date, [event]);
-          }
-        }
-      });
+      } else {
+        eventDict.set(dateString, [event]);
+      }
     });
   });
 
