@@ -50,11 +50,18 @@ export const getMeetingDates = (event: Event) => {
     schedule.days.forEach((day) => {
       const startTimeDate = new Date(schedule.initialDateScheduled);
       const timezoneOffset = startTimeDate.getTimezoneOffset() * 60000;
+
+      // get the initial date (adjusted to match UTC)
       const startDate = new Date(startTimeDate.getTime() + timezoneOffset);
+
+      // Calculate offset based on the current day being checked
       const offset = startDate.getDay() - convertDayToInt(day);
+
+      // apply offset to get the true date of this specific event
       startDate.setDate(startDate.getDate() - offset);
 
       // Note : schedule.startTime likely gets converted to the users timezone by default
+      // set the hour and minutes
       startDate.setHours(schedule.startTime?.getHours() ?? 0);
       startDate.setMinutes(schedule.startTime?.getMinutes() ?? 0);
 
@@ -64,10 +71,10 @@ export const getMeetingDates = (event: Event) => {
       // potentially needed to prevent extra events from showing up before the initial date
       if (new Date(schedule.initialDateScheduled).getTime() >= startDateAdjusted.getTime()) times.push(startDateAdjusted);
 
+      // add additional events for each recurrence on this day
       for (let i = 1; i <= schedule.recurrenceNumber; i++) {
         const nextDate = new Date(startDateAdjusted);
         nextDate.setDate(nextDate.getDate() + 7 * i);
-
         times.push(nextDate);
       }
     });
