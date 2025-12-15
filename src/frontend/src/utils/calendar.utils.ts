@@ -21,6 +21,7 @@ export const convertDayToInt = (day: DayOfWeek) => {
   }
 };
 
+// Get a list of dates for user viewing purposes (formatted to their timezone)
 export const getMeetingDates = (event: Event) => {
   const times: Date[] = [];
   event.scheduledTimes.forEach((schedule) => {
