@@ -1,32 +1,32 @@
 import NERFormModal from '../../../components/NERFormModal';
 import { useForm, Controller } from 'react-hook-form';
-import { Box, FormControl, TextField, Typography, FormLabel, FormHelperText, Button } from '@mui/material';
-import { useState } from 'react';
+import { Box, FormControl, TextField, Typography, FormLabel, FormHelperText, Button, Select, MenuItem } from '@mui/material';
+import { useEffect, useState } from 'react';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { FileUpload } from '@mui/icons-material';
 import { MAX_FILE_SIZE } from 'shared';
 import { useUploadRulesetFile } from '../../../hooks/rules.hooks';
+import { useGetAllCars } from '../../../hooks/cars.hooks';
 
 interface AddNewFileModalProps {
   open: boolean;
   onHide: () => void;
   onFormSubmit: (data: NewFileFormData) => Promise<void>;
-  carOptions: string[];
 }
 
 interface NewFileFormData {
   fileId: string;
   name: string;
-  car: string;
+  carNumber: number;
   parserType: 'FSAE' | 'FHE';
 }
 
 interface ButtonGroupProps {
   options: string[];
   value: string;
-  onChange: (option: string) => any;
+  onChange: (value: string) => any;
 }
 
 const sectionHeaderStyle = {
@@ -34,8 +34,8 @@ const sectionHeaderStyle = {
   color: '#ef4345',
   textDecoration: 'underline',
   fontSize: '1rem',
-  textUnderlineOffset: '3px',
-  marginBottom: '5px'
+  textUnderlineOffset: '5px',
+  marginBottom: '10px'
 };
 
 const isPdf = (fileName: string) => {
@@ -46,13 +46,13 @@ const isPdf = (fileName: string) => {
 const schema = yup.object({
   fileId: yup.string().required('File is required'),
   name: yup.string().required('Name is required'),
-  car: yup.string().required('Car is required'),
+  carNumber: yup.number().min(0).required('Car is required'),
   parserType: yup.string().oneOf(['FSAE', 'FHE']).required('Parser type is required')
 });
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({ options, value, onChange }) => {
   return (
-    <div style={{ display: 'flex', gap: '4px' }}>
+    <div style={{ display: 'flex', gap: '4px'}}>
       {options.map((option) => (
         <button
           type="button"
@@ -84,11 +84,12 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ options, value, onChange }) =
   );
 };
 
-const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormSubmit, carOptions }) => {
+const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormSubmit }) => {
   const toast = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const { mutateAsync: uploadFile } = useUploadRulesetFile();
+  const { data: cars, isLoading: carsLoading, isError: carsError } = useGetAllCars();
 
   const {
     formState: { errors },
@@ -102,12 +103,16 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
     defaultValues: {
       fileId: '',
       name: '',
-      car: '',
+      carNumber: 0,
       parserType: 'FSAE'
     }
   });
-  const carValue = watch('car');
-  const parserTypeValue = watch('parserType');
+
+  useEffect(() => {
+    if (cars && cars.length > 0) {
+      setValue('carNumber', cars[0].wbsNum.carNumber);
+    }
+  }, [cars, setValue]);
 
   const handleFormSubmit = async (data: NewFileFormData) => {
     try {
@@ -188,6 +193,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
       <Box>
         <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', gap: 3 }}>
+
             {/* File Upload */}
             <FormControl sx={{ flex: 2 }} error={!!errors.fileId}>
               <FormLabel sx={sectionHeaderStyle}>Upload Ruleset File:</FormLabel>
@@ -214,16 +220,28 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
             </FormControl>
 
             {/* Car */}
-            <FormControl error={!!errors.car}>
+            <FormControl error={!!errors.carNumber}>
               <FormLabel sx={sectionHeaderStyle}>Car:</FormLabel>
-              <Controller
-                name="car"
-                control={control}
-                render={({ field: { onChange } }) => (
-                  <ButtonGroup options={carOptions} value={carValue} onChange={onChange} />
-                )}
-              />
-              <FormHelperText error>{errors.car?.message}</FormHelperText>
+              {carsLoading ? (
+                <Typography sx={{ fontSize: '0.875rem' }}>Loading cars...</Typography>
+              ) : carsError ? (
+                <Typography sx={{ fontSize: '0.875rem', color: 'error.main' }}>Failed to load cars</Typography>
+              ) : (
+                <Controller
+                  name="carNumber"
+                  control={control}
+                  render={({ field }) => (
+                    <Select {...field} size="small">
+                      {cars?.map(car => (
+                        <MenuItem key={car.id} value={car.wbsNum.carNumber}>
+                          {car.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+              )}
+              <FormHelperText error>{errors.carNumber?.message}</FormHelperText>
             </FormControl>
 
             {/* Parser Type */}
@@ -232,11 +250,11 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
               <Controller
                 name="parserType"
                 control={control}
-                render={({ field: { onChange } }) => (
+                render={({ field: { onChange, value } }) => (
                   <ButtonGroup
                     options={['FSAE', 'FHE']}
-                    value={parserTypeValue}
-                    onChange={(value) => onChange(value as 'FSAE' | 'FHE')}
+                    value={value}
+                    onChange={(val) => onChange(val as 'FSAE' | 'FHE')}
                   />
                 )}
               />
@@ -245,7 +263,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
           </Box>
 
           {/* Ruleset Name */}
-          <FormControl fullWidth>
+          <FormControl error={!!errors.name}>
             <FormLabel sx={sectionHeaderStyle}>Name Ruleset File:</FormLabel>
             <Controller
               name="name"

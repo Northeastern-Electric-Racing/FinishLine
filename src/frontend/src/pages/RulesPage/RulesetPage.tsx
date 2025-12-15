@@ -24,17 +24,20 @@ const RulesetPage: React.FC = () => {
   const handleFileConfirm = async (data: {
     fileId: string;
     name: string;
-    car: string;
+    carNumber: number;
     parserType: string;
   }) => {
     setAddFileModalShow(false);
     try {
       console.log('Creating ruleset...');
+
+      const rulesetTypeId = 'PLACEHOLDER_RULESET_TYPE_ID'; /* TODO */
+
       const ruleset = await createRuleset({
         fileId: data.fileId,
         name: data.name,
-        rulesetTypeId: data.car,
-        carNumber: parseInt(data.car),
+        rulesetTypeId,
+        carNumber: data.carNumber,
         active: false,
       });
 
@@ -44,7 +47,7 @@ const RulesetPage: React.FC = () => {
       console.log('Ruleset.rulesetId:', ruleset.rulesetId);
       console.log('Ruleset.id:', ruleset.rulesetId);
 
-      const rulesetId = ruleset.rulesetId || ruleset.rulesetId;
+      const { rulesetId } = ruleset;
 
       if (!rulesetId) {
         console.error('No rulesetId found in response!');
@@ -74,7 +77,6 @@ const RulesetPage: React.FC = () => {
         open={AddFileModalShow}
         onHide={() => setAddFileModalShow(false)}
         onFormSubmit={handleFileConfirm}
-        carOptions={['1', '2']}
       />
        <NERButton onClick={() => history.push(`${routes.RULES}/placeholder_ruleset_id/edit`)}>MOCK edit/assign rules</NERButton>
     </PageLayout>
