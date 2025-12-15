@@ -52,6 +52,7 @@ export const getMeetingDates = (event: Event) => {
       const timezoneOffset = startTimeDate.getTimezoneOffset() * 60000;
 
       // get the initial date (adjusted to match UTC)
+      // this is done to ensure offset is properly calculated
       const startDate = new Date(startTimeDate.getTime() + timezoneOffset);
 
       // Calculate offset based on the current day being checked
