@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import CalendarService from '../services/calendar.services';
 import { getCurrentUserWithUserSettings } from '../utils/auth.utils';
-import { HttpException } from '../utils/errors.utils';
 
 export default class CalendarController {
   static async createEventType(req: Request, res: Response, next: NextFunction) {
@@ -371,13 +370,9 @@ export default class CalendarController {
     try {
       const { file } = req;
       const { eventId } = req.params;
-      if (!file) throw new HttpException(400, 'Invalid or undefined document data');
-      const receipt = await CalendarService.uploadDocument(eventId, file, req.currentUser, req.organization);
-      const isProd = process.env.NODE_ENV === 'production';
-      const origin = isProd ? 'https://finishlinebyner.com' : 'http://localhost:3000';
+      const document = await CalendarService.uploadDocument(eventId, file!, req.currentUser, req.organization);
 
-      res.header('Access-Control-Allow-Origin', origin);
-      res.status(200).json(receipt);
+      res.status(200).json(document);
     } catch (error: unknown) {
       next(error);
     }
