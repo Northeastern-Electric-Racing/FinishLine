@@ -388,7 +388,7 @@ const NewCalendarPage = () => {
                 {calendars.length > 0 && (
                   <FormGroup>
                     {calendars.map((cal) => {
-                      const { calendarId, color} = cal;
+                      const { calendarId, color } = cal;
                       const checked = selectedCalendarIds.includes(calendarId);
                       return (
                         <FormControlLabel
