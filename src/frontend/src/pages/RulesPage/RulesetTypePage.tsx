@@ -3,7 +3,7 @@ import {
   Box,
   Button,
   Paper,
-  Table,
+  Table, 
   TableBody,
   TableCell,
   TableContainer,
@@ -17,6 +17,9 @@ import {
   Stack
 } from '@mui/material';
 import { datePipe } from '../../utils/pipes';
+import { NERButton } from '../../components/NERButton';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../utils/routes';
 
 type RulesetTypeColumnId = 'id' | 'name' | 'lastUpdated' | 'revisions' | 'actions';
 
@@ -26,6 +29,7 @@ interface RulesetTypeHeadCell {
 }
 
 const RulesetTypePage: React.FC = () => {
+  const history = useHistory();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -49,20 +53,20 @@ const RulesetTypePage: React.FC = () => {
   ];
 
   // Mock data for now - will be replaced with ruleset type data
-  const mockRulesets = [
+  const mockRulesetTypes = [
     { id: '1', name: 'Ruleset 1', lastUpdated: new Date('2024-01-15'), revisions: 5, actions: 'Edit' },
     { id: '2', name: 'Ruleset 2', lastUpdated: new Date('2024-01-14'), revisions: 3, actions: 'Edit' }
   ];
 
   return (
-    <PageLayout title="Rulesets">
+    <PageLayout title="Ruleset Types">
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 120px)' }}>
         <Box sx={{ flexGrow: 1 }}>
           {isMobile ? (
             <Stack spacing={2} sx={{ px: 1 }}>
-              {mockRulesets.map((ruleset) => (
+              {mockRulesetTypes.map((rulesetType) => (
                 <Card
-                  key={ruleset.id}
+                  key={rulesetType.id}
                   sx={{
                     backgroundColor: '#121313',
                     borderRadius: '8px',
@@ -71,7 +75,7 @@ const RulesetTypePage: React.FC = () => {
                 >
                   <CardContent>
                     <Typography variant="h6" sx={{ color: '#dd514c', fontWeight: 600, mb: 2 }}>
-                      {ruleset.name}
+                      {rulesetType.name}
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -79,7 +83,7 @@ const RulesetTypePage: React.FC = () => {
                           Last Updated:
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#ededed' }}>
-                          {datePipe(ruleset.lastUpdated)}
+                          {datePipe(rulesetType.lastUpdated)}
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -87,7 +91,7 @@ const RulesetTypePage: React.FC = () => {
                           Revisions:
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#ededed' }}>
-                          {ruleset.revisions}
+                          {rulesetType.revisions}
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
@@ -184,6 +188,8 @@ const RulesetTypePage: React.FC = () => {
             >
               Add Ruleset
             </Button>
+            {/* Temporary for navigation */}
+            <NERButton onClick={() => history.push(`${routes.RULES}/placeholder_ruleset_id`)}>FSAE Ruleset</NERButton>
           </Box>
         </Box>
       </Box>
