@@ -16,7 +16,7 @@ import {
   FormGroup
 } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { Calendar, DayOfWeek, Event } from 'shared';
+import { DayOfWeek, Event } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import { useAllCalendars, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
@@ -33,13 +33,6 @@ import { useGetUsersTeams } from '../../hooks/teams.hooks';
 import { convertDayToInt } from '../../utils/calendar.utils';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-
-type CalendarWithColor = Calendar & {
-  id?: string;
-  calendarId?: string;
-  color?: string;
-  colorHexCode?: string;
-};
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -66,18 +59,6 @@ const NewCalendarPage = () => {
   const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>(teamList);
 
   const {
-    isLoading,
-    isError,
-    error,
-    data: allEvents
-  } = useFilterEvents({
-    startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
-    endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
-    memberIds: memberIds.concat(additionalMemberIds),
-    teamIds: teamIds.concat(additionalTeamIds)
-  });
-
-  const {
     data: allEventTypes,
     isLoading: allEventTypesLoading,
     isError: allEventTypesIsError,
@@ -91,13 +72,26 @@ const NewCalendarPage = () => {
     error: allCalendarsError
   } = useAllCalendars();
 
-  const calendars = (allCalendars ?? []) as CalendarWithColor[];
+  const calendars = allCalendars ?? [];
 
   const [selectedCalendarIds, setSelectedCalendarIds] = useState<string[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
+
+  const {
+    isLoading,
+    isError,
+    error,
+    data: allEvents
+  } = useFilterEvents({
+    startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
+    endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
+    memberIds: memberIds.concat(additionalMemberIds),
+    teamIds: teamIds.concat(additionalTeamIds),
+    calendarIds: selectedCalendarIds.length ? selectedCalendarIds: undefined
+  });
 
   const toggleCalendar = (calendarId: string) => {
     setSelectedCalendarIds((prev) =>
@@ -128,24 +122,15 @@ const NewCalendarPage = () => {
   if (isLoading || !allEvents) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  const getEventCalendarId = (event: any): string | undefined =>
-    event.calendarId ?? event.calendar?.id ?? event.calendar?.calendarId;
-
-  const baseEvents = allEvents.filter((event) => {
-    if (selectedCalendarIds.length === 0) {
-      return true;
-    }
-
-    const calId = getEventCalendarId(event);
-    if (!calId) {
-      return false;
-    }
-
-    return selectedCalendarIds.includes(calId);
-  });
+  type EventWithCalendar = Event & {
+    calendarId?: string | null;
+    calendar?: {
+      calendarId?: string | null;
+    } | null;
+  };
 
   // Sort events by their first occurrence's start time
-  const sortedEvents = [...baseEvents].sort((event1, event2) => {
+  const sortedEvents = [...allEvents].sort((event1, event2) => {
     const time1 = event1.scheduledTimes[0]?.startTime ? new Date(event1.scheduledTimes[0].startTime).getTime() : 0;
     const time2 = event2.scheduledTimes[0]?.startTime ? new Date(event2.scheduledTimes[0].startTime).getTime() : 0;
     return time1 - time2;
@@ -222,6 +207,17 @@ const NewCalendarPage = () => {
   const daysThisMonth = paddingArrayStart
     .concat([...Array(daysInMonth(displayMonthYear)).keys()].map((day) => day + 1))
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
+
+
+  if (
+    isLoading ||
+    !allEvents ||
+    allTeamTypesLoading ||
+    allEventTypesLoading ||
+    allCalendarsLoading ||
+    allTeamsLoading
+  ) return <LoadingIndicator />;
+
 
   if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
   if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
@@ -404,20 +400,12 @@ const NewCalendarPage = () => {
                   </Button>
                 </Stack>
 
-                {allCalendarsLoading && <Typography variant="body2">Loading...</Typography>}
-
-                {allCalendarsIsError && (
-                  <Typography variant="body2" color="error">
-                    {(allCalendarsError as Error | undefined)?.message ?? 'Failed to load calendars'}
-                  </Typography>
-                )}
-
-                {!allCalendarsLoading && !allCalendarsIsError && calendars.length > 0 && (
+                { (calendars.length > 0) && (
                   <FormGroup>
                     {calendars.map((cal) => {
-                      const calendarId = cal.calendarId ?? cal.id!;
+                      const calendarId = cal.calendarId;
                       const checked = selectedCalendarIds.includes(calendarId);
-                      const color = cal.color ?? cal.colorHexCode ?? '#999';
+                      const color = cal.color;
                       return (
                         <FormControlLabel
                           key={calendarId}
