@@ -20,6 +20,7 @@ import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
 import { convertDayToInt } from '../../utils/calendar.utils';
+import AvailabilityPanel from './AvailabilityPanel';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -44,6 +45,14 @@ const NewCalendarPage = () => {
 
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
   const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>(teamList);
+
+  const [availabilityInformation, setAvailabilityInformation] = useState<Event | null>(null);
+  const [availabilityVisible, setAvailabilityVisible] = useState<boolean>(false);
+
+  const setAvailability = (event: Event | null) => {
+    setAvailabilityInformation(event);
+    setAvailabilityVisible(event !== null);
+  };
 
   const {
     isLoading,
@@ -274,6 +283,7 @@ const NewCalendarPage = () => {
                                 dayDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
                                 DayOfWeek.SUNDAY
                               }
+                              setAvailability={(event: Event) => setAvailability(event)}
                             />
                           </Box>
                         </Grid>
@@ -340,6 +350,9 @@ const NewCalendarPage = () => {
           setShowTeam={(changed: boolean) => updateAdditionalTeamIds(changed)}
         />
       </PageLayout>
+      {availabilityInformation && availabilityVisible && (
+        <AvailabilityPanel event={availabilityInformation} closePanel={() => setAvailability(null)} />
+      )}
     </>
   );
 };

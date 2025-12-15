@@ -4,7 +4,7 @@ import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import TerminalIcon from '@mui/icons-material/Terminal';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import DRCSummaryModal from '../CalendarPage/EventSummaryModal';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -20,7 +20,6 @@ import HelpIcon from '@mui/icons-material/Help';
 import GroupsIcon from '@mui/icons-material/Groups';
 import EventPartialInfoView from './EventPartialInfoView';
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
-import { useAllEventTypes } from '../../hooks/calendar.hooks';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -49,6 +48,7 @@ interface CalendarDayCardProps {
   eventTypes?: EventType[];
   calendars?: Calendar[];
   dayOfWeek?: DayOfWeek;
+  setAvailability: (event: Event) => void;
 }
 
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
@@ -57,7 +57,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   teamTypes,
   eventTypes = [],
   calendars = [],
-  dayOfWeek = DayOfWeek.MONDAY
+  dayOfWeek = DayOfWeek.MONDAY,
+  setAvailability
 }) => {
   const [, setIsCreateModalOpen] = useState(false);
   const theme = useTheme();
@@ -78,7 +79,15 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     </Grid>
   );
 
-  const EventPopupInfo = ({ event, color, eventType }: { event: Event; color: string, eventType: EventType | undefined }) => {
+  const EventPopupInfo = ({
+    event,
+    color,
+    eventType
+  }: {
+    event: Event;
+    color: string;
+    eventType: EventType | undefined;
+  }) => {
     const name = event.title;
 
     const convertedStartTime = getConvertedStart(event, dayOfWeek);
@@ -169,23 +178,24 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           {eventType?.name === 'Design Review' && (
             <Stack direction="row">
               <GroupIcon />
-              <Button size="small"
-              variant="outlined"
-              id="filter-events-button"
-              onClick={() => console.log("eee")}
-              sx={{
-                color: 'white',
-                borderColor: 'white',
-                backgroundColor: 'transparent',
-                '&:hover': {
+              <Button
+                size="small"
+                variant="outlined"
+                id="filter-events-button"
+                onClick={() => setAvailability(event)}
+                sx={{
+                  color: 'white',
                   borderColor: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                },
-                marginX: 1,
-              }}
-            >
-              View Availibility
-            </Button>
+                  backgroundColor: 'transparent',
+                  '&:hover': {
+                    borderColor: 'white',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                  },
+                  marginX: 1
+                }}
+              >
+                View Availibility
+              </Button>
             </Stack>
           )}
           {event.confirmedMembers.length > 0 && (
@@ -378,7 +388,9 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
             <Tooltip
               placement="right"
               arrow
-              title={<EventPopupInfo event={event} color={specificCalendar?.color ?? 'gray'} eventType={specificEventType} />}
+              title={
+                <EventPopupInfo event={event} color={specificCalendar?.color ?? 'gray'} eventType={specificEventType} />
+              }
               slotProps={{
                 popper: {
                   sx: {
