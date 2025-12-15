@@ -122,13 +122,6 @@ const NewCalendarPage = () => {
   if (isLoading || !allEvents) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  type EventWithCalendar = Event & {
-    calendarId?: string | null;
-    calendar?: {
-      calendarId?: string | null;
-    } | null;
-  };
-
   // Sort events by their first occurrence's start time
   const sortedEvents = [...allEvents].sort((event1, event2) => {
     const time1 = event1.scheduledTimes[0]?.startTime ? new Date(event1.scheduledTimes[0].startTime).getTime() : 0;
