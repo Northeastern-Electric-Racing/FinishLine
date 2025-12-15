@@ -27,10 +27,11 @@ const UserScheduleSettingsView = ({
   const [confirmedAvailabilities, setConfirmedAvailabilities] = useState(new Map());
   const { mutateAsync } = useMarkUserConfirmed(event?.eventId || '');
 
-  // Get the first scheduled date from the event
-  const firstScheduledDate = event?.scheduledTimes?.[0]?.initialDateScheduled
-    ? new Date(event.scheduledTimes[0].initialDateScheduled as any)
-    : undefined;
+  // Get first scheduled date from event
+  let firstScheduledDate: Date | undefined;
+  if (event && event.scheduledTimes && event.scheduledTimes.length > 0 && event.scheduledTimes[0].initialDateScheduled) {
+    firstScheduledDate = new Date(event.scheduledTimes[0].initialDateScheduled);
+  }
 
   // Get work package names for the event title
   const workPackageNames = event?.workPackages.map((wp) => wp.wbsElement.name).join(', ') || 'Event';
