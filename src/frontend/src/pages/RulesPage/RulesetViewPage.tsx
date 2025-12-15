@@ -5,7 +5,7 @@ import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import { Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import { useSingleRuleset } from './RulesetPage';
+import { useSingleRuleset } from './RulesetEditPage';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 

@@ -25,7 +25,6 @@ const RulesetPage: React.FC = () => {
     fileId: string;
     name: string;
     car: string;
-    isActive: boolean;
     parserType: string;
   }) => {
     setAddFileModalShow(false);
@@ -36,7 +35,7 @@ const RulesetPage: React.FC = () => {
         name: data.name,
         rulesetTypeId: data.car,
         carNumber: parseInt(data.car),
-        active: data.isActive
+        active: false,
       });
 
       console.log('Full ruleset response:', ruleset);

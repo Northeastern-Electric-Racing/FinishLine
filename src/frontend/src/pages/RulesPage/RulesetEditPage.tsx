@@ -20,7 +20,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
  * @param rulesetId - The ID of the ruleset to fetch.
  * @returns The ruleset data.
  */
-const useSingleRuleset = (rulesetId: string) => {
+export const useSingleRuleset = (rulesetId: string) => {
   const placeholderRules: Rule[] = [
     {
       ruleId: '1',
