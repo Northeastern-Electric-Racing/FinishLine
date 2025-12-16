@@ -59,14 +59,12 @@ const UpcomingMeetingsCard: React.FC<UpcomingMeetingProp> = ({ event, calendars 
         <Box display="flex" alignItems="center" gap="5px" maxWidth="100%" minWidth={0}>
           <GroupsOutlinedIcon />
 
-          <Typography
-            noWrap
-            sx={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}
-          >
-            {members.length > 0 ? members.map((u) => `${u.firstName} ${u.lastName}`).join(', ') : 'N/A'}
+          <Typography noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {members.length > 0
+              ? members.map((u) => `${u.firstName} ${u.lastName}`).join(', ')
+              : event.teams.length > 0
+                ? event.teams.map((t) => t.teamName).join(', ')
+                : (event.teamType?.name ?? 'N/A')}
           </Typography>
         </Box>
       </Stack>
