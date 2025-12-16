@@ -26,7 +26,8 @@ import {
   wbsNamePipe,
   wbsNumComparator,
   EventType,
-  isHead
+  isHead,
+  MAX_FILE_SIZE
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
@@ -96,8 +97,6 @@ export interface EventRoutePayload {
     allDay: boolean;
   }>;
 }
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const schema = yup.object().shape({
   title: yup.string().required('Title is required'),
@@ -224,8 +223,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     defaultValues: defaultFormData
   });
 
-  const frozenValuesRef = React.useRef<Partial<EventFormValues>>(defaultFormData);
-
   const shopIds = watch('shopIds');
   const selectedEventTypeId = watch('eventTypeId');
   const documentFiles = watch('documentFiles');
@@ -238,7 +235,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
 
     const allMachineryOptions = machinery.map((m) => ({ id: m.machineryId, label: m.name }));
 
-    if (shops.length === 0) {
+    if (shopIds.length === 0) {
       return allMachineryOptions;
     }
 
@@ -252,7 +249,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
 
   useEffect(() => {
     if (open) {
-      frozenValuesRef.current = defaultFormData;
       reset(defaultFormData);
 
       if (initialValues?.requiredMemberIds && users) {
@@ -275,11 +271,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
           .map((t) => ({ id: t.teamId, label: t.teamName }));
         setSelectedTeams(teamOptions);
       }
-    } else {
-      reset(defaultFormData);
-      setRequiredMembers([]);
-      setOptionalMembers([]);
-      setSelectedTeams([]);
     }
   }, [open, defaultFormData, reset, initialValues, users, teams]);
 
@@ -288,8 +279,16 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     [allowedEventTypes, selectedEventTypeId]
   );
 
-  const isEditMode = !!frozenValuesRef.current.eventTypeId;
+  const isEditMode = !!initialValues?.eventTypeId;
   const computedTitle = isEditMode ? 'Edit Event' : 'Add Event';
+
+  const handleClose = () => {
+    reset(defaultFormData);
+    setRequiredMembers([]);
+    setOptionalMembers([]);
+    setSelectedTeams([]);
+    onClose();
+  };
 
   const handleDocumentRemove = (index: number) => {
     const currentFiles = watch('documentFiles');
@@ -425,11 +424,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       };
 
       await onSubmit(submitData);
-      onClose();
-      reset(defaultFormData);
-      setRequiredMembers([]);
-      setOptionalMembers([]);
-      setSelectedTeams([]);
+      handleClose();
     } catch (e: unknown) {
       if (e instanceof Error) toast.error(e.message);
     }
@@ -474,10 +469,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   return (
     <NERFormModal
       open={open}
-      onHide={() => {
-        onClose();
-        reset(defaultFormData);
-      }}
+      onHide={handleClose}
       title={computedTitle}
       reset={() => reset(defaultFormData)}
       handleUseFormSubmit={handleSubmit}
