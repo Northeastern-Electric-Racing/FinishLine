@@ -239,7 +239,6 @@ const NewCalendarPage = () => {
                                   datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
                                 ) ?? []
                               }
-                              teamTypes={allTeamTypes}
                               eventTypes={allEventTypes ?? []}
                               calendars={allCalendars ?? []}
                               dayOfWeek={
