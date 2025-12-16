@@ -1,9 +1,12 @@
 import { Box } from '@mui/system';
 import { useEffect, useState } from 'react';
 import { Event } from 'shared';
-import { Typography } from '@mui/material';
+import { TableContainer, Typography, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
 
-const fadeTime = 150;
+const fadeTime = 250;
+
+const startTime = 10; // 10 AM
+const endTime = 21; // 9 PM
 
 const AvailabilityPanel = ({ event, closePanel }: { event: Event; closePanel: () => void }) => {
   const [visible, setVisible] = useState(false);
@@ -19,6 +22,33 @@ const AvailabilityPanel = ({ event, closePanel }: { event: Event; closePanel: ()
     setTimeout(() => {
       closePanel();
     }, fadeTime);
+  };
+
+  const getDateBounds = (date: Date) => {
+    date = new Date(date);
+    const days: Date[] = new Array(7);
+    const mondayDate = new Date(date);
+    mondayDate.setDate(mondayDate.getDate() - ((date.getDay() + 6) % 7));
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(mondayDate);
+      currentDate.setDate(mondayDate.getDate() + i);
+      days[i] = currentDate;
+    }
+    return days;
+  };
+
+  const hourToString = (hour: number) => {
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+    return `${hour12}:00 ${ampm}`;
+  };
+
+  const getHours = () => {
+    const hours: number[] = [];
+    for (let hour = startTime; hour <= endTime; hour++) {
+      hours.push(hour);
+    }
+    return hours;
   };
 
   return (
@@ -67,9 +97,67 @@ const AvailabilityPanel = ({ event, closePanel }: { event: Event; closePanel: ()
         >
           {event.title} Availability
         </Typography>
-        <Typography>
-          Mon, Tues, Wed
-        </Typography>
+        {event.scheduledTimes[0]?.startTime && (
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell></TableCell>
+                  {getDateBounds(event.scheduledTimes[0].startTime).map((date) => (
+                    <TableCell key={date.toDateString()}>
+                      <Typography align="center">
+                        {date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      </Typography>
+                      <Typography flexGrow={1} variant="h6" fontSize={20} align="center">
+                        {date.toLocaleDateString(undefined, { weekday: 'short' })}
+                      </Typography>
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
+                {getHours().map((hour) => (
+                  <TableRow>
+                    <TableCell>
+                      <Typography flexGrow={1} variant="h6" fontSize={16} align="center">
+                        {hourToString(hour)}
+                      </Typography>
+                    </TableCell>
+                    {getDateBounds(event.scheduledTimes[0]?.startTime || new Date()).map((date) => (
+                      <TableCell key={date.toDateString()} sx={{ p: 0.5 }}>
+                        <Box
+                          sx={{
+                            borderRadius: 1,
+                            bgcolor: 'grey.200',
+                            width: '100%',
+                            height: '100%',
+                            minHeight: 40,
+                            display: 'flex'
+                          }}
+                        >
+                          <Typography
+                            color="grey.200"
+                            sx={{
+                              textAlign: 'center',
+                              justifyContent: 'center',
+                              width: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              ':hover': { color: 'black' }
+                            }}
+                          >
+                            5 / 5
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </Box>
     </Box>
   );
