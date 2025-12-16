@@ -77,7 +77,7 @@ const CalendarPage = () => {
   const firstDayOfMonth = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), 1);
   const lastDayOfMonth = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 0);
 
-  const paddingStart = firstDayOfMonth.getDay(); // 0-6 (Sun-Sat)
+  const paddingStart = firstDayOfMonth.getDay(); 
   const totalDays = lastDayOfMonth.getDate();
   const totalCells = Math.ceil((paddingStart + totalDays) / 7) * 7;
 
