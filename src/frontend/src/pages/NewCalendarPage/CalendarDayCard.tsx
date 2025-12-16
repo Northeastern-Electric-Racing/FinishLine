@@ -47,7 +47,6 @@ export const getStatusIcon = (status: string, isLarge?: boolean) => {
 interface CalendarDayCardProps {
   cardDate: Date;
   events: Event[];
-  teamTypes: TeamType[];
   eventTypes?: EventType[];
   calendars?: Calendar[];
   dayOfWeek?: DayOfWeek;
@@ -56,7 +55,6 @@ interface CalendarDayCardProps {
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   cardDate,
   events,
-  teamTypes: _teamTypes,
   eventTypes = [],
   calendars = [],
   dayOfWeek = DayOfWeek.MONDAY
@@ -68,8 +66,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const isCurrentDay = cardDate.toDateString() === today;
   const isFutureDay = cardDate >= new Date();
 
-  const [clickedEvent, setClickedEvent] = useState<Event | null>(null);
-  const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(null);
+  const [clickedEvent, setClickedEvent] = useState<Event>();
+  const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number }>();
 
   const handleOpenClickPopup = (event: Event) => {
     setClickedEvent(event);
@@ -84,8 +82,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   };
 
   const handleCloseClickPopup = () => {
-    setClickedEvent(null);
-    setAnchorPosition(null);
+    setClickedEvent(undefined);
+    setAnchorPosition(undefined);
   };
 
   const DayCardTitle = () => (

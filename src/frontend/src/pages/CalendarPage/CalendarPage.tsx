@@ -190,7 +190,6 @@ const CalendarPage = () => {
                                 datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))
                               ) ?? []
                             }
-                            teamTypes={allTeamTypes}
                           />
                         </Box>
                       </Grid>

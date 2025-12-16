@@ -305,8 +305,8 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
 };
 
 export interface EventClickPopupProps {
-  clickedEvent: Event | null;
-  anchorPosition: { top: number; left: number } | null;
+  clickedEvent?: Event;
+  anchorPosition?: { top: number; left: number };
   onClose: () => void;
   eventTypes: EventType[];
   calendars: Calendar[];
@@ -325,7 +325,7 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
     <Popover
       open={Boolean(clickedEvent && anchorPosition)}
       anchorReference="anchorPosition"
-      anchorPosition={anchorPosition || { top: 0, left: 0 }}
+      anchorPosition={anchorPosition ?? { top: 0, left: 0 }}
       onClose={onClose}
       anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
       transformOrigin={{ vertical: 'center', horizontal: 'center' }}
