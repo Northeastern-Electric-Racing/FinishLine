@@ -1,4 +1,5 @@
 import { DayOfWeek, Event } from 'shared';
+import { filterEventTransformer } from '../apis/transformers/calendar.transformer';
 
 export const convertDayToInt = (day: DayOfWeek) => {
   switch (day) {
@@ -40,15 +41,10 @@ export const getMeetingDates = (event: Event) => {
       // apply offset to get the true date of this specific event
       startDate.setDate(startDate.getDate() - offset);
 
-      let startTime: Date | undefined = undefined;
-      if (schedule.startTime) {
-        startTime = new Date(schedule.startTime);
-      }
-
       // Note : schedule.startTime likely gets converted to the users timezone by default
       // set the hour and minutes
-      startDate.setHours(startTime?.getHours() ?? 0);
-      startDate.setMinutes(startTime?.getMinutes() ?? 0);
+      startDate.setHours(schedule.startTime?.getHours() ?? 0);
+      startDate.setMinutes(schedule.startTime?.getMinutes() ?? 0);
 
       // adjust for the users time
       const startDateAdjusted = new Date(startDate.getTime() - timezoneOffset);
@@ -72,11 +68,10 @@ export const getEventsFlattened = (events: Event[], startPeriod: Date, endPeriod
   const occurrences: { event: Event; date: Date }[] = [];
 
   events.forEach((event) => {
-    const eventDates = getMeetingDates(event);
+    const eventDates = getMeetingDates(filterEventTransformer(event));
 
     eventDates.forEach((date) => {
       if (date >= startPeriod && date <= endPeriod) {
-        console.log(date);
         occurrences.push({ event, date });
       }
     });

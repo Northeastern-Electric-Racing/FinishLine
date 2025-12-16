@@ -88,7 +88,9 @@ const NewCalendarPage = () => {
 
   const { data: upcomingEvents } = useFilterEvents({
     startPeriod,
-    endPeriod
+    endPeriod,
+    memberIds: memberIds.concat(additionalMemberIds),
+    teamIds: teamIds.concat(additionalTeamIds)
   });
 
   const upcomingOccurences = upcomingEvents ? getEventsFlattened(upcomingEvents, startPeriod, endPeriod) : [];

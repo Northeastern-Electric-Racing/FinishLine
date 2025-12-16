@@ -52,7 +52,7 @@ const UpcomingMeetingsCard: React.FC<UpcomingMeetingProp> = ({ event, calendars 
 
         {/* Event Location */}
         <Typography sx={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '15px' }}>
-          <RoomOutlinedIcon /> {event.location ? event.location : 'N/A'}
+          <RoomOutlinedIcon /> {event.location ? event.location : event.zoomLink ? event.zoomLink : 'N/A'}
         </Typography>
 
         {/* Event Members */}
