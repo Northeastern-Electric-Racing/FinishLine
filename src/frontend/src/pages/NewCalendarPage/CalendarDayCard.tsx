@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { Calendar, DayOfWeek, Event, EventType} from 'shared';
+import { Calendar, DayOfWeek, Event, EventType } from 'shared';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
