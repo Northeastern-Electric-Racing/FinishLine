@@ -4,25 +4,31 @@ import { useFilterEvents } from '../../hooks/calendar.hooks';
 import { useHistory } from 'react-router-dom';
 import { ConflictStatus } from 'shared';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 interface SchedulingConflictsWarningProps {
   memberIds: string[];
   teamIds: string[];
+  startPeriod: Date;
+  endPeriod: Date;
 }
 
 //Component for main new calendar page for scheduling conflicts
-const SchedulingConflictsWarning: React.FC<SchedulingConflictsWarningProps> = ({ memberIds, teamIds }) => {
+const SchedulingConflictsWarning: React.FC<SchedulingConflictsWarningProps> = ({
+  memberIds,
+  teamIds,
+  startPeriod,
+  endPeriod
+}) => {
   const history = useHistory();
 
   // Filter for events with pending conflicts using the same filters as the calendar
-  // Use a wide date range (1 year back, 5 years forward) to catch all relevant conflicts
-  const startPeriod = new Date();
-  startPeriod.setFullYear(startPeriod.getFullYear() - 1);
-
-  const endPeriod = new Date();
-  endPeriod.setFullYear(endPeriod.getFullYear() + 5);
-
-  const { data: conflicts, isLoading } = useFilterEvents({
+  const {
+    data: conflicts,
+    isLoading,
+    isError,
+    error
+  } = useFilterEvents({
     statuses: [ConflictStatus.PENDING],
     startPeriod,
     endPeriod,
@@ -30,11 +36,17 @@ const SchedulingConflictsWarning: React.FC<SchedulingConflictsWarningProps> = ({
     teamIds
   });
 
-  if (isLoading) {
+  if (isLoading || !conflicts) {
     return <LoadingIndicator />;
   }
 
-  if (!conflicts || conflicts.length === 0) {
+  // There are conflicts, but error fetching them
+  if (isError) {
+    return <ErrorPage message={error?.message} />;
+  }
+
+  // If no conflicts, don't show the warning
+  if (conflicts.length === 0) {
     return null;
   }
 

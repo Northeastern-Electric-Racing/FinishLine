@@ -46,14 +46,18 @@ const NewCalendarPage = () => {
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
   const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>(teamList);
 
+  // Date range for filtering events (current month ±1 month)
+  const startPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15);
+  const endPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15);
+
   const {
     isLoading,
     isError,
     error,
     data: allEvents
   } = useFilterEvents({
-    startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
-    endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
+    startPeriod,
+    endPeriod,
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds)
   });
@@ -332,6 +336,8 @@ const NewCalendarPage = () => {
             <SchedulingConflictsWarning
               memberIds={memberIds.concat(additionalMemberIds)}
               teamIds={teamIds.concat(additionalTeamIds)}
+              startPeriod={startPeriod}
+              endPeriod={endPeriod}
             />
           </Box>
         </Box>
