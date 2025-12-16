@@ -3,11 +3,11 @@ import WarningIcon from '@mui/icons-material/Warning';
 import { usePendingConflicts } from '../../hooks/calendar.hooks';
 import { useHistory } from 'react-router-dom';
 
+//Component for main new calendar page for scheduling conflicts
 const SchedulingConflictsWarning: React.FC = () => {
   const { data: conflicts, isLoading } = usePendingConflicts();
   const history = useHistory();
 
-  // Don't show if loading or no conflicts
   if (isLoading || !conflicts || conflicts.length === 0) {
     return null;
   }
