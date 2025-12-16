@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { DayOfWeek, Event } from 'shared';
+import { ConflictStatus, DayOfWeek, Event } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import { useAllCalendars, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
@@ -56,7 +56,7 @@ const NewCalendarPage = () => {
     endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds),
-    approvedEvents: true
+    statuses: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT]
   });
 
   const {

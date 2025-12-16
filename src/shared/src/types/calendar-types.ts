@@ -90,8 +90,7 @@ export interface FilterArgs {
   calendarIds?: string[];
   eventTypeIds?: string[];
   eventIds?: string[];
-  approvedEvents?: boolean;
-  getPending?: boolean;
+  statuses?: ConflictStatus[];
   approvalIds?: string[];
   startPeriod: Date;
   endPeriod: Date;

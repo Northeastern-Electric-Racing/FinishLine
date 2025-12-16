@@ -1,6 +1,14 @@
 import express from 'express';
 import { body, param } from 'express-validator';
-import { intMinZero, isDate, nonEmptyString, validateInputs, isDayOfWeek, isEventStatus } from '../utils/validation.utils';
+import {
+  intMinZero,
+  isDate,
+  nonEmptyString,
+  validateInputs,
+  isDayOfWeek,
+  isEventStatus,
+  isConflictStatus
+} from '../utils/validation.utils';
 import CalendarController from '../controllers/calendar.controllers';
 
 const calendarRouter = express.Router();
@@ -229,10 +237,10 @@ calendarRouter.post(
   body('eventTypeIds.*').optional().isString(),
   body('eventIds').isArray().optional(),
   body('eventIds.*').isString().optional(),
-  body('approvalIdsIds').isArray().optional(),
-  body('approvalIdsIds.*').isString().optional(),
-  body('approvedEvents').isBoolean().optional(),
-  body('getPending').isBoolean().optional(),
+  body('approvalIds').isArray().optional(),
+  body('approvalIds.*').isString().optional(),
+  body('statuses').isArray().optional(),
+  isConflictStatus(body('statuses.*')),
   isDate(body('startPeriod')),
   isDate(body('endPeriod')),
   validateInputs,

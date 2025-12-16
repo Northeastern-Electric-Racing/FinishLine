@@ -6,7 +6,7 @@ import { Box } from '@mui/material';
 import FullPageTabs from '../../components/FullPageTabs';
 import { useState } from 'react';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isHead, isLead } from 'shared';
+import { ConflictStatus, isHead, isLead } from 'shared';
 import { useFilterEvents } from '../../hooks/calendar.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -39,7 +39,7 @@ const CalendarTab: React.FC = () => {
     error: reviewEventsError
   } = useFilterEvents({
     approvalIds: [user.userId],
-    getPending: canViewReviews,
+    statuses: [ConflictStatus.PENDING],
     startPeriod: new Date(0),
     endPeriod: new Date(2099, 11, 31) // Adjust as needed
   });
