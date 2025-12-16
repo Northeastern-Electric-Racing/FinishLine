@@ -38,8 +38,8 @@ const CalendarTab: React.FC = () => {
     isError: reviewEventsIsError,
     error: reviewEventsError
   } = useFilterEvents({
-    approvalIds: [user.userId],
-    statuses: [ConflictStatus.PENDING],
+    approvalIds: canViewReviews ? [] : [user.userId],
+    statuses: canViewReviews ? [ConflictStatus.PENDING] : [],
     startPeriod: new Date(0),
     endPeriod: new Date(2099, 11, 31) // Adjust as needed
   });
