@@ -8,8 +8,7 @@ import {
   Event,
   EventStatus,
   EventType,
-  FilterArgs,
-  ConflictStatus
+  FilterArgs
 } from 'shared';
 import {
   getAllShops,
@@ -346,24 +345,4 @@ export const useSetEventStatus = (id: string) => {
       }
     }
   );
-};
-
-export const usePendingConflicts = () => {
-  return useQuery<Event[], Error>(['conflicts', 'pending'], async () => {
-    // Use a wide date range to catch all pending conflicts
-    const startPeriod = new Date();
-    startPeriod.setFullYear(startPeriod.getFullYear() - 1);
-
-    const endPeriod = new Date();
-    endPeriod.setFullYear(endPeriod.getFullYear() + 5);
-
-    const filterArgs: FilterArgs = {
-      statuses: [ConflictStatus.PENDING],
-      startPeriod,
-      endPeriod
-    };
-
-    const { data } = await postFilterEvents(filterArgs);
-    return data;
-  });
 };

@@ -1,12 +1,26 @@
 import { Box, Stack, Typography } from '@mui/material';
 import WarningIcon from '@mui/icons-material/Warning';
-import { usePendingConflicts } from '../../hooks/calendar.hooks';
+import { useFilterEvents } from '../../hooks/calendar.hooks';
 import { useHistory } from 'react-router-dom';
+import { ConflictStatus } from 'shared';
 
 //Component for main new calendar page for scheduling conflicts
 const SchedulingConflictsWarning: React.FC = () => {
-  const { data: conflicts, isLoading } = usePendingConflicts();
   const history = useHistory();
+
+  // Filter for events with pending conflicts (set a range date for now 1 year back and 5 years forward
+  // since we might not be interested in all unresolved conflicts)
+  const startPeriod = new Date();
+  startPeriod.setFullYear(startPeriod.getFullYear() - 1);
+
+  const endPeriod = new Date();
+  endPeriod.setFullYear(endPeriod.getFullYear() + 5);
+
+  const { data: conflicts, isLoading } = useFilterEvents({
+    statuses: [ConflictStatus.PENDING],
+    startPeriod,
+    endPeriod
+  });
 
   if (isLoading || !conflicts || conflicts.length === 0) {
     return null;
