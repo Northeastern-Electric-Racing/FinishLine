@@ -329,7 +329,10 @@ const NewCalendarPage = () => {
             >
               More Filters
             </Button>
-            <SchedulingConflictsWarning />
+            <SchedulingConflictsWarning
+              memberIds={memberIds.concat(additionalMemberIds)}
+              teamIds={teamIds.concat(additionalTeamIds)}
+            />
           </Box>
         </Box>
 

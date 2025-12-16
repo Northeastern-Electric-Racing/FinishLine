@@ -3,13 +3,19 @@ import WarningIcon from '@mui/icons-material/Warning';
 import { useFilterEvents } from '../../hooks/calendar.hooks';
 import { useHistory } from 'react-router-dom';
 import { ConflictStatus } from 'shared';
+import LoadingIndicator from '../../components/LoadingIndicator';
+
+interface SchedulingConflictsWarningProps {
+  memberIds: string[];
+  teamIds: string[];
+}
 
 //Component for main new calendar page for scheduling conflicts
-const SchedulingConflictsWarning: React.FC = () => {
+const SchedulingConflictsWarning: React.FC<SchedulingConflictsWarningProps> = ({ memberIds, teamIds }) => {
   const history = useHistory();
 
-  // Filter for events with pending conflicts (set a range date for now 1 year back and 5 years forward
-  // since we might not be interested in all unresolved conflicts)
+  // Filter for events with pending conflicts using the same filters as the calendar
+  // Use a wide date range (1 year back, 5 years forward) to catch all relevant conflicts
   const startPeriod = new Date();
   startPeriod.setFullYear(startPeriod.getFullYear() - 1);
 
@@ -19,10 +25,16 @@ const SchedulingConflictsWarning: React.FC = () => {
   const { data: conflicts, isLoading } = useFilterEvents({
     statuses: [ConflictStatus.PENDING],
     startPeriod,
-    endPeriod
+    endPeriod,
+    memberIds,
+    teamIds
   });
 
-  if (isLoading || !conflicts || conflicts.length === 0) {
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
+
+  if (!conflicts || conflicts.length === 0) {
     return null;
   }
 
