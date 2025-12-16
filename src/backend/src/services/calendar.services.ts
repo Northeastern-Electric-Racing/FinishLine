@@ -2184,7 +2184,7 @@ export default class CalendarService {
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
         approvalRequiredFromUserId: approvalIds?.length ? { in: approvalIds } : undefined,
-        ...memberOrTeamFilter,
+        OR: memberOrTeamFilter.length > 0 ? memberOrTeamFilter : undefined,
         approved: statuses?.length ? { in: statuses } : undefined,
         scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
         ...fromCalendar
