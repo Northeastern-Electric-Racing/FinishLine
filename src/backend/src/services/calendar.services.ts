@@ -2070,7 +2070,8 @@ export default class CalendarService {
    * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
    */
   static async getFilteredEvents(filters: FilterArgs, organization: Organization): Promise<Event[]> {
-    const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvedEvents, startPeriod, endPeriod } = filters;
+    const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalIds, startPeriod, endPeriod, statuses } =
+      filters;
 
     // validate memberIds
     if (memberIds?.length) {
@@ -2182,10 +2183,9 @@ export default class CalendarService {
         dateDeleted: null,
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
-        AND: [
-          memberOrTeamFilter.length ? { OR: memberOrTeamFilter } : {},
-          approvedEvents ? { OR: [{ approved: 'APPROVED' }, { approved: 'NO_CONFLICT' }] } : {}
-        ],
+        approvalRequiredFromUserId: approvalIds?.length ? { in: approvalIds } : undefined,
+        OR: memberOrTeamFilter.length > 0 ? memberOrTeamFilter : undefined,
+        approved: statuses?.length ? { in: statuses } : undefined,
         scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
         ...fromCalendar
       },
@@ -2329,26 +2329,5 @@ export default class CalendarService {
       ...getEventTypeQueryArgs(organization.organizationId)
     });
     return eventTypes.map(eventTypeTransformer);
-  }
-
-  /**
-   * Gets all events with pending scheduling conflicts
-   * @param organization the organization the user is currently in
-   * @returns All events that have scheduling conflicts requiring a review
-   */
-  static async getPendingConflicts(organization: Organization): Promise<Event[]> {
-    const events = await prisma.event.findMany({
-      where: {
-        dateDeleted: null,
-        approved: Conflict_Status.PENDING,
-        eventType: {
-          organizationId: organization.organizationId
-        }
-      },
-      ...getEventQueryArgs(organization.organizationId),
-      orderBy: { dateCreated: 'desc' }
-    });
-
-    return events.map(eventTransformer);
   }
 }

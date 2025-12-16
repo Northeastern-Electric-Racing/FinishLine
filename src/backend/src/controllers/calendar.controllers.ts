@@ -471,13 +471,4 @@ export default class CalendarController {
       next(error);
     }
   }
-
-  static async getPendingConflicts(req: Request, res: Response, next: NextFunction) {
-    try {
-      const conflicts = await CalendarService.getPendingConflicts(req.organization);
-      res.status(200).json(conflicts);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
 }
