@@ -20,6 +20,7 @@ import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
 import { convertDayToInt } from '../../utils/calendar.utils';
+import SchedulingConflictsWarning from './SchedulingConflictsWarning';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -322,11 +323,13 @@ const NewCalendarPage = () => {
                 '&:hover': {
                   borderColor: 'white',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                }
+                },
+                mb: 2
               }}
             >
               More Filters
             </Button>
+            <SchedulingConflictsWarning />
           </Box>
         </Box>
 

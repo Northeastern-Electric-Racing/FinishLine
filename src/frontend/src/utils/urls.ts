@@ -442,6 +442,7 @@ const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
 const calendarEvents = () => `${calendar()}/events`;
+const calendarPendingConflicts = () => `${calendar()}/conflicts/pending`;
 const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
 const calendarFilterEvents = () => `${calendar()}/events/filter`;
@@ -778,6 +779,7 @@ export const apiUrls = {
   calendarEventMarkUserConfirmed,
   calendarGetSingleEvent,
   calendarEvents,
+  calendarPendingConflicts,
   calendarDeleteEvent,
   calendarEventSetStatus,
   calendarDeleteShop,

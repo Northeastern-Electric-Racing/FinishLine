@@ -147,6 +147,12 @@ export const getAllEvents = () => {
   });
 };
 
+export const getPendingConflicts = () => {
+  return axios.get(apiUrls.calendarPendingConflicts(), {
+    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
+  });
+};
+
 export const deleteEvent = async (id: string) => {
   return axios.delete(apiUrls.calendarDeleteEvent(id));
 };

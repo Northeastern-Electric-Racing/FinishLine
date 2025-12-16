@@ -2330,4 +2330,25 @@ export default class CalendarService {
     });
     return eventTypes.map(eventTypeTransformer);
   }
+
+  /**
+   * Gets all events with pending scheduling conflicts
+   * @param organization the organization the user is currently in
+   * @returns All events that have scheduling conflicts requiring a review
+   */
+  static async getPendingConflicts(organization: Organization): Promise<Event[]> {
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        approved: Conflict_Status.PENDING,
+        eventType: {
+          organizationId: organization.organizationId
+        }
+      },
+      ...getEventQueryArgs(organization.organizationId),
+      orderBy: { dateCreated: 'desc' }
+    });
+
+    return events.map(eventTransformer);
+  }
 }

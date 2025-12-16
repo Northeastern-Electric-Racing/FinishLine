@@ -159,6 +159,8 @@ calendarRouter.get('/event/:eventId', CalendarController.getSingleEvent);
 
 calendarRouter.get('/events', CalendarController.getAllEvents);
 
+calendarRouter.get('/conflicts/pending', CalendarController.getPendingConflicts);
+
 calendarRouter.get('/event-types', CalendarController.getAllEventTypes);
 
 calendarRouter.post('/machinery/create', nonEmptyString(body('name')), validateInputs, CalendarController.createMachinery);

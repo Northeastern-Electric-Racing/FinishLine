@@ -33,7 +33,8 @@ import {
   deleteEvent,
   setEventStatus,
   getAllEventTypes,
-  postFilterEvents
+  postFilterEvents,
+  getPendingConflicts
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 
@@ -345,4 +346,11 @@ export const useSetEventStatus = (id: string) => {
       }
     }
   );
+};
+
+export const usePendingConflicts = () => {
+  return useQuery<Event[], Error>(['conflicts', 'pending'], async () => {
+    const { data } = await getPendingConflicts();
+    return data;
+  });
 };
