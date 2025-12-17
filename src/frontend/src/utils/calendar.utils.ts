@@ -79,16 +79,15 @@ export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
       // this is done to ensure offset is properly calculated
       const startDate = new Date(startTimeDate.getTime() + timezoneOffset);
 
+      // set the hour and minutes using UTC to match the adjusted date
+      startDate.setHours(specificTime?.getUTCHours() ?? 0);
+      startDate.setMinutes(specificTime?.getUTCMinutes() ?? 0);
+
       // Calculate offset based on the current day being checked
       const offset = startDate.getDay() - convertDayToInt(day);
 
       // apply offset to get the true date of this specific event
       startDate.setDate(startDate.getDate() - offset);
-
-      // Note : schedule.startTime likely gets converted to the users timezone by default
-      // set the hour and minutes using UTC to match the adjusted date
-      startDate.setHours(specificTime?.getUTCHours() ?? 0);
-      startDate.setMinutes(specificTime?.getUTCMinutes() ?? 0);
 
       // adjust for the users time
       const startDateAdjusted = new Date(startDate.getTime() - timezoneOffset);
