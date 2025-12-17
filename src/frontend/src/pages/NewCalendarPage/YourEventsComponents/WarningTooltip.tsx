@@ -61,8 +61,8 @@ const WarningTooltip: React.FC<WarningTooltipProps> = ({ warning, buttonText, on
               }
             }}
             onClick={(e) => {
-              onClick();
               e.stopPropagation();
+              onClick();
             }}
           >
             {buttonText}

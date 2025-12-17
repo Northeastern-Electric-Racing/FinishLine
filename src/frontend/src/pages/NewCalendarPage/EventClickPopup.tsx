@@ -24,9 +24,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import PeopleIcon from '@mui/icons-material/People';
 
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
-import NERSuccessButton from '../../components/NERSuccessButton';
-import NERFailButton from '../../components/NERFailButton';
-import { useApproveEvent, useCreateShop, useDenyEvent } from '../../hooks/calendar.hooks';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
@@ -46,10 +43,7 @@ interface EventClickContentProps {
   event: Event;
   eventTypes: EventType[];
   calendars: Calendar[];
-  dayOfWeek?: DayOfWeek;
-  disable: boolean;
-  addApprovalButtons: boolean;
-  onClose: () => void;
+  dayOfWeek: DayOfWeek;
 }
 
 const joinPeople = (members: { firstName: string; lastName: string }[]) =>
@@ -60,23 +54,12 @@ const hasValue = (v?: string | null) => {
   return s.length > 0 && s.toLowerCase() !== 'n/a';
 };
 
-const EventClickContent: React.FC<EventClickContentProps> = ({
-  event,
-  eventTypes,
-  calendars,
-  dayOfWeek,
-  disable,
-  addApprovalButtons,
-  onClose
-}) => {
-  const { mutateAsync: approveEvent } = useApproveEvent(event.eventId);
-  const { mutateAsync: denyEvent } = useDenyEvent(event.eventId);
-
+const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes, calendars, dayOfWeek }) => {
   const theme = useTheme();
 
   const name = event.workPackages?.[0]?.wbsElement?.name || event.title;
-  const startTime = dayOfWeek ? getConvertedStart(event, dayOfWeek) : '';
-  const endTime = dayOfWeek ? getConvertedEnd(event, dayOfWeek) : '';
+  const startTime = getConvertedStart(event, dayOfWeek);
+  const endTime = getConvertedEnd(event, dayOfWeek);
 
   const specificEventType = eventTypes.find((et) => et.eventTypeId === event.eventTypeId);
   const specificCalendar = calendars.find((calendar) =>
@@ -116,26 +99,25 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
     >
       <Box sx={{ position: 'relative', mb: 2 }}>
         {/* Edit -> availability page */}
-        {!disable && (
-          <IconButton
-            size="small"
-            component={RouterLink}
-            to={editUrl}
-            onClick={stopClick}
-            sx={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              color: theme.palette.grey[500],
-              '&:hover': {
-                color: theme.palette.common.white,
-                bgcolor: 'transparent'
-              }
-            }}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-        )}
+        <IconButton
+          size="small"
+          component={RouterLink}
+          to={editUrl}
+          onClick={stopClick}
+          sx={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            color: theme.palette.grey[500],
+            '&:hover': {
+              color: theme.palette.common.white,
+              bgcolor: 'transparent'
+            }
+          }}
+        >
+          <EditIcon fontSize="small" />
+        </IconButton>
+
         <Stack direction="row" spacing={1} alignItems="center" sx={{ pr: 4 }}>
           {getTeamTypeIcon(event.teamType?.name ?? '', true)}
           <Typography
@@ -151,12 +133,10 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5, flexWrap: 'wrap' }}>
-          {dayOfWeek && <AccessTimeIcon fontSize="small" />}
-          {dayOfWeek && (
-            <Typography variant="body2">
-              {startTime} – {endTime}
-            </Typography>
-          )}
+          <AccessTimeIcon fontSize="small" />
+          <Typography variant="body2">
+            {startTime} – {endTime}
+          </Typography>
 
           {hasValue(locationText) && (
             <>
@@ -217,7 +197,6 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
               component={RouterLink}
               to={availabilityUrl}
               onClick={stopClick}
-              disabled={disable}
               sx={{
                 textTransform: 'none',
                 borderRadius: 999,
@@ -282,15 +261,9 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
         {hasValue(event.zoomLink) && (
           <Stack direction="row" spacing={1.25} alignItems="flex-start">
             <LinkIcon fontSize="small" sx={{ mt: 0.3 }} />
-            {disable ? (
-              <Typography variant="body2" sx={{ flex: 1 }}>
-                Zoom Link
-              </Typography>
-            ) : (
-              <Link href={event.zoomLink!} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
-                Zoom Link
-              </Link>
-            )}
+            <Link href={event.zoomLink!} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
+              Zoom Link
+            </Link>
           </Stack>
         )}
 
@@ -300,15 +273,9 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
             <ArticleIcon fontSize="small" sx={{ mt: 0.3 }} />
             <Typography variant="body2">
               <b>Question doc:</b>{' '}
-              {disable ? (
-                <Typography variant="body2" sx={{ flex: 1 }}>
-                  Question Document Link
-                </Typography>
-              ) : (
-                <Link href={event.questionDocument!} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
-                  Question Document Link
-                </Link>
-              )}
+              <Link href={event.questionDocument!} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
+                Question Document Link
+              </Link>
             </Typography>
           </Stack>
         )}
@@ -332,29 +299,6 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
             </Typography>
           </Stack>
         )}
-        {addApprovalButtons && (
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <NERSuccessButton
-              sx={{ mx: 1 }}
-              type="submit"
-              onClick={async () => {
-                await approveEvent();
-                onClose();
-              }}
-            >
-              Approve
-            </NERSuccessButton>
-            <NERFailButton
-              sx={{ mx: 1 }}
-              onClick={async () => {
-                await denyEvent();
-                onClose();
-              }}
-            >
-              Deny
-            </NERFailButton>
-          </Box>
-        )}
       </Stack>
     </Box>
   );
@@ -366,9 +310,7 @@ export interface EventClickPopupProps {
   onClose: () => void;
   eventTypes: EventType[];
   calendars: Calendar[];
-  dayOfWeek?: DayOfWeek;
-  disable?: boolean;
-  addApprovalButtons?: boolean;
+  dayOfWeek: DayOfWeek;
 }
 
 export const EventClickPopup: React.FC<EventClickPopupProps> = ({
@@ -377,9 +319,7 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
   onClose,
   eventTypes,
   calendars,
-  dayOfWeek,
-  disable = false,
-  addApprovalButtons = false
+  dayOfWeek
 }) => {
   return (
     <Popover
@@ -390,22 +330,9 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
       anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
       transformOrigin={{ vertical: 'center', horizontal: 'center' }}
       disableRestoreFocus
-      PaperProps={{
-        sx: {
-          backgroundImage: 'none'
-        }
-      }}
     >
       {clickedEvent && (
-        <EventClickContent
-          event={clickedEvent}
-          eventTypes={eventTypes}
-          calendars={calendars}
-          dayOfWeek={dayOfWeek}
-          disable={disable}
-          addApprovalButtons={addApprovalButtons}
-          onClose={onClose}
-        />
+        <EventClickContent event={clickedEvent} eventTypes={eventTypes} calendars={calendars} dayOfWeek={dayOfWeek} />
       )}
     </Popover>
   );

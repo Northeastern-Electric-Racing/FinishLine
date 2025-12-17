@@ -5,10 +5,10 @@
 import { useState } from 'react';
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { Calendar, ConflictStatus, DayOfWeek, Event, EventType } from 'shared';
+import { ConflictStatus, DayOfWeek, Event } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useFilterEvents } from '../../hooks/calendar.hooks';
+import { useAllCalendars, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -22,12 +22,7 @@ import { useGetUsersTeams } from '../../hooks/teams.hooks';
 import { convertIntToDay, getMeetingDates } from '../../utils/calendar.utils';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 
-interface NewCalendarPageProps {
-  allEventTypes: EventType[];
-  allCalendars: Calendar[];
-}
-
-const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, allCalendars }) => {
+const NewCalendarPage = () => {
   const theme = useTheme();
   const {
     data: allTeamTypes,
@@ -63,6 +58,20 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, allCal
     teamIds: teamIds.concat(additionalTeamIds),
     statuses: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT]
   });
+
+  const {
+    data: allEventTypes,
+    isLoading: allEventTypesLoading,
+    isError: allEventTypesIsError,
+    error: allEventTypesError
+  } = useAllEventTypes();
+
+  const {
+    data: allCalendars,
+    isLoading: allCalendarsLoading,
+    isError: allCalendarsIsError,
+    error: allCalendarsError
+  } = useAllCalendars();
 
   const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
@@ -145,6 +154,12 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, allCal
 
   if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
   if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
+
+  if (!allEventTypes || allEventTypesLoading) return <LoadingIndicator />;
+  if (allEventTypesIsError) return <ErrorPage error={allEventTypesError} message={allEventTypesError?.message} />;
+
+  if (!allCalendars || allCalendarsLoading) return <LoadingIndicator />;
+  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
 
   if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
   if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;

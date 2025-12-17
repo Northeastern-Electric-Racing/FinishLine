@@ -7,7 +7,7 @@ import FullPageTabs from '../../components/FullPageTabs';
 import { useState } from 'react';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { ConflictStatus, isHead, isLead } from 'shared';
-import { useAllCalendars, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
+import { useFilterEvents } from '../../hooks/calendar.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
@@ -44,20 +44,6 @@ const CalendarTab: React.FC = () => {
     endPeriod: new Date(2099, 11, 31) // Adjust as needed
   });
 
-  const {
-    data: allEventTypes,
-    isLoading: allEventTypesLoading,
-    isError: allEventTypesIsError,
-    error: allEventTypesError
-  } = useAllEventTypes();
-
-  const {
-    data: allCalendars,
-    isLoading: allCalendarsLoading,
-    isError: allCalendarsIsError,
-    error: allCalendarsError
-  } = useAllCalendars();
-
   const yourEvents = untransformedYourEvents?.map(filterEventTransformer);
   const reviewEvents = untransformedReviewEvents?.map(filterEventTransformer);
 
@@ -66,12 +52,6 @@ const CalendarTab: React.FC = () => {
 
   if (!reviewEvents || reviewEventsLoading) return <LoadingIndicator />;
   if (reviewEventsIsError) return <ErrorPage error={reviewEventsError} message={reviewEventsError?.message} />;
-
-  if (!allEventTypes || allEventTypesLoading) return <LoadingIndicator />;
-  if (allEventTypesIsError) return <ErrorPage error={allEventTypesError} message={allEventTypesError?.message} />;
-
-  if (!allCalendars || allCalendarsLoading) return <LoadingIndicator />;
-  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
 
   if (canViewReviews) tabs.push({ tabUrlValue: 'reviews', tabName: 'Review Bookings' });
 
@@ -92,15 +72,9 @@ const CalendarTab: React.FC = () => {
       }
     >
       {tabIndex === 0 ? (
-        <NewCalendarPage allEventTypes={allEventTypes} allCalendars={allCalendars} />
+        <NewCalendarPage />
       ) : (
-        <YourEventsPage
-          tab={tabIndex}
-          yourEvents={yourEvents ?? []}
-          reviewEvents={reviewEvents ?? []}
-          allEventTypes={allEventTypes}
-          allCalendars={allCalendars}
-        />
+        <YourEventsPage tab={tabIndex} yourEvents={yourEvents ?? []} reviewEvents={reviewEvents ?? []} />
       )}
     </PageLayout>
   );
