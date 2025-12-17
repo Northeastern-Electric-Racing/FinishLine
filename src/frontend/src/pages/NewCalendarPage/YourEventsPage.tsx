@@ -6,10 +6,12 @@ import { Box, Link, Table, TableBody, TableCell, TableContainer, TableHead, Tabl
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import TableCellHuge from './YourEventsComponents/TableCellHuge';
 import React, { useEffect, useState } from 'react';
-import { ConflictStatus } from 'shared';
+import { Calendar, ConflictStatus, DayOfWeek, EventType } from 'shared';
 import { Event } from 'shared';
 import WarningTooltip from './YourEventsComponents/WarningTooltip';
-import { getMeetingDates } from '../../utils/calendar.utils';
+import { convertIntToDay, getMeetingDates } from '../../utils/calendar.utils';
+import { EventClickPopup } from './EventClickPopup';
+import { datePipe } from '../../utils/pipes';
 
 interface YourEventsHeadCells {
   id: string;
@@ -35,13 +37,35 @@ const getNextMeetingTime = (event: Event) => {
 export interface EventTableArgs {
   yourEvents: Event[];
   reviewEvents: Event[];
+  allEventTypes: EventType[];
+  allCalendars: Calendar[];
   tab: number;
 }
 
-const YourEventsPage: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents }) => {
+const YourEventsPage: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, allEventTypes, allCalendars }) => {
   // Convert to include proper dates
   // Done this way to allow the old events transformer to function properly
   // but provide better utility to this file (without breaking other files that may rely on eventTransformer)
+
+  const [clickedEvent, setClickedEvent] = useState<Event>();
+  const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number }>();
+
+  const handleOpenClickPopup = (event: Event) => {
+    setClickedEvent(event);
+    if (typeof window !== 'undefined') {
+      setAnchorPosition({
+        top: window.innerHeight / 2,
+        left: window.innerWidth / 2
+      });
+    } else {
+      setAnchorPosition({ top: 0, left: 0 });
+    }
+  };
+
+  const handleCloseClickPopup = () => {
+    setClickedEvent(undefined);
+    setAnchorPosition(undefined);
+  };
 
   const headCells: readonly YourEventsHeadCells[] = [
     {
@@ -228,7 +252,9 @@ const YourEventsPage: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvent
                         <WarningTooltip
                           warning="This meeting is awaiting your approval. Please review the booking."
                           buttonText="View More Meeting Details"
-                          onClick={() => {}}
+                          onClick={() => {
+                            handleOpenClickPopup(event);
+                          }}
                         />
                       )}
                     </TableCell>
@@ -252,6 +278,15 @@ const YourEventsPage: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvent
           </TableBody>
         </Table>
       </TableContainer>
+      <EventClickPopup
+        clickedEvent={clickedEvent}
+        anchorPosition={anchorPosition}
+        onClose={handleCloseClickPopup}
+        eventTypes={allEventTypes}
+        calendars={allCalendars}
+        disable={true}
+        addApprovalButtons={true}
+      />
     </Box>
   );
 };
