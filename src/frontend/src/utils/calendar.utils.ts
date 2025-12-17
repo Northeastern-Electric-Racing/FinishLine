@@ -72,7 +72,7 @@ export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
       const startDateAdjusted = new Date(startDate.getTime() - timezoneOffset);
 
       // potentially needed to prevent extra events from showing up before the initial date
-      if (new Date(schedule.initialDateScheduled).getTime() >= startDateAdjusted.getTime()) times.push(startDateAdjusted);
+      times.push(startDateAdjusted);
 
       // add additional events for each recurrence on this day
       for (let i = 1; i <= schedule.recurrenceNumber; i++) {
