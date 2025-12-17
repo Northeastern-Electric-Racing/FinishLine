@@ -33,7 +33,9 @@ import {
   deleteEvent,
   setEventStatus,
   getAllEventTypes,
-  postFilterEvents
+  postFilterEvents,
+  approveEvent,
+  denyEvent
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 
@@ -342,6 +344,40 @@ export const useSetEventStatus = (id: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['events', id]);
+      }
+    }
+  );
+};
+
+export const useApproveEvent = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Event, Error>(
+    ['events', id],
+    async () => {
+      const { data } = await approveEvent(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['events', id]);
+        queryClient.invalidateQueries(['filter-events']);
+      }
+    }
+  );
+};
+
+export const useDenyEvent = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Event, Error>(
+    ['events', id],
+    async () => {
+      const { data } = await denyEvent(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['events', id]);
+        queryClient.invalidateQueries(['filter-events']);
       }
     }
   );

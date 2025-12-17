@@ -163,6 +163,14 @@ export const setEventStatus = async (id: string, payload: { status: EventStatus 
   });
 };
 
+export const approveEvent = async (id: string) => {
+  return axios.post<Event>(apiUrls.calendarApproveEvent(id));
+};
+
+export const denyEvent = async (id: string) => {
+  return axios.post<Event>(apiUrls.calendarDenyEvent(id));
+};
+
 export const postDeleteCalendar = async (id: string) => {
   return axios.post<Calendar>(apiUrls.calendarDeleteCalendar(id));
 };
