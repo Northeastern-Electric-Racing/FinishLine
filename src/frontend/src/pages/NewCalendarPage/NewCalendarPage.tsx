@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Grid,
@@ -75,10 +75,19 @@ const NewCalendarPage = () => {
   const calendars = allCalendars ?? [];
 
   const [selectedCalendarIds, setSelectedCalendarIds] = useState<string[]>([]);
+  const [didInitCalendarFilters, setDidInitCalendarFilters] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
+
+  useEffect(() => {
+    if (didInitCalendarFilters) return;
+    if (!calendars.length) return;
+
+    setSelectedCalendarIds(calendars.map((c) => c.calendarId));
+    setDidInitCalendarFilters(true);
+  }, [calendars, didInitCalendarFilters]);
 
   const {
     isLoading,
@@ -90,7 +99,7 @@ const NewCalendarPage = () => {
     endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds),
-    calendarIds: selectedCalendarIds.length ? selectedCalendarIds : undefined
+    calendarIds: selectedCalendarIds
   });
 
   const toggleCalendar = (calendarId: string) => {
@@ -121,6 +130,18 @@ const NewCalendarPage = () => {
 
   if (isLoading || !allEvents) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
+
+  if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
+  if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
+
+  if (!allEventTypes || allEventTypesLoading) return <LoadingIndicator />;
+  if (allEventTypesIsError) return <ErrorPage error={allEventTypesError} message={allEventTypesError?.message} />;
+
+  if (!allCalendars || allCalendarsLoading) return <LoadingIndicator />;
+  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
+
+  if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
+  if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
 
   // Sort events by their first occurrence's start time
   const sortedEvents = [...allEvents].sort((event1, event2) => {
@@ -200,21 +221,6 @@ const NewCalendarPage = () => {
   const daysThisMonth = paddingArrayStart
     .concat([...Array(daysInMonth(displayMonthYear)).keys()].map((day) => day + 1))
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
-
-  if (isLoading || !allEvents || allTeamTypesLoading || allEventTypesLoading || allCalendarsLoading || allTeamsLoading)
-    return <LoadingIndicator />;
-
-  if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
-  if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
-
-  if (!allEventTypes || allEventTypesLoading) return <LoadingIndicator />;
-  if (allEventTypesIsError) return <ErrorPage error={allEventTypesError} message={allEventTypesError?.message} />;
-
-  if (!allCalendars || allCalendarsLoading) return <LoadingIndicator />;
-  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
-
-  if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
-  if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
 
   return (
     <>

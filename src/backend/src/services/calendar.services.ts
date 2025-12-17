@@ -2114,21 +2114,22 @@ export default class CalendarService {
     }
 
     // filters for selected calendars
-    const fromCalendar = calendarIds?.length
-      ? {
-          eventType: {
-            is: {
-              organizationId: organization.organizationId,
-              calendars: {
-                some: {
-                  calendarId: { in: calendarIds },
-                  organizationId: organization.organizationId
+    const fromCalendar =
+      calendarIds !== undefined
+        ? {
+            eventType: {
+              is: {
+                organizationId: organization.organizationId,
+                calendars: {
+                  some: {
+                    calendarId: { in: calendarIds },
+                    organizationId: organization.organizationId
+                  }
                 }
               }
             }
           }
-        }
-      : undefined;
+        : undefined;
 
     // get event using filter args
     const events = await prisma.event.findMany({
