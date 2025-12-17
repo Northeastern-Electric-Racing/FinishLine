@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
+import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, Alert, Snackbar } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { Calendar, ConflictStatus, DayOfWeek, Event, EventType } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
@@ -21,13 +21,17 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
 import { convertIntToDay, getMeetingDates } from '../../utils/calendar.utils';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
+import WarningIcon from '@mui/icons-material/Warning';
+import { useHistory } from 'react-router-dom';
 
 interface NewCalendarPageProps {
   allEventTypes: EventType[];
+  yourEvents: Event[];
+  reviewEvents: Event[];
   allCalendars: Calendar[];
 }
 
-const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, allCalendars }) => {
+const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEvents, reviewEvents, allCalendars }) => {
   const theme = useTheme();
   const {
     data: allTeamTypes,
@@ -64,10 +68,18 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, allCal
     statuses: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT]
   });
 
+  const history = useHistory();
   const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
+  const [pendingEvent, setPendingEvent] = useState(
+    yourEvents.filter((event) => event.approved === ConflictStatus.PENDING).length > 0
+  );
+  const [deniedEvent, setDeniedEvent] = useState(
+    yourEvents.filter((event) => event.approved === ConflictStatus.DENIED).length > 0
+  );
+  const [reviewEvent, setReviewEvent] = useState(reviewEvents.length > 0);
 
   const updateAdditionalTeamIds = (changed: boolean) => {
     setShowTeamEvents(changed);
@@ -161,6 +173,73 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, allCal
           teamTypes={allTeamTypes}
         />
       )}
+      <Stack
+        spacing={1}
+        sx={{
+          position: 'fixed',
+          top: 24,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1400,
+          maxWidth: 600
+        }}
+      >
+        {deniedEvent && (
+          <Alert
+            icon={<WarningIcon fontSize="inherit" />}
+            variant="filled"
+            severity="error"
+            onClose={() => setDeniedEvent(false)}
+          >
+            An event that you scheduled conflicts with another event and has been denied. Please edit the event to put it
+            back up for re-approval, or to a time and location that does not conflict.
+          </Alert>
+        )}
+        {pendingEvent && (
+          <Alert
+            icon={<WarningIcon fontSize="inherit" />}
+            variant="filled"
+            severity="error"
+            onClose={() => setPendingEvent(false)}
+          >
+            An event that you scheduled conflicts with another event. The event creator has been notified and must allow your
+            event to take place in order to continue.
+          </Alert>
+        )}
+        {reviewEvent && (
+          <Alert
+            icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
+            variant="filled"
+            severity="error"
+            onClose={() => setReviewEvent(false)}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Typography fontSize={14}> An event has been scheduled that conflicts with one of your own events.</Typography>
+              <Button
+                variant="outlined"
+                sx={{
+                  color: 'white',
+                  borderColor: 'white',
+                  whiteSpace: 'nowrap',
+                  textTransform: 'none',
+                  flexShrink: 0,
+                  px: 2,
+                  '&:hover': {
+                    borderColor: 'white',
+                    bgcolor: 'rgba(255,255,255,0.1)'
+                  }
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  history.push('/calendar/reviews');
+                }}
+              >
+                Click Here to Review Booking
+              </Button>
+            </Stack>
+          </Alert>
+        )}
+      </Stack>
       <PageLayout hidePageTitle>
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
           <Typography variant="h4"></Typography>

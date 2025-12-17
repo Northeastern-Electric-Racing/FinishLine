@@ -92,7 +92,12 @@ const CalendarTab: React.FC = () => {
       }
     >
       {tabIndex === 0 ? (
-        <NewCalendarPage allEventTypes={allEventTypes} allCalendars={allCalendars} />
+        <NewCalendarPage
+          allEventTypes={allEventTypes}
+          reviewEvents={reviewEvents ?? []}
+          yourEvents={yourEvents ?? []}
+          allCalendars={allCalendars}
+        />
       ) : (
         <YourEventsPage
           tab={tabIndex}
