@@ -42,7 +42,7 @@ export const convertIntToDay = (num: number) => {
   }
 };
 
-// Get a list of dates for user viewing purposes (formatted to their timezone)
+// Get a list of dates for user viewing purposes (formatted to their timezone, with date and start time)
 // Should be used when events need to be populated/displayed
 export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
   const times: Date[] = [];
