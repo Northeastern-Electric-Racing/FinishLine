@@ -298,15 +298,16 @@ export const useSingleEvent = (id?: string) => {
   );
 };
 
-export const useConflictingEvent = (id?: string) => {
-  return useQuery<Event, Error>(
-    ['events', 'conflicting', id],
-    async () => {
-      const { data } = await getConflictingEvent(id!);
-      return data;
-    },
-    { enabled: !!id }
-  );
+export const useConflictingEvents = (ids: string[]) => {
+  return useQuery<Event[], Error>(['events', 'conflicting', ids], async () => {
+    const results = await Promise.all(
+      ids.map(async (id) => {
+        const { data } = await getConflictingEvent(id);
+        return data;
+      })
+    );
+    return results;
+  });
 };
 
 export const useAllEvents = () => {

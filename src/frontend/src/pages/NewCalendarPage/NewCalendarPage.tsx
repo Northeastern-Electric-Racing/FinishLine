@@ -2,13 +2,13 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, Alert, Snackbar } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { Calendar, ConflictStatus, DayOfWeek, Event, EventType } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useFilterEvents } from '../../hooks/calendar.hooks';
+import { useConflictingEvents, useFilterEvents } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -42,7 +42,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
 
   const [memberIds, setMemberIds] = useState<string[]>([]);
   const [teamIds, setTeamIds] = useState<string[]>([]);
-
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
 
@@ -81,6 +80,28 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   );
   const [reviewEvent, setReviewEvent] = useState(reviewEvents.length > 0);
 
+  const filteredToPending = yourEvents
+    .filter((event) => event.approved === ConflictStatus.PENDING)
+    .map((event) => event.eventId);
+
+  const filteredToDenied = yourEvents
+    .filter((event) => event.approved === ConflictStatus.DENIED)
+    .map((event) => event.eventId);
+
+  const {
+    data: conflictingEvents,
+    isLoading: conflictingEventsLoading,
+    isError: conflictingEventsIsError,
+    error: conflictingEventsError
+  } = useConflictingEvents(filteredToPending);
+
+  const {
+    data: conflictingDeniedEvents,
+    isLoading: conflictingDeniedEventsLoading,
+    isError: conflictingDeniedEventsIsError,
+    error: conflictingDeniedEventsError
+  } = useConflictingEvents(filteredToDenied);
+
   const updateAdditionalTeamIds = (changed: boolean) => {
     setShowTeamEvents(changed);
 
@@ -101,10 +122,30 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
     }
   };
 
-  if (isLoading || !allEvents) return <LoadingIndicator />;
+  const yourConflicts = useMemo(
+    () => conflictingEvents?.filter((event, i) => filteredToPending[i] !== event.eventId) ?? [],
+    [conflictingEvents, filteredToPending]
+  );
 
-  if (isLoading || !allEvents) return <LoadingIndicator />;
+  const yourConflictsDenied = useMemo(
+    () => conflictingDeniedEvents?.filter((event, i) => filteredToDenied[i] !== event.eventId) ?? [],
+    [conflictingDeniedEvents, filteredToDenied]
+  );
+
+  if (
+    isLoading ||
+    !allEvents ||
+    conflictingEventsLoading ||
+    !conflictingEvents ||
+    conflictingEventsLoading ||
+    !conflictingEvents ||
+    conflictingDeniedEventsLoading ||
+    !conflictingDeniedEvents
+  )
+    return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
+  if (conflictingEventsIsError) return <ErrorPage message={conflictingEventsError.message} />;
+  if (conflictingDeniedEventsIsError) return <ErrorPage message={conflictingDeniedEventsError.message} />;
 
   const transformedEvents = allEvents.map(filterEventTransformer);
 
@@ -186,13 +227,39 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
       >
         {deniedEvent && (
           <Alert
-            icon={<WarningIcon fontSize="inherit" />}
+            icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
             variant="filled"
             severity="error"
-            onClose={() => setDeniedEvent(false)}
+            onClose={() => setReviewEvent(false)}
           >
-            An event that you scheduled conflicts with another event and has been denied. Please edit the event to put it
-            back up for re-approval, or to a time and location that does not conflict.
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Typography fontSize={14}>
+                {' '}
+                You have scheduled an event at the same time and location as <i>{yourConflicts[0].title}</i> and was denied.
+                Edit the event to put it up for re-approval, or change the time/location to not conflict with other events.
+              </Typography>
+              <Button
+                variant="outlined"
+                sx={{
+                  color: 'white',
+                  borderColor: 'white',
+                  whiteSpace: 'nowrap',
+                  textTransform: 'none',
+                  flexShrink: 0,
+                  px: 2,
+                  '&:hover': {
+                    borderColor: 'white',
+                    bgcolor: 'rgba(255,255,255,0.1)'
+                  }
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  history.push('/calendar/yourEvents');
+                }}
+              >
+                Click Here to View Your Bookings
+              </Button>
+            </Stack>
           </Alert>
         )}
         {pendingEvent && (
@@ -202,8 +269,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             severity="error"
             onClose={() => setPendingEvent(false)}
           >
-            An event that you scheduled conflicts with another event. The event creator has been notified and must allow your
-            event to take place in order to continue.
+            You have scheduled an event at the same time and location as <i>{yourConflicts[0].title}</i>.{' '}
+            <i>
+              {yourConflicts[0].userCreated.firstName} {yourConflicts[0].userCreated.lastName}
+            </i>{' '}
+            has been notified of this and must allow your event to take place in order to continue.
           </Alert>
         )}
         {reviewEvent && (

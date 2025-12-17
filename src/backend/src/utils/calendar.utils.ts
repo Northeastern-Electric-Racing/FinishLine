@@ -1,5 +1,5 @@
 import { Prisma, Event_Type, Organization } from '@prisma/client';
-import { User, ScheduleSlotCreateArgs, Event, Team } from 'shared';
+import { User, ScheduleSlotCreateArgs, Event, Team, ConflictStatus } from 'shared';
 import { InvalidEventTypeConfigurationException } from './errors.utils';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
@@ -133,6 +133,7 @@ export async function checkEventConflicts(
       eventId: eventId ? { not: eventId } : undefined, // Exclude current event if editing
       location,
       dateDeleted: null,
+      approved: { in: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT] },
       eventType: {
         organizationId: organization.organizationId
       }
