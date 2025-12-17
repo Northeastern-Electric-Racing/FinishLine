@@ -44,11 +44,9 @@ export const convertIntToDay = (num: number) => {
 
 // Get a list of dates for user viewing purposes (formatted to their timezone)
 // Should be used when events need to be populated/displayed
-export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
+export const getMeetingDates = (event: Event) => {
   const times: Date[] = [];
   event.scheduledTimes.forEach((schedule) => {
-    const specificTime = startTimes ? schedule.startTime : schedule.endTime;
-
     schedule.days.forEach((day) => {
       const startTimeDate = new Date(schedule.initialDateScheduled);
       const timezoneOffset = startTimeDate.getTimezoneOffset() * 60000;
@@ -64,9 +62,9 @@ export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
       startDate.setDate(startDate.getDate() - offset);
 
       // Note : schedule.startTime likely gets converted to the users timezone by default
-      // set the hour and minutes using UTC to match the adjusted date
-      startDate.setHours(specificTime?.getUTCHours() ?? 0);
-      startDate.setMinutes(specificTime?.getUTCMinutes() ?? 0);
+      // set the hour and minutes
+      startDate.setHours(schedule.startTime?.getHours() ?? 0);
+      startDate.setMinutes(schedule.startTime?.getMinutes() ?? 0);
 
       // adjust for the users time
       const startDateAdjusted = new Date(startDate.getTime() - timezoneOffset);
