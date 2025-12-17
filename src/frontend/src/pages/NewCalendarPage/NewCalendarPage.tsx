@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Box,
   Grid,
@@ -75,19 +75,20 @@ const NewCalendarPage = () => {
   const calendars = allCalendars ?? [];
 
   const [selectedCalendarIds, setSelectedCalendarIds] = useState<string[]>([]);
-  const [didInitCalendarFilters, setDidInitCalendarFilters] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
 
-  useEffect(() => {
-    if (didInitCalendarFilters) return;
-    if (!calendars.length) return;
+  const didInitCalendarFilters = useRef(false);
 
-    setSelectedCalendarIds(calendars.map((c) => c.calendarId));
-    setDidInitCalendarFilters(true);
-  }, [calendars, didInitCalendarFilters]);
+  useEffect(() => {
+    if (didInitCalendarFilters.current) return;
+    if (!allCalendars?.length) return;
+
+    setSelectedCalendarIds(allCalendars.map((c) => c.calendarId));
+    didInitCalendarFilters.current = true;
+  }, [allCalendars]);
 
   const {
     isLoading,
