@@ -27,6 +27,7 @@ import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
 import { useApproveEvent, useCreateShop, useDenyEvent } from '../../hooks/calendar.hooks';
+import { convertDayToDayShorthand } from '../../utils/calendar.utils';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
@@ -157,7 +158,19 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
               {startTime} – {endTime}
             </Typography>
           )}
-
+          {!dayOfWeek && <AccessTimeIcon fontSize="small" />}
+          {!dayOfWeek && (
+            <Stack spacing={1.25} direction="column">
+              {event.scheduledTimes.map((slot) => (
+                <Typography variant="body2">
+                  {slot.startTime?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) ?? 'N/A'} –{' '}
+                  {slot.endTime?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) ?? 'N/A'}
+                  {' : '}
+                  {slot.days.map((day) => convertDayToDayShorthand(day)).join(', ')}
+                </Typography>
+              ))}
+            </Stack>
+          )}
           {hasValue(locationText) && (
             <>
               <LocationOnIcon fontSize="small" sx={{ ml: 2 }} />

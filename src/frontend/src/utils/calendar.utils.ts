@@ -42,6 +42,27 @@ export const convertIntToDay = (num: number) => {
   }
 };
 
+export const convertDayToDayShorthand = (day: DayOfWeek) => {
+  switch (day) {
+    case DayOfWeek.MONDAY:
+      return 'M';
+    case DayOfWeek.TUESDAY:
+      return 'T';
+    case DayOfWeek.WEDNESDAY:
+      return 'W';
+    case DayOfWeek.THURSDAY:
+      return 'Th';
+    case DayOfWeek.FRIDAY:
+      return 'F';
+    case DayOfWeek.SATURDAY:
+      return 'Sat';
+    case DayOfWeek.SUNDAY:
+      return 'S';
+    default:
+      return 'Undefined';
+  }
+};
+
 // Get a list of dates for user viewing purposes (formatted to their timezone, with date and start time)
 // Should be used when events need to be populated/displayed
 export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
