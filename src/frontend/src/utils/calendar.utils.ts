@@ -63,7 +63,8 @@ export const convertDayToDayShorthand = (day: DayOfWeek) => {
   }
 };
 
-// Get a list of dates for user viewing purposes (formatted to their timezone, with date and start time)
+// Get a list of dates for user viewing purposes (formatted to their timezone, with date and start/end time)
+// If start/end time is not needed, then only use the provided day
 // Should be used when events need to be populated/displayed
 export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
   const times: Date[] = [];
