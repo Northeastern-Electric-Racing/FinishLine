@@ -404,7 +404,7 @@ export default class CalendarService {
     }
 
     // Check for conflicts
-    const { hasConflict, approverUserId } = await checkEventConflicts(scheduleSlot, organization, location, undefined);
+    const { hasConflict, conflictingEvent } = await checkEventConflicts(scheduleSlot, organization, location, undefined);
 
     const computeEndDate = (initial: Date, recurrenceNumber: number) => {
       const weeks = Math.max(1, recurrenceNumber ?? 0);
@@ -462,7 +462,7 @@ export default class CalendarService {
         },
         status: foundEventType.requiresConfirmation ? Event_Status.UNCONFIRMED : Event_Status.CONFIRMED,
         approved: hasConflict ? Conflict_Status.PENDING : Conflict_Status.NO_CONFLICT,
-        approvalRequiredFromUserId: hasConflict ? approverUserId : null,
+        approvalRequiredFromUserId: hasConflict ? conflictingEvent?.userCreated.userId : null,
         location,
         zoomLink,
         questionDocument,
@@ -831,7 +831,7 @@ export default class CalendarService {
       let approverUserId: string | undefined;
 
       if (scheduleChanged || locationChanged) {
-        const { hasConflict: conflict, approverUserId: approver } = await checkEventConflicts(
+        const { hasConflict: conflict, conflictingEvent } = await checkEventConflicts(
           scheduleSlot,
           organization,
           location,
@@ -839,7 +839,7 @@ export default class CalendarService {
         );
 
         hasConflict = conflict;
-        approverUserId = approver;
+        approverUserId = conflictingEvent?.userCreated.userId;
       }
 
       if (scheduleChanged) {
@@ -2285,7 +2285,7 @@ export default class CalendarService {
    * Retrieves a single event
    *
    * @param submitter the user who is trying to retrieve the event
-   * @param designReviewId the id of the event to retrieve
+   * @param eventId the id of the event to retrieve
    * @param organizationId the organization that the user is currently in
    * @returns the event
    */
@@ -2300,6 +2300,41 @@ export default class CalendarService {
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
 
     return eventTransformer(event);
+  }
+
+  /**
+   * Retrieves a potential conflicting event
+   * If no conflict exists, returns the original event
+   *
+   * @param submitter the user who is trying to retrieve the event
+   * @param eventId the id of the event to retrieve
+   * @param organizationId the organization that the user is currently in
+   * @returns the event
+   */
+  static async getConflictingEvent(_submitter: User, eventId: string, organization: Organization): Promise<Event> {
+    const event = await prisma.event.findUnique({
+      where: { eventId },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    if (!event) throw new NotFoundException('Event', eventId);
+
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    const transformedEvent = eventTransformer(event);
+
+    const { hasConflict, conflictingEvent } = await checkEventConflicts(
+      transformedEvent.scheduledTimes,
+      organization,
+      transformedEvent.location,
+      transformedEvent.eventId
+    );
+
+    if (hasConflict && conflictingEvent) {
+      return conflictingEvent;
+    }
+
+    return transformedEvent;
   }
 
   /**

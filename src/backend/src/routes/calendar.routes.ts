@@ -163,6 +163,8 @@ calendarRouter.post(
 
 calendarRouter.post('/event/:eventId/delete', CalendarController.deleteEvent);
 
+calendarRouter.get('/event/conflict/:eventId', CalendarController.getConflictingEvent);
+
 calendarRouter.get('/event/:eventId', CalendarController.getSingleEvent);
 
 calendarRouter.get('/events', CalendarController.getAllEvents);

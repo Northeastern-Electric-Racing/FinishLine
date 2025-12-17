@@ -35,7 +35,8 @@ import {
   getAllEventTypes,
   postFilterEvents,
   approveEvent,
-  denyEvent
+  denyEvent,
+  getConflictingEvent
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 
@@ -291,6 +292,17 @@ export const useSingleEvent = (id?: string) => {
     ['events', id],
     async () => {
       const { data } = await getSingleEvent(id!);
+      return data;
+    },
+    { enabled: !!id }
+  );
+};
+
+export const useConflictingEvent = (id?: string) => {
+  return useQuery<Event, Error>(
+    ['events', 'conflicting', id],
+    async () => {
+      const { data } = await getConflictingEvent(id!);
       return data;
     },
     { enabled: !!id }

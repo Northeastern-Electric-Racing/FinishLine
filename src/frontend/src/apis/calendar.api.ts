@@ -125,6 +125,12 @@ export const getSingleEvent = async (id: string) => {
   });
 };
 
+export const getConflictingEvent = async (id: string) => {
+  return axios.get(apiUrls.calendarGetConflictingEvent(id), {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
+};
+
 export const postCreateEventType = (payload: EventTypeCreateArgs) => {
   return axios.post<EventType>(apiUrls.calendarCreateEventType(), payload, {
     transformResponse: (data) => JSON.parse(data) as EventType

@@ -454,6 +454,17 @@ export default class CalendarController {
     }
   }
 
+  static async getConflictingEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+
+      const event = await CalendarService.getConflictingEvent(req.currentUser, eventId, req.organization);
+      res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const events = await CalendarService.getAllEvents(req.organization);
