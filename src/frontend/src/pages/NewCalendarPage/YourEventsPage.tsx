@@ -6,12 +6,11 @@ import { Box, Link, Table, TableBody, TableCell, TableContainer, TableHead, Tabl
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import TableCellHuge from './YourEventsComponents/TableCellHuge';
 import React, { useEffect, useState } from 'react';
-import { Calendar, ConflictStatus, DayOfWeek, EventType } from 'shared';
+import { Calendar, ConflictStatus, EventType } from 'shared';
 import { Event } from 'shared';
 import WarningTooltip from './YourEventsComponents/WarningTooltip';
-import { convertIntToDay, getMeetingDates } from '../../utils/calendar.utils';
+import { getMeetingDates } from '../../utils/calendar.utils';
 import { EventClickPopup } from './EventClickPopup';
-import { datePipe } from '../../utils/pipes';
 
 interface YourEventsHeadCells {
   id: string;

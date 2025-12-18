@@ -1,8 +1,7 @@
 import { Prisma, Event_Type, Organization } from '@prisma/client';
-import { User, ScheduleSlotCreateArgs, Event, Team, ConflictStatus } from 'shared';
+import { User, ScheduleSlotCreateArgs, Event, ConflictStatus } from 'shared';
 import { InvalidEventTypeConfigurationException } from './errors.utils';
 import prisma from '../prisma/prisma';
-import teamTransformer from '../transformers/teams.transformer';
 import { getEventQueryArgs } from '../prisma-query-args/event.query-args';
 import { eventTransformer } from '../transformers/calendar.transformer';
 

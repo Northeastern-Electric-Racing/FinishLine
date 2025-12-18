@@ -26,7 +26,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
-import { useApproveEvent, useCreateShop, useDenyEvent } from '../../hooks/calendar.hooks';
+import { useApproveEvent, useDenyEvent } from '../../hooks/calendar.hooks';
 import { convertDayToDayShorthand } from '../../utils/calendar.utils';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
