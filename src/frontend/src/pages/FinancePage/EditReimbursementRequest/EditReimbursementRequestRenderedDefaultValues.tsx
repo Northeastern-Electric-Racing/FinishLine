@@ -12,7 +12,8 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
   onSubmitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
   onExitEditPage: () => void;
   onSubmitToFinance?: (data: ReimbursementRequestDataSubmission) => Promise<void>;
-}> = ({ reimbursementRequest, onSubmitData, onExitEditPage, onSubmitToFinance }) => {
+  isSubmitting?: boolean;
+}> = ({ reimbursementRequest, onSubmitData, onExitEditPage, onSubmitToFinance, isSubmitting }) => {
   const previousPage = `${routes.REIMBURSEMENT_REQUESTS}/my-requests/${reimbursementRequest.reimbursementRequestId}`;
   const isLeadershipApproved = isReimbursementRequestLeadershipApproved(reimbursementRequest);
 
@@ -35,6 +36,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
         submitData={onSubmitData}
         isLeadershipApproved={isLeadershipApproved}
         onSubmitToFinance={onSubmitToFinance}
+        isSubmitting={isSubmitting}
         defaultValues={{
           vendorId: reimbursementRequest.vendor.vendorId,
           indexCodeId: reimbursementRequest.indexCode.indexCodeId,

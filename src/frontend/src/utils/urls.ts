@@ -15,6 +15,7 @@ const API_URL: string = import.meta.env.VITE_REACT_APP_BACKEND_URL || 'http://lo
 /**************** Users Endpoints ****************/
 const users = () => `${API_URL}/users`;
 const orgUsers = () => `${users()}/organization`;
+const orgMembers = () => `${users()}/members`;
 const usersById = (id: string) => `${users()}/${id}`;
 const usersLogin = () => `${users()}/auth/login`;
 const usersLoginDev = () => `${users()}/auth/login/dev`;
@@ -474,6 +475,7 @@ const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing
 export const apiUrls = {
   users,
   orgUsers,
+  orgMembers,
   usersById,
   usersLogin,
   usersLoginDev,

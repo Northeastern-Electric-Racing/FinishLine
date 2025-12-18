@@ -19,7 +19,7 @@ const MarkSubmittedToSaboModal = ({ open, setOpen, reimbursementRequest }: MarkS
   const handleMarkSubmittedToSabo = async () => {
     try {
       await markAsSaboSubmitted();
-      toast.success('Successfully marked reimbursement request as submitted tp SABO');
+      toast.success('Successfully marked reimbursement request as submitted to SABO');
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);

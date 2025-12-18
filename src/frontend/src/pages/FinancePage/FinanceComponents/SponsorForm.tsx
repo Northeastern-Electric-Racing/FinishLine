@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import React, { useState } from 'react';
 import { Box, useTheme } from '@mui/system';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
@@ -75,7 +75,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
   const [datePickerOpenJoin, setDatePickerOpenJoin] = useState(false);
   const [datePickerOpenDue, setDatePickerOpenDue] = useState(false);
 
-  const { isLoading: membersLoading, isError: membersIsError, error: membersError, data: members } = useAllUsers();
+  const { isLoading: membersLoading, isError: membersIsError, error: membersError, data: members } = useAllMembers();
 
   const {
     isLoading: sponsorTierIsLoading,
