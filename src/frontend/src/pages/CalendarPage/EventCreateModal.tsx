@@ -29,7 +29,7 @@ import {
   wbsPipe
 } from 'shared';
 import { useCreateDesignReviews } from '../../hooks/design-reviews.hooks';
-import { useAllUsers } from '../../hooks/users.hooks';
+import { useAllMembers } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { userToAutocompleteOption } from '../../utils/teams.utils';
@@ -81,7 +81,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [requiredMembers, setRequiredMembers] = useState([].map(userToAutocompleteOption));
   const [optionalMembers, setOptionalMembers] = useState([].map(userToAutocompleteOption));
-  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
+  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllMembers();
 
   const {
     isLoading: allWorkPackagesIsLoading,

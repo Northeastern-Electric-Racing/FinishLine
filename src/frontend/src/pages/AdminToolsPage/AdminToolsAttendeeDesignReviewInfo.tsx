@@ -5,7 +5,7 @@ import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
-import { useAllUsers } from '../../hooks/users.hooks';
+import { useAllMembers } from '../../hooks/users.hooks';
 import { useAllEvents } from '../../hooks/calendar.hooks';
 import { EventStatus } from 'shared';
 
@@ -13,16 +13,16 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: allTeams, isLoading: teamsIsLoading, isError: teamsIsError, error: teamsError } = useAllTeams();
-  const { data: allUsers, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  const { data: allMembers, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const { data: allEvents, isLoading: eventsIsLoading, isError: eventsIsError, error: eventsError } = useAllEvents();
 
-  if (!allTeams || teamsIsLoading || !allUsers || usersIsLoading || !allEvents || eventsIsLoading)
+  if (!allTeams || teamsIsLoading || !allMembers || usersIsLoading || !allEvents || eventsIsLoading)
     return <LoadingIndicator />;
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;
   if (eventsIsError) return <ErrorPage message={eventsError.message} />;
 
-  const filteredMembers = allUsers.filter((member) =>
+  const filteredMembers = allMembers.filter((member) =>
     fullNamePipe(member).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
