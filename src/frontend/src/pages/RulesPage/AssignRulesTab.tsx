@@ -51,7 +51,7 @@ const TeamRow: React.FC<TeamRowProps> = ({ team, isSelected, onClick }) => {
       onClick={onClick}
       sx={{
         borderBottom: '1px solid #7d7d7d',
-        backgroundColor: isSelected ? '#b36b6b' : '#9d9d9d',
+        backgroundColor: isSelected ? '#b36b6b' : '#CECECE',
         '&:hover': { backgroundColor: isSelected ? '#a05858' : '#5e5e5e' },
         cursor: 'pointer',
         '&:last-child': { borderBottom: 'none' }
@@ -168,7 +168,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
       <Box sx={{ display: 'flex', gap: 4 }}>
         {/* Teams Column */}
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h6" sx={{ mb: 2, color: '#ffffff' }}>
+          <Typography variant="h4" sx={{ mb: 2, color: '#ffffff' }}>
             Teams:
           </Typography>
           <TableContainer
@@ -181,7 +181,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
             }}
           >
             <Table sx={{ borderCollapse: 'collapse' }}>
-              <TableBody sx={{ backgroundColor: '#9d9d9d' }}>
+              <TableBody sx={{ backgroundColor: '#CECECE' }}>
                 {teams?.map((team) => (
                   <TeamRow
                     key={team.teamId}
@@ -197,7 +197,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
 
         {/* Rules Column */}
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h6" sx={{ mb: 2, color: '#ffffff' }}>
+          <Typography variant="h4" sx={{ mb: 2, color: '#ffffff' }}>
             Rules:
           </Typography>
           <TableContainer
@@ -210,7 +210,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
             }}
           >
             <Table sx={{ borderCollapse: 'collapse' }}>
-              <TableBody sx={{ backgroundColor: '#9d9d9d' }}>
+              <TableBody sx={{ backgroundColor: '#CECECE' }}>
                 {topLevelRules.map((rule) => (
                   <RuleRow
                     key={rule.ruleId}
@@ -218,7 +218,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
                     allRules={rules}
                     backgroundColor={(r) => {
                       const isLeaf = r.subRuleIds.length === 0;
-                      return isLeaf && isRuleAssigned(r.ruleId) ? '#b36b6b' : '#9d9d9d';
+                      return isLeaf && isRuleAssigned(r.ruleId) ? '#b36b6b' : '#CECECE';
                     }}
                     hoverColor={(r) => {
                       const isLeaf = r.subRuleIds.length === 0;
