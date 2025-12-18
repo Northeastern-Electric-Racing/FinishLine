@@ -106,3 +106,31 @@ export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
 
   return times;
 };
+
+export const getOverlapTime = (event1: Event, event2: Event) => {
+  const starts1 = getMeetingDates(event1, true);
+  const ends1 = getMeetingDates(event1, false);
+  const starts2 = getMeetingDates(event2, true);
+  const ends2 = getMeetingDates(event2, false);
+
+  const overlaps: { event1Time: { start: Date; end: Date }; event2Time: { start: Date; end: Date } }[] = [];
+
+  for (let i = 0; i < starts1.length; i++) {
+    const start1 = starts1[i];
+    const end1 = ends1[i];
+
+    for (let j = 0; j < starts2.length; j++) {
+      const start2 = starts2[j];
+      const end2 = ends2[j];
+
+      if (start1 < end2 && end1 > start2) {
+        overlaps.push({
+          event1Time: { start: start1, end: end1 },
+          event2Time: { start: start2, end: end2 }
+        });
+      }
+    }
+  }
+
+  return overlaps;
+};

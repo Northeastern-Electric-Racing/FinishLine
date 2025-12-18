@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useMemo, useState } from 'react';
-import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, Alert, Snackbar } from '@mui/material';
+import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, Alert } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { Calendar, ConflictStatus, DayOfWeek, Event, EventType } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
@@ -19,7 +19,7 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
-import { convertIntToDay, getMeetingDates } from '../../utils/calendar.utils';
+import { convertIntToDay, getMeetingDates, getOverlapTime } from '../../utils/calendar.utils';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useHistory } from 'react-router-dom';
@@ -75,10 +75,14 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   const [pendingEvent, setPendingEvent] = useState(
     yourEvents.filter((event) => event.approved === ConflictStatus.PENDING).length > 0
   );
+
   const [deniedEvent, setDeniedEvent] = useState(
     yourEvents.filter((event) => event.approved === ConflictStatus.DENIED).length > 0
   );
-  const [reviewEvent, setReviewEvent] = useState(reviewEvents.length > 0);
+
+  const [reviewEvent, setReviewEvent] = useState(
+    reviewEvents.filter((event) => event.approvalRequiredFrom?.userId === user.userId).length > 0
+  );
 
   const filteredToPending = yourEvents
     .filter((event) => event.approved === ConflictStatus.PENDING)
@@ -101,6 +105,16 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
     isError: conflictingDeniedEventsIsError,
     error: conflictingDeniedEventsError
   } = useConflictingEvents(filteredToDenied);
+
+  const yourReviewEvents = reviewEvents.filter((event) => event.approvalRequiredFrom?.userId === user.userId);
+  const {
+    data: untransformedConflictingReviewEvents,
+    isLoading: conflictingReviewEventsLoading,
+    isError: conflictingReviewEventsIsError,
+    error: conflictingReviewEventsError
+  } = useConflictingEvents(yourReviewEvents.map((event) => event.eventId));
+
+  const conflictingReviewEvents = untransformedConflictingReviewEvents?.map(filterEventTransformer);
 
   const updateAdditionalTeamIds = (changed: boolean) => {
     setShowTeamEvents(changed);
@@ -140,12 +154,15 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
     conflictingEventsLoading ||
     !conflictingEvents ||
     conflictingDeniedEventsLoading ||
-    !conflictingDeniedEvents
+    !conflictingDeniedEvents ||
+    conflictingReviewEventsLoading ||
+    !conflictingReviewEvents
   )
     return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
   if (conflictingEventsIsError) return <ErrorPage message={conflictingEventsError.message} />;
   if (conflictingDeniedEventsIsError) return <ErrorPage message={conflictingDeniedEventsError.message} />;
+  if (conflictingReviewEventsIsError) return <ErrorPage message={conflictingReviewEventsError.message} />;
 
   const transformedEvents = allEvents.map(filterEventTransformer);
 
@@ -230,13 +247,14 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
             variant="filled"
             severity="error"
-            onClose={() => setReviewEvent(false)}
+            onClose={() => setDeniedEvent(false)}
           >
             <Stack direction="row" alignItems="center" spacing={2}>
               <Typography fontSize={14}>
                 {' '}
-                You have scheduled an event at the same time and location as <i>{yourConflicts[0].title}</i> and was denied.
-                Edit the event to put it up for re-approval, or change the time/location to not conflict with other events.
+                You have scheduled an event at the same time and location as <i>{yourConflictsDenied[0].title}</i> and was
+                denied. Edit the event to put it up for re-approval, or change the time/location to not conflict with other
+                events.
               </Typography>
               <Button
                 variant="outlined"
@@ -284,7 +302,22 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             onClose={() => setReviewEvent(false)}
           >
             <Stack direction="row" alignItems="center" spacing={2}>
-              <Typography fontSize={14}> An event has been scheduled that conflicts with one of your own events.</Typography>
+              <Typography fontSize={14}>
+                {' '}
+                <i>
+                  {yourReviewEvents[0].userCreated.firstName} {yourReviewEvents[0].userCreated.lastName}
+                </i>{' '}
+                has scheduled an event at the same time and location as your meeting at{' '}
+                {(() => {
+                  const overlaps = getOverlapTime(conflictingReviewEvents[0], yourReviewEvents[0]);
+                  const eventTime = overlaps[0].event1Time.start.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit'
+                  });
+                  return eventTime;
+                })()}{' '}
+                in {conflictingReviewEvents[0].location}.
+              </Typography>
               <Button
                 variant="outlined"
                 sx={{
