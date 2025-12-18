@@ -139,28 +139,6 @@ export const handleMulterError = (error: multer.MulterError): HttpException => {
   }
 };
 
-/**
- * Middleware to handle Multer upload errors and convert them to HTTP exceptions
- * Can be used with any multer upload configuration
- * @param upload - The multer upload
- */
-export const multerErrorMiddleware = (upload: any) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    upload(req, res, (err: any): void => {
-      if (err) {
-        if (err instanceof multer.MulterError) {
-          const httpError = handleMulterError(err);
-          res.status(httpError.status).json({ message: httpError.message });
-          return;
-        }
-        res.status(500).json({ message: 'Unknown upload error' });
-        return;
-      }
-      next();
-    });
-  };
-};
-
 // type so that the not found error messages are consistent
 export type ExceptionObjectNames =
   | 'User'
