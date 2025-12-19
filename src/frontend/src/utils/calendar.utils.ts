@@ -107,6 +107,7 @@ export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
   return times;
 };
 
+// check when two events overlap, returning the start and end time for both events that overlap
 export const getOverlapTime = (event1: Event, event2: Event) => {
   const starts1 = getMeetingDates(event1, true);
   const ends1 = getMeetingDates(event1, false);
