@@ -2311,7 +2311,7 @@ export default class CalendarService {
    * @param organizationId the organization that the user is currently in
    * @returns the event
    */
-  static async getConflictingEvent(submitter: User, eventId: string, organization: Organization): Promise<Event> {
+  static async getConflictingEvent(_submitter: User, eventId: string, organization: Organization): Promise<Event> {
     const event = await prisma.event.findUnique({
       where: { eventId },
       ...getEventQueryArgs(organization.organizationId)

@@ -1,6 +1,5 @@
 import { routes } from '../../utils/routes';
 import NewCalendarPage from './NewCalendarPage';
-import YourEventsPage from './YourEventsPage';
 import PageLayout from '../../components/PageLayout';
 import { Box } from '@mui/material';
 import FullPageTabs from '../../components/FullPageTabs';
@@ -11,6 +10,7 @@ import { useAllCalendars, useAllEventTypes, useFilterEvents } from '../../hooks/
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
+import EventsTable from './EventsTable';
 
 const CalendarTab: React.FC = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -61,16 +61,23 @@ const CalendarTab: React.FC = () => {
   const yourEvents = untransformedYourEvents?.map(filterEventTransformer);
   const reviewEvents = untransformedReviewEvents?.map(filterEventTransformer);
 
-  if (!yourEvents || yourEventsLoading) return <LoadingIndicator />;
+  if (
+    !yourEvents ||
+    yourEventsLoading ||
+    !reviewEvents ||
+    reviewEventsLoading ||
+    !allEventTypes ||
+    allEventTypesLoading ||
+    !allCalendars ||
+    allCalendarsLoading
+  )
+    return <LoadingIndicator />;
   if (yourEventsIsError) return <ErrorPage error={yourEventsError} message={yourEventsError?.message} />;
 
-  if (!reviewEvents || reviewEventsLoading) return <LoadingIndicator />;
   if (reviewEventsIsError) return <ErrorPage error={reviewEventsError} message={reviewEventsError?.message} />;
 
-  if (!allEventTypes || allEventTypesLoading) return <LoadingIndicator />;
   if (allEventTypesIsError) return <ErrorPage error={allEventTypesError} message={allEventTypesError?.message} />;
 
-  if (!allCalendars || allCalendarsLoading) return <LoadingIndicator />;
   if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
 
   if (canViewReviews) tabs.push({ tabUrlValue: 'reviews', tabName: 'Review Bookings' });
@@ -99,7 +106,7 @@ const CalendarTab: React.FC = () => {
           allCalendars={allCalendars}
         />
       ) : (
-        <YourEventsPage
+        <EventsTable
           tab={tabIndex}
           yourEvents={yourEvents ?? []}
           reviewEvents={reviewEvents ?? []}

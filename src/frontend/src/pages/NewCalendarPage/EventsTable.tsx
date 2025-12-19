@@ -41,7 +41,7 @@ export interface EventTableArgs {
   tab: number;
 }
 
-const YourEventsPage: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, allEventTypes, allCalendars }) => {
+const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, allEventTypes, allCalendars }) => {
   // Convert to include proper dates
   // Done this way to allow the old events transformer to function properly
   // but provide better utility to this file (without breaking other files that may rely on eventTransformer)
@@ -185,14 +185,15 @@ const YourEventsPage: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvent
                   <TableCell align="center">{event.title}</TableCell>
                   <TableCell align="center">
                     {new Date(earliestSchedule).toLocaleDateString()}{' '}
-                    {!timeAway.passed ? ` - In ${timeAway.days}d` : '- Passed'}
+                    {!timeAway.passed
+                      ? ` - In ${timeAway.days}d ${timeAway.hours}h ${timeAway.minutes}m ${timeAway.seconds}s`
+                      : '- Passed'}
                   </TableCell>
                   <TableCell align="center">
                     {new Date(earliestSchedule).toLocaleTimeString('en-US', {
                       hour: 'numeric',
                       minute: '2-digit'
-                    })}{' '}
-                    {!timeAway.passed ? ` - In ${timeAway.hours}h ${timeAway.minutes}m ${timeAway.seconds}s` : '- Passed'}
+                    })}
                   </TableCell>
                   <TableCell align="center">
                     {event.location ? (
@@ -220,7 +221,7 @@ const YourEventsPage: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvent
                   )}
                   {tab === 1 && (
                     <TableCell align="center">
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                         <Typography component="span">
                           {event.approved === ConflictStatus.APPROVED
                             ? 'Approved'
@@ -231,31 +232,37 @@ const YourEventsPage: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvent
                                 : 'N/A'}
                         </Typography>
                         {event.approved === ConflictStatus.DENIED && (
-                          <WarningTooltip
-                            warning="Your meeting approval has been denied, please reschedule or change your meeting location."
-                            buttonText="Click Here to Edit Meeting"
-                            onClick={() => {}}
-                          />
+                          <Box sx={{ position: 'absolute', left: '50%', mt: 0.5, ml: 5 }}>
+                            <WarningTooltip
+                              warning="Your meeting approval has been denied..."
+                              buttonText="Click Here to Edit Meeting"
+                              onClick={() => {}}
+                            />
+                          </Box>
                         )}
                       </Box>
                     </TableCell>
                   )}
                   {tab === 2 && (
                     <TableCell align="center">
-                      {event.approved === ConflictStatus.PENDING
-                        ? '...'
-                        : event.approved === ConflictStatus.APPROVED
-                          ? 'Yes'
-                          : 'No'}
-                      {event.approved === ConflictStatus.PENDING && (
-                        <WarningTooltip
-                          warning="This meeting is awaiting your approval. Please review the booking."
-                          buttonText="View More Meeting Details"
-                          onClick={() => {
-                            handleOpenClickPopup(event);
-                          }}
-                        />
-                      )}
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                        {event.approved === ConflictStatus.PENDING
+                          ? '...'
+                          : event.approved === ConflictStatus.APPROVED
+                            ? 'Yes'
+                            : 'No'}
+                        {event.approved === ConflictStatus.PENDING && (
+                          <Box sx={{ position: 'absolute', left: '50%', mt: 0.5, ml: 2 }}>
+                            <WarningTooltip
+                              warning="This meeting is awaiting your approval. Please review the booking."
+                              buttonText="View More Meeting Details"
+                              onClick={() => {
+                                handleOpenClickPopup(event);
+                              }}
+                            />
+                          </Box>
+                        )}
+                      </Box>
                     </TableCell>
                   )}
                 </TableRow>
@@ -290,4 +297,4 @@ const YourEventsPage: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvent
   );
 };
 
-export default YourEventsPage;
+export default EventsTable;
