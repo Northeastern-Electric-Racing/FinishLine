@@ -56,16 +56,16 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
   const budgetInfo = useMemo(() => {
     if (!project) return null;
 
-    const totalBudget = project.budget; 
-    const totalSpent = reimbursementRequests.reduce((sum, rr) => sum + (rr.totalCost || 0), 0); 
+    const totalBudget = project.budget;
+    const totalSpent = reimbursementRequests.reduce((sum, rr) => sum + (rr.totalCost || 0), 0);
     const budgetRemaining = totalBudget - totalSpent;
     const budgetUsedPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
 
     return {
-      totalBudget: totalBudget / 100, 
-      totalSpent: totalSpent / 100, 
-      budgetRemaining: budgetRemaining / 100, 
-      budgetUsedPercentage: Math.min(budgetUsedPercentage, 100) 
+      totalBudget: totalBudget / 100,
+      totalSpent: totalSpent / 100,
+      budgetRemaining: budgetRemaining / 100,
+      budgetUsedPercentage: Math.min(budgetUsedPercentage, 100)
     };
   }, [project, reimbursementRequests]);
 
