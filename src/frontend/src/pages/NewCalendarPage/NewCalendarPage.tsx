@@ -19,7 +19,8 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
-import { convertDayToInt } from '../../utils/calendar.utils';
+import { convertDayToInt, getEventsFlattened } from '../../utils/calendar.utils';
+import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -75,6 +76,24 @@ const NewCalendarPage = () => {
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
+
+  const [startPeriod] = useState(() => new Date());
+
+  const [endPeriod] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  });
+
+  const { data: upcomingEvents } = useFilterEvents({
+    startPeriod,
+    endPeriod,
+    memberIds: memberIds.concat(additionalMemberIds),
+    teamIds: teamIds.concat(additionalTeamIds)
+  });
+
+  const upcomingOccurences = upcomingEvents ? getEventsFlattened(upcomingEvents, startPeriod, endPeriod) : [];
 
   const updateAdditionalTeamIds = (changed: boolean) => {
     setShowTeamEvents(changed);
@@ -233,7 +252,13 @@ const NewCalendarPage = () => {
             </Button>
           </Stack>
         </Stack>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            height: '100vh'
+          }}
+        >
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Grid container>
               {enumToArray(DAY_NAMES).map((day, index) => (
@@ -285,7 +310,10 @@ const NewCalendarPage = () => {
           </Box>
           <Box
             sx={{
-              width: 320
+              width: 320,
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0
             }}
           >
             <DateCalendar
@@ -326,6 +354,33 @@ const NewCalendarPage = () => {
             >
               More Filters
             </Button>
+
+            <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 0.5 }}>
+              My Upcoming Meetings:
+            </Typography>
+
+            {upcomingOccurences && (
+              <Box
+                sx={{
+                  mt: 2,
+                  flex: 1,
+                  flexDirection: 'column',
+                  overflowX: 'hidden',
+                  overflowY: 'auto',
+                  scrollbarColor: `${theme.palette.primary.main} transparent`,
+                  maxHeight: 'calc(50%)'
+                }}
+              >
+                {upcomingOccurences?.map((event) => (
+                  <UpcomingMeetingsCard
+                    key={event.eventId}
+                    event={event}
+                    calendars={allCalendars ?? []}
+                    eventTypes={allEventTypes ?? []}
+                  />
+                ))}
+              </Box>
+            )}
           </Box>
         </Box>
 
