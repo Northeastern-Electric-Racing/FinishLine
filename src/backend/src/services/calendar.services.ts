@@ -2311,7 +2311,7 @@ export default class CalendarService {
    * @param organizationId the organization that the user is currently in
    * @returns the event
    */
-  static async getConflictingEvent(_submitter: User, eventId: string, organization: Organization): Promise<Event> {
+  static async getConflictingEvent(submitter: User, eventId: string, organization: Organization): Promise<Event> {
     const event = await prisma.event.findUnique({
       where: { eventId },
       ...getEventQueryArgs(organization.organizationId)
@@ -2320,6 +2320,18 @@ export default class CalendarService {
     if (!event) throw new NotFoundException('Event', eventId);
 
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    const eventType = await prisma.event_Type.findUnique({
+      where: { eventTypeId: event.eventTypeId }
+    });
+
+    if (!eventType) throw new NotFoundException('Event Type', event.eventTypeId);
+
+    if (eventType.dateDeleted) throw new DeletedException('Event Type', event.eventTypeId);
+
+    if (eventType.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Calendar');
+    }
 
     const transformedEvent = eventTransformer(event);
 

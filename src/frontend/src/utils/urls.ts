@@ -461,7 +461,7 @@ const calendarEditEventType = (eventTypeId: string) => `${calendar()}/event-type
 const calendarDeleteEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/delete`;
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
-const calendarGetConflictingEvent = (id: string) => `${calendar()}/event/conflict/${id}`;
+const calendarGetConflictingEvent = (id: string) => `${calendar()}/event/${id}/conflict`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
 const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
 const calendarApproveEvent = (id: string) => `${calendar()}/event/${id}/approve`;
