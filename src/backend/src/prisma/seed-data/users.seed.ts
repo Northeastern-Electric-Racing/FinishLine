@@ -1109,6 +1109,47 @@ export const dbSeedAllUsers = {
   patrick
 };
 
+function hashStringToSeed(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0; // force 32-bit
+  }
+  return Math.abs(hash);
+}
+
+function seededRandom(seed: number): () => number {
+  return function () {
+    seed = (seed * 1664525 + 1013904223) % 4294967296;
+    return seed / 4294967296;
+  };
+}
+
+export const createRandomSchedule = (firstName: string, lastName: string) => {
+  const seed = hashStringToSeed(firstName + lastName);
+  const rand = seededRandom(seed);
+
+  const daysOfWeekCount = 7;
+
+  return Array.from({ length: daysOfWeekCount }).map((_, dayIndex) => {
+    const arr: number[] = [];
+    const date = new Date();
+
+    date.setDate(date.getDate() + ((dayIndex + 7 - date.getDay()) % 7));
+
+    for (let hour = 0; hour < 12; hour++) {
+      if (rand() < 0.5) {
+        arr.push(hour);
+      }
+    }
+
+    return {
+      availability: arr,
+      dateSet: date
+    };
+  });
+};
+
 export const createUser = async (user: Prisma.UserCreateInput, role: RoleEnum, organizationId: string) => {
   return await prisma.user.create({
     data: {
@@ -1122,6 +1163,15 @@ export const createUser = async (user: Prisma.UserCreateInput, role: RoleEnum, o
         create: {
           roleType: role,
           organizationId
+        }
+      },
+      drScheduleSettings: {
+        create: {
+          personalGmail: `${user.firstName}.${user.lastName}`.toLowerCase() + '@gmail.com',
+          personalZoomLink: `https://zoom.us/${user.firstName}${user.lastName}`.toLowerCase(),
+          availabilities: {
+            create: createRandomSchedule(user.firstName, user.lastName)
+          }
         }
       }
     },

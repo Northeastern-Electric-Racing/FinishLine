@@ -191,6 +191,7 @@ const CalendarPage = () => {
                               ) ?? []
                             }
                             teamTypes={allTeamTypes}
+                            setAvailability={() => {}}
                           />
                         </Box>
                       </Grid>

@@ -15,7 +15,9 @@ import {
   EventStatus,
   EventPreview,
   DayOfWeek,
-  ConflictStatus
+  ConflictStatus,
+  Availability,
+  PersonalAvailability
 } from 'shared';
 import { MachineryQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer';
@@ -181,3 +183,15 @@ export const eventStatusTransformer = (status: PrismaEventStatus): EventStatus =
   };
   return mapping[status];
 };
+
+export const availabilityTransformer = (personalAvailabilities: PersonalAvailability[]): PersonalAvailability[] => {
+  return personalAvailabilities.map((pa) => ({
+    userId: pa.userId,
+    firstName: pa.firstName,
+    lastName: pa.lastName,
+    availabilities: pa.availabilities.map((av) => ({
+      dateSet: new Date(av.dateSet),
+      availability: av.availability
+    }))
+  }));
+}

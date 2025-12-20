@@ -9,9 +9,11 @@ import {
   EventStatus,
   EventTypeCreateArgs,
   Calendar,
-  FilterArgs
+  FilterArgs,
+  Availability,
+  PersonalAvailability
 } from 'shared';
-import { eventTransformer } from './transformers/calendar.transformer';
+import { eventTransformer, personalAvailabilityTransformer } from './transformers/calendar.transformer';
 
 export const getAllCalendars = () => {
   return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
@@ -166,3 +168,9 @@ export const setEventStatus = async (id: string, payload: { status: EventStatus 
 export const postDeleteCalendar = async (id: string) => {
   return axios.post<Calendar>(apiUrls.calendarDeleteCalendar(id));
 };
+
+export const getAvailability = async (id: string) => {
+  return axios.get(apiUrls.calendarGetAvailability(id), {
+    transformResponse: (data) => JSON.parse(data).map(personalAvailabilityTransformer) as PersonalAvailability[]
+  });
+}

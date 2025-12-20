@@ -115,6 +115,13 @@ export interface Availability {
   availability: number[];
 }
 
+export interface PersonalAvailability {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  availabilities: Availability[];
+}
+
 export interface UserWithScheduleSettings extends User {
   scheduleSettings?: UserScheduleSettings;
 }

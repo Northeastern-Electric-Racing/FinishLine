@@ -1,4 +1,4 @@
-import { Shop, Event, EventPreview } from 'shared';
+import { Shop, Event, EventPreview, Availability, PersonalAvailability } from 'shared';
 import { userTransformer } from './users.transformers';
 
 export const shopTransformer = (shop: Shop): Shop => {
@@ -23,7 +23,13 @@ export const filterEventTransformer = (event: Event): Event => {
 
 export const eventTransformer = (event: Event): Event => {
   return {
-    ...event
+    ...event,
+    dateCreated: new Date(event.dateCreated),
+    scheduledTimes: event.scheduledTimes.map((schedule) => ({
+      ...schedule,
+      startTime: schedule.startTime ? new Date(schedule.startTime) : undefined,
+      endTime: schedule.endTime ? new Date(schedule.endTime) : undefined
+    })),
   };
 };
 
@@ -37,3 +43,13 @@ export const eventPreviewTransformer = (event: EventPreview): EventPreview => {
     wbsName: event.wbsName
   };
 };
+
+export const personalAvailabilityTransformer = (personalAvailabilities: PersonalAvailability): PersonalAvailability => {
+  return {
+    ...personalAvailabilities,
+    availabilities: personalAvailabilities.availabilities.map((availability) => ({
+      ...availability,
+      dateSet: new Date(availability.dateSet)
+    }))
+  };
+}

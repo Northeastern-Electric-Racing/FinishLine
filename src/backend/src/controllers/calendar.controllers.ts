@@ -471,4 +471,15 @@ export default class CalendarController {
       next(error);
     }
   }
+
+  static async getAvailability(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+
+      const availability = await CalendarService.getAvailability(eventId);
+      res.status(200).json(availability);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

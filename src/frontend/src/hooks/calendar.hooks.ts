@@ -8,7 +8,8 @@ import {
   Event,
   EventStatus,
   EventType,
-  FilterArgs
+  FilterArgs,
+  PersonalAvailability
 } from 'shared';
 import {
   getAllShops,
@@ -33,7 +34,8 @@ import {
   deleteEvent,
   setEventStatus,
   getAllEventTypes,
-  postFilterEvents
+  postFilterEvents,
+  getAvailability
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 
@@ -346,3 +348,16 @@ export const useSetEventStatus = (id: string) => {
     }
   );
 };
+
+export const useGetAvailability = (id: string) => {
+  return useQuery<PersonalAvailability[], Error>(
+    ['get-availability', id],
+    async () => {
+      const { data } = await getAvailability(id);
+      return data;
+    },
+    {
+      keepPreviousData: true
+    }
+  );
+}

@@ -1,4 +1,9 @@
-import { calendarTransformer, eventTransformer, machineryTransformer } from '../transformers/calendar.transformer';
+import {
+  calendarTransformer,
+  eventTransformer,
+  machineryTransformer,
+  availabilityTransformer
+} from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { Conflict_Status, Event_Status, Organization } from '@prisma/client';
 import {
@@ -13,7 +18,9 @@ import {
   FilterArgs,
   Machinery,
   AvailabilityCreateArgs,
-  EventStatus
+  EventStatus,
+  Availability,
+  PersonalAvailability
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -2329,5 +2336,48 @@ export default class CalendarService {
       ...getEventTypeQueryArgs(organization.organizationId)
     });
     return eventTypes.map(eventTypeTransformer);
+  }
+
+  static async getAvailability(eventId: string): Promise<PersonalAvailability[]> {
+    const event = await prisma.event.findUnique({
+      where: { eventId: eventId },
+      include: {
+        requiredMembers: {
+          include: {
+            drScheduleSettings: {
+              include: {
+                availabilities: true
+              }
+            }
+          }
+        },
+        optionalMembers: {
+          include: {
+            drScheduleSettings: {
+              include: {
+                availabilities: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!event) throw new NotFoundException('Event', eventId);
+
+    const personalAvailabilities: PersonalAvailability[] = [];
+
+    [...event.requiredMembers, ...event.optionalMembers].forEach((member) => {
+      if (!member.drScheduleSettings) return;
+
+      personalAvailabilities.push({
+        userId: member.userId,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        availabilities: member.drScheduleSettings.availabilities
+      });
+    });
+
+    return availabilityTransformer(personalAvailabilities);
   }
 }
