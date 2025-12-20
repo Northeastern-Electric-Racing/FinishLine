@@ -19,8 +19,9 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
-import { convertDayToInt } from '../../utils/calendar.utils';
+import { convertDayToInt, getEventsFlattened } from '../../utils/calendar.utils';
 import SchedulingConflictsWarning from './SchedulingConflictsWarning';
+import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -80,6 +81,27 @@ const NewCalendarPage = () => {
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
+
+  // Date range for upcoming meetings (next 7 days)
+  const [upcomingStartPeriod] = useState(() => new Date());
+
+  const [upcomingEndPeriod] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  });
+
+  const { data: upcomingEvents } = useFilterEvents({
+    startPeriod: upcomingStartPeriod,
+    endPeriod: upcomingEndPeriod,
+    memberIds: memberIds.concat(additionalMemberIds),
+    teamIds: teamIds.concat(additionalTeamIds)
+  });
+
+  const upcomingOccurences = upcomingEvents
+    ? getEventsFlattened(upcomingEvents, upcomingStartPeriod, upcomingEndPeriod)
+    : [];
 
   const updateAdditionalTeamIds = (changed: boolean) => {
     setShowTeamEvents(changed);
@@ -339,6 +361,33 @@ const NewCalendarPage = () => {
               startPeriod={startPeriod}
               endPeriod={endPeriod}
             />
+
+            <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 0.5 }}>
+              My Upcoming Meetings:
+            </Typography>
+
+            {upcomingOccurences && (
+              <Box
+                sx={{
+                  mt: 2,
+                  flex: 1,
+                  flexDirection: 'column',
+                  overflowX: 'hidden',
+                  overflowY: 'auto',
+                  scrollbarColor: `${theme.palette.primary.main} transparent`,
+                  maxHeight: 'calc(50%)'
+                }}
+              >
+                {upcomingOccurences?.map((event: Event) => (
+                  <UpcomingMeetingsCard
+                    key={event.eventId}
+                    event={event}
+                    calendars={allCalendars ?? []}
+                    eventTypes={allEventTypes ?? []}
+                  />
+                ))}
+              </Box>
+            )}
           </Box>
         </Box>
 
