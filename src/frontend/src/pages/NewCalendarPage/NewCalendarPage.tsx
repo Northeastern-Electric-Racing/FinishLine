@@ -19,10 +19,11 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
-import { convertIntToDay, getMeetingDates, getOverlapTime } from '../../utils/calendar.utils';
+import { convertIntToDay, getEventsFlattened, getMeetingDates, getOverlapTime } from '../../utils/calendar.utils';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useHistory } from 'react-router-dom';
+import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 
 interface NewCalendarPageProps {
   allEventTypes: EventType[];
