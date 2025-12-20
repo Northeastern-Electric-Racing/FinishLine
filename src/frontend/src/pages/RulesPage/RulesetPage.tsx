@@ -74,6 +74,158 @@ const RulesetPage: React.FC = () => {
       percentRulesAssigned: 10,
       car: 1,
       isActive: true
+    },
+    {
+      id: '3',
+      fileName: 'Hi',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
     }
   ];
 
@@ -147,24 +299,51 @@ const RulesetPage: React.FC = () => {
                             }}
                           />
                         </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                          <NERButton
+                            sx={{
+                              backgroundColor: theme.palette.grey[800],
+                              color: theme.palette.getContrastText(theme.palette.grey[600]),
+                              '&:hover': {
+                                backgroundColor: theme.palette.grey[700]
+                              },
+                              marginRight: '10px',
+                              padding: '4px',
+                              lineHeight: 1,
+                              borderRadius: '6px'
+                            }}
+                          >
+                            Edit/Assign Rules
+                          </NERButton>
+                          <NERButton
+                            sx={{
+                              backgroundColor: theme.palette.grey[800],
+                              color: theme.palette.getContrastText(theme.palette.grey[600]),
+                              '&:hover': {
+                                backgroundColor: theme.palette.grey[700]
+                              },
+                              padding: '4px',
+                              lineHeight: 1,
+                              borderRadius: '6px'
+                            }}
+                          >
+                            View Rules
+                          </NERButton>
+                        </Box>
                       </Box>
                     </CardContent>
                   </Card>
                 ))}
               </Stack>
             ) : (
-              <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-                <Table aria-label="ruleset types">
-                  <TableHead
-                    sx={{
-                      backgroundColor: '#dd514c'
-                    }}
-                  >
+              <TableContainer component={Paper} sx={{ borderRadius: '8px', overflowY: 'auto', maxHeight: '100vh' }}>
+                <Table stickyHeader aria-label="rulesets">
+                  <TableHead>
                     <TableRow>
                       {headCells.map((headCell) => (
                         <TableCell
                           align="center"
-                          sx={{ fontSize: '16px', fontWeight: 600 }}
+                          sx={{ fontSize: '16px', fontWeight: 600, backgroundColor: '#dd514c' }}
                           style={{ paddingLeft: '24px', paddingRight: '0px' }}
                           key={headCell.id}
                         >
@@ -189,7 +368,9 @@ const RulesetPage: React.FC = () => {
                             '&:last-child td, &:last-child th': { border: 0 }
                           }}
                         >
-                          <TableCell align="center">{ruleset.fileName}</TableCell>
+                          <TableCell align="center" sx={{ maxWidth: '20vw' }}>
+                            {ruleset.fileName}
+                          </TableCell>
                           <TableCell align="center">{datePipe(ruleset.dateUploaded)}</TableCell>
                           <TableCell align="center">{ruleset.percentRulesAssigned}%</TableCell>
                           <TableCell align="center">{ruleset.car}</TableCell>
@@ -204,29 +385,35 @@ const RulesetPage: React.FC = () => {
                             />
                           </TableCell>
                           <TableCell align="center">
-                            <Button
+                            <NERButton
                               sx={{
-                                backgroundColor: theme.palette.grey[600],
+                                backgroundColor: theme.palette.grey[800],
                                 color: theme.palette.getContrastText(theme.palette.grey[600]),
                                 '&:hover': {
                                   backgroundColor: theme.palette.grey[700]
                                 },
-                                marginRight: '10px'
+                                marginRight: '10px',
+                                padding: '4px',
+                                lineHeight: 1,
+                                borderRadius: '6px'
                               }}
                             >
                               Edit/Assign Rules
-                            </Button>
-                            <Button
+                            </NERButton>
+                            <NERButton
                               sx={{
-                                backgroundColor: theme.palette.grey[600],
+                                backgroundColor: theme.palette.grey[800],
                                 color: theme.palette.getContrastText(theme.palette.grey[600]),
                                 '&:hover': {
                                   backgroundColor: theme.palette.grey[700]
-                                }
+                                },
+                                padding: '4px',
+                                lineHeight: 1,
+                                borderRadius: '6px'
                               }}
                             >
                               View Rules
-                            </Button>
+                            </NERButton>
                           </TableCell>
                         </TableRow>
                       ))
