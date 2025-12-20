@@ -82,16 +82,10 @@ const NewCalendarPage = () => {
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
 
-<<<<<<< HEAD
   // Date range for upcoming meetings (next 7 days)
   const [upcomingStartPeriod] = useState(() => new Date());
 
   const [upcomingEndPeriod] = useState(() => {
-=======
-  const [startPeriod] = useState(() => new Date());
-
-  const [endPeriod] = useState(() => {
->>>>>>> origin/feature/calendar-improvements
     const d = new Date();
     d.setDate(d.getDate() + 7);
     d.setHours(23, 59, 59, 999);
@@ -99,24 +93,15 @@ const NewCalendarPage = () => {
   });
 
   const { data: upcomingEvents } = useFilterEvents({
-<<<<<<< HEAD
     startPeriod: upcomingStartPeriod,
     endPeriod: upcomingEndPeriod,
-=======
-    startPeriod,
-    endPeriod,
->>>>>>> origin/feature/calendar-improvements
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds)
   });
 
-<<<<<<< HEAD
   const upcomingOccurences = upcomingEvents
     ? getEventsFlattened(upcomingEvents, upcomingStartPeriod, upcomingEndPeriod)
     : [];
-=======
-  const upcomingOccurences = upcomingEvents ? getEventsFlattened(upcomingEvents, startPeriod, endPeriod) : [];
->>>>>>> origin/feature/calendar-improvements
 
   const updateAdditionalTeamIds = (changed: boolean) => {
     setShowTeamEvents(changed);
@@ -401,11 +386,7 @@ const NewCalendarPage = () => {
                   maxHeight: 'calc(50%)'
                 }}
               >
-<<<<<<< HEAD
                 {upcomingOccurences?.map((event: Event) => (
-=======
-                {upcomingOccurences?.map((event) => (
->>>>>>> origin/feature/calendar-improvements
                   <UpcomingMeetingsCard
                     key={event.eventId}
                     event={event}
