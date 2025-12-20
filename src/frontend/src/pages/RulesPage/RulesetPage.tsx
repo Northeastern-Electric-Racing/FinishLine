@@ -10,7 +10,6 @@ import AddNewFileModal from './components/AddNewFileModal';
 import PageLayout from '../../components/PageLayout';
 import {
   Box,
-  Button,
   Typography,
   Paper,
   Table,
