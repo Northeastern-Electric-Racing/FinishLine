@@ -194,4 +194,4 @@ export const availabilityTransformer = (personalAvailabilities: PersonalAvailabi
       availability: av.availability
     }))
   }));
-}
+};

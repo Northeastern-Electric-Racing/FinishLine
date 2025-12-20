@@ -10,7 +10,6 @@ import {
   EventTypeCreateArgs,
   Calendar,
   FilterArgs,
-  Availability,
   PersonalAvailability
 } from 'shared';
 import { eventTransformer, personalAvailabilityTransformer } from './transformers/calendar.transformer';
@@ -173,4 +172,4 @@ export const getAvailability = async (id: string) => {
   return axios.get(apiUrls.calendarGetAvailability(id), {
     transformResponse: (data) => JSON.parse(data).map(personalAvailabilityTransformer) as PersonalAvailability[]
   });
-}
+};

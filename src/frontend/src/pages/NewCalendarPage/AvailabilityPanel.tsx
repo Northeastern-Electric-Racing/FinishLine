@@ -111,11 +111,9 @@ const AvailabilityPanel = ({ event, closePanel }: { event: Event; closePanel: ()
   const onCellSelect = (row: number, col: number) => {
     setCellSelected({ row, col });
     setSelectedAvailableUsers(availabilities[col][row]);
-    const unavailableInCell = unavailableUsers.filter(
-      (user) => !availabilities[col][row].includes(user)
-    );
+    const unavailableInCell = unavailableUsers.filter((user) => !availabilities[col][row].includes(user));
     setSelectedUnavailableUsers(unavailableInCell);
-  }
+  };
 
   const stickyLeft = {
     position: 'sticky',
@@ -287,45 +285,44 @@ const AvailabilityPanel = ({ event, closePanel }: { event: Event; closePanel: ()
           generateCell={(cellDetails) => {
             const { row, col } = cellDetails;
             return (
-              <Box
-                onMouseEnter={() => onCellSelect(row, col)}
-                onMouseLeave={() => setCellSelected(null)}
-                p={0.5}
-              >
+              <Box onMouseEnter={() => onCellSelect(row, col)} onMouseLeave={() => setCellSelected(null)} p={0.5}>
                 <Box
-                sx={{
-                  borderRadius: 1,
-                  bgcolor: `rgba(244, 67, 54, ${(availabilities[col][row].length / totalUsers) * 0.8})`,
-                  width: '100%',
-                  height: '100%',
-                  minHeight: 40,
-                  display: 'flex'
-                }}
-              >
-                <Typography
-                  color="grey.200"
                   sx={{
-                    textAlign: 'center',
-                    justifyContent: 'center',
+                    borderRadius: 1,
+                    bgcolor: `rgba(244, 67, 54, ${(availabilities[col][row].length / totalUsers) * 0.8})`,
                     width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    opacity: 0,
-                    ':hover': { opacity: 1 },
-                    transition: 'opacity 100ms ease-in-out',
-                    userSelect: 'none'
+                    height: '100%',
+                    minHeight: 40,
+                    display: 'flex'
                   }}
                 >
-                  {availabilities[col][row].length} / {totalUsers}
-                </Typography>
-              </Box>
+                  <Typography
+                    color="grey.200"
+                    sx={{
+                      textAlign: 'center',
+                      justifyContent: 'center',
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      opacity: 0,
+                      ':hover': { opacity: 1 },
+                      transition: 'opacity 100ms ease-in-out',
+                      userSelect: 'none'
+                    }}
+                  >
+                    {availabilities[col][row].length} / {totalUsers}
+                  </Typography>
+                </Box>
               </Box>
             );
           }}
         />
         <Box display="flex" justifyContent="left" alignItems="center" height="18%" mt={2} mb={1}>
           <AvailabilityList title="Available Participants" names={cellSelected ? selectedAvailableUsers : availableUsers} />
-          <AvailabilityList title="Unavailable Participants" names={cellSelected ? selectedUnavailableUsers : unavailableUsers} />
+          <AvailabilityList
+            title="Unavailable Participants"
+            names={cellSelected ? selectedUnavailableUsers : unavailableUsers}
+          />
         </Box>
       </Box>
     </Box>

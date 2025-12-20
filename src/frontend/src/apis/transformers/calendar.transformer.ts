@@ -1,4 +1,4 @@
-import { Shop, Event, EventPreview, Availability, PersonalAvailability } from 'shared';
+import { Shop, Event, EventPreview, PersonalAvailability } from 'shared';
 import { userTransformer } from './users.transformers';
 
 export const shopTransformer = (shop: Shop): Shop => {
@@ -29,7 +29,7 @@ export const eventTransformer = (event: Event): Event => {
       ...schedule,
       startTime: schedule.startTime ? new Date(schedule.startTime) : undefined,
       endTime: schedule.endTime ? new Date(schedule.endTime) : undefined
-    })),
+    }))
   };
 };
 
@@ -52,4 +52,4 @@ export const personalAvailabilityTransformer = (personalAvailabilities: Personal
       dateSet: new Date(availability.dateSet)
     }))
   };
-}
+};

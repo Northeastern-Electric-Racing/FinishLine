@@ -360,4 +360,4 @@ export const useGetAvailability = (id: string) => {
       keepPreviousData: true
     }
   );
-}
+};
