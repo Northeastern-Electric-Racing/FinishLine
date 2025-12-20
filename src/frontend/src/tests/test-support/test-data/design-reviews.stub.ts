@@ -87,8 +87,8 @@ export const exampleDesignReviewEvent1: Event = {
       }
     }
   ],
-  documentIds: [],
-  questionDocument: 'https://docs.google.com/document/d/example-questions',
+  documents: [],
+  questionDocumentLink: 'https://docs.google.com/document/d/example-questions',
   description: undefined,
   status: EventStatus.CONFIRMED
 };
@@ -143,8 +143,8 @@ export const exampleDesignReviewEvent2: Event = {
       }
     }
   ],
-  documentIds: [],
-  questionDocument: 'https://docs.google.com/document/d/example-questions-2',
+  documents: [],
+  questionDocumentLink: 'https://docs.google.com/document/d/example-questions-2',
   description: undefined,
   status: EventStatus.CONFIRMED
 };

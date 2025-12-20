@@ -241,14 +241,30 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
               </Typography>
             </Stack>
           )}
-
-          {event.questionDocument && (
+          {event.questionDocumentLink && (
             <Stack direction="row">
               <ArticleIcon />
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-                <Link href={event.questionDocument} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener">
-                  Question Document Link
-                </Link>
+              <Typography
+                marginX={0.5}
+                marginY={0.5}
+                lineHeight={'120%'}
+                fontSize={14}
+                fontWeight="bold"
+                noWrap
+                align="left"
+              >
+                {event.questionDocumentLink ? (
+                  <Link
+                    href={event.questionDocumentLink}
+                    onClick={(e) => e.stopPropagation()}
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Question Document Link
+                  </Link>
+                ) : (
+                  'N/A'
+                )}
               </Typography>
             </Stack>
           )}

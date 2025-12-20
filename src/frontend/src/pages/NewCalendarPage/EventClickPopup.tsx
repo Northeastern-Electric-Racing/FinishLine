@@ -268,12 +268,12 @@ const EventClickContent: React.FC<EventClickContentProps> = ({ event, eventTypes
         )}
 
         {/* Question document */}
-        {hasValue(event.questionDocument) && (
+        {hasValue(event.questionDocumentLink) && (
           <Stack direction="row" spacing={1.25} alignItems="flex-start">
             <ArticleIcon fontSize="small" sx={{ mt: 0.3 }} />
             <Typography variant="body2">
               <b>Question doc:</b>{' '}
-              <Link href={event.questionDocument!} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
+              <Link href={event.questionDocumentLink!} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
                 Question Document Link
               </Link>
             </Typography>

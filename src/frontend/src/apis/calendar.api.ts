@@ -12,6 +12,7 @@ import {
   FilterArgs
 } from 'shared';
 import { eventTransformer } from './transformers/calendar.transformer';
+import { EditEventArgs, EventCreateArgs } from '../hooks/calendar.hooks';
 
 export const getAllCalendars = () => {
   return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
@@ -147,14 +148,14 @@ export const getAllEvents = () => {
   });
 };
 
-export const deleteEvent = async (id: string) => {
-  return axios.delete(apiUrls.calendarDeleteEvent(id));
+export const getAllEventTypes = () => {
+  return axios.get(apiUrls.calendarEventTypes(), {
+    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
+  });
 };
 
-export const getAllEventTypes = () => {
-  return axios.get<EventType[]>(apiUrls.calendarEventTypes(), {
-    transformResponse: (data) => JSON.parse(data) as EventType[]
-  });
+export const deleteEvent = async (id: string) => {
+  return axios.post(apiUrls.calendarDeleteEvent(id));
 };
 
 export const setEventStatus = async (id: string, payload: { status: EventStatus }) => {
@@ -165,4 +166,40 @@ export const setEventStatus = async (id: string, payload: { status: EventStatus 
 
 export const postDeleteCalendar = async (id: string) => {
   return axios.post<Calendar>(apiUrls.calendarDeleteCalendar(id));
+};
+
+export const postCreateEvent = async (payload: EventCreateArgs) => {
+  return axios.post<Event>(apiUrls.calendarCreateEvent(), payload, {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
+};
+
+export const postEditEvent = async (eventId: string, payload: EditEventArgs) => {
+  return axios.post<Event>(apiUrls.calendarEditEvent(eventId), payload, {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
+};
+
+/**
+ * Upload a document
+ *
+ * @param payload Payload containing the document data
+ */
+export const uploadSingleDocument = (file: File, id: string) => {
+  const formData = new FormData();
+  formData.append('pdf', file);
+  return axios.post(apiUrls.calendarUploadDocument(id), formData);
+};
+
+/**
+ * Downloads a PDF file from google drive
+ *
+ * @param fileId the google id of the file to download
+ * @returns the downloaded file as a Blob
+ */
+export const downloadDocumentPdf = async (fileId: string): Promise<Blob> => {
+  const response = await axios.get(apiUrls.calendarPDFById(fileId), {
+    responseType: 'blob' // Simply use 'blob' for PDF downloads
+  });
+  return response.data; // response.data is already a Blob
 };

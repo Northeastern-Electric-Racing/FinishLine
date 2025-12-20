@@ -444,7 +444,7 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
   const location = zoomLink && inPersonLocation ? `${inPersonLocation} and ${zoomLink}` : inPersonLocation || zoomLink || '';
 
   const msg = `:spiral_calendar_pad: Design Review for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
-  const docLink = event.questionDocument ? `<${event.questionDocument}|Doc Link>` : '';
+  const docLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Doc Link>` : '';
   const threadMsg = `The Design Review has been Scheduled! \n` + docLink;
 
   try {
