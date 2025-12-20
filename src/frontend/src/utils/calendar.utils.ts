@@ -72,11 +72,6 @@ export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
   event.scheduledTimes.forEach((schedule) => {
     const specificTime = startTimes ? schedule.startTime : schedule.endTime;
 
-// Get a list of dates for user viewing purposes (formatted to their timezone)
-// Should be used when events need to be populated/displayed
-export const getMeetingDates = (event: Event) => {
-  const times: Date[] = [];
-  event.scheduledTimes.forEach((schedule) => {
     schedule.days.forEach((day) => {
       const startTimeDate = new Date(schedule.initialDateScheduled);
       const timezoneOffset = startTimeDate.getTimezoneOffset() * 60000;
@@ -99,14 +94,6 @@ export const getMeetingDates = (event: Event) => {
       const startDateAdjusted = new Date(startDate.getTime() - timezoneOffset);
 
       // potentially needed to prevent extra events from showing up before the initial date
-      // Note : schedule.startTime likely gets converted to the users timezone by default
-      // set the hour and minutes
-      startDate.setHours(schedule.startTime?.getHours() ?? 0);
-      startDate.setMinutes(schedule.startTime?.getMinutes() ?? 0);
-
-      // adjust for the users time
-      const startDateAdjusted = new Date(startDate.getTime() - timezoneOffset);
-
       times.push(startDateAdjusted);
 
       // add additional events for each recurrence on this day
@@ -148,6 +135,8 @@ export const getOverlapTime = (event1: Event, event2: Event) => {
   }
 
   return overlaps;
+};
+
 // Returns a flat list of event occurrences within a given period
 export const getEventsFlattened = (events: Event[], startPeriod: Date, endPeriod: Date): Event[] => {
   const occurrences: { event: Event; date: Date }[] = [];
