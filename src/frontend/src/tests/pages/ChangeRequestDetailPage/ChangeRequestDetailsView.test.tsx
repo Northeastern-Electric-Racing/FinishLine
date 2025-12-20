@@ -13,7 +13,7 @@ import { mockAuth, mockUseMutationResult, mockUseQueryResult } from '../../test-
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { ToastProvider } from '../../../components/Toast/ToastProvider';
 import * as authHooks from '../../../hooks/auth.hooks';
-import { useAllUsers, useLogUserIn } from '../../../hooks/users.hooks';
+import { useAllMembers, useLogUserIn } from '../../../hooks/users.hooks';
 import * as userHooks from '../../../hooks/users.hooks';
 import {
   mockLogUserInReturnValue,
@@ -30,9 +30,9 @@ const mockSingleProjectHook = (isLoading: boolean, isError: boolean, data?: Proj
   mockedUseSingleProject.mockReturnValue(mockUseQueryResult<Project>(isLoading, isError, data, error));
 };
 
-const mockedUseAllUsers = useAllUsers as jest.Mock<UseQueryResult<User[]>>;
-const mockAllUsersHook = (isLoading: boolean, isError: boolean, data?: User[], error?: Error) => {
-  mockedUseAllUsers.mockReturnValue(mockUseQueryResult<User[]>(isLoading, isError, data, error));
+const mockedUseAllMembers = useAllMembers as jest.Mock<UseQueryResult<User[]>>;
+const mockAllMembersHook = (isLoading: boolean, isError: boolean, data?: User[], error?: Error) => {
+  mockedUseAllMembers.mockReturnValue(mockUseQueryResult<User[]>(isLoading, isError, data, error));
 };
 
 const mockedUseLogUserIn = useLogUserIn as jest.Mock<UseMutationResult>;
@@ -74,7 +74,7 @@ describe('Implement change request permission tests', () => {
 
   it('Implementation actions disabled when not allowed', () => {
     mockSingleProjectHook(false, false, exampleProject1);
-    mockAllUsersHook(false, false, []);
+    mockAllMembersHook(false, false, []);
     mockUseLogUserInHook(false, false);
     renderComponent(exampleStandardChangeRequest);
     fireEvent.click(screen.getByText(actionBtnText));
@@ -84,7 +84,7 @@ describe('Implement change request permission tests', () => {
 
   it('Implementation actions enabled when allowed', () => {
     mockSingleProjectHook(false, false, exampleProject1);
-    mockAllUsersHook(false, false, []);
+    mockAllMembersHook(false, false, []);
     mockUseLogUserInHook(false, false);
     renderComponent(exampleStandardChangeRequest, true);
     fireEvent.click(screen.getByText(actionBtnText));

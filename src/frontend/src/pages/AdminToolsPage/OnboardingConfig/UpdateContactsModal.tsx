@@ -10,7 +10,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import * as yup from 'yup';
 import { useUpdateOrganizationContacts } from '../../../hooks/organizations.hooks'; // Assume hook exists
 import { Contact } from 'shared';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import { fullNamePipe } from '../../../utils/pipes';
 
 const schema = yup.object().shape({
@@ -48,7 +48,7 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
     mutateAsync
   } = useUpdateOrganizationContacts();
 
-  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
+  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllMembers();
 
   const contactsAsObjects = useMemo(
     () =>

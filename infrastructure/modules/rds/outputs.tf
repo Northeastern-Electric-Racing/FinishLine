@@ -1,7 +1,12 @@
 # RDS Module Outputs
 
 output "db_instance_id" {
-  description = "The RDS instance ID"
+  description = "The RDS instance identifier (for CloudWatch metrics)"
+  value       = aws_db_instance.main.identifier
+}
+
+output "db_instance_resource_id" {
+  description = "The RDS instance resource ID (DbiResourceId)"
   value       = aws_db_instance.main.id
 }
 

@@ -21,6 +21,15 @@ export default class UsersController {
     }
   }
 
+  static async getAllMembers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const users = await UsersService.getAllOrgMembers(req.organization.organizationId);
+      res.status(200).json(users);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getCurrentUser(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await UsersService.getCurrentUser(req.currentUser);
