@@ -20,6 +20,7 @@ import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
 import { convertDayToInt, getEventsFlattened } from '../../utils/calendar.utils';
+import SchedulingConflictsWarning from './SchedulingConflictsWarning';
 import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 
 const NewCalendarPage = () => {
@@ -46,14 +47,18 @@ const NewCalendarPage = () => {
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
   const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>(teamList);
 
+  // Date range for filtering events (current month ±1 month)
+  const startPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15);
+  const endPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15);
+
   const {
     isLoading,
     isError,
     error,
     data: allEvents
   } = useFilterEvents({
-    startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
-    endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
+    startPeriod,
+    endPeriod,
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds)
   });
@@ -77,9 +82,10 @@ const NewCalendarPage = () => {
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
   const [openFilterModal, setOpenFilterModal] = useState(false);
 
-  const [startPeriod] = useState(() => new Date());
+  // Date range for upcoming meetings (next 7 days)
+  const [upcomingStartPeriod] = useState(() => new Date());
 
-  const [endPeriod] = useState(() => {
+  const [upcomingEndPeriod] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() + 7);
     d.setHours(23, 59, 59, 999);
@@ -87,13 +93,15 @@ const NewCalendarPage = () => {
   });
 
   const { data: upcomingEvents } = useFilterEvents({
-    startPeriod,
-    endPeriod,
+    startPeriod: upcomingStartPeriod,
+    endPeriod: upcomingEndPeriod,
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds)
   });
 
-  const upcomingOccurences = upcomingEvents ? getEventsFlattened(upcomingEvents, startPeriod, endPeriod) : [];
+  const upcomingOccurences = upcomingEvents
+    ? getEventsFlattened(upcomingEvents, upcomingStartPeriod, upcomingEndPeriod)
+    : [];
 
   const updateAdditionalTeamIds = (changed: boolean) => {
     setShowTeamEvents(changed);
@@ -349,11 +357,18 @@ const NewCalendarPage = () => {
                 '&:hover': {
                   borderColor: 'white',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                }
+                },
+                mb: 2
               }}
             >
               More Filters
             </Button>
+            <SchedulingConflictsWarning
+              memberIds={memberIds.concat(additionalMemberIds)}
+              teamIds={teamIds.concat(additionalTeamIds)}
+              startPeriod={startPeriod}
+              endPeriod={endPeriod}
+            />
 
             <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 0.5 }}>
               My Upcoming Meetings:
@@ -371,7 +386,7 @@ const NewCalendarPage = () => {
                   maxHeight: 'calc(50%)'
                 }}
               >
-                {upcomingOccurences?.map((event) => (
+                {upcomingOccurences?.map((event: Event) => (
                   <UpcomingMeetingsCard
                     key={event.eventId}
                     event={event}
