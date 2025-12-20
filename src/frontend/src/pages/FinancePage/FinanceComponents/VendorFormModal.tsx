@@ -17,7 +17,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Vendor } from 'shared';
 import { EditVendorPayload } from '../../../hooks/finance.hooks';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
@@ -70,7 +70,7 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
     handleClose();
   };
 
-  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
 
   if (!users || usersIsLoading) {
     return <LoadingIndicator />;

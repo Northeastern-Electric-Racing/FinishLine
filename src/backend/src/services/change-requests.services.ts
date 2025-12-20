@@ -280,6 +280,14 @@ export default class ChangeRequestsService {
     if (reviewer.userId === foundCR.submitterId)
       throw new AccessDeniedException("You can't review your own change request!");
 
+    // verify that if there are requested reviewers, the reviewer is one of them
+    if (foundCR.requestedReviewers.length > 0) {
+      const isRequestedReviewer = foundCR.requestedReviewers.some((user) => user.userId === reviewer.userId);
+      if (!isRequestedReviewer) {
+        throw new AccessDeniedException('Only requested reviewers can review this change request!');
+      }
+    }
+
     // ScopeChange Request That Has Been Accepted Being Reviewed
     if (foundCR.scopeChangeRequest && accepted) {
       await this.reviewScopeChangeRequest(foundCR, reviewer, psId, organization);

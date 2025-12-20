@@ -1,7 +1,6 @@
 import { Box, Button, Menu, MenuItem, ListItemIcon, Typography, FormControlLabel, Checkbox } from '@mui/material';
 import { useState } from 'react';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { SearchBar } from '../../components/SearchBar';
 import { NERButton } from '../../components/NERButton';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import WorkIcon from '@mui/icons-material/Work';
@@ -116,7 +115,6 @@ const ReimbursementRequests: React.FC = () => {
     error: allReimbursementRequestsError
   } = useAllReimbursementRequests();
 
-  const [searchText, setSearchText] = useState<string>('');
   const [anchorFilterEl, setAnchorFilterEl] = useState<null | HTMLElement>(null);
   const [selectedStatuses, setSelectedStatuses] = useState<ReimbursementStatusType[]>([]);
   const [startDate, setStartDate] = useState<null | Date>(null);
@@ -230,16 +228,15 @@ const ReimbursementRequests: React.FC = () => {
 
   const SearchAndFilterBar = (
     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, position: 'relative', top: searchOffset }}>
-      <Box sx={{ ml: 'auto', width: { xs: '150px', sm: '200px', md: '250px', zIndex: 2 } }}>
-        <SearchBar placeholder="Search" searchText={searchText} setSearchText={setSearchText} />
+      <Box sx={{ ml: 'auto' }}>
+        <Button color="primary" aria-label="filter" onClick={handleFilterMenuOpen} sx={{ zIndex: 1 }}>
+          <FilterListIcon sx={{ fontSize: { xs: '1.25rem', sm: '2.5rem', zIndex: 2 } }} />
+          <Typography variant="button" sx={{ fontSize: { xs: '0.5rem', sm: '1.200rem', zIndex: 1 } }}>
+            Filters
+          </Typography>
+        </Button>
+        {filterMenu}
       </Box>
-      <Button color="primary" aria-label="filter" onClick={handleFilterMenuOpen} sx={{ zIndex: 1 }}>
-        <FilterListIcon sx={{ fontSize: { xs: '1.25rem', sm: '2.5rem', zIndex: 2 } }} />
-        <Typography variant="button" sx={{ fontSize: { xs: '0.5rem', sm: '1.200rem', zIndex: 1 } }}>
-          Filters
-        </Typography>
-      </Button>
-      {filterMenu}
     </Box>
   );
 
@@ -271,7 +268,6 @@ const ReimbursementRequests: React.FC = () => {
           userReimbursementRequests={createdReimbursementRequests ?? []}
           assignedReimbursementRequests={assignedReimbursementRequests ?? []}
           allReimbursementRequests={allReimbursementRequests ?? []}
-          searchText={searchText}
           statuses={selectedStatuses}
           startDate={startDate}
           endDate={endDate}

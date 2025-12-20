@@ -73,6 +73,8 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
     <>
       <Autocomplete
         isOptionEqualToValue={(option, value) => option.id === value.id}
+        getOptionLabel={(option) => option.label}
+        getOptionKey={(option) => option.id}
         disablePortal
         id={id}
         onChange={onChange}
