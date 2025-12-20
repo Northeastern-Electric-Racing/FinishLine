@@ -25,10 +25,12 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
-import { convertDayToInt } from '../../utils/calendar.utils';
+import { convertDayToInt, getEventsFlattened } from '../../utils/calendar.utils';
 import CreateEventModal from './Components/CreateEventModal';
 import { EventRoutePayload } from './Components/EventModal';
 import { useToast } from '../../hooks/toasts.hooks';
+import SchedulingConflictsWarning from './SchedulingConflictsWarning';
+import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 
 const NewCalendarPage = () => {
   const toast = useToast();
@@ -45,6 +47,8 @@ const NewCalendarPage = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
   const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>([]);
+  const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
+  const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
 
   const {
     data: allTeamTypes,
@@ -74,11 +78,9 @@ const NewCalendarPage = () => {
 
   const teamList = useMemo(() => allTeams?.map((team) => team.teamId) ?? [], [allTeams]);
 
-  useEffect(() => {
-    if (allTeams && additionalTeamIds.length === 0 && showTeamEvents) {
-      setAdditionalTeamIds(teamList);
-    }
-  }, [allTeams, teamList, additionalTeamIds.length, showTeamEvents]);
+  // Date range for filtering events (current month ±1 month)
+  const startPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15);
+  const endPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15);
 
   const {
     isLoading,
@@ -86,14 +88,34 @@ const NewCalendarPage = () => {
     error,
     data: allEvents
   } = useFilterEvents({
-    startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
-    endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
+    startPeriod,
+    endPeriod,
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds)
   });
 
-  const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
-  const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
+  useEffect(() => {
+    if (allTeams && additionalTeamIds.length === 0 && showTeamEvents) {
+      setAdditionalTeamIds(teamList);
+    }
+  }, [allTeams, teamList, additionalTeamIds.length, showTeamEvents]);
+
+  // Date range for upcoming meetings (next 7 days)
+  const [upcomingStartPeriod] = useState(() => new Date());
+
+  const [upcomingEndPeriod] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  });
+
+  const { data: upcomingEvents } = useFilterEvents({
+    startPeriod: upcomingStartPeriod,
+    endPeriod: upcomingEndPeriod,
+    memberIds: memberIds.concat(additionalMemberIds),
+    teamIds: teamIds.concat(additionalTeamIds)
+  });
 
   if (isLoading || !allEvents) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
@@ -106,6 +128,10 @@ const NewCalendarPage = () => {
   if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
   if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
   if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
+
+  const upcomingOccurences = upcomingEvents
+    ? getEventsFlattened(upcomingEvents, upcomingStartPeriod, upcomingEndPeriod)
+    : [];
 
   const updateAdditionalTeamIds = (changed: boolean) => {
     setShowTeamEvents(changed);
@@ -295,7 +321,13 @@ const NewCalendarPage = () => {
             </Button>
           </Stack>
         </Stack>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            height: '100vh'
+          }}
+        >
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Grid container>
               {enumToArray(DAY_NAMES).map((day, index) => (
@@ -347,7 +379,10 @@ const NewCalendarPage = () => {
           </Box>
           <Box
             sx={{
-              width: 320
+              width: 320,
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0
             }}
           >
             <DateCalendar
@@ -383,11 +418,45 @@ const NewCalendarPage = () => {
                 '&:hover': {
                   borderColor: 'white',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                }
+                },
+                mb: 2
               }}
             >
               More Filters
             </Button>
+            <SchedulingConflictsWarning
+              memberIds={memberIds.concat(additionalMemberIds)}
+              teamIds={teamIds.concat(additionalTeamIds)}
+              startPeriod={startPeriod}
+              endPeriod={endPeriod}
+            />
+
+            <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 0.5 }}>
+              My Upcoming Meetings:
+            </Typography>
+
+            {upcomingOccurences && (
+              <Box
+                sx={{
+                  mt: 2,
+                  flex: 1,
+                  flexDirection: 'column',
+                  overflowX: 'hidden',
+                  overflowY: 'auto',
+                  scrollbarColor: `${theme.palette.primary.main} transparent`,
+                  maxHeight: 'calc(50%)'
+                }}
+              >
+                {upcomingOccurences?.map((event: Event) => (
+                  <UpcomingMeetingsCard
+                    key={event.eventId}
+                    event={event}
+                    calendars={allCalendars ?? []}
+                    eventTypes={allEventTypes ?? []}
+                  />
+                ))}
+              </Box>
+            )}
           </Box>
         </Box>
 

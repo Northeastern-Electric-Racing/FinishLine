@@ -7,6 +7,7 @@ import {
   validateInputs,
   isDayOfWeek,
   isEventStatus,
+  isConflictStatus,
   requireFile
 } from '../utils/validation.utils';
 import CalendarController from '../controllers/calendar.controllers';
@@ -269,6 +270,10 @@ calendarRouter.post(
   body('eventIds').isArray().optional(),
   body('eventIds.*').isString().optional(),
   body('approvedEvents').isBoolean().optional(),
+  body('approvalIds').isArray().optional(),
+  body('approvalIds.*').isString().optional(),
+  body('statuses').isArray().optional(),
+  isConflictStatus(body('statuses.*')),
   isDate(body('startPeriod')),
   isDate(body('endPeriod')),
   validateInputs,
