@@ -8,14 +8,7 @@ import PageLayout from '../../components/PageLayout';
 import { Calendar, ConflictStatus, DayOfWeek, Event, EventType } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import {
-  useConflictingEvents,
-  useAllCalendars,
-  useFilterEvents,
-  useAllEventTypes,
-  useCreateEvent,
-  useUploadManyDocuments
-} from '../../hooks/calendar.hooks';
+import { useConflictingEvents, useFilterEvents, useCreateEvent, useUploadManyDocuments } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -197,7 +190,8 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
     conflictingDeniedEventsLoading ||
     !conflictingDeniedEvents ||
     conflictingReviewEventsLoading ||
-    !conflictingReviewEvents
+    !conflictingReviewEvents ||
+    documentsIsLoading
   )
     return <LoadingIndicator />;
 
