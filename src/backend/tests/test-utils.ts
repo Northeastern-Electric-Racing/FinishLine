@@ -613,7 +613,6 @@ export const createTestDesignReviewEvent = async () => {
     [], // shopIds
     [], // machineryIds
     [testWorkPackage.workPackageId], // workPackageIds
-    [], // documentIds
     [
       {
         days: [DayOfWeek.TUESDAY],

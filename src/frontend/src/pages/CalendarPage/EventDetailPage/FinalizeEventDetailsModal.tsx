@@ -63,7 +63,7 @@ const FinalizeEventDetailsModal = ({
   );
 
   const defaultValues = {
-    docTemplateLink: event.questionDocument ?? '',
+    docTemplateLink: event.questionDocumentLink ?? '',
     zoomLink: event.zoomLink ?? userScheduleSettings?.personalZoomLink ?? '',
     location: event.location ?? undefined
   };
@@ -92,7 +92,7 @@ const FinalizeEventDetailsModal = ({
   useEffect(() => {
     if (userScheduleSettings && !event.zoomLink) {
       reset({
-        docTemplateLink: event.questionDocument ?? '',
+        docTemplateLink: event.questionDocumentLink ?? '',
         zoomLink: userScheduleSettings.personalZoomLink ?? '',
         location: event.location ?? undefined
       });

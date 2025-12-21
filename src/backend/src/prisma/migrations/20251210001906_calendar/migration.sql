@@ -56,6 +56,20 @@ CREATE TABLE "public"."Schedule_Slot" (
 );
 
 -- CreateTable
+CREATE TABLE "Document" (
+    "documentId" TEXT NOT NULL,
+    "googleFileId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "deletedByUserId" TEXT,
+    "dateDeleted" TIMESTAMP(3),
+    "createdByUserId" TEXT NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "documentEventId" TEXT NOT NULL,
+
+    CONSTRAINT "Document_pkey" PRIMARY KEY ("documentId")
+);
+
+-- CreateTable
 CREATE TABLE "public"."Event" (
     "eventId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -68,8 +82,7 @@ CREATE TABLE "public"."Event" (
     "approvalRequiredFromUserId" TEXT,
     "location" TEXT,
     "zoomLink" TEXT,
-    "documentIds" TEXT[],
-    "questionDocument" TEXT,
+    "questionDocumentLink" TEXT,
     "description" TEXT,
     "teamTypeId" TEXT,
     "calendarEventIds" TEXT[],
@@ -217,6 +230,21 @@ CREATE INDEX "_confirmedEventAttendee_B_index" ON "public"."_confirmedEventAtten
 
 -- CreateIndex
 CREATE INDEX "_deniedEventAttendee_B_index" ON "public"."_deniedEventAttendee"("B");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Document_googleFileId_key" ON "Document"("googleFileId");
+
+-- CreateIndex
+CREATE INDEX "Document_documentEventId_idx" ON "Document"("documentEventId");
+
+-- AddForeignKey
+ALTER TABLE "Document" ADD CONSTRAINT "Document_deletedByUserId_fkey" FOREIGN KEY ("deletedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Document" ADD CONSTRAINT "Document_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Document" ADD CONSTRAINT "Document_documentEventId_fkey" FOREIGN KEY ("documentEventId") REFERENCES "Event"("eventId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_requiredEventAttendee" ADD CONSTRAINT "_requiredEventAttendee_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -474,8 +502,7 @@ INSERT INTO "public"."Event" (
     "approvalRequiredFromUserId",
     "location",
     "zoomLink",
-    "documentIds",
-    "questionDocument",
+    "questionDocumentLink",
     "description",
     "status",
     "teamTypeId",
@@ -497,7 +524,6 @@ SELECT
     NULL, -- approvalRequiredFromUserId (not in Design_Review)
     dr."location",
     dr."zoomLink",
-    CASE WHEN dr."docTemplateLink" IS NOT NULL THEN ARRAY[dr."docTemplateLink"] ELSE ARRAY[]::TEXT[] END,
     dr."docTemplateLink", -- questionDocument uses docTemplateLink
     NULL, -- description (not in Design_Review)
     dr."status"::"text"::"public"."Event_Status",

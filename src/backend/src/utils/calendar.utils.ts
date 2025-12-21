@@ -1,5 +1,5 @@
 import { Prisma, Event_Type, Organization } from '@prisma/client';
-import { User, ScheduleSlotCreateArgs, Event, ConflictStatus } from 'shared';
+import { User, ScheduleSlotCreateArgs, Event, EventDocumentCreateArgs, Document, ConflictStatus } from 'shared';
 import { InvalidEventTypeConfigurationException } from './errors.utils';
 import prisma from '../prisma/prisma';
 import { getEventQueryArgs } from '../prisma-query-args/event.query-args';
@@ -38,15 +38,19 @@ export function validateEventTypeConfiguration(
     shopIds: string[];
     machineryIds: string[];
     workPackageIds: string[];
-    documentIds: string[];
+    documents: EventDocumentCreateArgs[];
     scheduleSlot: ScheduleSlotCreateArgs[];
     teamTypeId?: string;
     location?: string;
     zoomLink?: string;
-    questionDocument?: string;
+    questionDocumentLink?: string;
     description?: string;
   }
 ): void {
+  const requiresLocationOrZoom = eventType.location || eventType.zoomLink;
+
+  const missingBoth = !eventData.location && !eventData.zoomLink;
+
   // Check required fields
   if (eventType.requiredMembers && eventData.requiredMemberIds.length === 0) {
     throw new InvalidEventTypeConfigurationException('at least one required member');
@@ -54,13 +58,13 @@ export function validateEventTypeConfiguration(
   if (eventType.teamType && !eventData.teamTypeId) {
     throw new InvalidEventTypeConfigurationException('a team type');
   }
-  if ((eventType.location && !eventData.location) || (eventType.zoomLink && !eventData.zoomLink)) {
+  if (requiresLocationOrZoom && missingBoth) {
     throw new InvalidEventTypeConfigurationException('a location or zoom link');
   }
   if (eventType.workPackage && eventData.workPackageIds.length === 0) {
     throw new InvalidEventTypeConfigurationException('at least one work package');
   }
-  if (eventType.questionDocument && !eventData.questionDocument) {
+  if (eventType.questionDocument && !eventData.questionDocumentLink) {
     throw new InvalidEventTypeConfigurationException('a question document');
   }
   if (eventData.scheduleSlot.length === 0) {
@@ -89,10 +93,10 @@ export function validateEventTypeConfiguration(
   if (!eventType.workPackage && eventData.workPackageIds.length > 0) {
     throw new InvalidEventTypeConfigurationException('Event type does not allow work packages');
   }
-  if (!eventType.questionDocument && eventData.questionDocument) {
+  if (!eventType.questionDocument && eventData.questionDocumentLink) {
     throw new InvalidEventTypeConfigurationException('Event type does not allow a question document');
   }
-  if (!eventType.documents && eventData.documentIds.length > 0) {
+  if (!eventType.documents && eventData.documents.length > 0) {
     throw new InvalidEventTypeConfigurationException('Event type does not allow documents');
   }
   if (!eventType.description && eventData.description) {
@@ -191,3 +195,28 @@ export async function checkEventConflicts(
 
   return { hasConflict: false };
 }
+
+/**
+ * This function removes any deleted documents and adds any new documents
+ * @param documents the new list of documents to compare against the old ones
+ * @param currentDocuments the current list of documents on the event that's being edited
+ */
+export const removeDeletedEventDocuments = async (
+  newDocuments: EventDocumentCreateArgs[],
+  currentDocuments: Document[],
+  submitter: User
+) => {
+  if (currentDocuments.length === 0) return;
+  const deletedDocuments = currentDocuments.filter(
+    (currentDocument) => !newDocuments.find((document) => document.googleFileId === currentDocument.googleFileId)
+  );
+
+  //mark any deleted documents as deleted in the database
+  await prisma.document.updateMany({
+    where: { documentId: { in: deletedDocuments.map((document) => document.documentId) } },
+    data: {
+      dateDeleted: new Date(),
+      deletedByUserId: submitter.userId
+    }
+  });
+};

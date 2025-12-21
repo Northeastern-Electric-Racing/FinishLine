@@ -264,3 +264,12 @@ export const financeDashboardFilterValidators = [
   nonEmptyString(query('endDate')).optional(),
   nonEmptyString(query('carNumber')).optional()
 ];
+
+export const requireFile = (chain: ValidationChain): ValidationChain => {
+  return chain.custom((_value, { req }) => {
+    if (!req.file) {
+      throw new Error('Invalid or undefined document data');
+    }
+    return true;
+  });
+};

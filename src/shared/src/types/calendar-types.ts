@@ -1,5 +1,20 @@
 import { User, UserWithScheduleSettings } from './user-types';
 
+export interface EventDocumentCreateArgs {
+  googleFileId: string;
+  name: string;
+}
+
+export interface EventDocumentUploadArgs extends EventDocumentCreateArgs {
+  file?: File;
+}
+
+export interface Document {
+  documentId: string;
+  googleFileId: string;
+  name: string;
+}
+
 export interface ShopPreview {
   shopId: string;
   name: string;
@@ -182,8 +197,8 @@ export interface Event {
   shops: ShopPreview[];
   machinery: MachineryPreview[];
   workPackages: WorkPackageCalendarPreview[];
-  documentIds: string[];
-  questionDocument?: string;
+  documents: Document[];
+  questionDocumentLink?: string;
   description?: string;
   status: EventStatus;
 }

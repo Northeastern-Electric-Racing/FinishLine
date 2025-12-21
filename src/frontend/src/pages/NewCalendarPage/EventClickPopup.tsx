@@ -308,7 +308,7 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
         )}
 
         {/* Question document */}
-        {hasValue(event.questionDocument) && (
+        {hasValue(event.questionDocumentLink) && (
           <Stack direction="row" spacing={1.25} alignItems="flex-start">
             <ArticleIcon fontSize="small" sx={{ mt: 0.3 }} />
             <Typography variant="body2">
@@ -318,9 +318,28 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
                   Question Document Link
                 </Typography>
               ) : (
-                <Link href={event.questionDocument!} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
-                  Question Document Link
-                </Link>
+                <Typography
+                  marginX={0.5}
+                  marginY={0.5}
+                  lineHeight={'120%'}
+                  fontSize={14}
+                  fontWeight="bold"
+                  noWrap
+                  align="left"
+                >
+                  {event.questionDocumentLink ? (
+                    <Link
+                      href={event.questionDocumentLink}
+                      onClick={(e) => e.stopPropagation()}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      Question Document Link
+                    </Link>
+                  ) : (
+                    'N/A'
+                  )}
+                </Typography>
               )}
             </Typography>
           </Stack>
