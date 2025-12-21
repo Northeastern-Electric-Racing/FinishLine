@@ -191,6 +191,7 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleOpenAddMenu = (ruleId: string, anchorEl: HTMLElement) => {
+    // man i sure hope this gets tests to run on my branch hahahaha
     if (showAddMenu && addMenuAnchorEl === anchorEl) {
       handleCloseAddMenu();
       return;
