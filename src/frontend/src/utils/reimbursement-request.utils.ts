@@ -206,7 +206,8 @@ export const createReimbursementRequestRowData = (reimbursementRequest: Reimburs
     submitter: reimbursementRequest.recipient,
     vendor: reimbursementRequest.vendor,
     refundSource: reimbursementRequest.indexCode,
-    financeMemberAssigned: reimbursementRequest.assignee
+    financeMemberAssigned: reimbursementRequest.assignee,
+    reimbursementProducts: reimbursementRequest.reimbursementProducts
   };
 };
 

@@ -5,7 +5,7 @@ import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
-import { useAllUsers } from '../../hooks/users.hooks';
+import { useAllMembers } from '../../hooks/users.hooks';
 import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
 import { DesignReviewStatus } from 'shared';
 
@@ -13,7 +13,7 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: allTeams, isLoading: teamsIsLoading, isError: teamsIsError, error: teamsError } = useAllTeams();
-  const { data: allUsers, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  const { data: allMembers, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const {
     data: allDesignReviews,
     isLoading: designReviewsIsLoading,
@@ -21,13 +21,13 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
     error: designReviewsError
   } = useAllDesignReviews();
 
-  if (!allTeams || teamsIsLoading || !allUsers || usersIsLoading || !allDesignReviews || designReviewsIsLoading)
+  if (!allTeams || teamsIsLoading || !allMembers || usersIsLoading || !allDesignReviews || designReviewsIsLoading)
     return <LoadingIndicator />;
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;
   if (designReviewsIsError) return <ErrorPage message={designReviewsError.message} />;
 
-  const filteredMembers = allUsers.filter((member) =>
+  const filteredMembers = allMembers.filter((member) =>
     fullNamePipe(member).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
