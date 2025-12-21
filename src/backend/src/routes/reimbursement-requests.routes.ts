@@ -19,7 +19,12 @@ import { MAX_FILE_SIZE } from 'shared';
 
 const reimbursementRequestsRouter = express.Router();
 
-const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
+const upload = multer({
+  storage: memoryStorage(),
+  limits: {
+    fileSize: MAX_FILE_SIZE
+  }
+});
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
