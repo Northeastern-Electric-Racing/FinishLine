@@ -14,6 +14,9 @@ import RuleActions from './RuleActions';
 import { Rule } from 'shared';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import AddRuleSectionModal from './components/AddRuleSectionModal';
+import AddRuleModal from './components/AddRuleModal';
+import { AddRuleBox } from './components/AddRuleBox';
 
 /**
  * Placeholder hook to fetch a single ruleset.
@@ -160,6 +163,14 @@ const RulesetEditPage: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const defaultTab = 'edit-rules';
 
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [addMenuAnchorEl, setAddMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [activeRuleId, setActiveRuleId] = useState<string | null>(null);
+
+  // temporary placeholder useState fns for the add rule section and add rule modals
+  const [showAddRuleSectionModal, setShowAddRuleSectionModal] = useState(false);
+  const [showAddRuleModal, setShowAddRuleModal] = useState(false);
+
   const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
 
   const tabs = [
@@ -179,9 +190,31 @@ const RulesetEditPage: React.FC = () => {
     // Placeholder
   };
 
-  const handleAddRule = (ruleId: string) => {
-    // Placeholder
-    console.log('Add rule to:', ruleId);
+  const handleOpenAddMenu = (ruleId: string, anchorEl: HTMLElement) => {
+    if (showAddMenu && addMenuAnchorEl === anchorEl) {
+      handleCloseAddMenu();
+      return;
+    }
+
+    setActiveRuleId(ruleId);
+    setAddMenuAnchorEl(anchorEl);
+    setShowAddMenu(true);
+  };
+
+  const handleCloseAddMenu = () => {
+    setShowAddMenu(false);
+    setAddMenuAnchorEl(null);
+  };
+
+  const handleAddRuleSectionFromMenu = () => {
+    setShowAddRuleSectionModal(true);
+    handleCloseAddMenu();
+  };
+
+  const handleAddRuleFromMenu = () => {
+    console.log('Add rule to:', activeRuleId);
+    setShowAddRuleModal(true);
+    handleCloseAddMenu();
   };
 
   const handleRemoveRule = (ruleId: string) => {
@@ -226,7 +259,7 @@ const RulesetEditPage: React.FC = () => {
                       rightContent={(currentRule) => (
                         <RuleActions
                           ruleId={currentRule.ruleId}
-                          onAdd={handleAddRule}
+                          onAdd={handleOpenAddMenu}
                           onRemove={handleRemoveRule}
                           onEdit={handleEditRule}
                           iconColor="#000000"
@@ -242,6 +275,17 @@ const RulesetEditPage: React.FC = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+
+            <AddRuleBox
+              open={showAddMenu}
+              anchorEl={addMenuAnchorEl}
+              onClose={handleCloseAddMenu}
+              onAddRuleSection={handleAddRuleSectionFromMenu}
+              onAddRule={handleAddRuleFromMenu}
+            />
+
+            <AddRuleSectionModal open={showAddRuleSectionModal} onClose={() => setShowAddRuleSectionModal(false)} />
+            <AddRuleModal open={showAddRuleModal} onClose={() => setShowAddRuleModal(false)} />
 
             <Box
               sx={{
