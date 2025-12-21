@@ -111,7 +111,7 @@ const AvailabilityPanel = ({ event, closePanel }: { event: Event; closePanel: ()
   const onCellSelect = (row: number, col: number) => {
     setCellSelected({ row, col });
     setSelectedAvailableUsers(availabilities[col][row]);
-    const unavailableInCell = unavailableUsers.filter((user) => !availabilities[col][row].includes(user));
+    const unavailableInCell = availableUsers.filter((user) => !availabilities[col][row].includes(user));
     setSelectedUnavailableUsers(unavailableInCell);
   };
 
