@@ -2,13 +2,20 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, Alert } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { Calendar, ConflictStatus, DayOfWeek, Event, EventType } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useConflictingEvents, useFilterEvents } from '../../hooks/calendar.hooks';
+import {
+  useConflictingEvents,
+  useAllCalendars,
+  useFilterEvents,
+  useAllEventTypes,
+  useCreateEvent,
+  useUploadManyDocuments
+} from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -20,6 +27,9 @@ import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
 import { convertIntToDay, getEventsFlattened, getMeetingDates, getOverlapTime } from '../../utils/calendar.utils';
+import CreateEventModal from './Components/CreateEventModal';
+import { EventRoutePayload } from './Components/EventModal';
+import { useToast } from '../../hooks/toasts.hooks';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useHistory } from 'react-router-dom';
@@ -33,6 +43,7 @@ interface NewCalendarPageProps {
 }
 
 const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEvents, reviewEvents, allCalendars }) => {
+  const toast = useToast();
   const theme = useTheme();
   const {
     data: allTeamTypes,
@@ -41,19 +52,30 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
     error: allTeamTypesError
   } = useAllTeamTypes();
 
-  const [memberIds, setMemberIds] = useState<string[]>([]);
-  const [teamIds, setTeamIds] = useState<string[]>([]);
-  const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
-  const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
-
-  const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
-  const { data: allTeams, isLoading: allTeamsLoading, isError: allTeamsIsError, error: allTeamsError } = useGetUsersTeams();
-
-  const teamList = allTeams?.map((team) => team.teamId) ?? [];
   const user = useCurrentUser();
 
+  const [memberIds, setMemberIds] = useState<string[]>([]);
+  const [teamIds, setTeamIds] = useState<string[]>([]);
+  const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
+  const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
+  const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
+  const [selectedEvent, setSelectedEvent] = useState<Event>();
+  const [openFilterModal, setOpenFilterModal] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
-  const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>(teamList);
+  const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>([]);
+  const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
+  const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const { data: allTeams, isLoading: allTeamsLoading, isError: allTeamsIsError, error: allTeamsError } = useGetUsersTeams();
+
+  const teamList = useMemo(() => allTeams?.map((team) => team.teamId) ?? [], [allTeams]);
+
+  useEffect(() => {
+    if (allTeams && additionalTeamIds.length === 0 && showTeamEvents) {
+      setAdditionalTeamIds(teamList);
+    }
+  }, [allTeams, teamList, additionalTeamIds.length, showTeamEvents]);
 
   const {
     isLoading,
@@ -69,10 +91,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   });
 
   const history = useHistory();
-  const [selectedEvent, setSelectedEvent] = useState<Event>();
-  const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
-  const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
-  const [openFilterModal, setOpenFilterModal] = useState(false);
+
   const [pendingEvent, setPendingEvent] = useState(
     yourEvents.filter((event) => event.approved === ConflictStatus.PENDING).length > 0
   );
@@ -116,6 +135,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   } = useConflictingEvents(yourReviewEvents.map((event) => event.eventId));
 
   const conflictingReviewEvents = untransformedConflictingReviewEvents?.map(filterEventTransformer);
+
+  const { mutateAsync: createEvent } = useCreateEvent();
+  const { isLoading: documentsIsLoading, mutateAsync: uploadDocuments } = useUploadManyDocuments();
 
   const [startPeriod] = useState(() => new Date());
 
@@ -178,6 +200,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
     !conflictingReviewEvents
   )
     return <LoadingIndicator />;
+
   if (isError) return <ErrorPage message={error.message} />;
   if (conflictingEventsIsError) return <ErrorPage message={conflictingEventsError.message} />;
   if (conflictingDeniedEventsIsError) return <ErrorPage message={conflictingDeniedEventsError.message} />;
@@ -238,6 +261,48 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
   if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
 
+  const handleCreateEvent = async (data: EventRoutePayload) => {
+    try {
+      const { scheduleSlot, documentFiles, ...eventData } = data;
+
+      if (!scheduleSlot || scheduleSlot.length === 0) {
+        throw new Error('Missing scheduleSlot');
+      }
+
+      // Create the event first without documents
+      const createArgs = {
+        ...eventData,
+        documentIds: [],
+        scheduleSlot: scheduleSlot.map((slot) => ({
+          days: slot.days,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          recurrenceNumber: slot.recurrenceNumber,
+          initialDateScheduled: slot.initialDateScheduled,
+          allDay: slot.allDay
+        }))
+      };
+
+      const createdEvent = await createEvent(createArgs);
+
+      const filesToUpload = documentFiles.map((doc) => doc.file).filter((file): file is File => file !== undefined);
+
+      if (filesToUpload.length > 0) {
+        await uploadDocuments({
+          id: createdEvent.eventId,
+          files: filesToUpload
+        });
+      }
+
+      toast.success('Event created successfully!');
+      setIsCreateModalOpen(false);
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    }
+  };
+
   return (
     <>
       {selectedEvent && (
@@ -248,6 +313,15 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
           }}
           event={selectedEvent as Event}
           teamTypes={allTeamTypes}
+        />
+      )}
+      {isCreateModalOpen && (
+        <CreateEventModal
+          open={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={handleCreateEvent}
+          eventTypes={allEventTypes}
+          defaultDate={displayMonthYear}
         />
       )}
       <Stack
@@ -370,7 +444,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             <Button
               variant="contained"
               disableElevation
-              onClick={() => {}}
+              onClick={() => setIsCreateModalOpen(true)}
               endIcon={<AddCircleOutlineIcon sx={{ fontSize: { xs: 24, sm: 30 } }} />}
               sx={{
                 flexShrink: 0,
