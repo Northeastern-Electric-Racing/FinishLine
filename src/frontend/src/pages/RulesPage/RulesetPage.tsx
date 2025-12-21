@@ -2,156 +2,39 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import { Box, Button, Paper, Table, TableBody, TableContainer } from '@mui/material';
-import { useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
-import PageLayout from '../../components/PageLayout';
-import FullPageTabs from '../../components/FullPageTabs';
+import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import RuleRow from './RuleRow';
-import RuleActions from './RuleActions';
-import { Rule } from 'shared';
-import ErrorPage from '../ErrorPage';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import React from 'react';
-import AddNewFileModal from './components/AddNewFileModal';
 import { NERButton } from '../../components/NERButton';
-/**
- * Placeholder hook to fetch a single ruleset.
- * @param rulesetId - The ID of the ruleset to fetch.
- * @returns The ruleset data.
- */
-export const useSingleRuleset = (rulesetId: string) => {
-  const placeholderRules: Rule[] = [
-    {
-      ruleId: '1',
-      ruleCode: 'GR - General Regulations',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '2',
-      ruleCode: 'AD - Administrative Regulations',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '3',
-      ruleCode: 'DR - Document Requirements',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '4',
-      ruleCode: 'V - Vehicle Requirements',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: ['5', '6', '7'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '5',
-      ruleCode: 'V.1 - Configuration',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '6',
-      ruleCode: 'V.2 - Driver',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '7',
-      ruleCode: 'V.3 - Suspension and Steering',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
-      subRuleIds: ['8', '9'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '8',
-      ruleCode: 'V.3.1 - Suspension',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '9',
-      ruleCode: 'V.3.2 - Steering',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
-      subRuleIds: ['10', '11', '12'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '10',
-      ruleCode: 'V.3.2.1',
-      ruleContent:
-        'Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line',
-      imageFileIds: [],
-      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '11',
-      ruleCode: 'V.3.2.2',
-      ruleContent: 'Electrically actuated steering of the front wheels is prohibited',
-      imageFileIds: [],
-      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '12',
-      ruleCode: 'V.3.2.3',
-      ruleContent:
-        'Steering systems must use a rigid mechanical linkage capable of tension and compression loads for operation',
-      imageFileIds: [],
-      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '13',
-      ruleCode: 'F - Chassis and Structural',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: [],
-      referencedRuleIds: []
-    }
-  ];
+import AddNewFileModal from './components/AddNewFileModal';
+import PageLayout from '../../components/PageLayout';
+import {
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  useMediaQuery,
+  useTheme,
+  Card,
+  CardContent,
+  Stack,
+  Checkbox
+} from '@mui/material';
+import { datePipe } from '../../utils/pipes';
 
-  return {
-    data: { name: 'FSAE Original Version', rulesetId, rules: placeholderRules },
-    isLoading: false,
-    isError: false,
-    error: undefined
-  };
-};
+interface RulesetRow {
+  id: string;
+  fileName: string;
+  dateUploaded: Date;
+  percentRulesAssigned: number;
+  car: number;
+  isActive: boolean;
+}
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
@@ -159,158 +42,426 @@ export const useSingleRuleset = (rulesetId: string) => {
  */
 const RulesetPage: React.FC = () => {
   const history = useHistory();
-  // testing for AddNewFileModal
+  const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Table header configuration
+  const headCells = [
+    { id: 'fileName', label: 'File Name' },
+    { id: 'dateUploaded', label: 'Date Uploaded' },
+    { id: 'percentRulesAssigned', label: '% of Rules Assigned' },
+    { id: 'car', label: 'Car' },
+    { id: 'isActive', label: 'Active?' },
+    { id: 'actions', label: 'Actions' }
+  ];
+
+  // Mock data for now - will be replaced with ruleset data
+  const mockRulesets: RulesetRow[] = [
+    {
+      id: '1',
+      fileName: 'FSAE Original Version',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '2',
+      fileName: 'FSAE Revision 1',
+      dateUploaded: new Date('2025-02-25'),
+      percentRulesAssigned: 10,
+      car: 1,
+      isActive: true
+    },
+    {
+      id: '3',
+      fileName: 'Hi',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    },
+    {
+      id: '3',
+      fileName: 'Hi ',
+      dateUploaded: new Date('2025-02-24'),
+      percentRulesAssigned: 80,
+      car: 1,
+      isActive: false
+    }
+  ];
+
   const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
     setAddFileModalShow(false);
     console.log('Added data: ' + data); // delete this later, once data is used properly
   };
 
-  const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
-  const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>();
-  const [tabValue, setTabValue] = useState(0);
-  const defaultTab = 'edit-rules';
-
-  const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
-
-  const tabs = [
-    { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
-    { tabUrlValue: 'assign-rules', tabName: 'Assign Rules' }
-  ];
-
-  if (isError) {
-    return <ErrorPage error={error} />;
-  }
-
-  if (isLoading || !ruleset) {
-    return <LoadingIndicator />;
-  }
-
-  const handleAddRuleSection = () => {
-    // Placeholder
-  };
-
-  const handleAddRule = (ruleId: string) => {
-    // Placeholder
-    console.log('Add rule to:', ruleId);
-  };
-
-  const handleRemoveRule = (ruleId: string) => {
-    // Placeholder
-    console.log('Remove rule:', ruleId);
-  };
-
-  const handleEditRule = (ruleId: string) => {
-    // Placeholder
-    console.log('Edit rule:', ruleId);
-  };
-
-  // Filter to only show top-level rules
-  const topLevelRules = ruleset.rules.filter((rule) => !rule.parentRule);
-
-  const headerRight = (
-    <NERButton onClick={() => history.push(`${routes.RULES}/${rulesetId}/view`)}>MOCK View Rules</NERButton>
-  );
-
   return (
-    <PageLayout
-      title={`${ruleset.name} Rules`}
-      headerRight={headerRight}
-      tabs={
-        <Box sx={{ width: 'fit-content', mt: 2 }}>
-          <FullPageTabs
-            setTab={setTabValue}
-            tabsLabels={tabs}
-            baseUrl={`${routes.RULES}/${rulesetId}`}
-            defaultTab={defaultTab}
-            id="rules-tabs"
-          />
-        </Box>
-      }
-    >
-      <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
-        {tabValue === 0 ? (
-          <Box sx={{ paddingBottom: '100px' }}>
-            <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-              <Table sx={{ borderCollapse: 'collapse' }}>
-                <TableBody sx={{ backgroundColor: '#9d9d9d' }}>
-                  {topLevelRules.map((rule) => (
-                    <RuleRow
-                      key={rule.ruleId}
-                      rule={rule}
-                      allRules={ruleset.rules}
-                      rightContent={(currentRule) => (
-                        <RuleActions
-                          ruleId={currentRule.ruleId}
-                          onAdd={handleAddRule}
-                          onRemove={handleRemoveRule}
-                          onEdit={handleEditRule}
-                          iconColor="#000000"
-                        />
-                      )}
-                      backgroundColor="#9d9d9d"
-                      textColor="#000000"
-                      hoverColor="#5e5e5e"
-                      rowHeight="10px"
-                      verticalPadding="5px"
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
+    <>
+      {/* Breadcrumb Placeholder */}
+      <Typography variant="body2" sx={{ color: '#999', mb: 1 }}>
+        Rules / FSAE Ruleset
+      </Typography>
+      <PageLayout title="Rulesets">
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 120px)' }}>
+          <Box sx={{ flexGrow: 1 }}>
+            {isMobile ? (
+              <Stack spacing={2} sx={{ px: 1 }}>
+                {mockRulesets.map((ruleset) => (
+                  <Card
+                    key={ruleset.id}
+                    sx={{
+                      backgroundColor: '#121313',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}
+                  >
+                    <CardContent>
+                      <Typography variant="h6" sx={{ color: '#dd514c', fontWeight: 600, mb: 2 }}>
+                        {ruleset.fileName}
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="body2" sx={{ color: '#999' }}>
+                            Date Uploaded:
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#ededed' }}>
+                            {datePipe(ruleset.dateUploaded)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="body2" sx={{ color: '#999' }}>
+                            % of Rules Assigned:
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#ededed' }}>
+                            {ruleset.percentRulesAssigned}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="body2" sx={{ color: '#999' }}>
+                            Car:
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#ededed' }}>
+                            {ruleset.car}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="body2" sx={{ color: '#999' }}>
+                            Active:
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#ededed' }}>
+                            {ruleset.isActive}
+                          </Typography>
+                          <Checkbox
+                            checked={ruleset.isActive}
+                            disabled // Read-only for now
+                            sx={{
+                              color: '#fff',
+                              '&.Mui-checked': { color: '#dd514c' }
+                            }}
+                          />
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                          <NERButton
+                            sx={{
+                              backgroundColor: theme.palette.grey[800],
+                              color: theme.palette.getContrastText(theme.palette.grey[600]),
+                              '&:hover': {
+                                backgroundColor: theme.palette.grey[700]
+                              },
+                              marginRight: '10px',
+                              padding: '4px',
+                              lineHeight: 1,
+                              borderRadius: '6px'
+                            }}
+                          >
+                            Edit/Assign Rules
+                          </NERButton>
+                          <NERButton
+                            sx={{
+                              backgroundColor: theme.palette.grey[800],
+                              color: theme.palette.getContrastText(theme.palette.grey[600]),
+                              '&:hover': {
+                                backgroundColor: theme.palette.grey[700]
+                              },
+                              padding: '4px',
+                              lineHeight: 1,
+                              borderRadius: '6px'
+                            }}
+                          >
+                            View Rules
+                          </NERButton>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Stack>
+            ) : (
+              <TableContainer component={Paper} sx={{ borderRadius: '8px', overflowY: 'auto', maxHeight: '100vh' }}>
+                <Table stickyHeader aria-label="rulesets">
+                  <TableHead>
+                    <TableRow>
+                      {headCells.map((headCell) => (
+                        <TableCell
+                          align="center"
+                          sx={{ fontSize: '16px', fontWeight: 600, backgroundColor: '#dd514c' }}
+                          style={{ paddingLeft: '24px', paddingRight: '0px' }}
+                          key={headCell.id}
+                        >
+                          {headCell.label}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody sx={{ backgroundColor: '#121313' }}>
+                    {/* Table rows with ruleset data */}
+                    {mockRulesets.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} align="center" sx={{ color: '#999', padding: '15px' }}>
+                          No Rulesets Found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      mockRulesets.map((ruleset) => (
+                        <TableRow
+                          key={ruleset.id}
+                          sx={{
+                            '&:last-child td, &:last-child th': { border: 0 }
+                          }}
+                        >
+                          <TableCell align="center" sx={{ maxWidth: '20vw' }}>
+                            {ruleset.fileName}
+                          </TableCell>
+                          <TableCell align="center">{datePipe(ruleset.dateUploaded)}</TableCell>
+                          <TableCell align="center">{ruleset.percentRulesAssigned}%</TableCell>
+                          <TableCell align="center">{ruleset.car}</TableCell>
+                          <TableCell align="center">
+                            <Checkbox
+                              checked={ruleset.isActive}
+                              disabled // Read-only for now
+                              sx={{
+                                color: '#fff',
+                                '&.Mui-checked': { color: '#dd514c' }
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align="center">
+                            <NERButton
+                              sx={{
+                                backgroundColor: theme.palette.grey[800],
+                                color: theme.palette.getContrastText(theme.palette.grey[600]),
+                                '&:hover': {
+                                  backgroundColor: theme.palette.grey[700]
+                                },
+                                marginRight: '10px',
+                                padding: '4px',
+                                lineHeight: 1,
+                                borderRadius: '6px'
+                              }}
+                            >
+                              Edit/Assign Rules
+                            </NERButton>
+                            <NERButton
+                              sx={{
+                                backgroundColor: theme.palette.grey[800],
+                                color: theme.palette.getContrastText(theme.palette.grey[600]),
+                                '&:hover': {
+                                  backgroundColor: theme.palette.grey[700]
+                                },
+                                padding: '4px',
+                                lineHeight: 1,
+                                borderRadius: '6px'
+                              }}
+                            >
+                              View Rules
+                            </NERButton>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </Box>
+          <Box
+            sx={{
+              backgroundColor: '#121313',
+              position: 'sticky',
+              bottom: 0,
+              zIndex: 2,
+              width: '100%',
+              px: { xs: 1, md: 0 }
+            }}
+          >
             <Box
               sx={{
-                backgroundColor: '#121313',
-                position: 'fixed',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                width: '100%'
+                borderBottom: '2px solid white',
+                mb: 2
+              }}
+            />
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: { xs: 'center', md: 'flex-end' }
               }}
             >
-              <Box
-                sx={{
-                  borderBottom: '2px solid white',
-                  mb: 2,
-                  ml: '30px'
-                }}
+              {/* Add New File Button */}
+              <NERButton variant="contained" onClick={() => setAddFileModalShow(!AddFileModalShow)}>
+                Add New File
+              </NERButton>
+              <AddNewFileModal
+                open={AddFileModalShow}
+                onHide={() => setAddFileModalShow(false)}
+                onConfirm={handleFileConfirm}
+                carOptions={['1', '2']}
               />
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 1 }}>
-                <Button
-                  variant="contained"
-                  onClick={handleAddRuleSection}
-                  sx={{
-                    borderRadius: '8px',
-                    color: '#ededed',
-                    backgroundColor: '#dd514c',
-                    padding: '2px 15px',
-                    fontSize: '16px',
-                    fontWeight: 700,
-                    textTransform: 'none',
-                    '&:hover': {
-                      backgroundColor: '#c74340'
-                    }
-                  }}
-                >
-                  Add Rule Section
-                </Button>
-                <NERButton variant="contained" onClick={() => setAddFileModalShow(!AddFileModalShow)}>
-                  Add New File
-                </NERButton>
-                <AddNewFileModal
-                  open={AddFileModalShow}
-                  onHide={() => setAddFileModalShow(false)}
-                  onConfirm={handleFileConfirm}
-                  carOptions={['1', '2']}
-                />
-              </Box>
+              <NERButton onClick={() => history.push(`${routes.RULES}/placeholder_ruleset_id/edit`)}>
+                MOCK edit/assign rules
+              </NERButton>
             </Box>
           </Box>
-        ) : (
-          <Box>{/* Assign Rules tab content will be added in a future ticket */}</Box>
-        )}
-      </Box>
-    </PageLayout>
+        </Box>
+      </PageLayout>
+    </>
   );
 };
 
