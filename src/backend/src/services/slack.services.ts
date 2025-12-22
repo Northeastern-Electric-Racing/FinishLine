@@ -1,9 +1,10 @@
 import { getChannelName, getUserName } from '../integrations/slack';
 import AnnouncementService from './announcement.services';
-import { Announcement } from 'shared';
+import { Announcement, ReimbursementStatusType } from 'shared';
 import prisma from '../prisma/prisma';
 import { blockToMentionedUsers, blockToString } from '../utils/slack.utils';
-import { NotFoundException } from '../utils/errors.utils';
+import { InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
+import ReimbursementRequestService from './reimbursement-requests.services';
 
 /**
  * Represents a slack event for a message in a channel.
@@ -67,63 +68,97 @@ export interface SlackRichTextBlock {
 }
 
 /**
- * Represents a Slack interactive payload from a button click
+ * Represents a Slack block action body structure.
+ * The general structure is validated in routes, while action-specific fields
+ * (action_id and value format) are validated in controllers.
  */
-export interface SlackInteractivePayload {
-  type: string;
+export interface SlackBlockActionBody {
+  type: 'block_actions';
   user: {
     id: string;
     username: string;
     name: string;
+    team_id: string;
   };
-  actions: Array<{
-    action_id: string;
-    value: string;
+  api_app_id: string;
+  token: string;
+  container: {
     type: string;
-  }>;
+    message_ts: string;
+    channel_id: string;
+    is_ephemeral: boolean;
+    thread_ts?: string; // Optional - if present, the message is in a thread
+  };
+  trigger_id: string;
+  team: {
+    id: string;
+    domain: string;
+  };
+  enterprise: null | {
+    id: string;
+    name: string;
+  };
+  is_enterprise_install: boolean;
+  channel: {
+    id: string;
+    name: string;
+  };
+  state: {
+    values: Record<string, any>;
+  };
   response_url: string;
+  actions: Array<{
+    action_id: string; // Validated in controller, not routes
+    block_id: string;
+    text?: any;
+    value: string; // Validated for format in controller, not routes
+    style?: string;
+    type: string;
+    action_ts: string;
+  }>;
+}
+
+/**
+ * Represents the parsed value from a SABO submission action
+ */
+export interface SaboSubmissionActionValue {
+  reimbursementRequestId: string;
 }
 
 export default class SlackServices {
   /**
-   * Handles the Slack button click for marking a reimbursement request as SABO submitted
-   * @param payload the Slack interactive payload
-   * @param organizationId the organization ID
+   * Handles the Slack button click for marking a reimbursement request as SABO submitted.
+   * This performs the business logic for processing the SABO submission confirmation.
+   *
+   * @param userSlackId The Slack user ID of the user who clicked the button
+   * @param teamSlackId The Slack team ID (workspace ID) where the action occurred
+   * @param reimbursementRequestId The ID of the reimbursement request to mark as submitted
+   * @param interactiveMessageTs The timestamp of the interactive message (to delete after processing)
    */
-  static async handleSaboSubmittedAction(payload: SlackInteractivePayload): Promise<void> {
-    const [action] = payload.actions;
-    if (action.action_id !== 'sabo_submitted_confirmation') {
-      console.log('Ignoring action with id:', action.action_id);
-      return;
-    }
-
-    console.log('Processing sabo_submitted_confirmation action');
-    const { reimbursementRequestId } = JSON.parse(action.value);
-    const slackUserId = payload.user.id;
-
-    console.log('Looking up user with slack ID:', slackUserId);
-    console.log('Reimbursement Request ID:', reimbursementRequestId);
-
+  static async handleSaboSubmittedAction(userSlackId: string, reimbursementRequestId: string): Promise<void> {
     // Find the user by their slack ID
     const user = await prisma.user.findFirst({
       where: {
         userSettings: {
-          slackId: slackUserId
+          slackId: userSlackId
         }
       }
     });
 
     if (!user) {
-      console.error('User not found for slack ID:', slackUserId);
-      throw new NotFoundException('User', slackUserId);
+      console.error('User not found for slack ID:', userSlackId);
+      throw new NotFoundException('User', userSlackId);
     }
 
+    // Find the reimbursement request
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: {
         reimbursementRequestId
       },
       include: {
-        organization: true
+        organization: true,
+        reimbursementStatuses: true,
+        notificationSlackThreads: true
       }
     });
 
@@ -131,9 +166,30 @@ export default class SlackServices {
       throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
     }
 
+    // Verify that the user's organization matches the reimbursement request's organization
+    const userOrganization = await prisma.user.findFirst({
+      where: {
+        userId: user.userId
+      },
+      include: {
+        organizations: true
+      }
+    });
 
-    // Import the service dynamically to avoid circular dependencies
-    const ReimbursementRequestService = (await import('./reimbursement-requests.services')).default;
+    const hasAccess = userOrganization?.organizations.some(
+      (org) => org.organizationId === reimbursementRequest.organizationId
+    );
+
+    if (!hasAccess) {
+      throw new InvalidOrganizationException('Reimbursement Request');
+    }
+
+    // If the reimbursement request has already been submitted to SABO, just return (message will be deleted by route)
+    if (
+      reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
+    ) {
+      return;
+    }
 
     // Call the service function to mark as SABO submitted
     await ReimbursementRequestService.markReimbursementRequestAsSaboSubmitted(

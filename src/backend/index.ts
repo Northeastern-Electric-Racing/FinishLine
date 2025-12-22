@@ -25,6 +25,7 @@ import statisticsRouter from './src/routes/statistics.routes';
 import retrospectiveRouter from './src/routes/retrospective.routes';
 import partsRouter from './src/routes/parts.routes';
 import financeRouter from './src/routes/finance.routes';
+import './src/routes/slack.routes';
 
 const app = express();
 

@@ -1,6 +1,6 @@
-import { getWorkspaceId } from '../integrations/slack';
+import { getWorkspaceId, replyToMessageInThread } from '../integrations/slack';
 import OrganizationsService from '../services/organizations.services';
-import SlackServices from '../services/slack.services';
+import SlackServices, { SlackBlockActionBody, SaboSubmissionActionValue } from '../services/slack.services';
 
 export default class SlackController {
   static async processMessageEvent(event: any) {
@@ -16,40 +16,70 @@ export default class SlackController {
     }
   }
 
-  static async handleSaboSubmittedAction(body: any) {
-    try {
-      // Extract action details from Bolt's BlockAction payload
-      const [action] = body.actions;
+  /**
+   * Handles the Slack block action for SABO submission confirmation.
+   * Performs action-specific validation and extracts relevant fields from the Slack action body.
+   * If validation fails, replies to the user in Slack with an error message.
+   *
+   * @param body The validated Slack block action body (general structure validated in routes)
+   */
+  static async handleSaboSubmittedAction(body: SlackBlockActionBody) {
+    const { user, container, actions } = body;
+    const channelId = container.channel_id;
+    const threadTs = container.thread_ts || container.message_ts;
+    const [firstAction] = actions;
 
-      if (action.type !== 'button') {
-        // ignore non-button actions for sab submission confirmation
+    try {
+      // Action-specific validation: verify action_id
+      if (firstAction.action_id !== 'sabo_submitted_confirmation') {
+        console.error('Unexpected action_id:', firstAction.action_id);
+        await replyToMessageInThread(
+          channelId,
+          threadTs,
+          `❌ An error occurred: Unexpected action type "${firstAction.action_id}". Please contact the software team.`
+        );
         return;
       }
 
-      const payload = {
-        type: body.type,
-        user: {
-          id: body.user.id,
-          username: body.user.username,
-          name: body.user.name
-        },
-        actions: [
-          {
-            action_id: action.action_id,
-            value: action.value || '',
-            type: action.type
-          }
-        ],
-        response_url: body.response_url
-      };
+      // Action-specific validation: verify value format
+      let actionValue: SaboSubmissionActionValue;
+      try {
+        actionValue = JSON.parse(firstAction.value);
+      } catch (parseError) {
+        const parseErrorMsg = parseError instanceof Error ? parseError.message : 'Unknown parse error';
+        await replyToMessageInThread(
+          channelId,
+          threadTs,
+          `❌ An error occurred: Invalid action data format.\n\n*Error:* ${parseErrorMsg}\n*Value:* \`${firstAction.value}\`\n\nPlease contact the software team.`
+        );
+        return;
+      }
 
-      // Handle the action using existing service
-      await SlackServices.handleSaboSubmittedAction(payload);
+      // Validate that reimbursementRequestId exists in the parsed value
+      if (!actionValue.reimbursementRequestId || typeof actionValue.reimbursementRequestId !== 'string') {
+        const actionValueStr = JSON.stringify(actionValue, null, 2);
+        await replyToMessageInThread(
+          channelId,
+          threadTs,
+          `❌ An error occurred: Missing or invalid reimbursement request ID.\n\n*Parsed value:*\n\`\`\`${actionValueStr}\`\`\`\n\nPlease contact the software team.`
+        );
+        return;
+      }
+
+      // Extract validated fields
+      const userSlackId = user.id;
+      const { reimbursementRequestId } = actionValue;
+
+      // Pass the extracted fields to the service layer for business logic
+      await SlackServices.handleSaboSubmittedAction(userSlackId, reimbursementRequestId);
     } catch (error: unknown) {
-      console.error('Error handling Slack interactive action:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error details:', errorMessage);
-      throw error; // Re-throw to be handled by Bolt's error handler
+      await replyToMessageInThread(
+        channelId,
+        threadTs,
+        `❌ An unexpected error occurred while processing your request.\n\n*Error message:* ${errorMessage}\n\nPlease contact the software team and provide them with this information.`
+      );
+      throw error;
     }
   }
 }
