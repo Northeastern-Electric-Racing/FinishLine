@@ -238,51 +238,28 @@ export const getWorkspaceId = async () => {
   }
 };
 
-export async function sendEphemeralConfirmation(
+/**
+ * Sends a slack ephemeral message to a user
+ * @param channelId - the channel id of the channel to send to
+ * @param threadTs - the timestamp of the thread to send to
+ * @param userId - the id of the user to send to
+ * @param text - the text of the message to send (should always be populated in case blocks can't be rendered, but if blocks render text will not)
+ * @param blocks - the blocks of the message to send
+ */
+export async function sendEphemeralMessage(
   channelId: string,
   threadTs: string,
   userId: string,
-  reimbursementRequestId: string
+  text: string,
+  blocks: any[]
 ) {
   try {
     await slack.chat.postEphemeral({
       channel: channelId,
       user: userId,
       thread_ts: threadTs,
-      text: 'Approve the request on concur and then click the button below to mark it as submitted on Finishline.',
-      blocks: [
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: 'Approve the request on concur and then click the button below to mark it as submitted on Finishline.'
-          }
-        },
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: '<https://us2.concursolutions.com/home|*Click here to go to concur*>'
-          }
-        },
-        {
-          type: 'actions',
-          elements: [
-            {
-              type: 'button',
-              text: {
-                type: 'plain_text',
-                text: "✓ I've approved the request on Concur"
-              },
-              style: 'primary',
-              action_id: 'sabo_submitted_confirmation',
-              value: JSON.stringify({
-                reimbursementRequestId
-              })
-            }
-          ]
-        }
-      ]
+      text,
+      blocks
     });
   } catch (err: unknown) {
     if (err instanceof Error) {

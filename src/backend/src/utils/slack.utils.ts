@@ -16,7 +16,7 @@ import {
   getUsersInChannel,
   reactToMessage,
   replyToMessageInThread,
-  sendEphemeralConfirmation,
+  sendEphemeralMessage,
   sendMessage
 } from '../integrations/slack';
 import { getUserSlackId, getUserSlackMentionOrName } from './users.utils';
@@ -246,7 +246,45 @@ export const sendPendingSaboSubmissionNotification = async (
   const userId = await getUserSlackId(financeUserId);
   if (threads && threads.length !== 0 && userId) {
     const msgs = threads.map((thread) =>
-      sendEphemeralConfirmation(thread.channelId, thread.timestamp, userId, reimbursementRequestId)
+      sendEphemeralMessage(
+        thread.channelId,
+        thread.timestamp,
+        userId,
+        'Approve the request on concur and then click the button below to mark it as submitted on Finishline.',
+        [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: 'Approve the request on concur and then click the button below to mark it as submitted on Finishline.'
+            }
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: '<https://us2.concursolutions.com/home|*Click here to go to concur*>'
+            }
+          },
+          {
+            type: 'actions',
+            elements: [
+              {
+                type: 'button',
+                text: {
+                  type: 'plain_text',
+                  text: "✓ I've approved the request on Concur"
+                },
+                style: 'primary',
+                action_id: 'sabo_submitted_confirmation',
+                value: JSON.stringify({
+                  reimbursementRequestId
+                })
+              }
+            ]
+          }
+        ]
+      )
     );
     await Promise.all(msgs);
   }
