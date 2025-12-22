@@ -209,7 +209,6 @@ export default class WorkPackagesService {
         .map((element) => element.wbsElement.workPackageNumber)
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
-    // Parse the startDate to UTC midnight (frontend handles timezone formatting)
     const date = toUtcMidnight(startDate);
 
     const changesToCreate = crId
@@ -342,7 +341,6 @@ export default class WorkPackagesService {
 
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
 
-    // Parse new startDate to UTC midnight (frontend handles timezone formatting)
     const normalizedEdit = toUtcMidnight(startDate);
     const changes = await getWorkPackageChanges(
       originalWorkPackage.wbsElement.name,
