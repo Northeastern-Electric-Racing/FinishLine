@@ -41,7 +41,7 @@ describe('activate work package modal container test suite', () => {
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
     vi.spyOn(userHooks, 'useLogUserIn').mockReturnValue(mockLogUserInReturnValue);
     vi.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
-    vi.spyOn(userHooks, 'useAllUsers').mockReturnValue(mockUseAllUsersReturnValue(exampleAllUsers));
+    vi.spyOn(userHooks, 'useAllMembers').mockReturnValue(mockUseAllUsersReturnValue(exampleAllUsers));
   });
 
   it('renders component without crashing', () => {

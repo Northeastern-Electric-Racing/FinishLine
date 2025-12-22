@@ -8,6 +8,7 @@ const userRouter = express.Router();
 
 userRouter.get('/', UsersController.getAllUsers);
 userRouter.get('/organization', UsersController.getAllOrgUsers);
+userRouter.get('/members', UsersController.getAllMembers);
 userRouter.post(
   '/scheduleSettings',
   body('userIds').isArray(),

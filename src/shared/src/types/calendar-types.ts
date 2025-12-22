@@ -1,5 +1,20 @@
 import { User, UserWithScheduleSettings } from './user-types';
 
+export interface EventDocumentCreateArgs {
+  googleFileId: string;
+  name: string;
+}
+
+export interface EventDocumentUploadArgs extends EventDocumentCreateArgs {
+  file?: File;
+}
+
+export interface Document {
+  documentId: string;
+  googleFileId: string;
+  name: string;
+}
+
 export interface ShopPreview {
   shopId: string;
   name: string;
@@ -47,6 +62,13 @@ export enum DayOfWeek {
   SUNDAY = 'SUNDAY'
 }
 
+export enum ConflictStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  DENIED = 'DENIED',
+  NO_CONFLICT = 'NO_CONFLICT'
+}
+
 export interface Calendar {
   calendarId: string;
   name: string;
@@ -83,9 +105,10 @@ export interface FilterArgs {
   calendarIds?: string[];
   eventTypeIds?: string[];
   eventIds?: string[];
-  approvalStatus?: boolean;
-  startPeriod?: Date;
-  endPeriod?: Date;
+  statuses?: ConflictStatus[];
+  approvalIds?: string[];
+  startPeriod: Date;
+  endPeriod: Date;
 }
 
 export interface EventType {
@@ -157,7 +180,7 @@ export interface Machinery {
 export interface Event {
   eventId: string;
   title: string;
-  approved: boolean;
+  approved: ConflictStatus;
   userCreated: UserWithScheduleSettings;
   dateCreated: Date;
   eventTypeId: string;
@@ -174,8 +197,8 @@ export interface Event {
   shops: ShopPreview[];
   machinery: MachineryPreview[];
   workPackages: WorkPackageCalendarPreview[];
-  documentIds: string[];
-  questionDocument?: string;
+  documents: Document[];
+  questionDocumentLink?: string;
   description?: string;
   status: EventStatus;
 }

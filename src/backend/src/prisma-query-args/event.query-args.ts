@@ -56,6 +56,7 @@ export const getEventQueryArgs = (organizationId: string) =>
       },
       approvalRequiredBy: getUserQueryArgs(organizationId),
       scheduledTimes: true,
-      notificationSlackThreads: true
+      notificationSlackThreads: true,
+      documents: true
     }
   });

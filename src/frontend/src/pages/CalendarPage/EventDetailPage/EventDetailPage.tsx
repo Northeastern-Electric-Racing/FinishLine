@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import PageLayout from '../../../components/PageLayout';
 import AvailabilityView from './AvailabilityView';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
@@ -71,7 +71,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ event }) => {
       : 1
   );
 
-  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
+  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allMembers } = useAllMembers();
   const {
     data: allEvents,
     isError: allEventsIsError,
@@ -81,9 +81,9 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ event }) => {
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allEventsIsError) return <ErrorPage message={allEventsError?.message} />;
-  if (allUsersIsLoading || !allUsers || allEventsIsLoading || !allEvents) return <LoadingIndicator />;
+  if (allUsersIsLoading || !allMembers || allEventsIsLoading || !allEvents) return <LoadingIndicator />;
 
-  const users = allUsers.map(userToAutocompleteOption);
+  const users = allMembers.map(userToAutocompleteOption);
 
   const handleDateChange = (newDate: Date | null) => {
     if (newDate) {

@@ -1,4 +1,9 @@
-import { Prisma, DayOfWeek as PrismaDayOfWeek, Event_Status as PrismaEventStatus } from '@prisma/client';
+import {
+  Prisma,
+  DayOfWeek as PrismaDayOfWeek,
+  Event_Status as PrismaEventStatus,
+  Conflict_Status as PrismaConflictStatus
+} from '@prisma/client';
 import {
   Machinery,
   Shop,
@@ -9,7 +14,9 @@ import {
   ScheduleSlot,
   EventStatus,
   EventPreview,
-  DayOfWeek
+  DayOfWeek,
+  ConflictStatus,
+  Document
 } from 'shared';
 import { MachineryQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer';
@@ -17,6 +24,10 @@ import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 import { EventQueryArgs } from '../prisma-query-args/event.query-args';
 import { ShopQueryArgs } from '../prisma-query-args/shop.query-args';
+
+export const documentTransformer = (document: Prisma.DocumentGetPayload<null>): Document => {
+  return { documentId: document.documentId, googleFileId: document.googleFileId, name: document.name };
+};
 
 export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Shop => {
   return {
@@ -117,13 +128,13 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     shops: event.shops,
     machinery: event.machinery,
     workPackages: event.workPackages,
-    documentIds: event.documentIds,
+    documents: event.documents.filter((document) => !document.dateDeleted).map(documentTransformer),
     scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer),
-    approved: event.approved,
+    approved: conflictStatusTransformer(event.approved),
     approvalRequiredFrom: event.approvalRequiredBy ?? undefined,
     location: event.location ?? undefined,
     zoomLink: event.zoomLink ?? undefined,
-    questionDocument: event.questionDocument ?? undefined,
+    questionDocumentLink: event.questionDocumentLink ?? undefined,
     description: event.description ?? undefined,
     status: eventStatusTransformer(event.status)
   };
@@ -152,6 +163,16 @@ export const dayOfWeekTransformer = (day: PrismaDayOfWeek): DayOfWeek => {
     FRIDAY: DayOfWeek.FRIDAY,
     SATURDAY: DayOfWeek.SATURDAY,
     SUNDAY: DayOfWeek.SUNDAY
+  };
+  return mapping[day];
+};
+
+export const conflictStatusTransformer = (day: PrismaConflictStatus): ConflictStatus => {
+  const mapping: Record<PrismaConflictStatus, ConflictStatus> = {
+    APPROVED: ConflictStatus.APPROVED,
+    PENDING: ConflictStatus.PENDING,
+    DENIED: ConflictStatus.DENIED,
+    NO_CONFLICT: ConflictStatus.NO_CONFLICT
   };
   return mapping[day];
 };

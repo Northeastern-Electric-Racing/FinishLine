@@ -15,6 +15,7 @@ const API_URL: string = import.meta.env.VITE_REACT_APP_BACKEND_URL || 'http://lo
 /**************** Users Endpoints ****************/
 const users = () => `${API_URL}/users`;
 const orgUsers = () => `${users()}/organization`;
+const orgMembers = () => `${users()}/members`;
 const usersById = (id: string) => `${users()}/${id}`;
 const usersLogin = () => `${users()}/auth/login`;
 const usersLoginDev = () => `${users()}/auth/login/dev`;
@@ -444,6 +445,7 @@ const calendarShops = () => `${calendar()}/shops`;
 const calendarEvents = () => `${calendar()}/events`;
 const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
+const calendarFilterEvents = () => `${calendar()}/events/filter`;
 const calendarMachinery = () => `${calendar()}/machinery`;
 const calendarCreateMachinery = () => `${calendar()}/machinery/create`;
 const calendarEditMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/edit`;
@@ -462,7 +464,10 @@ const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
 const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
-const calendarFilterEvents = () => `${calendar()}/events/filter`;
+const calendarCreateEvent = () => `${calendar()}/event/create`;
+const calendarEditEvent = (eventId: string) => `${calendar()}/event/${eventId}/edit`;
+const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
+const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -470,6 +475,7 @@ const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing
 export const apiUrls = {
   users,
   orgUsers,
+  orgMembers,
   usersById,
   usersLogin,
   usersLoginDev,
@@ -778,6 +784,7 @@ export const apiUrls = {
   calendarEventMarkUserConfirmed,
   calendarGetSingleEvent,
   calendarEvents,
+  calendarEventTypes,
   calendarDeleteEvent,
   calendarEventSetStatus,
   calendarDeleteShop,
@@ -785,10 +792,13 @@ export const apiUrls = {
   calendarCreateCalendar,
   calendarEditCalendar,
   calendarCalendars,
-  calendarEventTypes,
   calendarCreateEventType,
   calendarEditEventType,
+  calendarCreateEvent,
+  calendarUploadDocument,
+  calendarPDFById,
   calendarDeleteEventType,
+  calendarEditEvent,
 
   version
 };

@@ -23,7 +23,8 @@ import {
   getCurrentUser,
   logUserOut,
   getManyUsersWithScheduleSettings,
-  getAllOrgUsers
+  getAllOrgUsers,
+  getAllOrgMembers
 } from '../apis/users.api';
 import {
   User,
@@ -57,6 +58,16 @@ export const useCurrentUser = (): AuthenticatedUser => {
 export const useAllUsers = () => {
   return useQuery<UserWithRole[], Error>(['users'], async () => {
     const { data } = await getAllOrgUsers();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply all members (members and up in the current org)
+ */
+export const useAllMembers = () => {
+  return useQuery<UserWithRole[], Error>(['users', 'members'], async () => {
+    const { data } = await getAllOrgMembers();
     return data;
   });
 };

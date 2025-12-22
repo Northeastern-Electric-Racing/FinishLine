@@ -194,7 +194,7 @@ export default class NotificationsService {
       const messageBlock = events
         .map((event) => {
           const zoomLink = event.zoomLink ? `<${event.zoomLink}|Zoom Link>\n` : '';
-          const questionDocLink = event.questionDocument ? `<${event.questionDocument}|Question Doc Link>\n` : '';
+          const questionDocLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Question Doc Link>\n` : '';
 
           // Get work package names for this event
           const workPackageNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');

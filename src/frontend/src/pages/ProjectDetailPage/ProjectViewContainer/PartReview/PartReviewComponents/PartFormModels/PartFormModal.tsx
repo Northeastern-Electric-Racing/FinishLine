@@ -11,7 +11,7 @@ import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
 import ErrorPage from '../../../../../ErrorPage';
 import LoadingIndicator from '../../../../../../components/LoadingIndicator';
-import { useAllUsers } from '../../../../../../hooks/users.hooks';
+import { useAllMembers } from '../../../../../../hooks/users.hooks';
 import CreatePartTagModal from '../../../../../AdminToolsPage/ProjectsConfig/CreatePartTagModal';
 import AddIcon from '@mui/icons-material/Add';
 
@@ -94,7 +94,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
   };
 
   const { data: tags, isLoading: tagsLoading, isError: tagsIsError, error: tagsError } = useGetAllPartTags();
-  const { data: users, isLoading: usersLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  const { data: users, isLoading: usersLoading, isError: usersIsError, error: usersError } = useAllMembers();
   if (tagsIsError) return <ErrorPage message={tagsError?.message} />;
   if (usersIsError) return <ErrorPage message={usersError?.message} />;
   if (tagsLoading || !tags || usersLoading || !users) return <LoadingIndicator />;

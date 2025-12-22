@@ -211,7 +211,10 @@ export default class DesignReviewsService {
           }
         } catch (err: unknown) {
           if (err instanceof Error) {
-            throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+            if (!err.message.includes('channel_not_found') && !err.message.includes('is_archived')) {
+              // don't throw if slack id not found because sometimes users put the wrong slack id in or leave workspace
+              throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+            }
           }
         }
       }
