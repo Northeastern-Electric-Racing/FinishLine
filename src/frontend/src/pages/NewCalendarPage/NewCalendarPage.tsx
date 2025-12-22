@@ -135,18 +135,6 @@ const NewCalendarPage = () => {
     teamIds: teamIds.concat(additionalTeamIds)
   });
 
-  if (isLoading || !allEvents) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error.message} />;
-  if (allEventTypesLoading || !allEventTypes) return <LoadingIndicator />;
-  if (allEventTypesIsError) return <ErrorPage message={allEventTypesError?.message} />;
-  if (documentsIsLoading) return <LoadingIndicator />;
-  if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
-  if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
-  if (!allCalendars || allCalendarsLoading) return <LoadingIndicator />;
-  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
-  if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
-  if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
-
   const upcomingOccurences = upcomingEvents
     ? getEventsFlattened(upcomingEvents, upcomingStartPeriod, upcomingEndPeriod)
     : [];
@@ -184,6 +172,18 @@ const NewCalendarPage = () => {
       setAdditionalMemberIds([]);
     }
   };
+
+  if (isLoading || !allEvents) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error.message} />;
+  if (allEventTypesLoading || !allEventTypes) return <LoadingIndicator />;
+  if (allEventTypesIsError) return <ErrorPage message={allEventTypesError?.message} />;
+  if (documentsIsLoading) return <LoadingIndicator />;
+  if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
+  if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
+  if (!allCalendars || allCalendarsLoading) return <LoadingIndicator />;
+  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
+  if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
+  if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
 
   // Sort events by their first occurrence's start time
   const sortedEvents = [...allEvents].sort((event1, event2) => {
