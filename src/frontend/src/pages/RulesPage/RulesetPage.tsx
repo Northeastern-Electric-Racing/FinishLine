@@ -4,12 +4,6 @@
  */
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import RuleRow from './RuleRow';
-import RuleActions from './RuleActions';
-import AssignRulesTab from './AssignRulesTab';
-import { Rule } from 'shared';
-import ErrorPage from '../ErrorPage';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import React from 'react';
 import { NERButton } from '../../components/NERButton';
 import AddNewFileModal from './components/AddNewFileModal';
