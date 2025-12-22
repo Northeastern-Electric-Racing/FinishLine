@@ -94,7 +94,6 @@ slackApp.action('sabo_submitted_confirmation', async ({ ack, body, logger, respo
   await ack();
 
   try {
-
     // Validate the incoming action body structure
     if (!validateSlackActionBody(body)) {
       logger.error('Invalid Slack action body structure');

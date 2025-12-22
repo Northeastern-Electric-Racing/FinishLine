@@ -8,7 +8,7 @@ const receiver = new ExpressReceiver({
 
 // Initialize the Bolt app
 const slackApp = new App({
-  token: process.env.SLACK_BOT_TOKEN,
+  token: process.env.SLACK_BOT_TOKEN || '',
   receiver
 });
 
