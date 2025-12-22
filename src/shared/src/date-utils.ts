@@ -17,6 +17,18 @@ export const toUtcMidnight = (input: string): Date => {
 };
 
 /**
+ * Converts a Date object to UTC midnight, preserving the calendar day in the user's timezone
+ * @param date - The Date object from DatePicker (in user's local timezone)
+ * @returns Date object representing the selected day at UTC midnight
+ */
+export const dateToUtcMidnight = (date: Date): Date => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  return dayjs.utc().year(year).month(month).date(day).startOf('day').toDate();
+};
+
+/**
  * @param utcDate - The UTC date from the database
  * @returns Date string in local timezone (YYYY-MM-DD format)
  */

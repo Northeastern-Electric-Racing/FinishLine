@@ -19,7 +19,7 @@ import TotalAmountSpentModal from '../FinanceComponents/TotalAmountSpentModal';
 import { DatePicker } from '@mui/x-date-pickers';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import WorkIcon from '@mui/icons-material/Work';
-import { isAdmin } from 'shared';
+import { isAdmin, dateToUtcMidnight } from 'shared';
 import { useGetAllCars } from '../../../hooks/cars.hooks';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 
@@ -232,7 +232,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
           },
           field: { clearable: true }
         }}
-        onChange={(newValue: Date | null) => setStartDateState(newValue ?? undefined)}
+        onChange={(newValue: Date | null) => setStartDateState(newValue ? dateToUtcMidnight(newValue) : undefined)}
       />
 
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -251,7 +251,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
           },
           field: { clearable: true }
         }}
-        onChange={(newValue: Date | null) => setEndDateState(newValue ?? undefined)}
+        onChange={(newValue: Date | null) => setEndDateState(newValue ? dateToUtcMidnight(newValue) : undefined)}
       />
       <Box sx={{ ml: 0 }}></Box>
       <NERButton

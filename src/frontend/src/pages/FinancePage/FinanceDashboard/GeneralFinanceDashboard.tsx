@@ -10,6 +10,7 @@ import { useGetUsersTeams } from '../../../hooks/teams.hooks';
 import FinanceDashboardTeamView from './FinanceDashboardTeamView';
 import { useGetAllCars } from '../../../hooks/cars.hooks';
 import NERAutocomplete from '../../../components/NERAutocomplete';
+import { dateToUtcMidnight } from 'shared';
 
 interface GeneralFinanceDashboardProps {
   startDate?: Date;
@@ -156,7 +157,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
           },
           field: { clearable: true }
         }}
-        onChange={(newValue: Date | null) => setStartDateState(newValue ?? undefined)}
+        onChange={(newValue: Date | null) => setStartDateState(newValue ? dateToUtcMidnight(newValue) : undefined)}
       />
 
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -175,7 +176,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
           },
           field: { clearable: true }
         }}
-        onChange={(newValue: Date | null) => setEndDateState(newValue ?? undefined)}
+        onChange={(newValue: Date | null) => setEndDateState(newValue ? dateToUtcMidnight(newValue) : undefined)}
       />
     </Box>
   );
