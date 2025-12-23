@@ -472,12 +472,31 @@ export default class CalendarController {
     }
   }
 
-  static async getAvailability(req: Request, res: Response, next: NextFunction) {
+  static async getAvailabilities(req: Request, res: Response, next: NextFunction) {
     try {
       const { eventId } = req.params;
 
-      const availability = await CalendarService.getAvailability(eventId);
+      const availability = await CalendarService.getAvailabilities(eventId);
       res.status(200).json(availability);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAvailability(req: Request, res: Response, next: NextFunction) {
+    try {
+      const availability = await CalendarService.getAvailability(req.currentUser);
+      res.status(200).json(availability);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setAvailability(req: Request, res: Response, next: NextFunction) {
+    try {
+      const availability = req.body;
+      const updatedAvailability = await CalendarService.setAvailability(req.currentUser, availability);
+      res.status(200).json(updatedAvailability);
     } catch (error: unknown) {
       next(error);
     }

@@ -1,4 +1,4 @@
-import { Shop, Event, EventPreview, PersonalAvailability } from 'shared';
+import { Shop, Event, EventPreview, PersonalAvailability, Availability } from 'shared';
 import { userTransformer } from './users.transformers';
 
 export const shopTransformer = (shop: Shop): Shop => {
@@ -51,5 +51,12 @@ export const personalAvailabilityTransformer = (personalAvailabilities: Personal
       ...availability,
       dateSet: new Date(availability.dateSet)
     }))
+  };
+};
+
+export const availabilityTransformer = (availability: Availability & { dateSet: string }): Availability => {
+  return {
+    ...availability,
+    dateSet: new Date(availability.dateSet)
   };
 };

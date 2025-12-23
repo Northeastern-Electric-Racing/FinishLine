@@ -238,6 +238,10 @@ calendarRouter.post(
 
 calendarRouter.get('/calendars', CalendarController.getAllCalendars);
 
-calendarRouter.get('/availability/:eventId', CalendarController.getAvailability);
+calendarRouter.get('/availability/event/:eventId', CalendarController.getAvailabilities);
+
+calendarRouter.get('/availability/get', CalendarController.getAvailability);
+
+calendarRouter.post('/availability/set', CalendarController.setAvailability);
 
 export default calendarRouter;

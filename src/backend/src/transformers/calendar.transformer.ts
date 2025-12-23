@@ -184,7 +184,7 @@ export const eventStatusTransformer = (status: PrismaEventStatus): EventStatus =
   return mapping[status];
 };
 
-export const availabilityTransformer = (personalAvailabilities: PersonalAvailability[]): PersonalAvailability[] => {
+export const availabilitiesTransformer = (personalAvailabilities: PersonalAvailability[]): PersonalAvailability[] => {
   return personalAvailabilities.map((pa) => ({
     userId: pa.userId,
     firstName: pa.firstName,
@@ -194,4 +194,13 @@ export const availabilityTransformer = (personalAvailabilities: PersonalAvailabi
       availability: av.availability
     }))
   }));
+};
+
+export const availabilityTransformer = (
+  availability: Availability & { availabilityId: string; scheduleSettingsId: string }
+): Availability => {
+  return {
+    dateSet: new Date(availability.dateSet),
+    availability: availability.availability
+  };
 };

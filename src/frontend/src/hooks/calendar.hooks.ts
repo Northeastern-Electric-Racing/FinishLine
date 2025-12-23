@@ -9,7 +9,8 @@ import {
   EventStatus,
   EventType,
   FilterArgs,
-  PersonalAvailability
+  PersonalAvailability,
+  Availability
 } from 'shared';
 import {
   getAllShops,
@@ -35,6 +36,8 @@ import {
   setEventStatus,
   getAllEventTypes,
   postFilterEvents,
+  getAvailabilities,
+  setAvailability,
   getAvailability
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
@@ -349,15 +352,39 @@ export const useSetEventStatus = (id: string) => {
   );
 };
 
-export const useGetAvailability = (id: string) => {
+export const useGetAvailabilities = (id: string) => {
   return useQuery<PersonalAvailability[], Error>(
     ['get-availability', id],
     async () => {
-      const { data } = await getAvailability(id);
+      const { data } = await getAvailabilities(id);
       return data;
     },
     {
-      keepPreviousData: true
+      keepPreviousData: true,
+      refetchInterval: 10000
+    }
+  );
+};
+
+export const useGetAvailability = () => {
+  return useQuery<Availability[], Error>(['get-availability'], async () => {
+    const { data } = await getAvailability();
+    return data;
+  });
+};
+
+export const useSetAvailability = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Availability[], Error, Availability[]>(
+    async (payload: Availability[]) => {
+      const { data } = await setAvailability(payload);
+      console.log(data);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['set-availability']);
+      }
     }
   );
 };

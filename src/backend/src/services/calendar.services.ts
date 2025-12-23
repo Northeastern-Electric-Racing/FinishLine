@@ -2,6 +2,7 @@ import {
   calendarTransformer,
   eventTransformer,
   machineryTransformer,
+  availabilitiesTransformer,
   availabilityTransformer
 } from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
@@ -2338,9 +2339,9 @@ export default class CalendarService {
     return eventTypes.map(eventTypeTransformer);
   }
 
-  static async getAvailability(eventId: string): Promise<PersonalAvailability[]> {
+  static async getAvailabilities(eventId: string): Promise<PersonalAvailability[]> {
     const event = await prisma.event.findUnique({
-      where: { eventId: eventId },
+      where: { eventId },
       include: {
         requiredMembers: {
           include: {
@@ -2378,6 +2379,46 @@ export default class CalendarService {
       });
     });
 
-    return availabilityTransformer(personalAvailabilities);
+    return availabilitiesTransformer(personalAvailabilities);
+  }
+
+  static async getAvailability(submitter: User): Promise<Availability[]> {
+    const scheduleSettings = await prisma.schedule_Settings.findUnique({
+      where: { userId: submitter.userId },
+      include: { availabilities: true }
+    });
+
+    if (!scheduleSettings) {
+      return [];
+    }
+
+    return scheduleSettings.availabilities.map(availabilityTransformer);
+  }
+
+  static async setAvailability(submitter: User, availabilities: Availability[]): Promise<Availability[]> {
+    const scheduleSettings = await prisma.schedule_Settings.upsert({
+      where: { userId: submitter.userId },
+      update: {},
+      create: {
+        userId: submitter.userId,
+        personalGmail: '',
+        personalZoomLink: ''
+      }
+    });
+
+    await prisma.availability.deleteMany({
+      where: { scheduleSettingsId: scheduleSettings.drScheduleSettingsId }
+    });
+
+    await prisma.availability.createMany({
+      data: availabilities.map((availability) => ({
+        scheduleSettingsId: scheduleSettings.drScheduleSettingsId,
+
+        availability: availability.availability,
+        dateSet: availability.dateSet
+      }))
+    });
+
+    return availabilities;
   }
 }
