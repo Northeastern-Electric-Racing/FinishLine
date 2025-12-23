@@ -4,7 +4,7 @@ export const getProjectSegmentedWhereInput = (
   organizationId: string,
   startDate?: Date,
   endDate?: Date,
-  _carNumber?: number
+  carNumber?: number
 ): {
   where: {
     wbsElement: {
@@ -49,9 +49,9 @@ export const getProjectSegmentedWhereInput = (
     baseWhere.where.wbsElement.is.dateCreated = { ...baseWhere.where.wbsElement.is.dateCreated, lte: endDate };
   }
 
-  // if (carNumber !== undefined) {
-  //   baseWhere.where.wbsElement.is.carNumber = carNumber;
-  // }
+  if (carNumber !== undefined) {
+    baseWhere.where.wbsElement.is.carNumber = carNumber;
+  }
 
   return baseWhere;
 };
