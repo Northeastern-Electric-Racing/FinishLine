@@ -2090,7 +2090,7 @@ export default class ReimbursementRequestService {
     // find all names that have been tagged in the @FirstLast format
     const taggedNames = [...comment.matchAll(tagRegex)].map((match) => match[1]);
 
-    // spliot the tagged names into first and last names
+    // split the tagged names into first and last names
     const splitTaggedNames = taggedNames.map((name) => {
       const match = name.match(/([A-Z][a-z'-]+)([A-Z][a-z'-]+)/);
 

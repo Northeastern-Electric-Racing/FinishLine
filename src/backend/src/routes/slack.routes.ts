@@ -1,15 +1,20 @@
-import { slackApp } from '../integrations/slack';
+import { getSlackApp } from '../integrations/slack';
 import SlackController from '../controllers/slack.controllers';
 
-// Register message event listener
-slackApp.message(async ({ message, logger }: any) => {
-  try {
-    await SlackController.processMessageEvent(message);
-  } catch (error) {
-    logger.error('Error processing message event:', error);
-    console.error(error);
-  }
-});
+// Register Slack event listeners only if the Slack app is configured
+const slackApp = getSlackApp();
+
+if (slackApp) {
+  // Register message event listener
+  slackApp.message(async ({ message, logger }: any) => {
+    try {
+      await SlackController.processMessageEvent(message);
+    } catch (error) {
+      logger.error('Error processing message event:', error);
+      console.error(error);
+    }
+  });
+}
 
 /**
  * Validates the general structure of a Slack block action payload.
@@ -89,28 +94,30 @@ function validateSlackActionBody(body: any): boolean {
   return true;
 }
 
-// Register interactive action handler for SABO submission confirmation
-slackApp.action('sabo_submitted_confirmation', async ({ ack, body, logger, respond }: any) => {
-  await ack();
+if (slackApp) {
+  // Register interactive action handler for SABO submission confirmation
+  slackApp.action('sabo_submitted_confirmation', async ({ ack, body, logger, respond }: any) => {
+    await ack();
 
-  try {
-    // Validate the incoming action body structure
-    if (!validateSlackActionBody(body)) {
-      logger.error('Invalid Slack action body structure');
-      return;
+    try {
+      // Validate the incoming action body structure
+      if (!validateSlackActionBody(body)) {
+        logger.error('Invalid Slack action body structure');
+        return;
+      }
+
+      await SlackController.handleSaboSubmittedAction(body);
+
+      // If no error, delete the original message
+      await respond({ delete_original: true });
+    } catch (error) {
+      // Can't pass to normal middleware because not normal request
+      logger.error('Error handling sabo_submitted_confirmation action:', error);
     }
+  });
 
-    await SlackController.handleSaboSubmittedAction(body);
-
-    // If no error, delete the original message
-    await respond({ delete_original: true });
-  } catch (error) {
-    // Can't pass to normal middleware because not normal request
-    logger.error('Error handling sabo_submitted_confirmation action:', error);
-  }
-});
-
-// Error handler
-slackApp.error(async (error: Error) => {
-  console.error('Slack app error:', error);
-});
+  // Error handler
+  slackApp.error(async (error: Error) => {
+    console.error('Slack app error:', error);
+  });
+}

@@ -4,48 +4,54 @@ export const getProjectSegmentedWhereInput = (
   organizationId: string,
   startDate?: Date,
   endDate?: Date,
-  carNumber?: number
+  _carNumber?: number
 ): {
   where: {
     wbsElement: {
-      organizationId: string;
-      dateDeleted: null;
-      carNumber?: number;
-      dateCreated?: { gte?: Date; lte?: Date };
-    };
-  };
-} => {
-  const baseWhere: {
-    where: {
-      wbsElement: {
+      is: {
         organizationId: string;
         dateDeleted: null;
         carNumber?: number;
         dateCreated?: { gte?: Date; lte?: Date };
       };
     };
+  };
+} => {
+  const baseWhere: {
+    where: {
+      wbsElement: {
+        is: {
+          organizationId: string;
+          dateDeleted: null;
+          carNumber?: number;
+          dateCreated?: { gte?: Date; lte?: Date };
+        };
+      };
+    };
   } = Prisma.validator<Prisma.ProjectFindManyArgs>()({
     where: {
       wbsElement: {
-        organizationId,
-        dateDeleted: null
+        is: {
+          organizationId,
+          dateDeleted: null
+        }
       }
     }
   });
 
-  if (startDate) {
-    baseWhere.where.wbsElement.dateCreated = {
+  if (startDate !== undefined) {
+    baseWhere.where.wbsElement.is.dateCreated = {
       gte: startDate
     };
   }
 
-  if (endDate) {
-    baseWhere.where.wbsElement.dateCreated = { ...baseWhere.where.wbsElement.dateCreated, lte: endDate };
+  if (endDate !== undefined) {
+    baseWhere.where.wbsElement.is.dateCreated = { ...baseWhere.where.wbsElement.is.dateCreated, lte: endDate };
   }
 
-  if (carNumber !== undefined) {
-    baseWhere.where.wbsElement.carNumber = carNumber;
-  }
+  // if (carNumber !== undefined) {
+  //   baseWhere.where.wbsElement.is.carNumber = carNumber;
+  // }
 
   return baseWhere;
 };
@@ -80,7 +86,7 @@ export const getReimbursementRequestWhereInput = (
     })
   };
 
-  if (carNumber !== undefined) {
+  if (carNumber) {
     baseWhere.reimbursementProducts = {
       some: {
         OR: [

@@ -1,19 +1,49 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import { HttpException } from '../utils/errors.utils';
 
-const receiver = new ExpressReceiver({
-  signingSecret: process.env.SLACK_SIGNING_SECRET || '',
-  endpoints: '/slack/events'
-});
+let receiver: ExpressReceiver | null = null;
+let slackApp: App | null = null;
+let slack: any = null; // Type will be inferred from slackApp.client (WebClient from Bolt)
 
-// Initialize the Bolt app
-const slackApp = new App({
-  token: process.env.SLACK_BOT_TOKEN || '',
-  receiver
-});
+/**
+ * Initializes the Slack Bolt app, receiver, and client if not already initialized
+ * Only initializes if SLACK_BOT_TOKEN is present
+ */
+const initializeSlack = () => {
+  const { SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET } = process.env;
 
-// Get the WebClient from the Bolt app
-const slack = slackApp.client;
+  // Don't initialize if no token is configured (e.g., in tests)
+  if (!SLACK_BOT_TOKEN) {
+    return;
+  }
+
+  // Don't re-initialize if already initialized
+  if (slackApp) {
+    return;
+  }
+
+  // Initialize the receiver, app, and client
+  receiver = new ExpressReceiver({
+    signingSecret: SLACK_SIGNING_SECRET || '',
+    endpoints: '/slack/events'
+  });
+
+  slackApp = new App({
+    token: SLACK_BOT_TOKEN,
+    receiver
+  });
+
+  slack = slackApp.client;
+};
+
+/**
+ * Get the Slack WebClient (initializes Slack if needed)
+ * @returns the Slack WebClient or null if no token is configured
+ */
+const getSlackClient = () => {
+  initializeSlack();
+  return slack;
+};
 
 /**
  * Send a slack message
@@ -24,13 +54,13 @@ const slack = slackApp.client;
  * @returns the channel id and timestamp of the created slack message
  */
 export const sendMessage = async (slackId: string, message: string, link?: string, linkButtonText?: string) => {
-  const { SLACK_BOT_TOKEN } = process.env;
-  if (!SLACK_BOT_TOKEN) return;
+  const client = getSlackClient();
+  if (!client) return;
 
   const block = generateSlackTextBlock(message, link, linkButtonText);
 
   try {
-    const response = await slack.chat.postMessage({
+    const response = await client.chat.postMessage({
       channel: slackId,
       text: message,
       blocks: [block],
@@ -58,13 +88,13 @@ export const replyToMessageInThread = async (
   link?: string,
   linkButtonText?: string
 ) => {
-  const { SLACK_BOT_TOKEN } = process.env;
-  if (!SLACK_BOT_TOKEN) return;
+  const client = getSlackClient();
+  if (!client) return;
 
   const block = generateSlackTextBlock(message, link, linkButtonText);
 
   try {
-    await slack.chat.postMessage({
+    await client.chat.postMessage({
       channel: slackId,
       thread_ts: parentTimestamp,
       text: message,
@@ -90,13 +120,13 @@ export const editMessage = async (
   link?: string,
   linkButtonText?: string
 ) => {
-  const { SLACK_BOT_TOKEN } = process.env;
-  if (!SLACK_BOT_TOKEN) return;
+  const client = getSlackClient();
+  if (!client) return;
 
   const block = generateSlackTextBlock(message, link, linkButtonText);
 
   try {
-    await slack.chat.update({
+    await client.chat.update({
       channel: slackId,
       ts: timestamp,
       text: message,
@@ -114,11 +144,11 @@ export const editMessage = async (
  * @param emoji - the emoji to react with
  */
 export const reactToMessage = async (slackId: string, parentTimestamp: string, emoji: string) => {
-  const { SLACK_BOT_TOKEN } = process.env;
-  if (!SLACK_BOT_TOKEN) return;
+  const client = getSlackClient();
+  if (!client) return;
 
   try {
-    await slack.reactions.add({
+    await client.reactions.add({
       channel: slackId,
       timestamp: parentTimestamp,
       name: emoji
@@ -169,12 +199,15 @@ const generateSlackTextBlock = (message: string, link?: string, linkButtonText?:
  * @returns an array of strings of all the slack ids of the users in the given channel
  */
 export const getUsersInChannel = async (channelId: string) => {
+  const client = getSlackClient();
+  if (!client) return [];
+
   let members: string[] = [];
   let cursor: string | undefined;
 
   try {
     do {
-      const response = await slack.conversations.members({
+      const response = await client.conversations.members({
         channel: channelId,
         cursor,
         limit: 200
@@ -200,8 +233,11 @@ export const getUsersInChannel = async (channelId: string) => {
  * @returns the name of the channel or undefined if it cannot be found
  */
 export const getChannelName = async (channelId: string) => {
+  const client = getSlackClient();
+  if (!client) return undefined;
+
   try {
-    const channelRes = await slack.conversations.info({ channel: channelId });
+    const channelRes = await client.conversations.info({ channel: channelId });
     return channelRes.channel?.name;
   } catch (error) {
     return undefined;
@@ -214,8 +250,11 @@ export const getChannelName = async (channelId: string) => {
  * @returns the name of the user (real name if no display name), undefined if cannot be found
  */
 export const getUserName = async (userId: string) => {
+  const client = getSlackClient();
+  if (!client) return undefined;
+
   try {
-    const userRes = await slack.users.info({ user: userId });
+    const userRes = await client.users.info({ user: userId });
     return userRes.user?.profile?.display_name || userRes.user?.real_name;
   } catch (error) {
     return undefined;
@@ -227,8 +266,13 @@ export const getUserName = async (userId: string) => {
  * @returns the id of the workspace
  */
 export const getWorkspaceId = async () => {
+  const client = getSlackClient();
+  if (!client) {
+    throw new HttpException(500, 'Slack client not configured');
+  }
+
   try {
-    const response = await slack.auth.test();
+    const response = await client.auth.test();
     if (response.ok) {
       return response.team_id;
     }
@@ -253,8 +297,11 @@ export async function sendEphemeralMessage(
   text: string,
   blocks: any[]
 ) {
+  const client = getSlackClient();
+  if (!client) return;
+
   try {
-    await slack.chat.postEphemeral({
+    await client.chat.postEphemeral({
       channel: channelId,
       user: userId,
       thread_ts: threadTs,
@@ -268,6 +315,24 @@ export async function sendEphemeralMessage(
   }
 }
 
-// Export the slack client, bolt app, and receiver for any direct usage if needed
-export { slack, slackApp, receiver };
-export default slack;
+/**
+ * Get the Slack Bolt app instance (initializes Slack if needed)
+ * @returns the Slack Bolt App or null if no token is configured
+ */
+export const getSlackApp = (): App | null => {
+  initializeSlack();
+  return slackApp;
+};
+
+/**
+ * Get the Express receiver instance (initializes Slack if needed)
+ * @returns the ExpressReceiver or null if no token is configured
+ */
+export const getReceiver = (): ExpressReceiver | null => {
+  initializeSlack();
+  return receiver;
+};
+
+// Export the getters for any direct usage if needed
+export { getSlackClient };
+export default getSlackClient;

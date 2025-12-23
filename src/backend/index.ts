@@ -17,7 +17,7 @@ import wbsElementTemplatesRouter from './src/routes/wbs-element-templates.routes
 import carsRouter from './src/routes/cars.routes';
 import organizationRouter from './src/routes/organizations.routes';
 import recruitmentRouter from './src/routes/recruitment.routes';
-import { receiver } from './src/integrations/slack';
+import { getReceiver } from './src/integrations/slack';
 import announcementsRouter from './src/routes/announcements.routes';
 import onboardingRouter from './src/routes/onboarding.routes';
 import popUpsRouter from './src/routes/pop-up.routes';
@@ -25,6 +25,7 @@ import statisticsRouter from './src/routes/statistics.routes';
 import retrospectiveRouter from './src/routes/retrospective.routes';
 import partsRouter from './src/routes/parts.routes';
 import financeRouter from './src/routes/finance.routes';
+// Import slack routes (event listeners will be registered if Slack is configured)
 import './src/routes/slack.routes';
 
 const app = express();
@@ -65,7 +66,12 @@ const options: cors.CorsOptions = {
 // Mount Slack Bolt receiver BEFORE other middleware to handle raw body parsing
 // Bolt's receiver handles its own body parsing and request verification
 // The receiver is configured to handle requests at /slack/events
-app.use(receiver.router as unknown as Router);
+// Only mount if Slack is configured (when SLACK_BOT_TOKEN is set)
+const receiver = getReceiver();
+if (receiver) {
+  app.use(receiver.router as unknown as Router);
+}
+
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'healthy' });
 });
