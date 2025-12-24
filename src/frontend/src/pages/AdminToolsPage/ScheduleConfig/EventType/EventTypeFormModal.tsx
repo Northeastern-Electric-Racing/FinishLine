@@ -784,7 +784,7 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
                 color: 'rgba(255, 255, 255, 0.7)'
               }}
             >
-              Add a description or attachment
+              Add a description
             </Box>
           </Box>
         </Box>

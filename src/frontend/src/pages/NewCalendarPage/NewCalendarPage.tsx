@@ -2,13 +2,19 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DayOfWeek, Event } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useAllCalendars, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
+import {
+  useAllCalendars,
+  useFilterEvents,
+  useAllEventTypes,
+  useCreateEvent,
+  useUploadManyDocuments
+} from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -19,32 +25,38 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
-import { convertDayToInt } from '../../utils/calendar.utils';
+import { convertDayToInt, getEventsFlattened } from '../../utils/calendar.utils';
+import CreateEventModal from './Components/CreateEventModal';
+import { EventRoutePayload } from './Components/EventModal';
+import { useToast } from '../../hooks/toasts.hooks';
+import SchedulingConflictsWarning from './SchedulingConflictsWarning';
+import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 import AvailabilityPanel from './AvailabilityPanel';
 
 const NewCalendarPage = () => {
+  const toast = useToast();
   const theme = useTheme();
+  const user = useCurrentUser();
+
+  const [memberIds, setMemberIds] = useState<string[]>([]);
+  const [teamIds, setTeamIds] = useState<string[]>([]);
+  const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
+  const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
+  const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
+  const [selectedEvent, setSelectedEvent] = useState<Event>();
+  const [openFilterModal, setOpenFilterModal] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
+  const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>([]);
+  const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
+  const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
+
   const {
     data: allTeamTypes,
     isLoading: allTeamTypesLoading,
     isError: allTeamTypesIsError,
     error: allTeamTypesError
   } = useAllTeamTypes();
-
-  const [memberIds, setMemberIds] = useState<string[]>([]);
-  const [teamIds, setTeamIds] = useState<string[]>([]);
-
-  const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
-  const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
-
-  const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
-  const { data: allTeams, isLoading: allTeamsLoading, isError: allTeamsIsError, error: allTeamsError } = useGetUsersTeams();
-
-  const teamList = allTeams?.map((team) => team.teamId) ?? [];
-  const user = useCurrentUser();
-
-  const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
-  const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>(teamList);
 
   const [availabilityInformation, setAvailabilityInformation] = useState<Event | null>(null);
   const [availabilityVisible, setAvailabilityVisible] = useState<boolean>(false);
@@ -53,18 +65,6 @@ const NewCalendarPage = () => {
     setAvailabilityInformation(event);
     setAvailabilityVisible(event !== null);
   };
-
-  const {
-    isLoading,
-    isError,
-    error,
-    data: allEvents
-  } = useFilterEvents({
-    startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
-    endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
-    memberIds: memberIds.concat(additionalMemberIds),
-    teamIds: teamIds.concat(additionalTeamIds)
-  });
 
   const {
     data: allEventTypes,
@@ -80,14 +80,70 @@ const NewCalendarPage = () => {
     error: allCalendarsError
   } = useAllCalendars();
 
-  const [selectedEvent, setSelectedEvent] = useState<Event>();
-  const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
-  const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
-  const [openFilterModal, setOpenFilterModal] = useState(false);
+  const { mutateAsync: createEvent } = useCreateEvent();
+  const { isLoading: documentsIsLoading, mutateAsync: uploadDocuments } = useUploadManyDocuments();
+
+  const { data: allTeams, isLoading: allTeamsLoading, isError: allTeamsIsError, error: allTeamsError } = useGetUsersTeams();
+
+  const teamList = useMemo(() => allTeams?.map((team) => team.teamId) ?? [], [allTeams]);
+
+  // Date range for filtering events (current month ±1 month)
+  const startPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15);
+  const endPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15);
+
+  const {
+    isLoading,
+    isError,
+    error,
+    data: allEvents
+  } = useFilterEvents({
+    startPeriod,
+    endPeriod,
+    memberIds: memberIds.concat(additionalMemberIds),
+    teamIds: teamIds.concat(additionalTeamIds)
+  });
+
+  useEffect(() => {
+    if (allTeams && additionalTeamIds.length === 0 && showTeamEvents) {
+      setAdditionalTeamIds(teamList);
+    }
+  }, [allTeams, teamList, additionalTeamIds.length, showTeamEvents]);
+
+  // Date range for upcoming meetings (next 7 days)
+  const [upcomingStartPeriod] = useState(() => new Date());
+
+  const [upcomingEndPeriod] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  });
+
+  const { data: upcomingEvents } = useFilterEvents({
+    startPeriod: upcomingStartPeriod,
+    endPeriod: upcomingEndPeriod,
+    memberIds: memberIds.concat(additionalMemberIds),
+    teamIds: teamIds.concat(additionalTeamIds)
+  });
+
+  if (isLoading || !allEvents) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error.message} />;
+  if (allEventTypesLoading || !allEventTypes) return <LoadingIndicator />;
+  if (allEventTypesIsError) return <ErrorPage message={allEventTypesError?.message} />;
+  if (documentsIsLoading) return <LoadingIndicator />;
+  if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
+  if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
+  if (!allCalendars || allCalendarsLoading) return <LoadingIndicator />;
+  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
+  if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
+  if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
+
+  const upcomingOccurences = upcomingEvents
+    ? getEventsFlattened(upcomingEvents, upcomingStartPeriod, upcomingEndPeriod)
+    : [];
 
   const updateAdditionalTeamIds = (changed: boolean) => {
     setShowTeamEvents(changed);
-
     if (changed) {
       setAdditionalTeamIds(teamList);
     } else {
@@ -97,18 +153,12 @@ const NewCalendarPage = () => {
 
   const updateAdditionalMemberIds = (changed: boolean) => {
     setShowInvitedEvents(changed);
-
     if (changed) {
       setAdditionalMemberIds([user.userId]);
     } else {
       setAdditionalMemberIds([]);
     }
   };
-
-  if (isLoading || !allEvents) return <LoadingIndicator />;
-
-  if (isLoading || !allEvents) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error.message} />;
 
   // Sort events by their first occurrence's start time
   const sortedEvents = [...allEvents].sort((event1, event2) => {
@@ -189,17 +239,47 @@ const NewCalendarPage = () => {
     .concat([...Array(daysInMonth(displayMonthYear)).keys()].map((day) => day + 1))
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
 
-  if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
-  if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
+  const handleCreateEvent = async (data: EventRoutePayload) => {
+    try {
+      const { scheduleSlot, documentFiles, ...eventData } = data;
 
-  if (!allEventTypes || allEventTypesLoading) return <LoadingIndicator />;
-  if (allEventTypesIsError) return <ErrorPage error={allEventTypesError} message={allEventTypesError?.message} />;
+      if (!scheduleSlot || scheduleSlot.length === 0) {
+        throw new Error('Missing scheduleSlot');
+      }
 
-  if (!allCalendars || allCalendarsLoading) return <LoadingIndicator />;
-  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
+      // Create the event first without documents
+      const createArgs = {
+        ...eventData,
+        documentIds: [],
+        scheduleSlot: scheduleSlot.map((slot) => ({
+          days: slot.days,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          recurrenceNumber: slot.recurrenceNumber,
+          initialDateScheduled: slot.initialDateScheduled,
+          allDay: slot.allDay
+        }))
+      };
 
-  if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
-  if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
+      const createdEvent = await createEvent(createArgs);
+
+      const filesToUpload = documentFiles.map((doc) => doc.file).filter((file): file is File => file !== undefined);
+
+      if (filesToUpload.length > 0) {
+        await uploadDocuments({
+          id: createdEvent.eventId,
+          files: filesToUpload
+        });
+      }
+
+      toast.success('Event created successfully!');
+      setIsCreateModalOpen(false);
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    }
+  };
 
   return (
     <>
@@ -213,15 +293,23 @@ const NewCalendarPage = () => {
           teamTypes={allTeamTypes}
         />
       )}
+      {isCreateModalOpen && (
+        <CreateEventModal
+          open={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={handleCreateEvent}
+          eventTypes={allEventTypes}
+          defaultDate={displayMonthYear}
+        />
+      )}
       <PageLayout hidePageTitle>
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
           <Typography variant="h4"></Typography>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', columnGap: 1, rowGap: 1 }}>
-            {/* New Event Button (does not do anything yet) */}
             <Button
               variant="contained"
               disableElevation
-              onClick={() => {}}
+              onClick={() => setIsCreateModalOpen(true)}
               endIcon={<AddCircleOutlineIcon sx={{ fontSize: { xs: 24, sm: 30 } }} />}
               sx={{
                 flexShrink: 0,
@@ -242,7 +330,13 @@ const NewCalendarPage = () => {
             </Button>
           </Stack>
         </Stack>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            height: '100vh'
+          }}
+        >
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Grid container>
               {enumToArray(DAY_NAMES).map((day, index) => (
@@ -276,7 +370,6 @@ const NewCalendarPage = () => {
                                   datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
                                 ) ?? []
                               }
-                              teamTypes={allTeamTypes}
                               eventTypes={allEventTypes ?? []}
                               calendars={allCalendars ?? []}
                               dayOfWeek={
@@ -296,7 +389,10 @@ const NewCalendarPage = () => {
           </Box>
           <Box
             sx={{
-              width: 320
+              width: 320,
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0
             }}
           >
             <DateCalendar
@@ -332,11 +428,45 @@ const NewCalendarPage = () => {
                 '&:hover': {
                   borderColor: 'white',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                }
+                },
+                mb: 2
               }}
             >
               More Filters
             </Button>
+            <SchedulingConflictsWarning
+              memberIds={memberIds.concat(additionalMemberIds)}
+              teamIds={teamIds.concat(additionalTeamIds)}
+              startPeriod={startPeriod}
+              endPeriod={endPeriod}
+            />
+
+            <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 0.5 }}>
+              My Upcoming Meetings:
+            </Typography>
+
+            {upcomingOccurences && (
+              <Box
+                sx={{
+                  mt: 2,
+                  flex: 1,
+                  flexDirection: 'column',
+                  overflowX: 'hidden',
+                  overflowY: 'auto',
+                  scrollbarColor: `${theme.palette.primary.main} transparent`,
+                  maxHeight: 'calc(50%)'
+                }}
+              >
+                {upcomingOccurences?.map((event: Event) => (
+                  <UpcomingMeetingsCard
+                    key={event.eventId}
+                    event={event}
+                    calendars={allCalendars ?? []}
+                    eventTypes={allEventTypes ?? []}
+                  />
+                ))}
+              </Box>
+            )}
           </Box>
         </Box>
 

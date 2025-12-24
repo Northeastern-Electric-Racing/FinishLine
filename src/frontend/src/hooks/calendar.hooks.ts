@@ -9,6 +9,7 @@ import {
   EventStatus,
   EventType,
   FilterArgs,
+  ScheduleSlotCreateArgs,
   PersonalAvailability,
   Availability
 } from 'shared';
@@ -35,18 +36,69 @@ import {
   deleteEvent,
   setEventStatus,
   getAllEventTypes,
+  postCreateEvent,
+  uploadSingleDocument,
+  downloadDocumentPdf,
+  postEditEvent,
   postFilterEvents,
   getAvailabilities,
   setAvailability,
   getAvailability
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
+import { PDFDocument } from 'pdf-lib';
+import saveAs from 'file-saver';
 
 export const FILTER_EVENTS_KEY = ['filter_events'] as const;
 
 export const MACHINERY_KEY = ['machinery'] as const;
 const SHOP_KEY = ['shops'] as const;
 const CALENDAR_KEY = ['calendars'] as const;
+export const EVENT_TYPE_KEY = ['event-types'] as const;
+export const EVENT_KEY = ['events'] as const;
+
+export interface EventCreateArgs {
+  title: string;
+  eventTypeId: string;
+  requiredMemberIds: string[];
+  optionalMemberIds: string[];
+  teamIds: string[];
+  teamTypeId?: string;
+  location?: string;
+  zoomLink?: string;
+  shopIds: string[];
+  machineryIds: string[];
+  workPackageIds: string[];
+  documentIds: string[];
+  questionDocument?: string;
+  description?: string;
+  scheduleSlot: ScheduleSlotCreateArgs[];
+}
+
+export interface EditEventArgs {
+  title: string;
+  requiredMemberIds: string[];
+  optionalMemberIds: string[];
+  teamIds: string[];
+  teamTypeId?: string;
+  status: EventStatus;
+  location?: string;
+  zoomLink?: string;
+  shopIds: string[];
+  machineryIds: string[];
+  workPackageIds: string[];
+  documents: Array<{ name: string; googleFileId: string }>;
+  questionDocumentLink?: string;
+  description?: string;
+  scheduleSlot: ScheduleSlotCreateArgs[];
+}
+
+export interface DownloadDocumentsFormInput {
+  fileIds: string[];
+  startDate: Date;
+  endDate: Date;
+  event: Event;
+}
 
 export const useAllCalendars = () =>
   useQuery<Calendar[], Error>(['calendars'], async () => {
@@ -203,14 +255,6 @@ export const useDeleteMachinery = () => {
   );
 };
 
-export const EVENT_TYPE_KEY = ['event-types'] as const;
-
-export const useAllEventTypes = () =>
-  useQuery<EventType[], Error>(EVENT_TYPE_KEY, async () => {
-    const res = await getAllEventTypes();
-    return res.data;
-  });
-
 export const useCreateEventType = () => {
   const qc = useQueryClient();
   return useMutation<EventType, Error, EventTypeCreateArgs>(
@@ -243,7 +287,7 @@ export const useEditEventType = (eventTypeId: string) => {
 
 export const useDeleteEventType = () => {
   const qc = useQueryClient();
-  return useMutation<EventType, Error, string>(
+  return useMutation<{ eventTypeId: string }, Error, string>(
     async (eventTypeId: string) => {
       const { data } = await postDeleteEventType(eventTypeId);
       return data;
@@ -267,7 +311,7 @@ export const useMarkUserConfirmed = (id: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['events']);
+        queryClient.invalidateQueries(EVENT_KEY);
         queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
       }
     }
@@ -301,7 +345,7 @@ export const useSingleEvent = (id?: string) => {
 };
 
 export const useAllEvents = () => {
-  return useQuery<Event[], Error>(['events'], async () => {
+  return useQuery<Event[], Error>(EVENT_KEY, async () => {
     const { data } = await getAllEvents();
     return data;
   });
@@ -320,6 +364,13 @@ export const useFilterEvents = (filterArgs: FilterArgs) => {
   );
 };
 
+export const useAllEventTypes = () => {
+  return useQuery<EventType[], Error>(EVENT_TYPE_KEY, async () => {
+    const { data } = await getAllEventTypes();
+    return data;
+  });
+};
+
 export const useDeleteEvent = (id: string) => {
   const queryClient = useQueryClient();
   return useMutation<Event, Error>(
@@ -330,7 +381,8 @@ export const useDeleteEvent = (id: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['events']);
+        queryClient.invalidateQueries(EVENT_KEY);
+        queryClient.invalidateQueries(['filter-events']);
       }
     }
   );
@@ -350,6 +402,116 @@ export const useSetEventStatus = (id: string) => {
       }
     }
   );
+};
+
+export const useCreateEvent = () => {
+  const qc = useQueryClient();
+  return useMutation<Event, Error, EventCreateArgs>(
+    async (payload) => {
+      const { data } = await postCreateEvent(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(['filter-events']);
+        qc.invalidateQueries(EVENT_KEY);
+      }
+    }
+  );
+};
+
+export const useEditEvent = (eventId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Event, Error, EditEventArgs>(
+    ['events', 'edit', eventId],
+    async (payload) => {
+      const { data } = await postEditEvent(eventId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['filter-events']);
+        queryClient.invalidateQueries(EVENT_KEY);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to upload a new document.
+ */
+export const useUploadSingleDocument = () => {
+  return useMutation<{ googleFileId: string; name: string }, Error, { file: File; id: string }>(
+    ['events', 'upload', 'single'],
+    async (formData: { file: File; id: string }) => {
+      const { data } = await uploadSingleDocument(formData.file, formData.id);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom hook that uploads many documents to a given event
+ *
+ * @returns The created document information
+ */
+export const useUploadManyDocuments = () => {
+  return useMutation<{ googleFileId: string; name: string }[], Error, { files: File[]; id: string }>(
+    ['events', 'upload', 'many'],
+    async (formData: { files: File[]; id: string }) => {
+      const results = [];
+      for (const file of formData.files) {
+        results.push(await uploadSingleDocument(file, formData.id));
+      }
+      return results.map((result) => result.data);
+    }
+  );
+};
+
+/**
+ * Custom react hook to download PDFs from google drive and combine them into a single PDF
+ *
+ * @param fileIds The google file ids to fetch the PDFs for
+ */
+export const useDownloadPDFOfDocuments = () => {
+  return useMutation(['events'], async (formData: DownloadDocumentsFormInput) => {
+    const promises = formData.fileIds.map((fileId) => {
+      return downloadDocumentPdf(fileId);
+    });
+
+    const blobs = await Promise.all(promises);
+    const pdfName = `${formData.startDate.toLocaleDateString()}-${formData.endDate.toLocaleDateString()}.pdf`;
+
+    const pdfFileName = `documents-${formData.event.title}-${pdfName}`;
+
+    await combinePdfsAndDownload(blobs, pdfFileName);
+  });
+};
+
+/**
+ * Combines multiple PDF blobs into a single PDF and downloads it
+ *
+ * @param blobData an array of PDF blob data
+ * @param filename the name of the created PDF
+ */
+export const combinePdfsAndDownload = async (blobData: Blob[], filename: string) => {
+  const pdfDoc = await PDFDocument.create();
+
+  // Load and copy pages from each PDF
+  for (const blob of blobData) {
+    const arrayBuffer = await blob.arrayBuffer();
+    const pdf = await PDFDocument.load(arrayBuffer);
+    const pages = await pdfDoc.copyPages(pdf, pdf.getPageIndices());
+
+    pages.forEach((page) => {
+      pdfDoc.addPage(page);
+    });
+  }
+
+  // Save and download
+  const pdfBytes = await pdfDoc.save();
+  const pdfBlob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
+  saveAs(pdfBlob, filename);
 };
 
 export const useGetAvailabilities = (id: string) => {

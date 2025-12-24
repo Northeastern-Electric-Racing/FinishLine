@@ -270,6 +270,8 @@ model User {
   optionalEvents                          Event[]                              @relation(name: "optionalEventAttendee")
   confirmedEvents                         Event[]                              @relation(name: "confirmedEventAttendee")
   deniedEvents                            Event[]                              @relation(name: "deniedEventAttendee")
+  deletedDocuments                        Document[]                           @relation(name: "deletedDocuments")
+  createdDocuments                        Document[]                           @relation(name: "documentsCreatedBy")
 }
 
 model Role {
@@ -1037,6 +1039,22 @@ enum Conflict_Status {
   NO_CONFLICT
 }
 
+model Document {
+  documentId      String    @id @default(uuid())
+  googleFileId    String    @unique
+  name            String
+  deletedByUserId String?
+  deletedBy       User?     @relation(name: "deletedDocuments", fields: [deletedByUserId], references: [userId])
+  dateDeleted     DateTime?
+  createdBy       User      @relation(name: "documentsCreatedBy", fields: [createdByUserId], references: [userId])
+  createdByUserId String
+  dateCreated     DateTime  @default(now())
+  documentEventId String
+  documentEvent   Event     @relation(fields: [documentEventId], references: [eventId])
+
+  @@index([documentEventId])
+}
+
 model Event {
   eventId                    String          @id @default(uuid())
   dateCreated                DateTime        @default(now())
@@ -1049,8 +1067,6 @@ model Event {
   eventTypeId                String
   eventType                  Event_Type      @relation(fields: [eventTypeId], references: [eventTypeId])
   approved                   Conflict_Status
-  // when approval is false, approved by holds who needs to approve the event
-  // when approval is true, approved by holds who actually approved the event
   approvalRequiredFromUserId String?
   approvalRequiredBy         User?           @relation(fields: [approvalRequiredFromUserId], references: [userId], name: "eventApprovalRequiredBy")
   scheduledTimes             Schedule_Slot[]
@@ -1066,9 +1082,9 @@ model Event {
   shops                      Shop[]
   machinery                  Machinery[]
   workPackages               Work_Package[]
-  documentIds                String[]
+  documents                  Document[]      
   status                     Event_Status
-  questionDocument           String?
+  questionDocumentLink       String?
   description                String?
   notificationSlackThreads   Message_Info[]
   calendarEventIds           String[]

@@ -15,6 +15,7 @@ const API_URL: string = import.meta.env.VITE_REACT_APP_BACKEND_URL || 'http://lo
 /**************** Users Endpoints ****************/
 const users = () => `${API_URL}/users`;
 const orgUsers = () => `${users()}/organization`;
+const orgMembers = () => `${users()}/members`;
 const usersById = (id: string) => `${users()}/${id}`;
 const usersLogin = () => `${users()}/auth/login`;
 const usersLoginDev = () => `${users()}/auth/login/dev`;
@@ -463,6 +464,10 @@ const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
 const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
+const calendarCreateEvent = () => `${calendar()}/event/create`;
+const calendarEditEvent = (eventId: string) => `${calendar()}/event/${eventId}/edit`;
+const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
+const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 const calendarGetAvailabilities = (id: string) => `${calendar()}/availability/event/${id}`;
 const calendarGetAvailability = () => `${calendar()}/availability/get`;
 const calendarSetAvailability = () => `${calendar()}/availability/set`;
@@ -473,6 +478,7 @@ const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing
 export const apiUrls = {
   users,
   orgUsers,
+  orgMembers,
   usersById,
   usersLogin,
   usersLoginDev,
@@ -781,6 +787,7 @@ export const apiUrls = {
   calendarEventMarkUserConfirmed,
   calendarGetSingleEvent,
   calendarEvents,
+  calendarEventTypes,
   calendarDeleteEvent,
   calendarEventSetStatus,
   calendarDeleteShop,
@@ -788,10 +795,13 @@ export const apiUrls = {
   calendarCreateCalendar,
   calendarEditCalendar,
   calendarCalendars,
-  calendarEventTypes,
   calendarCreateEventType,
   calendarEditEventType,
+  calendarCreateEvent,
+  calendarUploadDocument,
+  calendarPDFById,
   calendarDeleteEventType,
+  calendarEditEvent,
   calendarGetAvailabilities,
   calendarGetAvailability,
   calendarSetAvailability,

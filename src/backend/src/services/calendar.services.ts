@@ -19,6 +19,8 @@ import {
   FilterArgs,
   Machinery,
   AvailabilityCreateArgs,
+  EventDocumentCreateArgs,
+  isGuest,
   EventStatus,
   Availability,
   PersonalAvailability
@@ -27,6 +29,7 @@ import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
+  AccessDeniedGuestException,
   DeletedException,
   HttpException,
   InvalidOrganizationException,
@@ -49,6 +52,7 @@ import {
   buildScheduledTimesOverlap,
   checkEventConflicts,
   isUserOnEvent,
+  removeDeletedEventDocuments,
   validateEventTypeConfiguration
 } from '../utils/calendar.utils';
 import { UserWithSettings } from '../utils/auth.utils';
@@ -62,6 +66,7 @@ import {
 } from '../utils/slack.utils';
 import { sendEventPopUp } from '../utils/pop-up.utils';
 import { createCalendarEvent, deleteCalendarEvents, updateCalendarEvent } from '../utils/google-integration.utils';
+import { downloadFile, uploadFile } from '../utils/google-integration.utils';
 
 export default class CalendarService {
   /**
@@ -236,9 +241,8 @@ export default class CalendarService {
    * @param shopIds An array of shops associated with the event.
    * @param machineryIds An array of machinery associated with the event.
    * @param workPackageIds An array of work packages associated with the event.
-   * @param documentIds An array of documents associated with the event.
    * @param scheduleSlots An array of schedule slots associated with the event.
-   * @param questionDocument The link to the question document.
+   * @param questionDocumentLink The link to the question document.
    * @param location Location of the event.
    * @param zoomLink Zoom Link if the event is online.
    * @param description Describes the event.
@@ -259,10 +263,9 @@ export default class CalendarService {
     shopIds: string[],
     machineryIds: string[],
     workPackageIds: string[],
-    documentIds: string[],
     scheduleSlot: ScheduleSlotCreateArgs[],
     teamTypeId?: string,
-    questionDocument?: string,
+    questionDocumentLink?: string,
     location?: string,
     zoomLink?: string,
     description?: string
@@ -293,12 +296,12 @@ export default class CalendarService {
       shopIds,
       machineryIds,
       workPackageIds,
-      documentIds,
+      documents: [],
       scheduleSlot,
       teamTypeId,
       location,
       zoomLink,
-      questionDocument,
+      questionDocumentLink,
       description
     });
 
@@ -456,7 +459,6 @@ export default class CalendarService {
         workPackages: {
           connect: workPackageIds.map((workPackageId) => ({ workPackageId }))
         },
-        documentIds,
         scheduledTimes: {
           create: scheduleSlot.map((s) => ({
             days: s.days,
@@ -473,7 +475,7 @@ export default class CalendarService {
         approvalRequiredFromUserId: hasConflict ? approverUserId : null,
         location,
         zoomLink,
-        questionDocument,
+        questionDocumentLink,
         description
       },
       ...getEventQueryArgs(organization.organizationId)
@@ -590,9 +592,9 @@ export default class CalendarService {
    * @param shopIds An array of shops associated with the event.
    * @param machineryIds An array of machinery associated with the event.
    * @param workPackageIds An array of work packages associated with the event.
-   * @param documentIds An array of documents associated with the event.
+   * @param documents An array of documents associated with the event.
    * @param scheduleSlots An array of schedule slots associated with the event.
-   * @param questionDocument The link to the question document.
+   * @param questionDocumentLink The link to the question document.
    * @param location Location of the event.
    * @param zoomLink Zoom Link if the event is online.
    * @param description Describes the event.
@@ -614,10 +616,10 @@ export default class CalendarService {
     shopIds: string[],
     machineryIds: string[],
     workPackageIds: string[],
-    documentIds: string[],
+    documents: EventDocumentCreateArgs[],
     scheduleSlot: ScheduleSlotCreateArgs[],
     teamTypeId?: string,
-    questionDocument?: string,
+    questionDocumentLink?: string,
     location?: string,
     zoomLink?: string,
     description?: string
@@ -647,19 +649,19 @@ export default class CalendarService {
       shopIds,
       machineryIds,
       workPackageIds,
-      documentIds,
+      documents,
       scheduleSlot,
       teamTypeId,
       location,
       zoomLink,
-      questionDocument,
+      questionDocumentLink,
       description
     });
 
     // question document is required if the status is scheduled or done
     if (foundEventType.requiresConfirmation) {
       if (foundEvent.status === Event_Status.SCHEDULED || foundEvent.status === Event_Status.DONE) {
-        if (questionDocument == null) {
+        if (questionDocumentLink == null) {
           throw new HttpException(400, 'doc template link is required for scheduled and done design reviews');
         }
       }
@@ -959,16 +961,18 @@ export default class CalendarService {
                 ? approverUserId
                 : null
               : foundEvent.approvalRequiredFromUserId,
-          documentIds,
           location,
           zoomLink,
-          questionDocument,
+          questionDocumentLink,
           description,
           calendarEventIds
         },
         ...getEventQueryArgs(organization.organizationId)
       });
     });
+
+    //set any deleted documents with a dateDeleted
+    await removeDeletedEventDocuments(documents, foundEvent.documents || [], submitter);
 
     const edittedEvent = eventTransformer(updatedEvent);
 
@@ -981,6 +985,72 @@ export default class CalendarService {
     }
 
     return edittedEvent;
+  }
+
+  /**
+   * Service function to upload a picture to the event documents folder in the NER google drive
+   * @param eventId id for the event we're tying the document to
+   * @param file The file data for the image
+   * @param submitter user who is uploading the document
+   * @param organizationId the organization the user is currently in
+   * @returns the google drive id for the file
+   */
+  static async uploadDocument(eventId: string, file: Express.Multer.File, submitter: User, organization: Organization) {
+    if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
+      throw new AccessDeniedGuestException('Guests cannot upload documents');
+
+    const event = await prisma.event.findUnique({
+      where: { eventId }
+    });
+
+    const numDocuments = await prisma.document.count({
+      where: {
+        documentEvent: {
+          eventType: {
+            organizationId: organization.organizationId
+          }
+        }
+      }
+    });
+
+    if (!event) throw new NotFoundException('Event', eventId);
+    if (event.dateDeleted) {
+      throw new DeletedException('Event', eventId);
+    }
+    if (event.userCreatedId !== submitter.userId && !isHead) {
+      throw new AccessDeniedException('You do not have access to upload a document for this event');
+    }
+
+    file.filename = 'document' + numDocuments;
+    const documentData = await uploadFile(file);
+
+    if (!documentData?.name) {
+      throw new HttpException(500, 'Document Name not found');
+    }
+
+    const document = await prisma.document.create({
+      data: {
+        googleFileId: documentData.id,
+        name: documentData.name,
+        documentEventId: eventId,
+        createdByUserId: submitter.userId
+      }
+    });
+
+    return document;
+  }
+
+  /**
+   * Downloads the document file with the given google file id
+   *
+   * @param fileId the google file id of the document
+   * @returns a buffer of the image data and the image type
+   */
+  static async downloadDocument(fileId: string) {
+    const fileData = await downloadFile(fileId);
+
+    if (!fileData) throw new NotFoundException('Image File', fileId);
+    return fileData;
   }
 
   /**
@@ -2078,7 +2148,8 @@ export default class CalendarService {
    * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
    */
   static async getFilteredEvents(filters: FilterArgs, organization: Organization): Promise<Event[]> {
-    const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvedEvents, startPeriod, endPeriod } = filters;
+    const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalIds, startPeriod, endPeriod, statuses } =
+      filters;
 
     // validate memberIds
     if (memberIds?.length) {
@@ -2190,10 +2261,9 @@ export default class CalendarService {
         dateDeleted: null,
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
-        AND: [
-          memberOrTeamFilter.length ? { OR: memberOrTeamFilter } : {},
-          approvedEvents ? { OR: [{ approved: 'APPROVED' }, { approved: 'NO_CONFLICT' }] } : {}
-        ],
+        approvalRequiredFromUserId: approvalIds?.length ? { in: approvalIds } : undefined,
+        OR: memberOrTeamFilter.length ? memberOrTeamFilter : undefined,
+        approved: statuses?.length ? { in: statuses } : undefined,
         scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
         ...fromCalendar
       },

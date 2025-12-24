@@ -1,9 +1,40 @@
 import express from 'express';
 import { body, param } from 'express-validator';
-import { intMinZero, isDate, nonEmptyString, validateInputs, isDayOfWeek, isEventStatus } from '../utils/validation.utils';
+import {
+  intMinZero,
+  isDate,
+  nonEmptyString,
+  validateInputs,
+  isDayOfWeek,
+  isEventStatus,
+  isConflictStatus,
+  requireFile
+} from '../utils/validation.utils';
 import CalendarController from '../controllers/calendar.controllers';
+import multer, { memoryStorage } from 'multer';
+import { MAX_FILE_SIZE } from 'shared';
 
 const calendarRouter = express.Router();
+
+const upload = multer({
+  limits: { fileSize: MAX_FILE_SIZE },
+  storage: memoryStorage(),
+  fileFilter: (_req, file, cb) => {
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg',
+      'image/png'
+    ];
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'));
+    }
+  }
+});
 
 calendarRouter.post(
   '/create',
@@ -81,9 +112,7 @@ calendarRouter.post(
   body('machineryIds.*').isString(),
   body('workPackageIds').isArray(),
   body('workPackageIds.*').isString(),
-  body('documentIds').isArray(),
-  body('documentIds.*').isString(),
-  body('questionDocument').optional().isString(),
+  body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),
   body('scheduleSlot').isArray(),
   body('scheduleSlot.*.days').isArray(),
@@ -116,9 +145,10 @@ calendarRouter.post(
   body('machineryIds.*').isString(),
   body('workPackageIds').isArray(),
   body('workPackageIds.*').isString(),
-  body('documentIds').isArray(),
-  body('documentIds.*').isString(),
-  body('questionDocument').optional().isString(),
+  body('documents').isArray(),
+  nonEmptyString(body('documents.*.name')),
+  nonEmptyString(body('documents.*.googleFileId')),
+  body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),
   body('scheduleSlot').isArray(),
   body('scheduleSlot.*.days').isArray(),
@@ -130,6 +160,16 @@ calendarRouter.post(
   body('scheduleSlot.*.allDay').isBoolean(),
   validateInputs,
   CalendarController.editEvent
+);
+
+calendarRouter.get('/document/:fileId', CalendarController.downloadDocument);
+
+calendarRouter.post(
+  '/event/:eventId/upload-document',
+  upload.single('pdf'),
+  requireFile(body('file')),
+  validateInputs,
+  CalendarController.uploadDocument
 );
 
 calendarRouter.post('/event/:eventId/approve', CalendarController.approveEvent);
@@ -230,6 +270,10 @@ calendarRouter.post(
   body('eventIds').isArray().optional(),
   body('eventIds.*').isString().optional(),
   body('approvedEvents').isBoolean().optional(),
+  body('approvalIds').isArray().optional(),
+  body('approvalIds.*').isString().optional(),
+  body('statuses').isArray().optional(),
+  isConflictStatus(body('statuses.*')),
   isDate(body('startPeriod')),
   isDate(body('endPeriod')),
   validateInputs,

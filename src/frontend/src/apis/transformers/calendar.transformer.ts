@@ -25,7 +25,7 @@ export const eventTransformer = (event: Event): Event => {
   return {
     ...event,
     dateCreated: new Date(event.dateCreated),
-    scheduledTimes: event.scheduledTimes.map((schedule) => ({
+    scheduledTimes: event.scheduledTimes?.map((schedule) => ({
       ...schedule,
       startTime: schedule.startTime ? new Date(schedule.startTime) : undefined,
       endTime: schedule.endTime ? new Date(schedule.endTime) : undefined
