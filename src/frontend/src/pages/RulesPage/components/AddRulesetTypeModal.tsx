@@ -76,7 +76,6 @@ const AddRulesetTypeModal: React.FC<AddRulesetTypeModalProps> = ({ open, onHide,
       onFormSubmit={handleFormSubmit}
       formId={'add-ruleset-type-form'}
       showCloseButton
-      submitText="Add Ruleset"
     >
       <Box>
         <FormControl fullWidth error={!!errors.name}>
