@@ -20,7 +20,9 @@ export const parseRuleset = (payload: ParseRulesetPayload) => {
   });
 };
 
-
+/**
+ * Upload ruleset PDF file
+ */
 export const uploadRulesetFile = (file: File) => {
   const formData = new FormData();
   formData.append('file', file);

@@ -2,6 +2,8 @@ import express from 'express';
 import RulesController from '../controllers/rules.controllers';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
 import { body } from 'express-validator';
+import { MAX_FILE_SIZE } from 'shared';
+import multer, { memoryStorage } from 'multer';
 
 const rulesRouter = express.Router();
 
@@ -98,5 +100,8 @@ rulesRouter.post(
   validateInputs,
   RulesController.parseRuleset
 );
+
+const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
+rulesRouter.post('/upload/file', upload.single('file'), RulesController.uploadRulesetFile);
 
 export default rulesRouter;

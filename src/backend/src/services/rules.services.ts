@@ -34,8 +34,8 @@ import {
   rulesetTypeTransformer,
   rulesetPreviewTransformer
 } from '../transformers/rules.transformer';
-import { downloadFile } from '../utils/google-integration.utils';
 import { ParsedRule, parseRulesFromPdf } from '../utils/parse.utils';
+import { uploadFile, downloadFile } from '../utils/google-integration.utils';
 
 export default class RulesService {
   /**
@@ -1368,5 +1368,14 @@ export default class RulesService {
     });
 
     return savedRules.map(ruleTransformer);
+  }
+
+  static async uploadRulesetFile(file: Express.Multer.File, uploader: User, organization: Organization) {
+    if (!(await userHasPermission(uploader.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('Only leadership and above can upload ruleset files');
+    }
+
+    const data = await uploadFile(file);
+    return data.id;
   }
 }

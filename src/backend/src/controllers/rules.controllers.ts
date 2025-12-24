@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services';
 import { ProjectRule, Rule, Ruleset } from 'shared';
+import { HttpException } from '../utils/errors.utils';
 
 export default class RulesController {
   static async getActiveRuleset(req: Request, res: Response, next: NextFunction) {
@@ -288,6 +289,20 @@ export default class RulesController {
       );
 
       res.status(200).json(parseResult);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async uploadRulesetFile(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.file) {
+        throw new HttpException(400, 'Invalid or undefined file data');
+      }
+
+      const fileId = await RulesService.uploadRulesetFile(req.file, req.currentUser, req.organization);
+
+      res.status(200).json(fileId);
     } catch (error: unknown) {
       next(error);
     }
