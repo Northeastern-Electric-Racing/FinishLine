@@ -1,7 +1,9 @@
 import { Prisma, Event_Type, Organization } from '@prisma/client';
-import { User, ScheduleSlotCreateArgs, Event, EventDocumentCreateArgs, Document } from 'shared';
+import { User, ScheduleSlotCreateArgs, Event, EventDocumentCreateArgs, Document, ConflictStatus } from 'shared';
 import { InvalidEventTypeConfigurationException } from './errors.utils';
 import prisma from '../prisma/prisma';
+import { getEventQueryArgs } from '../prisma-query-args/event.query-args';
+import { eventTransformer } from '../transformers/calendar.transformer';
 
 export function buildScheduledTimesOverlap(start?: Date, end?: Date): Prisma.Schedule_SlotListRelationFilter | undefined {
   if (!start && !end) return undefined;
@@ -117,7 +119,7 @@ export async function checkEventConflicts(
   organization: Organization,
   location?: string,
   eventId?: string
-): Promise<{ hasConflict: boolean; approverUserId?: string }> {
+): Promise<{ hasConflict: boolean; conflictingEvent?: Event }> {
   // No conflict if there's no location
   if (!location) {
     return { hasConflict: false };
@@ -134,16 +136,12 @@ export async function checkEventConflicts(
       eventId: eventId ? { not: eventId } : undefined, // Exclude current event if editing
       location,
       dateDeleted: null,
+      approved: { in: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT] },
       eventType: {
         organizationId: organization.organizationId
       }
     },
-    include: {
-      scheduledTimes: true
-    },
-    orderBy: {
-      dateCreated: 'asc' // Earlier events have priority
-    }
+    ...getEventQueryArgs(organization.organizationId)
   });
 
   // Check each schedule slot against existing events
@@ -167,12 +165,12 @@ export async function checkEventConflicts(
 
         // If both are all-day events, they conflict
         if (newSlot.allDay && existingSlot.allDay) {
-          return { hasConflict: true, approverUserId: event.userCreatedId };
+          return { hasConflict: true, conflictingEvent: eventTransformer(event) };
         }
 
         // If one is all-day and the other isn't, they conflict
         if (newSlot.allDay || existingSlot.allDay) {
-          return { hasConflict: true, approverUserId: event.userCreatedId };
+          return { hasConflict: true, conflictingEvent: eventTransformer(event) };
         }
 
         // Check time overlap (both have specific times)
@@ -185,7 +183,10 @@ export async function checkEventConflicts(
           const timeOverlap = newStart < existingEnd && newEnd > existingStart;
 
           if (timeOverlap) {
-            return { hasConflict: true, approverUserId: event.userCreatedId };
+            return {
+              hasConflict: true,
+              conflictingEvent: eventTransformer(event)
+            };
           }
         }
       }

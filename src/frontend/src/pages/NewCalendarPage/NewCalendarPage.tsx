@@ -2,19 +2,13 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
+import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, Alert } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { DayOfWeek, Event } from 'shared';
+import { Calendar, ConflictStatus, DayOfWeek, Event, EventType } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import {
-  useAllCalendars,
-  useFilterEvents,
-  useAllEventTypes,
-  useCreateEvent,
-  useUploadManyDocuments
-} from '../../hooks/calendar.hooks';
+import { useConflictingEvents, useFilterEvents, useCreateEvent, useUploadManyDocuments } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -25,16 +19,32 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
-import { convertDayToInt, getEventsFlattened } from '../../utils/calendar.utils';
+import { convertIntToDay, getEventsFlattened, getMeetingDates, getOverlapTime } from '../../utils/calendar.utils';
 import CreateEventModal from './Components/CreateEventModal';
 import { EventRoutePayload } from './Components/EventModal';
 import { useToast } from '../../hooks/toasts.hooks';
-import SchedulingConflictsWarning from './SchedulingConflictsWarning';
+import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
+import WarningIcon from '@mui/icons-material/Warning';
+import { useHistory } from 'react-router-dom';
 import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 
-const NewCalendarPage = () => {
+interface NewCalendarPageProps {
+  allEventTypes: EventType[];
+  yourEvents: Event[];
+  reviewEvents: Event[];
+  allCalendars: Calendar[];
+}
+
+const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEvents, reviewEvents, allCalendars }) => {
   const toast = useToast();
   const theme = useTheme();
+  const {
+    data: allTeamTypes,
+    isLoading: allTeamTypesLoading,
+    isError: allTeamTypesIsError,
+    error: allTeamTypesError
+  } = useAllTeamTypes();
+
   const user = useCurrentUser();
 
   const [memberIds, setMemberIds] = useState<string[]>([]);
@@ -50,49 +60,9 @@ const NewCalendarPage = () => {
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const {
-    data: allTeamTypes,
-    isLoading: allTeamTypesLoading,
-    isError: allTeamTypesIsError,
-    error: allTeamTypesError
-  } = useAllTeamTypes();
-
-  const {
-    data: allEventTypes,
-    isLoading: allEventTypesLoading,
-    isError: allEventTypesIsError,
-    error: allEventTypesError
-  } = useAllEventTypes();
-
-  const {
-    data: allCalendars,
-    isLoading: allCalendarsLoading,
-    isError: allCalendarsIsError,
-    error: allCalendarsError
-  } = useAllCalendars();
-
-  const { mutateAsync: createEvent } = useCreateEvent();
-  const { isLoading: documentsIsLoading, mutateAsync: uploadDocuments } = useUploadManyDocuments();
-
   const { data: allTeams, isLoading: allTeamsLoading, isError: allTeamsIsError, error: allTeamsError } = useGetUsersTeams();
 
   const teamList = useMemo(() => allTeams?.map((team) => team.teamId) ?? [], [allTeams]);
-
-  // Date range for filtering events (current month ±1 month)
-  const startPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15);
-  const endPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15);
-
-  const {
-    isLoading,
-    isError,
-    error,
-    data: allEvents
-  } = useFilterEvents({
-    startPeriod,
-    endPeriod,
-    memberIds: memberIds.concat(additionalMemberIds),
-    teamIds: teamIds.concat(additionalTeamIds)
-  });
 
   useEffect(() => {
     if (allTeams && additionalTeamIds.length === 0 && showTeamEvents) {
@@ -100,10 +70,71 @@ const NewCalendarPage = () => {
     }
   }, [allTeams, teamList, additionalTeamIds.length, showTeamEvents]);
 
-  // Date range for upcoming meetings (next 7 days)
-  const [upcomingStartPeriod] = useState(() => new Date());
+  const {
+    isLoading,
+    isError,
+    error,
+    data: allEvents
+  } = useFilterEvents({
+    startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
+    endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
+    memberIds: memberIds.concat(additionalMemberIds),
+    teamIds: teamIds.concat(additionalTeamIds),
+    statuses: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT]
+  });
 
-  const [upcomingEndPeriod] = useState(() => {
+  const history = useHistory();
+
+  const [pendingEvent, setPendingEvent] = useState(
+    yourEvents.filter((event) => event.approved === ConflictStatus.PENDING).length > 0
+  );
+
+  const [deniedEvent, setDeniedEvent] = useState(
+    yourEvents.filter((event) => event.approved === ConflictStatus.DENIED).length > 0
+  );
+
+  const [reviewEvent, setReviewEvent] = useState(
+    reviewEvents.filter((event) => event.approvalRequiredFrom?.userId === user.userId).length > 0
+  );
+
+  const filteredToPending = yourEvents
+    .filter((event) => event.approved === ConflictStatus.PENDING)
+    .map((event) => event.eventId);
+
+  const filteredToDenied = yourEvents
+    .filter((event) => event.approved === ConflictStatus.DENIED)
+    .map((event) => event.eventId);
+
+  const {
+    data: conflictingEvents,
+    isLoading: conflictingEventsLoading,
+    isError: conflictingEventsIsError,
+    error: conflictingEventsError
+  } = useConflictingEvents(filteredToPending);
+
+  const {
+    data: conflictingDeniedEvents,
+    isLoading: conflictingDeniedEventsLoading,
+    isError: conflictingDeniedEventsIsError,
+    error: conflictingDeniedEventsError
+  } = useConflictingEvents(filteredToDenied);
+
+  const yourReviewEvents = reviewEvents.filter((event) => event.approvalRequiredFrom?.userId === user.userId);
+  const {
+    data: untransformedConflictingReviewEvents,
+    isLoading: conflictingReviewEventsLoading,
+    isError: conflictingReviewEventsIsError,
+    error: conflictingReviewEventsError
+  } = useConflictingEvents(yourReviewEvents.map((event) => event.eventId));
+
+  const conflictingReviewEvents = untransformedConflictingReviewEvents?.map(filterEventTransformer);
+
+  const { mutateAsync: createEvent } = useCreateEvent();
+  const { isLoading: documentsIsLoading, mutateAsync: uploadDocuments } = useUploadManyDocuments();
+
+  const [startPeriod] = useState(() => new Date());
+
+  const [endPeriod] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() + 7);
     d.setHours(23, 59, 59, 999);
@@ -111,30 +142,17 @@ const NewCalendarPage = () => {
   });
 
   const { data: upcomingEvents } = useFilterEvents({
-    startPeriod: upcomingStartPeriod,
-    endPeriod: upcomingEndPeriod,
+    startPeriod,
+    endPeriod,
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds)
   });
 
-  if (isLoading || !allEvents) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error.message} />;
-  if (allEventTypesLoading || !allEventTypes) return <LoadingIndicator />;
-  if (allEventTypesIsError) return <ErrorPage message={allEventTypesError?.message} />;
-  if (documentsIsLoading) return <LoadingIndicator />;
-  if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
-  if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
-  if (!allCalendars || allCalendarsLoading) return <LoadingIndicator />;
-  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
-  if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
-  if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
-
-  const upcomingOccurences = upcomingEvents
-    ? getEventsFlattened(upcomingEvents, upcomingStartPeriod, upcomingEndPeriod)
-    : [];
+  const upcomingOccurences = upcomingEvents ? getEventsFlattened(upcomingEvents, startPeriod, endPeriod) : [];
 
   const updateAdditionalTeamIds = (changed: boolean) => {
     setShowTeamEvents(changed);
+
     if (changed) {
       setAdditionalTeamIds(teamList);
     } else {
@@ -144,6 +162,7 @@ const NewCalendarPage = () => {
 
   const updateAdditionalMemberIds = (changed: boolean) => {
     setShowInvitedEvents(changed);
+
     if (changed) {
       setAdditionalMemberIds([user.userId]);
     } else {
@@ -151,8 +170,40 @@ const NewCalendarPage = () => {
     }
   };
 
+  const yourConflicts = useMemo(
+    () => conflictingEvents?.filter((event, i) => filteredToPending[i] !== event.eventId) ?? [],
+    [conflictingEvents, filteredToPending]
+  );
+
+  const yourConflictsDenied = useMemo(
+    () => conflictingDeniedEvents?.filter((event, i) => filteredToDenied[i] !== event.eventId) ?? [],
+    [conflictingDeniedEvents, filteredToDenied]
+  );
+
+  if (
+    isLoading ||
+    !allEvents ||
+    conflictingEventsLoading ||
+    !conflictingEvents ||
+    conflictingEventsLoading ||
+    !conflictingEvents ||
+    conflictingDeniedEventsLoading ||
+    !conflictingDeniedEvents ||
+    conflictingReviewEventsLoading ||
+    !conflictingReviewEvents ||
+    documentsIsLoading
+  )
+    return <LoadingIndicator />;
+
+  if (isError) return <ErrorPage message={error.message} />;
+  if (conflictingEventsIsError) return <ErrorPage message={conflictingEventsError.message} />;
+  if (conflictingDeniedEventsIsError) return <ErrorPage message={conflictingDeniedEventsError.message} />;
+  if (conflictingReviewEventsIsError) return <ErrorPage message={conflictingReviewEventsError.message} />;
+
+  const transformedEvents = allEvents.map(filterEventTransformer);
+
   // Sort events by their first occurrence's start time
-  const sortedEvents = [...allEvents].sort((event1, event2) => {
+  const sortedEvents = [...transformedEvents].sort((event1, event2) => {
     const time1 = event1.scheduledTimes[0]?.startTime ? new Date(event1.scheduledTimes[0].startTime).getTime() : 0;
     const time2 = event2.scheduledTimes[0]?.startTime ? new Date(event2.scheduledTimes[0].startTime).getTime() : 0;
     return time1 - time2;
@@ -162,55 +213,23 @@ const NewCalendarPage = () => {
   const dayDict = new Map<string, DayOfWeek>();
 
   sortedEvents.forEach((event) => {
-    event.scheduledTimes.forEach((slot) => {
-      if (!slot.initialDateScheduled) return;
+    const times: Date[] = getMeetingDates(event);
 
-      // startTime is already a full timestamp, just use it directly
-      const startTimeDate = new Date(slot.initialDateScheduled);
-
-      // Accessing the date actually converts it to local time, which causes the date to be off. This is a workaround.
-      // 60000 is for millisecond conversion
-      const convertedStartTime = new Date(startTimeDate.getTime() + startTimeDate.getTimezoneOffset() * 60000);
-
-      const dayInt = convertedStartTime.getDay();
-
-      slot.days.forEach((day) => {
-        const eventDate = new Date(convertedStartTime);
-        eventDate.setHours(0, 0, 0, 0);
-        const offset = dayInt - convertDayToInt(day);
-
-        eventDate.setDate(eventDate.getDate() - offset);
-        const date = datePipe(new Date(eventDate.getTime()));
-
-        dayDict.set(date, day);
-
-        if (eventDict.has(date)) {
-          // Check if this event is already in this date's array to avoid duplicates
-          const existingEvents = eventDict.get(date)!;
-          if (!existingEvents.find((e) => e.eventId === event.eventId)) {
-            existingEvents.push(event);
-          }
-        } else {
-          eventDict.set(date, [event]);
+    times.forEach((date) => {
+      const eventDate = new Date(date);
+      const dateString = datePipe(eventDate);
+      eventDate.setHours(0, 0, 0, 0);
+      const day = convertIntToDay(eventDate.getDay());
+      dayDict.set(dateString, day);
+      if (eventDict.has(dateString)) {
+        // Check if this event is already in this date's array to avoid duplicates
+        const existingEvents = eventDict.get(dateString)!;
+        if (!existingEvents.find((e) => e.eventId === event.eventId)) {
+          existingEvents.push(event);
         }
-
-        for (let i = 1; i <= slot.recurrenceNumber; i++) {
-          const nextDate = new Date(eventDate);
-          nextDate.setDate(nextDate.getDate() + 7 * i);
-
-          const date = datePipe(new Date(nextDate.getTime()));
-          dayDict.set(date, day);
-
-          if (eventDict.has(date)) {
-            const existingEvents = eventDict.get(date)!;
-            if (!existingEvents.find((e) => e.eventId === event.eventId)) {
-              existingEvents.push(event);
-            }
-          } else {
-            eventDict.set(date, [event]);
-          }
-        }
-      });
+      } else {
+        eventDict.set(dateString, [event]);
+      }
     });
   });
 
@@ -229,6 +248,12 @@ const NewCalendarPage = () => {
   const daysThisMonth = paddingArrayStart
     .concat([...Array(daysInMonth(displayMonthYear)).keys()].map((day) => day + 1))
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
+
+  if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
+  if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
+
+  if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
+  if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
 
   const handleCreateEvent = async (data: EventRoutePayload) => {
     try {
@@ -293,10 +318,123 @@ const NewCalendarPage = () => {
           defaultDate={displayMonthYear}
         />
       )}
+      <Stack
+        spacing={1}
+        sx={{
+          position: 'fixed',
+          top: 24,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1400,
+          maxWidth: 600
+        }}
+      >
+        {deniedEvent && (
+          <Alert
+            icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
+            variant="filled"
+            severity="error"
+            onClose={() => setDeniedEvent(false)}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Typography fontSize={14}>
+                {' '}
+                You have scheduled an event at the same time and location as <i>{yourConflictsDenied[0].title}</i> and was
+                denied. Edit the event to put it up for re-approval, or change the time/location to not conflict with other
+                events.
+              </Typography>
+              <Button
+                variant="outlined"
+                sx={{
+                  color: 'white',
+                  borderColor: 'white',
+                  whiteSpace: 'nowrap',
+                  textTransform: 'none',
+                  flexShrink: 0,
+                  px: 2,
+                  '&:hover': {
+                    borderColor: 'white',
+                    bgcolor: 'rgba(255,255,255,0.1)'
+                  }
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  history.push('/calendar/yourEvents');
+                }}
+              >
+                Click Here to View Your Bookings
+              </Button>
+            </Stack>
+          </Alert>
+        )}
+        {pendingEvent && (
+          <Alert
+            icon={<WarningIcon fontSize="inherit" />}
+            variant="filled"
+            severity="error"
+            onClose={() => setPendingEvent(false)}
+          >
+            You have scheduled an event at the same time and location as <i>{yourConflicts[0].title}</i>.{' '}
+            <i>
+              {yourConflicts[0].userCreated.firstName} {yourConflicts[0].userCreated.lastName}
+            </i>{' '}
+            has been notified of this and must allow your event to take place in order to continue.
+          </Alert>
+        )}
+        {reviewEvent && (
+          <Alert
+            icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
+            variant="filled"
+            severity="error"
+            onClose={() => setReviewEvent(false)}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Typography fontSize={14}>
+                {' '}
+                <i>
+                  {yourReviewEvents[0].userCreated.firstName} {yourReviewEvents[0].userCreated.lastName}
+                </i>{' '}
+                has scheduled an event at the same time and location as your meeting at{' '}
+                {(() => {
+                  const overlaps = getOverlapTime(conflictingReviewEvents[0], yourReviewEvents[0]);
+                  const eventTime = overlaps[0].event1Time.start.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit'
+                  });
+                  return eventTime;
+                })()}{' '}
+                in {conflictingReviewEvents[0].location}.
+              </Typography>
+              <Button
+                variant="outlined"
+                sx={{
+                  color: 'white',
+                  borderColor: 'white',
+                  whiteSpace: 'nowrap',
+                  textTransform: 'none',
+                  flexShrink: 0,
+                  px: 2,
+                  '&:hover': {
+                    borderColor: 'white',
+                    bgcolor: 'rgba(255,255,255,0.1)'
+                  }
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  history.push('/calendar/reviews');
+                }}
+              >
+                Click Here to Review Booking
+              </Button>
+            </Stack>
+          </Alert>
+        )}
+      </Stack>
       <PageLayout hidePageTitle>
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
           <Typography variant="h4"></Typography>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', columnGap: 1, rowGap: 1 }}>
+            {/* New Event Button (does not do anything yet) */}
             <Button
               variant="contained"
               disableElevation
@@ -418,18 +556,11 @@ const NewCalendarPage = () => {
                 '&:hover': {
                   borderColor: 'white',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                },
-                mb: 2
+                }
               }}
             >
               More Filters
             </Button>
-            <SchedulingConflictsWarning
-              memberIds={memberIds.concat(additionalMemberIds)}
-              teamIds={teamIds.concat(additionalTeamIds)}
-              startPeriod={startPeriod}
-              endPeriod={endPeriod}
-            />
 
             <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 0.5 }}>
               My Upcoming Meetings:
@@ -447,7 +578,7 @@ const NewCalendarPage = () => {
                   maxHeight: 'calc(50%)'
                 }}
               >
-                {upcomingOccurences?.map((event: Event) => (
+                {upcomingOccurences?.map((event) => (
                   <UpcomingMeetingsCard
                     key={event.eventId}
                     event={event}

@@ -126,6 +126,12 @@ export const getSingleEvent = async (id: string) => {
   });
 };
 
+export const getConflictingEvent = async (id: string) => {
+  return axios.get(apiUrls.calendarGetConflictingEvent(id), {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
+};
+
 export const postCreateEventType = (payload: EventTypeCreateArgs) => {
   return axios.post<EventType>(apiUrls.calendarCreateEventType(), payload, {
     transformResponse: (data) => JSON.parse(data) as EventType
@@ -162,6 +168,14 @@ export const setEventStatus = async (id: string, payload: { status: EventStatus 
   return axios.post<Event>(apiUrls.calendarEventSetStatus(id), payload, {
     transformResponse: (data) => eventTransformer(JSON.parse(data))
   });
+};
+
+export const approveEvent = async (id: string) => {
+  return axios.post<Event>(apiUrls.calendarApproveEvent(id));
+};
+
+export const denyEvent = async (id: string) => {
+  return axios.post<Event>(apiUrls.calendarDenyEvent(id));
 };
 
 export const postDeleteCalendar = async (id: string) => {
