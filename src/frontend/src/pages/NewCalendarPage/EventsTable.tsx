@@ -43,16 +43,15 @@ export interface EventTableArgs {
 
 // trigger re-renders specifically for the timer
 const CountdownElement = ({ targetDate }: { targetDate: Date }) => {
-  const [, setUpdate] = useState(true);
+  const [now, setNow] = useState(new Date());
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setUpdate((prev) => !prev);
+      setNow(new Date());
     }, 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const now = new Date();
   const diffMs = targetDate.getTime() - now.getTime();
 
   const seconds = Math.floor(diffMs / 1000);
