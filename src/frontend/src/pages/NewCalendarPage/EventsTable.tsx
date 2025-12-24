@@ -41,6 +41,44 @@ export interface EventTableArgs {
   tab: number;
 }
 
+// trigger re-renders specifically for the timer
+const CountdownElement = ({ targetDate }: { targetDate: Date }) => {
+  const [, setUpdate] = useState(true);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setUpdate((prev) => !prev);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const now = new Date();
+  const diffMs = targetDate.getTime() - now.getTime();
+
+  const seconds = Math.floor(diffMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  const timeAway = {
+    passed: diffMs <= 0,
+    days,
+    hours: hours % 24,
+    minutes: minutes % 60,
+    seconds: seconds % 60
+  };
+
+  if (timeAway.passed) {
+    return <>- Passed</>;
+  }
+
+  return (
+    <>
+      - In {timeAway.days}d {timeAway.hours}h {timeAway.minutes}m {timeAway.seconds}s
+    </>
+  );
+};
+
 const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, allEventTypes, allCalendars }) => {
   // Convert to include proper dates
   // Done this way to allow the old events transformer to function properly
@@ -161,21 +199,6 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
           <TableBody>
             {events?.map((event) => {
               const earliestSchedule = new Date(getNextMeetingTime(event));
-              const now = new Date();
-              const diffMs = earliestSchedule.getTime() - now.getTime();
-
-              const seconds = Math.floor(diffMs / 1000);
-              const minutes = Math.floor(seconds / 60);
-              const hours = Math.floor(minutes / 60);
-              const days = Math.floor(hours / 24);
-
-              const timeAway = {
-                passed: diffMs <= 0,
-                days,
-                hours: hours % 24,
-                minutes: minutes % 60,
-                seconds: seconds % 60
-              };
 
               const attendeeNumber =
                 event.requiredMembers.length + event.optionalMembers.length - event.deniedMembers.length + 1;
@@ -184,10 +207,7 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
                 <TableRow key={event.eventId} hover>
                   <TableCell align="center">{event.title}</TableCell>
                   <TableCell align="center">
-                    {new Date(earliestSchedule).toLocaleDateString()}{' '}
-                    {!timeAway.passed
-                      ? ` - In ${timeAway.days}d ${timeAway.hours}h ${timeAway.minutes}m ${timeAway.seconds}s`
-                      : '- Passed'}
+                    {new Date(earliestSchedule).toLocaleDateString()} {<CountdownElement targetDate={earliestSchedule} />}
                   </TableCell>
                   <TableCell align="center">
                     {new Date(earliestSchedule).toLocaleTimeString('en-US', {
