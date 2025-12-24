@@ -27,9 +27,6 @@ import {
   Stack
 } from '@mui/material';
 import { datePipe } from '../../utils/pipes';
-import { NERButton } from '../../components/NERButton';
-import { useHistory } from 'react-router-dom';
-import { routes } from '../../utils/routes';
 
 type RulesetTypeColumnId = 'id' | 'name' | 'lastUpdated' | 'revisions' | 'actions';
 
@@ -42,7 +39,6 @@ interface RulesetTypeHeadCell {
 const RulesetTypePage: React.FC = () => {
   const history = useHistory();
   const theme = useTheme();
-  const history = useHistory();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const headCells: readonly RulesetTypeHeadCell[] = [
@@ -198,10 +194,12 @@ const RulesetTypePage: React.FC = () => {
                 }
               }}
             >
-              Add Ruleset
+              Add Ruleset Type
             </Button>
             {/* Temporary for navigation */}
-            <NERButton onClick={() => history.push(`${routes.RULES}/placeholder_ruleset_id`)}>FSAE Ruleset</NERButton>
+            <NERButton onClick={() => history.push(`${routes.RULES}/35fdd134-0ca5-4e42-a50a-3a7ebc852a74`)}>
+              FSAE Ruleset
+            </NERButton>
           </Box>
         </Box>
       </Box>

@@ -744,20 +744,39 @@ export default class RulesService {
     active: boolean,
     fileId: string
   ) {
+    // Query ALL ruleset types to see what exists
+    const allRulesetTypes = await prisma.ruleset_Type.findMany();
+    console.log(
+      '🔍 ALL Ruleset Types in DB:',
+      allRulesetTypes.map((t) => ({
+        id: t.rulesetTypeId,
+        name: t.name,
+        orgId: t.organizationId
+      }))
+    );
+
+    console.log('🔥 rulesetTypeId:', rulesetTypeId);
+
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
       throw new AccessDeniedException('only leadership and above can create ruleset!');
-
+    console.log('✅ Permission check passed');
     const rulesetType = await prisma.ruleset_Type.findUnique({
       where: {
-        rulesetTypeId,
-        deletedBy: null,
-        organizationId: organization.organizationId
+        rulesetTypeId
       }
     });
 
     if (!rulesetType) {
+      console.log('Ruleset type not found');
       throw new NotFoundException('Ruleset Type', rulesetTypeId);
     }
+    if (rulesetType.dateDeleted !== null) {
+      console.log('Ruleset type deleted');
+      throw new DeletedException('Ruleset Type', rulesetTypeId);
+    }
+    console.log('✅ Ruleset type exists and not deleted');
+
+    if (rulesetType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Ruleset Type');
 
     const car = await prisma.car.findFirst({
       where: {

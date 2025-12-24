@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import React from 'react';
 
@@ -31,8 +31,6 @@ import {
 } from '@mui/material';
 import { datePipe } from '../../utils/pipes';
 
-// List of rulesets for a specific ruleset type
-
 interface RulesetRow {
   id: string;
   fileName: string;
@@ -47,6 +45,10 @@ interface RulesetRow {
  * Supports editing and assigning rules to projects and teams.
  */
 const RulesetPage: React.FC = () => {
+  // ruleset from url
+  const { rulesetTypeId } = useParams<{ rulesetTypeId: string }>();
+  console.log('rulesetTypeId from URL:', rulesetTypeId);
+
   const { mutateAsync: createRuleset } = useCreateRuleset();
   const { mutateAsync: parseRuleset } = useParseRuleset();
   const toast = useToast();
@@ -93,7 +95,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '4',
       fileName: 'Hi',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -101,7 +103,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '5',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -109,7 +111,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '6',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -117,7 +119,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '7',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -125,7 +127,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '8',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -133,7 +135,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '9',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -141,7 +143,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '10',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -149,7 +151,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '11',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -157,7 +159,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '12',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -165,7 +167,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '13',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -173,7 +175,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '14',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -181,7 +183,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '15',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -189,7 +191,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
+      id: '16',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -197,39 +199,7 @@ const RulesetPage: React.FC = () => {
       isActive: false
     },
     {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
+      id: '17',
       fileName: 'Hi ',
       dateUploaded: new Date('2025-02-24'),
       percentRulesAssigned: 80,
@@ -240,17 +210,23 @@ const RulesetPage: React.FC = () => {
 
   const handleFileConfirm = async (data: { fileId: string; name: string; carNumber: number; parserType: string }) => {
     setAddFileModalShow(false);
-try {
+    try {
       console.log('Creating ruleset...');
-
-      const rulesetTypeId = 'PLACEHOLDER_RULESET_TYPE_ID'; /* TODO */
+      console.log('rulesetTypeId value:', rulesetTypeId);
+      console.log('Full payload:', {
+        fileId: data.fileId,
+        name: data.name,
+        rulesetTypeId,
+        carNumber: data.carNumber,
+        active: false
+      });
 
       const ruleset = await createRuleset({
         fileId: data.fileId,
         name: data.name,
         rulesetTypeId,
         carNumber: data.carNumber,
-        active: false,
+        active: false
       });
 
       console.log('Full ruleset response:', ruleset);
@@ -279,7 +255,7 @@ try {
       toast.error('Error uploading file: ' + (e instanceof Error ? e.message : 'Unknown error'));
     }
   };
-  
+
   return (
     <>
       {/* Breadcrumb Placeholder */}

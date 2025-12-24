@@ -2,7 +2,7 @@ name: finishline-development
 services:
   database:
     container_name: database-dev
-    image: postgres
+    image: postgres:16
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: docker
