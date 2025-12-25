@@ -436,6 +436,11 @@ const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
   (endDate ? `end=${encodeURIComponent(endDate.toISOString())}` : '');
 const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 
+/************** Rule Endpoints ***************/
+const rules = () => `${API_URL}/rules`;
+const rulesetTypes = () => `${rules()}/rulesetTypes`;
+const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -737,6 +742,10 @@ export const apiUrls = {
 
   retrospectiveTimelines,
   retrospectiveBudgets,
+
+  rules,
+  rulesetTypes,
+  rulesetsByType,
 
   version
 };
