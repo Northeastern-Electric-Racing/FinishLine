@@ -1,8 +1,13 @@
 import PageLayout from '../../components/PageLayout';
 import { Box, Button } from '@mui/material';
 import RulesetTypeTable from './components/RulesetTypeTable';
+import { NERButton } from '../../components/NERButton';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../utils/routes';
 
 const RulesetTypePage: React.FC = () => {
+  const history = useHistory();
+
   return (
     <PageLayout title="Ruleset Types">
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 120px)' }}>
@@ -54,6 +59,8 @@ const RulesetTypePage: React.FC = () => {
             >
               Add Ruleset
             </Button>
+            {/* Temporary for navigation */}
+            <NERButton onClick={() => history.push(`${routes.RULES}/placeholder_ruleset_id`)}>FSAE Ruleset</NERButton>
           </Box>
         </Box>
       </Box>
