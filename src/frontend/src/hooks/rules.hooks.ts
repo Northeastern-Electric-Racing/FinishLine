@@ -1,7 +1,11 @@
 import { useMutation, useQueryClient } from 'react-query';
-import { Rule as SharedRule, Ruleset } from 'shared';
-import { createRuleset, parseRuleset } from '../apis/rules.api';
+import { RulesetType, Rule as SharedRule, Ruleset } from 'shared';
+import { createRulesetType, parseRuleset } from '../apis/rules.api';
 import { uploadRulesetFile } from '../apis/rules.api';
+
+interface CreateRulesetTypePayload {
+  name: string;
+}
 
 export interface ParseRulesetPayload {
   rulesetId: string;
@@ -16,6 +20,26 @@ export interface CreateRulesetPayload {
   carNumber: number;
   active: boolean;
 }
+
+/**
+ * Custom React Hook to create a new ruleset type
+ */
+export const useCreateRulesetType = () => {
+  const queryClient = useQueryClient();
+  return useMutation<RulesetType, Error, CreateRulesetTypePayload>(
+    ['rulesetTypes', 'create'],
+    async (payload: CreateRulesetTypePayload) => {
+      const { data } = await createRulesetType(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rulesetTypes']);
+      }
+    }
+  );
+};
+
 
 export const useCreateRuleset = () => {
   const queryClient = useQueryClient();
@@ -60,3 +84,4 @@ export const useUploadRulesetFile = () => {
     return data;
   });
 };
+

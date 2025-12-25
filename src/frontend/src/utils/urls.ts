@@ -438,9 +438,10 @@ const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 
 /************** Rule Endpoints ***************/
 const rules = () => `${API_URL}/rules`;
-const ruleset = () => `${rules()}/ruleset`; 
-const rulesetsById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
-const rulesetsCreate = () => `${ruleset()}/create`;
+// const ruleset = () => `${rules()}/ruleset`;
+//const rulesetsById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
+const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
+const rulesetsCreate = () => `${rules()}/ruleset/create`; // fix this
 const parseRuleset = (rulesetId: string) => `${API_URL}/rules/ruleset/${rulesetId}/parse`;
 const uploadRulesetFile = () => `${rules()}/upload/file`;
 
@@ -746,8 +747,10 @@ export const apiUrls = {
   retrospectiveTimelines,
   retrospectiveBudgets,
 
-  ruleset,
-  rulesetsById,
+  rules,
+  // ruleset,
+  // rulesetsById,
+  rulesetTypeCreate,
   rulesetsCreate,
   parseRuleset,
   uploadRulesetFile,
