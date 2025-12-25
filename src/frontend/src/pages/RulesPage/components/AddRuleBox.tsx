@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Box, Popover } from '@mui/material';
+import { Box, Popover, useTheme } from '@mui/material';
 import { NERButton } from '../../../components/NERButton';
 
 type AddRuleBoxProps = {
@@ -11,6 +11,8 @@ type AddRuleBoxProps = {
 };
 
 export const AddRuleBox: React.FC<AddRuleBoxProps> = ({ open, anchorEl, onClose, onAddRuleSection, onAddRule }) => {
+  const theme = useTheme();
+
   return (
     <Popover
       open={open}
@@ -30,11 +32,11 @@ export const AddRuleBox: React.FC<AddRuleBoxProps> = ({ open, anchorEl, onClose,
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: '#6f6f6f',
+          backgroundColor: theme.palette.grey[700],
           borderRadius: '8px',
           overflow: 'hidden',
           border: '1px solid rgba(0,0,0,0.4)',
-          minWidth: 220
+          minWidth: 'auto'
         }}
       >
         <NERButton
@@ -42,10 +44,9 @@ export const AddRuleBox: React.FC<AddRuleBoxProps> = ({ open, anchorEl, onClose,
           sx={{
             borderRadius: 0,
             backgroundColor: 'transparent',
-            color: '#fff',
-            padding: '10px 12px',
+            color: theme.palette.common.white,
             lineHeight: 1.1,
-            justifyContent: 'flex-start',
+            justifyContent: 'flex-end',
             '&:hover': { backgroundColor: 'rgba(255,255,255,0.12)' }
           }}
         >
@@ -60,10 +61,9 @@ export const AddRuleBox: React.FC<AddRuleBoxProps> = ({ open, anchorEl, onClose,
             borderRadius: 0,
             borderTop: '1px solid black',
             backgroundColor: 'transparent',
-            color: '#fff',
-            padding: '10px 12px',
+            color: theme.palette.common.white,
             lineHeight: 1.1,
-            justifyContent: 'flex-start',
+            justifyContent: 'flex-end',
             '&:hover': { backgroundColor: 'rgba(255,255,255,0.12)' }
           }}
         >
