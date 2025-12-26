@@ -18,7 +18,6 @@ import {
 } from '@mui/material';
 import { datePipe } from '../../../utils/pipes';
 import { NERButton } from '../../../components/NERButton';
-import { useHistory } from 'react-router-dom';
 
 interface RulesetRow {
   id: string;
@@ -30,11 +29,11 @@ interface RulesetRow {
 }
 
 const RulesetTable: React.FC = () => {
-  const history = useHistory();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
+  // Add file upload logic
+  // const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
 
   // Table header configuration
   const headCells = [
