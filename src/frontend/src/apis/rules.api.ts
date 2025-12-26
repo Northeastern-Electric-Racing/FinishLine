@@ -34,4 +34,3 @@ export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
-

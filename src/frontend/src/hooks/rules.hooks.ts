@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient, useQuery } from 'react-query';
-import { RulesetType } from 'shared';
+import { Ruleset, RulesetType } from 'shared';
 import { createRulesetType, getAllRulesetTypes, getRulesetsByRulesetType } from '../apis/rules.api';
-
 
 interface CreateRulesetTypePayload {
   name: string;
@@ -25,7 +24,6 @@ export const useCreateRulesetType = () => {
     }
   );
 };
-
 
 /**
  * React Query hook to fetch all Ruleset Types.
@@ -51,4 +49,3 @@ export const useRulesetsByType = (rulesetTypeId: string) => {
     return data;
   });
 };
-

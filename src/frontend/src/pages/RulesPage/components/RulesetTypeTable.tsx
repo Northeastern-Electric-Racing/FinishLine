@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Paper,
   Table,
   TableBody,
@@ -23,6 +22,7 @@ import { useAllRulesetTypes } from '../../../hooks/rules.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { RulesetType } from 'shared';
+import { NERButton } from '../../../components/NERButton';
 
 type RulesetTypeColumnId = 'id' | 'name' | 'lastUpdated' | 'revisions' | 'actions';
 
@@ -61,8 +61,8 @@ const RulesetTypeTable: React.FC = () => {
     history.push(routes.RULESET_BY_ID.replace(':rulesetId', rulesetTypeId));
   };
 
-  //   if (isLoading) return <LoadingIndicator />;
-  //   if (error) return <ErrorPage message={error.message} />;
+  if (isLoading) return <LoadingIndicator />;
+  if (error) return <ErrorPage message={error.message} />;
 
   return (
     <Box>
@@ -99,21 +99,22 @@ const RulesetTypeTable: React.FC = () => {
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() => handleViewRuleset(rulesetType.rulesetTypeId)}
+                    <NERButton
                       sx={{
-                        color: '#dd514c',
-                        borderColor: '#dd514c',
+                        backgroundColor: theme.palette.grey[800],
+                        color: theme.palette.getContrastText(theme.palette.grey[600]),
                         '&:hover': {
-                          borderColor: '#c74340',
-                          backgroundColor: 'rgba(221, 81, 76, 0.08)'
-                        }
+                          backgroundColor: theme.palette.grey[700]
+                        },
+                        marginRight: '10px',
+                        padding: '4px',
+                        lineHeight: 1,
+                        borderRadius: '6px'
                       }}
+                      onClick={() => handleViewRuleset(rulesetType.rulesetTypeId)}
                     >
-                      Actions
-                    </Button>
+                      View Ruleset
+                    </NERButton>
                   </Box>
                 </Box>
               </CardContent>
@@ -121,47 +122,38 @@ const RulesetTypeTable: React.FC = () => {
           ))}
         </Stack>
       ) : (
-        <Box
-          sx={{
-            '& .Mui-even': {
-              backgroundColor: theme.palette.background.paper,
-              border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
-            },
-            '& .Mui-odd': { border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}` }
-          }}
-        >
-          <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-            <Table aria-label="ruleset types">
-              <TableHead
-                sx={{
-                  backgroundColor: '#dd514c'
-                }}
-              >
+        <TableContainer component={Paper} sx={{ borderRadius: '8px', overflowY: 'auto', maxHeight: '100vh' }}>
+          <Table stickyHeader aria-label="ruleset types">
+            <TableHead>
+              <TableRow>
+                {headCells.map((headCell) => (
+                  <TableCell
+                    align="center"
+                    sx={{ fontSize: '16px', fontWeight: 600, backgroundColor: '#dd514c' }}
+                    style={{ paddingLeft: '24px', paddingRight: '0px' }}
+                    key={headCell.id}
+                  >
+                    {headCell.label}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody sx={{ backgroundColor: '#121313', '& td': { py: 2 } }}>
+              {rulesetTypes.length === 0 ? (
                 <TableRow>
-                  {headCells.map((headCell) => (
-                    <TableCell
-                      align="center"
-                      sx={{ fontSize: '16px', fontWeight: 600 }}
-                      style={{ paddingLeft: '24px', paddingRight: '0px' }}
-                      key={headCell.id}
-                    >
-                      {headCell.label}
-                    </TableCell>
-                  ))}
+                  <TableCell colSpan={6} align="center" sx={{ color: '#999', padding: '15px' }}>
+                    No Ruleset Types Found
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody sx={{ backgroundColor: '#121313' }}>
-                {rulesetTypes.map((rulesetType: RulesetType, index: number) => (
+              ) : (
+                rulesetTypes.map((rulesetType: RulesetType) => (
                   <TableRow
                     key={rulesetType.rulesetTypeId}
                     sx={{
-                      '&:hover': {
-                        backgroundColor: 'rgba(239, 67, 69, 0.6)'
-                      }
+                      '&:last-child td, &:last-child th': { border: 0 }
                     }}
-                    className={index % 2 === 0 ? 'Mui-even' : 'Mui-odd'}
                   >
-                    <TableCell align="center" sx={{ color: '#ededed' }}>
+                    <TableCell align="center" sx={{ maxWidth: '20vw' }}>
                       <Link
                         component={RouterLink}
                         to={routes.RULESET_BY_ID.replace(':rulesetId', rulesetType.rulesetTypeId)}
@@ -170,7 +162,7 @@ const RulesetTypeTable: React.FC = () => {
                         {rulesetType.name}
                       </Link>
                     </TableCell>
-                    <TableCell align="center" sx={{ color: '#ededed' }}>
+                    <TableCell align="center">
                       <Link
                         component={RouterLink}
                         to={routes.RULESET_BY_ID.replace(':rulesetId', rulesetType.rulesetTypeId)}
@@ -179,7 +171,7 @@ const RulesetTypeTable: React.FC = () => {
                         {datePipe(rulesetType.lastUpdated)}
                       </Link>
                     </TableCell>
-                    <TableCell align="center" sx={{ color: '#ededed' }}>
+                    <TableCell align="center">
                       <Link
                         component={RouterLink}
                         to={routes.RULESET_BY_ID.replace(':rulesetId', rulesetType.rulesetTypeId)}
@@ -189,28 +181,29 @@ const RulesetTypeTable: React.FC = () => {
                       </Link>
                     </TableCell>
                     <TableCell align="center">
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => handleViewRuleset(rulesetType.rulesetTypeId)}
+                      <NERButton
                         sx={{
-                          color: '#dd514c',
-                          borderColor: '#dd514c',
+                          backgroundColor: theme.palette.grey[800],
+                          color: theme.palette.getContrastText(theme.palette.grey[600]),
                           '&:hover': {
-                            borderColor: '#c74340',
-                            backgroundColor: 'rgba(221, 81, 76, 0.08)'
-                          }
+                            backgroundColor: theme.palette.grey[700]
+                          },
+                          marginRight: '10px',
+                          padding: '4px',
+                          lineHeight: 1,
+                          borderRadius: '6px'
                         }}
+                        onClick={() => handleViewRuleset(rulesetType.rulesetTypeId)}
                       >
-                        View
-                      </Button>
+                        View Ruleset
+                      </NERButton>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
     </Box>
   );
