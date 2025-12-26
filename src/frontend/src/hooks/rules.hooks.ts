@@ -1,6 +1,31 @@
-import { useQuery } from 'react-query';
-import { Ruleset, RulesetType } from 'shared';
-import { getAllRulesetTypes, getRulesetsByRulesetType } from '../apis/rules.api';
+import { useMutation, useQueryClient, useQuery } from 'react-query';
+import { RulesetType } from 'shared';
+import { createRulesetType, getAllRulesetTypes, getRulesetsByRulesetType } from '../apis/rules.api';
+
+
+interface CreateRulesetTypePayload {
+  name: string;
+}
+
+/**
+ * Custom React Hook to create a new ruleset type
+ */
+export const useCreateRulesetType = () => {
+  const queryClient = useQueryClient();
+  return useMutation<RulesetType, Error, CreateRulesetTypePayload>(
+    ['rulesetTypes', 'create'],
+    async (payload: CreateRulesetTypePayload) => {
+      const { data } = await createRulesetType(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rulesetTypes']);
+      }
+    }
+  );
+};
+
 
 /**
  * React Query hook to fetch all Ruleset Types.
@@ -26,3 +51,4 @@ export const useRulesetsByType = (rulesetTypeId: string) => {
     return data;
   });
 };
+

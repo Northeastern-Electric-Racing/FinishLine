@@ -1,6 +1,17 @@
-import axios from 'axios';
-import { Ruleset, RulesetType } from 'shared';
+import { RulesetType, Ruleset } from 'shared';
+import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+
+/**
+ * Creates a new ruleset type
+ *
+ * @param payload the data for creating the ruleset type
+ * @returns the created ruleset type
+ */
+export const createRulesetType = (payload: { name: string }) => {
+  return axios.post<RulesetType>(apiUrls.rulesetTypeCreate(), payload);
+};
+
 /**
  * Fetches all Ruleset Types for the current organization.
  *
@@ -23,3 +34,4 @@ export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+

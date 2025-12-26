@@ -4,9 +4,30 @@ import RulesetTypeTable from './components/RulesetTypeTable';
 import { NERButton } from '../../components/NERButton';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
+import AddRulesetTypeModal from './components/AddRulesetTypeModal';
+import { useState } from 'react';
+import { useCreateRulesetType } from '../../hooks/rules.hooks';
+
+type RulesetTypeColumnId = 'id' | 'name' | 'lastUpdated' | 'revisions' | 'actions';
+
+interface RulesetTypeHeadCell {
+  id: RulesetTypeColumnId;
+  label: string;
+}
 
 const RulesetTypePage: React.FC = () => {
   const history = useHistory();
+  const [addRulesetTypeModalShow, setAddRulesetTypeModalShow] = useState(false);
+
+  const { mutateAsync: createRulesetType } = useCreateRulesetType();
+
+  const handleAddRulesetTypeConfirm = async (data: { name: string }) => {
+    await createRulesetType({ name: data.name });
+  };
+
+  const handleAddRulesetTypeCancel = () => {
+    setAddRulesetTypeModalShow(false);
+  };
 
   return (
     <PageLayout title="Ruleset Types">
@@ -36,29 +57,14 @@ const RulesetTypePage: React.FC = () => {
               justifyContent: { xs: 'center', md: 'flex-end' }
             }}
           >
-            <Button
-              className="viewButton"
-              variant="contained"
-              sx={{
-                borderRadius: '8px',
-                color: '#ededed',
-                backgroundColor: '#dd514c',
-                padding: { xs: '8px 16px', md: '2px 20px' },
-                mb: 1,
-                mr: { xs: 0, md: 2 },
-                display: 'flex',
-                fontSize: { xs: '14px', md: '16px' },
-                fontWeight: 700,
-                textTransform: 'none',
-                width: { xs: '100%', sm: 'auto' },
-                maxWidth: { xs: '300px', sm: 'none' },
-                '&:hover': {
-                  backgroundColor: '#c74340'
-                }
-              }}
-            >
-              Add Ruleset
-            </Button>
+            <NERButton variant="contained" onClick={() => setAddRulesetTypeModalShow(!addRulesetTypeModalShow)}>
+              Add Ruleset Type
+            </NERButton>
+            <AddRulesetTypeModal
+              open={addRulesetTypeModalShow}
+              onHide={handleAddRulesetTypeCancel}
+              onFormSubmit={handleAddRulesetTypeConfirm}
+            />
             {/* Temporary for navigation */}
             <NERButton onClick={() => history.push(`${routes.RULES}/placeholder_ruleset_id`)}>FSAE Ruleset</NERButton>
           </Box>
