@@ -221,7 +221,7 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
           </Stack>
         )}
 
-        {showAvailabilityButton && (
+        {specificEventType?.requiresConfirmation && showAvailabilityButton && (
           <Stack direction="row" spacing={1} alignItems="center">
             <PeopleIcon fontSize="small" sx={{ mt: 0.1 }} />
             <Button

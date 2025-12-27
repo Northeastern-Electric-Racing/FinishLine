@@ -78,8 +78,8 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   } = useFilterEvents({
     startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
     endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
-    memberIds: memberIds.concat(additionalMemberIds),
-    teamIds: teamIds.concat(additionalTeamIds),
+    memberIds: [...new Set(memberIds.concat(additionalMemberIds))],
+    teamIds: [...new Set(teamIds.concat(additionalTeamIds))],
     statuses: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT]
   });
 
@@ -144,8 +144,8 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   const { data: upcomingEvents } = useFilterEvents({
     startPeriod,
     endPeriod,
-    memberIds: memberIds.concat(additionalMemberIds),
-    teamIds: teamIds.concat(additionalTeamIds)
+    memberIds: [...new Set(memberIds.concat(additionalMemberIds))],
+    teamIds: [...new Set(teamIds.concat(additionalTeamIds))]
   });
 
   const upcomingOccurences = upcomingEvents ? getEventsFlattened(upcomingEvents, startPeriod, endPeriod) : [];

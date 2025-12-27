@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Grid, IconButton, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import { Calendar, DayOfWeek, Event, EventType } from 'shared';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -17,6 +17,7 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import ArticleIcon from '@mui/icons-material/Article';
 import HelpIcon from '@mui/icons-material/Help';
 import GroupsIcon from '@mui/icons-material/Groups';
+import EditIcon from '@mui/icons-material/Edit';
 
 import { EventClickPopup } from './EventClickPopup';
 import EventPartialInfoView from './EventPartialInfoView';
@@ -127,6 +128,27 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
               color={color}
             >
               {name}
+            </Typography>
+            <Typography
+              marginX={1.5}
+              marginY={1.5}
+              lineHeight="120%"
+              fontSize={24}
+              fontWeight="bold"
+              noWrap
+              align="right"
+              sx={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                color: theme.palette.grey[500],
+                '&:hover': {
+                  color: theme.palette.common.white,
+                  bgcolor: 'transparent'
+                }
+              }}
+            >
+              <EditIcon fontSize="small" />
             </Typography>
           </Stack>
 
