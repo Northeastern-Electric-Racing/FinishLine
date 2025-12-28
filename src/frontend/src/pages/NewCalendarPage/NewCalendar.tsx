@@ -6,10 +6,12 @@ import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import DesignReviewDetails from '../CalendarPage/EventDetailPage/EventDetails';
 import CalendarTab from './CalendarTab';
+import EventAvailabilityPage from './Components/EventAvailabilityPage';
 
 const NewCalendar: React.FC = () => {
   return (
     <Switch>
+      <Route path={`${routes.NEW_CALENDAR}/:eventId`} component={EventAvailabilityPage} />
       <Route path={routes.DESIGN_REVIEW_BY_ID} component={DesignReviewDetails} />
       <Route path={routes.NEW_CALENDAR} component={CalendarTab} />
     </Switch>

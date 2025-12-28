@@ -475,6 +475,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         eventTypes={eventTypes}
         calendars={calendars}
         dayOfWeek={dayOfWeek}
+        clickedDate={cardDate}
       />
     </>
   );

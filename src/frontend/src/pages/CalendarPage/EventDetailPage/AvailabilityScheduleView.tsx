@@ -21,6 +21,7 @@ interface AvailabilityScheduleViewProps {
   onSelectedTimeslotChanged: (val: number | null, day: Date | null) => void;
   dateRangeTitle: string;
   event: Event;
+  displayDate?: Date;
 }
 
 const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
@@ -32,11 +33,13 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   setCurrentUnavailableUsers,
   dateRangeTitle,
   onSelectedTimeslotChanged,
-  event
+  event,
+  displayDate
 }) => {
   const totalUsers = usersToAvailabilities.size;
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
-  const initialDate = event.scheduledTimes[0]?.initialDateScheduled || new Date();
+  // Use displayDate if provided, otherwise fall back to event's initial date
+  const initialDate = displayDate || event.scheduledTimes[0]?.initialDateScheduled || new Date();
   const potentialDays = getNextSevenDays(initialDate);
 
   const handleTimeslotClick = (index: number, day: Date) => {

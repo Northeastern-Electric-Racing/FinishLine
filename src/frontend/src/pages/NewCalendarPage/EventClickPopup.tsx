@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
 import { Calendar, DayOfWeek, Event, EventType } from 'shared';
 
@@ -26,8 +26,17 @@ import PeopleIcon from '@mui/icons-material/People';
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
-import { useApproveEvent, useDenyEvent } from '../../hooks/calendar.hooks';
+import {
+  EditEventArgs,
+  useApproveEvent,
+  useDenyEvent,
+  useEditEvent,
+  useUploadManyDocuments
+} from '../../hooks/calendar.hooks';
 import { convertDayToDayShorthand } from '../../utils/calendar.utils';
+import EditEventModal from './Components/EditEventModal';
+import { EventFormValues, EventRoutePayload } from './Components/EventModal';
+import { useToast } from '../../hooks/toasts.hooks';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
@@ -51,6 +60,8 @@ interface EventClickContentProps {
   disable: boolean;
   addApprovalButtons: boolean;
   onClose: () => void;
+  onEdit: (event: Event) => void;
+  clickedDate?: Date;
 }
 
 const joinPeople = (members: { firstName: string; lastName: string }[]) =>
@@ -68,7 +79,9 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
   dayOfWeek,
   disable,
   addApprovalButtons,
-  onClose
+  onClose,
+  onEdit,
+  clickedDate
 }) => {
   const { mutateAsync: approveEvent } = useApproveEvent(event.eventId);
   const { mutateAsync: denyEvent } = useDenyEvent(event.eventId);
@@ -87,8 +100,11 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
 
   const showAvailabilityButton = true;
 
-  const editUrl = `${routes.SETTINGS_PREFERENCES}?eventId=${event.eventId}`;
-  const availabilityUrl = `${routes.CALENDAR}/${event.eventId}`;
+  const eventDate =
+    clickedDate ||
+    (event.scheduledTimes[0]?.initialDateScheduled ? new Date(event.scheduledTimes[0].initialDateScheduled) : new Date());
+
+  const availabilityUrl = `${routes.NEW_CALENDAR}/${event.eventId}?date=${eventDate.toISOString()}`;
 
   const requiredText = event.requiredMembers.length > 0 ? joinPeople(event.requiredMembers) : '';
   const optionalText = event.optionalMembers.length > 0 ? joinPeople(event.optionalMembers) : '';
@@ -116,13 +132,13 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
       }}
     >
       <Box sx={{ position: 'relative', mb: 2 }}>
-        {/* Edit -> availability page */}
         {!disable && (
           <IconButton
             size="small"
-            component={RouterLink}
-            to={editUrl}
-            onClick={stopClick}
+            onClick={(e) => {
+              stopClick(e);
+              onEdit(event);
+            }}
             sx={{
               position: 'absolute',
               top: 0,
@@ -401,6 +417,7 @@ export interface EventClickPopupProps {
   dayOfWeek?: DayOfWeek;
   disable?: boolean;
   addApprovalButtons?: boolean;
+  clickedDate?: Date;
 }
 
 export const EventClickPopup: React.FC<EventClickPopupProps> = ({
@@ -411,8 +428,99 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
   calendars,
   dayOfWeek,
   disable = false,
-  addApprovalButtons = false
+  addApprovalButtons = false,
+  clickedDate
 }) => {
+  const toast = useToast();
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const { mutateAsync: editEvent } = useEditEvent(clickedEvent?.eventId ?? '');
+  const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
+
+  const convertEventToFormValues = (event: Event): Partial<EventFormValues> => {
+    return {
+      title: event.title,
+      eventTypeId: event.eventTypeId,
+      requiredMemberIds: event.requiredMembers.map((m) => m.userId),
+      optionalMemberIds: event.optionalMembers.map((m) => m.userId),
+      teamIds: event.teams.map((t) => t.teamId),
+      teamTypeId: event.teamType?.teamTypeId,
+      location: event.location,
+      zoomLink: event.zoomLink,
+      shopIds: event.shops.map((s) => s.shopId),
+      machineryIds: event.machinery.map((m) => m.machineryId),
+      workPackageIds: event.workPackages.map((wp) => wp.workPackageId),
+      documentFiles: event.documents.map((doc) => ({
+        name: doc.name,
+        googleFileId: doc.googleFileId
+      })),
+      questionDocumentLink: event.questionDocumentLink,
+      description: event.description,
+      scheduleDate: event.scheduledTimes[0]?.initialDateScheduled
+        ? new Date(event.scheduledTimes[0].initialDateScheduled)
+        : new Date(),
+      startTime: event.scheduledTimes[0]?.startTime ? new Date(event.scheduledTimes[0].startTime) : undefined,
+      endTime: event.scheduledTimes[0]?.endTime ? new Date(event.scheduledTimes[0].endTime) : undefined,
+      allDay: event.scheduledTimes[0]?.allDay ?? false,
+      recurrenceNumber: event.scheduledTimes[0]?.recurrenceNumber ?? 0,
+      days: event.scheduledTimes[0]?.days ?? []
+    };
+  };
+
+  const handleEdit = () => {
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (data: EventRoutePayload) => {
+    if (!clickedEvent) return;
+
+    try {
+      const { scheduleSlot, documentFiles, ...eventData } = data;
+
+      if (!scheduleSlot || scheduleSlot.length === 0) {
+        throw new Error('Missing scheduleSlot');
+      }
+
+      // Convert EventRoutePayload to EditEventArgs format
+      const editArgs: EditEventArgs = {
+        ...eventData,
+        status: clickedEvent.status, // Use existing event status
+        documents: clickedEvent.documents.map((doc) => ({
+          name: doc.name,
+          googleFileId: doc.googleFileId
+        })),
+        scheduleSlot: scheduleSlot.map((slot) => ({
+          days: slot.days,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          recurrenceNumber: slot.recurrenceNumber,
+          initialDateScheduled: slot.initialDateScheduled,
+          allDay: slot.allDay
+        }))
+      };
+
+      const editedEvent = await editEvent(editArgs);
+
+      // Upload new documents if any
+      const filesToUpload = documentFiles.map((doc) => doc.file).filter((file): file is File => file !== undefined);
+
+      if (filesToUpload.length > 0) {
+        await uploadDocuments({
+          id: editedEvent.eventId,
+          files: filesToUpload
+        });
+      }
+
+      toast.success('Event updated successfully!');
+      setShowEditModal(false);
+      onClose();
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    }
+  };
+
   return (
     <Popover
       open={Boolean(clickedEvent && anchorPosition)}
@@ -437,6 +545,20 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
           disable={disable}
           addApprovalButtons={addApprovalButtons}
           onClose={onClose}
+          onEdit={handleEdit}
+          clickedDate={clickedDate}
+        />
+      )}
+      {clickedEvent && showEditModal && (
+        <EditEventModal
+          open={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            onClose();
+          }}
+          onSubmit={handleEditSubmit}
+          initialValues={convertEventToFormValues(clickedEvent)}
+          eventTypes={eventTypes}
         />
       )}
     </Popover>

@@ -434,7 +434,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
           <Typography variant="h4"></Typography>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', columnGap: 1, rowGap: 1 }}>
-            {/* New Event Button (does not do anything yet) */}
             <Button
               variant="contained"
               disableElevation
