@@ -20,7 +20,7 @@ import { Rule, TeamPreview } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
 import { NERButton } from '../../components/NERButton';
@@ -32,6 +32,19 @@ import RuleRow from './RuleRow';
 interface AssignRulesTabProps {
   rules: Rule[];
 }
+
+const getLeafRuleIds = (ruleId: string, allRules: Rule[]): string[] => {
+  const rule = allRules.find((r) => r.ruleId === ruleId);
+  if (!rule) {
+    return [];
+  }
+
+  if (rule.subRuleIds.length === 0) {
+    return [ruleId];
+  }
+
+  return rule.subRuleIds.flatMap((subId) => getLeafRuleIds(subId, allRules));
+};
 
 /*
  * Props for the team row.
@@ -79,6 +92,7 @@ const TeamRow: React.FC<TeamRowProps> = ({ team, isSelected, onClick }) => {
 const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
   const theme = useTheme();
   const history = useHistory();
+  const { rulesetId } = useParams<{ rulesetId: string }>();
   const toast = useToast();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<Set<string>>(new Set());
@@ -131,13 +145,29 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
       return;
     }
 
-    const key = `${selectedTeamId}:${ruleId}`;
-    const newAssignments = new Set(assignments);
-    if (assignments.has(key)) {
-      newAssignments.delete(key);
-    } else {
-      newAssignments.add(key);
+    const leafIds = getLeafRuleIds(ruleId, rules);
+    if (leafIds.length === 0) {
+      return;
     }
+
+    const newAssignments = new Set(assignments);
+    let allSelected = true;
+    for (const id of leafIds) {
+      if (!newAssignments.has(`${selectedTeamId}:${id}`)) {
+        allSelected = false;
+        break;
+      }
+    }
+
+    for (const id of leafIds) {
+      const key = `${selectedTeamId}:${id}`;
+      if (allSelected) {
+        newAssignments.delete(key);
+      } else {
+        newAssignments.add(key);
+      }
+    }
+
     setAssignments(newAssignments);
   };
 
@@ -145,12 +175,17 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     const toAdd = [...assignments].filter((key) => !originalAssignments.has(key));
     const toRemove = [...originalAssignments].filter((key) => !assignments.has(key));
 
+    if (toAdd.length === 0 && toRemove.length === 0) {
+      toast.info('No changes to save');
+      return;
+    }
+
     // TODO: Save changes via backend
     if (toAdd.length > 0 || toRemove.length > 0) {
       toast.success(`Placeholder: Would save ${toAdd.length} additions and ${toRemove.length} removals`);
     }
 
-    history.push(routes.RULES);
+    history.push(`${routes.RULES}/${rulesetId}`);
   };
 
   if (teamsLoading) {

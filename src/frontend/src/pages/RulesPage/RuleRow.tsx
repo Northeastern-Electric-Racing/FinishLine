@@ -59,11 +59,13 @@ const RuleRow: React.FC<RuleRowProps> = ({
 
   const toggleExpand = () => hasSubRules && setIsExpanded(!isExpanded);
 
-  // if the rule has sub-rules, toggle the expand state, otherwise call the onRowClick function if it exists
-  const handleLeftCellClick = () => {
-    if (hasSubRules) {
-      toggleExpand();
-    } else if (onRowClick) {
+  const handleChevronClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleExpand();
+  };
+
+  const handleRowClick = () => {
+    if (onRowClick) {
       onRowClick(rule);
     }
   };
@@ -88,11 +90,17 @@ const RuleRow: React.FC<RuleRowProps> = ({
     >
       {hasSubRules && (
         <ChevronRightIcon
+          onClick={handleChevronClick}
           sx={{
             fontSize: '20px',
             color,
             transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s'
+            transition: 'transform 0.2s',
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              borderRadius: '50%'
+            }
           }}
         />
       )}
@@ -117,10 +125,10 @@ const RuleRow: React.FC<RuleRowProps> = ({
           align="left"
           sx={{
             ...commonCellStyles,
-            cursor: hasSubRules || onRowClick ? 'pointer' : 'default',
+            cursor: onRowClick ? 'pointer' : 'default',
             width: leftWidth
           }}
-          onClick={handleLeftCellClick}
+          onClick={handleRowClick}
         >
           {leftContent ? leftContent(rule, level, isExpanded, hasSubRules) : defaultLeftContent}
         </TableCell>
