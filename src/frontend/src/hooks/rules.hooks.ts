@@ -1,13 +1,114 @@
-import { useMutation, useQueryClient } from 'react-query';
-import { RulesetType } from 'shared';
-import { createRulesetType } from '../apis/rules.api';
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { ProjectRule, Rule, RuleCompletion, Ruleset, RulesetType } from 'shared';
+import {
+  createRulesetType,
+  getAllRulesetTypes,
+  getActiveRuleset,
+  getProjectRules,
+  getUnassignedRulesForRuleset,
+  createProjectRule,
+  deleteProjectRule,
+  editProjectRuleStatus,
+  getChildRules,
+  getTopLevelRules
+} from '../apis/rules.api';
+
+/**
+ * Hook to supply all ruleset types.
+ */
+export const useAllRulesetTypes = () => {
+  return useQuery<RulesetType[], Error>(['rules', 'rulesetTypes'], async () => {
+    const { data } = await getAllRulesetTypes();
+    return data;
+  });
+};
+
+/**
+ * Hook to get the active ruleset for a given ruleset type.
+ */
+export const useActiveRuleset = (rulesetTypeId: string) => {
+  return useQuery<Ruleset | undefined, Error>(
+    ['rules', 'activeRuleset', rulesetTypeId],
+    async () => {
+      try {
+        const { data } = await getActiveRuleset(rulesetTypeId);
+        return data;
+      } catch {
+        // Return undefined if no active ruleset exists
+        return undefined;
+      }
+    },
+    { enabled: !!rulesetTypeId }
+  );
+};
+
+/**
+ * Hook to get all project rules for a given ruleset and project.
+ */
+export const useProjectRules = (rulesetId: string, projectId: string) => {
+  return useQuery<ProjectRule[], Error>(
+    ['rules', 'projectRules', rulesetId, projectId],
+    async () => {
+      const { data } = await getProjectRules(rulesetId, projectId);
+      return data;
+    },
+    { enabled: !!rulesetId && !!projectId }
+  );
+};
+
+/**
+ * Hook to get unassigned rules for a ruleset and team.
+ */
+export const useUnassignedRulesForRuleset = (rulesetId: string, teamId: string) => {
+  return useQuery<Rule[], Error>(
+    ['rules', 'unassigned', rulesetId, teamId],
+    async () => {
+      const { data } = await getUnassignedRulesForRuleset(rulesetId, teamId);
+      return data;
+    },
+    { enabled: !!rulesetId && !!teamId }
+  );
+};
+
+/**
+ * Hook to get child rules of a rule.
+ */
+export const useChildRules = (ruleId: string) => {
+  return useQuery<Rule[], Error>(
+    ['rules', 'children', ruleId],
+    async () => {
+      const { data } = await getChildRules(ruleId);
+      return data;
+    },
+    { enabled: !!ruleId }
+  );
+};
+
+/**
+ * Hook to get top-level rules for a ruleset.
+ */
+export const useTopLevelRules = (rulesetId: string) => {
+  return useQuery<Rule[], Error>(
+    ['rules', 'topLevel', rulesetId],
+    async () => {
+      const { data } = await getTopLevelRules(rulesetId);
+      return data;
+    },
+    { enabled: !!rulesetId }
+  );
+};
 
 interface CreateRulesetTypePayload {
   name: string;
 }
 
 /**
- * Custom React Hook to create a new ruleset type
+ * Hook to create a new ruleset type.
  */
 export const useCreateRulesetType = () => {
   const queryClient = useQueryClient();
@@ -19,7 +120,66 @@ export const useCreateRulesetType = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['rulesetTypes']);
+        queryClient.invalidateQueries(['rules', 'rulesetTypes']);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to create a project rule (assign a rule to a project).
+ */
+export const useCreateProjectRule = (rulesetId: string, projectId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ProjectRule, Error, { ruleId: string; projectId: string }>(
+    ['rules', 'projectRules', 'create'],
+    async ({ ruleId, projectId: pId }) => {
+      const { data } = await createProjectRule(ruleId, pId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
+        queryClient.invalidateQueries(['rules', 'unassigned']);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to delete a project rule.
+ */
+export const useDeleteProjectRule = (rulesetId: string, projectId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ProjectRule, Error, string>(
+    ['rules', 'projectRules', 'delete'],
+    async (projectRuleId: string) => {
+      const { data } = await deleteProjectRule(projectRuleId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
+        queryClient.invalidateQueries(['rules', 'unassigned']);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to update project rule status.
+ */
+export const useEditProjectRuleStatus = (rulesetId: string, projectId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ProjectRule, Error, { projectRuleId: string; newStatus: RuleCompletion }>(
+    ['rules', 'projectRules', 'editStatus'],
+    async ({ projectRuleId, newStatus }) => {
+      const { data } = await editProjectRuleStatus(projectRuleId, newStatus);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
       }
     }
   );
