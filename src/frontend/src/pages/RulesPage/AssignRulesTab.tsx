@@ -253,14 +253,12 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
                     allRules={rules}
                     backgroundColor={(r) => {
                       const leafIds = getLeafRuleIds(r.ruleId, rules);
-                      const isSelected =
-                        leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
+                      const isSelected = leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
                       return isSelected ? '#b36b6b' : '#CECECE';
                     }}
                     hoverColor={(r) => {
                       const leafIds = getLeafRuleIds(r.ruleId, rules);
-                      const isSelected =
-                        leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
+                      const isSelected = leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
                       return isSelected ? '#a05858' : '#5e5e5e';
                     }}
                     textColor="#000000"

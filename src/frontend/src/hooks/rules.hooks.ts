@@ -10,7 +10,7 @@ import {
   getChildRules,
   toggleRuleTeam,
   getTeamRulesInRulesetType,
-  createRulesetType,
+  createRulesetType
 } from '../apis/rules.api';
 
 export const useGetTopLevelRules = (rulesetId: string) => {
@@ -38,7 +38,7 @@ export const useToggleRuleTeam = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['rules']);
-      },
+      }
     }
   );
 };
@@ -68,7 +68,7 @@ export const useCreateRulesetType = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['rulesetTypes']);
-      },
+      }
     }
   );
 };
