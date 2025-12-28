@@ -442,6 +442,9 @@ const rulesTopLevel = (rulesetId: string) => `${rules()}/${rulesetId}/parentRule
 const rulesToggleTeam = (ruleId: string) => `${rules()}/rule/${ruleId}/toggle-team`;
 const rulesChildRules = (ruleId: string) => `${rules()}/${ruleId}/subrules`;
 const rulesTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => `${rules()}/${rulesetTypeId}/team/${teamId}`;
+const ruleset = () => `${rules()}/ruleset`;
+const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
+const rulesetsCreate = () => `${ruleset()}/create`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -750,6 +753,9 @@ export const apiUrls = {
   rulesToggleTeam,
   rulesChildRules,
   rulesTeamRulesInRulesetType,
+  ruleset,
+  rulesetTypeCreate,
+  rulesetsCreate,
 
   version
 };

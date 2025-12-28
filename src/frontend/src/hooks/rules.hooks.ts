@@ -4,8 +4,14 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { Rule } from 'shared';
-import { getTopLevelRules, getChildRules, toggleRuleTeam, getTeamRulesInRulesetType } from '../apis/rules.api';
+import { Rule, RulesetType } from 'shared';
+import {
+  getTopLevelRules,
+  getChildRules,
+  toggleRuleTeam,
+  getTeamRulesInRulesetType,
+  createRulesetType,
+} from '../apis/rules.api';
 
 export const useGetTopLevelRules = (rulesetId: string) => {
   return useQuery<Rule[], Error>(['rules', 'top-level', rulesetId], async () => {
@@ -32,7 +38,7 @@ export const useToggleRuleTeam = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['rules']);
-      }
+      },
     }
   );
 };
@@ -42,4 +48,27 @@ export const useGetTeamRulesInRulesetType = (rulesetTypeId: string, teamId: stri
     const { data } = await getTeamRulesInRulesetType(rulesetTypeId, teamId);
     return data;
   });
+};
+
+interface CreateRulesetTypePayload {
+  name: string;
+}
+
+/**
+ * Custom React Hook to create a new ruleset type
+ */
+export const useCreateRulesetType = () => {
+  const queryClient = useQueryClient();
+  return useMutation<RulesetType, Error, CreateRulesetTypePayload>(
+    ['rulesetTypes', 'create'],
+    async (payload: CreateRulesetTypePayload) => {
+      const { data } = await createRulesetType(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rulesetTypes']);
+      },
+    }
+  );
 };

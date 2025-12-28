@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { Rule } from 'shared';
+import { Rule, RulesetType } from 'shared';
 import { apiUrls } from '../utils/urls';
 
 /**
@@ -33,4 +33,14 @@ export const toggleRuleTeam = (ruleId: string, teamId: string) => {
  */
 export const getTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => {
   return axios.get<Rule[]>(apiUrls.rulesTeamRulesInRulesetType(rulesetTypeId, teamId));
+};
+
+/**
+ * Creates a new ruleset type
+ *
+ * @param payload the data for creating the ruleset type
+ * @returns the created ruleset type
+ */
+export const createRulesetType = (payload: { name: string }) => {
+  return axios.post<RulesetType>(apiUrls.rulesetTypeCreate(), payload);
 };
