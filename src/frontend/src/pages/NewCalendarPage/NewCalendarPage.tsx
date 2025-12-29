@@ -41,6 +41,7 @@ import { useHistory } from 'react-router-dom';
 import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import SchedulingConflictsWarning from './SchedulingConflictsWarning';
 
 interface NewCalendarPageProps {
   allEventTypes: EventType[];
@@ -88,14 +89,17 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
     }
   }, [allTeams, teamList, additionalTeamIds.length, showTeamEvents]);
 
+  const startPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15);
+  const endPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15);
+
   const {
     isLoading,
     isError,
     error,
     data: allEvents
   } = useFilterEvents({
-    startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
-    endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
+    startPeriod,
+    endPeriod,
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds),
     statuses: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT],
@@ -151,9 +155,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   const { mutateAsync: createEvent } = useCreateEvent();
   const { isLoading: documentsIsLoading, mutateAsync: uploadDocuments } = useUploadManyDocuments();
 
-  const [startPeriod] = useState(() => new Date());
+  const [upcomingStartPeriod] = useState(() => new Date());
 
-  const [endPeriod] = useState(() => {
+  const [upcomingEndPeriod] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() + 7);
     d.setHours(23, 59, 59, 999);
@@ -161,13 +165,15 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   });
 
   const { data: upcomingEvents } = useFilterEvents({
-    startPeriod,
-    endPeriod,
+    startPeriod: upcomingStartPeriod,
+    endPeriod: upcomingEndPeriod,
     memberIds: memberIds.concat(additionalMemberIds),
     teamIds: teamIds.concat(additionalTeamIds)
   });
 
-  const upcomingOccurences = upcomingEvents ? getEventsFlattened(upcomingEvents, startPeriod, endPeriod) : [];
+  const upcomingOccurences = upcomingEvents
+    ? getEventsFlattened(upcomingEvents, upcomingStartPeriod, upcomingEndPeriod)
+    : [];
 
   const toggleCalendar = (calendarId: string) => {
     setSelectedCalendarIds((prev) =>
@@ -570,6 +576,12 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
                 }
               }}
             />
+            <SchedulingConflictsWarning
+              memberIds={memberIds.concat(additionalMemberIds)}
+              teamIds={teamIds.concat(additionalTeamIds)}
+              startPeriod={startPeriod}
+              endPeriod={endPeriod}
+            />
             <Box sx={{ width: 320, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 0.5 }}>
                 My Upcoming Meetings:
@@ -628,7 +640,8 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
                       '&:hover': {
                         borderColor: 'white',
                         backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                      }
+                      },
+                      mb: 2
                     }}
                   >
                     More Filters
