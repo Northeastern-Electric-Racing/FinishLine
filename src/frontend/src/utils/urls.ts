@@ -462,8 +462,11 @@ const calendarEditEventType = (eventTypeId: string) => `${calendar()}/event-type
 const calendarDeleteEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/delete`;
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
+const calendarGetConflictingEvent = (id: string) => `${calendar()}/event/${id}/conflict`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
 const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
+const calendarApproveEvent = (id: string) => `${calendar()}/event/${id}/approve`;
+const calendarDenyEvent = (id: string) => `${calendar()}/event/${id}/deny`;
 const calendarCreateEvent = () => `${calendar()}/event/create`;
 const calendarEditEvent = (eventId: string) => `${calendar()}/event/${eventId}/edit`;
 const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
@@ -783,6 +786,7 @@ export const apiUrls = {
   calendarEditShop,
   calendarEventMarkUserConfirmed,
   calendarGetSingleEvent,
+  calendarGetConflictingEvent,
   calendarEvents,
   calendarEventTypes,
   calendarDeleteEvent,
@@ -798,6 +802,8 @@ export const apiUrls = {
   calendarUploadDocument,
   calendarPDFById,
   calendarDeleteEventType,
+  calendarApproveEvent,
+  calendarDenyEvent,
   calendarEditEvent,
 
   version

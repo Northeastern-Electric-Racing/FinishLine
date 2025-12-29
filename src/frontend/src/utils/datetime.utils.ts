@@ -65,20 +65,18 @@ export const isPastEvent = (startDate: Date, endDate: Date) => {
   return startDate < endDate;
 };
 
+// gets the start time of an event for a given day
 export const getConvertedStart = (event: Event, dayOfWeek: DayOfWeek) => {
   const specificSlot = event.scheduledTimes.find((slot) => slot.days.find((day) => day === dayOfWeek));
-  const initialTime = specificSlot?.startTime ? new Date(specificSlot.startTime) : new Date(Date.now());
-  const startTime = new Date(
-    // getTimezoneOffset() is based on UTC (in minutes), and we need to inverse it and multiply by milliseconds to get the proper date
-    // for instance, if we were in UTC+3, it would return -180, which we need to invert and multiply to
-    initialTime.getTime()
-  );
+
+  const startTime = specificSlot?.startTime ? new Date(specificSlot.startTime) : new Date(Date.now());
 
   const convertedStartTime = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
   return convertedStartTime;
 };
 
+// gets the end time of an event for a given day
 export const getConvertedEnd = (event: Event, dayOfWeek: DayOfWeek) => {
   const specificSlot = event.scheduledTimes.find((slot) => slot.days.find((day) => day === dayOfWeek));
 
@@ -86,8 +84,7 @@ export const getConvertedEnd = (event: Event, dayOfWeek: DayOfWeek) => {
 
   const convertedEndTime = endTime.toLocaleTimeString('en-US', {
     hour: 'numeric',
-    minute: '2-digit',
-    timeZoneName: 'short'
+    minute: '2-digit'
   });
 
   return convertedEndTime;

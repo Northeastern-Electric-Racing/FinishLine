@@ -195,6 +195,8 @@ calendarRouter.post(
 
 calendarRouter.post('/event/:eventId/delete', CalendarController.deleteEvent);
 
+calendarRouter.get('/event/:eventId/conflict', CalendarController.getConflictingEvent);
+
 calendarRouter.get('/event/:eventId', CalendarController.getSingleEvent);
 
 calendarRouter.get('/events', CalendarController.getAllEvents);
@@ -269,7 +271,6 @@ calendarRouter.post(
   body('eventTypeIds.*').optional().isString(),
   body('eventIds').isArray().optional(),
   body('eventIds.*').isString().optional(),
-  body('approvedEvents').isBoolean().optional(),
   body('approvalIds').isArray().optional(),
   body('approvalIds.*').isString().optional(),
   body('statuses').isArray().optional(),

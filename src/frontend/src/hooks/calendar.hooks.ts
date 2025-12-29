@@ -35,6 +35,9 @@ import {
   setEventStatus,
   getAllEventTypes,
   postFilterEvents,
+  approveEvent,
+  denyEvent,
+  getConflictingEvent,
   postCreateEvent,
   uploadSingleDocument,
   downloadDocumentPdf,
@@ -339,6 +342,18 @@ export const useSingleEvent = (id?: string) => {
   );
 };
 
+export const useConflictingEvents = (ids: string[]) => {
+  return useQuery<Event[], Error>(['events', 'conflicting', ids], async () => {
+    const results = await Promise.all(
+      ids.map(async (id) => {
+        const { data } = await getConflictingEvent(id);
+        return data;
+      })
+    );
+    return results;
+  });
+};
+
 export const useAllEvents = () => {
   return useQuery<Event[], Error>(EVENT_KEY, async () => {
     const { data } = await getAllEvents();
@@ -415,6 +430,23 @@ export const useCreateEvent = () => {
   );
 };
 
+export const useApproveEvent = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Event, Error>(
+    ['events', id],
+    async () => {
+      const { data } = await approveEvent(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['events', id]);
+        queryClient.invalidateQueries(['filter-events']);
+      }
+    }
+  );
+};
+
 export const useEditEvent = (eventId: string) => {
   const queryClient = useQueryClient();
   return useMutation<Event, Error, EditEventArgs>(
@@ -427,6 +459,23 @@ export const useEditEvent = (eventId: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['filter-events']);
         queryClient.invalidateQueries(EVENT_KEY);
+      }
+    }
+  );
+};
+
+export const useDenyEvent = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Event, Error>(
+    ['events', id],
+    async () => {
+      const { data } = await denyEvent(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['events', id]);
+        queryClient.invalidateQueries(['filter-events']);
       }
     }
   );
