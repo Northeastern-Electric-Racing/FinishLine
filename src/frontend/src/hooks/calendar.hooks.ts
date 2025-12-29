@@ -311,6 +311,9 @@ export const useMarkUserConfirmed = (id: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(EVENT_KEY);
         queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+        queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+        queryClient.invalidateQueries(['users', 'many-with-schedule-settings']);
+        queryClient.invalidateQueries(['users']);
       }
     }
   );

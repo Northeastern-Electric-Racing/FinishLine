@@ -6,14 +6,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery as useQueryParam } from '../../../hooks/utils.hooks';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
-import { Availability, getMostRecentAvailabilities, User, UserWithScheduleSettings } from 'shared';
+import {
+  Availability,
+  getMostRecentAvailabilities,
+  User,
+  UserWithScheduleSettings,
+  Event,
+  TeamCalendarPreview
+} from 'shared';
 import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentUser, useUserScheduleSettings, useManyUsersWithScheduleSettings } from '../../../hooks/users.hooks';
 import { useSingleEvent, useMarkUserConfirmed } from '../../../hooks/calendar.hooks';
 import { useParams, useHistory } from 'react-router-dom';
-import { eventNamePipe } from '../../../utils/pipes';
+import { eventNamePipe, fullNamePipe } from '../../../utils/pipes';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { routes } from '../../../utils/routes';
@@ -24,7 +31,38 @@ import AvailabilityScheduleView from '../../CalendarPage/EventDetailPage/Availab
 import SingleAvailabilityModal from '../../SettingsPage/UserScheduleSettings/Availability/SingleAvailabilityModal';
 import AvailabilityEditModal from '../../SettingsPage/UserScheduleSettings/Availability/AvailabilityEditModal';
 
-const EventAvailabilityPage: React.FC = () => {
+const isUserOnEvent = (user: User, event: Event): boolean => {
+  const isDirectMember =
+    event.requiredMembers?.some((member: User) => member.userId === user.userId) ||
+    event.optionalMembers?.some((member: User) => member.userId === user.userId);
+
+  if (isDirectMember) return true;
+
+  const isOnEventTeam = event.teams?.some(
+    (team: TeamCalendarPreview) =>
+      team.members?.some((member: User) => member.userId === user.userId) ||
+      team.leads?.some((lead: User) => lead.userId === user.userId) ||
+      team.head?.userId === user.userId
+  );
+
+  if (isOnEventTeam) return true;
+
+  if (event.teamType?.teams) {
+    const isOnTeamType = event.teamType.teams.some(
+      (team: TeamCalendarPreview) =>
+        team.members?.some((member: User) => member.userId === user.userId) ||
+        team.leads?.some((lead: User) => lead.userId === user.userId) ||
+        team.head?.userId === user.userId
+    );
+    if (isOnTeamType) return true;
+  }
+
+  if (event.userCreated?.userId === user.userId) return true;
+
+  return false;
+};
+
+export const EventAvailabilityPage: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const queryParams = useQueryParam();
   const dateParam = queryParams.get('date');
@@ -33,12 +71,14 @@ const EventAvailabilityPage: React.FC = () => {
   const toast = useToast();
   const currentUser = useCurrentUser();
 
+  // ALL STATE HOOKS
   const [editAvailabilityOpen, setEditAvailabilityOpen] = useState(false);
   const [viewAvailabilityOpen, setViewAvailabilityOpen] = useState(false);
   const [confirmedAvailabilities, setConfirmedAvailabilities] = useState<Map<number, Availability>>(new Map());
-  //const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
-  //const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
+  const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
+  const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
 
+  // ALL DATA FETCHING HOOKS
   const { data: event, isError: eventError, error: eventErrorMsg, isLoading: eventLoading } = useSingleEvent(eventId);
 
   const {
@@ -48,10 +88,37 @@ const EventAvailabilityPage: React.FC = () => {
     error: settingsError
   } = useUserScheduleSettings(currentUser.userId);
 
-  // Get required and optional member IDs (use empty arrays if event not loaded yet)
-  const requiredUserIds = event?.requiredMembers.map((m) => m.userId) || [];
-  const optionalUserIds = event?.optionalMembers.map((m) => m.userId) || [];
-  const allRelevantUserIds = [...requiredUserIds, ...optionalUserIds];
+  // Get ALL user IDs who should be shown in team availability
+  const allRelevantUserIds = useMemo(() => {
+    if (!event) return [];
+
+    const userIds = new Set<string>();
+
+    // Add required and optional members
+    event.requiredMembers.forEach((m) => userIds.add(m.userId));
+    event.optionalMembers.forEach((m) => userIds.add(m.userId));
+
+    // Add creator
+    userIds.add(event.userCreated.userId);
+
+    // Add team members
+    event.teams.forEach((team) => {
+      team.members.forEach((m) => userIds.add(m.userId));
+      team.leads.forEach((l) => userIds.add(l.userId));
+      userIds.add(team.head.userId);
+    });
+
+    // Add team type members
+    if (event.teamType) {
+      event.teamType.teams.forEach((team) => {
+        team.members.forEach((m) => userIds.add(m.userId));
+        team.leads.forEach((l) => userIds.add(l.userId));
+        userIds.add(team.head.userId);
+      });
+    }
+
+    return Array.from(userIds);
+  }, [event]);
 
   const {
     data: relevantUsers,
@@ -60,29 +127,34 @@ const EventAvailabilityPage: React.FC = () => {
     error: usersErrorMsg
   } = useManyUsersWithScheduleSettings(allRelevantUserIds);
 
+  // MUTATION HOOK
   const { mutateAsync: markUserConfirmed } = useMarkUserConfirmed(eventId);
 
-  // Get the date to show availability for
+  // COMPUTED VALUES WITH USEMEMO
   const displayDate = useMemo(() => {
     if (dateParam) {
       return new Date(dateParam);
     }
-    // Fall back to initial scheduled date
     const raw = event?.scheduledTimes?.[0]?.initialDateScheduled;
     return raw ? new Date(raw as any) : new Date();
   }, [dateParam, event?.scheduledTimes]);
 
+  const isUserMember = useMemo(() => {
+    if (!event) return false;
+    return isUserOnEvent(currentUser, event);
+  }, [currentUser, event]);
+
+  // EFFECTS
   useEffect(() => {
     if (userScheduleSettings && userScheduleSettings.availabilities.length > 0) {
       const confirmed = getMostRecentAvailabilities(userScheduleSettings.availabilities, displayDate);
       setConfirmedAvailabilities(new Map(confirmed.map((availability) => [availability.dateSet.getTime(), availability])));
     } else {
-      // Clear availabilities if no schedule settings
       setConfirmedAvailabilities(new Map());
     }
   }, [userScheduleSettings, displayDate]);
 
-  // NOW do conditional returns AFTER all hooks
+  // NOW CONDITIONAL RETURNS - AFTER ALL HOOKS
   if (eventLoading || !event) return <LoadingIndicator />;
   if (eventError) return <ErrorPage error={eventErrorMsg} message={eventErrorMsg?.message} />;
 
@@ -92,14 +164,15 @@ const EventAvailabilityPage: React.FC = () => {
   if (usersLoading || !relevantUsers) return <LoadingIndicator />;
   if (usersError) return <ErrorPage error={usersErrorMsg} />;
 
-  // Get work package names for the modal title
+  // COMPUTED VALUES (after conditional returns)
   const workPackageNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ') || event.title;
   const editModalTitle = `Update your availability for ${workPackageNames} on the week of ${displayDate.toLocaleDateString()}`;
 
+  // EVENT HANDLERS
   const handleConfirm = async () => {
     try {
       await markUserConfirmed({ availability: Array.from(confirmedAvailabilities.values()) });
-      toast.success('Availability saved successfully!');
+      toast.success('Availability Confirmed!');
       setEditAvailabilityOpen(false);
     } catch (e) {
       if (e instanceof Error) {
@@ -112,7 +185,12 @@ const EventAvailabilityPage: React.FC = () => {
     history.push(routes.NEW_CALENDAR);
   };
 
-  // Build maps for AvailabilityScheduleView
+  const onSelectedTimeslotChanged = (_index: number | null, _day: Date | null) => {
+    // This is called when a timeslot is clicked in the heatmap
+    // The component already updates currentAvailableUsers and currentUnavailableUsers
+  };
+
+  // BUILD AVAILABILITY MAPS
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const usersToAvailabilities = new Map<User, Availability[]>();
@@ -123,13 +201,8 @@ const EventAvailabilityPage: React.FC = () => {
     usersToAvailabilities.set(user, availability ?? []);
   });
 
-  const onSelectedTimeslotChanged = (_index: number | null, _day: Date | null) => {
-    // This could be used to show detailed info about a specific timeslot if needed
-  };
-
   const dateRangeTitle = `Week of ${displayDate.toLocaleDateString()}`;
 
-  // Get display text for user's availability
   const getAvailabilitySummary = () => {
     if (confirmedAvailabilities.size === 0) {
       return 'No availability set yet. Click "Edit My Availability" to get started.';
@@ -141,44 +214,99 @@ const EventAvailabilityPage: React.FC = () => {
     return `${totalSlots} time slot${totalSlots !== 1 ? 's' : ''} marked as available`;
   };
 
+  // RENDER
   return (
     <PageLayout title={`Availability for ${eventNamePipe(event)}`}>
-      <Grid container spacing={4}>
-        {/* My Availability Section */}
-        <Grid item xs={12}>
-          <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 2, p: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h5" fontWeight="bold">
-                My Availability
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <NERSuccessButton
-                  variant="outlined"
-                  onClick={() => setViewAvailabilityOpen(true)}
-                  disabled={userScheduleSettings.availabilities.length === 0}
-                >
-                  View My Availability
-                </NERSuccessButton>
-                <NERSuccessButton variant="contained" onClick={() => setEditAvailabilityOpen(true)}>
-                  Edit My Availability
-                </NERSuccessButton>
-              </Box>
-            </Box>
-            <Typography variant="body2" color="text.secondary">
+      <Grid container spacing={3}>
+        {/* Top Row - Side by Side */}
+        <Grid item xs={12} md={6}>
+          {/* My Availability Section */}
+          <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 2, p: 3, height: '100%' }}>
+            <Typography variant="h5" fontWeight="bold" mb={2}>
+              My Availability
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mb={2}>
               {getAvailabilitySummary()}
             </Typography>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <NERSuccessButton
+                variant="contained"
+                onClick={() => setViewAvailabilityOpen(true)}
+                disabled={userScheduleSettings.availabilities.length === 0}
+              >
+                View My Availability
+              </NERSuccessButton>
+              <NERSuccessButton variant="contained" onClick={() => setEditAvailabilityOpen(true)} disabled={!isUserMember}>
+                Edit My Availability
+              </NERSuccessButton>
+            </Box>
+            {!isUserMember && (
+              <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+                You must be a member of this event to edit availability.
+              </Typography>
+            )}
           </Box>
         </Grid>
 
-        {/* Event-Wide Availability Section */}
-        <Grid item xs={12}>
-          <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 2, p: 3 }}>
+        <Grid item xs={12} md={6}>
+          {/* Team Availability Summary */}
+          <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 2, p: 3, height: '100%' }}>
             <Typography variant="h5" fontWeight="bold" mb={2}>
-              Team Availability
+              {eventNamePipe(event)} Availability
             </Typography>
             <Typography variant="body2" color="text.secondary" mb={3}>
-              Showing availability for all required and optional members. Darker colors indicate more people are available.
+              {currentAvailableUsers.length > 0
+                ? `${currentAvailableUsers.length}/${relevantUsers.length} available`
+                : 'Click a time slot to see availability'}
             </Typography>
+
+            <Grid container spacing={2}>
+              {/* Available Users */}
+              <Grid item xs={6}>
+                <Typography variant="subtitle2" fontWeight="bold" sx={{ textDecoration: 'underline', mb: 1 }}>
+                  Available
+                </Typography>
+                <Box sx={{ maxHeight: 150, overflowY: 'auto' }}>
+                  {currentAvailableUsers.length > 0 ? (
+                    currentAvailableUsers.map((user) => (
+                      <Typography key={user.userId} variant="body2">
+                        {fullNamePipe(user)}
+                      </Typography>
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary" fontSize="0.875rem">
+                      Click a time slot to see availability
+                    </Typography>
+                  )}
+                </Box>
+              </Grid>
+
+              {/* Unavailable Users */}
+              <Grid item xs={6}>
+                <Typography variant="subtitle2" fontWeight="bold" sx={{ textDecoration: 'underline', mb: 1 }}>
+                  Unavailable
+                </Typography>
+                <Box sx={{ maxHeight: 150, overflowY: 'auto' }}>
+                  {currentUnavailableUsers.length > 0 ? (
+                    currentUnavailableUsers.map((user) => (
+                      <Typography key={user.userId} variant="body2">
+                        {fullNamePipe(user)}
+                      </Typography>
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary" fontSize="0.875rem">
+                      Click a time slot to see availability
+                    </Typography>
+                  )}
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        </Grid>
+
+        {/* Full Width Heatmap Below */}
+        <Grid item xs={12}>
+          <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 2, p: 3 }}>
             <AvailabilityScheduleView
               availableUsers={availableUsers}
               unavailableUsers={unavailableUsers}
@@ -200,7 +328,7 @@ const EventAvailabilityPage: React.FC = () => {
         <NERFailButton onClick={handleClose}>Close</NERFailButton>
       </Box>
 
-      {/* View Availability Modal */}
+      {/* Modals */}
       <SingleAvailabilityModal
         open={viewAvailabilityOpen}
         onHide={() => setViewAvailabilityOpen(false)}
@@ -208,7 +336,6 @@ const EventAvailabilityPage: React.FC = () => {
         availabilites={userScheduleSettings.availabilities}
       />
 
-      {/* Edit Availability Modal */}
       <AvailabilityEditModal
         open={editAvailabilityOpen}
         onHide={() => setEditAvailabilityOpen(false)}
@@ -223,5 +350,3 @@ const EventAvailabilityPage: React.FC = () => {
     </PageLayout>
   );
 };
-
-export default EventAvailabilityPage;

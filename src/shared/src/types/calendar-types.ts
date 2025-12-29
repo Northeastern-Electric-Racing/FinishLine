@@ -28,11 +28,15 @@ export interface MachineryPreview {
 export interface TeamCalendarPreview {
   teamId: string;
   teamName: string;
+  members: User[];
+  leads: User[];
+  head: User;
 }
 
 export interface TeamTypeCalendarPreview {
   teamTypeId: string;
   name: string;
+  teams: TeamCalendarPreview[];
 }
 
 export interface WorkPackageCalendarPreview {

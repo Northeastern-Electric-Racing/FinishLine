@@ -12,15 +12,21 @@ export const getEventQueryArgs = (organizationId: string) =>
       confirmedMembers: getUserWithSettingsQueryArgs(organizationId),
       deniedMembers: getUserQueryArgs(organizationId),
       teams: {
-        select: {
-          teamName: true,
-          teamId: true
+        include: {
+          members: getUserQueryArgs(organizationId),
+          leads: getUserQueryArgs(organizationId),
+          head: getUserQueryArgs(organizationId)
         }
       },
       teamType: {
-        select: {
-          teamTypeId: true,
-          name: true
+        include: {
+          teams: {
+            include: {
+              members: getUserQueryArgs(organizationId),
+              leads: getUserQueryArgs(organizationId),
+              head: getUserQueryArgs(organizationId)
+            }
+          }
         }
       },
       shops: {

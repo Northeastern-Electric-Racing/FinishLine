@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   FormControl,
@@ -247,8 +247,12 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     });
   }, [machinery, shops, shopIds]);
 
+  const hasInitialized = useRef(false);
+
   useEffect(() => {
-    if (open) {
+    if (open && !hasInitialized.current) {
+      hasInitialized.current = true;
+
       reset(defaultFormData);
 
       if (initialValues?.requiredMemberIds && users) {
@@ -272,7 +276,12 @@ const EventModal: React.FC<BaseEventModalProps> = ({
         setSelectedTeams(teamOptions);
       }
     }
-  }, [open]);
+
+    // Reset the ref when modal closes
+    if (!open) {
+      hasInitialized.current = false;
+    }
+  }, [open, defaultFormData, initialValues, users, teams, reset]);
 
   useEffect(() => {
     if (open && initialValues?.days && initialValues.days.length > 0) {
