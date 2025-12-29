@@ -27,6 +27,7 @@ import { filterEventTransformer } from '../../apis/transformers/calendar.transfo
 import WarningIcon from '@mui/icons-material/Warning';
 import { useHistory } from 'react-router-dom';
 import UpcomingMeetingsCard from './UpcomingMeetingsCard';
+import AvailabilityPanel from './AvailabilityPanel';
 
 interface NewCalendarPageProps {
   allEventTypes: EventType[];
@@ -53,6 +54,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
   const [selectedEvent, setSelectedEvent] = useState<Event>();
+  const [availabileEvent, setAvailableEvent] = useState<Event>();
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
@@ -505,6 +507,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
                                 dayDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
                                 DayOfWeek.SUNDAY
                               }
+                              setAvailableEvent={setAvailableEvent}
                             />
                           </Box>
                         </Grid>
@@ -600,6 +603,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
           setShowInvited={(changed: boolean) => updateAdditionalMemberIds(changed)}
           setShowTeam={(changed: boolean) => updateAdditionalTeamIds(changed)}
         />
+        <AvailabilityPanel open={!!availabileEvent} onClose={() => setAvailableEvent(undefined)} event={availabileEvent} />
       </PageLayout>
     </>
   );
