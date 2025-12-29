@@ -11,9 +11,15 @@ import { EventAvailabilityPage } from './Components/EventAvailabilityPage';
 const NewCalendar: React.FC = () => {
   return (
     <Switch>
-      <Route path={`${routes.NEW_CALENDAR}/:eventId`} component={EventAvailabilityPage} />
+      <Route exact path={`${routes.NEW_CALENDAR}/yourEvents`} component={CalendarTab} />
+      <Route exact path={`${routes.NEW_CALENDAR}/reviews`} component={CalendarTab} />
+      <Route exact path={`${routes.NEW_CALENDAR}/mainCalendar`} component={CalendarTab} />
+
+      <Route path={`${routes.NEW_CALENDAR}/event/:eventId`} component={EventAvailabilityPage} />
+
       <Route path={routes.DESIGN_REVIEW_BY_ID} component={DesignReviewDetails} />
-      <Route path={routes.NEW_CALENDAR} component={CalendarTab} />
+
+      <Route exact path={routes.NEW_CALENDAR} component={CalendarTab} />
     </Switch>
   );
 };

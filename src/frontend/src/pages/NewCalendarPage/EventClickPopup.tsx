@@ -104,7 +104,7 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
     clickedDate ||
     (event.scheduledTimes[0]?.initialDateScheduled ? new Date(event.scheduledTimes[0].initialDateScheduled) : new Date());
 
-  const availabilityUrl = `${routes.NEW_CALENDAR}/${event.eventId}?date=${eventDate.toISOString()}`;
+  const availabilityUrl = `${routes.NEW_CALENDAR}/event/${event.eventId}?date=${eventDate.toISOString()}`;
 
   const requiredText = event.requiredMembers.length > 0 ? joinPeople(event.requiredMembers) : '';
   const optionalText = event.optionalMembers.length > 0 ? joinPeople(event.optionalMembers) : '';
