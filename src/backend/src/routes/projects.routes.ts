@@ -81,7 +81,7 @@ projectRouter.post(
 projectRouter.post(
   '/bom/assembly/:wbsNum/create',
   nonEmptyString(body('name')),
-  nonEmptyString(body('pdmFileName').optional()),
+  body('pdmFileName').optional().isString(),
   validateInputs,
   ProjectsController.createAssembly
 );
@@ -97,7 +97,7 @@ projectRouter.post('/bom/material/:materialId/edit', ...materialValidators, vali
 projectRouter.post(
   '/bom/assembly/:assemblyId/edit',
   nonEmptyString(body('name').optional()),
-  nonEmptyString(body('pdmFileName').optional()),
+  body('pdmFileName').optional().isString(),
   validateInputs,
   ProjectsController.editAssembly
 );

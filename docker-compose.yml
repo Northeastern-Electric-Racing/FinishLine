@@ -40,7 +40,7 @@ services:
     container_name: frontend-dev
     build:
       context: ./
-      dockerfile: devContainerization/Dockerfile.frontend.dev
+      dockerfile: src/frontend/Dockerfile
     ports:
       - '3000:3000'
     volumes:

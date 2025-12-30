@@ -184,7 +184,7 @@ export default class ProjectsController {
         req.currentUser,
         wbsNum,
         req.organization,
-        pdmFileName
+        pdmFileName === '' ? undefined : pdmFileName
       );
       res.status(200).json(createAssembly);
     } catch (error: unknown) {
@@ -226,7 +226,7 @@ export default class ProjectsController {
         req.organization,
         notes,
         assemblyId,
-        pdmFileName,
+        pdmFileName === '' ? undefined : pdmFileName,
         unitName,
         reimbursementRequestId
       );
@@ -389,7 +389,7 @@ export default class ProjectsController {
         notes,
         unitName,
         assemblyId,
-        pdmFileName,
+        pdmFileName === '' ? undefined : pdmFileName,
         reimbursementRequestId
       );
       res.status(200).json(updatedMaterial);
@@ -426,7 +426,7 @@ export default class ProjectsController {
         assemblyId,
         req.organization,
         name,
-        pdmFileName
+        pdmFileName === '' ? undefined : pdmFileName
       );
       res.status(200).json(updatedAssembly);
     } catch (error: unknown) {
