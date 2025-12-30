@@ -14,6 +14,7 @@ import RuleActions from './RuleActions';
 import { Rule } from 'shared';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import AssignRulesTab from './AssignRulesTab';
 
 /**
  * Placeholder hook to fetch a single ruleset.
@@ -283,7 +284,7 @@ const RulesetEditPage: React.FC = () => {
             </Box>
           </Box>
         ) : (
-          <Box>{/* Assign Rules tab content will be added in a future ticket */}</Box>
+          <AssignRulesTab rules={ruleset.rules} />
         )}
       </Box>
     </PageLayout>

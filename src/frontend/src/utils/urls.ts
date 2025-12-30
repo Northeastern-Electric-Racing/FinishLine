@@ -436,8 +436,12 @@ const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
   (endDate ? `end=${encodeURIComponent(endDate.toISOString())}` : '');
 const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 
-/************** Rule Endpoints ***************/
+/**************** Rules Endpoints ****************/
 const rules = () => `${API_URL}/rules`;
+const rulesTopLevel = (rulesetId: string) => `${rules()}/${rulesetId}/parentRules`;
+const rulesToggleTeam = (ruleId: string) => `${rules()}/rule/${ruleId}/toggle-team`;
+const rulesChildRules = (ruleId: string) => `${rules()}/${ruleId}/subrules`;
+const rulesTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => `${rules()}/${rulesetTypeId}/team/${teamId}`;
 const rulesetTypes = () => `${rules()}/rulesetTypes`;
 const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
 const ruleset = () => `${rules()}/ruleset`;
@@ -746,6 +750,11 @@ export const apiUrls = {
   retrospectiveTimelines,
   retrospectiveBudgets,
 
+  rules,
+  rulesTopLevel,
+  rulesToggleTeam,
+  rulesChildRules,
+  rulesTeamRulesInRulesetType,
   ruleset,
   rulesetTypes,
   rulesetsByType,
