@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { Rule, RulesetType } from 'shared';
+import { Rule, RulesetType, Ruleset } from 'shared';
 import { apiUrls } from '../utils/urls';
 
 /**
@@ -43,4 +43,27 @@ export const getTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string)
  */
 export const createRulesetType = (payload: { name: string }) => {
   return axios.post<RulesetType>(apiUrls.rulesetTypeCreate(), payload);
+};
+
+/**
+ * Fetches all Ruleset Types for the current organization.
+ *
+ * @returns A list of Ruleset Types.
+ */
+export const getAllRulesetTypes = () => {
+  return axios.get<RulesetType[]>(apiUrls.rulesetTypes(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * Fetches all Rulesets for a specific Ruleset Type.
+ *
+ * @param rulesetTypeId ID of the ruleset type.
+ * @returns A list of Rulesets for that ruleset type.
+ */
+export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
+  return axios.get<Ruleset[]>(apiUrls.rulesetsByType(rulesetTypeId), {
+    transformResponse: (data) => JSON.parse(data)
+  });
 };
