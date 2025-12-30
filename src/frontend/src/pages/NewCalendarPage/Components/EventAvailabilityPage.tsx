@@ -266,7 +266,7 @@ export const EventAvailabilityPage: React.FC = () => {
                 <Typography variant="subtitle2" fontWeight="bold" sx={{ textDecoration: 'underline', mb: 1 }}>
                   Available
                 </Typography>
-                <Box sx={{ maxHeight: 150, overflowY: 'auto' }}>
+                <Box sx={{ height: 100, overflowY: 'auto' }}>
                   {currentAvailableUsers.length > 0 ? (
                     currentAvailableUsers.map((user) => (
                       <Typography key={user.userId} variant="body2">
@@ -286,7 +286,7 @@ export const EventAvailabilityPage: React.FC = () => {
                 <Typography variant="subtitle2" fontWeight="bold" sx={{ textDecoration: 'underline', mb: 1 }}>
                   Unavailable
                 </Typography>
-                <Box sx={{ maxHeight: 150, overflowY: 'auto' }}>
+                <Box sx={{ height: 100, overflowY: 'auto' }}>
                   {currentUnavailableUsers.length > 0 ? (
                     currentUnavailableUsers.map((user) => (
                       <Typography key={user.userId} variant="body2">
