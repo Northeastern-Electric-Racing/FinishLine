@@ -4,13 +4,13 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { Rule, RulesetType } from 'shared';
+import { Rule, Ruleset, RulesetType } from 'shared';
 import {
   getTopLevelRules,
   getChildRules,
   toggleRuleTeam,
   getTeamRulesInRulesetType,
-  createRulesetType
+  createRulesetType, getAllRulesetTypes, getRulesetsByRulesetType
 } from '../apis/rules.api';
 
 export const useGetTopLevelRules = (rulesetId: string) => {
@@ -49,9 +49,6 @@ export const useGetTeamRulesInRulesetType = (rulesetTypeId: string, teamId: stri
     return data;
   });
 };
-import { useMutation, useQueryClient, useQuery } from 'react-query';
-import { Ruleset, RulesetType } from 'shared';
-import { createRulesetType, getAllRulesetTypes, getRulesetsByRulesetType } from '../apis/rules.api';
 
 interface CreateRulesetTypePayload {
   name: string;
