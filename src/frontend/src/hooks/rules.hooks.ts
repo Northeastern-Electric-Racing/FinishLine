@@ -10,8 +10,14 @@ import {
   getChildRules,
   toggleRuleTeam,
   getTeamRulesInRulesetType,
-  createRulesetType, getAllRulesetTypes, getRulesetsByRulesetType
+  createRulesetType,
+  getAllRulesetTypes,
+  getRulesetsByRulesetType
 } from '../apis/rules.api';
+
+interface CreateRulesetTypePayload {
+  name: string;
+}
 
 export const useGetTopLevelRules = (rulesetId: string) => {
   return useQuery<Rule[], Error>(['rules', 'top-level', rulesetId], async () => {
@@ -49,10 +55,6 @@ export const useGetTeamRulesInRulesetType = (rulesetTypeId: string, teamId: stri
     return data;
   });
 };
-
-interface CreateRulesetTypePayload {
-  name: string;
-}
 
 /**
  * Custom React Hook to create a new ruleset type
