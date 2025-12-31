@@ -17,15 +17,17 @@ const SingleAvailabilityModal: React.FC<SingleAvailabilityModalProps> = ({
   availabilites,
   initialDate
 }) => {
-  const existingMeetingData = new Map<number, { iconMap: Map<number, string> }>();
-
   return (
-    <NERModal open={open} onHide={onHide} title={header} onSubmit={onHide} hideFormButtons showCloseButton>
-      <SingleAvailabilityView
-        totalAvailability={availabilites}
-        existingMeetingData={existingMeetingData}
-        initialDate={initialDate}
-      />
+    <NERModal
+      open={open}
+      onHide={onHide}
+      title={header}
+      onSubmit={onHide}
+      hideFormButtons
+      showCloseButton
+      paperProps={{ maxWidth: '1200px', maxHeight: '680px' }}
+    >
+      <SingleAvailabilityView totalAvailability={availabilites} initialDate={initialDate} />
     </NERModal>
   );
 };

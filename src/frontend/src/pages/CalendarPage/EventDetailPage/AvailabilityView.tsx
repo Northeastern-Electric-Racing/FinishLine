@@ -4,7 +4,6 @@ import { useState } from 'react';
 import AvailabilityScheduleView from './AvailabilityScheduleView';
 import UserAvailabilites from './UserAvailabilitesView';
 import { getWeekDateRange } from '../../../utils/design-review.utils';
-import { dateRangePipe } from '../../../utils/pipes';
 import { FinalizeEventInformation } from './EventDetailPage';
 import { useManyUsersWithScheduleSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -114,10 +113,8 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
           availableUsers={availableUsers}
           unavailableUsers={unavailableUsers}
           usersToAvailabilities={usersToAvailabilities}
-          existingMeetingData={existingMeetingData}
           setCurrentAvailableUsers={setCurrentAvailableUsers}
           setCurrentUnavailableUsers={setCurrentUnavailableUsers}
-          dateRangeTitle={dateRangePipe(startDateRange, endDateRange)}
           event={event}
         />
       </Grid>

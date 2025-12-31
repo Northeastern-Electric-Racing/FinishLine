@@ -179,14 +179,11 @@ export const EventAvailabilityPage: React.FC = () => {
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const usersToAvailabilities = new Map<User, Availability[]>();
-  const existingMeetingData = new Map<number, string>();
 
   relevantUsers.forEach((user: UserWithScheduleSettings) => {
     const availability = getMostRecentAvailabilities(user.scheduleSettings?.availabilities ?? [], displayDate);
     usersToAvailabilities.set(user, availability ?? []);
   });
-
-  const dateRangeTitle = `Week of ${displayDate.toLocaleDateString()}`;
 
   const getAvailabilitySummary = () => {
     if (confirmedAvailabilities.size === 0) {
@@ -309,10 +306,8 @@ export const EventAvailabilityPage: React.FC = () => {
               availableUsers={availableUsers}
               unavailableUsers={unavailableUsers}
               usersToAvailabilities={usersToAvailabilities}
-              existingMeetingData={existingMeetingData}
               setCurrentAvailableUsers={setCurrentAvailableUsers}
               setCurrentUnavailableUsers={setCurrentUnavailableUsers}
-              dateRangeTitle={dateRangeTitle}
               event={event}
               displayDate={displayDate}
             />

@@ -1,13 +1,6 @@
-import { Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { Availability, Event, getDayOfWeek, getNextSevenDays, User } from 'shared';
-import {
-  enumToArray,
-  REVIEW_TIMES,
-  HeatmapColors,
-  getBackgroundColor,
-  NUMBER_OF_TIME_SLOTS
-} from '../../../utils/design-review.utils';
-import TimeSlot from '../../../components/TimeSlot';
+import { enumToArray, REVIEW_TIMES, getBackgroundColor, NUMBER_OF_TIME_SLOTS } from '../../../utils/design-review.utils';
 import React, { useState } from 'react';
 import { datePipe } from '../../../utils/pipes';
 import EventTimeSlot from '../../NewCalendarPage/Components/EventTimeSlot';
@@ -16,10 +9,8 @@ interface AvailabilityScheduleViewProps {
   availableUsers: Map<number, User[]>;
   unavailableUsers: Map<number, User[]>;
   usersToAvailabilities: Map<User, Availability[]>;
-  existingMeetingData: Map<number, string>;
   setCurrentAvailableUsers: (val: User[]) => void;
   setCurrentUnavailableUsers: (val: User[]) => void;
-  dateRangeTitle: string;
   event: Event;
   displayDate?: Date;
 }
@@ -28,10 +19,8 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   availableUsers,
   unavailableUsers,
   usersToAvailabilities,
-  existingMeetingData,
   setCurrentAvailableUsers,
   setCurrentUnavailableUsers,
-  dateRangeTitle,
   event,
   displayDate
 }) => {

@@ -1,26 +1,19 @@
-import { Box, Grid } from '@mui/material';
-import { HeatmapColors, enumToArray, REVIEW_TIMES, ExistingMeetingData } from '../../../../utils/design-review.utils';
-import TimeSlot from '../../../../components/TimeSlot';
+import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import NERArrows from '../../../../components/NERArrows';
+import { enumToArray, REVIEW_TIMES, getBackgroundColor } from '../../../../utils/design-review.utils';
+import EventTimeSlot from '../../../NewCalendarPage/Components/EventTimeSlot';
 
 interface SingleAvailabilityViewProps {
   totalAvailability: Availability[];
-  existingMeetingData: ExistingMeetingData;
   initialDate?: Date;
 }
 
-const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({
-  totalAvailability,
-  existingMeetingData,
-  initialDate
-}) => {
-  // Use initialDate if provided, otherwise default to today
+const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAvailability, initialDate }) => {
   const [startDate, setStartDate] = useState<Date>(initialDate || new Date());
 
-  // Update startDate when initialDate changes
   useEffect(() => {
     if (initialDate) {
       setStartDate(initialDate);
@@ -30,45 +23,85 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({
   const selectedTimes = getMostRecentAvailabilities(totalAvailability, startDate);
 
   const onArrowIncrease = () => {
-    setStartDate(new Date(startDate.setDate(startDate.getDate() + 7)));
+    const newDate = new Date(startDate);
+    newDate.setDate(newDate.getDate() + 7);
+    setStartDate(newDate);
   };
 
   const onArrowDecrease = () => {
-    setStartDate(new Date(startDate.setDate(startDate.getDate() - 7)));
+    const newDate = new Date(startDate);
+    newDate.setDate(newDate.getDate() - 7);
+    setStartDate(newDate);
   };
+
+  const stickyLeft = {
+    position: 'sticky',
+    left: 0,
+    zIndex: 2,
+    bgcolor: 'background.paper'
+  };
+
   return (
-    <Grid container>
-      <TimeSlot backgroundColor={HeatmapColors[0]} small={true} heightOverride="40px" />
-      {selectedTimes.map((availability) => (
-        <TimeSlot
-          key={availability.dateSet.getTime()}
-          backgroundColor={HeatmapColors[0]}
-          small={true}
-          heightOverride="40px"
-          text={getDayOfWeek(availability.dateSet) + ' ' + datePipe(availability.dateSet)}
-          fontSize={'12px'}
-        />
-      ))}
-      {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
-        <Grid container item>
-          <TimeSlot backgroundColor={HeatmapColors[0]} small={true} text={time} fontSize={'13px'} />
-          {selectedTimes.map((availability, dayIndex) => {
-            const backgroundColor = availability.availability.includes(timeIndex) ? HeatmapColors[3] : HeatmapColors[0];
-            return (
-              <TimeSlot
-                key={timeIndex * enumToArray(REVIEW_TIMES).length + dayIndex}
-                backgroundColor={backgroundColor}
-                small={true}
-                icon={existingMeetingData.get(dayIndex)?.iconMap.get(timeIndex)}
-              />
-            );
-          })}
-        </Grid>
-      ))}
-      <Box display={'flex'} justifyContent={'space-around'} width={'100%'}>
+    <Box>
+      <TableContainer
+        sx={{
+          overflowX: 'auto',
+          overflowY: 'auto',
+          maxWidth: '100%',
+          maxHeight: 500
+        }}
+      >
+        <Table
+          stickyHeader
+          size="small"
+          sx={{
+            '& .MuiTableCell-head': {
+              bgcolor: 'background.paper'
+            },
+            minWidth: 800
+          }}
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell sx={stickyLeft}></TableCell>
+              {selectedTimes.map((availability, idx) => (
+                <TableCell key={idx}>
+                  <Typography variant="body2" align="center" sx={{ fontSize: 12 }}>
+                    {getDayOfWeek(availability.dateSet) + ' ' + datePipe(availability.dateSet)}
+                  </Typography>
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
+              <TableRow key={time}>
+                <TableCell sx={{ ...stickyLeft, zIndex: 1 }}>
+                  <Typography variant="body2" align="center" sx={{ fontSize: 13 }}>
+                    {time}
+                  </Typography>
+                </TableCell>
+                {selectedTimes.map((availability, dayIndex) => {
+                  const isAvailable = availability.availability.includes(timeIndex);
+                  return (
+                    <TableCell key={dayIndex} sx={{ p: 0 }}>
+                      <EventTimeSlot
+                        backgroundColor={isAvailable ? getBackgroundColor(1, 1) : getBackgroundColor(0, 1)}
+                        selected={false}
+                        onClick={() => {}}
+                      />
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Box display="flex" justifyContent="center" width="100%" mt={2}>
         <NERArrows onRightArrowPressed={onArrowIncrease} onLeftArrowPressed={onArrowDecrease} />
       </Box>
-    </Grid>
+    </Box>
   );
 };
 
