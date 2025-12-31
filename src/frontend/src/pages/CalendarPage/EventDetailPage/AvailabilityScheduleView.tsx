@@ -1,4 +1,4 @@
-import { Grid } from '@mui/material';
+import { Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { Availability, Event, getDayOfWeek, getNextSevenDays, User } from 'shared';
 import {
   enumToArray,
@@ -10,6 +10,7 @@ import {
 import TimeSlot from '../../../components/TimeSlot';
 import React, { useState } from 'react';
 import { datePipe } from '../../../utils/pipes';
+import EventTimeSlot from '../../NewCalendarPage/Components/EventTimeSlot';
 
 interface AvailabilityScheduleViewProps {
   availableUsers: Map<number, User[]>;
@@ -76,30 +77,68 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
     unavailableUsers.set(time, currentUnavailableUsers);
   }
 
+  const stickyLeft = {
+    position: 'sticky',
+    left: 0,
+    zIndex: 2,
+    bgcolor: 'background.paper'
+  };
+
   return (
-    <Grid container>
-      <TimeSlot backgroundColor={HeatmapColors[0]} text={dateRangeTitle} />
-      {potentialDays.map((day) => (
-        <TimeSlot backgroundColor={HeatmapColors[0]} text={getDayOfWeek(day) + ' ' + datePipe(day)} fontSize={'1em'} />
-      ))}
-      {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
-        <Grid container>
-          <TimeSlot backgroundColor={HeatmapColors[0]} text={time} fontSize={'1em'} />
-          {potentialDays.map((day, dayIndex) => {
-            const index = dayIndex * enumToArray(REVIEW_TIMES).length + timeIndex;
-            return (
-              <TimeSlot
-                key={index}
-                backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
-                selected={selectedTimeslot === index}
-                onClick={() => handleTimeslotClick(index, day)}
-                icon={existingMeetingData.get(index)}
-              />
-            );
-          })}
-        </Grid>
-      ))}
-    </Grid>
+    <TableContainer
+      sx={{
+        overflowX: 'auto',
+        overflowY: 'auto',
+        maxWidth: '100%'
+      }}
+    >
+      <Table
+        stickyHeader
+        sx={{
+          '& .MuiTableCell-head': {
+            bgcolor: 'background.paper'
+          },
+          minWidth: 650
+        }}
+      >
+        <TableHead>
+          <TableRow>
+            <TableCell></TableCell>
+            {potentialDays.map((day) => (
+              <TableCell>
+                <Typography flexGrow={1} variant="h6" align="center" sx={{ fontSize: { xs: 12, md: 16 } }}>
+                  {getDayOfWeek(day) + ' ' + datePipe(day)}
+                </Typography>
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
+            <TableRow>
+              <TableCell sx={{ ...stickyLeft, zIndex: 1 }}>
+                <Typography flexGrow={1} variant="h6" align="center" sx={{ fontSize: { xs: 12, md: 16 } }}>
+                  {time}
+                </Typography>
+              </TableCell>
+              {potentialDays.map((day, dayIndex) => {
+                const index = dayIndex * enumToArray(REVIEW_TIMES).length + timeIndex;
+                return (
+                  <TableCell sx={{ p: 0 }}>
+                    <EventTimeSlot
+                      key={index}
+                      backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
+                      selected={selectedTimeslot === index}
+                      onClick={() => handleTimeslotClick(index, day)}
+                    />
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 
