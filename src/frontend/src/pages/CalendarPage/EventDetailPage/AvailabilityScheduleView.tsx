@@ -18,7 +18,6 @@ interface AvailabilityScheduleViewProps {
   existingMeetingData: Map<number, string>;
   setCurrentAvailableUsers: (val: User[]) => void;
   setCurrentUnavailableUsers: (val: User[]) => void;
-  onSelectedTimeslotChanged: (val: number | null, day: Date | null) => void;
   dateRangeTitle: string;
   event: Event;
   displayDate?: Date;
@@ -32,7 +31,6 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   setCurrentAvailableUsers,
   setCurrentUnavailableUsers,
   dateRangeTitle,
-  onSelectedTimeslotChanged,
   event,
   displayDate
 }) => {
@@ -42,18 +40,16 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   const initialDate = displayDate || event.scheduledTimes[0]?.initialDateScheduled || new Date();
   const potentialDays = getNextSevenDays(initialDate);
 
-  const handleTimeslotClick = (index: number, day: Date) => {
+  const handleTimeslotClick = (index: number, _day: Date) => {
     if (selectedTimeslot === index) {
-      setSelectedTimeslot(null); // unselect
+      setSelectedTimeslot(null);
       setCurrentAvailableUsers([]);
       setCurrentUnavailableUsers([]);
     } else {
-      setSelectedTimeslot(index); // select
+      setSelectedTimeslot(index);
       setCurrentAvailableUsers(availableUsers.get(index) || []);
       setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
     }
-
-    onSelectedTimeslotChanged(index, day);
   };
 
   // Populates the availableUsers map

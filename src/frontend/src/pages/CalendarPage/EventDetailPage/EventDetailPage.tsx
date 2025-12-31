@@ -299,13 +299,10 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ event }) => {
         event={event}
         allEvents={allEvents}
         selectedDate={date}
-        setSelectDate={setDate}
         requiredUserIds={requiredUsers.map((user) => user.id)}
         optionalUserIds={optionalUsers.map((user) => user.id)}
         startTime={startTime}
         endTime={endTime}
-        setStartTime={setStartTime}
-        setEndTime={setEndTime}
       />
     </PageLayout>
   );

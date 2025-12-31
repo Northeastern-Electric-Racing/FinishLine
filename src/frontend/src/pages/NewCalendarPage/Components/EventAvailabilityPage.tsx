@@ -71,14 +71,12 @@ export const EventAvailabilityPage: React.FC = () => {
   const toast = useToast();
   const currentUser = useCurrentUser();
 
-  // ALL STATE HOOKS
   const [editAvailabilityOpen, setEditAvailabilityOpen] = useState(false);
   const [viewAvailabilityOpen, setViewAvailabilityOpen] = useState(false);
   const [confirmedAvailabilities, setConfirmedAvailabilities] = useState<Map<number, Availability>>(new Map());
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
 
-  // ALL DATA FETCHING HOOKS
   const { data: event, isError: eventError, error: eventErrorMsg, isLoading: eventLoading } = useSingleEvent(eventId);
 
   const {
@@ -88,7 +86,6 @@ export const EventAvailabilityPage: React.FC = () => {
     error: settingsError
   } = useUserScheduleSettings(currentUser.userId);
 
-  // Get ALL user IDs who should be shown in team availability
   const allRelevantUserIds = useMemo(() => {
     if (!event) return [];
 
@@ -127,10 +124,8 @@ export const EventAvailabilityPage: React.FC = () => {
     error: usersErrorMsg
   } = useManyUsersWithScheduleSettings(allRelevantUserIds);
 
-  // MUTATION HOOK
   const { mutateAsync: markUserConfirmed } = useMarkUserConfirmed(eventId);
 
-  // COMPUTED VALUES WITH USEMEMO
   const displayDate = useMemo(() => {
     if (dateParam) {
       return new Date(dateParam);
@@ -144,7 +139,6 @@ export const EventAvailabilityPage: React.FC = () => {
     return isUserOnEvent(currentUser, event);
   }, [currentUser, event]);
 
-  // EFFECTS
   useEffect(() => {
     if (userScheduleSettings && userScheduleSettings.availabilities.length > 0) {
       const confirmed = getMostRecentAvailabilities(userScheduleSettings.availabilities, displayDate);
@@ -154,7 +148,6 @@ export const EventAvailabilityPage: React.FC = () => {
     }
   }, [userScheduleSettings, displayDate]);
 
-  // NOW CONDITIONAL RETURNS - AFTER ALL HOOKS
   if (eventLoading || !event) return <LoadingIndicator />;
   if (eventError) return <ErrorPage error={eventErrorMsg} message={eventErrorMsg?.message} />;
 
@@ -164,11 +157,9 @@ export const EventAvailabilityPage: React.FC = () => {
   if (usersLoading || !relevantUsers) return <LoadingIndicator />;
   if (usersError) return <ErrorPage error={usersErrorMsg} />;
 
-  // COMPUTED VALUES (after conditional returns)
   const workPackageNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ') || event.title;
   const editModalTitle = `Update your availability for ${workPackageNames} on the week of ${displayDate.toLocaleDateString()}`;
 
-  // EVENT HANDLERS
   const handleConfirm = async () => {
     try {
       await markUserConfirmed({ availability: Array.from(confirmedAvailabilities.values()) });
@@ -185,12 +176,6 @@ export const EventAvailabilityPage: React.FC = () => {
     history.push(routes.NEW_CALENDAR);
   };
 
-  const onSelectedTimeslotChanged = (_index: number | null, _day: Date | null) => {
-    // This is called when a timeslot is clicked in the heatmap
-    // The component already updates currentAvailableUsers and currentUnavailableUsers
-  };
-
-  // BUILD AVAILABILITY MAPS
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const usersToAvailabilities = new Map<User, Availability[]>();
@@ -218,10 +203,18 @@ export const EventAvailabilityPage: React.FC = () => {
   return (
     <PageLayout title={`Availability for ${eventNamePipe(event)}`}>
       <Grid container spacing={3}>
-        {/* Top Row - Side by Side */}
         <Grid item xs={12} md={6}>
           {/* My Availability Section */}
-          <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 2, p: 3, height: '100%' }}>
+          <Box
+            sx={{
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: 2,
+              p: 3,
+              height: '100%',
+              minHeight: 350,
+              maxHeight: 350
+            }}
+          >
             <Typography variant="h5" fontWeight="bold" mb={2}>
               My Availability
             </Typography>
@@ -249,8 +242,16 @@ export const EventAvailabilityPage: React.FC = () => {
         </Grid>
 
         <Grid item xs={12} md={6}>
-          {/* Team Availability Summary */}
-          <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 2, p: 3, height: '100%' }}>
+          <Box
+            sx={{
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: 2,
+              p: 3,
+              height: '100%',
+              minHeight: 350,
+              maxHeight: 350
+            }}
+          >
             <Typography variant="h5" fontWeight="bold" mb={2}>
               {eventNamePipe(event)} Availability
             </Typography>
@@ -261,7 +262,6 @@ export const EventAvailabilityPage: React.FC = () => {
             </Typography>
 
             <Grid container spacing={2}>
-              {/* Available Users */}
               <Grid item xs={6}>
                 <Typography variant="subtitle2" fontWeight="bold" sx={{ textDecoration: 'underline', mb: 1 }}>
                   Available
@@ -281,7 +281,6 @@ export const EventAvailabilityPage: React.FC = () => {
                 </Box>
               </Grid>
 
-              {/* Unavailable Users */}
               <Grid item xs={6}>
                 <Typography variant="subtitle2" fontWeight="bold" sx={{ textDecoration: 'underline', mb: 1 }}>
                   Unavailable
@@ -304,7 +303,6 @@ export const EventAvailabilityPage: React.FC = () => {
           </Box>
         </Grid>
 
-        {/* Full Width Heatmap Below */}
         <Grid item xs={12}>
           <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 2, p: 3 }}>
             <AvailabilityScheduleView
@@ -315,7 +313,6 @@ export const EventAvailabilityPage: React.FC = () => {
               setCurrentAvailableUsers={setCurrentAvailableUsers}
               setCurrentUnavailableUsers={setCurrentUnavailableUsers}
               dateRangeTitle={dateRangeTitle}
-              onSelectedTimeslotChanged={onSelectedTimeslotChanged}
               event={event}
               displayDate={displayDate}
             />
@@ -323,17 +320,16 @@ export const EventAvailabilityPage: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Action Buttons */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
         <NERFailButton onClick={handleClose}>Close</NERFailButton>
       </Box>
 
-      {/* Modals */}
       <SingleAvailabilityModal
         open={viewAvailabilityOpen}
         onHide={() => setViewAvailabilityOpen(false)}
         header="My Availability"
         availabilites={userScheduleSettings.availabilities}
+        initialDate={displayDate}
       />
 
       <AvailabilityEditModal

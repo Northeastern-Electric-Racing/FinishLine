@@ -15,11 +15,8 @@ interface AvailabilityViewProps {
   allEvents: Event[];
   handleEdit: (data?: FinalizeEventInformation) => void;
   selectedDate: Date;
-  setSelectDate: (date: Date) => void;
   startTime: number;
   endTime: number;
-  setStartTime: (time: number) => void;
-  setEndTime: (time: number) => void;
   requiredUserIds: string[];
   optionalUserIds: string[];
 }
@@ -29,11 +26,8 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
   allEvents,
   handleEdit,
   selectedDate,
-  setSelectDate,
   startTime,
   endTime,
-  setStartTime,
-  setEndTime,
   requiredUserIds,
   optionalUserIds
 }) => {
@@ -67,13 +61,6 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
 
     return drDate >= startRange && drDate <= endRange;
   });
-
-  const onSelectedTimeslotChanged = (index: number | null, day: Date | null) => {
-    if (index === null || day === null) return;
-    setStartTime(index);
-    setEndTime(index + 1);
-    setSelectDate(day);
-  };
 
   // Find conflicting events for the selected time
   const conflictingEvents = allEvents.filter((currEvent) => {
@@ -131,7 +118,6 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
           setCurrentAvailableUsers={setCurrentAvailableUsers}
           setCurrentUnavailableUsers={setCurrentUnavailableUsers}
           dateRangeTitle={dateRangePipe(startDateRange, endDateRange)}
-          onSelectedTimeslotChanged={onSelectedTimeslotChanged}
           event={event}
         />
       </Grid>

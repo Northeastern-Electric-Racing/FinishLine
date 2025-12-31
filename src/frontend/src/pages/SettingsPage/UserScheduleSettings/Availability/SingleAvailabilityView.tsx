@@ -3,16 +3,30 @@ import { HeatmapColors, enumToArray, REVIEW_TIMES, ExistingMeetingData } from '.
 import TimeSlot from '../../../../components/TimeSlot';
 import { Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import NERArrows from '../../../../components/NERArrows';
 
 interface SingleAvailabilityViewProps {
   totalAvailability: Availability[];
   existingMeetingData: ExistingMeetingData;
+  initialDate?: Date;
 }
 
-const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAvailability, existingMeetingData }) => {
-  const [startDate, setStartDate] = useState<Date>(new Date());
+const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({
+  totalAvailability,
+  existingMeetingData,
+  initialDate
+}) => {
+  // Use initialDate if provided, otherwise default to today
+  const [startDate, setStartDate] = useState<Date>(initialDate || new Date());
+
+  // Update startDate when initialDate changes
+  useEffect(() => {
+    if (initialDate) {
+      setStartDate(initialDate);
+    }
+  }, [initialDate]);
+
   const selectedTimes = getMostRecentAvailabilities(totalAvailability, startDate);
 
   const onArrowIncrease = () => {
