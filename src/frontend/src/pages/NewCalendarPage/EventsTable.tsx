@@ -313,7 +313,7 @@ const EventsTable: React.FC<EventTableArgs> = ({
                         {event.approved === ConflictStatus.DENIED && (
                           <Box sx={{ position: 'absolute', left: '50%', mt: 0.5, ml: 5 }}>
                             <WarningTooltip
-                              warning="Your meeting approval has been denied..."
+                              warning="Your meeting approval has been denied, please reschedule or change your meeting location."
                               buttonText="Click Here to Edit Meeting"
                               onClick={() => {}}
                             />

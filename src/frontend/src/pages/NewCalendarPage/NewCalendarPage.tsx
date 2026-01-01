@@ -340,7 +340,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
       <Stack
         spacing={1}
         sx={{
-          position: 'fixed',
+          position: 'absolute',
           top: 24,
           left: '50%',
           transform: 'translateX(-50%)',
