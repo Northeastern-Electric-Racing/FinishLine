@@ -92,11 +92,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     {
       name: 'Calendar',
       icon: <CalendarTodayIcon />,
-      route: routes.CALENDAR
-    },
-    {
-      name: 'New Calendar',
-      icon: <CalendarTodayIcon />,
       route: routes.NEW_CALENDAR
     },
     {

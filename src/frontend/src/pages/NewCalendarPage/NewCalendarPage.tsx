@@ -24,7 +24,6 @@ import { useConflictingEvents, useFilterEvents, useCreateEvent, useUploadManyDoc
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import EventSummaryModal from '../CalendarPage/EventSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import FilterModal from './FilterModal';
@@ -67,7 +66,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
-  const [selectedEvent, setSelectedEvent] = useState<Event>();
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
@@ -330,16 +328,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
 
   return (
     <>
-      {selectedEvent && (
-        <EventSummaryModal
-          open={!!selectedEvent}
-          onHide={() => {
-            setSelectedEvent(undefined);
-          }}
-          event={selectedEvent as Event}
-          teamTypes={allTeamTypes}
-        />
-      )}
       {isCreateModalOpen && (
         <CreateEventModal
           open={isCreateModalOpen}
