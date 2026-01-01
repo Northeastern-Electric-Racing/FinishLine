@@ -854,6 +854,7 @@ export default class CalendarService {
               data: {
                 days: s.days,
                 startTime: s.startTime ?? null,
+                endTime: s.endTime ?? null,
                 endDate: computeEndDate(s.initialDateScheduled, s.recurrenceNumber),
                 recurrenceNumber: s.recurrenceNumber,
                 initialDateScheduled: s.initialDateScheduled,
