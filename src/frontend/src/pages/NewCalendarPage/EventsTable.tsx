@@ -23,11 +23,13 @@ import { Event } from 'shared';
 import WarningTooltip from './YourEventsComponents/WarningTooltip';
 import { convertEventToFormValues, getMeetingDates } from '../../utils/calendar.utils';
 import { EventClickPopup } from './EventClickPopup';
-import { EditEventArgs, useEditEvent, useUploadManyDocuments } from '../../hooks/calendar.hooks';
+import { EditEventArgs, useDeleteEvent, useEditEvent, useUploadManyDocuments } from '../../hooks/calendar.hooks';
 import EditEventModal from './Components/EditEventModal';
 import { EventRoutePayload } from './Components/EventModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import NERDeleteModal from '../../components/NERDeleteModal';
 
 interface YourEventsHeadCells {
   id: string;
@@ -108,6 +110,8 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
   const [clickedEditEvent, setClickedEditEvent] = useState<Event | undefined>();
   const [showEditModal, setShowEditModal] = useState(false);
 
+  const [eventToDelete, setEventToDelete] = useState<Event | undefined>(undefined);
+
   const { mutateAsync: editEvent } = useEditEvent(clickedEditEvent?.eventId ?? '');
   const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
 
@@ -136,6 +140,23 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
   const handleCloseEdit = () => {
     setClickedEditEvent(undefined);
     setShowEditModal(false);
+  };
+
+  const { mutateAsync: deleteEvent } = useDeleteEvent(eventToDelete?.eventId ?? '');
+
+  const handleEventDelete = async () => {
+    if (!eventToDelete) return;
+    setEventToDelete(undefined);
+    try {
+      await deleteEvent();
+      toast.success('Event deleted successfully');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      } else {
+        toast.error('Failed to delete event', 3000);
+      }
+    }
   };
 
   const handleEditSubmit = async (data: EventRoutePayload) => {
@@ -377,6 +398,18 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
                             </IconButton>
                           </span>
                         </Tooltip>
+                        <Tooltip title="Delete" arrow>
+                          <span>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              aria-label="delete event"
+                              onClick={() => setEventToDelete(event)}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
                       </Box>
                     </TableCell>
                   )}
@@ -418,6 +451,13 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
           defaultDate={new Date()}
         />
       )}
+      <NERDeleteModal
+        open={!!eventToDelete}
+        onHide={() => setEventToDelete(undefined)}
+        formId="delete-event-form"
+        dataType={eventToDelete?.title || ''}
+        onFormSubmit={handleEventDelete}
+      />
     </Box>
   );
 };
