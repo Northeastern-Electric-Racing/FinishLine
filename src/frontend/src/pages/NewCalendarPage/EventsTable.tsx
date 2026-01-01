@@ -2,15 +2,32 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { Box, Link, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  Link,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import TableCellHuge from './YourEventsComponents/TableCellHuge';
 import React, { useEffect, useState } from 'react';
 import { Calendar, ConflictStatus, EventType } from 'shared';
 import { Event } from 'shared';
 import WarningTooltip from './YourEventsComponents/WarningTooltip';
-import { getMeetingDates } from '../../utils/calendar.utils';
+import { convertEventToFormValues, getMeetingDates } from '../../utils/calendar.utils';
 import { EventClickPopup } from './EventClickPopup';
+import { EditEventArgs, useEditEvent, useUploadManyDocuments } from '../../hooks/calendar.hooks';
+import EditEventModal from './Components/EditEventModal';
+import { EventRoutePayload } from './Components/EventModal';
+import { useToast } from '../../hooks/toasts.hooks';
+import EditIcon from '@mui/icons-material/Edit';
 
 interface YourEventsHeadCells {
   id: string;
@@ -83,8 +100,16 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
   // Done this way to allow the old events transformer to function properly
   // but provide better utility to this file (without breaking other files that may rely on eventTransformer)
 
+  const toast = useToast();
+
   const [clickedEvent, setClickedEvent] = useState<Event>();
   const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number }>();
+
+  const [clickedEditEvent, setClickedEditEvent] = useState<Event | undefined>();
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const { mutateAsync: editEvent } = useEditEvent(clickedEditEvent?.eventId ?? '');
+  const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
 
   const handleOpenClickPopup = (event: Event) => {
     setClickedEvent(event);
@@ -101,6 +126,66 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
   const handleCloseClickPopup = () => {
     setClickedEvent(undefined);
     setAnchorPosition(undefined);
+  };
+
+  const handleEdit = (event: Event) => {
+    setClickedEditEvent(event);
+    setShowEditModal(true);
+  };
+
+  const handleCloseEdit = () => {
+    setClickedEditEvent(undefined);
+    setShowEditModal(false);
+  };
+
+  const handleEditSubmit = async (data: EventRoutePayload) => {
+    if (!clickedEditEvent) return;
+
+    try {
+      const { scheduleSlot, documentFiles, ...eventData } = data;
+
+      if (!scheduleSlot || scheduleSlot.length === 0) {
+        throw new Error('Missing scheduleSlot');
+      }
+
+      // Convert EventRoutePayload to EditEventArgs format
+      const editArgs: EditEventArgs = {
+        ...eventData,
+        status: clickedEditEvent.status, // Use existing event status
+        documents: clickedEditEvent.documents.map((doc) => ({
+          name: doc.name,
+          googleFileId: doc.googleFileId
+        })),
+        scheduleSlot: scheduleSlot.map((slot) => ({
+          days: slot.days,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          recurrenceNumber: slot.recurrenceNumber,
+          initialDateScheduled: slot.initialDateScheduled,
+          allDay: slot.allDay
+        }))
+      };
+
+      const editedEvent = await editEvent(editArgs);
+
+      // Upload new documents if any
+      const filesToUpload = documentFiles.map((doc) => doc.file).filter((file): file is File => file !== undefined);
+
+      if (filesToUpload.length > 0) {
+        await uploadDocuments({
+          id: editedEvent.eventId,
+          files: filesToUpload
+        });
+      }
+
+      toast.success('Event updated successfully!');
+      setShowEditModal(false);
+      handleCloseEdit();
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    }
   };
 
   const headCells: readonly YourEventsHeadCells[] = [
@@ -164,15 +249,6 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
 
   const events = tab === 1 ? yourEvents : reviewEvents;
 
-  const [, setUpdate] = useState(true); // Linting...
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setUpdate((prev) => !prev);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
       <PageTitle title={tab === 1 ? 'Your Events' : 'Review Bookings'} />
@@ -193,6 +269,7 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
               {headCells.map((headCell) => (
                 <TableCellHuge title={headCell.label} />
               ))}
+              {tab === 1 && <TableCellHuge title={''} />}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -284,6 +361,25 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
                       </Box>
                     </TableCell>
                   )}
+                  {tab === 1 && (
+                    <TableCell align="center">
+                      <Box display="flex" gap={1} justifyContent="center">
+                        <Tooltip title="Edit" arrow>
+                          <span>
+                            <IconButton
+                              size="small"
+                              aria-label="edit shop"
+                              onClick={() => {
+                                handleEdit(event);
+                              }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Box>
+                    </TableCell>
+                  )}
                 </TableRow>
               );
             })}
@@ -312,6 +408,16 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
         disable={true}
         addApprovalButtons={true}
       />
+      {clickedEditEvent && showEditModal && (
+        <EditEventModal
+          open={showEditModal}
+          onClose={handleCloseEdit}
+          onSubmit={handleEditSubmit}
+          initialValues={convertEventToFormValues(clickedEditEvent)}
+          eventTypes={allEventTypes}
+          defaultDate={new Date()}
+        />
+      )}
     </Box>
   );
 };

@@ -7,6 +7,7 @@ export interface EditEventModalProps {
   onSubmit: (data: EventRoutePayload) => void;
   initialValues: Partial<EventFormValues>;
   eventTypes: EventType[];
+  defaultDate?: Date;
 }
 
 const EditEventModal: React.FC<EditEventModalProps> = (props) => {
