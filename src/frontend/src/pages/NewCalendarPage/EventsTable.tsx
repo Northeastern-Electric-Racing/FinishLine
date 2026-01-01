@@ -175,7 +175,7 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
 
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <PageTitle title="Your Events" />
+      <PageTitle title={tab === 1 ? 'Your Events' : 'Review Bookings'} />
       <TableContainer
         sx={{
           maxHeight: 'calc(100vh - 200px)',
