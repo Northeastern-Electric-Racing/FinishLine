@@ -23,7 +23,7 @@ import { Event } from 'shared';
 import WarningTooltip from './YourEventsComponents/WarningTooltip';
 import { convertEventToFormValues, getMeetingDates } from '../../utils/calendar.utils';
 import { EventClickPopup } from './EventClickPopup';
-import { EditEventArgs, useDeleteEvent, useEditEvent, useUploadManyDocuments } from '../../hooks/calendar.hooks';
+import { EditEventArgs, useDeleteEvent, useEditEvent } from '../../hooks/calendar.hooks';
 import EditEventModal from './Components/EditEventModal';
 import { EventRoutePayload } from './Components/EventModal';
 import { useToast } from '../../hooks/toasts.hooks';
@@ -58,6 +58,12 @@ export interface EventTableArgs {
   allEventTypes: EventType[];
   allCalendars: Calendar[];
   tab: number;
+  handleEditSubmit: (
+    data: EventRoutePayload,
+    event: Event,
+    editEvent: (editArgs: EditEventArgs) => Promise<Event>,
+    onClose: () => void
+  ) => Promise<void>;
 }
 
 // trigger re-renders specifically for the timer
@@ -97,7 +103,14 @@ const CountdownElement = ({ targetDate }: { targetDate: Date }) => {
   );
 };
 
-const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, allEventTypes, allCalendars }) => {
+const EventsTable: React.FC<EventTableArgs> = ({
+  tab,
+  yourEvents,
+  reviewEvents,
+  allEventTypes,
+  allCalendars,
+  handleEditSubmit
+}) => {
   // Convert to include proper dates
   // Done this way to allow the old events transformer to function properly
   // but provide better utility to this file (without breaking other files that may rely on eventTransformer)
@@ -113,7 +126,6 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
   const [eventToDelete, setEventToDelete] = useState<Event | undefined>(undefined);
 
   const { mutateAsync: editEvent } = useEditEvent(clickedEditEvent?.eventId ?? '');
-  const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
 
   const handleOpenClickPopup = (event: Event) => {
     setClickedEvent(event);
@@ -155,56 +167,6 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
         toast.error(e.message, 3000);
       } else {
         toast.error('Failed to delete event', 3000);
-      }
-    }
-  };
-
-  const handleEditSubmit = async (data: EventRoutePayload) => {
-    if (!clickedEditEvent) return;
-
-    try {
-      const { scheduleSlot, documentFiles, ...eventData } = data;
-
-      if (!scheduleSlot || scheduleSlot.length === 0) {
-        throw new Error('Missing scheduleSlot');
-      }
-
-      // Convert EventRoutePayload to EditEventArgs format
-      const editArgs: EditEventArgs = {
-        ...eventData,
-        status: clickedEditEvent.status, // Use existing event status
-        documents: clickedEditEvent.documents.map((doc) => ({
-          name: doc.name,
-          googleFileId: doc.googleFileId
-        })),
-        scheduleSlot: scheduleSlot.map((slot) => ({
-          days: slot.days,
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-          recurrenceNumber: slot.recurrenceNumber,
-          initialDateScheduled: slot.initialDateScheduled,
-          allDay: slot.allDay
-        }))
-      };
-
-      const editedEvent = await editEvent(editArgs);
-
-      // Upload new documents if any
-      const filesToUpload = documentFiles.map((doc) => doc.file).filter((file): file is File => file !== undefined);
-
-      if (filesToUpload.length > 0) {
-        await uploadDocuments({
-          id: editedEvent.eventId,
-          files: filesToUpload
-        });
-      }
-
-      toast.success('Event updated successfully!');
-      setShowEditModal(false);
-      handleCloseEdit();
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
       }
     }
   };
@@ -445,7 +407,12 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
         <EditEventModal
           open={showEditModal}
           onClose={handleCloseEdit}
-          onSubmit={handleEditSubmit}
+          onSubmit={(data) => {
+            handleEditSubmit(data, clickedEditEvent, editEvent, () => {
+              setShowEditModal(false);
+              handleCloseEdit();
+            });
+          }}
           initialValues={convertEventToFormValues(clickedEditEvent)}
           eventTypes={allEventTypes}
           defaultDate={new Date()}
