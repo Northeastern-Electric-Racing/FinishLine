@@ -58,7 +58,7 @@ const RulesetTypeTable: React.FC = () => {
   ];
 
   const handleViewRulesetType = (rulesetTypeId: string) => {
-    history.push(routes.RULESET_BY_ID.replace(':rulesetId', rulesetTypeId));
+    history.push(routes.RULESET_BY_ID.replace(':rulesetTypeId', rulesetTypeId));
   };
 
   if (isLoading) return <LoadingIndicator />;

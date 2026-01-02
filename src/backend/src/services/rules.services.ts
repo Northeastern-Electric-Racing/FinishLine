@@ -525,10 +525,10 @@ export default class RulesService {
           organizationId
         }
       },
-      ...getRulesetPreviewQueryArgs()
+      ...getRulesetQueryArgs(organizationId)
     });
 
-    return rulesets.map(rulesetPreviewTransformer);
+    return rulesets.map(rulesetTransformer);
   }
 
   /**

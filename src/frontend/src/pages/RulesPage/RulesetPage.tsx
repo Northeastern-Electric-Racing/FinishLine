@@ -67,9 +67,6 @@ const RulesetPage: React.FC = () => {
                 onConfirm={handleFileConfirm}
                 carOptions={['1', '2']}
               />
-              <NERButton onClick={() => history.push(`${routes.RULES}/placeholder_ruleset_id/edit`)}>
-                MOCK edit/assign rules
-              </NERButton>
             </Box>
           </Box>
         </Box>

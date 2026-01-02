@@ -23,22 +23,14 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useRulesetsByType } from '../../../hooks/rules.hooks';
 import { Ruleset } from 'shared';
-
-interface RulesetRow {
-  id: string;
-  fileName: string;
-  dateUploaded: Date;
-  percentRulesAssigned: number;
-  car: number;
-  isActive: boolean;
-}
+import { routes } from '../../../utils/routes';
 
 interface RulesetParams {
-  rulesetId: string;
+  rulesetTypeId: string;
 }
 
 const RulesetTable: React.FC = () => {
-  const { rulesetId } = useParams<RulesetParams>();
+  const { rulesetTypeId } = useParams<RulesetParams>();
   const history = useHistory();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -46,7 +38,7 @@ const RulesetTable: React.FC = () => {
   // Add file upload logic
   // const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
 
-  const { data: rulesets = [], isLoading, error } = useRulesetsByType(rulesetId);
+  const { data: rulesets = [], isLoading, error } = useRulesetsByType(rulesetTypeId);
 
   // Table header configuration
   const headCells = [
@@ -58,14 +50,12 @@ const RulesetTable: React.FC = () => {
     { id: 'actions', label: 'Actions' }
   ];
 
-  const handleEditRuleset = () => {
-    // Navigation logic to edit/assign rules pages
-    history.push(`/rules/${rulesetId}/edit`);
+  const handleEditRuleset = (rulesetId: string) => {
+    history.push(routes.RULESET_EDIT.replace(':rulesetId', rulesetId));
   };
 
-  const handleViewRuleset = () => {
-    // Navigation logic to view rules pages
-    history.push(`/rules/${rulesetId}/view`);
+  const handleViewRuleset = (rulesetId: string) => {
+    history.push(routes.RULESET_VIEW.replace(':rulesetId', rulesetId));
   };
 
   if (isLoading) return <LoadingIndicator />;
@@ -131,6 +121,7 @@ const RulesetTable: React.FC = () => {
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                     <NERButton
+                      onClick={() => handleEditRuleset(ruleset.rulesetId)}
                       sx={{
                         backgroundColor: theme.palette.grey[800],
                         color: theme.palette.getContrastText(theme.palette.grey[600]),
@@ -146,6 +137,7 @@ const RulesetTable: React.FC = () => {
                       Edit/Assign Rules
                     </NERButton>
                     <NERButton
+                      onClick={() => handleViewRuleset(ruleset.rulesetId)}
                       sx={{
                         backgroundColor: theme.palette.grey[800],
                         color: theme.palette.getContrastText(theme.palette.grey[600]),
@@ -216,6 +208,7 @@ const RulesetTable: React.FC = () => {
                     </TableCell>
                     <TableCell align="center">
                       <NERButton
+                        onClick={() => handleEditRuleset(ruleset.rulesetId)}
                         sx={{
                           backgroundColor: theme.palette.grey[800],
                           color: theme.palette.getContrastText(theme.palette.grey[600]),
@@ -231,6 +224,7 @@ const RulesetTable: React.FC = () => {
                         Edit/Assign Rules
                       </NERButton>
                       <NERButton
+                        onClick={() => handleViewRuleset(ruleset.rulesetId)}
                         sx={{
                           backgroundColor: theme.palette.grey[800],
                           color: theme.palette.getContrastText(theme.palette.grey[600]),
