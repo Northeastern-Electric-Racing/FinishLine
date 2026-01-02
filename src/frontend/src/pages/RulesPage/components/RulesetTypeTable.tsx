@@ -113,7 +113,7 @@ const RulesetTypeTable: React.FC = () => {
                       }}
                       onClick={() => handleViewRulesetType(rulesetType.rulesetTypeId)}
                     >
-                      View Ruleset
+                      View Rulesets
                     </NERButton>
                   </Box>
                 </Box>
@@ -195,7 +195,7 @@ const RulesetTypeTable: React.FC = () => {
                         }}
                         onClick={() => handleViewRulesetType(rulesetType.rulesetTypeId)}
                       >
-                        View Ruleset
+                        View Rulesets
                       </NERButton>
                     </TableCell>
                   </TableRow>

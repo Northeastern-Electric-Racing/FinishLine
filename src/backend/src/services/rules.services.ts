@@ -5,10 +5,10 @@ import {
   ProjectRule,
   RulesetType,
   notGuest,
-  RulesetPreview,
   User,
   Rule as SharedRule,
-  isHead
+  isHead,
+  Ruleset
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -24,15 +24,13 @@ import { userHasPermission } from '../utils/users.utils';
 import {
   getProjectRuleQueryArgs,
   getRulesetQueryArgs,
-  getRulesetPreviewQueryArgs,
   getRulePreviewQueryArgs
 } from '../prisma-query-args/rules.query-args';
 import {
   ruleTransformer,
   projectRuleTransformer,
   rulesetTransformer,
-  rulesetTypeTransformer,
-  rulesetPreviewTransformer
+  rulesetTypeTransformer
 } from '../transformers/rules.transformer';
 
 export default class RulesService {
@@ -516,7 +514,7 @@ export default class RulesService {
    * @param organizationId id of organization
    * @returns rulesets associated with provided ruleset type
    */
-  static async getRulesetsByRulesetType(rulesetTypeId: string, organizationId: string): Promise<RulesetPreview[]> {
+  static async getRulesetsByRulesetType(rulesetTypeId: string, organizationId: string): Promise<Ruleset[]> {
     const rulesets = await prisma.ruleset.findMany({
       where: {
         rulesetTypeId,

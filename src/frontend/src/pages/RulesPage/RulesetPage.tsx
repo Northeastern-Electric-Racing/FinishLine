@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useHistory } from 'react-router-dom';
-import { routes } from '../../utils/routes';
 import React from 'react';
 import { NERButton } from '../../components/NERButton';
 import AddNewFileModal from './components/AddNewFileModal';
@@ -16,7 +15,6 @@ import RulesetTable from './components/RulesetTable';
  * Supports editing and assigning rules to projects and teams.
  */
 const RulesetPage: React.FC = () => {
-  const history = useHistory();
   const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
 
   const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {

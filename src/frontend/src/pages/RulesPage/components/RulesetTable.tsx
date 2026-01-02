@@ -100,7 +100,7 @@ const RulesetTable: React.FC = () => {
                       Car:
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#ededed' }}>
-                      {ruleset.car.carId}
+                      {ruleset.car.name}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -195,7 +195,7 @@ const RulesetTable: React.FC = () => {
                     </TableCell>
                     <TableCell align="center">{datePipe(ruleset.dateCreated)}</TableCell>
                     <TableCell align="center">{ruleset.assignedPercentage}%</TableCell>
-                    <TableCell align="center">{ruleset.car.carId}</TableCell>
+                    <TableCell align="center">{ruleset.car.name}</TableCell>
                     <TableCell align="center">
                       <Checkbox
                         checked={ruleset.active}
