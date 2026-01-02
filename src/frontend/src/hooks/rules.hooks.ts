@@ -14,7 +14,8 @@ import {
   parseRuleset,
   uploadRulesetFile,
   getAllRulesetTypes,
-  getRulesetsByRulesetType
+  getRulesetsByRulesetType,
+  createRuleset
 } from '../apis/rules.api';
 
 interface CreateRulesetTypePayload {
@@ -36,14 +37,14 @@ export interface CreateRulesetPayload {
 }
 
 export const useGetTopLevelRules = (rulesetId: string) => {
-  return useQuery<Rule[], Error>(['rules', 'top-level', rulesetId], async () => {
+  return useQuery<SharedRule[], Error>(['rules', 'top-level', rulesetId], async () => {
     const { data } = await getTopLevelRules(rulesetId);
     return data;
   });
 };
 
 export const useGetChildRules = (ruleId: string) => {
-  return useQuery<Rule[], Error>(['rules', 'children', ruleId], async () => {
+  return useQuery<SharedRule[], Error>(['rules', 'children', ruleId], async () => {
     const { data } = await getChildRules(ruleId);
     return data;
   });
@@ -51,7 +52,7 @@ export const useGetChildRules = (ruleId: string) => {
 
 export const useToggleRuleTeam = () => {
   const queryClient = useQueryClient();
-  return useMutation<Rule, Error, { ruleId: string; teamId: string }>(
+  return useMutation<SharedRule, Error, { ruleId: string; teamId: string }>(
     ['rules', 'toggle-team'],
     async ({ ruleId, teamId }) => {
       const { data } = await toggleRuleTeam(ruleId, teamId);
@@ -66,7 +67,7 @@ export const useToggleRuleTeam = () => {
 };
 
 export const useGetTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => {
-  return useQuery<Rule[], Error>(['rules', 'team-rules', rulesetTypeId, teamId], async () => {
+  return useQuery<SharedRule[], Error>(['rules', 'team-rules', rulesetTypeId, teamId], async () => {
     const { data } = await getTeamRulesInRulesetType(rulesetTypeId, teamId);
     return data;
   });
@@ -116,7 +117,6 @@ export const useRulesetsByType = (rulesetTypeId: string) => {
   });
 };
 
-
 export const useCreateRuleset = () => {
   const queryClient = useQueryClient();
   return useMutation<Ruleset, Error, CreateRulesetPayload>(
@@ -160,4 +160,3 @@ export const useUploadRulesetFile = () => {
     return data;
   });
 };
-

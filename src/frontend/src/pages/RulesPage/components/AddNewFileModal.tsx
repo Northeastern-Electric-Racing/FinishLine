@@ -52,7 +52,7 @@ const schema = yup.object({
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({ options, value, onChange }) => {
   return (
-    <div style={{ display: 'flex', gap: '4px'}}>
+    <div style={{ display: 'flex', gap: '4px' }}>
       {options.map((option) => (
         <button
           type="button"
@@ -77,7 +77,8 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ options, value, onChange }) =
             }
           }}
         >
-          <Typography sx={{ fontSize: '0.875rem', px: 1 }}>{option}</Typography>{/* ? need ?*/}
+          <Typography sx={{ fontSize: '0.875rem', px: 1 }}>{option}</Typography>
+          {/* ? need ?*/}
         </button>
       ))}
     </div>
@@ -96,7 +97,6 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
     handleSubmit,
     reset,
     setValue,
-    watch,
     control
   } = useForm<NewFileFormData>({
     resolver: yupResolver(schema),
@@ -193,7 +193,6 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
       <Box>
         <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', gap: 3 }}>
-
             {/* File Upload */}
             <FormControl sx={{ flex: 2 }} error={!!errors.fileId}>
               <FormLabel sx={sectionHeaderStyle}>Upload Ruleset File:</FormLabel>
@@ -208,12 +207,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
                   disabled={uploading || !!file}
                 >
                   {file ? 'File Selected' : 'Select File'}
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    hidden
-                    onChange={handleFileUpload}
-                  />
+                  <input type="file" accept="application/pdf" hidden onChange={handleFileUpload} />
                 </Button>
               </Box>
               <FormHelperText error>{errors.fileId?.message}</FormHelperText>
@@ -232,7 +226,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
                   control={control}
                   render={({ field }) => (
                     <Select {...field} size="small">
-                      {cars?.map(car => (
+                      {cars?.map((car) => (
                         <MenuItem key={car.id} value={car.wbsNum.carNumber}>
                           {car.name}
                         </MenuItem>
@@ -251,11 +245,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
                 name="parserType"
                 control={control}
                 render={({ field: { onChange, value } }) => (
-                  <ButtonGroup
-                    options={['FSAE', 'FHE']}
-                    value={value}
-                    onChange={(val) => onChange(val as 'FSAE' | 'FHE')}
-                  />
+                  <ButtonGroup options={['FSAE', 'FHE']} value={value} onChange={(val) => onChange(val as 'FSAE' | 'FHE')} />
                 )}
               />
               <FormHelperText error>{errors.parserType?.message}</FormHelperText>
@@ -269,7 +259,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
               name="name"
               control={control}
               render={({ field }) => (
-                <TextField {...field} autoComplete="off" placeholder="Name File" error={!!errors.name} /> 
+                <TextField {...field} autoComplete="off" placeholder="Name File" error={!!errors.name} />
               )}
             />
             <FormHelperText error>{errors.name?.message}</FormHelperText>

@@ -9,8 +9,6 @@ import PageLayout from '../../components/PageLayout';
 import { Box, Typography } from '@mui/material';
 import RulesetTypeTable from './components/RulesetTypeTable';
 import { NERButton } from '../../components/NERButton';
-import { useHistory } from 'react-router-dom';
-import { routes } from '../../utils/routes';
 import AddRulesetTypeModal from './components/AddRulesetTypeModal';
 import { useState } from 'react';
 import { useCreateRulesetType } from '../../hooks/rules.hooks';

@@ -57,8 +57,8 @@ const RulesetTypeTable: React.FC = () => {
     }
   ];
 
-  const handleViewRuleset = (rulesetTypeId: string) => {
-    history.push(routes.RULESET_BY_ID.replace(':rulesetId', rulesetTypeId));
+  const handleViewRulesetType = (rulesetTypeId: string) => {
+    history.push(routes.RULESET_BY_ID.replace(':rulesetTypeId', rulesetTypeId));
   };
 
   if (isLoading) return <LoadingIndicator />;
@@ -111,9 +111,9 @@ const RulesetTypeTable: React.FC = () => {
                         lineHeight: 1,
                         borderRadius: '6px'
                       }}
-                      onClick={() => handleViewRuleset(rulesetType.rulesetTypeId)}
+                      onClick={() => handleViewRulesetType(rulesetType.rulesetTypeId)}
                     >
-                      View Ruleset
+                      View Rulesets
                     </NERButton>
                   </Box>
                 </Box>
@@ -193,9 +193,9 @@ const RulesetTypeTable: React.FC = () => {
                           lineHeight: 1,
                           borderRadius: '6px'
                         }}
-                        onClick={() => handleViewRuleset(rulesetType.rulesetTypeId)}
+                        onClick={() => handleViewRulesetType(rulesetType.rulesetTypeId)}
                       >
-                        View Ruleset
+                        View Rulesets
                       </NERButton>
                     </TableCell>
                   </TableRow>
