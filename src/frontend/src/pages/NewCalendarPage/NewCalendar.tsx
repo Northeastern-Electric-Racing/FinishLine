@@ -10,7 +10,6 @@ import CalendarTab from './CalendarTab';
 const NewCalendar: React.FC = () => {
   return (
     <Switch>
-      <Route path={routes.DESIGN_REVIEW_BY_ID} component={DesignReviewDetails} />
       <Route path={routes.NEW_CALENDAR} component={CalendarTab} />
     </Switch>
   );
