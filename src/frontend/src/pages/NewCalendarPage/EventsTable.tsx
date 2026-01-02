@@ -315,7 +315,7 @@ const EventsTable: React.FC<EventTableArgs> = ({
                             <WarningTooltip
                               warning="Your meeting approval has been denied, please reschedule or change your meeting location."
                               buttonText="Click Here to Edit Meeting"
-                              onClick={() => {}}
+                              onClick={() => handleEdit(event)}
                             />
                           </Box>
                         )}

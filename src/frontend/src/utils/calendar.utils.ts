@@ -159,6 +159,7 @@ export const getEventsFlattened = (events: Event[], startPeriod: Date, endPeriod
   return occurrences.map(({ event }) => event);
 };
 
+// converts an Event into Event Form Values
 export const convertEventToFormValues = (event: Event): Partial<EventFormValues> => {
   return {
     title: event.title,
