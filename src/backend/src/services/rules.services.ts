@@ -72,6 +72,31 @@ export default class RulesService {
   }
 
   /**
+   * Gets a single ruleset by its ID
+   * @param rulesetId  The ID of the ruleset to retrieve
+   * @param organizationId The ID of the organization the ruleset belongs to
+   * @returns The ruleset if found, otherwise throws an error
+   */
+  static async getRulesetById(rulesetId: string, organizationId: string): Promise<RulesetPreview> {
+    const ruleset = await prisma.ruleset.findFirst({
+      where: {
+        rulesetId,
+        deletedBy: null,
+        rulesetType: {
+          organizationId
+        }
+      },
+      ...getRulesetQueryArgs(organizationId)
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    return rulesetTransformer(ruleset);
+  }
+
+  /**
    * Creates a new rule in the database
    *
    * @param user The user creating the rule, must be a member or above

@@ -8,6 +8,7 @@ import multer, { memoryStorage } from 'multer';
 const rulesRouter = express.Router();
 
 rulesRouter.get('/rulesetType/:rulesetTypeId/active', RulesController.getActiveRuleset);
+rulesRouter.get('/ruleset/:rulesetId', RulesController.getRulesetById);
 
 rulesRouter.post(
   '/rule/create',

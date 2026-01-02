@@ -3,12 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useHistory, useParams } from 'react-router-dom';
-import { routes } from '../../utils/routes';
 import React from 'react';
-
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCreateRuleset, useParseRuleset } from '../../hooks/rules.hooks';
-
 import { NERButton } from '../../components/NERButton';
 import AddNewFileModal from './components/AddNewFileModal';
 import PageLayout from '../../components/PageLayout';
@@ -20,7 +17,6 @@ import RulesetTable from './components/RulesetTable';
  * Supports editing and assigning rules to projects and teams.
  */
 const RulesetPage: React.FC = () => {
-  // ruleset from url
   const { rulesetTypeId } = useParams<{ rulesetTypeId: string }>();
   console.log('rulesetTypeId from URL:', rulesetTypeId);
 
@@ -121,9 +117,6 @@ const RulesetPage: React.FC = () => {
                 onHide={() => setAddFileModalShow(false)}
                 onFormSubmit={handleFileConfirm}
               />
-              <NERButton onClick={() => history.push(`${routes.RULES}/placeholder_ruleset_id/edit`)}>
-                MOCK edit/assign rules
-              </NERButton>
             </Box>
           </Box>
         </Box>

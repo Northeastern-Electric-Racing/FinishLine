@@ -18,149 +18,14 @@ import AddRuleSectionModal from './components/AddRuleSectionModal';
 import AddRuleModal from './components/AddRuleModal';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
-
-/**
- * Placeholder hook to fetch a single ruleset.
- * @param rulesetId - The ID of the ruleset to fetch.
- * @returns The ruleset data.
- */
-export const useSingleRuleset = (rulesetId: string) => {
-  const placeholderRules: Rule[] = [
-    {
-      ruleId: '1',
-      ruleCode: 'GR - General Regulations',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '2',
-      ruleCode: 'AD - Administrative Regulations',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '3',
-      ruleCode: 'DR - Document Requirements',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '4',
-      ruleCode: 'V - Vehicle Requirements',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: ['5', '6', '7'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '5',
-      ruleCode: 'V.1 - Configuration',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '6',
-      ruleCode: 'V.2 - Driver',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '7',
-      ruleCode: 'V.3 - Suspension and Steering',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
-      subRuleIds: ['8', '9'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '8',
-      ruleCode: 'V.3.1 - Suspension',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '9',
-      ruleCode: 'V.3.2 - Steering',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
-      subRuleIds: ['10', '11', '12'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '10',
-      ruleCode: 'V.3.2.1',
-      ruleContent:
-        'Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line',
-      imageFileIds: [],
-      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '11',
-      ruleCode: 'V.3.2.2',
-      ruleContent: 'Electrically actuated steering of the front wheels is prohibited',
-      imageFileIds: [],
-      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '12',
-      ruleCode: 'V.3.2.3',
-      ruleContent:
-        'Steering systems must use a rigid mechanical linkage capable of tension and compression loads for operation',
-      imageFileIds: [],
-      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '13',
-      ruleCode: 'F - Chassis and Structural',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: [],
-      referencedRuleIds: []
-    }
-  ];
-
-  return {
-    data: { name: 'FSAE Original Version', rulesetId, rules: placeholderRules },
-    isLoading: false,
-    isError: false,
-    error: undefined
-  };
-};
+import { useGetRuleset, useGetTopLevelRules } from '../../hooks/rules.hooks';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
  * Supports editing and assigning rules to projects and teams.
  */
 const RulesetEditPage: React.FC = () => {
-  const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>();
+  const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>(); //why tab value??
   const [tabValue, setTabValue] = useState(0);
   const defaultTab = 'edit-rules';
 
@@ -172,18 +37,34 @@ const RulesetEditPage: React.FC = () => {
   const [showAddRuleSectionModal, setShowAddRuleSectionModal] = useState(false);
   const [showAddRuleModal, setShowAddRuleModal] = useState(false);
 
-  const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
+  const {
+    data: ruleset,
+    isLoading: rulesetLoading,
+    isError: rulesetError,
+    error: rulesetErrorMsg
+  } = useGetRuleset(rulesetId);
+
+  const {
+    data: topLevelRules = [],
+    isError: rulesError,
+    error: rulesErrorMsg,
+    isLoading: rulesLoading
+  } = useGetTopLevelRules(rulesetId);
 
   const tabs = [
     { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
     { tabUrlValue: 'assign-rules', tabName: 'Assign Rules' }
   ];
 
-  if (isError) {
-    return <ErrorPage error={error} />;
+  if (rulesetError) {
+    return <ErrorPage error={rulesetErrorMsg} />;
   }
 
-  if (isLoading || !ruleset) {
+  if (rulesError) {
+    return <ErrorPage error={rulesErrorMsg} />;
+  }
+
+  if (rulesetLoading || rulesLoading || !ruleset) {
     return <LoadingIndicator />;
   }
 
@@ -229,9 +110,6 @@ const RulesetEditPage: React.FC = () => {
     console.log('Edit rule:', ruleId);
   };
 
-  // Filter to only show top-level rules
-  const topLevelRules = ruleset.rules.filter((rule) => !rule.parentRule);
-
   return (
     <PageLayout
       title={`${ruleset.name} Rules`}
@@ -240,7 +118,7 @@ const RulesetEditPage: React.FC = () => {
           <FullPageTabs
             setTab={setTabValue}
             tabsLabels={tabs}
-            baseUrl={`${routes.RULES}/${rulesetId}/edit`}
+            baseUrl={routes.RULESET_EDIT.replace(':rulesetId', rulesetId)}
             defaultTab={defaultTab}
             id="rules-tabs"
           />
@@ -257,7 +135,6 @@ const RulesetEditPage: React.FC = () => {
                     <RuleRow
                       key={rule.ruleId}
                       rule={rule}
-                      allRules={ruleset.rules}
                       rightContent={(currentRule) => (
                         <RuleActions
                           ruleId={currentRule.ruleId}
@@ -329,7 +206,7 @@ const RulesetEditPage: React.FC = () => {
             </Box>
           </Box>
         ) : (
-          <AssignRulesTab rules={ruleset.rules} />
+          <AssignRulesTab rules={topLevelRules} />
         )}
       </Box>
     </PageLayout>

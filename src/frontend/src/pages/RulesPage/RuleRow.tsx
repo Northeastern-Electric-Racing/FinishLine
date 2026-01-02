@@ -7,10 +7,11 @@ import { TableCell, TableRow, Box } from '@mui/material';
 import { useState } from 'react';
 import { Rule } from 'shared';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { useGetChildRules } from '../../hooks/rules.hooks';
 
 interface RuleRowProps {
   rule: Rule;
-  allRules: Rule[];
+  allRules?: Rule[];
   level?: number;
   leftContent?: (rule: Rule, level: number, isExpanded: boolean, hasSubRules: boolean) => React.ReactNode;
   middleContent?: (rule: Rule, level: number) => React.ReactNode;
@@ -51,7 +52,12 @@ const RuleRow: React.FC<RuleRowProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasSubRules = rule.subRuleIds.length > 0;
-  const subRules = allRules.filter((r) => rule.subRuleIds.includes(r.ruleId));
+
+  // Lazy load if allRules not provided
+  const { data: fetchedSubRules = [] } = useGetChildRules(rule.ruleId, !allRules && isExpanded && hasSubRules);
+
+  // Use allRules if provided, otherwise use fetched
+  const subRules = allRules ? allRules.filter((r) => rule.subRuleIds.includes(r.ruleId)) : fetchedSubRules;
 
   const bgColor = typeof backgroundColor === 'function' ? backgroundColor(rule) : backgroundColor;
   const color = typeof textColor === 'function' ? textColor(rule) : textColor;

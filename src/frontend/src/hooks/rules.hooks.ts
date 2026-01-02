@@ -15,7 +15,8 @@ import {
   uploadRulesetFile,
   getAllRulesetTypes,
   getRulesetsByRulesetType,
-  createRuleset
+  createRuleset,
+  getRulesetById
 } from '../apis/rules.api';
 
 interface CreateRulesetTypePayload {
@@ -43,9 +44,22 @@ export const useGetTopLevelRules = (rulesetId: string) => {
   });
 };
 
-export const useGetChildRules = (ruleId: string) => {
-  return useQuery<SharedRule[], Error>(['rules', 'children', ruleId], async () => {
-    const { data } = await getChildRules(ruleId);
+export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
+  return useQuery<SharedRule[], Error>(
+    ['rules', 'children', ruleId],
+    async () => {
+      const { data } = await getChildRules(ruleId);
+      return data;
+    },
+    {
+      enabled // only fetch when true
+    }
+  );
+};
+
+export const useGetRuleset = (rulesetId: string) => {
+  return useQuery<Ruleset, Error>(['ruleset', rulesetId], async () => {
+    const { data } = await getRulesetById(rulesetId);
     return data;
   });
 };

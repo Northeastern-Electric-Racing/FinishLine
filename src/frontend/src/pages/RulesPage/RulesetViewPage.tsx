@@ -5,7 +5,6 @@ import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import { Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import { useSingleRuleset } from './RulesetEditPage';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 
@@ -18,20 +17,20 @@ const RulesetViewPage = () => {
 
   const { rulesetId } = useParams<{ rulesetId: string }>();
 
-  const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
+  // const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
 
-  if (isError) {
-    return <ErrorPage error={error} />;
-  }
+  // if (isError) {
+  //   return <ErrorPage error={error} />;
+  // }
 
-  if (isLoading || !ruleset) {
-    return <LoadingIndicator />;
-  }
+  // if (isLoading || !ruleset) {
+  //   return <LoadingIndicator />;
+  // }
 
   return (
     <Box>
       <PageLayout
-        title={ruleset.name}
+        title="Title" /*{ruleset.name}*/
         tabs={
           <Box borderBottom={1} borderColor={'divider'}>
             <FullPageTabs

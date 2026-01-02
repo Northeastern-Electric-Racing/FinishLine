@@ -445,10 +445,9 @@ const rulesTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => `
 const rulesetTypes = () => `${rules()}/rulesetTypes`;
 const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
 const ruleset = () => `${rules()}/ruleset`;
-// const ruleset = () => `${rules()}/ruleset`;
-//const rulesetsById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
 const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
 const rulesetsCreate = () => `${rules()}/ruleset/create`; // fix this
+const rulesetById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
 const parseRuleset = (rulesetId: string) => `${API_URL}/rules/ruleset/${rulesetId}/parse`;
 const uploadRulesetFile = () => `${rules()}/upload/file`;
 
@@ -762,8 +761,7 @@ export const apiUrls = {
   ruleset,
   rulesetTypes,
   rulesetsByType,
-  // ruleset,
-  // rulesetsById,
+  rulesetById,
   rulesetTypeCreate,
   rulesetsCreate,
   parseRuleset,

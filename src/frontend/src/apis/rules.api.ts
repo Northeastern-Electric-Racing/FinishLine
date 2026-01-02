@@ -16,6 +16,15 @@ export const getTopLevelRules = (rulesetId: string) => {
 };
 
 /**
+ * Gets a ruleset by its ID
+ */
+export const getRulesetById = (rulesetId: string) => {
+  return axios.get<Ruleset>(apiUrls.rulesetById(rulesetId), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
  * Gets all child rules of a specific rule
  */
 export const getChildRules = (ruleId: string) => {
