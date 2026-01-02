@@ -53,7 +53,7 @@ export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQuer
     rulesetType: rulesetTypeTransformer(ruleset.rulesetType),
     car: {
       carId: ruleset.car.carId,
-      name: ruleset.car.wbsElementId
+      name: ruleset.car.wbsElement.name
     }
   };
 };

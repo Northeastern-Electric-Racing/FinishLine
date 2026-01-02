@@ -65,7 +65,11 @@ export const getRulesetQueryArgs = (organizationId: string) =>
         }
       },
       rulesetType: true,
-      car: true,
+      car: {
+        include: {
+          wbsElement: true
+        }
+      },
       createdBy: getUserQueryArgs(organizationId)
     }
   });

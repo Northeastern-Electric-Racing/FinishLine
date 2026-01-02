@@ -24,15 +24,13 @@ import { userHasPermission } from '../utils/users.utils';
 import {
   getProjectRuleQueryArgs,
   getRulesetQueryArgs,
-  getRulesetPreviewQueryArgs,
   getRulePreviewQueryArgs
 } from '../prisma-query-args/rules.query-args';
 import {
   ruleTransformer,
   projectRuleTransformer,
   rulesetTransformer,
-  rulesetTypeTransformer,
-  rulesetPreviewTransformer
+  rulesetTypeTransformer
 } from '../transformers/rules.transformer';
 import { ParsedRule, parseRulesFromPdf } from '../utils/parse.utils';
 import { uploadFile, downloadFile } from '../utils/google-integration.utils';
@@ -524,10 +522,10 @@ export default class RulesService {
           organizationId
         }
       },
-      ...getRulesetPreviewQueryArgs()
+      ...getRulesetQueryArgs(organizationId)
     });
 
-    return rulesets.map(rulesetPreviewTransformer);
+    return rulesets.map(rulesetTransformer);
   }
 
   /**
