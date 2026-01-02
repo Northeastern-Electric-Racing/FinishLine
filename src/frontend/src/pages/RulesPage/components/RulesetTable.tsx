@@ -18,6 +18,11 @@ import {
 } from '@mui/material';
 import { datePipe } from '../../../utils/pipes';
 import { NERButton } from '../../../components/NERButton';
+import { useHistory, useParams } from 'react-router-dom';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { useRulesetsByType } from '../../../hooks/rules.hooks';
+import { Ruleset } from 'shared';
 
 interface RulesetRow {
   id: string;
@@ -28,12 +33,20 @@ interface RulesetRow {
   isActive: boolean;
 }
 
+interface RulesetParams {
+  rulesetId: string;
+}
+
 const RulesetTable: React.FC = () => {
+  const { rulesetId } = useParams<RulesetParams>();
+  const history = useHistory();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Add file upload logic
   // const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
+
+  const { data: rulesets = [], isLoading, error } = useRulesetsByType(rulesetId);
 
   // Table header configuration
   const headCells = [
@@ -45,185 +58,26 @@ const RulesetTable: React.FC = () => {
     { id: 'actions', label: 'Actions' }
   ];
 
-  // Mock data for now - will be replaced with ruleset data
-  const mockRulesets: RulesetRow[] = [
-    {
-      id: '1',
-      fileName: 'FSAE Original Version',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '2',
-      fileName: 'FSAE Revision 1',
-      dateUploaded: new Date('2025-02-25'),
-      percentRulesAssigned: 10,
-      car: 1,
-      isActive: true
-    },
-    {
-      id: '3',
-      fileName: 'Hi',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    },
-    {
-      id: '3',
-      fileName: 'Hi ',
-      dateUploaded: new Date('2025-02-24'),
-      percentRulesAssigned: 80,
-      car: 1,
-      isActive: false
-    }
-  ];
+  const handleEditRuleset = () => {
+    // Navigation logic to edit/assign rules pages
+    history.push(`/rules/${rulesetId}/edit`);
+  };
+
+  const handleViewRuleset = () => {
+    // Navigation logic to view rules pages
+    history.push(`/rules/${rulesetId}/view`);
+  };
+
+  if (isLoading) return <LoadingIndicator />;
+  if (error) return <ErrorPage message={error.message} />;
 
   return (
     <Box>
       {isMobile ? (
         <Stack spacing={2} sx={{ px: 1 }}>
-          {mockRulesets.map((ruleset) => (
+          {rulesets.map((ruleset: Ruleset) => (
             <Card
-              key={ruleset.id}
+              key={ruleset.rulesetId}
               sx={{
                 backgroundColor: '#121313',
                 borderRadius: '8px',
@@ -232,7 +86,7 @@ const RulesetTable: React.FC = () => {
             >
               <CardContent>
                 <Typography variant="h6" sx={{ color: '#dd514c', fontWeight: 600, mb: 2 }}>
-                  {ruleset.fileName}
+                  {ruleset.name}
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -240,7 +94,7 @@ const RulesetTable: React.FC = () => {
                       Date Uploaded:
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#ededed' }}>
-                      {datePipe(ruleset.dateUploaded)}
+                      {datePipe(ruleset.dateCreated)}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -248,7 +102,7 @@ const RulesetTable: React.FC = () => {
                       % of Rules Assigned:
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#ededed' }}>
-                      {ruleset.percentRulesAssigned}
+                      {ruleset.assignedPercentage}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -256,7 +110,7 @@ const RulesetTable: React.FC = () => {
                       Car:
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#ededed' }}>
-                      {ruleset.car}
+                      {ruleset.car.carId}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -264,10 +118,10 @@ const RulesetTable: React.FC = () => {
                       Active:
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#ededed' }}>
-                      {ruleset.isActive}
+                      {ruleset.active}
                     </Typography>
                     <Checkbox
-                      checked={ruleset.isActive}
+                      checked={ruleset.active}
                       disabled // Read-only for now
                       sx={{
                         color: '#fff',
@@ -330,29 +184,29 @@ const RulesetTable: React.FC = () => {
             </TableHead>
             <TableBody sx={{ backgroundColor: '#121313' }}>
               {/* Table rows with ruleset data */}
-              {mockRulesets.length === 0 ? (
+              {rulesets.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ color: '#999', padding: '15px' }}>
                     No Rulesets Found
                   </TableCell>
                 </TableRow>
               ) : (
-                mockRulesets.map((ruleset) => (
+                rulesets.map((ruleset: Ruleset) => (
                   <TableRow
-                    key={ruleset.id}
+                    key={ruleset.rulesetId}
                     sx={{
                       '&:last-child td, &:last-child th': { border: 0 }
                     }}
                   >
                     <TableCell align="center" sx={{ maxWidth: '20vw' }}>
-                      {ruleset.fileName}
+                      {ruleset.name}
                     </TableCell>
-                    <TableCell align="center">{datePipe(ruleset.dateUploaded)}</TableCell>
-                    <TableCell align="center">{ruleset.percentRulesAssigned}%</TableCell>
-                    <TableCell align="center">{ruleset.car}</TableCell>
+                    <TableCell align="center">{datePipe(ruleset.dateCreated)}</TableCell>
+                    <TableCell align="center">{ruleset.assignedPercentage}%</TableCell>
+                    <TableCell align="center">{ruleset.car.carId}</TableCell>
                     <TableCell align="center">
                       <Checkbox
-                        checked={ruleset.isActive}
+                        checked={ruleset.active}
                         disabled // Read-only for now
                         sx={{
                           color: '#fff',
