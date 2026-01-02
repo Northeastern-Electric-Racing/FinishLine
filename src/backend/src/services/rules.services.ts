@@ -502,6 +502,9 @@ export default class RulesService {
       where: {
         organizationId: organization.organizationId,
         deletedBy: null
+      },
+      include: {
+        revisionFiles: true
       }
     });
     return rulesets.map(rulesetTypeTransformer);
