@@ -173,8 +173,8 @@ const EventsTable: React.FC<EventTableArgs> = ({
 
   const headCells: readonly YourEventsHeadCells[] = [
     {
-      id: 'eventsName',
-      label: 'Events Name'
+      id: 'eventName',
+      label: 'Event Name'
     },
     {
       id: 'date',
