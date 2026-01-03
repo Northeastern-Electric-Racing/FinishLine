@@ -395,8 +395,8 @@ describe('Create Rules Tests', () => {
       });
       const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(2);
-      expect(rulesets[0].name).toBe('2025 FSAE Rules');
-      expect(rulesets[1].name).toBe('2025 FSAE Rules2');
+      expect(rulesets[0].name).toBe('2025 FSAE Rules2');
+      expect(rulesets[1].name).toBe('2025 FSAE Rules');
     });
   });
 
