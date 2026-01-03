@@ -17,7 +17,6 @@ const RulesetViewPage = () => {
   ];
 
   const { rulesetId } = useParams<{ rulesetId: string }>();
-
   const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
 
   if (isError) {
@@ -38,7 +37,7 @@ const RulesetViewPage = () => {
               noUnderline
               setTab={setTabIndex}
               tabsLabels={tabs}
-              baseUrl={`${routes.RULES}/${rulesetId}/view`}
+              baseUrl={routes.RULESET_VIEW.replace(':rulesetId', rulesetId)}
               defaultTab={'teamView'}
               id="rules-view-tabs"
             />

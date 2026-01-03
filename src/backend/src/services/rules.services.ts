@@ -59,7 +59,7 @@ export default class RulesService {
 
     const activeRuleset = await prisma.ruleset.findFirst({
       where: { rulesetTypeId, deletedByUserId: null, active: true },
-      ...getRulesetQueryArgs(organization.organizationId)
+      ...getRulesetQueryArgs()
     });
 
     if (!activeRuleset) {
@@ -459,10 +459,10 @@ export default class RulesService {
    * @param organizationId the id of the organization the ruleset is being deleted in
    * @returns the ruleset with query args
    */
-  static async getRulesetWithQueryArgs(rulesetId: string, organizationId: string) {
+  static async getRulesetWithQueryArgs(rulesetId: string) {
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
-      ...getRulesetQueryArgs(organizationId)
+      ...getRulesetQueryArgs()
     });
 
     if (!ruleset) throw new NotFoundException('Ruleset', rulesetId);
@@ -479,7 +479,7 @@ export default class RulesService {
    * @returns the deleted Ruleset
    */
   static async deleteRuleset(rulesetId: string, deleterId: string, organizationId: string) {
-    const ruleset = await RulesService.getRulesetWithQueryArgs(rulesetId, organizationId);
+    const ruleset = await RulesService.getRulesetWithQueryArgs(rulesetId);
 
     const hasPermission =
       (await userHasPermission(deleterId, organizationId, isAdmin)) || deleterId === ruleset.createdByUserId;
@@ -489,7 +489,7 @@ export default class RulesService {
     const deletedRuleset = await prisma.ruleset.update({
       where: { rulesetId },
       data: { deletedBy: { connect: { userId: deleterId } } },
-      ...getRulesetQueryArgs(organizationId)
+      ...getRulesetQueryArgs()
     });
 
     return rulesetTransformer(deletedRuleset);
@@ -523,7 +523,7 @@ export default class RulesService {
           organizationId
         }
       },
-      ...getRulesetQueryArgs(organizationId)
+      ...getRulesetQueryArgs()
     });
 
     return rulesets.map(rulesetTransformer);
@@ -571,7 +571,7 @@ export default class RulesService {
         active: true,
         deletedBy: null
       },
-      ...getRulesetQueryArgs(organization.organizationId)
+      ...getRulesetQueryArgs()
     });
 
     if (!activeRuleset) {
@@ -782,7 +782,7 @@ export default class RulesService {
         active,
         createdByUserId: submitter.userId
       },
-      ...getRulesetQueryArgs(organization.organizationId)
+      ...getRulesetQueryArgs()
     });
 
     return rulesetTransformer(ruleset);
@@ -959,7 +959,7 @@ export default class RulesService {
         name,
         active: isActive
       },
-      ...getRulesetQueryArgs(organizationId)
+      ...getRulesetQueryArgs()
     });
 
     return rulesetTransformer(ruleset);
