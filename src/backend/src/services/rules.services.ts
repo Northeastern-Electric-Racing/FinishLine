@@ -523,6 +523,9 @@ export default class RulesService {
           organizationId
         }
       },
+      orderBy: {
+        dateCreated: 'desc'
+      },
       ...getRulesetQueryArgs()
     });
 

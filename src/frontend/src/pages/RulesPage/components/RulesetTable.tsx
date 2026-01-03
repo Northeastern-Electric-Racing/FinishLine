@@ -21,9 +21,10 @@ import { NERButton } from '../../../components/NERButton';
 import { useHistory, useParams } from 'react-router-dom';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { useRulesetsByType } from '../../../hooks/rules.hooks';
+import { useRulesetsByType, useUpdateRuleset } from '../../../hooks/rules.hooks';
 import { Ruleset } from 'shared';
 import { routes } from '../../../utils/routes';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface RulesetParams {
   rulesetTypeId: string;
@@ -31,6 +32,7 @@ interface RulesetParams {
 
 const RulesetTable: React.FC = () => {
   const { rulesetTypeId } = useParams<RulesetParams>();
+  const toast = useToast();
   const history = useHistory();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -39,6 +41,7 @@ const RulesetTable: React.FC = () => {
   // const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
 
   const { data: rulesets = [], isLoading, error } = useRulesetsByType(rulesetTypeId);
+  const updateRuleset = useUpdateRuleset();
 
   // Table header configuration
   const headCells = [
@@ -49,6 +52,25 @@ const RulesetTable: React.FC = () => {
     { id: 'isActive', label: 'Active?' },
     { id: 'actions', label: 'Actions' }
   ];
+
+  const handleToggleActive = (ruleset: Ruleset) => {
+    updateRuleset.mutate(
+      {
+        rulesetId: ruleset.rulesetId,
+        name: ruleset.name,
+        isActive: !ruleset.active
+      },
+      {
+        onSuccess: () => {
+          toast.success(ruleset.active ? 'Ruleset deactivated' : 'Ruleset activated');
+        },
+        onError: (error: any) => {
+          const message = error.response?.data?.message || error.message;
+          toast.error(message);
+        }
+      }
+    );
+  };
 
   const handleEditRuleset = (rulesetId: string) => {
     history.push(routes.RULESET_EDIT.replace(':rulesetId', rulesetId));
@@ -112,7 +134,8 @@ const RulesetTable: React.FC = () => {
                     </Typography>
                     <Checkbox
                       checked={ruleset.active}
-                      disabled // Read-only for now
+                      onChange={() => handleToggleActive(ruleset)}
+                      disabled={updateRuleset.isLoading}
                       sx={{
                         color: '#fff',
                         '&.Mui-checked': { color: '#dd514c' }
@@ -199,7 +222,8 @@ const RulesetTable: React.FC = () => {
                     <TableCell align="center">
                       <Checkbox
                         checked={ruleset.active}
-                        disabled // Read-only for now
+                        onChange={() => handleToggleActive(ruleset)}
+                        disabled={updateRuleset.isLoading}
                         sx={{
                           color: '#fff',
                           '&.Mui-checked': { color: '#dd514c' }

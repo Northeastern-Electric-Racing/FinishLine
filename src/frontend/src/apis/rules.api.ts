@@ -67,3 +67,10 @@ export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+/**
+ * Updates a rulesets active status
+ */
+export const updateRuleset = (rulesetId: string, name: string, isActive: boolean) => {
+  return axios.post<Ruleset>(apiUrls.rulesetUpdate(rulesetId), { name, isActive });
+};

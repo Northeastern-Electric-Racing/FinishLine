@@ -12,7 +12,8 @@ import {
   getTeamRulesInRulesetType,
   createRulesetType,
   getAllRulesetTypes,
-  getRulesetsByRulesetType
+  getRulesetsByRulesetType,
+  updateRuleset
 } from '../apis/rules.api';
 
 interface CreateRulesetTypePayload {
@@ -98,4 +99,19 @@ export const useRulesetsByType = (rulesetTypeId: string) => {
     const { data } = await getRulesetsByRulesetType(rulesetTypeId);
     return data;
   });
+};
+
+export const useUpdateRuleset = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Ruleset, Error, { rulesetId: string; name: string; isActive: boolean }>(
+    async ({ rulesetId, name, isActive }) => {
+      const { data } = await updateRuleset(rulesetId, name, isActive);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rulesets']);
+      }
+    }
+  );
 };
