@@ -138,6 +138,11 @@ const parseFSAERules = (text: string): ParsedRule[] => {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
 
+    // Skip page headers/footers
+    if (isHeaderFooterFSAE(trimmedLine)) {
+      continue;
+    }
+
     // Skip table of contents
     if (/\.{4,}\s+\d+\s*$/.test(trimmedLine)) {
       continue;
@@ -180,6 +185,30 @@ const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
     };
   }
   return null;
+};
+
+/**
+ * Checks if a line is a page header/footer that should be skipped
+ * @param line line to check
+ * @returns true if line should be skipped
+ */
+const isHeaderFooterFSAE = (line: string): boolean => {
+  const trimmed = line.trim();
+
+  // Match FSAE headers like "Formula SAE® Rules 2025 © 2024 SAE International Page 7 of 143 Version 1.0 31 Aug 2024"
+  if (/Formula SAE.*Rules.*\d{4}.*SAE International.*Page \d+ of \d+/i.test(trimmed)) {
+    return true;
+  }
+  // Match standalone page numbers
+  if (/^Page \d+ of \d+$/i.test(trimmed)) {
+    return true;
+  }
+  // Match version strings
+  if (/^Version \d+\.\d+.*\d{1,2}\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}$/i.test(trimmed)) {
+    return true;
+  }
+
+  return false;
 };
 
 /**************** FHE *****************/

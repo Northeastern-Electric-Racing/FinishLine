@@ -446,7 +446,7 @@ const rulesetTypes = () => `${rules()}/rulesetTypes`;
 const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
 const ruleset = () => `${rules()}/ruleset`;
 const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
-const rulesetsCreate = () => `${rules()}/ruleset/create`; // fix this
+const rulesetsCreate = () => `${rules()}/ruleset/create`;
 const rulesetById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
 const parseRuleset = (rulesetId: string) => `${API_URL}/rules/ruleset/${rulesetId}/parse`;
 const uploadRulesetFile = () => `${rules()}/upload/file`;

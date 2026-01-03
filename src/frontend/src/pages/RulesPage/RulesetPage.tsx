@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useHistory, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import React from 'react';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCreateRuleset, useParseRuleset } from '../../hooks/rules.hooks';
@@ -18,28 +18,16 @@ import RulesetTable from './components/RulesetTable';
  */
 const RulesetPage: React.FC = () => {
   const { rulesetTypeId } = useParams<{ rulesetTypeId: string }>();
-  console.log('rulesetTypeId from URL:', rulesetTypeId);
 
   const { mutateAsync: createRuleset } = useCreateRuleset();
   const { mutateAsync: parseRuleset } = useParseRuleset();
   const toast = useToast();
 
-  const history = useHistory();
   const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
 
   const handleFileConfirm = async (data: { fileId: string; name: string; carNumber: number; parserType: string }) => {
     setAddFileModalShow(false);
     try {
-      console.log('Creating ruleset...');
-      console.log('rulesetTypeId value:', rulesetTypeId);
-      console.log('Full payload:', {
-        fileId: data.fileId,
-        name: data.name,
-        rulesetTypeId,
-        carNumber: data.carNumber,
-        active: false
-      });
-
       const ruleset = await createRuleset({
         fileId: data.fileId,
         name: data.name,
@@ -47,30 +35,19 @@ const RulesetPage: React.FC = () => {
         carNumber: data.carNumber,
         active: false
       });
-
-      console.log('Full ruleset response:', ruleset);
-      console.log('Ruleset type:', typeof ruleset);
-      console.log('Ruleset keys:', Object.keys(ruleset));
-      console.log('Ruleset.rulesetId:', ruleset.rulesetId);
-      console.log('Ruleset.id:', ruleset.rulesetId);
-
       const { rulesetId } = ruleset;
 
       if (!rulesetId) {
-        console.error('No rulesetId found in response!');
-        throw new Error('No rulesetId returned from createRuleset');
+        throw new Error('Error creating Ruleset');
       }
 
-      console.log('Parsing ruleset with ID:', rulesetId);
       const parsedRules = await parseRuleset({
         rulesetId,
         fileId: data.fileId,
         parserType: data.parserType as 'FSAE' | 'FHE'
       });
-      console.log('Rules parsed:', parsedRules.length);
       toast.success(`Successfully parsed ${parsedRules.length} rules!`);
     } catch (e) {
-      console.error('Error in handleFileConfirm:', e);
       toast.error('Error uploading file: ' + (e instanceof Error ? e.message : 'Unknown error'));
     }
   };

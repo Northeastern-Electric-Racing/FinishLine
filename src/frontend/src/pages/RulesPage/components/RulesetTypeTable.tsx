@@ -12,10 +12,9 @@ import {
   Card,
   CardContent,
   Typography,
-  Stack,
-  Link
+  Stack
 } from '@mui/material';
-import { Link as RouterLink, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useAllRulesetTypes } from '../../../hooks/rules.hooks';
@@ -57,7 +56,7 @@ const RulesetTypeTable: React.FC = () => {
     }
   ];
 
-  const handleViewRulesetType = (rulesetTypeId: string) => {
+  const handleViewRuleset = (rulesetTypeId: string) => {
     history.push(routes.RULESET_BY_ID.replace(':rulesetTypeId', rulesetTypeId));
   };
 
@@ -111,9 +110,9 @@ const RulesetTypeTable: React.FC = () => {
                         lineHeight: 1,
                         borderRadius: '6px'
                       }}
-                      onClick={() => handleViewRulesetType(rulesetType.rulesetTypeId)}
+                      onClick={() => handleViewRuleset(rulesetType.rulesetTypeId)}
                     >
-                      View Rulesets
+                      View Ruleset
                     </NERButton>
                   </Box>
                 </Box>
@@ -154,32 +153,10 @@ const RulesetTypeTable: React.FC = () => {
                     }}
                   >
                     <TableCell align="center" sx={{ maxWidth: '20vw' }}>
-                      <Link
-                        component={RouterLink}
-                        to={routes.RULESET_BY_ID.replace(':rulesetId', rulesetType.rulesetTypeId)}
-                        sx={{ color: 'inherit', textDecoration: 'none' }}
-                      >
-                        {rulesetType.name}
-                      </Link>
+                      {rulesetType.name}
                     </TableCell>
-                    <TableCell align="center">
-                      <Link
-                        component={RouterLink}
-                        to={routes.RULESET_BY_ID.replace(':rulesetId', rulesetType.rulesetTypeId)}
-                        sx={{ color: 'inherit', textDecoration: 'none' }}
-                      >
-                        {datePipe(rulesetType.lastUpdated)}
-                      </Link>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Link
-                        component={RouterLink}
-                        to={routes.RULESET_BY_ID.replace(':rulesetId', rulesetType.rulesetTypeId)}
-                        sx={{ color: 'inherit', textDecoration: 'none' }}
-                      >
-                        {rulesetType.revisionFiles.length}
-                      </Link>
-                    </TableCell>
+                    <TableCell align="center">{datePipe(rulesetType.lastUpdated)}</TableCell>
+                    <TableCell align="center">{rulesetType.revisionFiles.length}</TableCell>
                     <TableCell align="center">
                       <NERButton
                         sx={{
@@ -193,9 +170,9 @@ const RulesetTypeTable: React.FC = () => {
                           lineHeight: 1,
                           borderRadius: '6px'
                         }}
-                        onClick={() => handleViewRulesetType(rulesetType.rulesetTypeId)}
+                        onClick={() => handleViewRuleset(rulesetType.rulesetTypeId)}
                       >
-                        View Rulesets
+                        View Ruleset
                       </NERButton>
                     </TableCell>
                   </TableRow>

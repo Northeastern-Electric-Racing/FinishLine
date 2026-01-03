@@ -7,6 +7,7 @@ import { Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import { useGetRuleset } from '../../hooks/rules.hooks';
 
 const RulesetViewPage = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -17,20 +18,25 @@ const RulesetViewPage = () => {
 
   const { rulesetId } = useParams<{ rulesetId: string }>();
 
-  // const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
+  const {
+    data: ruleset,
+    isLoading: rulesetLoading,
+    isError: rulesetError,
+    error: rulesetErrorMsg
+  } = useGetRuleset(rulesetId);
 
-  // if (isError) {
-  //   return <ErrorPage error={error} />;
-  // }
+  if (rulesetError) {
+    return <ErrorPage error={rulesetErrorMsg} />;
+  }
 
-  // if (isLoading || !ruleset) {
-  //   return <LoadingIndicator />;
-  // }
+  if (rulesetLoading || !ruleset) {
+    return <LoadingIndicator />;
+  }
 
   return (
     <Box>
       <PageLayout
-        title="Title" /*{ruleset.name}*/
+        title={ruleset.name}
         tabs={
           <Box borderBottom={1} borderColor={'divider'}>
             <FullPageTabs

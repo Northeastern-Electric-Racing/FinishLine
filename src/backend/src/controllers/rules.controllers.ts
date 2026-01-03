@@ -309,7 +309,6 @@ export default class RulesController {
       if (!req.file) {
         throw new HttpException(400, 'Invalid or undefined file data');
       }
-
       const fileId = await RulesService.uploadRulesetFile(req.file, req.currentUser, req.organization);
 
       res.status(200).json(fileId);

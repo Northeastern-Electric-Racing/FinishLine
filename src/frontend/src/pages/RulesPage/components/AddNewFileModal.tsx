@@ -78,7 +78,6 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ options, value, onChange }) =
           }}
         >
           <Typography sx={{ fontSize: '0.875rem', px: 1 }}>{option}</Typography>
-          {/* ? need ?*/}
         </button>
       ))}
     </div>
@@ -103,7 +102,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
     defaultValues: {
       fileId: '',
       name: '',
-      carNumber: 0,
+      carNumber: 100,
       parserType: 'FSAE'
     }
   });
@@ -117,7 +116,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
   const handleFormSubmit = async (data: NewFileFormData) => {
     try {
       await onFormSubmit(data);
-      toast.success('File Successfully Added');
+      console.log('Ruleset Successfully Added');
       setFile(null);
       reset();
       onHide();

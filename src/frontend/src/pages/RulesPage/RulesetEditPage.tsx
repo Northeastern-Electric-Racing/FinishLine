@@ -11,7 +11,6 @@ import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
 import RuleRow from './RuleRow';
 import RuleActions from './RuleActions';
-import { Rule } from 'shared';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import AddRuleSectionModal from './components/AddRuleSectionModal';

@@ -166,7 +166,6 @@ export const useParseRuleset = () => {
 
 /**
  * Uploads a file to the drive and returns the fileId
- * @returns the fileId of the uploaded file
  */
 export const useUploadRulesetFile = () => {
   return useMutation<string, Error, File>(['ruleset-file', 'upload'], async (file: File) => {
