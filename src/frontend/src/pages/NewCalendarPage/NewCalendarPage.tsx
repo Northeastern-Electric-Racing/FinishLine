@@ -353,7 +353,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
             variant="filled"
             severity="error"
+            onClick={() => setDeniedEvent(false)}
             onClose={() => setDeniedEvent(false)}
+            sx={{
+              cursor: 'pointer'
+            }}
           >
             <Stack direction="row" alignItems="center" spacing={2}>
               <Typography fontSize={14}>
@@ -391,7 +395,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             icon={<WarningIcon fontSize="inherit" />}
             variant="filled"
             severity="error"
+            onClick={() => setPendingEvent(false)}
             onClose={() => setPendingEvent(false)}
+            sx={{
+              cursor: 'pointer'
+            }}
           >
             You have scheduled an event at the same time and location as <i>{yourConflicts[0].title}</i>.{' '}
             <i>
@@ -405,7 +413,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
             variant="filled"
             severity="error"
+            onClick={() => setReviewEvent(false)}
             onClose={() => setReviewEvent(false)}
+            sx={{
+              cursor: 'pointer'
+            }}
           >
             <Stack direction="row" alignItems="center" spacing={2}>
               <Typography fontSize={14}>
