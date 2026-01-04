@@ -36,6 +36,7 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { InfoOutlined } from '@mui/icons-material';
 import NERModal from '../../../../components/NERModal';
 import NERFailButton from '../../../../components/NERFailButton';
+import { RuleHistoryModal } from './RuleHistoryModal';
 
 interface ProjectRulesTabProps {
   project: Project;
@@ -288,99 +289,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     );
   };
 
-  const RuleHistoryModal = () => {
-    if (!selectedRuleForHistory) return null;
-
-    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === selectedRuleForHistory.ruleId);
-    const statusHistory = projectRule?.statusHistory || [];
-
-    // don't we have a format date util function somewhere?
-    const formatDate = (date: Date) => {
-      return new Intl.DateTimeFormat('en-US', {
-        month: 'numeric',
-        day: 'numeric',
-        year: 'numeric'
-      }).format(date);
-    };
-
-    // do we have a util function for this already?
-    const formatUserName = (user: { firstName: string; lastName: string }) => {
-      return `${user.firstName} ${user.lastName}`;
-    };
-
-    const getStatusLabel = (status: RuleCompletion) => {
-      const config = getStatusConfig(status);
-      return config.label;
-    };
-
-    return (
-      <NERModal
-        open={showHistoryModal}
-        onHide={() => {
-          setShowHistoryModal(false);
-          setSelectedRuleForHistory(null);
-        }}
-        title="History"
-        hideFormButtons={true}
-        showCloseButton={false}
-      >
-        <Box sx={{ minWidth: '400px', display: 'flex', flexDirection: 'column' }}>
-          <Box
-            sx={{
-              maxHeight: '300px',
-              overflowY: 'auto',
-              mb: 3,
-              '&::-webkit-scrollbar': {
-                width: '8px'
-              },
-              '&::-webkit-scrollbar-track': {
-                backgroundColor: 'rgba(0,0,0,0.1)',
-                borderRadius: '4px'
-              },
-              '&::-webkit-scrollbar-thumb': {
-                backgroundColor: 'rgba(0,0,0,0.3)',
-                borderRadius: '4px',
-                '&:hover': {
-                  backgroundColor: 'rgba(0,0,0,0.5)'
-                }
-              }
-            }}
-          >
-            <Box component="ul" sx={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {statusHistory.map((history) => (
-                <Box
-                  component="li"
-                  key={history.historyId}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    py: 1
-                  }}
-                >
-                  <Typography sx={{ fontSize: '25', color: 'text.primary' }}>
-                    •{formatDate(history.dateCreated)} - {formatUserName(history.createdBy)} Marked as{' '}
-                    {getStatusLabel(history.newStatus)}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <NERFailButton
-              onClick={() => {
-                setShowHistoryModal(false);
-                setSelectedRuleForHistory(null);
-              }}
-            >
-              Exit
-            </NERFailButton>
-          </Box>
-        </Box>
-      </NERModal>
-    );
-  };
-
   const tableBackgroundColor = theme.palette.background.paper;
   const tableTextColor = theme.palette.text.primary;
   const tableHoverColor = theme.palette.action.hover;
@@ -499,7 +407,15 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         />
       )}
 
-      <RuleHistoryModal />
+      <RuleHistoryModal
+        open={showHistoryModal}
+        onClose={() => {
+          setShowHistoryModal(false);
+          setSelectedRuleForHistory(null);
+        }}
+        rule={selectedRuleForHistory}
+        projectRules={projectRules}
+      />
 
       {/* Add Rule Modal */}
       {activeRuleset && teamId && (
