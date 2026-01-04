@@ -14,20 +14,6 @@ import {
 } from './transformers/rules.transformers';
 
 /**
- * Gets all top-level rules (rules with no parent) for a ruleset
- */
-export const getTopLevelRules = (rulesetId: string) => {
-  return axios.get<Rule[]>(apiUrls.rulesTopLevel(rulesetId));
-};
-
-/**
- * Gets all child rules of a specific rule
- */
-export const getChildRules = (ruleId: string) => {
-  return axios.get<Rule[]>(apiUrls.rulesChildRules(ruleId));
-};
-
-/**
  * Toggles team assignment for a rule
  */
 export const toggleRuleTeam = (ruleId: string, teamId: string) => {
@@ -130,7 +116,7 @@ export const editProjectRuleStatus = (projectRuleId: string, newStatus: RuleComp
  * @param ruleId The ID of the parent rule.
  */
 export const getChildRules = (ruleId: string) => {
-  return axios.get<Rule[]>(apiUrls.rulesGetChildRules(ruleId), {
+  return axios.get<Rule[]>(apiUrls.rulesChildRules(ruleId), {
     transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
   });
 };
@@ -144,6 +130,7 @@ export const getTopLevelRules = (rulesetId: string) => {
   return axios.get<Rule[]>(apiUrls.rulesGetTopLevelRules(rulesetId), {
     transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
   });
+};
 
 /**
  * Fetches all Rulesets for a specific Ruleset Type.

@@ -18,7 +18,6 @@ import {
   getTopLevelRules,
   toggleRuleTeam,
   getTeamRulesInRulesetType,
-  createRulesetType,
   getRulesetsByRulesetType
 } from '../apis/rules.api';
 
@@ -224,18 +223,6 @@ export const useEditProjectRuleStatus = (rulesetId: string, projectId: string) =
       }
     }
   );
-};
-
-/**
- * React Query hook to fetch all Ruleset Types.
- *
- * @returns Query result containing Ruleset Types data, loading state, and error state.
- */
-export const useAllRulesetTypes = () => {
-  return useQuery<RulesetType[], Error>(['rulesetTypes'], async () => {
-    const { data } = await getAllRulesetTypes();
-    return data;
-  });
 };
 
 /**
