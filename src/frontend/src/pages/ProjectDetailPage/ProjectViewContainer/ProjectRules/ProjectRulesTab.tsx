@@ -16,7 +16,8 @@ import {
   TableBody,
   TableContainer,
   Paper,
-  useTheme
+  useTheme,
+  IconButton
 } from '@mui/material';
 import { Project, ProjectRule, Rule, RuleCompletion } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
@@ -32,6 +33,9 @@ import {
   useCreateProjectRule
 } from '../../../../hooks/rules.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
+import { InfoOutlined } from '@mui/icons-material';
+import NERModal from '../../../../components/NERModal';
+import NERFailButton from '../../../../components/NERFailButton';
 
 interface ProjectRulesTabProps {
   project: Project;
@@ -61,6 +65,9 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
   const [selectedProjectRule, setSelectedProjectRule] = useState<ProjectRule | null>(null);
+
+  const [selectedRuleForHistory, setSelectedRuleForHistory] = React.useState<Rule | null>(null);
+  const [showHistoryModal, setShowHistoryModal] = React.useState(false);
 
   // Fetch all ruleset types
   const { data: rulesetTypes, isLoading: rulesetTypesLoading, isError: rulesetTypesError } = useAllRulesetTypes();
@@ -224,37 +231,143 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       : getAggregatedStatus(rule);
     const statusConfig = getStatusConfig(status);
 
+    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
+
     return (
-      <Box
-        onClick={
-          isLeafRule
-            ? (e: React.MouseEvent<HTMLElement>) => {
-                e.stopPropagation();
-                handleStatusClick(e, rule);
+      <>
+        <Box
+          onClick={
+            isLeafRule
+              ? (e: React.MouseEvent<HTMLElement>) => {
+                  e.stopPropagation();
+                  handleStatusClick(e, rule);
+                }
+              : undefined
+          }
+          sx={{
+            backgroundColor: statusConfig.color,
+            color: 'white',
+            fontSize: '11px',
+            fontWeight: 600,
+            px: 0.75,
+            py: 0.25,
+            borderRadius: '3px',
+            cursor: isLeafRule ? 'pointer' : 'default',
+            display: 'inline-flex',
+            alignItems: 'center',
+            whiteSpace: 'nowrap',
+            '&:hover': isLeafRule
+              ? {
+                  opacity: 0.85
+                }
+              : {}
+          }}
+        >
+          {statusConfig.label}
+        </Box>
+        {isLeafRule && projectRule && projectRule.statusHistory && projectRule.statusHistory.length > 0 && (
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedRuleForHistory(rule);
+              setShowHistoryModal(true);
+            }}
+            sx={{
+              padding: '2px',
+              color: 'text.secondary',
+              '&:hover': {
+                color: 'primary.main'
               }
-            : undefined
-        }
-        sx={{
-          backgroundColor: statusConfig.color,
-          color: 'white',
-          fontSize: '11px',
-          fontWeight: 600,
-          px: 0.75,
-          py: 0.25,
-          borderRadius: '3px',
-          cursor: isLeafRule ? 'pointer' : 'default',
-          display: 'inline-flex',
-          alignItems: 'center',
-          whiteSpace: 'nowrap',
-          '&:hover': isLeafRule
-            ? {
-                opacity: 0.85
-              }
-            : {}
+            }}
+          >
+            <InfoOutlined fontSize="small" />
+          </IconButton>
+        )}
+      </>
+    );
+  };
+
+  const RuleHistoryModal = () => {
+    if (!selectedRuleForHistory) return null;
+
+    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === selectedRuleForHistory.ruleId);
+    const statusHistory = projectRule?.statusHistory || [];
+
+    // don't we have a format date util function somewhere?
+    const formatDate = (date: Date) => {
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'numeric',
+        day: 'numeric',
+        year: 'numeric'
+      }).format(date);
+    };
+
+    // do we have a util function for this already?
+    const formatUserName = (user: { firstName: string; lastName: string }) => {
+      return `${user.firstName} ${user.lastName}`;
+    };
+
+    const getStatusLabel = (status: RuleCompletion) => {
+      const config = getStatusConfig(status);
+      return config.label;
+    };
+
+    return (
+      <NERModal
+        open={showHistoryModal}
+        onHide={() => {
+          setShowHistoryModal(false);
+          setSelectedRuleForHistory(null);
         }}
+        title="History"
+        hideFormButtons={true}
+        showCloseButton={false}
       >
-        {statusConfig.label}
-      </Box>
+        <Box sx={{ minWidth: '400px' }}>
+          {statusHistory.length === 0 ? (
+            <Typography color="text.secondary">No status history available.</Typography>
+          ) : (
+            <Box component="ul" sx={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {statusHistory.map((history) => (
+                <Box
+                  component="li"
+                  key={history.historyId}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    py: 1,
+                    '&:not(:last-child)': {
+                      borderBottom: '1px solid',
+                      borderColor: 'divider'
+                    }
+                  }}
+                >
+                  <Typography sx={{ fontSize: '14px', color: 'text.primary' }}>•</Typography>
+                  <Typography sx={{ fontSize: '14px', color: 'text.primary', minWidth: '90px' }}>
+                    {formatDate(history.dateCreated)}
+                  </Typography>
+                  <Typography sx={{ fontSize: '14px', color: 'text.primary' }}>-</Typography>
+                  <Typography sx={{ fontSize: '14px', color: 'text.primary', flex: 1 }}>
+                    {formatUserName(history.createdBy)} Marked as {getStatusLabel(history.newStatus)}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+          <NERFailButton
+            onClick={() => {
+              setShowHistoryModal(false);
+              setSelectedRuleForHistory(null);
+            }}
+          >
+            Exit
+          </NERFailButton>
+        </Box>
+      </NERModal>
     );
   };
 
@@ -375,6 +488,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           onStatusChange={handleStatusUpdate}
         />
       )}
+
+      <RuleHistoryModal />
 
       {/* Add Rule Modal */}
       {activeRuleset && teamId && (

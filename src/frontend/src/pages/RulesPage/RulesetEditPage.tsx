@@ -18,6 +18,7 @@ import AddRuleSectionModal from './components/AddRuleSectionModal';
 import AddRuleModal from './components/AddRuleModal';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
+import { InfoOutlined } from '@mui/icons-material';
 
 /**
  * Placeholder hook to fetch a single ruleset.
@@ -192,7 +193,6 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleOpenAddMenu = (ruleId: string, anchorEl: HTMLElement) => {
-    // trying to make tests run lol this comment can get deleted later
     if (showAddMenu && addMenuAnchorEl === anchorEl) {
       handleCloseAddMenu();
       return;
