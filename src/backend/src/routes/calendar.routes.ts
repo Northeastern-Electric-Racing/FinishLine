@@ -199,6 +199,8 @@ calendarRouter.get('/event/:eventId/conflict', CalendarController.getConflicting
 
 calendarRouter.get('/event/:eventId', CalendarController.getSingleEvent);
 
+calendarRouter.get('/event-members/:eventId', CalendarController.getSingleEventWithMembers);
+
 calendarRouter.get('/events', CalendarController.getAllEvents);
 
 calendarRouter.get('/event-types', CalendarController.getAllEventTypes);

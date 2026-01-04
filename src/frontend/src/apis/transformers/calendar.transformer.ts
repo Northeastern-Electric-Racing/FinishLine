@@ -1,4 +1,4 @@
-import { Shop, Event, EventPreview } from 'shared';
+import { Shop, Event, EventPreview, EventWithMembers } from 'shared';
 import { userTransformer } from './users.transformers';
 
 export const shopTransformer = (shop: Shop): Shop => {
@@ -24,6 +24,20 @@ export const filterEventTransformer = (event: Event): Event => {
 export const eventTransformer = (event: Event): Event => {
   return {
     ...event
+  };
+};
+
+export const eventWithMembersTransformer = (event: EventWithMembers): EventWithMembers => {
+  return {
+    ...event,
+    dateCreated: new Date(event.dateCreated),
+    scheduledTimes: event.scheduledTimes.map((slot: any) => ({
+      ...slot,
+      startTime: slot.startTime ? new Date(slot.startTime) : undefined,
+      endTime: slot.endTime ? new Date(slot.endTime) : undefined,
+      initialDateScheduled: new Date(slot.initialDateScheduled),
+      endDate: new Date(slot.endDate)
+    }))
   };
 };
 

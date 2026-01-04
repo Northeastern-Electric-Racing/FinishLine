@@ -16,13 +16,14 @@ import {
   EventPreview,
   DayOfWeek,
   ConflictStatus,
-  Document
+  Document,
+  EventWithMembers
 } from 'shared';
 import { MachineryQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
-import { EventQueryArgs } from '../prisma-query-args/event.query-args';
+import { EventQueryArgs, EventWithMembersQueryArgs } from '../prisma-query-args/event.query-args';
 import { ShopQueryArgs } from '../prisma-query-args/shop.query-args';
 
 export const documentTransformer = (document: Prisma.DocumentGetPayload<null>): Document => {
@@ -125,6 +126,49 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     deniedMembers: event.deniedMembers.map(userTransformer),
     teams: event.teams,
     teamType: event.teamType ?? undefined,
+    shops: event.shops,
+    machinery: event.machinery,
+    workPackages: event.workPackages,
+    documents: event.documents.filter((document) => !document.dateDeleted).map(documentTransformer),
+    scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer),
+    approved: conflictStatusTransformer(event.approved),
+    approvalRequiredFrom: event.approvalRequiredBy ?? undefined,
+    location: event.location ?? undefined,
+    zoomLink: event.zoomLink ?? undefined,
+    questionDocumentLink: event.questionDocumentLink ?? undefined,
+    description: event.description ?? undefined,
+    status: eventStatusTransformer(event.status)
+  };
+};
+
+export const eventWithMembersTransformer = (event: Prisma.EventGetPayload<EventWithMembersQueryArgs>): EventWithMembers => {
+  return {
+    eventId: event.eventId,
+    title: event.title,
+    userCreated: userWithScheduleSettingsTransformer(event.userCreated),
+    dateCreated: event.dateCreated,
+    eventTypeId: event.eventTypeId,
+    requiredMembers: event.requiredMembers.map(userTransformer),
+    optionalMembers: event.optionalMembers.map(userTransformer),
+    confirmedMembers: event.confirmedMembers.map(userWithScheduleSettingsTransformer),
+    deniedMembers: event.deniedMembers.map(userTransformer),
+    teams: event.teams.map((team) => ({
+      ...team,
+      members: team.members.map(userTransformer),
+      leads: team.leads.map(userTransformer),
+      head: userTransformer(team.head)
+    })),
+    teamType: event.teamType
+      ? {
+          teamTypeId: event.teamType.teamTypeId,
+          name: event.teamType.name,
+          teams: event.teamType.teams.map((team) => ({
+            members: team.members.map(userTransformer),
+            leads: team.leads.map(userTransformer),
+            head: userTransformer(team.head)
+          }))
+        }
+      : undefined,
     shops: event.shops,
     machinery: event.machinery,
     workPackages: event.workPackages,

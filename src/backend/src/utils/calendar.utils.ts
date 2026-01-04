@@ -1,5 +1,13 @@
 import { Prisma, Event_Type, Organization } from '@prisma/client';
-import { User, ScheduleSlotCreateArgs, EventDocumentCreateArgs, Document, ConflictStatus, Event } from 'shared';
+import {
+  User,
+  ScheduleSlotCreateArgs,
+  EventDocumentCreateArgs,
+  Document,
+  ConflictStatus,
+  Event,
+  EventWithMembers
+} from 'shared';
 import { InvalidEventTypeConfigurationException } from './errors.utils';
 import prisma from '../prisma/prisma';
 import { getEventQueryArgs } from '../prisma-query-args/event.query-args';
@@ -15,7 +23,7 @@ export function buildScheduledTimesOverlap(start?: Date, end?: Date): Prisma.Sch
   return { some: { AND } };
 }
 
-export const isUserOnEvent = (user: User, event: Event): boolean => {
+export const isUserOnEvent = (user: User, event: EventWithMembers): boolean => {
   // Check if user is directly a required or optional member
   const isDirectMember =
     event.requiredMembers.some((member) => member.userId === user.userId) ||

@@ -6,19 +6,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery as useQueryParam } from '../../../hooks/utils.hooks';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
-import {
-  Availability,
-  getMostRecentAvailabilities,
-  User,
-  UserWithScheduleSettings,
-  Event,
-  TeamCalendarPreview
-} from 'shared';
+import { Availability, getMostRecentAvailabilities, User, UserWithScheduleSettings, EventWithMembers } from 'shared';
 import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentUser, useUserScheduleSettings, useManyUsersWithScheduleSettings } from '../../../hooks/users.hooks';
-import { useSingleEvent, useMarkUserConfirmed } from '../../../hooks/calendar.hooks';
+import { useMarkUserConfirmed, useSingleEventWithMembers } from '../../../hooks/calendar.hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { eventNamePipe, fullNamePipe } from '../../../utils/pipes';
 import NERSuccessButton from '../../../components/NERSuccessButton';
@@ -31,7 +24,7 @@ import AvailabilityScheduleView from '../../CalendarPage/EventDetailPage/Availab
 import SingleAvailabilityModal from '../../SettingsPage/UserScheduleSettings/Availability/SingleAvailabilityModal';
 import AvailabilityEditModal from '../../SettingsPage/UserScheduleSettings/Availability/AvailabilityEditModal';
 
-const isUserOnEvent = (user: User, event: Event): boolean => {
+const isUserOnEvent = (user: User, event: EventWithMembers): boolean => {
   const isDirectMember =
     event.requiredMembers?.some((member: User) => member.userId === user.userId) ||
     event.optionalMembers?.some((member: User) => member.userId === user.userId);
@@ -39,7 +32,7 @@ const isUserOnEvent = (user: User, event: Event): boolean => {
   if (isDirectMember) return true;
 
   const isOnEventTeam = event.teams?.some(
-    (team: TeamCalendarPreview) =>
+    (team) =>
       team.members?.some((member: User) => member.userId === user.userId) ||
       team.leads?.some((lead: User) => lead.userId === user.userId) ||
       team.head?.userId === user.userId
@@ -49,7 +42,7 @@ const isUserOnEvent = (user: User, event: Event): boolean => {
 
   if (event.teamType?.teams) {
     const isOnTeamType = event.teamType.teams.some(
-      (team: TeamCalendarPreview) =>
+      (team) =>
         team.members?.some((member: User) => member.userId === user.userId) ||
         team.leads?.some((lead: User) => lead.userId === user.userId) ||
         team.head?.userId === user.userId
@@ -77,7 +70,12 @@ export const EventAvailabilityPage: React.FC = () => {
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
 
-  const { data: event, isError: eventError, error: eventErrorMsg, isLoading: eventLoading } = useSingleEvent(eventId);
+  const {
+    data: event,
+    isError: eventError,
+    error: eventErrorMsg,
+    isLoading: eventLoading
+  } = useSingleEventWithMembers(eventId);
 
   const {
     data: userScheduleSettings,

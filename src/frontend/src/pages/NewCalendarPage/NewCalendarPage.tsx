@@ -20,7 +20,13 @@ import PageLayout from '../../components/PageLayout';
 import { Calendar, ConflictStatus, DayOfWeek, Event, EventType } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useConflictingEvents, useFilterEvents, useCreateEvent, useUploadManyDocuments } from '../../hooks/calendar.hooks';
+import {
+  useConflictingEvents,
+  useFilterEvents,
+  useCreateEvent,
+  useUploadManyDocuments,
+  EditEventArgs
+} from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -47,9 +53,21 @@ interface NewCalendarPageProps {
   yourEvents: Event[];
   reviewEvents: Event[];
   allCalendars: Calendar[];
+  handleEditSubmit: (
+    data: EventRoutePayload,
+    event: Event,
+    editEvent: (editArgs: EditEventArgs) => Promise<Event>,
+    onClose: () => void
+  ) => Promise<void>;
 }
 
-const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEvents, reviewEvents, allCalendars }) => {
+const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
+  allEventTypes,
+  yourEvents,
+  reviewEvents,
+  allCalendars,
+  handleEditSubmit
+}) => {
   const toast = useToast();
   const theme = useTheme();
   const {
@@ -348,7 +366,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
           maxWidth: 600
         }}
       >
-        {deniedEvent && (
+        {deniedEvent && yourConflictsDenied.length > 0 && (
           <Alert
             icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
             variant="filled"
@@ -390,7 +408,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             </Stack>
           </Alert>
         )}
-        {pendingEvent && (
+        {pendingEvent && yourConflicts.length > 0 && (
           <Alert
             icon={<WarningIcon fontSize="inherit" />}
             variant="filled"
@@ -408,7 +426,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             has been notified of this and must allow your event to take place in order to continue.
           </Alert>
         )}
-        {reviewEvent && (
+        {reviewEvent && yourReviewEvents.length > 0 && (
           <Alert
             icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
             variant="filled"
@@ -535,6 +553,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
                                 dayDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
                                 DayOfWeek.SUNDAY
                               }
+                              handleEditSubmit={handleEditSubmit}
                             />
                           </Box>
                         </Grid>

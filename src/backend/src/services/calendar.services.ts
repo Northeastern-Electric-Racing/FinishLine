@@ -1,4 +1,9 @@
-import { calendarTransformer, eventTransformer, machineryTransformer } from '../transformers/calendar.transformer';
+import {
+  calendarTransformer,
+  eventTransformer,
+  eventWithMembersTransformer,
+  machineryTransformer
+} from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { Conflict_Status, Event_Status, Organization } from '@prisma/client';
 import {
@@ -39,7 +44,7 @@ import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-arg
 import { shopTransformer } from '../transformers/calendar.transformer';
 import { getShopQueryArgs } from '../prisma-query-args/shop.query-args';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
-import { getEventQueryArgs } from '../prisma-query-args/event.query-args';
+import { getEventQueryArgs, getEventWithMembersQueryArgs } from '../prisma-query-args/event.query-args';
 import {
   buildScheduledTimesOverlap,
   checkEventConflicts,
@@ -1144,13 +1149,13 @@ export default class CalendarService {
   ): Promise<Event> {
     const event = await prisma.event.findUnique({
       where: { eventId },
-      ...getEventQueryArgs(organization.organizationId)
+      ...getEventWithMembersQueryArgs(organization.organizationId)
     });
 
     if (!event) throw new NotFoundException('Event', eventId);
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
 
-    if (!isUserOnEvent(submitter, eventTransformer(event)))
+    if (!isUserOnEvent(submitter, eventWithMembersTransformer(event)))
       throw new HttpException(400, 'Current user is not in the list of this events members');
 
     let userSettings = await prisma.schedule_Settings.findUnique({
@@ -2365,6 +2370,27 @@ export default class CalendarService {
     const event = await prisma.event.findUnique({
       where: { eventId },
       ...getEventQueryArgs(organization.organizationId)
+    });
+
+    if (!event) throw new NotFoundException('Event', eventId);
+
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    return eventTransformer(event);
+  }
+
+  /**
+   * Retrieves a single event
+   *
+   * @param submitter the user who is trying to retrieve the event
+   * @param eventId the id of the event to retrieve
+   * @param organizationId the organization that the user is currently in
+   * @returns the event
+   */
+  static async getSingleEventWithMembers(_submitter: User, eventId: string, organization: Organization): Promise<Event> {
+    const event = await prisma.event.findUnique({
+      where: { eventId },
+      ...getEventWithMembersQueryArgs(organization.organizationId)
     });
 
     if (!event) throw new NotFoundException('Event', eventId);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { JSX, useState } from 'react';
 import { Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
 import { Calendar, DayOfWeek, Event, EventType } from 'shared';
 
@@ -22,21 +22,17 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import HelpIcon from '@mui/icons-material/Help';
 import EditIcon from '@mui/icons-material/Edit';
 import PeopleIcon from '@mui/icons-material/People';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
-import {
-  EditEventArgs,
-  useApproveEvent,
-  useDenyEvent,
-  useEditEvent,
-  useUploadManyDocuments
-} from '../../hooks/calendar.hooks';
-import { convertDayToDayShorthand } from '../../utils/calendar.utils';
+import { EditEventArgs, useApproveEvent, useDeleteEvent, useDenyEvent, useEditEvent } from '../../hooks/calendar.hooks';
+import { convertDayToDayShorthand, convertEventToFormValues } from '../../utils/calendar.utils';
 import EditEventModal from './Components/EditEventModal';
-import { EventFormValues, EventRoutePayload } from './Components/EventModal';
 import { useToast } from '../../hooks/toasts.hooks';
+import NERDeleteModal from '../../components/NERDeleteModal';
+import { EventRoutePayload } from './Components/EventModal';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
@@ -61,6 +57,7 @@ interface EventClickContentProps {
   addApprovalButtons: boolean;
   onClose: () => void;
   onEdit: (event: Event) => void;
+  onDelete: (event: Event) => void;
   clickedDate?: Date;
 }
 
@@ -81,6 +78,7 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
   addApprovalButtons,
   onClose,
   onEdit,
+  onDelete,
   clickedDate
 }) => {
   const { mutateAsync: approveEvent } = useApproveEvent(event.eventId);
@@ -133,25 +131,40 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
     >
       <Box sx={{ position: 'relative', mb: 2 }}>
         {!disable && (
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              stopClick(e);
-              onEdit(event);
-            }}
-            sx={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              color: theme.palette.grey[500],
-              '&:hover': {
-                color: theme.palette.common.white,
-                bgcolor: 'transparent'
-              }
-            }}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
+          <Box sx={{ position: 'absolute', top: 0, right: 0, display: 'flex', gap: 0.5 }}>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                stopClick(e);
+                onEdit(event);
+              }}
+              sx={{
+                color: theme.palette.grey[500],
+                '&:hover': {
+                  color: theme.palette.common.white,
+                  bgcolor: 'transparent'
+                }
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                stopClick(e);
+                onDelete(event);
+              }}
+              sx={{
+                color: theme.palette.grey[500],
+                '&:hover': {
+                  color: '#ef5350',
+                  bgcolor: 'transparent'
+                }
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
         )}
         <Stack direction="row" spacing={1} alignItems="center" sx={{ pr: 4 }}>
           {getTeamTypeIcon(event.teamType?.name ?? '', true)}
@@ -418,6 +431,12 @@ export interface EventClickPopupProps {
   disable?: boolean;
   addApprovalButtons?: boolean;
   clickedDate?: Date;
+  handleEditSubmit: (
+    data: EventRoutePayload,
+    event: Event,
+    editEvent: (editArgs: EditEventArgs) => Promise<Event>,
+    onClose: () => void
+  ) => Promise<void>;
 }
 
 export const EventClickPopup: React.FC<EventClickPopupProps> = ({
@@ -429,91 +448,30 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
   dayOfWeek,
   disable = false,
   addApprovalButtons = false,
-  clickedDate
+  clickedDate,
+  handleEditSubmit
 }) => {
   const toast = useToast();
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  const { mutateAsync: deleteEvent } = useDeleteEvent(clickedEvent?.eventId ?? '');
   const { mutateAsync: editEvent } = useEditEvent(clickedEvent?.eventId ?? '');
-  const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
-
-  const convertEventToFormValues = (event: Event): Partial<EventFormValues> => {
-    return {
-      title: event.title,
-      eventTypeId: event.eventTypeId,
-      requiredMemberIds: event.requiredMembers.map((m) => m.userId),
-      optionalMemberIds: event.optionalMembers.map((m) => m.userId),
-      teamIds: event.teams.map((t) => t.teamId),
-      teamTypeId: event.teamType?.teamTypeId,
-      location: event.location,
-      zoomLink: event.zoomLink,
-      shopIds: event.shops.map((s) => s.shopId),
-      machineryIds: event.machinery.map((m) => m.machineryId),
-      workPackageIds: event.workPackages.map((wp) => wp.workPackageId),
-      documentFiles: event.documents.map((doc) => ({
-        name: doc.name,
-        googleFileId: doc.googleFileId
-      })),
-      questionDocumentLink: event.questionDocumentLink,
-      description: event.description,
-      scheduleDate: event.scheduledTimes[0]?.initialDateScheduled
-        ? new Date(event.scheduledTimes[0].initialDateScheduled)
-        : new Date(),
-      startTime: event.scheduledTimes[0]?.startTime ? new Date(event.scheduledTimes[0].startTime) : undefined,
-      endTime: event.scheduledTimes[0]?.endTime ? new Date(event.scheduledTimes[0].endTime) : undefined,
-      allDay: event.scheduledTimes[0]?.allDay ?? false,
-      recurrenceNumber: event.scheduledTimes[0]?.recurrenceNumber ?? 0,
-      days: event.scheduledTimes[0]?.days ?? []
-    };
-  };
 
   const handleEdit = () => {
     setShowEditModal(true);
   };
 
-  const handleEditSubmit = async (data: EventRoutePayload) => {
-    if (!clickedEvent) return;
+  const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
 
+  const handleDeleteConfirm = async () => {
     try {
-      const { scheduleSlot, documentFiles, ...eventData } = data;
-
-      if (!scheduleSlot || scheduleSlot.length === 0) {
-        throw new Error('Missing scheduleSlot');
-      }
-
-      // Convert EventRoutePayload to EditEventArgs format
-      const editArgs: EditEventArgs = {
-        ...eventData,
-        status: clickedEvent.status, // Use existing event status
-        documents: clickedEvent.documents.map((doc) => ({
-          name: doc.name,
-          googleFileId: doc.googleFileId
-        })),
-        scheduleSlot: scheduleSlot.map((slot) => ({
-          days: slot.days,
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-          recurrenceNumber: slot.recurrenceNumber,
-          initialDateScheduled: slot.initialDateScheduled,
-          allDay: slot.allDay
-        }))
-      };
-
-      const editedEvent = await editEvent(editArgs);
-
-      // Upload new documents if any
-      const filesToUpload = documentFiles.map((doc) => doc.file).filter((file): file is File => file !== undefined);
-
-      if (filesToUpload.length > 0) {
-        await uploadDocuments({
-          id: editedEvent.eventId,
-          files: filesToUpload
-        });
-      }
-
-      toast.success('Event updated successfully!');
-      setShowEditModal(false);
+      setShowDeleteModal(false);
       onClose();
+      await deleteEvent();
+      toast.success('Event deleted successfully!');
     } catch (err) {
       if (err instanceof Error) {
         toast.error(err.message);
@@ -546,6 +504,7 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
           addApprovalButtons={addApprovalButtons}
           onClose={onClose}
           onEdit={handleEdit}
+          onDelete={handleDelete}
           clickedDate={clickedDate}
         />
       )}
@@ -556,9 +515,32 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
             setShowEditModal(false);
             onClose();
           }}
-          onSubmit={handleEditSubmit}
+          onSubmit={(data) =>
+            handleEditSubmit(data, clickedEvent, editEvent, () => {
+              setShowEditModal(false);
+              onClose();
+            })
+          }
           initialValues={convertEventToFormValues(clickedEvent)}
           eventTypes={eventTypes}
+          defaultDate={
+            clickedEvent.scheduledTimes[0]?.initialDateScheduled
+              ? new Date(clickedEvent.scheduledTimes[0].initialDateScheduled)
+              : new Date()
+          }
+        />
+      )}
+
+      {clickedEvent && showDeleteModal && (
+        <NERDeleteModal
+          open={showDeleteModal}
+          onHide={() => {
+            setShowDeleteModal(false);
+            onClose();
+          }}
+          formId="delete-event-form"
+          dataType={clickedEvent.title}
+          onFormSubmit={handleDeleteConfirm}
         />
       )}
     </Popover>
