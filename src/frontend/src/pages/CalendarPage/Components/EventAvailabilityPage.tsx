@@ -20,9 +20,9 @@ import { routes } from '../../../utils/routes';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { deeplyCopy } from 'shared/src/utils';
 import { availabilityTransformer } from '../../../apis/transformers/users.transformers';
-import AvailabilityScheduleView from '../../CalendarPage/EventDetailPage/AvailabilityScheduleView';
 import SingleAvailabilityModal from '../../SettingsPage/UserScheduleSettings/Availability/SingleAvailabilityModal';
 import AvailabilityEditModal from '../../SettingsPage/UserScheduleSettings/Availability/AvailabilityEditModal';
+import AvailabilityScheduleView from '../AvailabilityScheduleView';
 
 const isUserOnEvent = (user: User, event: EventWithMembers): boolean => {
   const isDirectMember =

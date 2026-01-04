@@ -1,4 +1,4 @@
-import React, { JSX, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
 import { Calendar, DayOfWeek, Event, EventType } from 'shared';
 
