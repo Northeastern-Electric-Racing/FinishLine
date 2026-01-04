@@ -66,8 +66,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
   const [selectedProjectRule, setSelectedProjectRule] = useState<ProjectRule | null>(null);
 
-  const [selectedRuleForHistory, setSelectedRuleForHistory] = React.useState<Rule | null>(null);
-  const [showHistoryModal, setShowHistoryModal] = React.useState(false);
+  const [selectedRuleForHistory, setSelectedRuleForHistory] = useState<Rule | null>(null);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Fetch all ruleset types
   const { data: rulesetTypes, isLoading: rulesetTypesLoading, isError: rulesetTypesError } = useAllRulesetTypes();
@@ -324,10 +324,28 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         hideFormButtons={true}
         showCloseButton={false}
       >
-        <Box sx={{ minWidth: '400px' }}>
-          {statusHistory.length === 0 ? (
-            <Typography color="text.secondary">No status history available.</Typography>
-          ) : (
+        <Box sx={{ minWidth: '400px', display: 'flex', flexDirection: 'column' }}>
+          <Box
+            sx={{
+              maxHeight: '300px',
+              overflowY: 'auto',
+              mb: 3,
+              '&::-webkit-scrollbar': {
+                width: '8px'
+              },
+              '&::-webkit-scrollbar-track': {
+                backgroundColor: 'rgba(0,0,0,0.1)',
+                borderRadius: '4px'
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                borderRadius: '4px',
+                '&:hover': {
+                  backgroundColor: 'rgba(0,0,0,0.5)'
+                }
+              }
+            }}
+          >
             <Box component="ul" sx={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {statusHistory.map((history) => (
                 <Box
@@ -336,36 +354,28 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 2,
-                    py: 1,
-                    '&:not(:last-child)': {
-                      borderBottom: '1px solid',
-                      borderColor: 'divider'
-                    }
+                    gap: 1,
+                    py: 1
                   }}
                 >
-                  <Typography sx={{ fontSize: '14px', color: 'text.primary' }}>•</Typography>
-                  <Typography sx={{ fontSize: '14px', color: 'text.primary', minWidth: '90px' }}>
-                    {formatDate(history.dateCreated)}
-                  </Typography>
-                  <Typography sx={{ fontSize: '14px', color: 'text.primary' }}>-</Typography>
-                  <Typography sx={{ fontSize: '14px', color: 'text.primary', flex: 1 }}>
-                    {formatUserName(history.createdBy)} Marked as {getStatusLabel(history.newStatus)}
+                  <Typography sx={{ fontSize: '25', color: 'text.primary' }}>
+                    •{formatDate(history.dateCreated)} - {formatUserName(history.createdBy)} Marked as{' '}
+                    {getStatusLabel(history.newStatus)}
                   </Typography>
                 </Box>
               ))}
             </Box>
-          )}
-        </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-          <NERFailButton
-            onClick={() => {
-              setShowHistoryModal(false);
-              setSelectedRuleForHistory(null);
-            }}
-          >
-            Exit
-          </NERFailButton>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <NERFailButton
+              onClick={() => {
+                setShowHistoryModal(false);
+                setSelectedRuleForHistory(null);
+              }}
+            >
+              Exit
+            </NERFailButton>
+          </Box>
         </Box>
       </NERModal>
     );
