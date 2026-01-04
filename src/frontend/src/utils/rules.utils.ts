@@ -20,4 +20,3 @@ export const countRulesToDelete = (rule: Rule, allRules: Rule[]): number => {
   }
   return count;
 };
-
