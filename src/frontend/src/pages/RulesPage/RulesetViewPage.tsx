@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import { useSingleRuleset } from './RulesetEditPage';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import RulesetGeneralView from './components/RulesetGeneralView';
 
 const RulesetViewPage = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -48,7 +49,7 @@ const RulesetViewPage = () => {
         {tabIndex === 0 ? (
           <Typography>Team View rules table PLACEHOLDER</Typography>
         ) : (
-          <Typography>General View rules table PLACEHOLDER</Typography>
+          <RulesetGeneralView allRules={ruleset.rules} />
         )}
       </PageLayout>
     </Box>

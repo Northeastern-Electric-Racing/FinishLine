@@ -32,6 +32,24 @@ export const useSingleRuleset = (rulesetId: string) => {
       ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
+      subRuleIds: ['1.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '1.1',
+      ruleCode: 'G.1',
+      ruleContent: 'Content for G.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '1', ruleCode: 'GR - General Regulations' },
+      subRuleIds: ['1.1.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '1.1.1',
+      ruleCode: 'G.1.1',
+      ruleContent: 'Content for G.1.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '1.1', ruleCode: 'G.1' },
       subRuleIds: [],
       referencedRuleIds: []
     },
@@ -41,6 +59,15 @@ export const useSingleRuleset = (rulesetId: string) => {
       ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
+      subRuleIds: ['2.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '2.1',
+      ruleCode: 'AD.1',
+      ruleContent: 'Content for AD.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '2', ruleCode: 'AD - Administrative Regulations' },
       subRuleIds: [],
       referencedRuleIds: []
     },
@@ -50,6 +77,15 @@ export const useSingleRuleset = (rulesetId: string) => {
       ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
+      subRuleIds: ['3.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '3.1',
+      ruleCode: 'DR.1',
+      ruleContent: 'Content for DR.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '3', ruleCode: 'DR - Document Requirements' },
       subRuleIds: [],
       referencedRuleIds: []
     },
@@ -142,6 +178,15 @@ export const useSingleRuleset = (rulesetId: string) => {
       ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
+      subRuleIds: ['13.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '13.1',
+      ruleCode: 'F.1',
+      ruleContent: 'Content for F.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '13', ruleCode: 'F - Chassis and Structural' },
       subRuleIds: [],
       referencedRuleIds: []
     }
