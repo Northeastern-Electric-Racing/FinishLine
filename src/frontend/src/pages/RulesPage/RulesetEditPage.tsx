@@ -18,7 +18,6 @@ import AddRuleSectionModal from './components/AddRuleSectionModal';
 import AddRuleModal from './components/AddRuleModal';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
-import { InfoOutlined } from '@mui/icons-material';
 
 /**
  * Placeholder hook to fetch a single ruleset.

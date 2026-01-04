@@ -1,4 +1,4 @@
-import { Box, Typography, IconButton } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import NERModal from '../../../../components/NERModal';
 import NERFailButton from '../../../../components/NERFailButton';
 import { Rule, ProjectRule, RuleCompletion } from 'shared';
