@@ -50,6 +50,10 @@ const RulesetTable: React.FC = () => {
   const updateRuleset = useUpdateRuleset();
   const { mutateAsync: deleteRuleset } = useDeleteRuleset();
 
+  const hasRules = (ruleset: Ruleset) => {
+    return ruleset.ruleAmount > 0;
+  };
+
   // Table header configuration
   const headCells = [
     { id: 'fileName', label: 'File Name' },
@@ -178,8 +182,9 @@ const RulesetTable: React.FC = () => {
                       {ruleset.active}
                     </Typography>
                     <Checkbox
-                      checked={ruleset.isActive}
-                      disabled // Read-only for now
+                      checked={ruleset.active}
+                      onChange={() => handleToggleActive(ruleset)}
+                      disabled={updateRuleset.isLoading}
                       sx={{
                         color: '#fff',
                         '&.Mui-checked': { color: '#dd514c' }
@@ -189,6 +194,7 @@ const RulesetTable: React.FC = () => {
                   <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                     <NERButton
                       onClick={() => handleEditRuleset(ruleset.rulesetId)}
+                      disabled={!hasRules(ruleset)}
                       sx={{
                         backgroundColor: theme.palette.grey[800],
                         color: theme.palette.getContrastText(theme.palette.grey[600]),
@@ -198,13 +204,18 @@ const RulesetTable: React.FC = () => {
                         marginRight: '10px',
                         padding: '4px',
                         lineHeight: 1,
-                        borderRadius: '6px'
+                        borderRadius: '6px',
+                        '&.Mui-disabled': {
+                          backgroundColor: theme.palette.grey[900],
+                          color: theme.palette.grey[600]
+                        }
                       }}
                     >
                       Edit/Assign Rules
                     </NERButton>
                     <NERButton
                       onClick={() => handleViewRuleset(ruleset.rulesetId)}
+                      disabled={!hasRules(ruleset)}
                       sx={{
                         backgroundColor: theme.palette.grey[800],
                         color: theme.palette.getContrastText(theme.palette.grey[600]),
@@ -213,7 +224,11 @@ const RulesetTable: React.FC = () => {
                         },
                         padding: '4px',
                         lineHeight: 1,
-                        borderRadius: '6px'
+                        borderRadius: '6px',
+                        '&.Mui-disabled': {
+                          backgroundColor: theme.palette.grey[900],
+                          color: theme.palette.grey[600]
+                        }
                       }}
                     >
                       View Rules
@@ -278,6 +293,7 @@ const RulesetTable: React.FC = () => {
                     <TableCell align="center">
                       <NERButton
                         onClick={() => handleEditRuleset(ruleset.rulesetId)}
+                        disabled={!hasRules(ruleset)}
                         sx={{
                           backgroundColor: theme.palette.grey[800],
                           color: theme.palette.getContrastText(theme.palette.grey[600]),
@@ -287,13 +303,18 @@ const RulesetTable: React.FC = () => {
                           marginRight: '10px',
                           padding: '4px',
                           lineHeight: 1,
-                          borderRadius: '6px'
+                          borderRadius: '6px',
+                          '&.Mui-disabled': {
+                            backgroundColor: theme.palette.grey[900],
+                            color: theme.palette.grey[600]
+                          }
                         }}
                       >
                         Edit/Assign Rules
                       </NERButton>
                       <NERButton
                         onClick={() => handleViewRuleset(ruleset.rulesetId)}
+                        disabled={!hasRules(ruleset)}
                         sx={{
                           backgroundColor: theme.palette.grey[800],
                           color: theme.palette.getContrastText(theme.palette.grey[600]),
@@ -302,7 +323,11 @@ const RulesetTable: React.FC = () => {
                           },
                           padding: '4px',
                           lineHeight: 1,
-                          borderRadius: '6px'
+                          borderRadius: '6px',
+                          '&.Mui-disabled': {
+                            backgroundColor: theme.palette.grey[900],
+                            color: theme.palette.grey[600]
+                          }
                         }}
                       >
                         View Rules

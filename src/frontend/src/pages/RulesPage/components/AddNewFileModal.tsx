@@ -116,7 +116,6 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
   const handleFormSubmit = async (data: NewFileFormData) => {
     try {
       await onFormSubmit(data);
-      console.log('Ruleset Successfully Added');
       setFile(null);
       reset();
       onHide();

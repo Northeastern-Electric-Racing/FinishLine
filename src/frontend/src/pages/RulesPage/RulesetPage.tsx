@@ -5,7 +5,7 @@
 import { useParams } from 'react-router-dom';
 import React from 'react';
 import { useToast } from '../../hooks/toasts.hooks';
-import { useCreateRuleset, useParseRuleset } from '../../hooks/rules.hooks';
+import { useCreateRuleset, useDeleteRuleset, useParseRuleset } from '../../hooks/rules.hooks';
 import { NERButton } from '../../components/NERButton';
 import AddNewFileModal from './components/AddNewFileModal';
 import PageLayout from '../../components/PageLayout';
@@ -21,12 +21,17 @@ const RulesetPage: React.FC = () => {
 
   const { mutateAsync: createRuleset } = useCreateRuleset();
   const { mutateAsync: parseRuleset } = useParseRuleset();
+  const { mutateAsync: deleteRuleset } = useDeleteRuleset();
   const toast = useToast();
 
   const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
 
   const handleFileConfirm = async (data: { fileId: string; name: string; carNumber: number; parserType: string }) => {
     setAddFileModalShow(false);
+    const loadingToast = toast.info('Creating ruleset and parsing rules...');
+
+    let createdRulesetId: string | null = null;
+
     try {
       const ruleset = await createRuleset({
         fileId: data.fileId,
@@ -41,6 +46,8 @@ const RulesetPage: React.FC = () => {
         throw new Error('Error creating Ruleset');
       }
 
+      createdRulesetId = rulesetId;
+
       const parsedRules = await parseRuleset({
         rulesetId,
         fileId: data.fileId,
@@ -48,7 +55,16 @@ const RulesetPage: React.FC = () => {
       });
       toast.success(`Successfully parsed ${parsedRules.length} rules!`);
     } catch (e) {
-      toast.error('Error uploading file: ' + (e instanceof Error ? e.message : 'Unknown error'));
+      if (createdRulesetId) {
+        try {
+          await deleteRuleset(createdRulesetId);
+          toast.error('Parsing failed. Ruleset has been removed. ' + (e instanceof Error ? e.message : 'Unknown error'));
+        } catch (deleteError) {
+          toast.error('Error during cleanup: ' + (deleteError instanceof Error ? deleteError.message : 'Unknown error'));
+        }
+      } else {
+        toast.error('Error creating ruleset: ' + (e instanceof Error ? e.message : 'Unknown error'));
+      }
     }
   };
 

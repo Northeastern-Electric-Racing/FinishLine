@@ -3106,9 +3106,6 @@ const performSeed: () => Promise<void> = async () => {
     data: ruleSeedData.emptyRulesetType(batman.userId, ner.organizationId)
   });
 
-  console.log('FSAE Ruleset Type ID:', fsaeRulesetType.rulesetTypeId);
-  console.log('FHE Ruleset Type ID:', fheRulesetType.rulesetTypeId);
-
   // rulesets
   const ruleset1 = await prisma.ruleset.create({
     data: ruleSeedData.ruleset1(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
