@@ -49,4 +49,3 @@ const DeleteRuleModal = ({ open, onHide, onConfirm, rule, totalRulesToDelete }: 
 };
 
 export default DeleteRuleModal;
-
