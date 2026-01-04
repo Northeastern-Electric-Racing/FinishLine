@@ -1,5 +1,4 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args';
 
 export type RulePreviewQueryArgs = ReturnType<typeof getRulePreviewQueryArgs>;
 
@@ -50,7 +49,7 @@ export const getProjectRuleQueryArgs = () =>
 
 export type RulesetQueryArgs = ReturnType<typeof getRulesetQueryArgs>;
 
-export const getRulesetQueryArgs = (organizationId: string) =>
+export const getRulesetQueryArgs = () =>
   Prisma.validator<Prisma.RulesetDefaultArgs>()({
     include: {
       rules: {
@@ -69,8 +68,7 @@ export const getRulesetQueryArgs = (organizationId: string) =>
         include: {
           wbsElement: true
         }
-      },
-      createdBy: getUserQueryArgs(organizationId)
+      }
     }
   });
 
@@ -82,7 +80,7 @@ export const getRulesetPreviewQueryArgs = () =>
       rulesetType: true,
       active: true,
       car: {
-        select: {
+        include: {
           wbsElement: true
         }
       }

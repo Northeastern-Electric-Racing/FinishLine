@@ -450,6 +450,9 @@ const rulesetsCreate = () => `${rules()}/ruleset/create`;
 const rulesetById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
 const parseRuleset = (rulesetId: string) => `${API_URL}/rules/ruleset/${rulesetId}/parse`;
 const uploadRulesetFile = () => `${rules()}/upload/file`;
+const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
+const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
+const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -764,6 +767,9 @@ export const apiUrls = {
   rulesetById,
   rulesetTypeCreate,
   rulesetsCreate,
+  rulesetUpdate,
+  rulesetDelete,
+  rulesetTypeDelete,
   parseRuleset,
   uploadRulesetFile,
 

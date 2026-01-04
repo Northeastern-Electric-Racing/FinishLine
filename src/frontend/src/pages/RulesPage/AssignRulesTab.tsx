@@ -185,7 +185,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
       toast.success(`Placeholder: Would save ${toAdd.length} additions and ${toRemove.length} removals`);
     }
 
-    history.push(`${routes.RULES}/${rulesetId}`);
+    history.push(routes.RULESET_EDIT.replace(':rulesetId', rulesetId));
   };
 
   if (teamsLoading) {

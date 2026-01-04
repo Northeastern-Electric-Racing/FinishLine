@@ -26,6 +26,7 @@ interface RuleRowProps {
   leftWidth?: string;
   middleWidth?: string;
   rightWidth?: string;
+  initiallyExpanded?: boolean;
 }
 
 /**
@@ -48,9 +49,10 @@ const RuleRow: React.FC<RuleRowProps> = ({
   horizontalPadding = '16px',
   leftWidth = '20%',
   middleWidth = '70%',
-  rightWidth = '10%'
+  rightWidth = '10%',
+  initiallyExpanded = false
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
   const hasSubRules = rule.subRuleIds.length > 0;
 
   // Lazy load if allRules not provided

@@ -5,10 +5,11 @@ import {
   ProjectRule,
   RulesetType,
   notGuest,
-  RulesetPreview,
   User,
   Rule as SharedRule,
-  isHead
+  isHead,
+  Ruleset,
+  RulesetPreview
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -61,7 +62,7 @@ export default class RulesService {
 
     const activeRuleset = await prisma.ruleset.findFirst({
       where: { rulesetTypeId, deletedByUserId: null, active: true },
-      ...getRulesetQueryArgs(organization.organizationId)
+      ...getRulesetQueryArgs()
     });
 
     if (!activeRuleset) {
@@ -86,7 +87,7 @@ export default class RulesService {
           organizationId
         }
       },
-      ...getRulesetQueryArgs(organizationId)
+      ...getRulesetQueryArgs()
     });
 
     if (!ruleset) {
@@ -486,10 +487,10 @@ export default class RulesService {
    * @param organizationId the id of the organization the ruleset is being deleted in
    * @returns the ruleset with query args
    */
-  static async getRulesetWithQueryArgs(rulesetId: string, organizationId: string) {
+  static async getRulesetWithQueryArgs(rulesetId: string) {
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
-      ...getRulesetQueryArgs(organizationId)
+      ...getRulesetQueryArgs()
     });
 
     if (!ruleset) throw new NotFoundException('Ruleset', rulesetId);
@@ -506,17 +507,21 @@ export default class RulesService {
    * @returns the deleted Ruleset
    */
   static async deleteRuleset(rulesetId: string, deleterId: string, organizationId: string) {
-    const ruleset = await RulesService.getRulesetWithQueryArgs(rulesetId, organizationId);
+    const ruleset = await RulesService.getRulesetWithQueryArgs(rulesetId);
 
     const hasPermission =
       (await userHasPermission(deleterId, organizationId, isAdmin)) || deleterId === ruleset.createdByUserId;
 
     if (!hasPermission) throw new AccessDeniedException('Only admins can delete a ruleset.');
 
+    if (ruleset.active) {
+      throw new HttpException(400, 'Cannot delete an active ruleset. Please deactivate it first.');
+    }
+
     const deletedRuleset = await prisma.ruleset.update({
       where: { rulesetId },
-      data: { deletedBy: { connect: { userId: deleterId } } },
-      ...getRulesetQueryArgs(organizationId)
+      data: { deletedBy: { connect: { userId: deleterId } }, active: false },
+      ...getRulesetQueryArgs()
     });
 
     return rulesetTransformer(deletedRuleset);
@@ -541,7 +546,7 @@ export default class RulesService {
    * @param organizationId id of organization
    * @returns rulesets associated with provided ruleset type
    */
-  static async getRulesetsByRulesetType(rulesetTypeId: string, organizationId: string): Promise<RulesetPreview[]> {
+  static async getRulesetsByRulesetType(rulesetTypeId: string, organizationId: string): Promise<Ruleset[]> {
     const rulesets = await prisma.ruleset.findMany({
       where: {
         rulesetTypeId,
@@ -550,7 +555,10 @@ export default class RulesService {
           organizationId
         }
       },
-      ...getRulesetQueryArgs(organizationId)
+      orderBy: {
+        dateCreated: 'desc'
+      },
+      ...getRulesetQueryArgs()
     });
 
     return rulesets.map(rulesetTransformer);
@@ -598,7 +606,7 @@ export default class RulesService {
         active: true,
         deletedBy: null
       },
-      ...getRulesetQueryArgs(organization.organizationId)
+      ...getRulesetQueryArgs()
     });
 
     if (!activeRuleset) {
@@ -813,7 +821,7 @@ export default class RulesService {
         active,
         createdByUserId: submitter.userId
       },
-      ...getRulesetQueryArgs(organization.organizationId)
+      ...getRulesetQueryArgs()
     });
 
     return rulesetTransformer(ruleset);
@@ -971,7 +979,7 @@ export default class RulesService {
             rulesetTypeId: rulesetExists.rulesetTypeId,
             organizationId
           },
-          dateDeleted: null
+          deletedByUserId: null
         }
       });
 
@@ -990,7 +998,7 @@ export default class RulesService {
         name,
         active: isActive
       },
-      ...getRulesetQueryArgs(organizationId)
+      ...getRulesetQueryArgs()
     });
 
     return rulesetTransformer(ruleset);
