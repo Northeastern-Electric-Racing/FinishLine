@@ -3,7 +3,6 @@ import FullPageTabs from '../../components/FullPageTabs';
 import PageLayout from '../../components/PageLayout';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
-import { Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useSingleRuleset } from './RulesetEditPage';
 import ErrorPage from '../ErrorPage';
