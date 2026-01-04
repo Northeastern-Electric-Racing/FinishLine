@@ -402,6 +402,7 @@ const EventsTable: React.FC<EventTableArgs> = ({
         calendars={allCalendars}
         disable={true}
         addApprovalButtons={true}
+        handleEditSubmit={handleEditSubmit}
       />
       {clickedEditEvent && showEditModal && (
         <EditEventModal

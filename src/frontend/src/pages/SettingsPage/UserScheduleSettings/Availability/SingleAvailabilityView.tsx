@@ -4,7 +4,7 @@ import { datePipe } from '../../../../utils/pipes';
 import { useState, useEffect } from 'react';
 import NERArrows from '../../../../components/NERArrows';
 import { enumToArray, REVIEW_TIMES, getBackgroundColor } from '../../../../utils/design-review.utils';
-import EventTimeSlot from '../../../NewCalendarPage/Components/EventTimeSlot';
+import EventTimeSlot from '../../../CalendarPage/Components/EventTimeSlot';
 
 interface SingleAvailabilityViewProps {
   totalAvailability: Availability[];

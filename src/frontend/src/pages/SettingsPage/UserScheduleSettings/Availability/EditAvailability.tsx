@@ -5,7 +5,7 @@ import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities 
 import { datePipe } from '../../../../utils/pipes';
 import NERArrows from '../../../../components/NERArrows';
 import { NERButton } from '../../../../components/NERButton';
-import EventTimeSlot from '../../../NewCalendarPage/Components/EventTimeSlot';
+import EventTimeSlot from '../../../CalendarPage/Components/EventTimeSlot';
 
 interface EditAvailabilityProps {
   editedAvailabilities: Map<number, Availability>;
