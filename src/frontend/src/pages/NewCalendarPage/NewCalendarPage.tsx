@@ -24,7 +24,6 @@ import { useConflictingEvents, useFilterEvents, useCreateEvent, useUploadManyDoc
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import EventSummaryModal from '../CalendarPage/EventSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import FilterModal from './FilterModal';
@@ -67,7 +66,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
-  const [selectedEvent, setSelectedEvent] = useState<Event>();
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
@@ -100,8 +98,8 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   } = useFilterEvents({
     startPeriod,
     endPeriod,
-    memberIds: memberIds.concat(additionalMemberIds),
-    teamIds: teamIds.concat(additionalTeamIds),
+    memberIds: [...new Set(memberIds.concat(additionalMemberIds))],
+    teamIds: [...new Set(teamIds.concat(additionalTeamIds))],
     statuses: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT],
     calendarIds: selectedCalendarIds
   });
@@ -167,8 +165,8 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   const { data: upcomingEvents } = useFilterEvents({
     startPeriod: upcomingStartPeriod,
     endPeriod: upcomingEndPeriod,
-    memberIds: memberIds.concat(additionalMemberIds),
-    teamIds: teamIds.concat(additionalTeamIds)
+    memberIds: [...new Set(memberIds.concat(additionalMemberIds))],
+    teamIds: [...new Set(teamIds.concat(additionalTeamIds))]
   });
 
   const upcomingOccurences = upcomingEvents
@@ -330,16 +328,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
 
   return (
     <>
-      {selectedEvent && (
-        <EventSummaryModal
-          open={!!selectedEvent}
-          onHide={() => {
-            setSelectedEvent(undefined);
-          }}
-          event={selectedEvent as Event}
-          teamTypes={allTeamTypes}
-        />
-      )}
       {isCreateModalOpen && (
         <CreateEventModal
           open={isCreateModalOpen}
@@ -352,7 +340,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
       <Stack
         spacing={1}
         sx={{
-          position: 'fixed',
+          position: 'absolute',
           top: 24,
           left: '50%',
           transform: 'translateX(-50%)',
@@ -365,7 +353,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
             variant="filled"
             severity="error"
+            onClick={() => setDeniedEvent(false)}
             onClose={() => setDeniedEvent(false)}
+            sx={{
+              cursor: 'pointer'
+            }}
           >
             <Stack direction="row" alignItems="center" spacing={2}>
               <Typography fontSize={14}>
@@ -403,7 +395,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             icon={<WarningIcon fontSize="inherit" />}
             variant="filled"
             severity="error"
+            onClick={() => setPendingEvent(false)}
             onClose={() => setPendingEvent(false)}
+            sx={{
+              cursor: 'pointer'
+            }}
           >
             You have scheduled an event at the same time and location as <i>{yourConflicts[0].title}</i>.{' '}
             <i>
@@ -417,7 +413,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
             variant="filled"
             severity="error"
+            onClick={() => setReviewEvent(false)}
             onClose={() => setReviewEvent(false)}
+            sx={{
+              cursor: 'pointer'
+            }}
           >
             <Stack direction="row" alignItems="center" spacing={2}>
               <Typography fontSize={14}>

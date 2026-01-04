@@ -854,6 +854,7 @@ export default class CalendarService {
               data: {
                 days: s.days,
                 startTime: s.startTime ?? null,
+                endTime: s.endTime ?? null,
                 endDate: computeEndDate(s.initialDateScheduled, s.recurrenceNumber),
                 recurrenceNumber: s.recurrenceNumber,
                 initialDateScheduled: s.initialDateScheduled,
@@ -2255,7 +2256,7 @@ export default class CalendarService {
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
         approvalRequiredFromUserId: approvalIds?.length ? { in: approvalIds } : undefined,
-        OR: memberOrTeamFilter.length ? memberOrTeamFilter : undefined,
+        OR: memberIds || teamIds ? memberOrTeamFilter : undefined,
         approved: statuses?.length ? { in: statuses } : undefined,
         scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
         ...fromCalendar
