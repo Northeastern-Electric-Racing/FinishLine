@@ -2,8 +2,6 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useHistory } from 'react-router-dom';
-import { routes } from '../../utils/routes';
 import React from 'react';
 import { NERButton } from '../../components/NERButton';
 import AddNewFileModal from './components/AddNewFileModal';
@@ -16,7 +14,6 @@ import RulesetTable from './components/RulesetTable';
  * Supports editing and assigning rules to projects and teams.
  */
 const RulesetPage: React.FC = () => {
-  const history = useHistory();
   const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
 
   const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
@@ -67,9 +64,6 @@ const RulesetPage: React.FC = () => {
                 onConfirm={handleFileConfirm}
                 carOptions={['1', '2']}
               />
-              <NERButton onClick={() => history.push(`${routes.RULES}/placeholder_ruleset_id/edit`)}>
-                MOCK edit/assign rules
-              </NERButton>
             </Box>
           </Box>
         </Box>

@@ -41,7 +41,7 @@ export const createRulesetType = (payload: { name: string }) => {
  * Fetches all ruleset types for the organization.
  */
 export const getAllRulesetTypes = () => {
-  return axios.get<RulesetType[]>(apiUrls.rulesGetAllRulesetTypes(), {
+  return axios.get<RulesetType[]>(apiUrls.rulesetTypes(), {
     transformResponse: (data) => JSON.parse(data).map(rulesetTypeTransformer)
   });
 };
@@ -127,7 +127,7 @@ export const getChildRules = (ruleId: string) => {
  * @param rulesetId The ID of the ruleset.
  */
 export const getTopLevelRules = (rulesetId: string) => {
-  return axios.get<Rule[]>(apiUrls.rulesGetTopLevelRules(rulesetId), {
+  return axios.get<Rule[]>(apiUrls.rulesTopLevel(rulesetId), {
     transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
   });
 };
@@ -142,4 +142,25 @@ export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
   return axios.get<Ruleset[]>(apiUrls.rulesetsByType(rulesetTypeId), {
     transformResponse: (data) => JSON.parse(data)
   });
+};
+
+/**
+ * Updates a rulesets active status
+ */
+export const updateRuleset = (rulesetId: string, name: string, isActive: boolean) => {
+  return axios.post<Ruleset>(apiUrls.rulesetUpdate(rulesetId), { name, isActive });
+};
+
+/**
+ * Deletes a ruleset given its ID
+ */
+export const deleteRuleset = (rulesetId: string) => {
+  return axios.post(apiUrls.rulesetDelete(rulesetId));
+};
+
+/**
+ * Deletes a ruleset type given its ID
+ */
+export const deleteRulesetType = (rulesetTypeId: string) => {
+  return axios.post(apiUrls.rulesetTypeDelete(rulesetTypeId));
 };

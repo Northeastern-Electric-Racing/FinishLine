@@ -13,30 +13,42 @@ import {
   CardContent,
   Typography,
   Stack,
-  Link
+  IconButton
 } from '@mui/material';
-import { Link as RouterLink, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
-import { useAllRulesetTypes } from '../../../hooks/rules.hooks';
+import { useAllRulesetTypes, useDeleteRulesetType } from '../../../hooks/rules.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { RulesetType } from 'shared';
 import { NERButton } from '../../../components/NERButton';
+import { useToast } from '../../../hooks/toasts.hooks';
+import { useState } from 'react';
+import RulesetTypeDeleteModal from './RulesetTypeDeleteModal';
+import { Delete } from '@mui/icons-material';
 
-type RulesetTypeColumnId = 'id' | 'name' | 'lastUpdated' | 'revisions' | 'actions';
+type RulesetTypeColumnId = 'id' | 'name' | 'lastUpdated' | 'revisions' | 'actions' | 'delete';
 
 interface RulesetTypeHeadCell {
   id: RulesetTypeColumnId;
   label: string;
 }
 
+interface RulesetTypeDeleteButtonProps {
+  rulesetTypeId: string;
+  name: string;
+  onDelete: (rulesetTypeId: string, name: string) => void;
+}
+
 const RulesetTypeTable: React.FC = () => {
   const history = useHistory();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const toast = useToast();
 
   const { data: rulesetTypes = [], isLoading, error } = useAllRulesetTypes();
+  const { mutateAsync: deleteRulesetType } = useDeleteRulesetType();
 
   const headCells: readonly RulesetTypeHeadCell[] = [
     {
@@ -54,11 +66,56 @@ const RulesetTypeTable: React.FC = () => {
     {
       id: 'actions',
       label: 'Actions'
+    },
+    {
+      id: 'delete',
+      label: ''
     }
   ];
 
-  const handleViewRuleset = (rulesetTypeId: string) => {
-    history.push(routes.RULESET_BY_ID.replace(':rulesetId', rulesetTypeId));
+  const handleViewRulesetType = (rulesetTypeId: string) => {
+    history.push(routes.RULESET_BY_ID.replace(':rulesetTypeId', rulesetTypeId));
+  };
+
+  const handleDeleteRulesetType = async (rulesetTypeId: string, name: string) => {
+    const rulesetType = rulesetTypes.find((rt) => rt.rulesetTypeId === rulesetTypeId);
+    if (rulesetType && rulesetType.revisionFiles.length > 0) {
+      toast.error('Cannot delete ruleset type with existing revisions');
+      return;
+    }
+
+    try {
+      await deleteRulesetType(rulesetTypeId);
+      toast.success(`Ruleset Type: ${name} deleted successfully!`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
+  };
+
+  const RulesetTypeDeleteButton: React.FC<RulesetTypeDeleteButtonProps> = ({ rulesetTypeId, name, onDelete }) => {
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    const handleDeleteSubmit = () => {
+      onDelete(rulesetTypeId, name);
+      setShowDeleteModal(false);
+    };
+
+    return (
+      <>
+        <IconButton type="button" sx={{ mx: 1 }} onClick={() => setShowDeleteModal(true)}>
+          <Delete />
+        </IconButton>
+        {showDeleteModal && (
+          <RulesetTypeDeleteModal
+            rulesetTypeName={name}
+            onDelete={handleDeleteSubmit}
+            onHide={() => setShowDeleteModal(false)}
+          />
+        )}
+      </>
+    );
   };
 
   if (isLoading) return <LoadingIndicator />;
@@ -111,10 +168,15 @@ const RulesetTypeTable: React.FC = () => {
                         lineHeight: 1,
                         borderRadius: '6px'
                       }}
-                      onClick={() => handleViewRuleset(rulesetType.rulesetTypeId)}
+                      onClick={() => handleViewRulesetType(rulesetType.rulesetTypeId)}
                     >
-                      View Ruleset
+                      View Rulesets
                     </NERButton>
+                    <RulesetTypeDeleteButton
+                      rulesetTypeId={rulesetType.rulesetTypeId}
+                      name={rulesetType.name}
+                      onDelete={handleDeleteRulesetType}
+                    />
                   </Box>
                 </Box>
               </CardContent>
@@ -154,32 +216,10 @@ const RulesetTypeTable: React.FC = () => {
                     }}
                   >
                     <TableCell align="center" sx={{ maxWidth: '20vw' }}>
-                      <Link
-                        component={RouterLink}
-                        to={routes.RULESET_BY_ID.replace(':rulesetId', rulesetType.rulesetTypeId)}
-                        sx={{ color: 'inherit', textDecoration: 'none' }}
-                      >
-                        {rulesetType.name}
-                      </Link>
+                      {rulesetType.name}
                     </TableCell>
-                    <TableCell align="center">
-                      <Link
-                        component={RouterLink}
-                        to={routes.RULESET_BY_ID.replace(':rulesetId', rulesetType.rulesetTypeId)}
-                        sx={{ color: 'inherit', textDecoration: 'none' }}
-                      >
-                        {datePipe(rulesetType.lastUpdated)}
-                      </Link>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Link
-                        component={RouterLink}
-                        to={routes.RULESET_BY_ID.replace(':rulesetId', rulesetType.rulesetTypeId)}
-                        sx={{ color: 'inherit', textDecoration: 'none' }}
-                      >
-                        {rulesetType.revisionFiles.length}
-                      </Link>
-                    </TableCell>
+                    <TableCell align="center">{datePipe(rulesetType.lastUpdated)}</TableCell>
+                    <TableCell align="center">{rulesetType.revisionFiles.length}</TableCell>
                     <TableCell align="center">
                       <NERButton
                         sx={{
@@ -193,10 +233,17 @@ const RulesetTypeTable: React.FC = () => {
                           lineHeight: 1,
                           borderRadius: '6px'
                         }}
-                        onClick={() => handleViewRuleset(rulesetType.rulesetTypeId)}
+                        onClick={() => handleViewRulesetType(rulesetType.rulesetTypeId)}
                       >
-                        View Ruleset
+                        View Rulesets
                       </NERButton>
+                    </TableCell>
+                    <TableCell align="center" sx={{ width: '60px', paddingLeft: '0px' }}>
+                      <RulesetTypeDeleteButton
+                        rulesetTypeId={rulesetType.rulesetTypeId}
+                        name={rulesetType.name}
+                        onDelete={handleDeleteRulesetType}
+                      />
                     </TableCell>
                   </TableRow>
                 ))
