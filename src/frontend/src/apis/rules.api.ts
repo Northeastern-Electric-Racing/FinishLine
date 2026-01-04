@@ -67,3 +67,11 @@ export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+/**
+ * Deletes a rule by its ID
+ * @param ruleId - The ID of the rule to delete
+ */
+export const deleteRule = (ruleId: string) => {
+  return axios.post(`/rules/rule/${ruleId}/delete`);
+};
