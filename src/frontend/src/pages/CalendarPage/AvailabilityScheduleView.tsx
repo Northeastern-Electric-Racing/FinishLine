@@ -1,67 +1,44 @@
-import { Grid } from '@mui/material';
-import { useState } from 'react';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { Availability, Event, getDayOfWeek, getNextSevenDays, User } from 'shared';
-import {
-  enumToArray,
-  getBackgroundColor,
-  HeatmapColors,
-  NUMBER_OF_TIME_SLOTS,
-  REVIEW_TIMES
-} from '../../utils/design-review.utils';
-import TimeSlot from '../../components/TimeSlot';
+import React, { useState } from 'react';
+import { enumToArray, getBackgroundColor, NUMBER_OF_TIME_SLOTS, REVIEW_TIMES } from '../../utils/design-review.utils';
 import { datePipe } from '../../utils/pipes';
+import EventTimeSlot from './Components/EventTimeSlot';
 
 interface AvailabilityScheduleViewProps {
   availableUsers: Map<number, User[]>;
   unavailableUsers: Map<number, User[]>;
   usersToAvailabilities: Map<User, Availability[]>;
-  existingMeetingData: Map<number, string>;
   setCurrentAvailableUsers: (val: User[]) => void;
   setCurrentUnavailableUsers: (val: User[]) => void;
-  onSelectedTimeslotChanged: (val: number | null, day: Date | null) => void;
-  dateRangeTitle: string;
   event: Event;
+  displayDate?: Date;
 }
 
 const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   availableUsers,
   unavailableUsers,
   usersToAvailabilities,
-  existingMeetingData,
   setCurrentAvailableUsers,
   setCurrentUnavailableUsers,
-  dateRangeTitle,
-  onSelectedTimeslotChanged,
-  event
+  event,
+  displayDate
 }) => {
   const totalUsers = usersToAvailabilities.size;
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
-  const initialDate = event.scheduledTimes[0]?.initialDateScheduled || new Date();
+  // Use displayDate if provided, otherwise fall back to event's initial date
+  const initialDate = displayDate || event.scheduledTimes[0]?.initialDateScheduled || new Date();
   const potentialDays = getNextSevenDays(initialDate);
 
-  const handleTimeslotClick = (index: number, day: Date) => {
+  const handleTimeslotClick = (index: number, _day: Date) => {
     if (selectedTimeslot === index) {
-      setSelectedTimeslot(null); // unselect
+      setSelectedTimeslot(null);
       setCurrentAvailableUsers([]);
       setCurrentUnavailableUsers([]);
     } else {
-      setSelectedTimeslot(index); // select
+      setSelectedTimeslot(index);
       setCurrentAvailableUsers(availableUsers.get(index) || []);
       setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
-    }
-
-    onSelectedTimeslotChanged(index, day);
-  };
-
-  const handleOnMouseOver = (index: number) => {
-    setCurrentAvailableUsers(availableUsers.get(index) || []);
-    setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
-  };
-
-  const handleOnMouseLeave = (): void => {
-    if (selectedTimeslot === null) {
-      setCurrentAvailableUsers([]);
-      setCurrentUnavailableUsers([]);
     }
   };
 
@@ -89,31 +66,68 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
     unavailableUsers.set(time, currentUnavailableUsers);
   }
 
+  const stickyLeft = {
+    position: 'sticky',
+    left: 0,
+    zIndex: 2,
+    bgcolor: 'background.paper'
+  };
+
   return (
-    <Grid container>
-      <TimeSlot backgroundColor={HeatmapColors[0]} text={dateRangeTitle} />
-      {potentialDays.map((day) => (
-        <TimeSlot backgroundColor={HeatmapColors[0]} text={getDayOfWeek(day) + ' ' + datePipe(day)} fontSize={'1em'} />
-      ))}
-      {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
-        <Grid container onMouseLeave={handleOnMouseLeave}>
-          <TimeSlot backgroundColor={HeatmapColors[0]} text={time} fontSize={'1em'} />
-          {potentialDays.map((day, dayIndex) => {
-            const index = dayIndex * enumToArray(REVIEW_TIMES).length + timeIndex;
-            return (
-              <TimeSlot
-                key={index}
-                backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
-                selected={selectedTimeslot === index}
-                onClick={() => handleTimeslotClick(index, day)}
-                onMouseOver={() => handleOnMouseOver(index)}
-                icon={existingMeetingData.get(index)}
-              />
-            );
-          })}
-        </Grid>
-      ))}
-    </Grid>
+    <TableContainer
+      sx={{
+        overflowX: 'auto',
+        overflowY: 'auto',
+        maxWidth: '100%'
+      }}
+    >
+      <Table
+        stickyHeader
+        sx={{
+          '& .MuiTableCell-head': {
+            bgcolor: 'background.paper'
+          },
+          minWidth: 650
+        }}
+      >
+        <TableHead>
+          <TableRow>
+            <TableCell></TableCell>
+            {potentialDays.map((day) => (
+              <TableCell>
+                <Typography flexGrow={1} variant="h6" align="center" sx={{ fontSize: { xs: 12, md: 16 } }}>
+                  {getDayOfWeek(day) + ' ' + datePipe(day)}
+                </Typography>
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
+            <TableRow>
+              <TableCell sx={{ ...stickyLeft, zIndex: 1 }}>
+                <Typography flexGrow={1} variant="h6" align="center" sx={{ fontSize: { xs: 12, md: 16 } }}>
+                  {time}
+                </Typography>
+              </TableCell>
+              {potentialDays.map((day, dayIndex) => {
+                const index = dayIndex * enumToArray(REVIEW_TIMES).length + timeIndex;
+                return (
+                  <TableCell sx={{ p: 0 }}>
+                    <EventTimeSlot
+                      key={index}
+                      backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
+                      selected={selectedTimeslot === index}
+                      onClick={() => handleTimeslotClick(index, day)}
+                    />
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 
