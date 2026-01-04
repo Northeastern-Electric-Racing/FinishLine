@@ -92,6 +92,13 @@ const RulesetTable: React.FC = () => {
   };
 
   const handleDeleteRuleset = async (rulesetId: string, name: string) => {
+    const ruleset = rulesets.find((r) => r.rulesetId === rulesetId);
+
+    if (ruleset && ruleset.active) {
+      toast.error('Cannot delete an active ruleset. Please deactivate it first.');
+      return;
+    }
+
     try {
       await deleteRuleset(rulesetId);
       toast.success(`Ruleset: ${name} deleted successfully!`);
@@ -243,7 +250,7 @@ const RulesetTable: React.FC = () => {
               {/* Table rows with ruleset data */}
               {rulesets.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ color: '#999', padding: '15px' }}>
+                  <TableCell colSpan={7} align="center" sx={{ color: '#999', padding: '15px' }}>
                     No Rulesets Found
                   </TableCell>
                 </TableRow>

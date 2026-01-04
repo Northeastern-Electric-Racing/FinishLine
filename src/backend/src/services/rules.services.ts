@@ -486,9 +486,13 @@ export default class RulesService {
 
     if (!hasPermission) throw new AccessDeniedException('Only admins can delete a ruleset.');
 
+    if (ruleset.active) {
+      throw new HttpException(400, 'Cannot delete an active ruleset. Please deactivate it first.');
+    }
+
     const deletedRuleset = await prisma.ruleset.update({
       where: { rulesetId },
-      data: { deletedBy: { connect: { userId: deleterId } } },
+      data: { deletedBy: { connect: { userId: deleterId } }, active: false },
       ...getRulesetQueryArgs()
     });
 
@@ -943,7 +947,7 @@ export default class RulesService {
             rulesetTypeId: rulesetExists.rulesetTypeId,
             organizationId
           },
-          dateDeleted: null
+          deletedByUserId: null
         }
       });
 
