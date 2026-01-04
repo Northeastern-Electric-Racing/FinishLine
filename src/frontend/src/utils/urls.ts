@@ -438,6 +438,12 @@ const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 
 /**************** Rules Endpoints ****************/
 const rules = () => `${API_URL}/rules`;
+const rulesTopLevel = (rulesetId: string) => `${rules()}/${rulesetId}/parentRules`;
+const rulesToggleTeam = (ruleId: string) => `${rules()}/rule/${ruleId}/toggle-team`;
+const rulesChildRules = (ruleId: string) => `${rules()}/${ruleId}/subrules`;
+const rulesTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => `${rules()}/${rulesetTypeId}/team/${teamId}`;
+const rulesetTypes = () => `${rules()}/rulesetTypes`;
+const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
 const ruleset = () => `${rules()}/ruleset`;
 const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
 const rulesetsCreate = () => `${ruleset()}/create`;
@@ -450,7 +456,6 @@ const rulesGetUnassignedRulesForRuleset = (rulesetId: string, teamId: string) =>
 const rulesCreateProjectRule = () => `${rules()}/projectRule/create`;
 const rulesDeleteProjectRule = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/delete`;
 const rulesEditProjectRuleStatus = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/editStatus`;
-const rulesGetChildRules = (ruleId: string) => `${rules()}/${ruleId}/subrules`;
 const rulesGetTopLevelRules = (rulesetId: string) => `${rules()}/${rulesetId}/parentRules`;
 
 /**************** Other Endpoints ****************/
@@ -756,7 +761,13 @@ export const apiUrls = {
   retrospectiveBudgets,
 
   rules,
+  rulesTopLevel,
+  rulesToggleTeam,
+  rulesChildRules,
+  rulesTeamRulesInRulesetType,
   ruleset,
+  rulesetTypes,
+  rulesetsByType,
   rulesetTypeCreate,
   rulesetsCreate,
   rulesGetAllRulesetTypes,
@@ -766,7 +777,6 @@ export const apiUrls = {
   rulesCreateProjectRule,
   rulesDeleteProjectRule,
   rulesEditProjectRuleStatus,
-  rulesGetChildRules,
   rulesGetTopLevelRules,
 
   version

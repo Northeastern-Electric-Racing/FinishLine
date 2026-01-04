@@ -14,6 +14,34 @@ import {
 } from './transformers/rules.transformers';
 
 /**
+ * Gets all top-level rules (rules with no parent) for a ruleset
+ */
+export const getTopLevelRules = (rulesetId: string) => {
+  return axios.get<Rule[]>(apiUrls.rulesTopLevel(rulesetId));
+};
+
+/**
+ * Gets all child rules of a specific rule
+ */
+export const getChildRules = (ruleId: string) => {
+  return axios.get<Rule[]>(apiUrls.rulesChildRules(ruleId));
+};
+
+/**
+ * Toggles team assignment for a rule
+ */
+export const toggleRuleTeam = (ruleId: string, teamId: string) => {
+  return axios.post<Rule>(apiUrls.rulesToggleTeam(ruleId), { teamId });
+};
+
+/**
+ * Gets all rules assigned to a team for a specific ruleset type
+ */
+export const getTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => {
+  return axios.get<Rule[]>(apiUrls.rulesTeamRulesInRulesetType(rulesetTypeId, teamId));
+};
+
+/**
  * Creates a new ruleset type
  *
  * @param payload the data for creating the ruleset type.
@@ -115,5 +143,16 @@ export const getChildRules = (ruleId: string) => {
 export const getTopLevelRules = (rulesetId: string) => {
   return axios.get<Rule[]>(apiUrls.rulesGetTopLevelRules(rulesetId), {
     transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
+  });
+
+/**
+ * Fetches all Rulesets for a specific Ruleset Type.
+ *
+ * @param rulesetTypeId ID of the ruleset type.
+ * @returns A list of Rulesets for that ruleset type.
+ */
+export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
+  return axios.get<Ruleset[]>(apiUrls.rulesetsByType(rulesetTypeId), {
+    transformResponse: (data) => JSON.parse(data)
   });
 };

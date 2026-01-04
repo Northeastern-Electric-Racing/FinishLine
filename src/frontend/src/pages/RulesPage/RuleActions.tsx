@@ -10,7 +10,7 @@ import EditIcon from '@mui/icons-material/Edit';
 
 interface RuleActionsProps {
   ruleId: string;
-  onAdd: (ruleId: string) => void;
+  onAdd: (ruleId: string, anchorEl: HTMLElement) => void;
   onRemove: (ruleId: string) => void;
   onEdit: (ruleId: string) => void;
   iconColor?: string;
@@ -21,27 +21,40 @@ interface RuleActionsProps {
  * Supports adding, removing, and editing a rule.
  */
 const RuleActions: React.FC<RuleActionsProps> = ({ ruleId, onAdd, onRemove, onEdit, iconColor = '#000000' }) => {
-  const actions = [
-    { icon: <AddCircleOutlineIcon fontSize="small" />, handler: onAdd },
-    { icon: <RemoveCircleOutlineIcon fontSize="small" />, handler: onRemove },
-    { icon: <EditIcon fontSize="small" />, handler: onEdit }
-  ];
-
   return (
     <Box sx={{ display: 'flex', gap: 0.25, alignItems: 'center', justifyContent: 'center' }}>
-      {actions.map((action, index) => (
-        <IconButton
-          key={index}
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation();
-            action.handler(ruleId);
-          }}
-          sx={{ padding: 0.25, color: iconColor }}
-        >
-          {action.icon}
-        </IconButton>
-      ))}
+      <IconButton
+        size="small"
+        onClick={(e) => {
+          e.stopPropagation();
+          onAdd(ruleId, e.currentTarget);
+        }}
+        sx={{ padding: 0.25, color: iconColor }}
+      >
+        <AddCircleOutlineIcon fontSize="small" />
+      </IconButton>
+
+      <IconButton
+        size="small"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove(ruleId);
+        }}
+        sx={{ padding: 0.25, color: iconColor }}
+      >
+        <RemoveCircleOutlineIcon fontSize="small" />
+      </IconButton>
+
+      <IconButton
+        size="small"
+        onClick={(e) => {
+          e.stopPropagation();
+          onEdit(ruleId);
+        }}
+        sx={{ padding: 0.25, color: iconColor }}
+      >
+        <EditIcon fontSize="small" />
+      </IconButton>
     </Box>
   );
 };

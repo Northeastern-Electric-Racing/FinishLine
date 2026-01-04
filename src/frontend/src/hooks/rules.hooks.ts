@@ -15,7 +15,11 @@ import {
   deleteProjectRule,
   editProjectRuleStatus,
   getChildRules,
-  getTopLevelRules
+  getTopLevelRules,
+  toggleRuleTeam,
+  getTeamRulesInRulesetType,
+  createRulesetType,
+  getRulesetsByRulesetType
 } from '../apis/rules.api';
 
 /**
@@ -107,6 +111,43 @@ interface CreateRulesetTypePayload {
   name: string;
 }
 
+export const useGetTopLevelRules = (rulesetId: string) => {
+  return useQuery<Rule[], Error>(['rules', 'top-level', rulesetId], async () => {
+    const { data } = await getTopLevelRules(rulesetId);
+    return data;
+  });
+};
+
+export const useGetChildRules = (ruleId: string) => {
+  return useQuery<Rule[], Error>(['rules', 'children', ruleId], async () => {
+    const { data } = await getChildRules(ruleId);
+    return data;
+  });
+};
+
+export const useToggleRuleTeam = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Rule, Error, { ruleId: string; teamId: string }>(
+    ['rules', 'toggle-team'],
+    async ({ ruleId, teamId }) => {
+      const { data } = await toggleRuleTeam(ruleId, teamId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rules']);
+      }
+    }
+  );
+};
+
+export const useGetTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => {
+  return useQuery<Rule[], Error>(['rules', 'team-rules', rulesetTypeId, teamId], async () => {
+    const { data } = await getTeamRulesInRulesetType(rulesetTypeId, teamId);
+    return data;
+  });
+};
+
 /**
  * Hook to create a new ruleset type.
  */
@@ -183,4 +224,29 @@ export const useEditProjectRuleStatus = (rulesetId: string, projectId: string) =
       }
     }
   );
+};
+
+/**
+ * React Query hook to fetch all Ruleset Types.
+ *
+ * @returns Query result containing Ruleset Types data, loading state, and error state.
+ */
+export const useAllRulesetTypes = () => {
+  return useQuery<RulesetType[], Error>(['rulesetTypes'], async () => {
+    const { data } = await getAllRulesetTypes();
+    return data;
+  });
+};
+
+/**
+ * React Query hook to fetch all Rulesets for a specific Ruleset Type.
+ *
+ * @param rulesetTypeId The ID of the ruleset type.
+ * @returns Query result containing Rulesets data, loading state, and error state.
+ */
+export const useRulesetsByType = (rulesetTypeId: string) => {
+  return useQuery<Ruleset[], Error>(['rulesets', rulesetTypeId], async () => {
+    const { data } = await getRulesetsByRulesetType(rulesetTypeId);
+    return data;
+  });
 };
