@@ -143,3 +143,24 @@ export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+/**
+ * Updates a rulesets active status
+ */
+export const updateRuleset = (rulesetId: string, name: string, isActive: boolean) => {
+  return axios.post<Ruleset>(apiUrls.rulesetUpdate(rulesetId), { name, isActive });
+};
+
+/**
+ * Deletes a ruleset given its ID
+ */
+export const deleteRuleset = (rulesetId: string) => {
+  return axios.post(apiUrls.rulesetDelete(rulesetId));
+};
+
+/**
+ * Deletes a ruleset type given its ID
+ */
+export const deleteRulesetType = (rulesetTypeId: string) => {
+  return axios.post(apiUrls.rulesetTypeDelete(rulesetTypeId));
+};

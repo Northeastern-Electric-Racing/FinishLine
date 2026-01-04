@@ -447,7 +447,6 @@ const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${ruleset
 const ruleset = () => `${rules()}/ruleset`;
 const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
 const rulesetsCreate = () => `${ruleset()}/create`;
-const rulesGetAllRulesetTypes = () => `${rules()}/rulesetTypes`;
 const rulesGetActiveRuleset = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/active`;
 const rulesGetProjectRules = (rulesetId: string, projectId: string) =>
   `${rules()}/ruleset/${rulesetId}/project/${projectId}/rules`;
@@ -456,7 +455,9 @@ const rulesGetUnassignedRulesForRuleset = (rulesetId: string, teamId: string) =>
 const rulesCreateProjectRule = () => `${rules()}/projectRule/create`;
 const rulesDeleteProjectRule = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/delete`;
 const rulesEditProjectRuleStatus = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/editStatus`;
-const rulesGetTopLevelRules = (rulesetId: string) => `${rules()}/${rulesetId}/parentRules`;
+const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
+const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
+const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -770,14 +771,15 @@ export const apiUrls = {
   rulesetsByType,
   rulesetTypeCreate,
   rulesetsCreate,
-  rulesGetAllRulesetTypes,
   rulesGetActiveRuleset,
   rulesGetProjectRules,
   rulesGetUnassignedRulesForRuleset,
   rulesCreateProjectRule,
   rulesDeleteProjectRule,
   rulesEditProjectRuleStatus,
-  rulesGetTopLevelRules,
+  rulesetUpdate,
+  rulesetDelete,
+  rulesetTypeDelete,
 
   version
 };

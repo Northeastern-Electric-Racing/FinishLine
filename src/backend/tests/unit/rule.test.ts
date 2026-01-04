@@ -377,6 +377,12 @@ describe('Create Rules Tests', () => {
     });
 
     it('Successful get rulesets by ruleset types after deleting ruleset', async () => {
+      // Deactivate the ruleset before deleting
+      await prisma.ruleset.update({
+        where: { rulesetId },
+        data: { active: false }
+      });
+
       await RulesService.deleteRuleset(rulesetId, batman.userId, orgId);
       const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(0);
@@ -395,8 +401,8 @@ describe('Create Rules Tests', () => {
       });
       const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(2);
-      expect(rulesets[0].name).toBe('2025 FSAE Rules');
-      expect(rulesets[1].name).toBe('2025 FSAE Rules2');
+      expect(rulesets[0].name).toBe('2025 FSAE Rules2');
+      expect(rulesets[1].name).toBe('2025 FSAE Rules');
     });
   });
 
@@ -524,6 +530,11 @@ describe('Create Rules Tests', () => {
       expect(ruleset2.name).toBe('name2');
     });
     it('update ruleset status on deleted ruleset fails', async () => {
+      // Deactivate the ruleset before deleting
+      await prisma.ruleset.update({
+        where: { rulesetId },
+        data: { active: false }
+      });
       await RulesService.deleteRuleset(rulesetId, batman.userId, orgId);
       await expect(async () => await RulesService.updateRuleset(batman, orgId, rulesetId, 'name', false)).rejects.toThrow(
         new NotFoundException('Ruleset', rulesetId)
@@ -973,6 +984,13 @@ describe('Rule Tests', () => {
     it('Deletes a ruleset successfully and returns the correct information', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
+
+      // deactivate before deleting
+      await prisma.ruleset.update({
+        where: { rulesetId: ruleset1.rulesetId },
+        data: { active: false }
+      });
+
       const totalRules = await prisma.rule.count({
         where: { rulesetId: ruleset1.rulesetId }
       });
@@ -989,6 +1007,20 @@ describe('Rule Tests', () => {
       expect(deleted.rulesetId).toBe(ruleset1.rulesetId);
       expect(deleted.assignedPercentage).toBeCloseTo(expectedPercentage, 2);
     });
+    it('Throws error when trying to delete an active ruleset', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      // Ensure the ruleset is active
+      await prisma.ruleset.update({
+        where: { rulesetId: ruleset1.rulesetId },
+        data: { active: true }
+      });
+
+      await expect(
+        RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId)
+      ).rejects.toThrow('Cannot delete an active ruleset. Please deactivate it first.');
+    });
     it('Delete ruleset fails if user does not have permission', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
@@ -1000,6 +1032,12 @@ describe('Rule Tests', () => {
     it('Delete ruleset fails if ruleset was already deleted', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
+
+      // Deactivate the ruleset before deleting
+      await prisma.ruleset.update({
+        where: { rulesetId: ruleset1.rulesetId },
+        data: { active: false }
+      });
 
       await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
       await expect(
@@ -1454,6 +1492,12 @@ describe('Rule Tests', () => {
     it('Fails when ruleset is deleted', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
+
+      // Deactivate the ruleset before deleting
+      await prisma.ruleset.update({
+        where: { rulesetId: ruleset1.rulesetId },
+        data: { active: false }
+      });
 
       await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
 
