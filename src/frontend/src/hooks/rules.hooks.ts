@@ -13,7 +13,10 @@ import {
   createRulesetType,
   getAllRulesetTypes,
   getRulesetsByRulesetType,
-  deleteRule
+  deleteRule,
+  updateRuleset,
+  deleteRuleset,
+  deleteRulesetType
 } from '../apis/rules.api';
 import { useToast } from './toasts.hooks';
 
@@ -122,6 +125,49 @@ export const useDeleteRule = () => {
       },
       onError: (error: Error) => {
         toast.error(error.message);
+      }
+    }
+  );
+};
+
+export const useUpdateRuleset = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Ruleset, Error, { rulesetId: string; name: string; isActive: boolean }>(
+    async ({ rulesetId, name, isActive }) => {
+      const { data } = await updateRuleset(rulesetId, name, isActive);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rulesets']);
+      }
+    }
+  );
+};
+
+export const useDeleteRuleset = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, string>(
+    async (rulesetId: string) => {
+      await deleteRuleset(rulesetId);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rulesets']);
+      }
+    }
+  );
+};
+
+export const useDeleteRulesetType = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, string>(
+    async (rulesetTypeId: string) => {
+      await deleteRulesetType(rulesetTypeId);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rulesetTypes']);
       }
     }
   );

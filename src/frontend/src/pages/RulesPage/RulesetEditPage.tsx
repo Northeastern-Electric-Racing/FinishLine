@@ -270,7 +270,7 @@ const RulesetEditPage: React.FC = () => {
           <FullPageTabs
             setTab={setTabValue}
             tabsLabels={tabs}
-            baseUrl={`${routes.RULES}/${rulesetId}/edit`}
+            baseUrl={routes.RULESET_EDIT.replace(':rulesetId', rulesetId)}
             defaultTab={defaultTab}
             id="rules-tabs"
           />
