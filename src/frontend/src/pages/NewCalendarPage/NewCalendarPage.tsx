@@ -3,7 +3,19 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Grid, Stack, Typography, useMediaQuery, useTheme, Button, Alert } from '@mui/material';
+import {
+  Box,
+  Grid,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+  Button,
+  Alert,
+  Checkbox,
+  FormControlLabel,
+  FormGroup
+} from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { Calendar, ConflictStatus, DayOfWeek, Event, EventType } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
@@ -12,7 +24,6 @@ import { useConflictingEvents, useFilterEvents, useCreateEvent, useUploadManyDoc
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import EventSummaryModal from '../CalendarPage/EventSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import FilterModal from './FilterModal';
@@ -27,6 +38,9 @@ import { filterEventTransformer } from '../../apis/transformers/calendar.transfo
 import WarningIcon from '@mui/icons-material/Warning';
 import { useHistory } from 'react-router-dom';
 import UpcomingMeetingsCard from './UpcomingMeetingsCard';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import SchedulingConflictsWarning from './SchedulingConflictsWarning';
 
 interface NewCalendarPageProps {
   allEventTypes: EventType[];
@@ -52,13 +66,16 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
-  const [selectedEvent, setSelectedEvent] = useState<Event>();
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
   const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>([]);
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const calendars = allCalendars ?? [];
+
+  const [selectedCalendarIds, setSelectedCalendarIds] = useState<string[]>(allCalendars.map((c) => c.calendarId));
 
   const { data: allTeams, isLoading: allTeamsLoading, isError: allTeamsIsError, error: allTeamsError } = useGetUsersTeams();
 
@@ -70,17 +87,21 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
     }
   }, [allTeams, teamList, additionalTeamIds.length, showTeamEvents]);
 
+  const startPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15);
+  const endPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15);
+
   const {
     isLoading,
     isError,
     error,
     data: allEvents
   } = useFilterEvents({
-    startPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15),
-    endPeriod: new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15),
-    memberIds: memberIds.concat(additionalMemberIds),
-    teamIds: teamIds.concat(additionalTeamIds),
-    statuses: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT]
+    startPeriod,
+    endPeriod,
+    memberIds: [...new Set(memberIds.concat(additionalMemberIds))],
+    teamIds: [...new Set(teamIds.concat(additionalTeamIds))],
+    statuses: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT],
+    calendarIds: selectedCalendarIds
   });
 
   const history = useHistory();
@@ -132,9 +153,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   const { mutateAsync: createEvent } = useCreateEvent();
   const { isLoading: documentsIsLoading, mutateAsync: uploadDocuments } = useUploadManyDocuments();
 
-  const [startPeriod] = useState(() => new Date());
+  const [upcomingStartPeriod] = useState(() => new Date());
 
-  const [endPeriod] = useState(() => {
+  const [upcomingEndPeriod] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() + 7);
     d.setHours(23, 59, 59, 999);
@@ -142,13 +163,21 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   });
 
   const { data: upcomingEvents } = useFilterEvents({
-    startPeriod,
-    endPeriod,
-    memberIds: memberIds.concat(additionalMemberIds),
-    teamIds: teamIds.concat(additionalTeamIds)
+    startPeriod: upcomingStartPeriod,
+    endPeriod: upcomingEndPeriod,
+    memberIds: [...new Set(memberIds.concat(additionalMemberIds))],
+    teamIds: [...new Set(teamIds.concat(additionalTeamIds))]
   });
 
-  const upcomingOccurences = upcomingEvents ? getEventsFlattened(upcomingEvents, startPeriod, endPeriod) : [];
+  const upcomingOccurences = upcomingEvents
+    ? getEventsFlattened(upcomingEvents, upcomingStartPeriod, upcomingEndPeriod)
+    : [];
+
+  const toggleCalendar = (calendarId: string) => {
+    setSelectedCalendarIds((prev) =>
+      prev.includes(calendarId) ? prev.filter((id) => id !== calendarId) : [...prev, calendarId]
+    );
+  };
 
   const updateAdditionalTeamIds = (changed: boolean) => {
     setShowTeamEvents(changed);
@@ -299,16 +328,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
 
   return (
     <>
-      {selectedEvent && (
-        <EventSummaryModal
-          open={!!selectedEvent}
-          onHide={() => {
-            setSelectedEvent(undefined);
-          }}
-          event={selectedEvent as Event}
-          teamTypes={allTeamTypes}
-        />
-      )}
       {isCreateModalOpen && (
         <CreateEventModal
           open={isCreateModalOpen}
@@ -321,7 +340,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
       <Stack
         spacing={1}
         sx={{
-          position: 'fixed',
+          position: 'absolute',
           top: 24,
           left: '50%',
           transform: 'translateX(-50%)',
@@ -334,7 +353,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
             variant="filled"
             severity="error"
+            onClick={() => setDeniedEvent(false)}
             onClose={() => setDeniedEvent(false)}
+            sx={{
+              cursor: 'pointer'
+            }}
           >
             <Stack direction="row" alignItems="center" spacing={2}>
               <Typography fontSize={14}>
@@ -372,7 +395,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             icon={<WarningIcon fontSize="inherit" />}
             variant="filled"
             severity="error"
+            onClick={() => setPendingEvent(false)}
             onClose={() => setPendingEvent(false)}
+            sx={{
+              cursor: 'pointer'
+            }}
           >
             You have scheduled an event at the same time and location as <i>{yourConflicts[0].title}</i>.{' '}
             <i>
@@ -386,7 +413,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
             icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
             variant="filled"
             severity="error"
+            onClick={() => setReviewEvent(false)}
             onClose={() => setReviewEvent(false)}
+            sx={{
+              cursor: 'pointer'
+            }}
           >
             <Stack direction="row" alignItems="center" spacing={2}>
               <Typography fontSize={14}>
@@ -519,7 +550,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
               width: 320,
               display: 'flex',
               flexDirection: 'column',
-              minHeight: 0
+              gap: 2
             }}
           >
             <DateCalendar
@@ -544,49 +575,123 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
                 }
               }}
             />
-            <Button
-              variant="outlined"
-              id="filter-events-button"
-              onClick={() => setOpenFilterModal(true)}
-              sx={{
-                color: 'white',
-                borderColor: 'white',
-                backgroundColor: 'transparent',
-                '&:hover': {
-                  borderColor: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                }
-              }}
-            >
-              More Filters
-            </Button>
+            <SchedulingConflictsWarning
+              memberIds={memberIds.concat(additionalMemberIds)}
+              teamIds={teamIds.concat(additionalTeamIds)}
+              startPeriod={startPeriod}
+              endPeriod={endPeriod}
+            />
+            <Box sx={{ width: 320, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 0.5 }}>
+                My Upcoming Meetings:
+              </Typography>
 
-            <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 0.5 }}>
-              My Upcoming Meetings:
-            </Typography>
+              {upcomingOccurences && (
+                <Box
+                  sx={{
+                    mt: 2,
+                    flex: 1,
+                    flexDirection: 'column',
+                    overflowX: 'hidden',
+                    overflowY: 'auto',
+                    scrollbarColor: `${theme.palette.primary.main} transparent`,
+                    maxHeight: 'calc(50%)'
+                  }}
+                >
+                  {upcomingOccurences?.map((event) => (
+                    <UpcomingMeetingsCard
+                      key={event.eventId}
+                      event={event}
+                      calendars={allCalendars ?? []}
+                      eventTypes={allEventTypes ?? []}
+                    />
+                  ))}
+                </Box>
+              )}
+              {/* Calendar Selector */}
+              <Box sx={{ p: 2, borderRadius: 2 }}>
+                <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontFamily: (t) => t.typography.h4.fontFamily,
+                      fontWeight: 400,
+                      fontSize: 22
+                    }}
+                  >
+                    Calendars:
+                  </Typography>
 
-            {upcomingOccurences && (
-              <Box
-                sx={{
-                  mt: 2,
-                  flex: 1,
-                  flexDirection: 'column',
-                  overflowX: 'hidden',
-                  overflowY: 'auto',
-                  scrollbarColor: `${theme.palette.primary.main} transparent`,
-                  maxHeight: 'calc(50%)'
-                }}
-              >
-                {upcomingOccurences?.map((event) => (
-                  <UpcomingMeetingsCard
-                    key={event.eventId}
-                    event={event}
-                    calendars={allCalendars ?? []}
-                    eventTypes={allEventTypes ?? []}
-                  />
-                ))}
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    id="filter-events-button"
+                    onClick={() => setOpenFilterModal(true)}
+                    sx={{
+                      px: 1,
+                      py: 0,
+                      color: 'white',
+                      borderColor: 'white',
+                      backgroundColor: 'transparent',
+                      textTransform: 'none',
+                      fontSize: 14,
+                      fontFamily: (t) => t.typography.h4.fontFamily,
+                      '&:hover': {
+                        borderColor: 'white',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                      },
+                      mb: 2
+                    }}
+                  >
+                    More Filters
+                  </Button>
+                </Stack>
+
+                {calendars.length > 0 && (
+                  <FormGroup>
+                    {calendars.map((cal) => {
+                      const { calendarId, color } = cal;
+                      const checked = selectedCalendarIds.includes(calendarId);
+                      return (
+                        <FormControlLabel
+                          key={calendarId}
+                          sx={{
+                            ml: -1,
+                            mb: 1.5
+                          }}
+                          control={
+                            <Checkbox
+                              checked={checked}
+                              onChange={() => toggleCalendar(calendarId)}
+                              icon={<RadioButtonUncheckedIcon />}
+                              checkedIcon={<CheckCircleOutlineIcon />}
+                              sx={{
+                                p: 0.5,
+                                color,
+                                '&.Mui-checked': { color }
+                              }}
+                            />
+                          }
+                          label={
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontFamily: (t) => t.typography.h6.fontFamily,
+                                fontSize: 16,
+                                color,
+                                fontWeight: 500
+                              }}
+                            >
+                              {cal.name}
+                            </Typography>
+                          }
+                        />
+                      );
+                    })}
+                  </FormGroup>
+                )}
               </Box>
-            )}
+            </Box>
           </Box>
         </Box>
 

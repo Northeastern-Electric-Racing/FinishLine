@@ -2,15 +2,34 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { Box, Link, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  Link,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import TableCellHuge from './YourEventsComponents/TableCellHuge';
 import React, { useEffect, useState } from 'react';
 import { Calendar, ConflictStatus, EventType } from 'shared';
 import { Event } from 'shared';
 import WarningTooltip from './YourEventsComponents/WarningTooltip';
-import { getMeetingDates } from '../../utils/calendar.utils';
+import { convertEventToFormValues, getMeetingDates } from '../../utils/calendar.utils';
 import { EventClickPopup } from './EventClickPopup';
+import { EditEventArgs, useDeleteEvent, useEditEvent } from '../../hooks/calendar.hooks';
+import EditEventModal from './Components/EditEventModal';
+import { EventRoutePayload } from './Components/EventModal';
+import { useToast } from '../../hooks/toasts.hooks';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import NERDeleteModal from '../../components/NERDeleteModal';
 
 interface YourEventsHeadCells {
   id: string;
@@ -39,6 +58,12 @@ export interface EventTableArgs {
   allEventTypes: EventType[];
   allCalendars: Calendar[];
   tab: number;
+  handleEditSubmit: (
+    data: EventRoutePayload,
+    event: Event,
+    editEvent: (editArgs: EditEventArgs) => Promise<Event>,
+    onClose: () => void
+  ) => Promise<void>;
 }
 
 // trigger re-renders specifically for the timer
@@ -78,13 +103,29 @@ const CountdownElement = ({ targetDate }: { targetDate: Date }) => {
   );
 };
 
-const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, allEventTypes, allCalendars }) => {
+const EventsTable: React.FC<EventTableArgs> = ({
+  tab,
+  yourEvents,
+  reviewEvents,
+  allEventTypes,
+  allCalendars,
+  handleEditSubmit
+}) => {
   // Convert to include proper dates
   // Done this way to allow the old events transformer to function properly
   // but provide better utility to this file (without breaking other files that may rely on eventTransformer)
 
+  const toast = useToast();
+
   const [clickedEvent, setClickedEvent] = useState<Event>();
   const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number }>();
+
+  const [clickedEditEvent, setClickedEditEvent] = useState<Event | undefined>();
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const [eventToDelete, setEventToDelete] = useState<Event | undefined>(undefined);
+
+  const { mutateAsync: editEvent } = useEditEvent(clickedEditEvent?.eventId ?? '');
 
   const handleOpenClickPopup = (event: Event) => {
     setClickedEvent(event);
@@ -103,10 +144,37 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
     setAnchorPosition(undefined);
   };
 
+  const handleEdit = (event: Event) => {
+    setClickedEditEvent(event);
+    setShowEditModal(true);
+  };
+
+  const handleCloseEdit = () => {
+    setClickedEditEvent(undefined);
+    setShowEditModal(false);
+  };
+
+  const { mutateAsync: deleteEvent } = useDeleteEvent(eventToDelete?.eventId ?? '');
+
+  const handleEventDelete = async () => {
+    if (!eventToDelete) return;
+    setEventToDelete(undefined);
+    try {
+      await deleteEvent();
+      toast.success('Event deleted successfully');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      } else {
+        toast.error('Failed to delete event', 3000);
+      }
+    }
+  };
+
   const headCells: readonly YourEventsHeadCells[] = [
     {
-      id: 'eventsName',
-      label: 'Events Name'
+      id: 'eventName',
+      label: 'Event Name'
     },
     {
       id: 'date',
@@ -164,18 +232,9 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
 
   const events = tab === 1 ? yourEvents : reviewEvents;
 
-  const [, setUpdate] = useState(true); // Linting...
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setUpdate((prev) => !prev);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <PageTitle title="Your Events" />
+      <PageTitle title={tab === 1 ? 'Your Events' : 'Review Bookings'} />
       <TableContainer
         sx={{
           maxHeight: 'calc(100vh - 200px)',
@@ -193,6 +252,7 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
               {headCells.map((headCell) => (
                 <TableCellHuge title={headCell.label} />
               ))}
+              {tab === 1 && <TableCellHuge title={''} />}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -253,9 +313,9 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
                         {event.approved === ConflictStatus.DENIED && (
                           <Box sx={{ position: 'absolute', left: '50%', mt: 0.5, ml: 5 }}>
                             <WarningTooltip
-                              warning="Your meeting approval has been denied..."
+                              warning="Your meeting approval has been denied, please reschedule or change your meeting location."
                               buttonText="Click Here to Edit Meeting"
-                              onClick={() => {}}
+                              onClick={() => handleEdit(event)}
                             />
                           </Box>
                         )}
@@ -281,6 +341,37 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
                             />
                           </Box>
                         )}
+                      </Box>
+                    </TableCell>
+                  )}
+                  {tab === 1 && (
+                    <TableCell align="center">
+                      <Box display="flex" gap={1} justifyContent="center">
+                        <Tooltip title="Edit" arrow>
+                          <span>
+                            <IconButton
+                              size="small"
+                              aria-label="edit shop"
+                              onClick={() => {
+                                handleEdit(event);
+                              }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        <Tooltip title="Delete" arrow>
+                          <span>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              aria-label="delete event"
+                              onClick={() => setEventToDelete(event)}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
                       </Box>
                     </TableCell>
                   )}
@@ -311,6 +402,28 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
         calendars={allCalendars}
         disable={true}
         addApprovalButtons={true}
+      />
+      {clickedEditEvent && showEditModal && (
+        <EditEventModal
+          open={showEditModal}
+          onClose={handleCloseEdit}
+          onSubmit={(data) => {
+            handleEditSubmit(data, clickedEditEvent, editEvent, () => {
+              setShowEditModal(false);
+              handleCloseEdit();
+            });
+          }}
+          initialValues={convertEventToFormValues(clickedEditEvent)}
+          eventTypes={allEventTypes}
+          defaultDate={new Date()}
+        />
+      )}
+      <NERDeleteModal
+        open={!!eventToDelete}
+        onHide={() => setEventToDelete(undefined)}
+        formId="delete-event-form"
+        dataType={eventToDelete?.title || ''}
+        onFormSubmit={handleEventDelete}
       />
     </Box>
   );

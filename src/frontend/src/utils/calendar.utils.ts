@@ -1,5 +1,6 @@
 import { DayOfWeek, Event } from 'shared';
 import { filterEventTransformer } from '../apis/transformers/calendar.transformer';
+import { EventFormValues } from '../pages/NewCalendarPage/Components/EventModal';
 
 export const convertDayToInt = (day: DayOfWeek) => {
   switch (day) {
@@ -156,4 +157,35 @@ export const getEventsFlattened = (events: Event[], startPeriod: Date, endPeriod
 
   // Return only the events, possibly repeated for multiple occurrences
   return occurrences.map(({ event }) => event);
+};
+
+// converts an Event into Event Form Values
+export const convertEventToFormValues = (event: Event): Partial<EventFormValues> => {
+  return {
+    title: event.title,
+    eventTypeId: event.eventTypeId,
+    requiredMemberIds: event.requiredMembers.map((m) => m.userId),
+    optionalMemberIds: event.optionalMembers.map((m) => m.userId),
+    teamIds: event.teams.map((t) => t.teamId),
+    teamTypeId: event.teamType?.teamTypeId,
+    location: event.location,
+    zoomLink: event.zoomLink,
+    shopIds: event.shops.map((s) => s.shopId),
+    machineryIds: event.machinery.map((m) => m.machineryId),
+    workPackageIds: event.workPackages.map((wp) => wp.workPackageId),
+    documentFiles: event.documents.map((doc) => ({
+      name: doc.name,
+      googleFileId: doc.googleFileId
+    })),
+    questionDocumentLink: event.questionDocumentLink,
+    description: event.description,
+    scheduleDate: event.scheduledTimes[0]?.initialDateScheduled
+      ? new Date(event.scheduledTimes[0].initialDateScheduled)
+      : new Date(),
+    startTime: event.scheduledTimes[0]?.startTime ? new Date(event.scheduledTimes[0].startTime) : undefined,
+    endTime: event.scheduledTimes[0]?.endTime ? new Date(event.scheduledTimes[0].endTime) : undefined,
+    allDay: event.scheduledTimes[0]?.allDay ?? false,
+    recurrenceNumber: event.scheduledTimes[0]?.recurrenceNumber ?? 0,
+    days: event.scheduledTimes[0]?.days ?? []
+  };
 };
