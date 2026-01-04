@@ -448,6 +448,8 @@ const ruleset = () => `${rules()}/ruleset`;
 const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
 const rulesetsCreate = () => `${ruleset()}/create`;
 const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
+const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
+const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -762,6 +764,8 @@ export const apiUrls = {
   rulesetTypeCreate,
   rulesetsCreate,
   rulesetUpdate,
+  rulesetDelete,
+  rulesetTypeDelete,
 
   version
 };

@@ -13,7 +13,9 @@ import {
   createRulesetType,
   getAllRulesetTypes,
   getRulesetsByRulesetType,
-  updateRuleset
+  updateRuleset,
+  deleteRuleset,
+  deleteRulesetType
 } from '../apis/rules.api';
 
 interface CreateRulesetTypePayload {
@@ -111,6 +113,34 @@ export const useUpdateRuleset = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['rulesets']);
+      }
+    }
+  );
+};
+
+export const useDeleteRuleset = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, string>(
+    async (rulesetId: string) => {
+      await deleteRuleset(rulesetId);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rulesets']);
+      }
+    }
+  );
+};
+
+export const useDeleteRulesetType = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, string>(
+    async (rulesetTypeId: string) => {
+      await deleteRulesetType(rulesetTypeId);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rulesetTypes']);
       }
     }
   );

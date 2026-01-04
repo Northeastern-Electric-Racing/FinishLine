@@ -35,6 +35,8 @@ export const rulesetTypeTransformer = (rulesetType: any): RulesetType => {
     name: rulesetType.name,
     lastUpdated: rulesetType.lastUpdated,
     revisionFiles: rulesetType.revisionFiles
+      ? rulesetType.revisionFiles.filter((ruleset: any) => ruleset.deletedByUserId === null)
+      : []
   };
 };
 

@@ -34,8 +34,6 @@ rulesRouter.post('/rule/:ruleId/delete', RulesController.deleteRule);
 
 rulesRouter.post('/rulesetType/create', nonEmptyString(body('name')), validateInputs, RulesController.createRulesetType);
 
-rulesRouter.post('/rule/:ruleId/delete', RulesController.deleteRule);
-
 rulesRouter.post(
   '/projectRule/create',
   nonEmptyString(body('ruleId')),

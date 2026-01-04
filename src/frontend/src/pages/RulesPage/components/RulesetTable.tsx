@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Paper,
@@ -14,20 +14,29 @@ import {
   CardContent,
   Typography,
   Stack,
-  Checkbox
+  Checkbox,
+  IconButton
 } from '@mui/material';
 import { datePipe } from '../../../utils/pipes';
 import { NERButton } from '../../../components/NERButton';
 import { useHistory, useParams } from 'react-router-dom';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { useRulesetsByType, useUpdateRuleset } from '../../../hooks/rules.hooks';
+import { useDeleteRuleset, useRulesetsByType, useUpdateRuleset } from '../../../hooks/rules.hooks';
 import { Ruleset } from 'shared';
 import { routes } from '../../../utils/routes';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { Delete } from '@mui/icons-material';
+import RulesetDeleteModal from './RulesetDeleteModal';
 
 interface RulesetParams {
   rulesetTypeId: string;
+}
+
+interface RulesetDeleteButtonProps {
+  rulesetId: string;
+  name: string;
+  onDelete: (rulesetId: string, name: string) => void;
 }
 
 const RulesetTable: React.FC = () => {
@@ -42,6 +51,7 @@ const RulesetTable: React.FC = () => {
 
   const { data: rulesets = [], isLoading, error } = useRulesetsByType(rulesetTypeId);
   const updateRuleset = useUpdateRuleset();
+  const { mutateAsync: deleteRuleset } = useDeleteRuleset();
 
   // Table header configuration
   const headCells = [
@@ -50,7 +60,8 @@ const RulesetTable: React.FC = () => {
     { id: 'percentRulesAssigned', label: '% of Rules Assigned' },
     { id: 'car', label: 'Car' },
     { id: 'isActive', label: 'Active?' },
-    { id: 'actions', label: 'Actions' }
+    { id: 'actions', label: 'Actions' },
+    { id: 'delete', label: '' }
   ];
 
   const handleToggleActive = (ruleset: Ruleset) => {
@@ -78,6 +89,36 @@ const RulesetTable: React.FC = () => {
 
   const handleViewRuleset = (rulesetId: string) => {
     history.push(routes.RULESET_VIEW.replace(':rulesetId', rulesetId));
+  };
+
+  const handleDeleteRuleset = async (rulesetId: string, name: string) => {
+    try {
+      await deleteRuleset(rulesetId);
+      toast.success(`Ruleset: ${name} deleted successfully!`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
+  };
+
+  const RulesetDeleteButton: React.FC<RulesetDeleteButtonProps> = ({ rulesetId, name, onDelete }) => {
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    const handleDeleteSubmit = () => {
+      onDelete(rulesetId, name);
+      setShowDeleteModal(false);
+    };
+    return (
+      <>
+        <IconButton type="button" sx={{ mx: 1 }} onClick={() => setShowDeleteModal(true)}>
+          <Delete />
+        </IconButton>
+        {showDeleteModal && (
+          <RulesetDeleteModal rulesetName={name} onDelete={handleDeleteSubmit} onHide={() => setShowDeleteModal(false)} />
+        )}
+      </>
+    );
   };
 
   if (isLoading) return <LoadingIndicator />;
@@ -174,6 +215,7 @@ const RulesetTable: React.FC = () => {
                     >
                       View Rules
                     </NERButton>
+                    <RulesetDeleteButton rulesetId={ruleset.rulesetId} name={ruleset.name} onDelete={handleDeleteRuleset} />
                   </Box>
                 </Box>
               </CardContent>
@@ -262,6 +304,13 @@ const RulesetTable: React.FC = () => {
                       >
                         View Rules
                       </NERButton>
+                    </TableCell>
+                    <TableCell align="center" sx={{ width: '60px', paddingLeft: '0px' }}>
+                      <RulesetDeleteButton
+                        rulesetId={ruleset.rulesetId}
+                        name={ruleset.name}
+                        onDelete={handleDeleteRuleset}
+                      />
                     </TableCell>
                   </TableRow>
                 ))
