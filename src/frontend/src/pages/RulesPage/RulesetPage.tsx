@@ -28,7 +28,7 @@ const RulesetPage: React.FC = () => {
 
   const handleFileConfirm = async (data: { fileId: string; name: string; carNumber: number; parserType: string }) => {
     setAddFileModalShow(false);
-    const loadingToast = toast.info('Creating ruleset and parsing rules...');
+    toast.info('Creating ruleset and parsing rules...');
 
     let createdRulesetId: string | null = null;
 

@@ -161,7 +161,9 @@ const parseFSAERules = (text: string): ParsedRule[] => {
     }
   }
   saveCurrentRule();
-  return handleDuplicateCodes(rules);
+
+  const fixedRules = fixOrphanedRulesFSAE(rules);
+  return handleDuplicateCodes(fixedRules);
 };
 
 /**
@@ -173,12 +175,12 @@ const parseFSAERules = (text: string): ParsedRule[] => {
 const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
   // Match rule patterns like "GR.1.1" followed by text
   const rulePattern = /^([A-Z]{1,4}(?:\.[\d]+)+)\s+(.+)$/;
-  // Match section patterns like "GR - GENERAL REGULATIONS"
-  const sectionPattern = /^([A-Z]{1,4})\s*-\s*([A-Z][A-Z\s]+)$/;
+  // Match section patterns like "GR - GENERAL REGULATIONS or PS - PRE-COMPETITION SUBMISSIONS"
+  const sectionPattern = /^([A-Z]{1,4})\s*-\s*(.+)$/;
 
   const match = line.match(rulePattern) || line.match(sectionPattern);
   if (match) {
-    const cleanContent = match[2].replace(/\.{3,}/g, '...');
+    const cleanContent = match[2].replace(/\.{5,}/g, '.....');
     return {
       ruleCode: match[1],
       ruleContent: cleanContent
@@ -209,6 +211,35 @@ const isHeaderFooterFSAE = (line: string): boolean => {
   }
 
   return false;
+};
+
+/**
+ * Updates rules to point to nearest existing parent if their assigned parent doesn't exist.
+ * D.8.1.2 -> checks for D.8.1, if missing goes to D.8, then D
+ * @param rules array of parsed rules
+ * @returns rules with corrected parent references
+ */
+const fixOrphanedRulesFSAE = (rules: ParsedRule[]): ParsedRule[] => {
+  const existingCodes = new Set(rules.map((r) => r.ruleCode));
+
+  return rules.map((rule) => {
+    // skip if no parent or parent exists
+    if (!rule.parentRuleCode || existingCodes.has(rule.parentRuleCode)) {
+      return rule; // Top-level rule
+    }
+
+    // Set parent doesn't exist, walk up the hierarchy
+    const parts = rule.ruleCode.split('.');
+    for (let i = parts.length - 2; i > 0; i--) {
+      const ancestorCode = parts.slice(0, i).join('.');
+      if (existingCodes.has(ancestorCode)) {
+        return { ...rule, parentRuleCode: ancestorCode };
+      }
+    }
+
+    // No ancestor exists, becomes top-level
+    return { ...rule, parentRuleCode: undefined };
+  });
 };
 
 /**************** FHE *****************/
@@ -254,7 +285,9 @@ const parseFHERules = (text: string): ParsedRule[] => {
     }
   }
   saveCurrentRule();
-  return handleDuplicateCodes(rules);
+
+  const fixedRules = fixOrphanedRulesFHE(rules);
+  return handleDuplicateCodes(fixedRules);
 };
 
 /**
@@ -267,13 +300,26 @@ const parseRuleNumberFHE = (line: string): ParsedRule | null => {
   // Match FHE rule patterns like "1T3.17.1" followed by text
   const rulePattern = /^(\d+[A-Z]+\d+(?:\.\d+)*)\s+(.+)$/;
 
-  // "PART A1 - ADMINISTRATIVE REGULATIONS"
-  const partPattern = /^(PART\s+[A-Z0-9]+)\s+-\s+(.+)$/;
+  // "PART A1 - ADMINISTRATIVE REGULATIONS" removes "PART" and captures "A1" as rule code, rest as content
+  const partMatch = line.match(/^PART\s+([A-Z0-9]+)\s+-\s+(.+)$/);
+  if (partMatch) {
+    return {
+      ruleCode: partMatch[1], // "A1", not "PART A1"
+      ruleContent: partMatch[2]
+    };
+  }
 
   // "ARTICLE A1 FORMULA HYBRID + ELECTRIC OVERVIEW"
-  const articlePattern = /^(ARTICLE\s+[A-Z]+\d+)\s+(.+)$/;
+  // Caputres "A1" as rule code, removes "ARTICLE" and adds rest as content
+  const articleMatch = line.match(/^ARTICLE\s+([A-Z]+\d+)\s+(.+)$/);
+  if (articleMatch) {
+    return {
+      ruleCode: articleMatch[1], // "A11", not "ARTICLE A11"
+      ruleContent: articleMatch[2]
+    };
+  }
 
-  const match = line.match(rulePattern) || line.match(partPattern) || line.match(articlePattern);
+  const match = line.match(rulePattern);
   if (match) {
     return {
       ruleCode: match[1],
@@ -282,4 +328,51 @@ const parseRuleNumberFHE = (line: string): ParsedRule | null => {
   }
 
   return null;
+};
+
+/**
+ * Updates rules to point to nearest existing parent if their assigned parent doesn't exist.
+ * D.8.1.2 -> checks for D.8.1, if missing goes to D.8, then D
+ * Also for FHE formatting 1A11.1 -> checks for 1A11, if missing tries A11 (article format)
+ * @param rules array of parsed rules
+ * @returns rules with corrected parent references
+ */
+const fixOrphanedRulesFHE = (rules: ParsedRule[]): ParsedRule[] => {
+  const existingCodes = new Set(rules.map((r) => r.ruleCode));
+
+  return rules.map((rule) => {
+    // skip if no parent or parent exists
+    if (!rule.parentRuleCode || existingCodes.has(rule.parentRuleCode)) {
+      return rule;
+    }
+
+    // Set parent doesn't exist, walk up the hierarchy
+    const parts = rule.ruleCode.split('.');
+    for (let i = parts.length - 2; i > 0; i--) {
+      const ancestorCode = parts.slice(0, i).join('.');
+
+      if (existingCodes.has(ancestorCode)) {
+        return { ...rule, parentRuleCode: ancestorCode };
+      }
+
+      // Also check stripped version (1A5 -> A5)
+      if (/^\d+[A-Z]+/.test(ancestorCode)) {
+        const strippedAncestor = ancestorCode.replace(/^\d+/, '');
+        if (existingCodes.has(strippedAncestor)) {
+          return { ...rule, parentRuleCode: strippedAncestor };
+        }
+      }
+    }
+
+    // Special case: if parent is like "1A11" and doesn't exist, try "A11" (article format)
+    // This handles rules like "1A11.1" whose parent "1A11" doesn't exist but should be "A11"
+    if (rule.parentRuleCode && /^\d+[A-Z]+\d+$/.test(rule.parentRuleCode)) {
+      const withoutLeadingDigit = rule.parentRuleCode.substring(1); // "1A11" -> "A11"
+      if (existingCodes.has(withoutLeadingDigit)) {
+        return { ...rule, parentRuleCode: withoutLeadingDigit };
+      }
+    }
+
+    return { ...rule, parentRuleCode: undefined };
+  });
 };
