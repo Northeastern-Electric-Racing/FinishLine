@@ -34,8 +34,6 @@ import {
 } from '../../../../hooks/rules.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { InfoOutlined } from '@mui/icons-material';
-import NERModal from '../../../../components/NERModal';
-import NERFailButton from '../../../../components/NERFailButton';
 import { RuleHistoryModal } from './RuleHistoryModal';
 
 interface ProjectRulesTabProps {
