@@ -4,12 +4,192 @@ import PageLayout from '../../components/PageLayout';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import { useParams } from 'react-router-dom';
-import { useSingleRuleset } from './RulesetEditPage';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import RulesetGeneralView from './components/RulesetGeneralView';
 import { Rule } from 'shared';
 import RulesetTeamView, { TeamRules } from './components/RulesetTeamView';
+
+/**
+ * Placeholder hook to fetch a single ruleset.
+ * @param rulesetId - The ID of the ruleset to fetch.
+ * @returns The ruleset data.
+ */
+export const useSingleRuleset = (rulesetId: string) => {
+  const placeholderRules: Rule[] = [
+    {
+      ruleId: '1',
+      ruleCode: 'GR - General Regulations',
+      ruleContent: '',
+      imageFileIds: [],
+      parentRule: undefined,
+      subRuleIds: ['1.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '1.1',
+      ruleCode: 'G.1',
+      ruleContent: 'Content for G.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '1', ruleCode: 'GR - General Regulations' },
+      subRuleIds: ['1.1.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '1.1.1',
+      ruleCode: 'G.1.1',
+      ruleContent: 'Content for G.1.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '1.1', ruleCode: 'G.1' },
+      subRuleIds: [],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '2',
+      ruleCode: 'AD - Administrative Regulations',
+      ruleContent: '',
+      imageFileIds: [],
+      parentRule: undefined,
+      subRuleIds: ['2.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '2.1',
+      ruleCode: 'AD.1',
+      ruleContent: 'Content for AD.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '2', ruleCode: 'AD - Administrative Regulations' },
+      subRuleIds: [],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '3',
+      ruleCode: 'DR - Document Requirements',
+      ruleContent: '',
+      imageFileIds: [],
+      parentRule: undefined,
+      subRuleIds: ['3.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '3.1',
+      ruleCode: 'DR.1',
+      ruleContent: 'Content for DR.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '3', ruleCode: 'DR - Document Requirements' },
+      subRuleIds: [],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '4',
+      ruleCode: 'V - Vehicle Requirements',
+      ruleContent: '',
+      imageFileIds: [],
+      parentRule: undefined,
+      subRuleIds: ['5', '6', '7'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '5',
+      ruleCode: 'V.1 - Configuration',
+      ruleContent: '',
+      imageFileIds: [],
+      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
+      subRuleIds: [],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '6',
+      ruleCode: 'V.2 - Driver',
+      ruleContent: '',
+      imageFileIds: [],
+      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
+      subRuleIds: [],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '7',
+      ruleCode: 'V.3 - Suspension and Steering',
+      ruleContent: '',
+      imageFileIds: [],
+      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
+      subRuleIds: ['8', '9'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '8',
+      ruleCode: 'V.3.1 - Suspension',
+      ruleContent: '',
+      imageFileIds: [],
+      parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
+      subRuleIds: [],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '9',
+      ruleCode: 'V.3.2 - Steering',
+      ruleContent: '',
+      imageFileIds: [],
+      parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
+      subRuleIds: ['10', '11', '12'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '10',
+      ruleCode: 'V.3.2.1',
+      ruleContent:
+        'Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line',
+      imageFileIds: [],
+      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
+      subRuleIds: [],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '11',
+      ruleCode: 'V.3.2.2',
+      ruleContent: 'Electrically actuated steering of the front wheels is prohibited',
+      imageFileIds: [],
+      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
+      subRuleIds: [],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '12',
+      ruleCode: 'V.3.2.3',
+      ruleContent:
+        'Steering systems must use a rigid mechanical linkage capable of tension and compression loads for operation',
+      imageFileIds: [],
+      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
+      subRuleIds: [],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '13',
+      ruleCode: 'F - Chassis and Structural',
+      ruleContent: '',
+      imageFileIds: [],
+      parentRule: undefined,
+      subRuleIds: ['13.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '13.1',
+      ruleCode: 'F.1',
+      ruleContent: 'Content for F.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '13', ruleCode: 'F - Chassis and Structural' },
+      subRuleIds: [],
+      referencedRuleIds: []
+    }
+  ];
+
+  return {
+    data: { name: 'FSAE Original Version', rulesetId, rules: placeholderRules },
+    isLoading: false,
+    isError: false,
+    error: undefined
+  };
+};
 
 /**
  * Mock function to organize rules by team and project

@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { Rule, Ruleset, RulesetType } from 'shared';
+import { Rule as SharedRule, Ruleset, RulesetType } from 'shared';
 import {
   getTopLevelRules,
   getChildRules,
@@ -15,30 +15,54 @@ import {
   getRulesetsByRulesetType,
   updateRuleset,
   deleteRuleset,
-  deleteRulesetType
+  deleteRulesetType,
+  getRulesetById,
+  createRule
 } from '../apis/rules.api';
 
 interface CreateRulesetTypePayload {
   name: string;
 }
 
+export interface CreateRulePayload {
+  ruleCode: string;
+  ruleContent: string;
+  rulesetId: string;
+  parentRuleId?: string;
+  referencedRules?: string[];
+  imageFileIds?: string[];
+}
+
 export const useGetTopLevelRules = (rulesetId: string) => {
-  return useQuery<Rule[], Error>(['rules', 'top-level', rulesetId], async () => {
+  return useQuery<SharedRule[], Error>(['rules', 'top-level', rulesetId], async () => {
     const { data } = await getTopLevelRules(rulesetId);
     return data;
   });
 };
 
-export const useGetChildRules = (ruleId: string) => {
-  return useQuery<Rule[], Error>(['rules', 'children', ruleId], async () => {
-    const { data } = await getChildRules(ruleId);
+export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
+  return useQuery<SharedRule[], Error>(
+    ['rules', 'children', ruleId],
+    async () => {
+      const { data } = await getChildRules(ruleId);
+      return data;
+    },
+    {
+      enabled // only fetch when true
+    }
+  );
+};
+
+export const useGetRuleset = (rulesetId: string) => {
+  return useQuery<Ruleset, Error>(['ruleset', rulesetId], async () => {
+    const { data } = await getRulesetById(rulesetId);
     return data;
   });
 };
 
 export const useToggleRuleTeam = () => {
   const queryClient = useQueryClient();
-  return useMutation<Rule, Error, { ruleId: string; teamId: string }>(
+  return useMutation<SharedRule, Error, { ruleId: string; teamId: string }>(
     ['rules', 'toggle-team'],
     async ({ ruleId, teamId }) => {
       const { data } = await toggleRuleTeam(ruleId, teamId);
@@ -53,7 +77,7 @@ export const useToggleRuleTeam = () => {
 };
 
 export const useGetTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => {
-  return useQuery<Rule[], Error>(['rules', 'team-rules', rulesetTypeId, teamId], async () => {
+  return useQuery<SharedRule[], Error>(['rules', 'team-rules', rulesetTypeId, teamId], async () => {
     const { data } = await getTeamRulesInRulesetType(rulesetTypeId, teamId);
     return data;
   });
@@ -73,6 +97,26 @@ export const useCreateRulesetType = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['rulesetTypes']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to create a new rule
+ */
+export const useCreateRule = () => {
+  const queryClient = useQueryClient();
+  return useMutation<SharedRule, Error, CreateRulePayload>(
+    ['rules', 'create'],
+    async (payload: CreateRulePayload) => {
+      const { data } = await createRule(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rules']);
+        queryClient.invalidateQueries(['ruleset']);
       }
     }
   );
