@@ -69,6 +69,14 @@ export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
 };
 
 /**
+ * Deletes a rule by its ID
+ * @param ruleId - The ID of the rule to delete
+ */
+export const deleteRule = (ruleId: string) => {
+  return axios.post(`/rules/rule/${ruleId}/delete`);
+};
+
+/**
  * Updates a rulesets active status
  */
 export const updateRuleset = (rulesetId: string, name: string, isActive: boolean) => {
