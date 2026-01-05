@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
 import { Calendar, DayOfWeek, Event, EventType } from 'shared';
 
@@ -22,12 +22,17 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import HelpIcon from '@mui/icons-material/Help';
 import EditIcon from '@mui/icons-material/Edit';
 import PeopleIcon from '@mui/icons-material/People';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
-import { useApproveEvent, useDenyEvent } from '../../hooks/calendar.hooks';
-import { convertDayToDayShorthand } from '../../utils/calendar.utils';
+import { EditEventArgs, useApproveEvent, useDeleteEvent, useDenyEvent, useEditEvent } from '../../hooks/calendar.hooks';
+import { convertDayToDayShorthand, convertEventToFormValues } from '../../utils/calendar.utils';
+import EditEventModal from './Components/EditEventModal';
+import { useToast } from '../../hooks/toasts.hooks';
+import NERDeleteModal from '../../components/NERDeleteModal';
+import { EventRoutePayload } from './Components/EventModal';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
@@ -51,6 +56,9 @@ interface EventClickContentProps {
   disable: boolean;
   addApprovalButtons: boolean;
   onClose: () => void;
+  onEdit: (event: Event) => void;
+  onDelete: (event: Event) => void;
+  clickedDate?: Date;
 }
 
 const joinPeople = (members: { firstName: string; lastName: string }[]) =>
@@ -68,7 +76,10 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
   dayOfWeek,
   disable,
   addApprovalButtons,
-  onClose
+  onClose,
+  onEdit,
+  onDelete,
+  clickedDate
 }) => {
   const { mutateAsync: approveEvent } = useApproveEvent(event.eventId);
   const { mutateAsync: denyEvent } = useDenyEvent(event.eventId);
@@ -87,8 +98,11 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
 
   const showAvailabilityButton = true;
 
-  const editUrl = `${routes.SETTINGS_PREFERENCES}?eventId=${event.eventId}`;
-  const availabilityUrl = `${routes.CALENDAR}/${event.eventId}`;
+  const eventDate =
+    clickedDate ||
+    (event.scheduledTimes[0]?.initialDateScheduled ? new Date(event.scheduledTimes[0].initialDateScheduled) : new Date());
+
+  const availabilityUrl = `${routes.NEW_CALENDAR}/event/${event.eventId}?date=${eventDate.toISOString()}`;
 
   const requiredText = event.requiredMembers.length > 0 ? joinPeople(event.requiredMembers) : '';
   const optionalText = event.optionalMembers.length > 0 ? joinPeople(event.optionalMembers) : '';
@@ -116,26 +130,41 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
       }}
     >
       <Box sx={{ position: 'relative', mb: 2 }}>
-        {/* Edit -> availability page */}
         {!disable && (
-          <IconButton
-            size="small"
-            component={RouterLink}
-            to={editUrl}
-            onClick={stopClick}
-            sx={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              color: theme.palette.grey[500],
-              '&:hover': {
-                color: theme.palette.common.white,
-                bgcolor: 'transparent'
-              }
-            }}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
+          <Box sx={{ position: 'absolute', top: 0, right: 0, display: 'flex', gap: 0.5 }}>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                stopClick(e);
+                onEdit(event);
+              }}
+              sx={{
+                color: theme.palette.grey[500],
+                '&:hover': {
+                  color: theme.palette.common.white,
+                  bgcolor: 'transparent'
+                }
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                stopClick(e);
+                onDelete(event);
+              }}
+              sx={{
+                color: theme.palette.grey[500],
+                '&:hover': {
+                  color: '#ef5350',
+                  bgcolor: 'transparent'
+                }
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
         )}
         <Stack direction="row" spacing={1} alignItems="center" sx={{ pr: 4 }}>
           {getTeamTypeIcon(event.teamType?.name ?? '', true)}
@@ -401,6 +430,13 @@ export interface EventClickPopupProps {
   dayOfWeek?: DayOfWeek;
   disable?: boolean;
   addApprovalButtons?: boolean;
+  clickedDate?: Date;
+  handleEditSubmit: (
+    data: EventRoutePayload,
+    event: Event,
+    editEvent: (editArgs: EditEventArgs) => Promise<Event>,
+    onClose: () => void
+  ) => Promise<void>;
 }
 
 export const EventClickPopup: React.FC<EventClickPopupProps> = ({
@@ -411,8 +447,38 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
   calendars,
   dayOfWeek,
   disable = false,
-  addApprovalButtons = false
+  addApprovalButtons = false,
+  clickedDate,
+  handleEditSubmit
 }) => {
+  const toast = useToast();
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const { mutateAsync: deleteEvent } = useDeleteEvent(clickedEvent?.eventId ?? '');
+  const { mutateAsync: editEvent } = useEditEvent(clickedEvent?.eventId ?? '');
+
+  const handleEdit = () => {
+    setShowEditModal(true);
+  };
+
+  const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      setShowDeleteModal(false);
+      onClose();
+      await deleteEvent();
+      toast.success('Event deleted successfully!');
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    }
+  };
+
   return (
     <Popover
       open={Boolean(clickedEvent && anchorPosition)}
@@ -437,6 +503,44 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
           disable={disable}
           addApprovalButtons={addApprovalButtons}
           onClose={onClose}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          clickedDate={clickedDate}
+        />
+      )}
+      {clickedEvent && showEditModal && (
+        <EditEventModal
+          open={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            onClose();
+          }}
+          onSubmit={(data) =>
+            handleEditSubmit(data, clickedEvent, editEvent, () => {
+              setShowEditModal(false);
+              onClose();
+            })
+          }
+          initialValues={convertEventToFormValues(clickedEvent)}
+          eventTypes={eventTypes}
+          defaultDate={
+            clickedEvent.scheduledTimes[0]?.initialDateScheduled
+              ? new Date(clickedEvent.scheduledTimes[0].initialDateScheduled)
+              : new Date()
+          }
+        />
+      )}
+
+      {clickedEvent && showDeleteModal && (
+        <NERDeleteModal
+          open={showDeleteModal}
+          onHide={() => {
+            setShowDeleteModal(false);
+            onClose();
+          }}
+          formId="delete-event-form"
+          dataType={clickedEvent.title}
+          onFormSubmit={handleDeleteConfirm}
         />
       )}
     </Popover>

@@ -21,6 +21,8 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import { EventClickPopup } from './EventClickPopup';
 import EventPartialInfoView from './EventPartialInfoView';
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
+import { EventRoutePayload } from './Components/EventModal';
+import { EditEventArgs } from '../../hooks/calendar.hooks';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -50,6 +52,12 @@ interface CalendarDayCardProps {
   eventTypes?: EventType[];
   calendars?: Calendar[];
   dayOfWeek?: DayOfWeek;
+  handleEditSubmit: (
+    data: EventRoutePayload,
+    event: Event,
+    editEvent: (editArgs: EditEventArgs) => Promise<Event>,
+    onClose: () => void
+  ) => Promise<void>;
 }
 
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
@@ -57,7 +65,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   events,
   eventTypes = [],
   calendars = [],
-  dayOfWeek = DayOfWeek.MONDAY
+  dayOfWeek = DayOfWeek.MONDAY,
+  handleEditSubmit
 }) => {
   const [, setIsCreateModalOpen] = useState(false);
   const theme = useTheme();
@@ -475,6 +484,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         eventTypes={eventTypes}
         calendars={calendars}
         dayOfWeek={dayOfWeek}
+        clickedDate={cardDate}
+        handleEditSubmit={handleEditSubmit}
       />
     </>
   );

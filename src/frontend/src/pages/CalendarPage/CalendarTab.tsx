@@ -169,6 +169,7 @@ const CalendarTab: React.FC = () => {
           reviewEvents={reviewEvents ?? []}
           yourEvents={yourEvents ?? []}
           allCalendars={allCalendars}
+          handleEditSubmit={handleEditSubmit}
         />
       ) : (
         <EventsTable

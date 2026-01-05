@@ -1,5 +1,13 @@
 import { Prisma, Event_Type, Organization } from '@prisma/client';
-import { User, ScheduleSlotCreateArgs, Event, EventDocumentCreateArgs, Document, ConflictStatus } from 'shared';
+import {
+  User,
+  ScheduleSlotCreateArgs,
+  EventDocumentCreateArgs,
+  Document,
+  ConflictStatus,
+  Event,
+  EventWithMembers
+} from 'shared';
 import { InvalidEventTypeConfigurationException } from './errors.utils';
 import prisma from '../prisma/prisma';
 import { getEventQueryArgs } from '../prisma-query-args/event.query-args';
@@ -15,10 +23,47 @@ export function buildScheduledTimesOverlap(start?: Date, end?: Date): Prisma.Sch
   return { some: { AND } };
 }
 
-export const isUserOnEvent = (user: User, event: Event): boolean => {
-  const requiredMembers = event.requiredMembers.map((user) => user.userId);
-  const optionalMembers = event.optionalMembers.map((user) => user.userId);
-  return requiredMembers.includes(user.userId) || optionalMembers.includes(user.userId);
+export const isUserOnEvent = (user: User, event: EventWithMembers): boolean => {
+  // Check if user is directly a required or optional member
+  const isDirectMember =
+    event.requiredMembers.some((member) => member.userId === user.userId) ||
+    event.optionalMembers.some((member) => member.userId === user.userId);
+
+  if (isDirectMember) {
+    return true;
+  }
+
+  // Check if user is on any of the event's teams (as member, lead, or head)
+  const isOnEventTeam = event.teams.some(
+    (team) =>
+      team.members.some((member) => member.userId === user.userId) ||
+      team.leads.some((lead) => lead.userId === user.userId) ||
+      team.head.userId === user.userId
+  );
+
+  if (isOnEventTeam) {
+    return true;
+  }
+
+  // Check if user is on any team that belongs to the event's team type
+  if (event.teamType) {
+    const isOnTeamType = event.teamType.teams.some(
+      (team) =>
+        team.members.some((member) => member.userId === user.userId) ||
+        team.leads.some((lead) => lead.userId === user.userId) ||
+        team.head.userId === user.userId
+    );
+
+    if (isOnTeamType) {
+      return true;
+    }
+  }
+
+  if (event.userCreated.userId === user.userId) {
+    return true;
+  }
+
+  return false;
 };
 
 /**

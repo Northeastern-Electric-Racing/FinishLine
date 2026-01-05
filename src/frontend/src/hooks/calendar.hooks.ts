@@ -9,7 +9,8 @@ import {
   EventStatus,
   EventType,
   FilterArgs,
-  ScheduleSlotCreateArgs
+  ScheduleSlotCreateArgs,
+  EventWithMembers
 } from 'shared';
 import {
   getAllShops,
@@ -41,7 +42,8 @@ import {
   postCreateEvent,
   uploadSingleDocument,
   downloadDocumentPdf,
-  postEditEvent
+  postEditEvent,
+  getSingleEventWithMembers
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 import { PDFDocument } from 'pdf-lib';
@@ -311,6 +313,9 @@ export const useMarkUserConfirmed = (id: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(EVENT_KEY);
         queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+        queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+        queryClient.invalidateQueries(['users', 'many-with-schedule-settings']);
+        queryClient.invalidateQueries(['users']);
       }
     }
   );
@@ -336,6 +341,17 @@ export const useSingleEvent = (id?: string) => {
     ['events', id],
     async () => {
       const { data } = await getSingleEvent(id!);
+      return data;
+    },
+    { enabled: !!id }
+  );
+};
+
+export const useSingleEventWithMembers = (id?: string) => {
+  return useQuery<EventWithMembers, Error>(
+    ['events', id, 'with-members'],
+    async () => {
+      const { data } = await getSingleEventWithMembers(id!);
       return data;
     },
     { enabled: !!id }

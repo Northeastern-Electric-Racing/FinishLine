@@ -30,9 +30,27 @@ export interface TeamCalendarPreview {
   teamName: string;
 }
 
+export interface TeamWithMembers {
+  teamId: string;
+  teamName: string;
+  members: User[];
+  leads: User[];
+  head: User;
+}
+
 export interface TeamTypeCalendarPreview {
   teamTypeId: string;
   name: string;
+}
+
+export interface TeamTypeWithMembersCalendarPreview {
+  teamTypeId: string;
+  name: string;
+  teams: {
+    members: User[];
+    leads: User[];
+    head: User;
+  }[];
 }
 
 export interface WorkPackageCalendarPreview {
@@ -211,3 +229,29 @@ export type EventPreview = {
   userCreated: User;
   wbsName: string;
 };
+
+export interface EventWithMembers {
+  eventId: string;
+  title: string;
+  approved: ConflictStatus;
+  userCreated: UserWithScheduleSettings;
+  dateCreated: Date;
+  eventTypeId: string;
+  approvalRequiredFrom?: User;
+  scheduledTimes: ScheduleSlot[];
+  requiredMembers: User[];
+  optionalMembers: User[];
+  confirmedMembers: UserWithScheduleSettings[];
+  deniedMembers: User[];
+  teams: TeamWithMembers[];
+  teamType?: TeamTypeWithMembersCalendarPreview;
+  location?: string;
+  zoomLink?: string;
+  shops: ShopPreview[];
+  machinery: MachineryPreview[];
+  workPackages: WorkPackageCalendarPreview[];
+  documents: Document[];
+  questionDocumentLink?: string;
+  description?: string;
+  status: EventStatus;
+}

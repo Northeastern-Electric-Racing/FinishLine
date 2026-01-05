@@ -33,7 +33,7 @@ import { useHomePageContext } from './HomePageContext';
 import { useCurrentOrganization } from '../hooks/organizations.hooks';
 import Statistics from '../pages/StatisticsPage/Statistics';
 import RetrospectiveGanttChartPage from '../pages/RetrospectivePage/Retrospective';
-import NewCalendar from '../pages/NewCalendarPage/NewCalendar';
+import NewCalendar from '../pages/CalendarPage/NewCalendar';
 
 interface AppAuthenticatedProps {
   userId: string;

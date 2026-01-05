@@ -1,6 +1,6 @@
 import { DayOfWeek, Event } from 'shared';
 import { filterEventTransformer } from '../apis/transformers/calendar.transformer';
-import { EventFormValues } from '../pages/NewCalendarPage/Components/EventModal';
+import { EventFormValues } from '../pages/CalendarPage/Components/EventModal';
 
 export const convertDayToInt = (day: DayOfWeek) => {
   switch (day) {

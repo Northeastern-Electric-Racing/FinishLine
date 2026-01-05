@@ -271,8 +271,18 @@ const EventModal: React.FC<BaseEventModalProps> = ({
           .map((t) => ({ id: t.teamId, label: t.teamName }));
         setSelectedTeams(teamOptions);
       }
+
+      if (initialValues?.days && initialValues.days.length > 0) {
+        setShowRecurringOptions(true);
+      }
     }
-  }, [open, defaultFormData, reset, initialValues, users, teams]);
+  }, [open, defaultFormData, initialValues, users, teams, reset]);
+
+  useEffect(() => {
+    if (open && initialValues?.days && initialValues.days.length > 0) {
+      setShowRecurringOptions(true);
+    }
+  }, [open, initialValues?.days]);
 
   const selectedEventType = useMemo(
     () => allowedEventTypes.find((et) => et.eventTypeId === selectedEventTypeId),
