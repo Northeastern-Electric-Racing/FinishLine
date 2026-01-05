@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TableCell, TableRow, Box } from '@mui/material';
+import { TableCell, TableRow, Box, TextField } from '@mui/material';
 import { useState } from 'react';
 import { Rule } from 'shared';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -26,6 +26,9 @@ interface RuleRowProps {
   middleWidth?: string;
   rightWidth?: string;
   initiallyExpanded?: boolean;
+  editingRuleId?: string | null;
+  editedContents?: Record<string, string>;
+  onContentChange?: (content: string) => void;
 }
 
 /**
@@ -49,7 +52,10 @@ const RuleRow: React.FC<RuleRowProps> = ({
   leftWidth = '20%',
   middleWidth = '70%',
   rightWidth = '10%',
-  initiallyExpanded = false
+  initiallyExpanded = false,
+  editingRuleId,
+  editedContents = {},
+  onContentChange
 }) => {
   const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
   const hasSubRules = rule.subRuleIds.length > 0;
@@ -58,6 +64,9 @@ const RuleRow: React.FC<RuleRowProps> = ({
   const bgColor = typeof backgroundColor === 'function' ? backgroundColor(rule) : backgroundColor;
   const color = typeof textColor === 'function' ? textColor(rule) : textColor;
   const hoverBgColor = typeof hoverColor === 'function' ? hoverColor(rule) : hoverColor;
+
+  const isEditing = editingRuleId === rule.ruleId;
+  const editedContent = editedContents[rule.ruleId] || rule.ruleContent;
 
   const toggleExpand = () => hasSubRules && setIsExpanded(!isExpanded);
 
@@ -145,9 +154,28 @@ const RuleRow: React.FC<RuleRowProps> = ({
             whiteSpace: 'normal'
           }}
         >
-          {middleContent
-            ? middleContent(rule, level)
-            : rule.ruleContent && <span style={{ color }}>{rule.ruleContent}</span>}
+          {middleContent ? (
+            middleContent(rule, level)
+          ) : isEditing ? (
+            <TextField
+              fullWidth
+              multiline
+              value={editedContent}
+              onChange={(e) => onContentChange?.(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  color,
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  '& fieldset': { borderColor: '#666' },
+                  '&:hover fieldset': { borderColor: '#999' },
+                }
+              }}
+            />
+          ) : (
+            rule.ruleContent && <span style={{ color }}>{rule.ruleContent}</span>
+          )}
         </TableCell>
         <TableCell
           align="center"
@@ -180,6 +208,9 @@ const RuleRow: React.FC<RuleRowProps> = ({
             leftWidth={leftWidth}
             middleWidth={middleWidth}
             rightWidth={rightWidth}
+            editingRuleId={editingRuleId}
+            editedContents={editedContents}
+            onContentChange={onContentChange}
           />
         ))}
     </>

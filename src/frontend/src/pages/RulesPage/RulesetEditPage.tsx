@@ -213,6 +213,9 @@ const RulesetEditPage: React.FC = () => {
   const [addMenuAnchorEl, setAddMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [activeRuleId, setActiveRuleId] = useState<string | null>(null);
 
+  const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
+  const [editedContents, setEditedContents] = useState<Record<string, string>>({});
+
   // temporary placeholder useState fns for the add rule section and add rule modals
   const [showAddRuleSectionModal, setShowAddRuleSectionModal] = useState(false);
   const [showAddRuleModal, setShowAddRuleModal] = useState(false);
@@ -270,8 +273,30 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleEditRule = (ruleId: string) => {
-    // Placeholder
-    console.log('Edit rule:', ruleId);
+    const rule = ruleset.rules.find((r) => r.ruleId === ruleId);
+    if (rule) {
+      setEditingRuleId(ruleId);
+      setEditedContents({ ...editedContents, [ruleId]: rule.ruleContent });
+    }
+  };
+
+  const handleSaveRule = async (ruleId: string) => {
+    const newContent = editedContents[ruleId];
+    // TODO: edit rule hook goes here
+
+    setEditingRuleId(null);
+    const { [ruleId]: _, ...rest } = editedContents;
+    setEditedContents(rest);
+  };
+
+  const handleCancelEdit = (ruleId: string) => {
+    setEditingRuleId(null);
+    const { [ruleId]: _, ...rest } = editedContents;
+    setEditedContents(rest);
+  };
+
+  const handleContentChange = (ruleId: string, content: string) => {
+    setEditedContents({ ...editedContents, [ruleId]: content });
   };
 
   // Filter to only show top-level rules
@@ -303,13 +328,19 @@ const RulesetEditPage: React.FC = () => {
                       key={rule.ruleId}
                       rule={rule}
                       allRules={ruleset.rules}
+                      editingRuleId={editingRuleId}
+                      editedContents={editedContents}
+                      onContentChange={(content) => handleContentChange(rule.ruleId, content)}
                       rightContent={(currentRule) => (
                         <RuleActions
                           ruleId={currentRule.ruleId}
                           onAdd={handleOpenAddMenu}
                           onRemove={handleRemoveRule}
                           onEdit={handleEditRule}
+                          onSave={handleSaveRule}
+                          onCancel={handleCancelEdit}
                           iconColor="#000000"
+                          isEditing={editingRuleId === currentRule.ruleId}
                         />
                       )}
                       backgroundColor="#9d9d9d"
