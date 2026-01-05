@@ -52,7 +52,6 @@ export type ManufacturerPreview = Omit<Manufacturer, 'materials' | 'userCreated'
 export interface Material {
   materialId: string;
   assemblyId?: string;
-  assembly?: AssemblyPreview;
   name: string;
   wbsElementId: string;
   dateDeleted?: Date;

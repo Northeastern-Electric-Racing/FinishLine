@@ -23,7 +23,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
     return openRows.includes(rowId) ? '▼' : '▶';
   };
 
-  const noAssemblyMaterials = materials.filter((material) => !material.assembly);
+  const noAssemblyMaterials = materials.filter((material) => !material.assemblyId);
   const theme = useTheme();
 
   const rows: BomRow[] = noAssemblyMaterials.map((material: Material, idx: number) => materialToRow(material, idx));
