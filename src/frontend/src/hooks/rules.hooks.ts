@@ -172,7 +172,7 @@ export const useCreateRulesetType = () => {
 /**
  * Hook to create a project rule (assign a rule to a project).
  */
-export const useCreateProjectRule = (rulesetId: string, projectId: string) => {
+export const useCreateProjectRule = () => {
   const queryClient = useQueryClient();
   return useMutation<ProjectRule, Error, { ruleId: string; projectId: string }>(
     ['rules', 'projectRules', 'create'],
@@ -182,7 +182,7 @@ export const useCreateProjectRule = (rulesetId: string, projectId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
+        queryClient.invalidateQueries(['rules', 'projectRules']);
         queryClient.invalidateQueries(['rules', 'unassigned']);
       }
     }
