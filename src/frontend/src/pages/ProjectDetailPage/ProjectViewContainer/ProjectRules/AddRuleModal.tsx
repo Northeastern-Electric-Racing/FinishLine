@@ -32,54 +32,32 @@ interface AddRuleModalProps {
 
 const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModalProps) => {
   const theme = useTheme();
-  const [selectedSection, setSelectedSection] = useState<string>('');
-  const [selectedSubSection1, setSelectedSubSection1] = useState<string>('');
-  const [selectedSubSection2, setSelectedSubSection2] = useState<string>('');
   const [selectedRuleIds, setSelectedRuleIds] = useState<string[]>([]);
 
   const { data: unassignedRules, isLoading, isError } = useUnassignedRulesForRuleset(rulesetId, teamId);
 
-  // Get top-level sections (rules without parent)
-  const sections = useMemo(() => {
+  type ParentInfo = { ruleId: string; ruleCode: string };
+
+  const uniqueParents = useMemo(() => {
     if (!unassignedRules) return [];
-    return unassignedRules.filter((rule: Rule) => !rule.parentRule);
+    const parentMap = new Map<string, ParentInfo>();
+    unassignedRules.forEach((rule: Rule) => {
+      if (rule.parentRule) {
+        parentMap.set(rule.parentRule.ruleId, rule.parentRule);
+      }
+    });
+    return Array.from(parentMap.values()).sort((a, b) => a.ruleCode.localeCompare(b.ruleCode));
   }, [unassignedRules]);
 
-  // Get sub-sections based on selected section
-  const subSections1 = useMemo(() => {
-    if (!unassignedRules || !selectedSection) return [];
-    return unassignedRules.filter((rule: Rule) => rule.parentRule?.ruleId === selectedSection);
-  }, [unassignedRules, selectedSection]);
+  const [selectedParentId, setSelectedParentId] = useState<string>('');
 
-  // Get sub-sub-sections based on selected sub-section
-  const subSections2 = useMemo(() => {
-    if (!unassignedRules || !selectedSubSection1) return [];
-    return unassignedRules.filter((rule: Rule) => rule.parentRule?.ruleId === selectedSubSection1);
-  }, [unassignedRules, selectedSubSection1]);
+  const availableRules = useMemo(() => {
+    if (!unassignedRules || !selectedParentId) return [];
+    return unassignedRules.filter((rule: Rule) => rule.parentRule?.ruleId === selectedParentId);
+  }, [unassignedRules, selectedParentId]);
 
-  // Get leaf rules based on selected sub-sub-section (or sub-section if no sub-sub-sections)
-  const leafRules = useMemo(() => {
-    if (!unassignedRules) return [];
-    const parentId = selectedSubSection2 || selectedSubSection1 || selectedSection;
-    if (!parentId) return [];
-    return unassignedRules.filter((rule: Rule) => rule.parentRule?.ruleId === parentId && rule.subRuleIds.length === 0);
-  }, [unassignedRules, selectedSection, selectedSubSection1, selectedSubSection2]);
-
-  const handleSectionChange = (event: SelectChangeEvent<string>) => {
-    setSelectedSection(event.target.value);
-    setSelectedSubSection1('');
-    setSelectedSubSection2('');
-    setSelectedRuleIds([]);
-  };
-
-  const handleSubSection1Change = (event: SelectChangeEvent<string>) => {
-    setSelectedSubSection1(event.target.value);
-    setSelectedSubSection2('');
-    setSelectedRuleIds([]);
-  };
-
-  const handleSubSection2Change = (event: SelectChangeEvent<string>) => {
-    setSelectedSubSection2(event.target.value);
+  const handleParentChange = (event: SelectChangeEvent<string>) => {
+    setSelectedParentId(event.target.value);
     setSelectedRuleIds([]);
   };
 
@@ -106,10 +84,8 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModa
   };
 
   const resetForm = () => {
-    setSelectedSection('');
-    setSelectedSubSection1('');
-    setSelectedSubSection2('');
     setSelectedRuleIds([]);
+    setSelectedParentId('');
   };
 
   // Get rule display name
@@ -182,9 +158,10 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModa
               <Typography sx={labelStyles}>Select Section</Typography>
               <FormControl fullWidth>
                 <Select
-                  value={selectedSection}
-                  onChange={handleSectionChange}
+                  value={selectedParentId}
+                  onChange={handleParentChange}
                   displayEmpty
+                  disabled={uniqueParents.length === 0}
                   sx={selectStyles}
                   MenuProps={{
                     PaperProps: {
@@ -195,65 +172,9 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModa
                   <MenuItem value="" disabled>
                     <Typography sx={{ color: theme.palette.text.secondary }}>Select Section</Typography>
                   </MenuItem>
-                  {sections.map((section: Rule) => (
-                    <MenuItem key={section.ruleId} value={section.ruleId}>
-                      {section.ruleCode}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-
-            {/* Select Sub-Section 1 */}
-            <Box>
-              <Typography sx={labelStyles}>Select Sub-Section</Typography>
-              <FormControl fullWidth>
-                <Select
-                  value={selectedSubSection1}
-                  onChange={handleSubSection1Change}
-                  displayEmpty
-                  disabled={!selectedSection || subSections1.length === 0}
-                  sx={selectStyles}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: { backgroundColor: theme.palette.background.paper }
-                    }
-                  }}
-                >
-                  <MenuItem value="" disabled>
-                    <Typography sx={{ color: theme.palette.text.secondary }}>Select Sub-Section</Typography>
-                  </MenuItem>
-                  {subSections1.map((subSection: Rule) => (
-                    <MenuItem key={subSection.ruleId} value={subSection.ruleId}>
-                      {subSection.ruleCode}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-
-            {/* Select Sub-Section 2 */}
-            <Box>
-              <Typography sx={labelStyles}>Select Sub-Section</Typography>
-              <FormControl fullWidth>
-                <Select
-                  value={selectedSubSection2}
-                  onChange={handleSubSection2Change}
-                  displayEmpty
-                  disabled={!selectedSubSection1 || subSections2.length === 0}
-                  sx={selectStyles}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: { backgroundColor: theme.palette.background.paper }
-                    }
-                  }}
-                >
-                  <MenuItem value="" disabled>
-                    <Typography sx={{ color: theme.palette.text.secondary }}>Select Sub-Section</Typography>
-                  </MenuItem>
-                  {subSections2.map((subSection: Rule) => (
-                    <MenuItem key={subSection.ruleId} value={subSection.ruleId}>
-                      {subSection.ruleCode}
+                  {uniqueParents.map((parent) => (
+                    <MenuItem key={parent.ruleId} value={parent.ruleId}>
+                      {parent.ruleCode}
                     </MenuItem>
                   ))}
                 </Select>
@@ -287,7 +208,7 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModa
                   value=""
                   onChange={handleRuleSelect}
                   displayEmpty
-                  disabled={!selectedSection}
+                  disabled={!selectedParentId}
                   sx={selectStyles}
                   MenuProps={{
                     PaperProps: {
@@ -298,7 +219,7 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModa
                   <MenuItem value="" disabled>
                     <Typography sx={{ color: theme.palette.text.secondary }}>Add Subtask</Typography>
                   </MenuItem>
-                  {leafRules
+                  {availableRules
                     .filter((rule: Rule) => !selectedRuleIds.includes(rule.ruleId))
                     .map((rule: Rule) => (
                       <MenuItem key={rule.ruleId} value={rule.ruleId}>
