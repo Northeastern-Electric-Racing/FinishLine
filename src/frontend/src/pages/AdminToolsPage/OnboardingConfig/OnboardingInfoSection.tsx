@@ -107,7 +107,7 @@ const OnboardingInfoSection: React.FC = () => {
                   component="img"
                   sx={{ display: 'block', maxWidth: '100%', maxHeight: '200px', mb: 1, objectFit: 'contain' }}
                   alt="New Member Event"
-                  src={newMemberImageBlob ? URL.createObjectURL(newMemberImageBlob) : undefined}
+                  src={URL.createObjectURL(newMemberImageBlob)}
                 />
               )}
               <NERUploadButton

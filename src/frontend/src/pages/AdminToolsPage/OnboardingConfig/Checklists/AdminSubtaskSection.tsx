@@ -1,6 +1,6 @@
 import { Typography, useTheme, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Checklist, ChecklistPreview, ChecklistItemType } from 'shared';
 import { GridDragIcon } from '@mui/x-data-grid';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -60,9 +60,9 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
   const [localItems, setLocalItems] = useState(allItems);
 
   // Update local items when allItems changes
-  useState(() => {
+  useEffect(() => {
     setLocalItems(allItems);
-  });
+  }, [allItems]);
 
   const onDragEnd: OnDragEndResponder = (result) => {
     const { destination, source } = result;

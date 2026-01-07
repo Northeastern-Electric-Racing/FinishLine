@@ -1,7 +1,7 @@
 import { KeyboardArrowDown, KeyboardArrowRight } from '@mui/icons-material';
 import { Grid, Typography, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Checklist, TeamType } from 'shared';
 import AdminTask from './AdminTask';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -31,9 +31,9 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
   const { mutate: reorderTasks } = useReorderTasks();
 
   // Update local tasks when parentChecklists changes
-  useState(() => {
+  useEffect(() => {
     setLocalTasks(parentChecklists);
-  });
+  }, [parentChecklists]);
 
   const handleDelete = async () => {
     if (!tasksToDelete) return;
