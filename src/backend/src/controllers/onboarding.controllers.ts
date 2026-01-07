@@ -32,7 +32,7 @@ export default class OnboardingController {
 
   static async createChecklist(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, descriptions, isOptional, teamId, teamTypeId, parentChecklistId } = req.body;
+      const { name, descriptions, isOptional, teamId, teamTypeId, parentChecklistId, itemType } = req.body;
       const checklist = await OnboardingServices.createChecklist(
         req.currentUser,
         name,
@@ -41,7 +41,8 @@ export default class OnboardingController {
         teamTypeId,
         parentChecklistId,
         req.organization,
-        isOptional
+        isOptional,
+        itemType
       );
       res.status(200).json(checklist);
     } catch (error: unknown) {
@@ -52,7 +53,7 @@ export default class OnboardingController {
   static async editChecklist(req: Request, res: Response, next: NextFunction) {
     try {
       const { checklistId } = req.params;
-      const { name, descriptions, isOptional, teamId, teamTypeId, parentChecklistId } = req.body;
+      const { name, descriptions, isOptional, teamId, teamTypeId, parentChecklistId, itemType } = req.body;
       const checklist = await OnboardingServices.editChecklist(
         req.currentUser,
         checklistId,
@@ -62,7 +63,8 @@ export default class OnboardingController {
         teamTypeId,
         parentChecklistId,
         req.organization,
-        isOptional
+        isOptional,
+        itemType
       );
       res.status(200).json(checklist);
     } catch (error: unknown) {
@@ -103,6 +105,27 @@ export default class OnboardingController {
 
       // Send the Buffer as the response body
       res.send(imageData.buffer);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async reorderTasks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { taskIds } = req.body;
+      await OnboardingServices.reorderTasks(req.currentUser, taskIds, req.organization);
+      res.status(200).json({ message: 'Tasks reordered successfully' });
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async reorderChecklistItems(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { parentId } = req.params;
+      const { itemIds } = req.body;
+      await OnboardingServices.reorderChecklistItems(req.currentUser, parentId, itemIds, req.organization);
+      res.status(200).json({ message: 'Checklist items reordered successfully' });
     } catch (error: unknown) {
       return next(error);
     }

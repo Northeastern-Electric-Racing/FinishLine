@@ -21,6 +21,7 @@ onboardingRouter.post(
   nonEmptyString(body('teamTypeId').optional()),
   nonEmptyString(body('parentChecklistId').optional()),
   body('isOptional').isBoolean().optional(),
+  body('itemType').isIn(['TASK', 'INFO']).optional(),
   validateInputs,
   OnboardingController.createChecklist
 );
@@ -34,6 +35,7 @@ onboardingRouter.post(
   nonEmptyString(body('teamTypeId').optional()),
   nonEmptyString(body('parentChecklistId').optional()),
   body('isOptional').isBoolean().optional(),
+  body('itemType').isIn(['TASK', 'INFO']).optional(),
   validateInputs,
   OnboardingController.editChecklist
 );
@@ -41,6 +43,22 @@ onboardingRouter.post(
 onboardingRouter.post('/checklist/delete/:checklistId', OnboardingController.deleteChecklist);
 
 onboardingRouter.post('/checklists/:checklistId/toggle', OnboardingController.toggleChecklist);
+
+onboardingRouter.post(
+  '/tasks/reorder',
+  body('taskIds').isArray(),
+  nonEmptyString(body('taskIds.*')),
+  validateInputs,
+  OnboardingController.reorderTasks
+);
+
+onboardingRouter.post(
+  '/tasks/:parentId/items/reorder',
+  body('itemIds').isArray(),
+  nonEmptyString(body('itemIds.*')),
+  validateInputs,
+  OnboardingController.reorderChecklistItems
+);
 
 onboardingRouter.get('/image/:fileId', OnboardingController.downloadImage);
 
