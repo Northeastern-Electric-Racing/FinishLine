@@ -32,11 +32,11 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
     );
   };
 
-  // All items (tasks and info blocks) are now stored in subtasks with itemType field
+  // All items (tasks and info blocks) now stored in subtasks with itemType field
   const allItems = subtasks
     .map((subtask) => ({
       ...subtask,
-      itemType: subtask.itemType ?? 'TASK',
+      itemType: subtask.itemType ?? ChecklistItemType.TASK,
       displayOrder: subtask.displayOrder ?? 999
     }))
     .sort((a, b) => a.displayOrder - b.displayOrder);

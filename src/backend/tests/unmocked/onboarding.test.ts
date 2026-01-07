@@ -147,15 +147,7 @@ describe('Onboarding tests', () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       await expect(
         async () =>
-          await OnboardingServices.createChecklist(
-            batman,
-            'content',
-            'invalidTeamId',
-            null,
-            null,
-            organization,
-            true
-          )
+          await OnboardingServices.createChecklist(batman, 'content', 'invalidTeamId', null, null, organization, true)
       ).rejects.toThrow(new NotFoundException('Team', 'invalidTeamId'));
     });
 
@@ -163,15 +155,7 @@ describe('Onboarding tests', () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       await expect(
         async () =>
-          await OnboardingServices.createChecklist(
-            batman,
-            'content',
-            null,
-            'invalidTeamTypeId',
-            null,
-            organization,
-            true
-          )
+          await OnboardingServices.createChecklist(batman, 'content', null, 'invalidTeamTypeId', null, organization, true)
       ).rejects.toThrow(new NotFoundException('Team Type', 'invalidTeamTypeId'));
     });
 
@@ -179,15 +163,7 @@ describe('Onboarding tests', () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       await expect(
         async () =>
-          await OnboardingServices.createChecklist(
-            batman,
-            'content',
-            null,
-            null,
-            'invalidChecklistId',
-            organization,
-            true
-          )
+          await OnboardingServices.createChecklist(batman, 'content', null, null, 'invalidChecklistId', organization, true)
       ).rejects.toThrow(new NotFoundException('Checklist', 'invalidChecklistId'));
     });
 

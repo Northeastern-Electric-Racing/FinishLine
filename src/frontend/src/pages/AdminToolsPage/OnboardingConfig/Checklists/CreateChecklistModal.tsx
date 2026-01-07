@@ -25,6 +25,7 @@ import { DragDropContext, Droppable, Draggable, OnDragEndResponder } from '@hell
 import { GridDragIcon } from '@mui/x-data-grid';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import InfoIcon from '@mui/icons-material/Info';
+import { ChecklistItemType } from 'shared';
 
 interface CreateChecklistModalProps {
   open: boolean;
@@ -38,9 +39,8 @@ type ItemType = 'TASK' | 'INFO';
 interface ChecklistItem {
   id: string;
   type: ItemType;
-  name?: string; // For tasks
+  content: string;
   isOptional?: boolean; // For tasks
-  content?: string; // For info blocks
 }
 
 interface ChecklistFormValues {
@@ -49,7 +49,7 @@ interface ChecklistFormValues {
 
 const schema: yup.ObjectSchema<ChecklistFormValues> = yup.object().shape({
   content: yup.string().required('Task name is required')
-}) as any;
+});
 
 const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateChecklistModalProps) => {
   const theme = useTheme();
@@ -73,7 +73,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
   });
 
   const addTask = () => {
-    setItems([...items, { id: `task-${Date.now()}`, type: 'TASK', name: '', isOptional: false }]);
+    setItems([...items, { id: `task-${Date.now()}`, type: 'TASK', content: '', isOptional: false }]);
   };
 
   const addInfoBlock = () => {
@@ -120,23 +120,23 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
       // Create all items in order with their displayOrder set
       await Promise.all(
         items.map((item) => {
-          if (item.type === 'TASK' && item.name) {
+          if (item.type === ChecklistItemType.TASK) {
             return createChecklist({
-              content: item.name,
+              content: item.content,
               teamId,
               teamTypeId,
               parentChecklistId: parentChecklist.checklistId,
               isOptional: item.isOptional || false,
-              itemType: 'TASK'
+              itemType: ChecklistItemType.TASK
             });
-          } else if (item.type === 'INFO' && item.content) {
+          } else if (item.type === ChecklistItemType.INFO) {
             return createChecklist({
               content: item.content,
               teamId,
               teamTypeId,
               parentChecklistId: parentChecklist.checklistId,
               isOptional: true, // INFO blocks are always optional
-              itemType: 'INFO'
+              itemType: ChecklistItemType.INFO
             });
           }
           return Promise.resolve();
@@ -243,8 +243,8 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
                               </Box>
                               <CheckBoxIcon sx={{ color: theme.palette.text.secondary }} />
                               <TextField
-                                value={item.name || ''}
-                                onChange={(e) => updateItem(index, { name: e.target.value })}
+                                value={item.content || ''}
+                                onChange={(e) => updateItem(index, { content: e.target.value })}
                                 placeholder="Subtask Name"
                                 fullWidth
                                 InputProps={{
