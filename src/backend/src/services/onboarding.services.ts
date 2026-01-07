@@ -14,7 +14,11 @@ export default class OnboardingServices {
   static async getAllChecklists(organization: Organization) {
     const allChecklists = await prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null, parentChecklistId: null },
-      include: { subtasks: { where: { dateDeleted: null }, orderBy: { displayOrder: 'asc' } }, teamType: true, usersChecked: true },
+      include: {
+        subtasks: { where: { dateDeleted: null }, orderBy: { displayOrder: 'asc' } },
+        teamType: true,
+        usersChecked: true
+      },
       orderBy: { displayOrder: 'asc' }
     });
 
@@ -101,8 +105,7 @@ export default class OnboardingServices {
 
   /**
    * Creates a new checklist
-   * @param name the name of the checklist
-   * @param descriptions the descriptions of the checklist
+   * @param content the content of the checklist
    * @param isOptional whether the checklist is optional
    * @param teamId the team Id of the checklist
    * @param teamTypeId the teamType Id of the checklist
@@ -113,8 +116,7 @@ export default class OnboardingServices {
    */
   static async createChecklist(
     creator: User,
-    name: string,
-    descriptions: string[],
+    content: string,
     teamId: string | null,
     teamTypeId: string | null,
     parentChecklistId: string | null,
@@ -185,14 +187,14 @@ export default class OnboardingServices {
       take: 1
     });
 
-    const nextDisplayOrder = existingChecklists.length > 0 && existingChecklists[0].displayOrder !== null
-      ? existingChecklists[0].displayOrder + 1
-      : 1;
+    const nextDisplayOrder =
+      existingChecklists.length > 0 && existingChecklists[0].displayOrder !== null
+        ? existingChecklists[0].displayOrder + 1
+        : 1;
 
     const checklist: Checklist = await prisma.checklist.create({
       data: {
-        name,
-        descriptions,
+        content,
         isOptional,
         displayOrder: nextDisplayOrder,
         itemType: itemType ?? 'TASK',
@@ -210,8 +212,7 @@ export default class OnboardingServices {
   /**
    * Edits a checklist
    * @param checklistId the id of the checklist to edit
-   * @param name the name of the checklist
-   * @param descriptions the descriptions of the checklist
+   * @param content the content of the checklist
    * @param isOptional whether the checklist is optional
    * @param teamId the team Id of the checklist
    * @param teamTypeId the teamType Id of the checklist
@@ -223,8 +224,7 @@ export default class OnboardingServices {
   static async editChecklist(
     editor: User,
     checklistId: string,
-    name: string,
-    descriptions: string[],
+    content: string,
     teamId: string | null,
     teamTypeId: string | null,
     parentChecklistId: string | null,
@@ -297,8 +297,7 @@ export default class OnboardingServices {
     const editedChecklist = await prisma.checklist.update({
       where: { checklistId },
       data: {
-        name,
-        descriptions,
+        content,
         isOptional,
         itemType: itemType ?? checklist.itemType,
         teamId,
@@ -349,7 +348,10 @@ export default class OnboardingServices {
   static async toggleChecklist(checklistId: string, user: User, organization: Organization) {
     const checklist = await prisma.checklist.findUnique({
       where: { checklistId, organizationId: organization.organizationId },
-      include: { usersChecked: true, subtasks: { where: { dateDeleted: null }, include: { usersChecked: true }, orderBy: { displayOrder: 'asc' } } }
+      include: {
+        usersChecked: true,
+        subtasks: { where: { dateDeleted: null }, include: { usersChecked: true }, orderBy: { displayOrder: 'asc' } }
+      }
     });
 
     if (!checklist) {
@@ -497,8 +499,7 @@ export default class OnboardingServices {
           })
         )
       );
-    })
-
+    });
   }
 
   /**
@@ -545,7 +546,6 @@ export default class OnboardingServices {
           })
         )
       );
-    })
-
+    });
   }
 }

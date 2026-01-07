@@ -14,9 +14,7 @@ onboardingRouter.get('/checklists/usersChecklists', OnboardingController.getUser
 
 onboardingRouter.post(
   '/checklist/create',
-  nonEmptyString(body('name')),
-  body('descriptions').isArray(),
-  nonEmptyString(body('descriptions.*')),
+  nonEmptyString(body('content')),
   nonEmptyString(body('teamId').optional()),
   nonEmptyString(body('teamTypeId').optional()),
   nonEmptyString(body('parentChecklistId').optional()),
@@ -28,9 +26,7 @@ onboardingRouter.post(
 
 onboardingRouter.post(
   '/checklist/edit/:checklistId',
-  nonEmptyString(body('name')),
-  body('descriptions').isArray(),
-  nonEmptyString(body('descriptions.*')),
+  nonEmptyString(body('content')),
   nonEmptyString(body('teamId').optional()),
   nonEmptyString(body('teamTypeId').optional()),
   nonEmptyString(body('parentChecklistId').optional()),

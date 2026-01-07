@@ -3,8 +3,6 @@ import { useState } from 'react';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import SubtaskSection from './SubtaskSection';
 import { Checklist } from 'shared';
-import { useToggleChecklist } from '../../../hooks/onboarding.hook';
-import { useToast } from '../../../hooks/toasts.hooks';
 import { isChecklistChecked } from '../../../utils/onboarding.utils';
 
 interface ParentTaskProps {
@@ -52,7 +50,7 @@ const ParentTask: React.FC<ParentTaskProps> = ({ parentTask, checkedChecklists }
               }}
             />
           </Box>
-          <Typography sx={{ color: 'black', fontWeight: 'bold' }}>{parentTask.name}</Typography>
+          <Typography sx={{ color: 'black', fontWeight: 'bold' }}>{parentTask.content}</Typography>
           <IconButton onClick={toggleShowSubtasks} sx={{ marginLeft: 'auto' }}>
             {showSubtasks ? <KeyboardArrowDown sx={{ color: 'black' }} /> : <KeyboardArrowRight sx={{ color: 'black' }} />}
           </IconButton>

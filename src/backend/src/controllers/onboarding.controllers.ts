@@ -32,11 +32,10 @@ export default class OnboardingController {
 
   static async createChecklist(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, descriptions, isOptional, teamId, teamTypeId, parentChecklistId, itemType } = req.body;
+      const { content, isOptional, teamId, teamTypeId, parentChecklistId, itemType } = req.body;
       const checklist = await OnboardingServices.createChecklist(
         req.currentUser,
-        name,
-        descriptions,
+        content,
         teamId,
         teamTypeId,
         parentChecklistId,
@@ -53,12 +52,11 @@ export default class OnboardingController {
   static async editChecklist(req: Request, res: Response, next: NextFunction) {
     try {
       const { checklistId } = req.params;
-      const { name, descriptions, isOptional, teamId, teamTypeId, parentChecklistId, itemType } = req.body;
+      const { content, isOptional, teamId, teamTypeId, parentChecklistId, itemType } = req.body;
       const checklist = await OnboardingServices.editChecklist(
         req.currentUser,
         checklistId,
-        name,
-        descriptions,
+        content,
         teamId,
         teamTypeId,
         parentChecklistId,

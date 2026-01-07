@@ -22,32 +22,24 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
   const { mutate: toggleChecklist } = useToggleChecklist();
 
   const handleToggleChecklist = (subtaskId: string) => {
-    toggleChecklist({ checklistId: subtaskId }, {
-      onError: (error: any) => {
-        toast.error(error.message);
+    toggleChecklist(
+      { checklistId: subtaskId },
+      {
+        onError: (error: any) => {
+          toast.error(error.message);
+        }
       }
-    });
+    );
   };
 
   // All items (tasks and info blocks) are now stored in subtasks with itemType field
-  // Keep descriptions for backward compatibility with old data
-  const allItems = [
-    ...subtasks.map((subtask) => ({
+  const allItems = subtasks
+    .map((subtask) => ({
       ...subtask,
       itemType: subtask.itemType ?? 'TASK',
       displayOrder: subtask.displayOrder ?? 999
-    })),
-    // Backward compatibility: show old descriptions only if they exist and aren't already in subtasks as info blocks
-    ...(parentTask.descriptions && parentTask.descriptions.length > 0 
-      ? parentTask.descriptions.map((description, index) => ({
-          checklistId: `info-${index}`,
-          name: description,
-          itemType: 'INFO' as const,
-          displayOrder: 1000 + index,
-          isOptional: false
-        }))
-      : [])
-  ].sort((a, b) => a.displayOrder - b.displayOrder);
+    }))
+    .sort((a, b) => a.displayOrder - b.displayOrder);
 
   return (
     <Box
@@ -65,7 +57,7 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
     >
       <Box display="flex" flexDirection="column" gap={2} sx={{ width: '100%' }}>
         {allItems.map((item) => {
-          if (item.itemType === 'TASK') {
+          if (item.itemType === ChecklistItemType.TASK) {
             return (
               <Box key={item.checklistId} display="flex" alignItems="center" gap={1}>
                 {isAdmin ? (
@@ -93,27 +85,25 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
                   </IconButton>
                 )}
                 <Typography color="black" fontWeight="bold">
-                  {item.name} {item.isOptional && '(Optional)'}
+                  {item.content} {item.isOptional && '(Optional)'}
                 </Typography>
               </Box>
             );
-          } else {
-            // INFO block - content is in descriptions[0] for new items, or name for backward compatibility
-            const content = (item as any).descriptions?.[0] || item.name;
-            return (
-              <Box
-                key={item.checklistId}
-                sx={{
-                  backgroundColor: theme.palette.background.paper,
-                  padding: 2,
-                  borderRadius: 2,
-                  width: '100%'
-                }}
-              >
-                <NERMarkdown markdown={content} />
-              </Box>
-            );
           }
+          // INFO block
+          return (
+            <Box
+              key={item.checklistId}
+              sx={{
+                backgroundColor: theme.palette.background.paper,
+                padding: 2,
+                borderRadius: 2,
+                width: '100%'
+              }}
+            >
+              <NERMarkdown markdown={item.content} />
+            </Box>
+          );
         })}
       </Box>
     </Box>

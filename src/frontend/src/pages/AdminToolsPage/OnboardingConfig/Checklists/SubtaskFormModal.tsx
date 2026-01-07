@@ -32,16 +32,16 @@ const SubtaskFormModal = ({ open, handleClose, onSubmit, parentChecklist, defaul
   } = useForm<SubtaskCreateArgs>({
     resolver: yupResolver(schema),
     defaultValues: {
-      name: defaultValues?.name ?? '',
+      name: defaultValues?.content ?? '',
       isOptional: defaultValues?.isOptional ?? false
     }
   });
 
-  const onFormSubmit = async (data: ChecklistCreateArgs) => {
+  const onFormSubmit = async (data: SubtaskCreateArgs) => {
     try {
       const formattedData = {
-        ...data,
-        descriptions: [],
+        content: data.name,
+        isOptional: data.isOptional,
         parentChecklistId: parentChecklist.checklistId,
         teamId: parentChecklist.team?.teamId,
         teamTypeId: parentChecklist.teamType?.teamTypeId,
