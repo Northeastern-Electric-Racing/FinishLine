@@ -6,7 +6,7 @@ import * as yup from 'yup';
 import NERFormModal from '../../../../components/NERFormModal';
 import { useCreateChecklist } from '../../../../hooks/onboarding.hook';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { Checklist } from 'shared';
+import { Checklist, ChecklistItemType } from 'shared';
 import NERMarkdown from '../../../../components/NERMarkdown';
 
 interface CreateInfoBlockModalProps {
@@ -49,7 +49,7 @@ const CreateInfoBlockModal: React.FC<CreateInfoBlockModalProps> = ({ open, handl
         parentChecklistId: parentChecklist.checklistId,
         teamId: parentChecklist.team?.teamId,
         teamTypeId: parentChecklist.teamType?.teamTypeId,
-        itemType: 'INFO'
+        itemType: ChecklistItemType.INFO
       });
       toast.success('Information block created successfully');
       handleClose();

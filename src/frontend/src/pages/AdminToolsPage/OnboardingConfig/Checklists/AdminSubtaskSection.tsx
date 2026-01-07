@@ -52,7 +52,7 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
   const allItems = subtasks
     .map((subtask) => ({
       ...subtask,
-      itemType: subtask.itemType ?? ('TASK' as ChecklistItemType),
+      itemType: subtask.itemType,
       displayOrder: subtask.displayOrder ?? 999
     }))
     .sort((a, b) => a.displayOrder - b.displayOrder);
@@ -202,7 +202,7 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
           open={!!itemToDelete}
           onHide={() => setItemToDelete(null)}
           formId="delete-item-form"
-          dataType={itemToDelete.itemType === 'INFO' ? 'Information Block' : 'Task'}
+          dataType={itemToDelete.itemType === ChecklistItemType.INFO ? 'Information Block' : 'Task'}
           onFormSubmit={() => handleDelete(itemToDelete.checklistId)}
         />
       )}
