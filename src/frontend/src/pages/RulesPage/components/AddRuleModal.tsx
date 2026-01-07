@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Typography, FormControl, Select, MenuItem, SelectChangeEvent, useTheme, TextField } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -13,27 +13,26 @@ interface AddRuleModalProps {
   open: boolean;
   onClose: () => void;
   rulesetId: string;
+  initialParentRuleId?: string;
 }
 
 interface FormData {
   ruleCode: string;
   ruleContent: string;
-  parentRuleId?: string;
 }
 
 const schema = yup.object().shape({
-  ruleCode: yup.string().required('Rule Code is required!'),
-  ruleContent: yup.string().required('Rule Content is required!'),
-  parentRuleId: yup.string().optional()
+  ruleCode: yup.string().required('Rule Code is required'),
+  ruleContent: yup.string().required('Rule Content is required')
 });
 
-const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId }) => {
+const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, initialParentRuleId }) => {
   const theme = useTheme();
   const toast = useToast();
   const { mutateAsync: createRule } = useCreateRule();
 
-  // Track the hierarchy of selected rules
-  const [selectedRuleHierarchy, setSelectedRuleHierarchy] = useState<string[]>([]);
+  // Track the hierarchy of selected REFERENCED rules (separate from parent)
+  const [selectedReferenceHierarchy, setSelectedReferenceHierarchy] = useState<string[]>([]);
 
   const {
     handleSubmit,
@@ -44,29 +43,46 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId })
     resolver: yupResolver(schema),
     defaultValues: {
       ruleCode: '',
-      ruleContent: '',
-      parentRuleId: undefined
+      ruleContent: ''
     }
   });
+
+  // Reset reference hierarchy when modal opens/closes or parent changes
+  useEffect(() => {
+    if (open) {
+      setSelectedReferenceHierarchy([]);
+    }
+  }, [open, initialParentRuleId]);
 
   // Fetch top-level rules
   const { data: topLevelRules = [], isLoading: topLevelLoading } = useGetTopLevelRules(rulesetId);
 
-  // Dynamically fetch children for each level in the hierarchy
-  const childRulesQueries = selectedRuleHierarchy.map((ruleId, index) =>
-    useGetChildRules(ruleId, index === selectedRuleHierarchy.length - 1)
+  // Fetch child rules for the last selected rule in the REFERENCE hierarchy
+  const lastSelectedReferenceRuleId =
+    selectedReferenceHierarchy.length > 0 ? selectedReferenceHierarchy[selectedReferenceHierarchy.length - 1] : null;
+
+  const { data: currentChildRules = [] } = useGetChildRules(
+    lastSelectedReferenceRuleId || '',
+    !!lastSelectedReferenceRuleId
   );
 
   const onSubmit = async (data: FormData) => {
     try {
-      const parentRuleId = selectedRuleHierarchy[selectedRuleHierarchy.length - 1] || undefined;
-      
+      // Parent rule is ALWAYS the initialParentRuleId - it never changes
+      // Referenced rules are the ones selected in the dropdowns (optional)
+      const referencedRules =
+        selectedReferenceHierarchy.length > 0 ? [selectedReferenceHierarchy[selectedReferenceHierarchy.length - 1]] : [];
+
+      console.log('Creating rule with:');
+      console.log('  parentRuleId:', initialParentRuleId);
+      console.log('  referencedRules:', referencedRules);
+
       await createRule({
         ruleCode: data.ruleCode,
         ruleContent: data.ruleContent,
         rulesetId,
-        parentRuleId,
-        referencedRules: [],
+        parentRuleId: initialParentRuleId,
+        referencedRules,
         imageFileIds: []
       });
 
@@ -80,27 +96,19 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId })
 
   const handleClose = () => {
     reset();
-    setSelectedRuleHierarchy([]);
+    setSelectedReferenceHierarchy([]);
     onClose();
   };
 
-  const handleRuleSelect = (level: number) => (event: SelectChangeEvent<string>) => {
+  const handleReferenceSelect = (level: number) => (event: SelectChangeEvent<string>) => {
     const selectedRuleId = event.target.value;
-    
-    // Update hierarchy - keep rules up to this level, replace current level
-    const newHierarchy = [...selectedRuleHierarchy.slice(0, level), selectedRuleId];
-    setSelectedRuleHierarchy(newHierarchy);
+
+    // Update reference hierarchy - keep rules up to this level, replace current level
+    const newHierarchy = [...selectedReferenceHierarchy.slice(0, level), selectedRuleId];
+    setSelectedReferenceHierarchy(newHierarchy);
   };
 
   // Styling
-  const labelStyles = {
-    color: '#ef4345',
-    fontWeight: 700,
-    textDecoration: 'underline',
-    fontSize: '20px',
-    mb: 1.5
-  };
-
   const selectStyles = {
     backgroundColor: theme.palette.action.hover,
     borderRadius: '8px',
@@ -138,30 +146,13 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId })
     }
   };
 
-  // Get rules for current level
-  const getCurrentLevelRules = (level: number): Rule[] => {
-    if (level === 0) {
-      return topLevelRules;
-    }
-    
-    const queryResult = childRulesQueries[level - 1];
-    return queryResult?.data || [];
-  };
-
-  // Check if current level has child rules
-  const hasChildRules = (level: number): boolean => {
-    if (level >= selectedRuleHierarchy.length) return false;
-    const rules = getCurrentLevelRules(level + 1);
-    return rules.length > 0;
-  };
-
   return (
     <NERFormModal
       open={open}
       onHide={handleClose}
       reset={() => {
         reset();
-        setSelectedRuleHierarchy([]);
+        setSelectedReferenceHierarchy([]);
       }}
       title="Add Rule"
       handleUseFormSubmit={handleSubmit}
@@ -169,10 +160,15 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId })
       formId="add-rule-form"
       showCloseButton
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, py: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, py: 2, minWidth: '500px' }}>
         {/* Rule Code */}
         <Box>
-          <Typography sx={labelStyles}>Rule Code*</Typography>
+          <Typography
+            variant="h4"
+            sx={{ color: theme.palette.primary.main, textDecoration: 'underline', fontSize: 30, mb: 2 }}
+          >
+            Rule Code*
+          </Typography>
           <Controller
             name="ruleCode"
             control={control}
@@ -191,7 +187,12 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId })
 
         {/* Rule Content */}
         <Box>
-          <Typography sx={labelStyles}>Rule Content*</Typography>
+          <Typography
+            variant="h4"
+            sx={{ color: theme.palette.primary.main, textDecoration: 'underline', fontSize: 30, mb: 2 }}
+          >
+            Rule Content*
+          </Typography>
           <Controller
             name="ruleContent"
             control={control}
@@ -199,8 +200,6 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId })
               <TextField
                 {...field}
                 fullWidth
-                multiline
-                rows={3}
                 placeholder="Enter Rule Content"
                 error={!!errors.ruleContent}
                 helperText={errors.ruleContent?.message}
@@ -210,15 +209,20 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId })
           />
         </Box>
 
-        {/* Select Referenced Rule - Cascading Dropdowns */}
+        {/* Select Referenced Rule - Cascading Dropdowns (OPTIONAL) */}
         <Box>
-          <Typography sx={labelStyles}>Select Referenced Rule</Typography>
+          <Typography
+            variant="h4"
+            sx={{ color: theme.palette.primary.main, textDecoration: 'underline', fontSize: 30, mb: 2 }}
+          >
+            Select Referenced Rule
+          </Typography>
 
           {/* Level 0: Top-level rules */}
           <FormControl fullWidth sx={{ mb: 2 }}>
             <Select
-              value={selectedRuleHierarchy[0] || ''}
-              onChange={handleRuleSelect(0)}
+              value={selectedReferenceHierarchy[0] || ''}
+              onChange={handleReferenceSelect(0)}
               displayEmpty
               disabled={topLevelLoading}
               sx={selectStyles}
@@ -239,38 +243,31 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId })
             </Select>
           </FormControl>
 
-          {/* Dynamic child rule dropdowns */}
-          {selectedRuleHierarchy.map((selectedRuleId, level) => {
-            const childRules = getCurrentLevelRules(level + 1);
-            const shouldShow = childRules.length > 0;
-
-            if (!shouldShow) return null;
-
-            return (
-              <FormControl key={`level-${level + 1}`} fullWidth sx={{ mb: 2 }}>
-                <Select
-                  value={selectedRuleHierarchy[level + 1] || ''}
-                  onChange={handleRuleSelect(level + 1)}
-                  displayEmpty
-                  sx={selectStyles}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: { backgroundColor: theme.palette.background.paper }
-                    }
-                  }}
-                >
-                  <MenuItem value="" disabled>
-                    <Typography sx={{ color: theme.palette.text.secondary }}>Select Sub-Section</Typography>
+          {/* Dynamic child rule dropdown - only show one level at a time */}
+          {selectedReferenceHierarchy.length > 0 && currentChildRules.length > 0 && (
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <Select
+                value={selectedReferenceHierarchy[selectedReferenceHierarchy.length] || ''}
+                onChange={handleReferenceSelect(selectedReferenceHierarchy.length)}
+                displayEmpty
+                sx={selectStyles}
+                MenuProps={{
+                  PaperProps: {
+                    sx: { backgroundColor: theme.palette.background.paper }
+                  }
+                }}
+              >
+                <MenuItem value="" disabled>
+                  <Typography sx={{ color: theme.palette.text.secondary }}>Select Sub-Section</Typography>
+                </MenuItem>
+                {currentChildRules.map((rule: Rule) => (
+                  <MenuItem key={rule.ruleId} value={rule.ruleId}>
+                    {rule.ruleCode}
                   </MenuItem>
-                  {childRules.map((rule: Rule) => (
-                    <MenuItem key={rule.ruleId} value={rule.ruleId}>
-                      {rule.ruleCode}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            );
-          })}
+                ))}
+              </Select>
+            </FormControl>
+          )}
         </Box>
       </Box>
     </NERFormModal>

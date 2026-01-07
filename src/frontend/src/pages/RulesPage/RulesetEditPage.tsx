@@ -26,181 +26,181 @@ import { countRulesToDelete } from '../../utils/rules.utils';
  * @param rulesetId - The ID of the ruleset to fetch.
  * @returns The ruleset data.
  */
-export const useSingleRuleset = (rulesetId: string) => {
-  const placeholderRules: Rule[] = [
-    {
-      ruleId: '1',
-      ruleCode: 'GR - General Regulations',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: ['1.1'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '1.1',
-      ruleCode: 'G.1',
-      ruleContent: 'Content for G.1 Rule',
-      imageFileIds: [],
-      parentRule: { ruleId: '1', ruleCode: 'GR - General Regulations' },
-      subRuleIds: ['1.1.1'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '1.1.1',
-      ruleCode: 'G.1.1',
-      ruleContent: 'Content for G.1.1 Rule',
-      imageFileIds: [],
-      parentRule: { ruleId: '1.1', ruleCode: 'G.1' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '2',
-      ruleCode: 'AD - Administrative Regulations',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: ['2.1'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '2.1',
-      ruleCode: 'AD.1',
-      ruleContent: 'Content for AD.1 Rule',
-      imageFileIds: [],
-      parentRule: { ruleId: '2', ruleCode: 'AD - Administrative Regulations' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '3',
-      ruleCode: 'DR - Document Requirements',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: ['3.1'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '3.1',
-      ruleCode: 'DR.1',
-      ruleContent: 'Content for DR.1 Rule',
-      imageFileIds: [],
-      parentRule: { ruleId: '3', ruleCode: 'DR - Document Requirements' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '4',
-      ruleCode: 'V - Vehicle Requirements',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: ['5', '6', '7'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '5',
-      ruleCode: 'V.1 - Configuration',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '6',
-      ruleCode: 'V.2 - Driver',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '7',
-      ruleCode: 'V.3 - Suspension and Steering',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
-      subRuleIds: ['8', '9'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '8',
-      ruleCode: 'V.3.1 - Suspension',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '9',
-      ruleCode: 'V.3.2 - Steering',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
-      subRuleIds: ['10', '11', '12'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '10',
-      ruleCode: 'V.3.2.1',
-      ruleContent:
-        'Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line',
-      imageFileIds: [],
-      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '11',
-      ruleCode: 'V.3.2.2',
-      ruleContent: 'Electrically actuated steering of the front wheels is prohibited',
-      imageFileIds: [],
-      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '12',
-      ruleCode: 'V.3.2.3',
-      ruleContent:
-        'Steering systems must use a rigid mechanical linkage capable of tension and compression loads for operation',
-      imageFileIds: [],
-      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '13',
-      ruleCode: 'F - Chassis and Structural',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: ['13.1'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '13.1',
-      ruleCode: 'F.1',
-      ruleContent: 'Content for F.1 Rule',
-      imageFileIds: [],
-      parentRule: { ruleId: '13', ruleCode: 'F - Chassis and Structural' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    }
-  ];
+// export const useSingleRuleset = (rulesetId: string) => {
+//   const placeholderRules: Rule[] = [
+//     {
+//       ruleId: '1',
+//       ruleCode: 'GR - General Regulations',
+//       ruleContent: '',
+//       imageFileIds: [],
+//       parentRule: undefined,
+//       subRuleIds: ['1.1'],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '1.1',
+//       ruleCode: 'G.1',
+//       ruleContent: 'Content for G.1 Rule',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '1', ruleCode: 'GR - General Regulations' },
+//       subRuleIds: ['1.1.1'],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '1.1.1',
+//       ruleCode: 'G.1.1',
+//       ruleContent: 'Content for G.1.1 Rule',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '1.1', ruleCode: 'G.1' },
+//       subRuleIds: [],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '2',
+//       ruleCode: 'AD - Administrative Regulations',
+//       ruleContent: '',
+//       imageFileIds: [],
+//       parentRule: undefined,
+//       subRuleIds: ['2.1'],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '2.1',
+//       ruleCode: 'AD.1',
+//       ruleContent: 'Content for AD.1 Rule',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '2', ruleCode: 'AD - Administrative Regulations' },
+//       subRuleIds: [],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '3',
+//       ruleCode: 'DR - Document Requirements',
+//       ruleContent: '',
+//       imageFileIds: [],
+//       parentRule: undefined,
+//       subRuleIds: ['3.1'],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '3.1',
+//       ruleCode: 'DR.1',
+//       ruleContent: 'Content for DR.1 Rule',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '3', ruleCode: 'DR - Document Requirements' },
+//       subRuleIds: [],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '4',
+//       ruleCode: 'V - Vehicle Requirements',
+//       ruleContent: '',
+//       imageFileIds: [],
+//       parentRule: undefined,
+//       subRuleIds: ['5', '6', '7'],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '5',
+//       ruleCode: 'V.1 - Configuration',
+//       ruleContent: '',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
+//       subRuleIds: [],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '6',
+//       ruleCode: 'V.2 - Driver',
+//       ruleContent: '',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
+//       subRuleIds: [],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '7',
+//       ruleCode: 'V.3 - Suspension and Steering',
+//       ruleContent: '',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
+//       subRuleIds: ['8', '9'],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '8',
+//       ruleCode: 'V.3.1 - Suspension',
+//       ruleContent: '',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
+//       subRuleIds: [],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '9',
+//       ruleCode: 'V.3.2 - Steering',
+//       ruleContent: '',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
+//       subRuleIds: ['10', '11', '12'],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '10',
+//       ruleCode: 'V.3.2.1',
+//       ruleContent:
+//         'Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
+//       subRuleIds: [],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '11',
+//       ruleCode: 'V.3.2.2',
+//       ruleContent: 'Electrically actuated steering of the front wheels is prohibited',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
+//       subRuleIds: [],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '12',
+//       ruleCode: 'V.3.2.3',
+//       ruleContent:
+//         'Steering systems must use a rigid mechanical linkage capable of tension and compression loads for operation',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
+//       subRuleIds: [],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '13',
+//       ruleCode: 'F - Chassis and Structural',
+//       ruleContent: '',
+//       imageFileIds: [],
+//       parentRule: undefined,
+//       subRuleIds: ['13.1'],
+//       referencedRuleIds: []
+//     },
+//     {
+//       ruleId: '13.1',
+//       ruleCode: 'F.1',
+//       ruleContent: 'Content for F.1 Rule',
+//       imageFileIds: [],
+//       parentRule: { ruleId: '13', ruleCode: 'F - Chassis and Structural' },
+//       subRuleIds: [],
+//       referencedRuleIds: []
+//     }
+//   ];
 
-  return {
-    data: { name: 'FSAE Original Version', rulesetId, rules: placeholderRules },
-    isLoading: false,
-    isError: false,
-    error: undefined
-  };
-};
+//   return {
+//     data: { name: 'FSAE Original Version', rulesetId, rules: placeholderRules },
+//     isLoading: false,
+//     isError: false,
+//     error: undefined
+//   };
+// };
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
@@ -220,11 +220,11 @@ const RulesetEditPage: React.FC = () => {
   const [showAddRuleModal, setShowAddRuleModal] = useState(false);
 
   // Delete modal state
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [ruleToDelete, setRuleToDelete] = useState<Rule | null>(null);
+  // const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  // const [ruleToDelete, setRuleToDelete] = useState<Rule | null>(null);
 
-  const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
-  const { mutateAsync: deleteRuleMutation } = useDeleteRule();
+  // const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
+  // const { mutateAsync: deleteRuleMutation } = useDeleteRule();
 
   const {
     data: ruleset,
@@ -262,7 +262,9 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleOpenAddMenu = (ruleId: string, anchorEl: HTMLElement) => {
-    // trying to make tests run lol this comment can get deleted later
+    console.log('=== handleOpenAddMenu ===');
+    console.log('ruleId:', ruleId);
+
     if (showAddMenu && addMenuAnchorEl === anchorEl) {
       handleCloseAddMenu();
       return;
@@ -284,42 +286,44 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleAddRuleFromMenu = () => {
-    console.log('Add rule to:', activeRuleId);
+    console.log('=== handleAddRuleFromMenu ===');
+    console.log('activeRuleId:', activeRuleId);
     setShowAddRuleModal(true);
     handleCloseAddMenu();
   };
 
   const handleRemoveRule = (ruleId: string) => {
-    const rule = ruleset.rules.find((r) => r.ruleId === ruleId);
-    if (rule) {
-      setRuleToDelete(rule);
-      setDeleteModalOpen(true);
-    }
+    console.log('Remove rule:', ruleId);
+    //   const rule = ruleset.rules.find((r) => r.ruleId === ruleId);
+    //   if (rule) {
+    //     setRuleToDelete(rule);
+    //     setDeleteModalOpen(true);
+    //   }
+    // };
+
+    // const handleDeleteConfirm = async () => {
+    //   if (!ruleToDelete) return;
+
+    //   try {
+    //     await deleteRuleMutation(ruleToDelete.ruleId);
+    //     setDeleteModalOpen(false);
+    //     setRuleToDelete(null);
+    //   } catch (err) {
+    //     console.error('Failed to delete rule:', err);
+    //   }
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!ruleToDelete) return;
-
-    try {
-      await deleteRuleMutation(ruleToDelete.ruleId);
-      setDeleteModalOpen(false);
-      setRuleToDelete(null);
-    } catch (err) {
-      console.error('Failed to delete rule:', err);
-    }
-  };
-
-  const handleDeleteCancel = () => {
-    setDeleteModalOpen(false);
-    setRuleToDelete(null);
-  };
+  // const handleDeleteCancel = () => {
+  //   setDeleteModalOpen(false);
+  //   setRuleToDelete(null);
+  // };
 
   const handleEditRule = (ruleId: string) => {
     // Placeholder
     console.log('Edit rule:', ruleId);
   };
 
-  const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, ruleset.rules) : 0;
+  // const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, ruleset.rules) : 0;
 
   return (
     <PageLayout
@@ -375,9 +379,14 @@ const RulesetEditPage: React.FC = () => {
             />
 
             <AddRuleSectionModal open={showAddRuleSectionModal} onClose={() => setShowAddRuleSectionModal(false)} />
-            <AddRuleModal open={showAddRuleModal} onClose={() => setShowAddRuleModal(false)} rulesetId={rulesetId} />
+            <AddRuleModal
+              open={showAddRuleModal}
+              onClose={() => setShowAddRuleModal(false)}
+              rulesetId={rulesetId}
+              initialParentRuleId={activeRuleId || undefined}
+            />
 
-            {ruleToDelete && (
+            {/* {ruleToDelete && (
               <DeleteRuleModal
                 open={deleteModalOpen}
                 onHide={handleDeleteCancel}
@@ -385,7 +394,7 @@ const RulesetEditPage: React.FC = () => {
                 rule={ruleToDelete}
                 totalRulesToDelete={totalRulesToDelete}
               />
-            )}
+            )} */}
 
             <Box
               sx={{
