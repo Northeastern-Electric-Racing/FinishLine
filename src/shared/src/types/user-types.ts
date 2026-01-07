@@ -42,7 +42,15 @@ export type ThemeName = 'DARK' | 'LIGHT';
 
 export type OrganizationPreview = Pick<
   Organization,
-  'organizationId' | 'name' | 'dateCreated' | 'dateDeleted' | 'description' | 'applicationLink' | 'applyInterestImageId' | 'exploreAsGuestImageId' | 'newMemberImageId'
+  | 'organizationId'
+  | 'name'
+  | 'dateCreated'
+  | 'dateDeleted'
+  | 'description'
+  | 'applicationLink'
+  | 'applyInterestImageId'
+  | 'exploreAsGuestImageId'
+  | 'newMemberImageId'
 >;
 
 export interface Organization {

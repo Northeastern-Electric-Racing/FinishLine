@@ -345,7 +345,7 @@ export const createTestMilestone = async (user: User, organizationId: string) =>
 export const createTestChecklist = async (
   user: User,
   organizationId: string,
-  name: string,
+  content: string,
   teamTypeId?: string,
   teamId?: string,
   parentChecklistId?: string
@@ -355,7 +355,7 @@ export const createTestChecklist = async (
 
   const checklist = await prisma.checklist.create({
     data: {
-      name,
+      content,
       organizationId,
       userCreatedId: user.userId,
       teamTypeId,

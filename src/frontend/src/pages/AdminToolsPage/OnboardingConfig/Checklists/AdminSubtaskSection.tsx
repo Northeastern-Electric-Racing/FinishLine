@@ -25,9 +25,11 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
   const toast = useToast();
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const [showCreateInfoModal, setShowCreateInfoModal] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<ChecklistPreview & { descriptions?: string[], itemType?: ChecklistItemType } | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<
+    (ChecklistPreview & { descriptions?: string[]; itemType?: ChecklistItemType }) | null
+  >(null);
   const [taskToEdit, setTaskToEdit] = useState<ChecklistPreview | null>(null);
-  const [infoToEdit, setInfoToEdit] = useState<ChecklistPreview & { descriptions?: string[] } | null>(null);
+  const [infoToEdit, setInfoToEdit] = useState<ChecklistPreview | null>(null);
 
   const { mutateAsync: deleteChecklist } = useDeleteChecklist();
   const { mutate: reorderItems } = useReorderChecklistItems(parentTask.checklistId);
@@ -77,17 +79,20 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
     const newItems = Array.from(localItems);
     const [removed] = newItems.splice(source.index, 1);
     newItems.splice(destination.index, 0, removed);
-    
+
     setLocalItems(newItems);
 
     // Send to backend - all items are now real checklist items
     const itemIds = newItems.map((item) => item.checklistId);
-    reorderItems({ itemIds }, {
-      onError: (error: any) => {
-        toast.error(error.message || 'Failed to reorder items');
-        setLocalItems(allItems); // Revert on error
+    reorderItems(
+      { itemIds },
+      {
+        onError: (error: any) => {
+          toast.error(error.message || 'Failed to reorder items');
+          setLocalItems(allItems); // Revert on error
+        }
       }
-    });
+    );
   };
 
   return (
@@ -122,7 +127,7 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
                                     </IconButton>
                                   </Box>
                                   <Typography color="black" fontWeight="bold">
-                                    {item.name} {item.isOptional && '(Optional)'}
+                                    {item.content} {item.isOptional && '(Optional)'}
                                   </Typography>
                                 </Box>
                                 <Box sx={{ display: 'flex' }}>
@@ -143,13 +148,13 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
                                     </IconButton>
                                   </Box>
                                   <Box sx={{ flex: 1 }}>
-                                    <NERMarkdown markdown={(item as any).descriptions?.[0] || item.name} />
+                                    <NERMarkdown markdown={item.content} />
                                   </Box>
                                   <Box sx={{ display: 'flex' }}>
                                     <IconButton onClick={() => setItemToDelete(item)}>
                                       <RemoveCircleOutlineIcon sx={{ color: 'black' }} />
                                     </IconButton>
-                                    <IconButton onClick={() => setInfoToEdit({ ...item, descriptions: (item as any).descriptions || [item.name] })}>
+                                    <IconButton onClick={() => setInfoToEdit(item)}>
                                       <EditIcon sx={{ color: 'black' }} />
                                     </IconButton>
                                   </Box>

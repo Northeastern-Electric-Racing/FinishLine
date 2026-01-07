@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { groupChecklists } from '../../../utils/onboarding.utils';
 import Checklist from './Checklist';
 import { Checklist as ChecklistType } from 'shared';

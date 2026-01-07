@@ -66,17 +66,20 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
     const newTasks = Array.from(localTasks);
     const [removed] = newTasks.splice(source.index, 1);
     newTasks.splice(destination.index, 0, removed);
-    
+
     setLocalTasks(newTasks);
 
     // Send to backend
     const taskIds = newTasks.map((task) => task.checklistId);
-    reorderTasks({ taskIds }, {
-      onError: (error: any) => {
-        toast.error(error.message || 'Failed to reorder tasks');
-        setLocalTasks(parentChecklists); // Revert on error
+    reorderTasks(
+      { taskIds },
+      {
+        onError: (error: any) => {
+          toast.error(error.message || 'Failed to reorder tasks');
+          setLocalTasks(parentChecklists); // Revert on error
+        }
       }
-    });
+    );
   };
 
   return (

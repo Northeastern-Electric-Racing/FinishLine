@@ -1472,8 +1472,7 @@ model Checklist {
   teamType          Team_Type?          @relation(fields: [teamTypeId], references: [teamTypeId])
   teamId            String?
   team              Team?               @relation(fields: [teamId], references: [teamId])
-  name              String
-  descriptions      String[]
+  content           String
   isOptional        Boolean             @default(false)
   displayOrder      Int?
   itemType          Checklist_Item_Type @default(TASK)

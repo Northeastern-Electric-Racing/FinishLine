@@ -124,7 +124,7 @@ export default class OrganizationsService {
     const exploreAsGuestImageData = exploreAsGuestImage ? await uploadFile(exploreAsGuestImage) : null;
     const updateData = {
       ...(applyInterestImageData && { applyInterestImageId: applyInterestImageData.id }),
-      ...(exploreAsGuestImageData && { exploreAsGuestImageId: exploreAsGuestImageData.id }),
+      ...(exploreAsGuestImageData && { exploreAsGuestImageId: exploreAsGuestImageData.id })
     };
 
     const newImages = await prisma.organization.update({

@@ -43,11 +43,9 @@ const CreateInfoBlockModal: React.FC<CreateInfoBlockModalProps> = ({ open, handl
 
   const onFormSubmit = async (data: InfoBlockFormValues) => {
     try {
-      
       await createChecklist({
-        name: 'Info Block', // Name is required but not used for info blocks
-        descriptions: [data.content],
-        isOptional: false,
+        content: data.content,
+        isOptional: true, // INFO blocks are always optional
         parentChecklistId: parentChecklist.checklistId,
         teamId: parentChecklist.team?.teamId,
         teamTypeId: parentChecklist.teamType?.teamTypeId,
@@ -162,4 +160,3 @@ const CreateInfoBlockModal: React.FC<CreateInfoBlockModalProps> = ({ open, handl
 };
 
 export default CreateInfoBlockModal;
-

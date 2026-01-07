@@ -51,7 +51,11 @@ organizationRouter.post(
 );
 organizationRouter.post('/logo/update', upload.single('logo'), OrganizationsController.setLogoImage);
 organizationRouter.get('/logo', OrganizationsController.getOrganizationLogoImage);
-organizationRouter.post('/new-member-image/update', upload.single('newMemberImage'), OrganizationsController.setNewMemberImage);
+organizationRouter.post(
+  '/new-member-image/update',
+  upload.single('newMemberImage'),
+  OrganizationsController.setNewMemberImage
+);
 organizationRouter.get('/new-member-image', OrganizationsController.getOrganizationNewMemberImage);
 organizationRouter.post(
   '/description/set',

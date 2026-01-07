@@ -14,10 +14,9 @@ export enum ChecklistItemType {
 
 export interface Checklist {
   checklistId: string;
-  name: string;
+  content: string;
   teamType?: TeamType;
   team?: Team;
-  descriptions: string[];
   isOptional: boolean;
   displayOrder?: number;
   itemType: ChecklistItemType;
@@ -30,6 +29,9 @@ export interface Checklist {
   dateDeleted?: Date;
 }
 
-export type ChecklistPreview = Pick<Checklist, 'checklistId' | 'name' | 'team' | 'teamType' | 'dateCreated' | 'isOptional' | 'displayOrder' | 'itemType'>;
+export type ChecklistPreview = Pick<
+  Checklist,
+  'checklistId' | 'content' | 'team' | 'teamType' | 'dateCreated' | 'isOptional' | 'displayOrder' | 'itemType'
+>;
 
 export type CreateChecklistPreview = Omit<ChecklistPreview, 'checklistId' | 'dateCreated'>;

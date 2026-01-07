@@ -13,7 +13,7 @@ interface EditInfoBlockModalProps {
   open: boolean;
   handleClose: () => void;
   parentChecklist: Checklist;
-  defaultValues: ChecklistPreview & { descriptions?: string[] };
+  defaultValues: ChecklistPreview;
 }
 
 interface InfoBlockFormValues {
@@ -37,7 +37,7 @@ const EditInfoBlockModal: React.FC<EditInfoBlockModalProps> = ({ open, handleClo
     formState: { errors }
   } = useForm<InfoBlockFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: { content: defaultValues.descriptions?.[0] || '' }
+    defaultValues: { content: defaultValues.content || '' }
   });
 
   const contentValue = watch('content');
@@ -45,9 +45,8 @@ const EditInfoBlockModal: React.FC<EditInfoBlockModalProps> = ({ open, handleClo
   const onFormSubmit = async (data: InfoBlockFormValues) => {
     try {
       await editChecklist({
-        name: 'Info Block', // Name is required but not used for info blocks
-        descriptions: [data.content],
-        isOptional: false,
+        content: data.content,
+        isOptional: true, // INFO blocks are always optional
         parentChecklistId: parentChecklist.checklistId,
         teamId: parentChecklist.team?.teamId,
         teamTypeId: parentChecklist.teamType?.teamTypeId,
@@ -65,7 +64,7 @@ const EditInfoBlockModal: React.FC<EditInfoBlockModalProps> = ({ open, handleClo
       open={open}
       onHide={handleClose}
       title="Edit Information Block"
-      reset={() => reset({ content: defaultValues.descriptions?.[0] || '' })}
+      reset={() => reset({ content: defaultValues.content || '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId="edit-info-block-form"
@@ -158,4 +157,3 @@ const EditInfoBlockModal: React.FC<EditInfoBlockModalProps> = ({ open, handleClo
 };
 
 export default EditInfoBlockModal;
-

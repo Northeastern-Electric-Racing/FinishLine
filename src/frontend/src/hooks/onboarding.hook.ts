@@ -22,8 +22,7 @@ export interface ToggleChecklistPayload {
 }
 
 export interface ChecklistCreateArgs {
-  name: string;
-  descriptions: string[];
+  content: string;
   isOptional: boolean;
   parentChecklistId?: string;
   teamId?: string;

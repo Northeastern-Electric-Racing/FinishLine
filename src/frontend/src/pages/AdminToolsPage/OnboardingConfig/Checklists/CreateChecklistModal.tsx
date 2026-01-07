@@ -44,11 +44,11 @@ interface ChecklistItem {
 }
 
 interface ChecklistFormValues {
-  name: string;
+  content: string;
 }
 
 const schema: yup.ObjectSchema<ChecklistFormValues> = yup.object().shape({
-  name: yup.string().required('Name is Required')
+  content: yup.string().required('Task name is required')
 }) as any;
 
 const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateChecklistModalProps) => {
@@ -59,7 +59,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
   const [items, setItems] = useState<ChecklistItem[]>([]);
 
   const defaultValues = {
-    name: ''
+    content: ''
   };
 
   const {
@@ -109,8 +109,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
   const onFormSubmit = async (data: ChecklistFormValues) => {
     try {
       const formattedData = {
-        name: data.name,
-        descriptions: [],
+        content: data.content,
         isOptional: false,
         teamId,
         teamTypeId
@@ -123,8 +122,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
         items.map((item) => {
           if (item.type === 'TASK' && item.name) {
             return createChecklist({
-              name: item.name,
-              descriptions: [],
+              content: item.name,
               teamId,
               teamTypeId,
               parentChecklistId: parentChecklist.checklistId,
@@ -133,12 +131,11 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
             });
           } else if (item.type === 'INFO' && item.content) {
             return createChecklist({
-              name: 'Info Block',
-              descriptions: [item.content],
+              content: item.content,
               teamId,
               teamTypeId,
               parentChecklistId: parentChecklist.checklistId,
-              isOptional: false,
+              isOptional: true, // INFO blocks are always optional
               itemType: 'INFO'
             });
           }
@@ -162,7 +159,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
       onHide={handleClose}
       title={'Create Task'}
       reset={() => {
-        reset({ name: '' });
+        reset({ content: '' });
         setItems([]);
       }}
       handleUseFormSubmit={handleSubmit}
@@ -185,7 +182,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
             Task Name*
           </FormLabel>
           <Controller
-            name="name"
+            name="content"
             control={control}
             render={({ field }) => (
               <TextField
@@ -204,8 +201,8 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
                   mt: 1,
                   width: '100%'
                 }}
-                error={!!errors.name}
-                helperText={errors.name?.message}
+                error={!!errors.content}
+                helperText={errors.content?.message}
               />
             )}
           />
