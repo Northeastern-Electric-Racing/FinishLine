@@ -31,11 +31,12 @@ const ParentTask: React.FC<ParentTaskProps> = ({ parentTask, checkedChecklists }
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Tooltip title="Please complete all subtasks to mark this task as completed" arrow placement="right">
-            <Box sx={{ pointerEvents: 'none', padding: '8px' }}>
+            <Box sx={{ padding: '8px', cursor: 'not-allowed' }}>
               <Checkbox
                 checked={isChecklistChecked(checkedChecklists, parentTask)}
                 disabled
                 sx={{
+                  pointerEvents: 'none',
                   '& .MuiSvgIcon-root': {
                     fill: 'rgba(0, 0, 0, 0.5)',
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
