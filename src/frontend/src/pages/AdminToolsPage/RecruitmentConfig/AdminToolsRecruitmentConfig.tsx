@@ -146,7 +146,7 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
                     <Box
                       component="img"
                       sx={{ display: 'block', maxWidth: '200px', mb: 1 }}
-                      alt="Apply Interest"
+                      alt="Explore As Guest"
                       src={exploreGuestImageUrl}
                     />
                   )}

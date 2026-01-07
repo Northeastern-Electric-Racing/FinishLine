@@ -8,8 +8,9 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CreateChecklistModal from './CreateChecklistModal';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { useDeleteChecklist } from '../../../../hooks/onboarding.hook';
+import { useDeleteChecklist, useReorderTasks } from '../../../../hooks/onboarding.hook';
 import NERDeleteModal from '../../../../components/NERDeleteModal';
+import { DragDropContext, Droppable, Draggable, OnDragEndResponder } from '@hello-pangea/dnd';
 
 export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklistName?: string; teamType?: TeamType }> = ({
   parentChecklists,
@@ -19,6 +20,7 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
   const [showTasks, setShowTasks] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [tasksToDelete, setTasksToDelete] = useState<Checklist[] | null>(null);
+  const [localTasks, setLocalTasks] = useState(parentChecklists);
 
   const toggleShowTasks = () => {
     setShowTasks((prev) => !prev);
@@ -26,6 +28,12 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
 
   const toast = useToast();
   const { mutateAsync: deleteChecklist } = useDeleteChecklist();
+  const { mutate: reorderTasks } = useReorderTasks();
+
+  // Update local tasks when parentChecklists changes
+  useState(() => {
+    setLocalTasks(parentChecklists);
+  });
 
   const handleDelete = async () => {
     if (!tasksToDelete) return;
@@ -41,6 +49,34 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
       }
     }
     setTasksToDelete(null);
+  };
+
+  const onDragEnd: OnDragEndResponder = (result) => {
+    const { destination, source } = result;
+
+    if (!destination) {
+      return;
+    }
+
+    if (destination.index === source.index) {
+      return;
+    }
+
+    // Reorder locally
+    const newTasks = Array.from(localTasks);
+    const [removed] = newTasks.splice(source.index, 1);
+    newTasks.splice(destination.index, 0, removed);
+    
+    setLocalTasks(newTasks);
+
+    // Send to backend
+    const taskIds = newTasks.map((task) => task.checklistId);
+    reorderTasks({ taskIds }, {
+      onError: (error: any) => {
+        toast.error(error.message || 'Failed to reorder tasks');
+        setLocalTasks(parentChecklists); // Revert on error
+      }
+    });
   };
 
   return (
@@ -86,9 +122,24 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
                 borderRadius: '0px 0px 10px 10px'
               }}
             >
-              {parentChecklists.map((parentChecklist) => (
-                <AdminTask parentTask={parentChecklist} />
-              ))}
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="parent-tasks">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef}>
+                      {localTasks.map((parentChecklist, index) => (
+                        <Draggable key={parentChecklist.checklistId} draggableId={parentChecklist.checklistId} index={index}>
+                          {(provided) => (
+                            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                              <AdminTask parentTask={parentChecklist} />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
               <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                 <IconButton sx={{ color: 'red' }} onClick={() => setShowCreateModal(true)}>
                   <AddCircleOutlineIcon sx={{ mr: 1 }} />

@@ -1,6 +1,6 @@
 import ErrorPage from '../../../ErrorPage';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { ChecklistCreateArgs, useCreateChecklist } from '../../../../hooks/onboarding.hook';
+import { useCreateChecklist } from '../../../../hooks/onboarding.hook';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -15,13 +15,16 @@ import {
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import React, { useState } from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { CreateChecklistPreview } from 'shared';
+import { useForm, Controller } from 'react-hook-form';
 import NERFormModal from '../../../../components/NERFormModal';
 import * as yup from 'yup';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import NERMarkdown from '../../../../components/NERMarkdown';
+import { DragDropContext, Droppable, Draggable, OnDragEndResponder } from '@hello-pangea/dnd';
+import { GridDragIcon } from '@mui/x-data-grid';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import InfoIcon from '@mui/icons-material/Info';
 
 interface CreateChecklistModalProps {
   open: boolean;
@@ -30,51 +33,38 @@ interface CreateChecklistModalProps {
   teamTypeId?: string;
 }
 
-interface ChecklistFormValues {
-  name: string;
-  descriptions: { name: string }[];
-  subtasks: CreateChecklistPreview[];
+type ItemType = 'TASK' | 'INFO';
+
+interface ChecklistItem {
+  id: string;
+  type: ItemType;
+  name?: string; // For tasks
+  isOptional?: boolean; // For tasks
+  content?: string; // For info blocks
 }
 
-const schema = yup.object().shape({
-  name: yup.string().required('Name is Required'),
-  descriptions: yup
-    .array()
-    .of(
-      yup.object().shape({
-        name: yup.string().required('Description is Required')
-      })
-    )
-    .required()
-    .min(1, 'At least one description is required'),
-  subtasks: yup
-    .array()
-    .of(
-      yup.object().shape({
-        name: yup.string().required('Subtask Name is Required'),
-        isOptional: yup.boolean().required('Is Optional is Required')
-      })
-    )
-    .required()
-});
+interface ChecklistFormValues {
+  name: string;
+}
+
+const schema: yup.ObjectSchema<ChecklistFormValues> = yup.object().shape({
+  name: yup.string().required('Name is Required')
+}) as any;
 
 const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateChecklistModalProps) => {
   const theme = useTheme();
   const toast = useToast();
   const { mutateAsync: createChecklist, isLoading, isError, error } = useCreateChecklist();
 
-  const [subtasks, setSubtasks] = useState<ChecklistCreateArgs[]>([{ name: '', isOptional: false, descriptions: [] }]);
+  const [items, setItems] = useState<ChecklistItem[]>([]);
 
   const defaultValues = {
-    name: '',
-    descriptions: [{ name: '' }],
-    subtasks: []
+    name: ''
   };
 
   const {
     handleSubmit,
     control,
-    watch,
     reset,
     formState: { errors }
   } = useForm<ChecklistFormValues>({
@@ -82,59 +72,88 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
     defaultValues
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'descriptions'
-  });
+  const addTask = () => {
+    setItems([...items, { id: `task-${Date.now()}`, type: 'TASK', name: '', isOptional: false }]);
+  };
+
+  const addInfoBlock = () => {
+    setItems([...items, { id: `info-${Date.now()}`, type: 'INFO', content: '' }]);
+  };
+
+  const updateItem = (index: number, updates: Partial<ChecklistItem>) => {
+    const newItems = [...items];
+    newItems[index] = { ...newItems[index], ...updates };
+    setItems(newItems);
+  };
+
+  const removeItem = (index: number) => {
+    setItems(items.filter((_, i) => i !== index));
+  };
+
+  const onDragEnd: OnDragEndResponder = (result) => {
+    const { destination, source } = result;
+
+    if (!destination || destination.index === source.index) {
+      return;
+    }
+
+    const newItems = Array.from(items);
+    const [removed] = newItems.splice(source.index, 1);
+    newItems.splice(destination.index, 0, removed);
+    setItems(newItems);
+  };
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  const onFormSubmit = async (data: ChecklistCreateArgs) => {
+  const onFormSubmit = async (data: ChecklistFormValues) => {
     try {
       const formattedData = {
-        ...data,
+        name: data.name,
+        descriptions: [],
+        isOptional: false,
         teamId,
-        teamTypeId,
-        descriptions: (data.descriptions as unknown as { name: string }[]).map((desc) => desc.name)
+        teamTypeId
       };
 
       const parentChecklist = await createChecklist(formattedData);
 
-      // Handle subtasks
-      const filteredSubtasks = subtasks.filter((subtask) => subtask.name !== '');
+      // Create all items in order with their displayOrder set
       await Promise.all(
-        filteredSubtasks.map((subtask) =>
-          createChecklist({
-            name: subtask.name,
-            descriptions: [],
-            teamId,
-            teamTypeId,
-            parentChecklistId: parentChecklist.checklistId,
-            isOptional: subtask.isOptional
-          })
-        )
+        items.map((item) => {
+          if (item.type === 'TASK' && item.name) {
+            return createChecklist({
+              name: item.name,
+              descriptions: [],
+              teamId,
+              teamTypeId,
+              parentChecklistId: parentChecklist.checklistId,
+              isOptional: item.isOptional || false,
+              itemType: 'TASK'
+            });
+          } else if (item.type === 'INFO' && item.content) {
+            return createChecklist({
+              name: 'Info Block',
+              descriptions: [item.content],
+              teamId,
+              teamTypeId,
+              parentChecklistId: parentChecklist.checklistId,
+              isOptional: false,
+              itemType: 'INFO'
+            });
+          }
+          return Promise.resolve();
+        })
       );
 
+      toast.success('Task created successfully');
       handleClose();
+      reset();
+      setItems([]);
     } catch (error) {
       toast.error('Failed to create checklist');
       console.error('Error in onFormSubmit:', error);
     }
-  };
-
-  const addSubtask = () => {
-    setSubtasks([...subtasks, { name: '', isOptional: false, descriptions: [] }]);
-  };
-
-  const deleteSubtask = (index: number) => {
-    const updatedSubtasks = subtasks.filter((_, i) => i !== index);
-    setSubtasks(updatedSubtasks);
-  };
-
-  const handleSubtaskChange = (index: number, key: string, value: any) => {
-    const updatedSubtasks = subtasks.map((subtask, i) => (i === index ? { ...subtask, [key]: value } : subtask));
-    setSubtasks(updatedSubtasks);
   };
 
   return (
@@ -142,7 +161,10 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
       open={open}
       onHide={handleClose}
       title={'Create Task'}
-      reset={() => reset({ name: '', descriptions: [] })}
+      reset={() => {
+        reset({ name: '' });
+        setItems([]);
+      }}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId={'create-task-form'}
@@ -188,211 +210,206 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
             )}
           />
         </FormControl>
-        <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <FormLabel
-              sx={{
-                color: theme.palette.error.main,
-                fontWeight: 'bold',
-                fontSize: '1.5rem',
-                textDecoration: 'underline'
-              }}
-            >
-              Subtasks
-            </FormLabel>
-            <FormLabel
-              sx={{
-                color: theme.palette.text.primary,
-                fontSize: '1rem',
-                mr: 4.5
-              }}
-            >
-              Optional?
-            </FormLabel>
-          </Box>
-          <Box>
-            {subtasks.map((subtask, index) => (
-              <TextField
-                key={index}
-                value={subtask.name}
-                onChange={(e) => handleSubtaskChange(index, 'name', e.target.value)}
-                placeholder="Subtask Name"
-                fullWidth
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <Checkbox
-                        checked={subtask.isOptional}
-                        onChange={(e) => handleSubtaskChange(index, 'isOptional', e.target.checked)}
-                      />
-                      <IconButton onClick={() => deleteSubtask(index)}>
-                        <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  disableUnderline: true,
-                  sx: {
-                    '& fieldset': { border: 'none' }
-                  }
-                }}
-                sx={{
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: 5,
-                  mt: 1,
-                  width: '100%'
-                }}
-              />
-            ))}
-          </Box>
+        <FormControl fullWidth>
+          <FormLabel
+            sx={{
+              color: theme.palette.error.main,
+              fontWeight: 'bold',
+              fontSize: '1.5rem',
+              textDecoration: 'underline',
+              mb: 2
+            }}
+          >
+            Subtasks & Information
+          </FormLabel>
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="items-list">
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef}>
+                  {items.map((item, index) => (
+                    <Draggable key={item.id} draggableId={item.id} index={index}>
+                      {(provided) => (
+                        <div ref={provided.innerRef} {...provided.draggableProps}>
+                          {item.type === 'TASK' ? (
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                mb: 2
+                              }}
+                            >
+                              <Box {...provided.dragHandleProps}>
+                                <IconButton size="small">
+                                  <GridDragIcon sx={{ color: 'black' }} />
+                                </IconButton>
+                              </Box>
+                              <CheckBoxIcon sx={{ color: theme.palette.text.secondary }} />
+                              <TextField
+                                value={item.name || ''}
+                                onChange={(e) => updateItem(index, { name: e.target.value })}
+                                placeholder="Subtask Name"
+                                fullWidth
+                                InputProps={{
+                                  endAdornment: (
+                                    <InputAdornment position="end">
+                                      <FormLabel sx={{ mr: 1, fontSize: '0.9rem' }}>Optional?</FormLabel>
+                                      <Checkbox
+                                        checked={item.isOptional || false}
+                                        onChange={(e) => updateItem(index, { isOptional: e.target.checked })}
+                                        size="small"
+                                      />
+                                      <IconButton onClick={() => removeItem(index)} size="small">
+                                        <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
+                                      </IconButton>
+                                    </InputAdornment>
+                                  ),
+                                  disableUnderline: true,
+                                  sx: {
+                                    '& fieldset': { border: 'none' }
+                                  }
+                                }}
+                                sx={{
+                                  backgroundColor: theme.palette.background.paper,
+                                  borderRadius: 5
+                                }}
+                              />
+                            </Box>
+                          ) : (
+                            <Box sx={{ mb: 2 }}>
+                              <Stack direction="row" spacing={2}>
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    width: '35vw'
+                                  }}
+                                >
+                                  <Box {...provided.dragHandleProps} sx={{ mt: 2 }}>
+                                    <IconButton size="small">
+                                      <GridDragIcon sx={{ color: 'black' }} />
+                                    </IconButton>
+                                  </Box>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, mr: 1 }}>
+                                    <InfoIcon sx={{ color: theme.palette.info.main }} />
+                                  </Box>
+                                  <TextField
+                                    value={item.content || ''}
+                                    onChange={(e) => updateItem(index, { content: e.target.value })}
+                                    placeholder="Enter markdown content..."
+                                    fullWidth
+                                    multiline
+                                    variant="outlined"
+                                    minRows={8}
+                                    maxRows={15}
+                                    InputProps={{
+                                      endAdornment: (
+                                        <InputAdornment position="end" sx={{ alignSelf: 'flex-start', mt: 1 }}>
+                                          <IconButton onClick={() => removeItem(index)} size="small">
+                                            <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
+                                          </IconButton>
+                                        </InputAdornment>
+                                      ),
+                                      disableUnderline: true,
+                                      sx: {
+                                        '& fieldset': { border: 'none' },
+                                        fontSize: '1.1rem',
+                                        lineHeight: 1.6,
+                                        padding: 2
+                                      }
+                                    }}
+                                    sx={{
+                                      backgroundColor: theme.palette.background.paper,
+                                      borderRadius: 3,
+                                      '& .MuiInputBase-root': {
+                                        alignItems: 'flex-start'
+                                      }
+                                    }}
+                                  />
+                                </Box>
+                                <Box
+                                  sx={{
+                                    backgroundColor: theme.palette.background.paper,
+                                    borderRadius: 3,
+                                    width: '35vw',
+                                    padding: 2,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    overflow: 'hidden',
+                                    wordWrap: 'break-word',
+                                    border: `1px solid ${theme.palette.divider}`,
+                                    minHeight: '200px'
+                                  }}
+                                >
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      color: theme.palette.text.secondary,
+                                      mb: 1,
+                                      fontStyle: 'italic'
+                                    }}
+                                  >
+                                    Preview:
+                                  </Typography>
+                                  <Box sx={{ flex: 1, overflow: 'auto' }}>
+                                    {item.content ? (
+                                      <NERMarkdown markdown={item.content} />
+                                    ) : (
+                                      <Typography
+                                        variant="body2"
+                                        sx={{
+                                          color: theme.palette.text.disabled,
+                                          fontStyle: 'italic'
+                                        }}
+                                      >
+                                        Start typing to see formatted markdown...
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                </Box>
+                              </Stack>
+                            </Box>
+                          )}
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </FormControl>
+        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
           <IconButton
-            onClick={addSubtask}
+            onClick={addTask}
             sx={{
               backgroundColor: theme.palette.background.paper,
               borderRadius: 5,
-              mt: 1,
               fontSize: '1rem',
               padding: 1.5,
-              width: '100%',
+              flex: 1,
               justifyContent: 'flex-start'
             }}
           >
             <AddCircleOutlineIcon sx={{ color: theme.palette.text.primary, mr: 1 }} />
             Add Subtask
           </IconButton>
+          <IconButton
+            onClick={addInfoBlock}
+            sx={{
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: 5,
+              fontSize: '1rem',
+              padding: 1.5,
+              flex: 1,
+              justifyContent: 'flex-start'
+            }}
+          >
+            <AddCircleOutlineIcon sx={{ color: theme.palette.text.primary, mr: 1 }} />
+            Add Information Block
+          </IconButton>
         </Box>
-        <FormControl fullWidth>
-          <Box>
-            <FormLabel
-              sx={{
-                color: theme.palette.error.main,
-                fontWeight: 'bold',
-                fontSize: '1.5rem',
-                textDecoration: 'underline',
-                mb: 2
-              }}
-            >
-              Descriptions*
-            </FormLabel>
-            {fields.map((item, index) => (
-              <Stack key={item.id} direction={'row'} spacing={3} sx={{ mb: 3 }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    width: '30vw',
-                    alignItems: 'stretch'
-                  }}
-                >
-                  <Controller
-                    name={`descriptions.${index}.name`}
-                    control={control}
-                    defaultValue={item.name || ''}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        placeholder="Enter description markdown..."
-                        fullWidth
-                        multiline
-                        variant="outlined"
-                        minRows={12}
-                        maxRows={20}
-                        InputProps={{
-                          endAdornment: index !== 0 && (
-                            <InputAdornment position="end" sx={{ alignSelf: 'flex-start', mt: 1 }}>
-                              <IconButton onClick={() => remove(index)}>
-                                <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                          disableUnderline: true,
-                          sx: {
-                            '& fieldset': { border: 'none' },
-                            fontSize: '1.1rem',
-                            lineHeight: 1.6,
-                            padding: 2
-                          }
-                        }}
-                        sx={{
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: 3,
-                          width: '100%',
-                          '& .MuiInputBase-root': {
-                            alignItems: 'flex-start'
-                          }
-                        }}
-                        error={!!errors.descriptions?.[index]?.name}
-                        helperText={errors.descriptions?.[index]?.name?.message}
-                      />
-                    )}
-                  />
-                </Box>
-                <Box
-                  sx={{
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: 3,
-                    width: '30vw',
-                    padding: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden',
-                    wordWrap: 'break-word',
-                    border: `1px solid ${theme.palette.divider}`,
-                    '& *': {
-                      wordWrap: 'break-word',
-                      overflowWrap: 'break-word'
-                    }
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      mb: 1,
-                      fontStyle: 'italic'
-                    }}
-                  >
-                    Preview:
-                  </Typography>
-                  <Box
-                    sx={{
-                      flex: 1,
-                      overflow: 'auto'
-                    }}
-                  >
-                    {watch(`descriptions.${index}.name`) ? (
-                      <NERMarkdown markdown={watch(`descriptions.${index}.name`)} />
-                    ) : (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: theme.palette.text.disabled,
-                          fontStyle: 'italic'
-                        }}
-                      >
-                        Start typing to see formatted markdown...
-                      </Typography>
-                    )}
-                  </Box>
-                </Box>
-              </Stack>
-            ))}
-
-            <IconButton
-              onClick={() => append({ name: '' })}
-              sx={{
-                backgroundColor: theme.palette.background.paper,
-                borderRadius: 5,
-                mt: 1,
-                fontSize: '1rem',
-                padding: 1.5,
-                width: '100%',
-                justifyContent: 'flex-start'
-              }}
-            >
-              <AddCircleOutlineIcon sx={{ color: theme.palette.text.primary, mr: 1 }} />
-              Add Additional Information
-            </IconButton>
-          </Box>
-        </FormControl>
       </Box>
     </NERFormModal>
   );

@@ -7,6 +7,11 @@ import { TeamType } from './design-review-types';
 import { Team } from './team-types';
 import { User } from './user-types';
 
+export enum ChecklistItemType {
+  TASK = 'TASK',
+  INFO = 'INFO'
+}
+
 export interface Checklist {
   checklistId: string;
   name: string;
@@ -14,6 +19,8 @@ export interface Checklist {
   team?: Team;
   descriptions: string[];
   isOptional: boolean;
+  displayOrder?: number;
+  itemType: ChecklistItemType;
   subtasks: ChecklistPreview[];
   parentChecklistId?: string;
   usersChecked: User[];
@@ -23,6 +30,6 @@ export interface Checklist {
   dateDeleted?: Date;
 }
 
-export type ChecklistPreview = Pick<Checklist, 'checklistId' | 'name' | 'team' | 'teamType' | 'dateCreated' | 'isOptional'>;
+export type ChecklistPreview = Pick<Checklist, 'checklistId' | 'name' | 'team' | 'teamType' | 'dateCreated' | 'isOptional' | 'displayOrder' | 'itemType'>;
 
 export type CreateChecklistPreview = Omit<ChecklistPreview, 'checklistId' | 'dateCreated'>;
