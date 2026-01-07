@@ -9,7 +9,11 @@ interface NERMarkdownProps {
 const NERMarkdown = ({ markdown }: NERMarkdownProps) => {
   // make all links open in new tabs
   const components: Components = {
-    a: ({ node, children, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer">{children}</a>
+    a: ({ children, ...props }) => (
+      <a {...props} target="_blank" rel="noopener noreferrer">
+        {children}
+      </a>
+    )
   };
 
   return (

@@ -34,11 +34,9 @@ interface CreateChecklistModalProps {
   teamTypeId?: string;
 }
 
-type ItemType = 'TASK' | 'INFO';
-
 interface ChecklistItem {
   id: string;
-  type: ItemType;
+  type: ChecklistItemType;
   content: string;
   isOptional?: boolean; // For tasks
 }
@@ -73,11 +71,11 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
   });
 
   const addTask = () => {
-    setItems([...items, { id: `task-${Date.now()}`, type: 'TASK', content: '', isOptional: false }]);
+    setItems([...items, { id: `task-${Date.now()}`, type: ChecklistItemType.TASK, content: '', isOptional: false }]);
   };
 
   const addInfoBlock = () => {
-    setItems([...items, { id: `info-${Date.now()}`, type: 'INFO', content: '' }]);
+    setItems([...items, { id: `info-${Date.now()}`, type: ChecklistItemType.INFO, content: '' }]);
   };
 
   const updateItem = (index: number, updates: Partial<ChecklistItem>) => {
@@ -139,7 +137,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
               itemType: ChecklistItemType.INFO
             });
           }
-          return Promise.resolve();
+          throw new Error(`Unexpected checklist item type: ${String(item.type)}`);
         })
       );
 

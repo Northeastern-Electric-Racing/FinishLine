@@ -2633,8 +2633,6 @@ const performSeed: () => Promise<void> = async () => {
     false
   );
 
-  const engageChecklist = await OnboardingServices.createChecklist(batman, 'Engage', null, null, null, ner, false);
-
   const learnGitChecklist = await OnboardingServices.createChecklist(
     batman,
     'Learn how to use git',
