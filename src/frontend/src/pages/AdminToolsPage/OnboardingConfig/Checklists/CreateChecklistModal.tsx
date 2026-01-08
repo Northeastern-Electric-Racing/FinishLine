@@ -46,7 +46,7 @@ interface ChecklistFormValues {
 }
 
 const schema: yup.ObjectSchema<ChecklistFormValues> = yup.object().shape({
-  content: yup.string().required('Task name is required')
+  content: yup.string().required('Content is required')
 });
 
 const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateChecklistModalProps) => {
@@ -71,21 +71,26 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
   });
 
   const addTask = () => {
-    setItems([...items, { id: `task-${Date.now()}`, type: ChecklistItemType.TASK, content: '', isOptional: false }]);
+    setItems((prevItems) => [
+      ...prevItems,
+      { id: `task-${Date.now()}`, type: ChecklistItemType.TASK, content: '', isOptional: false }
+    ]);
   };
 
   const addInfoBlock = () => {
-    setItems([...items, { id: `info-${Date.now()}`, type: ChecklistItemType.INFO, content: '' }]);
+    setItems((prevItems) => [...prevItems, { id: `info-${Date.now()}`, type: ChecklistItemType.INFO, content: '' }]);
   };
 
   const updateItem = (index: number, updates: Partial<ChecklistItem>) => {
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], ...updates };
-    setItems(newItems);
+    setItems((prevItems) => {
+      const newItems = [...prevItems];
+      newItems[index] = { ...newItems[index], ...updates };
+      return newItems;
+    });
   };
 
   const removeItem = (index: number) => {
-    setItems(items.filter((_, i) => i !== index));
+    setItems((prevItems) => prevItems.filter((_, i) => i !== index));
   };
 
   const onDragEnd: OnDragEndResponder = (result) => {
@@ -95,10 +100,12 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
       return;
     }
 
-    const newItems = Array.from(items);
-    const [removed] = newItems.splice(source.index, 1);
-    newItems.splice(destination.index, 0, removed);
-    setItems(newItems);
+    setItems((prevItems) => {
+      const newItems = Array.from(prevItems);
+      const [removed] = newItems.splice(source.index, 1);
+      newItems.splice(destination.index, 0, removed);
+      return newItems;
+    });
   };
 
   if (isError) return <ErrorPage message={error?.message} />;

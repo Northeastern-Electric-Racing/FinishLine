@@ -371,6 +371,7 @@ export default class OrganizationsService {
 
     const newMemberImageData = await uploadFile(newMemberImage);
 
+    // Ensure name exists for frontend display purposes
     if (!newMemberImageData?.name) {
       throw new HttpException(500, 'Image Name not found');
     }
