@@ -36,6 +36,7 @@ import {
 } from '../prisma-query-args/bom.query-args';
 import { getManufacturerQueryArgs } from '../prisma-query-args/manufacturers.query-args';
 import { getMaterialTypeQueryArgs } from '../prisma-query-args/material-type.query-args';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
 
 export default class BillOfMaterialsService {
   /**
@@ -705,7 +706,21 @@ export default class BillOfMaterialsService {
   ): Promise<Assembly> {
     const assembly = await BillOfMaterialsService.getSingleAssemblyWithQueryArgs(assemblyId, organization);
 
-    const teams = assembly.wbsElement?.project?.teams ?? assembly.wbsElement.workPackage?.project.teams ?? [];
+    const teams = await prisma.team.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        projects: {
+          some: {
+            wbsElementId: assembly.wbsElementId
+          }
+        }
+      },
+      include: {
+        members: getUserQueryArgs(organization.organizationId),
+        head: getUserQueryArgs(organization.organizationId),
+        leads: getUserQueryArgs(organization.organizationId)
+      }
+    });
 
     const perms =
       (await userHasPermission(submitter.userId, assembly.wbsElement.organizationId, isAdmin)) ||
@@ -807,14 +822,6 @@ export default class BillOfMaterialsService {
           ...wbsNum,
           organizationId: organization.organizationId
         }
-      },
-      include: {
-        assemblies: {
-          where: {
-            dateDeleted: null
-          },
-          ...getAssemblyQueryArgs(organization.organizationId)
-        }
       }
     });
 
@@ -825,7 +832,15 @@ export default class BillOfMaterialsService {
       throw new DeletedException('WBS Element', wbsPipe(wbsNum));
     }
 
-    return wbsElement.assemblies.map(assemblyTransformer);
+    const assemblies = await prisma.assembly.findMany({
+      where: {
+        wbsElementId: wbsElement.wbsElementId,
+        dateDeleted: null
+      },
+      ...getAssemblyQueryArgs(organization.organizationId)
+    });
+
+    return assemblies.map(assemblyTransformer);
   }
 
   static async getMaterialsForWbsElement(wbsNum: WbsNumber, organization: Organization): Promise<Material[]> {
