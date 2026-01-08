@@ -30,7 +30,12 @@ const CreateInfoBlockModal = ({ open, handleClose, parentChecklist }: CreateInfo
   if (isLoading) return <LoadingIndicator />;
 
   return (
-    <InfoBlockFormModal open={open} handleClose={handleClose} onSubmit={handleFormSubmit} parentChecklist={parentChecklist} />
+    <InfoBlockFormModal
+      open={open}
+      handleClose={handleClose}
+      onSubmit={handleFormSubmit}
+      parentChecklist={parentChecklist}
+    />
   );
 };
 
