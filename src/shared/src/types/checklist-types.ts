@@ -18,7 +18,7 @@ export interface Checklist {
   teamType?: TeamType;
   team?: Team;
   isOptional: boolean;
-  displayOrder?: number;
+  displayIndex?: number;
   itemType: ChecklistItemType;
   subtasks: ChecklistPreview[];
   parentChecklistId?: string;
@@ -31,7 +31,7 @@ export interface Checklist {
 
 export type ChecklistPreview = Pick<
   Checklist,
-  'checklistId' | 'content' | 'team' | 'teamType' | 'dateCreated' | 'isOptional' | 'displayOrder' | 'itemType'
+  'checklistId' | 'content' | 'team' | 'teamType' | 'dateCreated' | 'isOptional' | 'displayIndex' | 'itemType'
 >;
 
 export type CreateChecklistPreview = Omit<ChecklistPreview, 'checklistId' | 'dateCreated'>;

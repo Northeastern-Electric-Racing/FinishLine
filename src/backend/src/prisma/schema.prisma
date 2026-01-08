@@ -1474,7 +1474,7 @@ model Checklist {
   team              Team?               @relation(fields: [teamId], references: [teamId])
   content           String
   isOptional        Boolean             @default(false)
-  displayOrder      Int?
+  displayIndex      Int?
   itemType          Checklist_Item_Type @default(TASK)
   subtasks          Checklist[]         @relation("subtasks")
   parentChecklist   Checklist?          @relation("subtasks", fields: [parentChecklistId], references: [checklistId])
