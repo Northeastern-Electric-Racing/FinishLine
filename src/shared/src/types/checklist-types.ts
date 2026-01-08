@@ -7,12 +7,10 @@ import { TeamType } from './design-review-types';
 import { Team } from './team-types';
 import { User } from './user-types';
 
-export const ChecklistItemType = {
-  TASK: 'TASK',
-  INFO: 'INFO'
-} as const;
-
-export type ChecklistItemType = (typeof ChecklistItemType)[keyof typeof ChecklistItemType];
+export enum ChecklistItemType {
+  TASK = 'TASK',
+  INFO = 'INFO'
+}
 
 export interface Checklist {
   checklistId: string;
