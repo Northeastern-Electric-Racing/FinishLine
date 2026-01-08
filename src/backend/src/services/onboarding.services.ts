@@ -177,20 +177,17 @@ export default class OnboardingServices {
     }
 
     // Calculate next displayIndex
-    const existingChecklists = await prisma.checklist.findMany({
+    const lastChecklist = await prisma.checklist.findFirst({
       where: {
         organizationId: organization.organizationId,
         parentChecklistId: parentChecklistId ?? null,
         dateDeleted: null
       },
-      orderBy: { displayIndex: 'desc' },
-      take: 1
+      orderBy: { displayIndex: 'desc' }
     });
 
-    const nextDisplayIndex =
-      existingChecklists.length > 0 && existingChecklists[0].displayIndex !== null
-        ? existingChecklists[0].displayIndex + 1
-        : 1;
+    // 1 indexed because 0 can be easily confused with null
+    const nextDisplayIndex = lastChecklist && lastChecklist.displayIndex !== null ? lastChecklist.displayIndex + 1 : 1;
 
     const checklist: Checklist = await prisma.checklist.create({
       data: {
