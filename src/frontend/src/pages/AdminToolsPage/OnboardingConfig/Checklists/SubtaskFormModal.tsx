@@ -3,7 +3,7 @@ import NERFormModal from '../../../../components/NERFormModal';
 import { FormControl, FormLabel, Box, TextField, useTheme, Checkbox, InputAdornment } from '@mui/material';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Checklist, ChecklistPreview } from 'shared';
+import { Checklist, ChecklistItemType, ChecklistPreview } from 'shared';
 import { ChecklistCreateArgs, SubtaskCreateArgs } from '../../../../hooks/onboarding.hook';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import React from 'react';
@@ -32,19 +32,20 @@ const SubtaskFormModal = ({ open, handleClose, onSubmit, parentChecklist, defaul
   } = useForm<SubtaskCreateArgs>({
     resolver: yupResolver(schema),
     defaultValues: {
-      name: defaultValues?.name ?? '',
+      name: defaultValues?.content ?? '',
       isOptional: defaultValues?.isOptional ?? false
     }
   });
 
-  const onFormSubmit = async (data: ChecklistCreateArgs) => {
+  const onFormSubmit = async (data: SubtaskCreateArgs) => {
     try {
       const formattedData = {
-        ...data,
-        descriptions: [],
+        content: data.name,
+        isOptional: data.isOptional,
         parentChecklistId: parentChecklist.checklistId,
         teamId: parentChecklist.team?.teamId,
-        teamTypeId: parentChecklist.teamType?.teamTypeId
+        teamTypeId: parentChecklist.teamType?.teamTypeId,
+        itemType: ChecklistItemType.TASK
       };
 
       await onSubmit(formattedData);

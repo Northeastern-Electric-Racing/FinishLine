@@ -146,6 +146,11 @@ enum Special_Permission {
   FINANCE_ONLY
 }
 
+enum Checklist_Item_Type {
+  TASK
+  INFO
+}
+
 enum Review_Status {
   IN_PROGRESS
   READY_FOR_REVIEW
@@ -1171,6 +1176,7 @@ model Organization {
   description                            String    @default("")
   applyInterestImageId                   String?
   exploreAsGuestImageId                  String?
+  newMemberImageId                       String?
   logoImageId                            String?
   slackWorkspaceId                       String?
   applicationLink                        String?
@@ -1321,26 +1327,27 @@ model PopUp {
 }
 
 model Checklist {
-  checklistId       String       @id @default(uuid())
+  checklistId       String              @id @default(uuid())
   teamTypeId        String?
-  teamType          Team_Type?   @relation(fields: [teamTypeId], references: [teamTypeId])
+  teamType          Team_Type?          @relation(fields: [teamTypeId], references: [teamTypeId])
   teamId            String?
-  team              Team?        @relation(fields: [teamId], references: [teamId])
-  name              String
-  descriptions      String[]
-  isOptional        Boolean      @default(false)
-  subtasks          Checklist[]  @relation("subtasks")
-  parentChecklist   Checklist?   @relation("subtasks", fields: [parentChecklistId], references: [checklistId])
+  team              Team?               @relation(fields: [teamId], references: [teamId])
+  content           String
+  isOptional        Boolean             @default(false)
+  displayIndex      Int?
+  itemType          Checklist_Item_Type @default(TASK)
+  subtasks          Checklist[]         @relation("subtasks")
+  parentChecklist   Checklist?          @relation("subtasks", fields: [parentChecklistId], references: [checklistId])
   parentChecklistId String?
-  usersChecked      User[]       @relation(name: "checkedChecklists")
-  dateCreated       DateTime     @default(now())
+  usersChecked      User[]              @relation(name: "checkedChecklists")
+  dateCreated       DateTime            @default(now())
   dateDeleted       DateTime?
-  userCreated       User         @relation(fields: [userCreatedId], references: [userId], name: "checklistCreator")
+  userCreated       User                @relation(fields: [userCreatedId], references: [userId], name: "checklistCreator")
   userCreatedId     String
-  userDeleted       User?        @relation(fields: [userDeletedId], references: [userId], name: "checklistDeleter")
+  userDeleted       User?               @relation(fields: [userDeletedId], references: [userId], name: "checklistDeleter")
   userDeletedId     String?
   organizationId    String
-  organization      Organization @relation(fields: [organizationId], references: [organizationId])
+  organization      Organization        @relation(fields: [organizationId], references: [organizationId])
 
   @@index([organizationId])
   @@index([teamId])

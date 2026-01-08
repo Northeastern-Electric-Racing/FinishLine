@@ -54,6 +54,18 @@ export const setOrganizationLogo = async (file: File) => {
   return axios.post(apiUrls.organizationsSetLogoImage(), formData);
 };
 
+export const setOrganizationNewMemberImage = async (file: File) => {
+  const formData = new FormData();
+  formData.append('newMemberImage', file);
+  return axios.post(apiUrls.organizationsSetNewMemberImage(), formData);
+};
+
+export const getOrganizationNewMemberImage = async () => {
+  return axios.get<string>(apiUrls.organizationsNewMemberImage(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
 export const setOrganizationFeaturedProjects = async (featuredProjectIds: string[]) => {
   return axios.post<Organization>(apiUrls.organizationsSetFeaturedProjects(), {
     projectIds: featuredProjectIds

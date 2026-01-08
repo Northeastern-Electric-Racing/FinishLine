@@ -100,8 +100,7 @@ describe('Onboarding tests', () => {
         async () =>
           await OnboardingServices.createChecklist(
             await createTestUser(wonderwomanGuest, orgId),
-            'name',
-            ['description1', 'description2'],
+            'content',
             null,
             'teamTypeId',
             null,
@@ -116,8 +115,7 @@ describe('Onboarding tests', () => {
         async () =>
           await OnboardingServices.createChecklist(
             await createTestUser(batmanAppAdmin, orgId),
-            'name',
-            ['description1', 'description2'],
+            'content',
             'teamId',
             'teamTypeId',
             null,
@@ -135,8 +133,7 @@ describe('Onboarding tests', () => {
         async () =>
           await OnboardingServices.createChecklist(
             batman,
-            'name',
-            ['description1', 'description2'],
+            'content',
             null,
             null,
             parentChecklist.checklistId,
@@ -150,16 +147,7 @@ describe('Onboarding tests', () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       await expect(
         async () =>
-          await OnboardingServices.createChecklist(
-            batman,
-            'name',
-            ['description1', 'description2'],
-            'invalidTeamId',
-            null,
-            null,
-            organization,
-            true
-          )
+          await OnboardingServices.createChecklist(batman, 'content', 'invalidTeamId', null, null, organization, true)
       ).rejects.toThrow(new NotFoundException('Team', 'invalidTeamId'));
     });
 
@@ -167,16 +155,7 @@ describe('Onboarding tests', () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       await expect(
         async () =>
-          await OnboardingServices.createChecklist(
-            batman,
-            'name',
-            ['description1', 'description2'],
-            null,
-            'invalidTeamTypeId',
-            null,
-            organization,
-            true
-          )
+          await OnboardingServices.createChecklist(batman, 'content', null, 'invalidTeamTypeId', null, organization, true)
       ).rejects.toThrow(new NotFoundException('Team Type', 'invalidTeamTypeId'));
     });
 
@@ -184,16 +163,7 @@ describe('Onboarding tests', () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       await expect(
         async () =>
-          await OnboardingServices.createChecklist(
-            batman,
-            'name',
-            ['description1', 'description2'],
-            null,
-            null,
-            'invalidChecklistId',
-            organization,
-            true
-          )
+          await OnboardingServices.createChecklist(batman, 'content', null, null, 'invalidChecklistId', organization, true)
       ).rejects.toThrow(new NotFoundException('Checklist', 'invalidChecklistId'));
     });
 
@@ -208,8 +178,7 @@ describe('Onboarding tests', () => {
         async () =>
           await OnboardingServices.createChecklist(
             batman,
-            'name',
-            ['description1', 'description2'],
+            'content',
             null,
             null,
             parentChecklist.checklistId,
@@ -228,8 +197,7 @@ describe('Onboarding tests', () => {
         async () =>
           await OnboardingServices.createChecklist(
             batman,
-            'name',
-            ['description1', 'description2'],
+            'content',
             null,
             teamType2.teamTypeId,
             parentChecklist.checklistId,
@@ -244,15 +212,14 @@ describe('Onboarding tests', () => {
       const teamType1 = await createTestTeamType('teamtype1', organization.organizationId);
       const result = await OnboardingServices.createChecklist(
         batman,
-        'name',
-        ['description1', 'description2'],
+        'content',
         null,
         teamType1.teamTypeId,
         null,
         organization,
         true
       );
-      expect(result.name).toEqual('name');
+      expect(result.content).toEqual('content');
     });
   });
 
@@ -263,8 +230,7 @@ describe('Onboarding tests', () => {
           await OnboardingServices.editChecklist(
             await createTestUser(wonderwomanGuest, orgId),
             'checklidtId',
-            'name',
-            ['description1', 'description2'],
+            'content',
             null,
             null,
             null,
@@ -280,8 +246,7 @@ describe('Onboarding tests', () => {
           await OnboardingServices.editChecklist(
             await createTestUser(batmanAppAdmin, orgId),
             'checklistId',
-            'name',
-            ['description1', 'description2'],
+            'content',
             'teamId',
             'teamTypeId',
             null,
@@ -298,8 +263,7 @@ describe('Onboarding tests', () => {
           await OnboardingServices.editChecklist(
             batman,
             'checklistId',
-            'name',
-            ['description1', 'description2'],
+            'content',
             'invalidTeamId',
             null,
             null,
@@ -316,8 +280,7 @@ describe('Onboarding tests', () => {
           await OnboardingServices.editChecklist(
             batman,
             'checklistId',
-            'name',
-            ['description1', 'description2'],
+            'content',
             null,
             'invalidTeamTypeId',
             null,
@@ -334,8 +297,7 @@ describe('Onboarding tests', () => {
           await OnboardingServices.editChecklist(
             batman,
             'checklistId',
-            'name',
-            ['description1', 'description2'],
+            'content',
             null,
             null,
             'invalidChecklistId',
@@ -357,8 +319,7 @@ describe('Onboarding tests', () => {
           await OnboardingServices.editChecklist(
             batman,
             'checklistId',
-            'name',
-            ['description1', 'description2'],
+            'content',
             null,
             null,
             parentChecklist.checklistId,
@@ -378,8 +339,7 @@ describe('Onboarding tests', () => {
           await OnboardingServices.editChecklist(
             batman,
             'checklistId',
-            'name',
-            ['description1', 'description2'],
+            'content',
             null,
             teamType2.teamTypeId,
             parentChecklist.checklistId,
@@ -396,17 +356,15 @@ describe('Onboarding tests', () => {
       const result = await OnboardingServices.editChecklist(
         batman,
         checklist.checklistId,
-        'newName',
-        ['description1', 'description2'],
+        'newContent',
         null,
         teamType1.teamTypeId,
         null,
         organization,
         true
       );
-      expect(result.name).toEqual('newName');
+      expect(result.content).toEqual('newContent');
       expect(result.teamTypeId).toEqual(teamType1.teamTypeId);
-      expect(result.descriptions).toEqual(['description1', 'description2']);
     });
   });
 

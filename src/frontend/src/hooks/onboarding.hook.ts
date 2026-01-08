@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Checklist } from 'shared';
+import { Checklist, ChecklistPreview, User } from 'shared';
 import {
   getAllChecklists,
   getGeneralChecklists,
@@ -9,22 +9,25 @@ import {
   toggleChecklist,
   createChecklist,
   editChecklist,
-  getCheckedChecklists
+  getCheckedChecklists,
+  reorderTasks,
+  reorderChecklistItems
 } from '../apis/onboarding.api';
 import { useEffect, useState } from 'react';
 import { isChecklistChecked } from '../utils/onboarding.utils';
+import { useCurrentUser } from './users.hooks';
 
 export interface ToggleChecklistPayload {
   checklistId: string;
 }
 
 export interface ChecklistCreateArgs {
-  name: string;
-  descriptions: string[];
+  content: string;
   isOptional: boolean;
   parentChecklistId?: string;
   teamId?: string;
   teamTypeId?: string;
+  itemType?: 'TASK' | 'INFO';
 }
 
 export interface SubtaskCreateArgs {
@@ -78,13 +81,62 @@ export const useDeleteChecklist = () => {
 
 export const useToggleChecklist = () => {
   const queryClient = useQueryClient();
-  return useMutation<Checklist, Error, ToggleChecklistPayload>(
+  const currentUser = useCurrentUser();
+
+  type MutationContext = {
+    previousChecklists?: Checklist[];
+    previousCheckedChecklists?: Checklist[];
+  };
+
+  return useMutation<Checklist, Error, ToggleChecklistPayload, MutationContext>(
     ['checklists', 'edit'],
     async (payload) => {
       const { data } = await toggleChecklist(payload);
       return data;
     },
     {
+      onMutate: async ({ checklistId }) => {
+        // Cancel outgoing queries
+        await queryClient.cancelQueries(['checklists']);
+
+        // Snapshot previous values
+        const previousChecklists = queryClient.getQueryData<Checklist[]>(['checklists']);
+        const previousCheckedChecklists = queryClient.getQueryData<Checklist[]>(['checklists', 'checked']);
+
+        // Optimistically update the checklists cache
+        if (previousChecklists && currentUser) {
+          const toggleChecklistInTree = (checklists: Checklist[]): Checklist[] => {
+            return checklists.map((checklist) => {
+              // If this is the checklist we're toggling
+              if (checklist.checklistId === checklistId) {
+                const isCurrentlyChecked = checklist.usersChecked.some((user) => user.userId === currentUser.userId);
+                return {
+                  ...checklist,
+                  usersChecked: isCurrentlyChecked
+                    ? checklist.usersChecked.filter((user) => user.userId !== currentUser.userId)
+                    : [...checklist.usersChecked, currentUser as User]
+                };
+              }
+
+              return checklist;
+            });
+          };
+
+          const updatedChecklists = toggleChecklistInTree(previousChecklists);
+          queryClient.setQueryData(['checklists'], updatedChecklists);
+        }
+
+        return { previousChecklists, previousCheckedChecklists };
+      },
+      onError: (_err, _variables, context) => {
+        // Rollback on error
+        if (context?.previousChecklists) {
+          queryClient.setQueryData(['checklists'], context.previousChecklists);
+        }
+        if (context?.previousCheckedChecklists) {
+          queryClient.setQueryData(['checklists', 'checked'], context.previousCheckedChecklists);
+        }
+      },
       onSuccess: () => {
         queryClient.invalidateQueries(['checklists']);
       }
@@ -177,4 +229,98 @@ export const useChecklistProgress = (parentChecklists: Checklist[], checkedCheck
   }, [parentChecklists, checkedChecklists]);
 
   return progress;
+};
+
+export const useReorderTasks = () => {
+  const queryClient = useQueryClient();
+
+  type MutationContext = {
+    previousChecklists?: Checklist[];
+  };
+
+  return useMutation<void, Error, { taskIds: string[] }, MutationContext>(
+    ['checklists', 'reorder'],
+    async (payload) => {
+      await reorderTasks(payload);
+    },
+    {
+      onMutate: async ({ taskIds }) => {
+        // Cancel outgoing queries
+        await queryClient.cancelQueries(['checklists']);
+
+        // Snapshot previous value
+        const previousChecklists = queryClient.getQueryData<Checklist[]>(['checklists']);
+
+        // Optimistically update cache with new order
+        if (previousChecklists) {
+          const reorderedChecklists = taskIds
+            .map((id) => previousChecklists.find((c) => c.checklistId === id))
+            .filter((c): c is Checklist => c !== undefined);
+
+          queryClient.setQueryData(['checklists'], reorderedChecklists);
+        }
+
+        return { previousChecklists };
+      },
+      onError: (_err, _variables, context) => {
+        // Rollback on error
+        if (context?.previousChecklists) {
+          queryClient.setQueryData(['checklists'], context.previousChecklists);
+        }
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries(['checklists']);
+      }
+    }
+  );
+};
+
+export const useReorderChecklistItems = (parentId: string) => {
+  const queryClient = useQueryClient();
+
+  type MutationContext = {
+    previousChecklists?: Checklist[];
+  };
+
+  return useMutation<void, Error, { itemIds: string[] }, MutationContext>(
+    ['checklists', 'reorder', parentId],
+    async (payload) => {
+      await reorderChecklistItems(parentId, payload);
+    },
+    {
+      onMutate: async ({ itemIds }) => {
+        // Cancel outgoing queries
+        await queryClient.cancelQueries(['checklists']);
+
+        // Snapshot previous value
+        const previousChecklists = queryClient.getQueryData<Checklist[]>(['checklists']);
+
+        // Optimistically reorder subtasks within the parent
+        if (previousChecklists) {
+          const updatedChecklists = previousChecklists.map((checklist) => {
+            if (checklist.checklistId === parentId && checklist.subtasks) {
+              const subtasksAsChecklists = checklist.subtasks as unknown as Checklist[];
+              const reorderedSubtasks = itemIds
+                .map((id) => subtasksAsChecklists.find((s) => s.checklistId === id))
+                .filter((s): s is Checklist => s !== undefined);
+              return { ...checklist, subtasks: reorderedSubtasks as unknown as ChecklistPreview[] };
+            }
+            return checklist;
+          });
+          queryClient.setQueryData(['checklists'], updatedChecklists);
+        }
+
+        return { previousChecklists };
+      },
+      onError: (_err, _variables, context) => {
+        // Rollback on error
+        if (context?.previousChecklists) {
+          queryClient.setQueryData(['checklists'], context.previousChecklists);
+        }
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries(['checklists']);
+      }
+    }
+  );
 };

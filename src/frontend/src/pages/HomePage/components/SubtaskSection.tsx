@@ -1,8 +1,8 @@
-import { Typography, useTheme, Grid, IconButton } from '@mui/material';
+import { Typography, useTheme, IconButton } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/system';
 import React from 'react';
-import { Checklist } from 'shared';
+import { Checklist, ChecklistItemType } from 'shared';
 import { GridDragIcon } from '@mui/x-data-grid';
 import { useToggleChecklist } from '../../../hooks/onboarding.hook';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -19,15 +19,27 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
   const theme = useTheme();
   const toast = useToast();
   const { subtasks } = parentTask;
-  const { mutateAsync: toggleChecklist } = useToggleChecklist();
+  const { mutate: toggleChecklist } = useToggleChecklist();
 
-  const handleToggleChecklist = async (subtaskId: string) => {
-    try {
-      await toggleChecklist({ checklistId: subtaskId });
-    } catch (error: any) {
-      toast.error(error.message);
-    }
+  const handleToggleChecklist = (subtaskId: string) => {
+    toggleChecklist(
+      { checklistId: subtaskId },
+      {
+        onError: (error: any) => {
+          toast.error(error.message);
+        }
+      }
+    );
   };
+
+  // All items (tasks and info blocks) now stored in subtasks with itemType field
+  const allItems = subtasks
+    .map((subtask) => ({
+      ...subtask,
+      itemType: subtask.itemType,
+      displayIndex: subtask.displayIndex ?? 999
+    }))
+    .sort((a, b) => a.displayIndex - b.displayIndex);
 
   return (
     <Box
@@ -43,83 +55,57 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
             }
       }
     >
-      {subtasks.length > 0 ? (
-        <Grid container sx={{ display: 'flex', alignContent: 'center', justifyContent: 'center', alignItems: 'center' }}>
-          <Grid item xs={12} md={5}>
-            <Box display="flex" flexDirection="column" marginLeft={5} gap={1}>
-              {subtasks.map((subtask) => (
-                <Box display={'flex'} alignItems={'center'}>
-                  {isAdmin ? (
-                    <IconButton>
-                      <GridDragIcon sx={{ color: 'black' }} />
-                    </IconButton>
-                  ) : (
-                    <IconButton onClick={() => handleToggleChecklist(subtask.checklistId)}>
-                      <Checkbox
-                        checked={isChecklistChecked(checkedChecklists, subtask)}
-                        sx={{
-                          '& .MuiSvgIcon-root': {
-                            fill: 'black',
-                            backgroundColor: 'black',
-                            borderRadius: 1
-                          },
-                          '&.Mui-checked .MuiSvgIcon-root': {
-                            backgroundColor: 'white'
-                          },
-                          '&:hover': {
-                            backgroundColor: 'transparent'
-                          }
-                        }}
-                      />
-                    </IconButton>
-                  )}
-                  <Typography color={'black'} fontWeight={'bold'}>
-                    {subtask.name} {subtask.isOptional && '(Optional)'}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            md={7}
-            sx={{
-              backgroundColor: theme.palette.background.paper,
-              padding: 2,
-              borderRadius: 2
-            }}
-          >
-            <NERMarkdown markdown={parentTask.descriptions[0]} />
-          </Grid>
-        </Grid>
-      ) : (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: 2,
-            marginTop: isAdmin ? 1 : 0
-          }}
-        >
-          {parentTask.descriptions.map((description) => {
+      <Box display="flex" flexDirection="column" gap={2} sx={{ width: '100%' }}>
+        {allItems.map((item) => {
+          if (item.itemType === ChecklistItemType.TASK) {
             return (
-              <Grid
-                sx={{
-                  backgroundColor: theme.palette.background.paper,
-                  width: '50%',
-                  padding: 2,
-                  borderRadius: 2,
-                  display: 'flex',
-                  margin: 'auto'
-                }}
-              >
-                <NERMarkdown markdown={description} />
-              </Grid>
+              <Box key={item.checklistId} display="flex" alignItems="center" gap={1}>
+                {isAdmin ? (
+                  <IconButton>
+                    <GridDragIcon sx={{ color: 'black' }} />
+                  </IconButton>
+                ) : (
+                  <IconButton onClick={() => handleToggleChecklist(item.checklistId)}>
+                    <Checkbox
+                      checked={isChecklistChecked(checkedChecklists, item)}
+                      sx={{
+                        '& .MuiSvgIcon-root': {
+                          fill: 'black',
+                          backgroundColor: 'black',
+                          borderRadius: 1
+                        },
+                        '&.Mui-checked .MuiSvgIcon-root': {
+                          backgroundColor: 'white'
+                        },
+                        '&:hover': {
+                          backgroundColor: 'transparent'
+                        }
+                      }}
+                    />
+                  </IconButton>
+                )}
+                <Typography color="black" fontWeight="bold">
+                  {item.content} {item.isOptional && '(Optional)'}
+                </Typography>
+              </Box>
             );
-          })}
-        </Box>
-      )}
+          }
+          // INFO block
+          return (
+            <Box
+              key={item.checklistId}
+              sx={{
+                backgroundColor: theme.palette.background.paper,
+                padding: 2,
+                borderRadius: 2,
+                width: '100%'
+              }}
+            >
+              <NERMarkdown markdown={item.content} />
+            </Box>
+          );
+        })}
+      </Box>
     </Box>
   );
 };
