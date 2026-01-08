@@ -834,7 +834,8 @@ export default class BillOfMaterialsService {
 
     const assemblies = await prisma.assembly.findMany({
       where: {
-        wbsElementId: wbsElement.wbsElementId
+        wbsElementId: wbsElement.wbsElementId,
+        dateDeleted: null
       },
       ...getAssemblyQueryArgs(organization.organizationId)
     });
