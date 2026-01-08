@@ -115,7 +115,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
 
       const parentChecklist = await createChecklist(formattedData);
 
-      // Create all items in order with their displayOrder set
+      // Create all items in order with their displayIndex set
       await Promise.all(
         items.map((item) => {
           if (item.type === ChecklistItemType.TASK) {

@@ -53,9 +53,9 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
     .map((subtask) => ({
       ...subtask,
       itemType: subtask.itemType,
-      displayOrder: subtask.displayOrder ?? 999
+      displayIndex: subtask.displayIndex ?? 999
     }))
-    .sort((a, b) => a.displayOrder - b.displayOrder);
+    .sort((a, b) => a.displayIndex - b.displayIndex);
 
   const [localItems, setLocalItems] = useState(allItems);
 

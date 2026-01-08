@@ -2,18 +2,18 @@
 CREATE TYPE "Checklist_Item_Type" AS ENUM ('TASK', 'INFO');
 
 -- AlterTable
-ALTER TABLE "Checklist" ADD COLUMN "displayOrder" INTEGER,
+ALTER TABLE "Checklist" ADD COLUMN "displayIndex" INTEGER,
 ADD COLUMN "itemType" "Checklist_Item_Type" NOT NULL DEFAULT 'TASK';
 
--- Backfill displayOrder based on dateCreated for existing records
+-- Backfill displayIndex based on dateCreated for existing records
 -- For top-level checklists (parentChecklistId IS NULL)
 WITH ranked_parent AS (
   SELECT "checklistId", ROW_NUMBER() OVER (ORDER BY "dateCreated", "checklistId") as rn
   FROM "Checklist"
-  WHERE "parentChecklistId" IS NULL AND "displayOrder" IS NULL
+  WHERE "parentChecklistId" IS NULL AND "displayIndex" IS NULL
 )
 UPDATE "Checklist"
-SET "displayOrder" = ranked_parent.rn
+SET "displayIndex" = ranked_parent.rn
 FROM ranked_parent
 WHERE "Checklist"."checklistId" = ranked_parent."checklistId";
 
@@ -21,10 +21,10 @@ WHERE "Checklist"."checklistId" = ranked_parent."checklistId";
 WITH ranked_children AS (
   SELECT "checklistId", ROW_NUMBER() OVER (PARTITION BY "parentChecklistId" ORDER BY "dateCreated", "checklistId") as rn
   FROM "Checklist"
-  WHERE "parentChecklistId" IS NOT NULL AND "displayOrder" IS NULL
+  WHERE "parentChecklistId" IS NOT NULL AND "displayIndex" IS NULL
 )
 UPDATE "Checklist"
-SET "displayOrder" = ranked_children.rn
+SET "displayIndex" = ranked_children.rn
 FROM ranked_children
 WHERE "Checklist"."checklistId" = ranked_children."checklistId";
 
@@ -49,8 +49,8 @@ BEGIN
       AND array_length("descriptions", 1) > 0
       AND "dateDeleted" IS NULL
   LOOP
-    -- Get the maximum displayOrder for existing subtasks of this checklist
-    SELECT COALESCE(MAX("displayOrder"), 0) INTO max_order
+    -- Get the maximum displayIndex for existing subtasks of this checklist
+    SELECT COALESCE(MAX("displayIndex"), 0) INTO max_order
     FROM "Checklist"
     WHERE "parentChecklistId" = checklist_record."checklistId"
       AND "dateDeleted" IS NULL;
@@ -69,7 +69,7 @@ BEGIN
         "name",
         "descriptions",
         "isOptional",
-        "displayOrder",
+        "displayIndex",
         "itemType",
         "parentChecklistId",
         "organizationId",

@@ -15,11 +15,11 @@ export default class OnboardingServices {
     const allChecklists = await prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null, parentChecklistId: null },
       include: {
-        subtasks: { where: { dateDeleted: null }, orderBy: { displayOrder: 'asc' } },
+        subtasks: { where: { dateDeleted: null }, orderBy: { displayIndex: 'asc' } },
         teamType: true,
         usersChecked: true
       },
-      orderBy: { displayOrder: 'asc' }
+      orderBy: { displayIndex: 'asc' }
     });
 
     return allChecklists;
@@ -34,8 +34,8 @@ export default class OnboardingServices {
   static async getCheckedChecklists(user: User, organization: Organization) {
     const allChecklists = await prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null },
-      include: { subtasks: { where: { dateDeleted: null }, orderBy: { displayOrder: 'asc' } }, usersChecked: true },
-      orderBy: { displayOrder: 'asc' }
+      include: { subtasks: { where: { dateDeleted: null }, orderBy: { displayIndex: 'asc' } }, usersChecked: true },
+      orderBy: { displayIndex: 'asc' }
     });
 
     const checkedChecklists = allChecklists.filter((checklist) =>
@@ -72,11 +72,11 @@ export default class OnboardingServices {
           include: {
             usersChecked: true
           },
-          orderBy: { displayOrder: 'asc' }
+          orderBy: { displayIndex: 'asc' }
         },
         teamType: true
       },
-      orderBy: { displayOrder: 'asc' }
+      orderBy: { displayIndex: 'asc' }
     });
 
     const generalChecklists = await prisma.checklist.findMany({
@@ -93,11 +93,11 @@ export default class OnboardingServices {
           include: {
             usersChecked: true
           },
-          orderBy: { displayOrder: 'asc' }
+          orderBy: { displayIndex: 'asc' }
         },
         teamType: true
       },
-      orderBy: { displayOrder: 'asc' }
+      orderBy: { displayIndex: 'asc' }
     });
 
     return [...generalChecklists, ...teamTypeChecklists];
@@ -176,27 +176,27 @@ export default class OnboardingServices {
       }
     }
 
-    // Calculate next displayOrder
+    // Calculate next displayIndex
     const existingChecklists = await prisma.checklist.findMany({
       where: {
         organizationId: organization.organizationId,
         parentChecklistId: parentChecklistId ?? null,
         dateDeleted: null
       },
-      orderBy: { displayOrder: 'desc' },
+      orderBy: { displayIndex: 'desc' },
       take: 1
     });
 
-    const nextDisplayOrder =
-      existingChecklists.length > 0 && existingChecklists[0].displayOrder !== null
-        ? existingChecklists[0].displayOrder + 1
+    const nextDisplayIndex =
+      existingChecklists.length > 0 && existingChecklists[0].displayIndex !== null
+        ? existingChecklists[0].displayIndex + 1
         : 1;
 
     const checklist: Checklist = await prisma.checklist.create({
       data: {
         content,
         isOptional,
-        displayOrder: nextDisplayOrder,
+        displayIndex: nextDisplayIndex,
         itemType: itemType ?? 'TASK',
         organizationId: organization.organizationId,
         teamId,
@@ -350,7 +350,7 @@ export default class OnboardingServices {
       where: { checklistId, organizationId: organization.organizationId },
       include: {
         usersChecked: true,
-        subtasks: { where: { dateDeleted: null }, include: { usersChecked: true }, orderBy: { displayOrder: 'asc' } }
+        subtasks: { where: { dateDeleted: null }, include: { usersChecked: true }, orderBy: { displayIndex: 'asc' } }
       }
     });
 
@@ -419,7 +419,7 @@ export default class OnboardingServices {
           subtasks: {
             where: { dateDeleted: null },
             include: { usersChecked: true },
-            orderBy: { displayOrder: 'asc' }
+            orderBy: { displayIndex: 'asc' }
           }
         }
       });
@@ -490,12 +490,12 @@ export default class OnboardingServices {
     }
 
     await prisma.$transaction(async (tx) => {
-      // Update displayOrder for each task
+      // Update displayIndex for each task
       await Promise.all(
         taskIds.map((taskId, index) =>
           tx.checklist.update({
             where: { checklistId: taskId },
-            data: { displayOrder: index + 1 }
+            data: { displayIndex: index + 1 }
           })
         )
       );
@@ -537,12 +537,12 @@ export default class OnboardingServices {
     }
 
     await prisma.$transaction(async (tx) => {
-      // Update displayOrder for each item
+      // Update displayIndex for each item
       await Promise.all(
         itemIds.map((itemId, index) =>
           tx.checklist.update({
             where: { checklistId: itemId },
-            data: { displayOrder: index + 1 }
+            data: { displayIndex: index + 1 }
           })
         )
       );
