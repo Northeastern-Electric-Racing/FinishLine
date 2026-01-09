@@ -2,7 +2,7 @@ import { Typography, useTheme, IconButton } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/system';
 import React from 'react';
-import { Checklist } from 'shared';
+import { Checklist, ChecklistItemType } from 'shared';
 import { GridDragIcon } from '@mui/x-data-grid';
 import { useToggleChecklist } from '../../../hooks/onboarding.hook';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -57,7 +57,7 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
     >
       <Box display="flex" flexDirection="column" gap={2} sx={{ width: '100%' }}>
         {allItems.map((item) => {
-          if (item.itemType === 'TASK') {
+          if (item.itemType === ChecklistItemType.TASK) {
             return (
               <Box key={item.checklistId} display="flex" alignItems="center" gap={1}>
                 {isAdmin ? (

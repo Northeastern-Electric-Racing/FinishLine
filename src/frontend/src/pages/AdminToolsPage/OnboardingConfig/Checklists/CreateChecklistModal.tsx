@@ -73,12 +73,12 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
   const addTask = () => {
     setItems((prevItems) => [
       ...prevItems,
-      { id: `task-${Date.now()}`, type: 'TASK' as ChecklistItemType, content: '', isOptional: false }
+      { id: `task-${Date.now()}`, type: ChecklistItemType.TASK, content: '', isOptional: false }
     ]);
   };
 
   const addInfoBlock = () => {
-    setItems((prevItems) => [...prevItems, { id: `info-${Date.now()}`, type: 'INFO' as ChecklistItemType, content: '' }]);
+    setItems((prevItems) => [...prevItems, { id: `info-${Date.now()}`, type: ChecklistItemType.INFO, content: '' }]);
   };
 
   const updateItem = (index: number, updates: Partial<ChecklistItem>) => {
@@ -125,23 +125,23 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
       // Create all items in order with their displayIndex set
       await Promise.all(
         items.map((item) => {
-          if (item.type === 'TASK') {
+          if (item.type === ChecklistItemType.TASK) {
             return createChecklist({
               content: item.content,
               teamId,
               teamTypeId,
               parentChecklistId: parentChecklist.checklistId,
               isOptional: item.isOptional || false,
-              itemType: 'TASK'
+              itemType: ChecklistItemType.TASK
             });
-          } else if (item.type === 'INFO') {
+          } else if (item.type === ChecklistItemType.INFO) {
             return createChecklist({
               content: item.content,
               teamId,
               teamTypeId,
               parentChecklistId: parentChecklist.checklistId,
               isOptional: true, // INFO blocks are always optional
-              itemType: 'INFO'
+              itemType: ChecklistItemType.INFO
             });
           }
           throw new Error(`Unexpected checklist item type: ${String(item.type)}`);
@@ -232,7 +232,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
                     <Draggable key={item.id} draggableId={item.id} index={index}>
                       {(provided) => (
                         <div ref={provided.innerRef} {...provided.draggableProps}>
-                          {item.type === 'TASK' ? (
+                          {item.type === ChecklistItemType.TASK ? (
                             <Box
                               sx={{
                                 display: 'flex',

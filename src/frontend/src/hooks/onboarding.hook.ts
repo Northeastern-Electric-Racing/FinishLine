@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Checklist, ChecklistPreview, User } from 'shared';
+import { Checklist, ChecklistItemType, ChecklistPreview, User } from 'shared';
 import {
   getAllChecklists,
   getGeneralChecklists,
@@ -27,7 +27,7 @@ export interface ChecklistCreateArgs {
   parentChecklistId?: string;
   teamId?: string;
   teamTypeId?: string;
-  itemType?: 'TASK' | 'INFO';
+  itemType?: ChecklistItemType;
 }
 
 export interface SubtaskCreateArgs {
