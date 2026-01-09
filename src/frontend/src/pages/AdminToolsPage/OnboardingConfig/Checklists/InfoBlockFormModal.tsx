@@ -56,7 +56,7 @@ const InfoBlockFormModal: React.FC<InfoBlockFormModalProps> = ({
         parentChecklistId: parentChecklist.checklistId,
         teamId: parentChecklist.team?.teamId,
         teamTypeId: parentChecklist.teamType?.teamTypeId,
-        itemType: "INFO" as ChecklistItemType
+        itemType: 'INFO' as ChecklistItemType
       };
 
       await onSubmit(formattedData);
