@@ -57,7 +57,7 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
     >
       <Box display="flex" flexDirection="column" gap={2} sx={{ width: '100%' }}>
         {allItems.map((item) => {
-          if (item.itemType === "TASK") {
+          if (item.itemType === 'TASK') {
             return (
               <Box key={item.checklistId} display="flex" alignItems="center" gap={1}>
                 {isAdmin ? (

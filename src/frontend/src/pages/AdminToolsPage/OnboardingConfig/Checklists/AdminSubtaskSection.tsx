@@ -202,7 +202,7 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
           open={!!itemToDelete}
           onHide={() => setItemToDelete(null)}
           formId="delete-item-form"
-          dataType={itemToDelete.itemType === "INFO" ? 'Information Block' : 'Task'}
+          dataType={itemToDelete.itemType === 'INFO' ? 'Information Block' : 'Task'}
           onFormSubmit={() => handleDelete(itemToDelete.checklistId)}
         />
       )}

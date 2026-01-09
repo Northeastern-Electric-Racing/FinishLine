@@ -45,7 +45,7 @@ const SubtaskFormModal = ({ open, handleClose, onSubmit, parentChecklist, defaul
         parentChecklistId: parentChecklist.checklistId,
         teamId: parentChecklist.team?.teamId,
         teamTypeId: parentChecklist.teamType?.teamTypeId,
-        itemType: "TASK" as ChecklistItemType
+        itemType: 'TASK' as ChecklistItemType
       };
 
       await onSubmit(formattedData);
