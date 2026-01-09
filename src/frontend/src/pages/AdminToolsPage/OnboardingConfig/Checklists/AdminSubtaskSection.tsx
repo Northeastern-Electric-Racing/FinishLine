@@ -110,16 +110,15 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
                           <Box
                             sx={{
                               display: 'flex',
-                              alignItems: item.itemType === ChecklistItemType.TASK ? 'center' : 'flex-start',
+                              alignItems: item.itemType === 'TASK' ? 'center' : 'flex-start',
                               justifyContent: 'space-between',
                               borderRadius: 3,
                               mb: 2,
-                              backgroundColor:
-                                item.itemType === ChecklistItemType.INFO ? theme.palette.background.paper : 'transparent',
-                              padding: item.itemType === ChecklistItemType.INFO ? 2 : 0
+                              backgroundColor: item.itemType === 'TASK' ? theme.palette.background.paper : 'transparent',
+                              padding: item.itemType === 'TASK' ? 2 : 0
                             }}
                           >
-                            {item.itemType === ChecklistItemType.TASK ? (
+                            {item.itemType === 'TASK' ? (
                               <>
                                 <Box display="flex" alignItems="center" gap={1} sx={{ flex: 1 }}>
                                   <Box {...provided.dragHandleProps}>
@@ -203,7 +202,7 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
           open={!!itemToDelete}
           onHide={() => setItemToDelete(null)}
           formId="delete-item-form"
-          dataType={itemToDelete.itemType === ChecklistItemType.INFO ? 'Information Block' : 'Task'}
+          dataType={itemToDelete.itemType === 'TASK' ? 'Information Block' : 'Task'}
           onFormSubmit={() => handleDelete(itemToDelete.checklistId)}
         />
       )}
