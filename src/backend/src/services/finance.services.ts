@@ -437,6 +437,7 @@ export default class FinanceServices {
         totalCost: true,
         reimbursementProducts: {
           where: {
+            dateDeleted: null,
             reimbursementProductReason: {
               wbsElement: {
                 project: {
@@ -528,6 +529,7 @@ export default class FinanceServices {
         totalCost: true,
         reimbursementProducts: {
           where: {
+            dateDeleted: null,
             reimbursementProductReason: {
               wbsElement: {
                 project: {
@@ -953,6 +955,7 @@ export default class FinanceServices {
         totalCost: true,
         reimbursementProducts: {
           where: {
+            dateDeleted: null,
             reimbursementProductReason: {
               otherReasonId
             }
