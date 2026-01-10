@@ -14,7 +14,7 @@ export default class DesignReviewsController {
 
   static async deleteDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
-      const drId: string = req.params.designReviewId;
+      const drId = req.params.designReviewId as string;
       const deletedDesignReview = await DesignReviewsService.deleteDesignReview(req.currentUser, drId, req.organization);
       res.status(200).json(deletedDesignReview);
     } catch (error: unknown) {

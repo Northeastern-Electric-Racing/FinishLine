@@ -62,7 +62,7 @@ export default class ProjectsController {
 
   static async getSingleProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const project: Project = await ProjectsService.getSingleProject(wbsNumber, req.organization);
 
@@ -122,7 +122,7 @@ export default class ProjectsController {
 
   static async setProjectTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
       const { teamId } = req.body;
 
       await ProjectsService.setProjectTeam(req.currentUser, wbsNumber, teamId, req.organization);
@@ -135,7 +135,7 @@ export default class ProjectsController {
 
   static async deleteProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
       const deletedProject: Project = await ProjectsService.deleteProject(req.currentUser, wbsNumber, req.organization);
       res.status(200).json(deletedProject);
     } catch (error: unknown) {
@@ -145,7 +145,7 @@ export default class ProjectsController {
 
   static async toggleFavorite(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const targetProject = await ProjectsService.toggleFavorite(wbsNum, req.currentUser, req.organization);
 
@@ -177,7 +177,7 @@ export default class ProjectsController {
 
   static async createAssembly(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
       const { name, pdmFileName } = req.body;
       const createAssembly = await BillOfMaterialsService.createAssembly(
         name,
@@ -210,7 +210,7 @@ export default class ProjectsController {
         notes,
         reimbursementRequestId
       } = req.body;
-      const wbsNum = validateWBS(req.params.wbsNum);
+      const wbsNum = validateWBS(req.params.wbsNum as string);
       const material = await BillOfMaterialsService.createMaterial(
         req.currentUser,
         name,
@@ -454,7 +454,7 @@ export default class ProjectsController {
 
   static async getAssembliesForWbsElement(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const assemblies = await BillOfMaterialsService.getAssembliesForWbsElement(wbsNumber, req.organization);
       res.status(200).json(assemblies);
@@ -465,7 +465,7 @@ export default class ProjectsController {
 
   static async getMaterialsForWbsElement(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const assemblies = await BillOfMaterialsService.getMaterialsForWbsElement(wbsNumber, req.organization);
       res.status(200).json(assemblies);
@@ -487,7 +487,7 @@ export default class ProjectsController {
 
   static async deleteAbbreviation(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
       await ProjectsService.deleteAbbreviation(wbsNum, req.currentUser, req.organization);
       res.status(200).json({ message: `Project ${wbsPipe(wbsNum)}'s abbreviation was successfully deleted.` });
     } catch (error: unknown) {

@@ -6,7 +6,7 @@ export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
     try {
       const { title, deadline, startDate, priority, status, assignees, notes } = req.body;
-      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const task = await TasksService.createTask(
         req.currentUser,

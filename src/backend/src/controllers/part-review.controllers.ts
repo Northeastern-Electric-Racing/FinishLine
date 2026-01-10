@@ -18,7 +18,7 @@ export default class PartReviewController {
 
   static async getAllPartsForProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const parts = await PartReviewService.getAllPartsForProject(wbsNumber, req.organization, req.currentUser);
       res.status(200).json(parts);
