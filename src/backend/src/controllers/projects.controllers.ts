@@ -52,7 +52,7 @@ export default class ProjectsController {
 
   static async getTeamsProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamId } = req.params;
+      const { teamId } = req.params as Record<string, string>;
       const projects: Project[] = await ProjectsService.getTeamsProjects(req.organization, teamId);
       res.status(200).json(projects);
     } catch (error: unknown) {
@@ -248,7 +248,7 @@ export default class ProjectsController {
 
   static async deleteManufacturer(req: Request, res: Response, next: NextFunction) {
     try {
-      const { manufacturerName } = req.params;
+      const { manufacturerName } = req.params as Record<string, string>;
       const deletedManufacturer = await BillOfMaterialsService.deleteManufacturer(
         req.currentUser,
         manufacturerName,
@@ -262,7 +262,7 @@ export default class ProjectsController {
 
   static async deleteUnit(req: Request, res: Response, next: NextFunction) {
     try {
-      const { unitId } = req.params;
+      const { unitId } = req.params as Record<string, string>;
       const deletedUnit = await BillOfMaterialsService.deleteUnit(req.currentUser, unitId, req.organization);
       res.status(200).json(deletedUnit);
     } catch (error: unknown) {
@@ -306,7 +306,7 @@ export default class ProjectsController {
 
   static async assignMaterialAssembly(req: Request, res: Response, next: NextFunction) {
     try {
-      const { materialId } = req.params;
+      const { materialId } = req.params as Record<string, string>;
       const { assemblyId } = req.body;
       const updatedMaterial = await BillOfMaterialsService.assignMaterialAssembly(
         req.currentUser,
@@ -322,7 +322,7 @@ export default class ProjectsController {
 
   static async deleteAssembly(req: Request, res: Response, next: NextFunction) {
     try {
-      const { assemblyId } = req.params;
+      const { assemblyId } = req.params as Record<string, string>;
       const deletedAssembly = await BillOfMaterialsService.deleteAssembly(assemblyId, req.currentUser, req.organization);
       res.status(200).json(deletedAssembly);
     } catch (error: unknown) {
@@ -332,7 +332,7 @@ export default class ProjectsController {
 
   static async deleteMaterialType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { materialTypeName } = req.params;
+      const { materialTypeName } = req.params as Record<string, string>;
       const deletedMaterial = await BillOfMaterialsService.deleteMaterialType(
         req.currentUser,
         materialTypeName,
@@ -346,7 +346,7 @@ export default class ProjectsController {
 
   static async deleteMaterial(req: Request, res: Response, next: NextFunction) {
     try {
-      const { materialId } = req.params;
+      const { materialId } = req.params as Record<string, string>;
       const updatedMaterial = await BillOfMaterialsService.deleteMaterial(req.currentUser, materialId, req.organization);
       res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
@@ -356,7 +356,7 @@ export default class ProjectsController {
 
   static async editMaterial(req: Request, res: Response, next: NextFunction) {
     try {
-      const { materialId } = req.params;
+      const { materialId } = req.params as Record<string, string>;
       const {
         name,
         assemblyId,
@@ -419,7 +419,7 @@ export default class ProjectsController {
 
   static async editAssembly(req: Request, res: Response, next: NextFunction) {
     try {
-      const { assemblyId } = req.params;
+      const { assemblyId } = req.params as Record<string, string>;
       const { name, pdmFileName } = req.body;
       const updatedAssembly = await BillOfMaterialsService.editAssembly(
         req.currentUser,
@@ -436,7 +436,7 @@ export default class ProjectsController {
 
   static async editLinkType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { linkTypeName } = req.params;
+      const { linkTypeName } = req.params as Record<string, string>;
       const { name: newName, iconName, required } = req.body;
       const linkTypeUpdated = await ProjectsService.editLinkType(
         linkTypeName,

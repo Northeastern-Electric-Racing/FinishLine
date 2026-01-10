@@ -25,7 +25,7 @@ export default class TeamsController {
 
   static async getSingleTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamId } = req.params;
+      const { teamId } = req.params as Record<string, string>;
 
       const team = await TeamsService.getSingleTeam(teamId, req.organization);
 
@@ -48,7 +48,7 @@ export default class TeamsController {
   static async setTeamMembers(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
-      const { teamId } = req.params;
+      const { teamId } = req.params as Record<string, string>;
       // update the team with the input fields
       const updateTeam = await TeamsService.setTeamMembers(req.currentUser, teamId, userIds, req.organization);
 
@@ -84,7 +84,7 @@ export default class TeamsController {
   static async setTeamHead(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.body;
-      const { teamId } = req.params;
+      const { teamId } = req.params as Record<string, string>;
 
       const team = await TeamsService.setTeamHead(req.currentUser, teamId, userId, req.organization);
       res.status(200).json(team);
@@ -115,7 +115,7 @@ export default class TeamsController {
   static async setTeamLeads(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
-      const { teamId } = req.params;
+      const { teamId } = req.params as Record<string, string>;
 
       const team = await TeamsService.setTeamLeads(req.currentUser, teamId, userIds, req.organization);
       res.status(200).json(team);
@@ -126,7 +126,7 @@ export default class TeamsController {
 
   static async deleteTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamId } = req.params;
+      const { teamId } = req.params as Record<string, string>;
 
       await TeamsService.deleteTeam(req.currentUser, teamId, req.organization);
       res.status(204).json({ message: `Successfully deleted team with id ${teamId}` });
@@ -137,7 +137,7 @@ export default class TeamsController {
 
   static async archiveTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamId } = req.params;
+      const { teamId } = req.params as Record<string, string>;
 
       const archivedTeam = await TeamsService.archiveTeam(req.currentUser, teamId, req.organization);
       res.status(200).json(archivedTeam);
@@ -149,7 +149,7 @@ export default class TeamsController {
   static async setTeamType(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamTypeId } = req.body;
-      const { teamId } = req.params;
+      const { teamId } = req.params as Record<string, string>;
 
       const updatedTeam = await TeamsService.setTeamType(req.currentUser, teamId, teamTypeId, req.organization);
 
@@ -161,7 +161,7 @@ export default class TeamsController {
 
   static async setOnboardingUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamTypeId } = req.params;
+      const { teamTypeId } = req.params as Record<string, string>;
 
       const updatedTeamType = await TeamsService.setOnboardingUser(req.currentUser, teamTypeId, req.organization);
 
@@ -183,7 +183,7 @@ export default class TeamsController {
 
   static async getSingleTeamType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamTypeId } = req.params;
+      const { teamTypeId } = req.params as Record<string, string>;
 
       const teamType = await TeamsService.getSingleTeamType(teamTypeId, req.organization);
 
@@ -239,7 +239,7 @@ export default class TeamsController {
 
   static async deleteTeamType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamTypeId } = req.params;
+      const { teamTypeId } = req.params as Record<string, string>;
       const deleter = req.currentUser;
       await TeamsService.deleteTeamType(deleter, teamTypeId, req.organization);
       res.status(200).json({ message: `Successfully deleted team type ${req.params.teamTypeId}` });

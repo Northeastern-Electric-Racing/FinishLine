@@ -137,7 +137,7 @@ export default class WorkPackagesController {
 
   static async getHomePageWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const { selection } = req.params;
+      const { selection } = req.params as Record<string, string>;
 
       const workPackages: WorkPackagePreview[] = await WorkPackagesService.getHomePageWorkPackages(
         req.currentUser,

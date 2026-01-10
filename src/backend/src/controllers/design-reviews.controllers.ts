@@ -71,7 +71,7 @@ export default class DesignReviewsController {
         meetingTimes
       } = req.body;
 
-      const { designReviewId } = req.params;
+      const { designReviewId } = req.params as Record<string, string>;
 
       await DesignReviewsService.editDesignReview(
         req.currentUser,
@@ -100,7 +100,7 @@ export default class DesignReviewsController {
   static async markUserConfirmed(req: Request, res: Response, next: NextFunction) {
     try {
       const { availability } = req.body;
-      const { designReviewId } = req.params;
+      const { designReviewId } = req.params as Record<string, string>;
       const user = await getCurrentUserWithUserSettings(res);
 
       const updatedDesignReview = await DesignReviewsService.markUserConfirmed(
@@ -118,7 +118,7 @@ export default class DesignReviewsController {
   // Set a new status for the design review
   static async setStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const { designReviewId } = req.params;
+      const { designReviewId } = req.params as Record<string, string>;
       const { status } = req.body;
 
       const updatedDesignReview = await DesignReviewsService.setStatus(
