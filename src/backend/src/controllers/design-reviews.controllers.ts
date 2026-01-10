@@ -44,7 +44,7 @@ export default class DesignReviewsController {
 
   static async getSingleDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
-      const drId: string = req.params.designReviewId;
+      const drId = req.params.designReviewId as string;
 
       const designReview = await DesignReviewsService.getSingleDesignReview(req.currentUser, drId, req.organization);
       res.status(200).json(designReview);

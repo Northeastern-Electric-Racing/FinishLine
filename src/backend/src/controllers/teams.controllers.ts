@@ -63,7 +63,12 @@ export default class TeamsController {
     try {
       const { newDescription } = req.body;
 
-      const team = await TeamsService.editDescription(req.currentUser, req.params.teamId, newDescription, req.organization);
+      const team = await TeamsService.editDescription(
+        req.currentUser,
+        req.params.teamId as string,
+        newDescription,
+        req.organization
+      );
       res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
@@ -74,7 +79,7 @@ export default class TeamsController {
     try {
       const { slackId } = req.body;
 
-      const team = await TeamsService.editSlackId(req.currentUser, req.organization, req.params.teamId, slackId);
+      const team = await TeamsService.editSlackId(req.currentUser, req.organization, req.params.teamId as string, slackId);
       res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
@@ -225,7 +230,7 @@ export default class TeamsController {
 
       const teamType = await TeamsService.editTeamType(
         req.currentUser,
-        req.params.teamTypeId,
+        req.params.teamTypeId as string,
         name,
         iconName,
         description,
@@ -252,7 +257,12 @@ export default class TeamsController {
     try {
       const { file } = req;
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
-      const teamType = await TeamsService.setTeamTypeImage(req.currentUser, req.params.teamTypeId, file, req.organization);
+      const teamType = await TeamsService.setTeamTypeImage(
+        req.currentUser,
+        req.params.teamTypeId as string,
+        file,
+        req.organization
+      );
       res.status(200).json(teamType);
     } catch (error: unknown) {
       next(error);
