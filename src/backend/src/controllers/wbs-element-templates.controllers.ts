@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { ProjectTemplate, WorkPackageTemplate } from 'shared';
 import WbsElementTemplatesService from '../services/wbs-element-templates.services';
+import { getStringParam } from '../utils/utils';
 
 /** Controller for operations involving work packages templates. */
 export default class WbsElementTemplatesController {
@@ -35,7 +36,7 @@ export default class WbsElementTemplatesController {
   // Get a single work package template that corresponds to the given work package template id
   static async getSingleWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
     try {
-      const { workPackageTemplateId } = req.params;
+      const workPackageTemplateId = getStringParam(req.params.workPackageTemplateId);
 
       const workPackageTemplate: WorkPackageTemplate = await WbsElementTemplatesService.getSingleWorkPackageTemplate(
         req.currentUser,
@@ -64,7 +65,7 @@ export default class WbsElementTemplatesController {
 
   static async editWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
     try {
-      const { workpackageTemplateId } = req.params;
+      const workpackageTemplateId = getStringParam(req.params.workPackageTemplateId);
       const { templateName, templateNotes, duration, blockedBy, descriptionBullets, workPackageName } = req.body;
       let { stage } = req.body;
       if (stage === 'NONE') {
@@ -93,9 +94,9 @@ export default class WbsElementTemplatesController {
   // Delete a work package template that corresponds to the given workPackageTemplateId
   static async deleteWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
     try {
-      const { workPackageTemplateId } = req.params;
+      const workPackageTemplateId = getStringParam(req.params.workPackageTemplateId);
       await WbsElementTemplatesService.deleteWorkPackageTemplate(req.currentUser, workPackageTemplateId, req.organization);
-      res.status(200).json({ message: `Successfully deleted work package template #${req.params.workPackageTemplateId}` });
+      res.status(200).json({ message: `Successfully deleted work package template #${workPackageTemplateId}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -112,7 +113,7 @@ export default class WbsElementTemplatesController {
 
   static async deleteProjectTemplate(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectTemplateId } = req.params;
+      const projectTemplateId = getStringParam(req.params.projectTemplateId);
       await WbsElementTemplatesService.deleteProjectTemplate(req.currentUser, projectTemplateId, req.organization);
       res.status(200).json({ message: `Successfully deleted project template ${projectTemplateId}` });
     } catch (error: unknown) {
@@ -146,7 +147,7 @@ export default class WbsElementTemplatesController {
 
   static async getSingleProjectTemplate(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectTemplateId } = req.params;
+      const projectTemplateId = getStringParam(req.params.projectTemplateId);
 
       const projectTemplate: ProjectTemplate = await WbsElementTemplatesService.getSingleProjectTemplate(
         req.currentUser,
@@ -162,7 +163,7 @@ export default class WbsElementTemplatesController {
 
   static async editProjectTemplate(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectTemplateId } = req.params;
+      const projectTemplateId = getStringParam(req.params.projectTemplateId);
       const { templateName, templateNotes, descriptionBullets, workPackageTemplates, projectName, budget, teams, summary } =
         req.body;
 

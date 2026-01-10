@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import DesignReviewsService from '../services/design-reviews.services';
 import { getCurrentUserWithUserSettings } from '../utils/auth.utils';
+import { getStringParam } from '../utils/utils';
 
 export default class DesignReviewsController {
   static async getAllDesignReviews(req: Request, res: Response, next: NextFunction) {
@@ -14,7 +15,7 @@ export default class DesignReviewsController {
 
   static async deleteDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
-      const drId: string = req.params.designReviewId;
+      const drId = getStringParam(req.params.designReviewId);
       const deletedDesignReview = await DesignReviewsService.deleteDesignReview(req.currentUser, drId, req.organization);
       res.status(200).json(deletedDesignReview);
     } catch (error: unknown) {
@@ -44,7 +45,7 @@ export default class DesignReviewsController {
 
   static async getSingleDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
-      const drId: string = req.params.designReviewId;
+      const drId = getStringParam(req.params.designReviewId);
 
       const designReview = await DesignReviewsService.getSingleDesignReview(req.currentUser, drId, req.organization);
       res.status(200).json(designReview);
@@ -71,7 +72,7 @@ export default class DesignReviewsController {
         meetingTimes
       } = req.body;
 
-      const { designReviewId } = req.params;
+      const designReviewId = getStringParam(req.params.designReviewId);
 
       await DesignReviewsService.editDesignReview(
         req.currentUser,
@@ -100,7 +101,7 @@ export default class DesignReviewsController {
   static async markUserConfirmed(req: Request, res: Response, next: NextFunction) {
     try {
       const { availability } = req.body;
-      const { designReviewId } = req.params;
+      const designReviewId = getStringParam(req.params.designReviewId);
       const user = await getCurrentUserWithUserSettings(res);
 
       const updatedDesignReview = await DesignReviewsService.markUserConfirmed(
@@ -118,7 +119,7 @@ export default class DesignReviewsController {
   // Set a new status for the design review
   static async setStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const { designReviewId } = req.params;
+      const designReviewId = getStringParam(req.params.designReviewId);
       const { status } = req.body;
 
       const updatedDesignReview = await DesignReviewsService.setStatus(

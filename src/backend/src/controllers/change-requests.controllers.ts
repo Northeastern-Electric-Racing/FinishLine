@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import ChangeRequestsService from '../services/change-requests.services';
 import { validateWBS, WbsNumber } from 'shared';
+import { getStringParam } from '../utils/utils';
 
 export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
     try {
-      const { crId } = req.params;
+      const crId = getStringParam(req.params.crId);
 
       const cr = await ChangeRequestsService.getChangeRequestByID(crId, req.organization);
       res.status(200).json(cr);
@@ -186,7 +187,7 @@ export default class ChangeRequestsController {
 
   static async deleteChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { crId } = req.params;
+      const crId = getStringParam(req.params.crId);
 
       await ChangeRequestsService.deleteChangeRequest(req.currentUser, crId, req.organization);
       res.status(200).json({ message: `Successfully deleted change request #${crId}` });
@@ -198,7 +199,7 @@ export default class ChangeRequestsController {
   static async requestCRReview(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
-      const { crId } = req.params;
+      const crId = getStringParam(req.params.crId);
 
       await ChangeRequestsService.requestCRReview(req.currentUser, userIds, crId, req.organization);
       res.status(200).json({ message: `Successfully requested reviewer(s) to change request #${crId}` });

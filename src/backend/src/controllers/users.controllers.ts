@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import UsersService from '../services/users.services';
 import { AccessDeniedException } from '../utils/errors.utils';
+import { getStringParam } from '../utils/utils';
 import { Task } from 'shared';
 export default class UsersController {
   static async getAllUsers(_req: Request, res: Response, next: NextFunction) {
@@ -42,7 +43,7 @@ export default class UsersController {
 
   static async getSingleUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId } = req.params;
+      const userId = getStringParam(req.params.userId);
 
       const requestedUser = await UsersService.getSingleUser(userId, req.organization);
 
@@ -131,7 +132,7 @@ export default class UsersController {
 
   static async updateUserRole(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId } = req.params;
+      const userId = getStringParam(req.params.userId);
       const { role } = req.body;
 
       const targetUser = await UsersService.updateUserRole(userId, req.currentUser, role, req.organization);
@@ -144,7 +145,7 @@ export default class UsersController {
 
   static async getUserSecureSettings(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId } = req.params;
+      const userId = getStringParam(req.params.userId);
 
       const userSecureSettings = await UsersService.getUserSecureSetting(userId, req.currentUser, req.organization);
 
@@ -186,7 +187,7 @@ export default class UsersController {
 
   static async getUserScheduleSettings(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId } = req.params;
+      const userId = getStringParam(req.params.userId);
 
       const userScheduleSettings = await UsersService.getUserScheduleSettings(userId, req.currentUser);
       res.status(200).json(userScheduleSettings);
@@ -197,7 +198,7 @@ export default class UsersController {
 
   static async getUserTasks(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId } = req.params;
+      const userId = getStringParam(req.params.userId);
       const { organization } = req;
 
       const userTasks = await UsersService.getUserTasks(userId, organization);

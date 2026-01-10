@@ -13,3 +13,9 @@ export const convertStatus = (status: WBS_Element_Status): WbsElementStatus =>
     ACTIVE: WbsElementStatus.Active,
     COMPLETE: WbsElementStatus.Complete
   })[status];
+
+export const getStringParam = (value: string | string[] | undefined): string => {
+  if (Array.isArray(value)) throw new Error('Expected single value');
+  if (!value) throw new Error('Missing parameter');
+  return value;
+};

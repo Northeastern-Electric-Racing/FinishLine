@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { getStringParam } from '../utils/utils';
 import AnnouncementService from '../services/announcement.services';
 
 export default class AnnouncementController {
@@ -18,7 +19,7 @@ export default class AnnouncementController {
 
   static async removeUserAnnouncement(req: Request, res: Response, next: NextFunction) {
     try {
-      const { announcementId } = req.params;
+      const announcementId = getStringParam(req.params.announcementId);
       const { organization, currentUser } = req;
 
       const unreadAnnouncements = await AnnouncementService.removeUserAnnouncement(

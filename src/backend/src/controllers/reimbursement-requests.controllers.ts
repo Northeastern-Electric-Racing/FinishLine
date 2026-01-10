@@ -9,6 +9,7 @@ import ReimbursementRequestService from '../services/reimbursement-requests.serv
 import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
 import { Vendor } from 'shared';
 import { HttpException } from '../utils/errors.utils';
+import { getStringParam } from '../utils/utils';
 
 export default class ReimbursementRequestsController {
   static async getCurrentUserReimbursementRequests(req: Request, res: Response, next: NextFunction) {
@@ -121,7 +122,7 @@ export default class ReimbursementRequestsController {
 
   static async editReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
       const {
         dateOfExpense,
         vendorId,
@@ -154,7 +155,7 @@ export default class ReimbursementRequestsController {
 
   static async assignFinanceMember(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
       const { assigneeId } = req.body;
 
       const updatedReimbursementRequest = await ReimbursementRequestService.assignFinanceMember(
@@ -171,7 +172,7 @@ export default class ReimbursementRequestsController {
 
   static async editReimbursement(req: Request, res: Response, next: NextFunction) {
     try {
-      const { reimbursementId } = req.params;
+      const reimbursementId = getStringParam(req.params.reimbursementId);
       const { amount, dateReceived } = req.body;
 
       const updatedReimbursement = await ReimbursementRequestService.editReimbursement(
@@ -189,7 +190,7 @@ export default class ReimbursementRequestsController {
 
   static async deleteReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
 
       const deletedReimbursementRequest = await ReimbursementRequestService.deleteReimbursementRequest(
         requestId,
@@ -230,7 +231,7 @@ export default class ReimbursementRequestsController {
 
   static async setSaboNumber(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
       const { saboNumber } = req.body;
       await ReimbursementRequestService.setSaboNumber(requestId, saboNumber, req.currentUser, req.organization);
       res.status(200).json({ message: 'Successfully set sabo number' });
@@ -280,7 +281,7 @@ export default class ReimbursementRequestsController {
   static async uploadReceipt(req: Request, res: Response, next: NextFunction) {
     try {
       const { file } = req;
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
       const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, req.currentUser, req.organization);
       const isProd = process.env.NODE_ENV === 'production';
@@ -316,7 +317,7 @@ export default class ReimbursementRequestsController {
 
   static async leadershipApproveReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
 
       const reimbursementStatus = await ReimbursementRequestService.leadershipApproveReimbursementRequest(
         requestId,
@@ -331,7 +332,7 @@ export default class ReimbursementRequestsController {
 
   static async inputReimbursementRequestInSabo(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
 
       const reimbursementStatus = await ReimbursementRequestService.inputReimbursementRequestInSabo(
         requestId,
@@ -346,7 +347,7 @@ export default class ReimbursementRequestsController {
 
   static async markReimbursementRequestAsSaboSubmitted(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
 
       const reimbursementStatus = await ReimbursementRequestService.markReimbursementRequestAsSaboSubmitted(
         requestId,
@@ -361,7 +362,7 @@ export default class ReimbursementRequestsController {
 
   static async denyReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
 
       const reimbursementStatus = await ReimbursementRequestService.denyReimbursementRequest(
         requestId,
@@ -376,7 +377,7 @@ export default class ReimbursementRequestsController {
 
   static async markReimbursementRequestAsReimbursed(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
 
       const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsReimbursed(
         requestId,
@@ -391,7 +392,7 @@ export default class ReimbursementRequestsController {
 
   static async markReimbursementRequestAsDelivered(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
       const { dateDelivered } = req.body;
 
       const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
@@ -408,7 +409,7 @@ export default class ReimbursementRequestsController {
 
   static async getSingleReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
 
       const reimbursementRequest: ReimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
         req.currentUser,
@@ -423,7 +424,7 @@ export default class ReimbursementRequestsController {
 
   static async downloadReceiptImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { fileId } = req.params;
+      const fileId = getStringParam(req.params.fileId);
 
       const imageData = await ReimbursementRequestService.downloadReceiptImage(fileId, req.currentUser, req.organization);
 
@@ -440,7 +441,7 @@ export default class ReimbursementRequestsController {
 
   static async editAccountCode(req: Request, res: Response, next: NextFunction) {
     try {
-      const { accountCodeId } = req.params;
+      const accountCodeId = getStringParam(req.params.accountCodeId);
       const { name, code, allowed, amount, indexCodeIds } = req.body;
 
       const accountCodeUpdated = await ReimbursementRequestService.editAccountCode(
@@ -461,7 +462,7 @@ export default class ReimbursementRequestsController {
 
   static async deleteAccountCode(req: Request, res: Response, next: NextFunction) {
     try {
-      const { accountCodeId } = req.params;
+      const accountCodeId = getStringParam(req.params.accountCodeId);
 
       const deletedAccountCode = await ReimbursementRequestService.deleteAccountCode(
         accountCodeId,
@@ -476,7 +477,7 @@ export default class ReimbursementRequestsController {
 
   static async editVendor(req: Request, res: Response, next: NextFunction) {
     try {
-      const { vendorId } = req.params;
+      const vendorId = getStringParam(req.params.vendorId);
       const { name, username, password, discountCode, taxExempt, twoFactorContacts, notes } = req.body;
 
       const editedVendor = await ReimbursementRequestService.editVendor(
@@ -499,7 +500,7 @@ export default class ReimbursementRequestsController {
 
   static async setVendorTaxExemptStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const { vendorId } = req.params;
+      const vendorId = getStringParam(req.params.vendorId);
 
       const { taxExempt } = req.body;
 
@@ -518,7 +519,7 @@ export default class ReimbursementRequestsController {
 
   static async deleteVendor(req: Request, res: Response, next: NextFunction) {
     try {
-      const { vendorId } = req.params;
+      const vendorId = getStringParam(req.params.vendorId);
 
       const deletedVendor = await ReimbursementRequestService.deleteVendor(vendorId, req.currentUser, req.organization);
       res.status(200).json(deletedVendor);
@@ -529,7 +530,7 @@ export default class ReimbursementRequestsController {
 
   static async markReimbursementRequestAsPendingFinance(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
 
       const updatedRequest = await ReimbursementRequestService.markPendingFinance(
         req.currentUser,
@@ -544,7 +545,7 @@ export default class ReimbursementRequestsController {
 
   static async requestReimbursementRequestChanges(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const requestId = getStringParam(req.params.requestId);
 
       const updatedRequest = await ReimbursementRequestService.financeRequestReimbursementRequestChanges(
         req.currentUser,
@@ -569,7 +570,7 @@ export default class ReimbursementRequestsController {
 
   static async getSingleIndexCode(req: Request, res: Response, next: NextFunction) {
     try {
-      const { indexCodeId } = req.params;
+      const indexCodeId = getStringParam(req.params.indexCodeId);
 
       const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, req.organization);
 
@@ -591,7 +592,7 @@ export default class ReimbursementRequestsController {
   static async editIndexCode(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, code } = req.body;
-      const { indexCodeId } = req.params;
+      const indexCodeId = getStringParam(req.params.indexCodeId);
       const updatedIndexCode = await ReimbursementRequestService.editIndexCode(
         req.currentUser,
         req.organization,
@@ -607,7 +608,7 @@ export default class ReimbursementRequestsController {
 
   static async deleteIndexCode(req: Request, res: Response, next: NextFunction) {
     try {
-      const { indexCodeId } = req.params;
+      const indexCodeId = getStringParam(req.params.indexCodeId);
 
       const deletedIndexCode = await ReimbursementRequestService.deleteIndexCode(
         indexCodeId,
@@ -650,7 +651,7 @@ export default class ReimbursementRequestsController {
 
   static async getSingleOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
     try {
-      const { otherReimbursementProductReasonId } = req.params;
+      const otherReimbursementProductReasonId = getStringParam(req.params.otherReimbursementProductReasonId);
       const otherProductReason = await ReimbursementRequestService.getSingleOtherReimbursementProductReason(
         otherReimbursementProductReasonId,
         req.organization
@@ -663,7 +664,7 @@ export default class ReimbursementRequestsController {
 
   static async deleteOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
     try {
-      const { otherReimbursementProductReasonId } = req.params;
+      const otherReimbursementProductReasonId = getStringParam(req.params.otherReimbursementProductReasonId);
 
       const deletedOtherProductReason = await ReimbursementRequestService.deleteOtherReimbursementProductReason(
         otherReimbursementProductReasonId,
@@ -679,7 +680,7 @@ export default class ReimbursementRequestsController {
   static async createReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
     try {
       const { comment } = req.body;
-      const { requestId: reimbursementRequestId } = req.params;
+      const reimbursementRequestId = getStringParam(req.params.requestId);
 
       const createdComment = await ReimbursementRequestService.createReimbursementRequestComment(
         req.currentUser,
@@ -696,7 +697,7 @@ export default class ReimbursementRequestsController {
   static async editReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
     try {
       const { comment } = req.body;
-      const { commentId } = req.params;
+      const commentId = getStringParam(req.params.commentId);
 
       const editedComment = await ReimbursementRequestService.editReimbursementRequestComment(
         req.currentUser,
@@ -712,7 +713,7 @@ export default class ReimbursementRequestsController {
 
   static async deleteReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
     try {
-      const { commentId } = req.params;
+      const commentId = getStringParam(req.params.commentId);
       await ReimbursementRequestService.deleteReimbursementRequestComment(req.currentUser, req.organization, commentId);
       res.status(204).json({ message: `Successfully deleted Comment with id ${commentId}` });
     } catch (error: unknown) {
@@ -722,7 +723,7 @@ export default class ReimbursementRequestsController {
 
   static async editOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
     try {
-      const { otherReimbursementProductReasonId } = req.params;
+      const otherReimbursementProductReasonId = getStringParam(req.params.otherReimbursementProductReasonId);
       const { name, budget, indexCodeId, accountCodeIds } = req.body;
 
       const updatedReason = await ReimbursementRequestService.editOtherReimbursementProductReason(

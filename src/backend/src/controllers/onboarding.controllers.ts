@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import OnboardingServices from '../services/onboarding.services';
+import { getStringParam } from '../utils/utils';
 
 export default class OnboardingController {
   /* Checklists section */
@@ -51,7 +52,7 @@ export default class OnboardingController {
 
   static async editChecklist(req: Request, res: Response, next: NextFunction) {
     try {
-      const { checklistId } = req.params;
+      const checklistId = getStringParam(req.params.checklistId);
       const { content, isOptional, teamId, teamTypeId, parentChecklistId, itemType } = req.body;
       const checklist = await OnboardingServices.editChecklist(
         req.currentUser,
@@ -72,7 +73,7 @@ export default class OnboardingController {
 
   static async deleteChecklist(req: Request, res: Response, next: NextFunction) {
     try {
-      const { checklistId } = req.params;
+      const checklistId = getStringParam(req.params.checklistId);
       await OnboardingServices.deleteChecklist(req.currentUser, checklistId, req.organization);
       res.status(200).json({ message: 'Checklist deleted successfully' });
     } catch (error: unknown) {
@@ -82,7 +83,7 @@ export default class OnboardingController {
 
   static async toggleChecklist(req: Request, res: Response, next: NextFunction) {
     try {
-      const { checklistId } = req.params;
+      const checklistId = getStringParam(req.params.checklistId);
 
       const updatedItem = await OnboardingServices.toggleChecklist(checklistId, req.currentUser, req.organization);
       res.status(200).json(updatedItem);
@@ -93,7 +94,7 @@ export default class OnboardingController {
 
   static async downloadImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { fileId } = req.params;
+      const fileId = getStringParam(req.params.fileId);
 
       const imageData = await OnboardingServices.downloadImage(fileId);
 
@@ -120,7 +121,7 @@ export default class OnboardingController {
 
   static async reorderChecklistItems(req: Request, res: Response, next: NextFunction) {
     try {
-      const { parentId } = req.params;
+      const parentId = getStringParam(req.params.parentId);
       const { itemIds } = req.body;
       await OnboardingServices.reorderChecklistItems(req.currentUser, parentId, itemIds, req.organization);
       res.status(200).json({ message: 'Checklist items reordered successfully' });

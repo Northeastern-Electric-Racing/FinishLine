@@ -12,6 +12,7 @@ import {
 import { NextFunction, Request, Response } from 'express';
 import ProjectsService from '../services/projects.services';
 import BillOfMaterialsService from '../services/boms.services';
+import { getStringParam } from '../utils/utils';
 
 export default class ProjectsController {
   static async getAllProjectsGantt(req: Request, res: Response, next: NextFunction) {
@@ -52,7 +53,7 @@ export default class ProjectsController {
 
   static async getTeamsProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamId } = req.params;
+      const teamId = getStringParam(req.params.teamId);
       const projects: Project[] = await ProjectsService.getTeamsProjects(req.organization, teamId);
       res.status(200).json(projects);
     } catch (error: unknown) {
@@ -62,7 +63,7 @@ export default class ProjectsController {
 
   static async getSingleProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const project: Project = await ProjectsService.getSingleProject(wbsNumber, req.organization);
 
@@ -122,7 +123,7 @@ export default class ProjectsController {
 
   static async setProjectTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
       const { teamId } = req.body;
 
       await ProjectsService.setProjectTeam(req.currentUser, wbsNumber, teamId, req.organization);
@@ -135,7 +136,7 @@ export default class ProjectsController {
 
   static async deleteProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
       const deletedProject: Project = await ProjectsService.deleteProject(req.currentUser, wbsNumber, req.organization);
       res.status(200).json(deletedProject);
     } catch (error: unknown) {
@@ -145,7 +146,7 @@ export default class ProjectsController {
 
   static async toggleFavorite(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const targetProject = await ProjectsService.toggleFavorite(wbsNum, req.currentUser, req.organization);
 
@@ -177,7 +178,7 @@ export default class ProjectsController {
 
   static async createAssembly(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
       const { name, pdmFileName } = req.body;
       const createAssembly = await BillOfMaterialsService.createAssembly(
         name,
@@ -210,7 +211,7 @@ export default class ProjectsController {
         notes,
         reimbursementRequestId
       } = req.body;
-      const wbsNum = validateWBS(req.params.wbsNum);
+      const wbsNum = validateWBS(req.params.wbsNum as string);
       const material = await BillOfMaterialsService.createMaterial(
         req.currentUser,
         name,
@@ -248,7 +249,7 @@ export default class ProjectsController {
 
   static async deleteManufacturer(req: Request, res: Response, next: NextFunction) {
     try {
-      const { manufacturerName } = req.params;
+      const manufacturerName = getStringParam(req.params.manufacturerName);
       const deletedManufacturer = await BillOfMaterialsService.deleteManufacturer(
         req.currentUser,
         manufacturerName,
@@ -262,7 +263,7 @@ export default class ProjectsController {
 
   static async deleteUnit(req: Request, res: Response, next: NextFunction) {
     try {
-      const { unitId } = req.params;
+      const unitId = getStringParam(req.params.unitId);
       const deletedUnit = await BillOfMaterialsService.deleteUnit(req.currentUser, unitId, req.organization);
       res.status(200).json(deletedUnit);
     } catch (error: unknown) {
@@ -306,7 +307,7 @@ export default class ProjectsController {
 
   static async assignMaterialAssembly(req: Request, res: Response, next: NextFunction) {
     try {
-      const { materialId } = req.params;
+      const materialId = getStringParam(req.params.materialId);
       const { assemblyId } = req.body;
       const updatedMaterial = await BillOfMaterialsService.assignMaterialAssembly(
         req.currentUser,
@@ -322,7 +323,7 @@ export default class ProjectsController {
 
   static async deleteAssembly(req: Request, res: Response, next: NextFunction) {
     try {
-      const { assemblyId } = req.params;
+      const assemblyId = getStringParam(req.params.assemblyId);
       const deletedAssembly = await BillOfMaterialsService.deleteAssembly(assemblyId, req.currentUser, req.organization);
       res.status(200).json(deletedAssembly);
     } catch (error: unknown) {
@@ -332,7 +333,7 @@ export default class ProjectsController {
 
   static async deleteMaterialType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { materialTypeName } = req.params;
+      const materialTypeName = getStringParam(req.params.materialTypeName);
       const deletedMaterial = await BillOfMaterialsService.deleteMaterialType(
         req.currentUser,
         materialTypeName,
@@ -346,7 +347,7 @@ export default class ProjectsController {
 
   static async deleteMaterial(req: Request, res: Response, next: NextFunction) {
     try {
-      const { materialId } = req.params;
+      const materialId = getStringParam(req.params.materialId);
       const updatedMaterial = await BillOfMaterialsService.deleteMaterial(req.currentUser, materialId, req.organization);
       res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
@@ -356,7 +357,7 @@ export default class ProjectsController {
 
   static async editMaterial(req: Request, res: Response, next: NextFunction) {
     try {
-      const { materialId } = req.params;
+      const materialId = getStringParam(req.params.materialId);
       const {
         name,
         assemblyId,
@@ -419,7 +420,7 @@ export default class ProjectsController {
 
   static async editAssembly(req: Request, res: Response, next: NextFunction) {
     try {
-      const { assemblyId } = req.params;
+      const assemblyId = getStringParam(req.params.assemblyId);
       const { name, pdmFileName } = req.body;
       const updatedAssembly = await BillOfMaterialsService.editAssembly(
         req.currentUser,
@@ -436,7 +437,7 @@ export default class ProjectsController {
 
   static async editLinkType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { linkTypeName } = req.params;
+      const linkTypeName = getStringParam(req.params.linkTypeName);
       const { name: newName, iconName, required } = req.body;
       const linkTypeUpdated = await ProjectsService.editLinkType(
         linkTypeName,
@@ -454,7 +455,7 @@ export default class ProjectsController {
 
   static async getAssembliesForWbsElement(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const assemblies = await BillOfMaterialsService.getAssembliesForWbsElement(wbsNumber, req.organization);
       res.status(200).json(assemblies);
@@ -465,7 +466,7 @@ export default class ProjectsController {
 
   static async getMaterialsForWbsElement(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const assemblies = await BillOfMaterialsService.getMaterialsForWbsElement(wbsNumber, req.organization);
       res.status(200).json(assemblies);
@@ -487,7 +488,7 @@ export default class ProjectsController {
 
   static async deleteAbbreviation(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
       await ProjectsService.deleteAbbreviation(wbsNum, req.currentUser, req.organization);
       res.status(200).json({ message: `Project ${wbsPipe(wbsNum)}'s abbreviation was successfully deleted.` });
     } catch (error: unknown) {
