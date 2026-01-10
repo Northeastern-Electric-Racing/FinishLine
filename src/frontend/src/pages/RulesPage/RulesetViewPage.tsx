@@ -246,13 +246,6 @@ const RulesetViewPage = () => {
 
   const { rulesetId } = useParams<{ rulesetId: string }>();
 
-  //   const {
-  //   data: ruleset,
-  //   isLoading: rulesetLoading,
-  //   isError: rulesetError,
-  //   error: rulesetErrorMsg
-  // } = useGetRuleset(rulesetId);
-
   const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
 
   // team organization mock for now

@@ -15,7 +15,14 @@ export const parseRulesFromPdf = async (buffer: Buffer, parserType: 'FSAE' | 'FH
       verbosityLevel: 0 as const
     };
     const pdfData = await pdf(buffer, options);
-    return parserType === 'FSAE' ? parseFSAERules(pdfData.text) : parseFHERules(pdfData.text);
+
+    if (parserType === 'FSAE') {
+      return parseFSAERules(pdfData.text);
+    }
+    if (parserType === 'FHE') {
+      return parseFHERules(pdfData.text);
+    }
+    throw new Error(`Invalid parser type: ${parserType}. Must be 'FSAE' or 'FHE'`);
   } catch (error) {
     throw error;
   }
