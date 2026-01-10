@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import RecruitmentServices from '../services/recruitment.services';
-import { getStringParam } from '../utils/utils';
 
 export default class RecruitmentController {
   static async getAllMilestones(req: Request, res: Response, next: NextFunction) {
@@ -31,7 +30,7 @@ export default class RecruitmentController {
 
   static async editMilestone(req: Request, res: Response, next: NextFunction) {
     try {
-      const milestoneId = getStringParam(req.params.milestoneId);
+      const { milestoneId } = req.params;
       const { name, description, dateOfEvent } = req.body;
 
       const milestone = await RecruitmentServices.editMilestone(
@@ -50,7 +49,7 @@ export default class RecruitmentController {
 
   static async deleteMilestone(req: Request, res: Response, next: NextFunction) {
     try {
-      const milestoneId = getStringParam(req.params.milestoneId);
+      const { milestoneId } = req.params;
       await RecruitmentServices.deleteMilestone(req.currentUser, milestoneId, req.organization);
       res.status(200).json({ message: `Successfully deleted milestone with id ${milestoneId}` });
     } catch (error: unknown) {
@@ -80,7 +79,7 @@ export default class RecruitmentController {
   static async editFAQ(req: Request, res: Response, next: NextFunction) {
     try {
       const { question, answer } = req.body;
-      const faqId = getStringParam(req.params.faqId);
+      const { faqId } = req.params;
       const editedFAQ = await RecruitmentServices.editFAQ(question, answer, req.currentUser, req.organization, faqId);
       res.status(200).json(editedFAQ);
     } catch (error: unknown) {
@@ -90,7 +89,7 @@ export default class RecruitmentController {
 
   static async deleteFaq(req: Request, res: Response, next: NextFunction) {
     try {
-      const faqId = getStringParam(req.params.faqId);
+      const { faqId } = req.params;
       await RecruitmentServices.deleteFaq(req.currentUser, faqId, req.organization);
       res.status(200).json({ message: `Successfully deleted FAQ with id ${faqId}` });
     } catch (error: unknown) {

@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import StatisticsService from '../services/statistics.services';
 import { Graph, GraphCollection } from 'shared';
-import { getStringParam } from '../utils/utils';
 
 export default class StatisticsController {
   static async createGraph(req: Request, res: Response, next: NextFunction) {
@@ -40,7 +39,7 @@ export default class StatisticsController {
 
   static async getSingleGraph(req: Request, res: Response, next: NextFunction) {
     try {
-      const graphId = getStringParam(req.params.graphId);
+      const { graphId } = req.params;
 
       const requestedGraph = await StatisticsService.getSingleGraph(graphId, req.currentUser, req.organization);
 
@@ -72,7 +71,7 @@ export default class StatisticsController {
         carIds,
         specialPermissions
       } = req.body;
-      const graphId = getStringParam(req.params.graphId);
+      const { graphId } = req.params;
 
       const updatedGraph = await StatisticsService.editGraph(
         req.currentUser,
@@ -113,7 +112,7 @@ export default class StatisticsController {
   static async editGraphCollection(req: Request, res: Response, next: NextFunction) {
     try {
       const { title, specialPermissions } = req.body;
-      const graphCollectionId = getStringParam(req.params.graphCollectionId);
+      const { graphCollectionId } = req.params;
       const graphCollection: GraphCollection = await StatisticsService.editGraphCollection(
         req.currentUser,
         graphCollectionId,
@@ -129,7 +128,7 @@ export default class StatisticsController {
 
   static async getSingleGraphCollection(req: Request, res: Response, next: NextFunction) {
     try {
-      const graphCollectionId = getStringParam(req.params.graphCollectionId);
+      const { graphCollectionId } = req.params;
       const graphCollection: GraphCollection = await StatisticsService.getSingleGraphCollection(
         req.currentUser,
         graphCollectionId,
@@ -143,8 +142,7 @@ export default class StatisticsController {
 
   static async removeGraphFromGraphCollection(req: Request, res: Response, next: NextFunction) {
     try {
-      const graphCollectionId = getStringParam(req.params.graphCollectionId);
-      const graphId = getStringParam(req.params.graphId);
+      const { graphCollectionId, graphId } = req.params;
       const message: { message: string } = await StatisticsService.removeGraphFromCollection(
         req.currentUser,
         graphCollectionId,
@@ -159,7 +157,7 @@ export default class StatisticsController {
 
   static async deleteGraphCollection(req: Request, res: Response, next: NextFunction) {
     try {
-      const graphCollectionId = getStringParam(req.params.graphCollectionId);
+      const { graphCollectionId } = req.params;
       const message: { message: string } = await StatisticsService.deleteGraphCollection(
         req.currentUser,
         graphCollectionId,

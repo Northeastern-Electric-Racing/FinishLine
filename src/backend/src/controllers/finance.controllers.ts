@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import FinanceServices from '../services/finance.services';
-import { getStringParam } from '../utils/utils';
 
 export default class FinanceController {
   static async createSponsor(req: Request, res: Response, next: NextFunction) {
@@ -49,7 +48,7 @@ export default class FinanceController {
 
   static async getSponsorTasks(req: Request, res: Response, next: NextFunction) {
     try {
-      const sponsorId = getStringParam(req.params.sponsorId);
+      const { sponsorId } = req.params;
       const { organizationId } = req.organization;
 
       const sponsorTasks = await FinanceServices.getSponsorTasks(sponsorId, organizationId);
@@ -61,7 +60,7 @@ export default class FinanceController {
 
   static async deleteSponsor(req: Request, res: Response, next: NextFunction) {
     try {
-      const sponsorId = getStringParam(req.params.sponsorId);
+      const { sponsorId } = req.params;
       const deletedSponsor = await FinanceServices.deleteSponsor(sponsorId, req.currentUser, req.organization);
       res.status(200).json(deletedSponsor);
     } catch (error: unknown) {
@@ -71,7 +70,7 @@ export default class FinanceController {
 
   static async editSponsorTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const sponsorTaskId = getStringParam(req.params.sponsorTaskId);
+      const { sponsorTaskId } = req.params;
       const { dueDate, notes, notifyDate, assigneeUserId } = req.body;
 
       const updatedSponsorTask = await FinanceServices.editSponsorTask(
@@ -91,7 +90,7 @@ export default class FinanceController {
 
   static async deleteSponsorTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const sponsorTaskId = getStringParam(req.params.sponsorTaskId);
+      const { sponsorTaskId } = req.params;
       const deleted = await FinanceServices.deleteSponsorTask(sponsorTaskId, req.currentUser, req.organization);
       res.status(200).json(deleted);
     } catch (error: unknown) {
@@ -119,7 +118,7 @@ export default class FinanceController {
   static async createSponsorTask(req: Request, res: Response, next: NextFunction) {
     try {
       const { dueDate, notes, notifyDate, assigneeUserId } = req.body;
-      const sponsorId = getStringParam(req.params.sponsorId);
+      const { sponsorId } = req.params;
 
       const sponsorTask = await FinanceServices.createSponsorTask(
         req.currentUser,
@@ -138,7 +137,7 @@ export default class FinanceController {
 
   static async getReimbursementRequestProjectData(req: Request, res: Response, next: NextFunction) {
     try {
-      const projectId = getStringParam(req.params.projectId);
+      const { projectId } = req.params;
       const { startDate, endDate } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
@@ -157,7 +156,7 @@ export default class FinanceController {
 
   static async getReimbursementRequestTeamData(req: Request, res: Response, next: NextFunction) {
     try {
-      const teamId = getStringParam(req.params.teamId);
+      const { teamId } = req.params;
       const { startDate, endDate, carNumber } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
@@ -178,7 +177,7 @@ export default class FinanceController {
 
   static async getReimbursementRequestTeamTypeData(req: Request, res: Response, next: NextFunction) {
     try {
-      const teamTypeId = getStringParam(req.params.teamTypeId);
+      const { teamTypeId } = req.params;
       const { startDate, endDate, carNumber } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
@@ -199,7 +198,7 @@ export default class FinanceController {
 
   static async getSpendingBarTeamData(req: Request, res: Response, next: NextFunction) {
     try {
-      const teamId = getStringParam(req.params.teamId);
+      const { teamId } = req.params;
       const { startDate, endDate, carNumber } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
@@ -220,7 +219,7 @@ export default class FinanceController {
 
   static async getSpendingBarTeamTypeData(req: Request, res: Response, next: NextFunction) {
     try {
-      const teamTypeId = getStringParam(req.params.teamTypeId);
+      const { teamTypeId } = req.params;
       const { startDate, endDate, carNumber } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
@@ -260,7 +259,7 @@ export default class FinanceController {
 
   static async getReimbursementRequestCategoryData(req: Request, res: Response, next: NextFunction) {
     try {
-      const otherReasonId = getStringParam(req.params.otherReasonId);
+      const { otherReasonId } = req.params;
       const { startDate, endDate, carNumber } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
@@ -318,7 +317,7 @@ export default class FinanceController {
 
   static async editSponsor(req: Request, res: Response, next: NextFunction) {
     try {
-      const sponsorId = getStringParam(req.params.sponsorId);
+      const { sponsorId } = req.params;
       const {
         name,
         activeStatus,
@@ -356,7 +355,7 @@ export default class FinanceController {
 
   static async deleteSponsorTier(req: Request, res: Response, next: NextFunction) {
     try {
-      const sponsorTierId = getStringParam(req.params.sponsorTierId);
+      const { sponsorTierId } = req.params;
       const deletedSponsorTier = await FinanceServices.deleteSponsorTier(sponsorTierId, req.currentUser, req.organization);
       res.status(200).json(deletedSponsorTier);
     } catch (error: unknown) {
@@ -366,7 +365,7 @@ export default class FinanceController {
 
   static async editSponsorTier(req: Request, res: Response, next: NextFunction) {
     try {
-      const sponsorTierId = getStringParam(req.params.sponsorTierId);
+      const { sponsorTierId } = req.params;
       const { name, colorHexCode, minSupportValue } = req.body;
 
       const updatedSponsorTier = await FinanceServices.editSponsorTier(

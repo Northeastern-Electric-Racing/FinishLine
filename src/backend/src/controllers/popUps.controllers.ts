@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { PopUpService } from '../services/pop-up.services';
-import { getStringParam } from '../utils/utils';
 
 export default class PopUpsController {
   static async getUserUnreadPopUps(req: Request, res: Response, next: NextFunction) {
@@ -16,7 +15,7 @@ export default class PopUpsController {
 
   static async removeUserPopUps(req: Request, res: Response, next: NextFunction) {
     try {
-      const popUpId = getStringParam(req.params.popUpId);
+      const { popUpId } = req.params;
       const { organization, currentUser } = req;
 
       const unreadPopUps = await PopUpService.removeUserPopUp(currentUser.userId, popUpId, organization.organizationId);

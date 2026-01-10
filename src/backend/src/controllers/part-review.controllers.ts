@@ -2,13 +2,11 @@ import { NextFunction, Request, Response } from 'express';
 import PartReviewService from '../services/part-review.services';
 import { WbsNumber, validateWBS } from 'shared';
 import { HttpException } from '../utils/errors.utils';
-import { getStringParam } from '../utils/utils';
 
 export default class PartReviewController {
   static async getPart(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNum = getStringParam(req.params.wbsNum);
-      const indexNum = getStringParam(req.params.indexNum);
+      const { wbsNum, indexNum } = req.params;
 
       const wbsNumber: WbsNumber = validateWBS(wbsNum);
       const part = await PartReviewService.getPart(req.organization, req.currentUser, wbsNumber, indexNum);
@@ -20,7 +18,7 @@ export default class PartReviewController {
 
   static async getAllPartsForProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
 
       const parts = await PartReviewService.getAllPartsForProject(wbsNumber, req.organization, req.currentUser);
       res.status(200).json(parts);
@@ -53,7 +51,7 @@ export default class PartReviewController {
   static async uploadPreview(req: Request, res: Response, next: NextFunction) {
     try {
       const { file } = req;
-      const partId = getStringParam(req.params.partId);
+      const { partId } = req.params;
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
 
       const newPreviewImage = await PartReviewService.uploadPartPreviewImage(
@@ -86,7 +84,7 @@ export default class PartReviewController {
   static async updatePart(req: Request, res: Response, next: NextFunction) {
     try {
       const { index, commonName, description, reviewStatus, tagIds, assigneeIds, reviewerIds } = req.body;
-      const partId = getStringParam(req.params.partId);
+      const { partId } = req.params;
       const part = await PartReviewService.updatePart(
         req.organization.organizationId,
         partId,
@@ -107,7 +105,7 @@ export default class PartReviewController {
 
   static async deletePart(req: Request, res: Response, next: NextFunction) {
     try {
-      const partId = getStringParam(req.params.partId);
+      const { partId } = req.params;
       await PartReviewService.deletePart(partId, req.currentUser, req.organization.organizationId);
       res.status(204).json({ message: `Successfully deleted part #${partId}` });
     } catch (error: unknown) {
@@ -134,7 +132,7 @@ export default class PartReviewController {
 
   static async updateReview(req: Request, res: Response, next: NextFunction) {
     try {
-      const reviewId = getStringParam(req.params.reviewId);
+      const { reviewId } = req.params;
       const { notes, status, fileIds } = req.body;
       const updatedReview = await PartReviewService.updateReview(
         req.organization.organizationId,
@@ -152,7 +150,7 @@ export default class PartReviewController {
 
   static async deleteReview(req: Request, res: Response, next: NextFunction) {
     try {
-      const reviewId = getStringParam(req.params.reviewId);
+      const { reviewId } = req.params;
       await PartReviewService.deleteReview(reviewId, req.currentUser, req.organization.organizationId);
       res.status(204).json({ message: 'Successfully deleted review' });
     } catch (error: unknown) {
@@ -179,7 +177,7 @@ export default class PartReviewController {
 
   static async updateSubmission(req: Request, res: Response, next: NextFunction) {
     try {
-      const submissionId = getStringParam(req.params.submissionId);
+      const { submissionId } = req.params;
       const { name, notes } = req.body;
       const updatedSubmission = await PartReviewService.updateSubmission(
         submissionId,
@@ -229,7 +227,7 @@ export default class PartReviewController {
 
   static async updatePartTag(req: Request, res: Response, next: NextFunction) {
     try {
-      const partTagId = getStringParam(req.params.partTagId);
+      const { partTagId } = req.params;
       const { name, colorHexCode } = req.body;
       const updatedPartTag = await PartReviewService.updatePartTag(
         partTagId,
@@ -246,7 +244,7 @@ export default class PartReviewController {
 
   static async deletePartTag(req: Request, res: Response, next: NextFunction) {
     try {
-      const partTagId = getStringParam(req.params.partTagId);
+      const { partTagId } = req.params;
       await PartReviewService.deletePartTag(partTagId, req.currentUser, req.organization.organizationId);
       res.status(204).send({ message: 'Successfully deleted part tag' });
     } catch (error: unknown) {
@@ -266,7 +264,7 @@ export default class PartReviewController {
 
   static async updateFaq(req: Request, res: Response, next: NextFunction) {
     try {
-      const faqId = getStringParam(req.params.faqId);
+      const { faqId } = req.params;
       const { question, answer } = req.body;
       const updatedfaq = await PartReviewService.updateFaq(
         faqId,
@@ -283,7 +281,7 @@ export default class PartReviewController {
 
   static async deleteFaq(req: Request, res: Response, next: NextFunction) {
     try {
-      const faqId = getStringParam(req.params.faqId);
+      const { faqId } = req.params;
       const deletedfaq = await PartReviewService.deleteFaq(faqId, req.currentUser, req.organization.organizationId);
       res.status(204).json(deletedfaq);
     } catch (error: unknown) {
@@ -318,7 +316,7 @@ export default class PartReviewController {
 
   static async updateCommonMistake(req: Request, res: Response, next: NextFunction) {
     try {
-      const commonMistakeId = getStringParam(req.params.commonMistakeId);
+      const { commonMistakeId } = req.params;
       const { title, description, starred } = req.body;
       const commonMistake = await PartReviewService.updateCommonMistake(
         commonMistakeId,
@@ -336,7 +334,7 @@ export default class PartReviewController {
 
   static async deleteCommonMistake(req: Request, res: Response, next: NextFunction) {
     try {
-      const commonMistakeId = getStringParam(req.params.commonMistakeId);
+      const { commonMistakeId } = req.params;
       await PartReviewService.deleteCommonMistake(commonMistakeId, req.currentUser, req.organization.organizationId);
       res.status(204).json({ message: 'Successfully deleted common mistake' });
     } catch (error: unknown) {
@@ -346,7 +344,7 @@ export default class PartReviewController {
 
   static async createPartReviewRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const partId = getStringParam(req.params.partId);
+      const { partId } = req.params;
       const { reviewerId } = req.body;
 
       const request = await PartReviewService.createPartReviewRequest(
@@ -364,7 +362,7 @@ export default class PartReviewController {
 
   static async deletePartReviewRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const reviewRequestId = getStringParam(req.params.reviewRequestId);
+      const { reviewRequestId } = req.params;
 
       await PartReviewService.deletePartReviewRequest(reviewRequestId, req.currentUser, req.organization.organizationId);
 
@@ -397,7 +395,7 @@ export default class PartReviewController {
   static async createPartReviewPopup(req: Request, res: Response, next: NextFunction) {
     try {
       const user = req.currentUser;
-      const reviewId = getStringParam(req.params.reviewId);
+      const { reviewId } = req.params;
       const organizationID = req.organization.organizationId;
       const { xCoord, yCoord, fileIndex, title, description } = req.body;
       const newPopup = await PartReviewService.createPartReviewPopup(
@@ -419,7 +417,7 @@ export default class PartReviewController {
   static async updatePartReviewPopup(req: Request, res: Response, next: NextFunction) {
     try {
       const user = req.currentUser;
-      const popupId = getStringParam(req.params.popupId);
+      const { popupId } = req.params;
       const organizationID = req.organization.organizationId;
       const { xCoord, yCoord, fileIndex, title, description } = req.body;
       const updatedPopup = await PartReviewService.updatePartReviewPopup(
@@ -441,7 +439,7 @@ export default class PartReviewController {
   static async deletePartReviewPopup(req: Request, res: Response, next: NextFunction) {
     try {
       const user = req.currentUser;
-      const popupId = getStringParam(req.params.popupId);
+      const { popupId } = req.params;
       const organizationID = req.organization.organizationId;
       await PartReviewService.deletePartReviewPopup(popupId, user, organizationID);
       res.status(204).json({ message: 'Popup deleted successfully' });
@@ -452,7 +450,7 @@ export default class PartReviewController {
 
   static async downloadFile(req: Request, res: Response, next: NextFunction) {
     try {
-      const fileId = getStringParam(req.params.fileId);
+      const { fileId } = req.params;
 
       const fileData = await PartReviewService.downloadFile(fileId, req.currentUser, req.organization);
 
