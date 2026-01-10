@@ -3,7 +3,7 @@
   "compilerOptions": {
     "module": "ESNext",
     "target": "ES2019",
-    "outDir": "./dist",
+    "outDir": "./dist/esm",
     "noEmit": false,
     "types": []
   },
