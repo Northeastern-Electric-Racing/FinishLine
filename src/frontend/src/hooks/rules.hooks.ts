@@ -19,7 +19,9 @@ import {
   deleteRuleset,
   deleteRulesetType,
   createRuleset,
-  getRulesetById
+  getRulesetById,
+  getProjectRulesInRuleset,
+  getUnassignedTeamRulesInRuleset
 } from '../apis/rules.api';
 
 interface CreateRulesetTypePayload {
@@ -88,6 +90,32 @@ export const useGetTeamRulesInRulesetType = (rulesetTypeId: string, teamId: stri
     const { data } = await getTeamRulesInRulesetType(rulesetTypeId, teamId);
     return data;
   });
+};
+
+export const useGetTeamRulesInRuleset = (rulesetId: string, teamId: string) => {
+  return useQuery<SharedRule[], Error>(['rules', 'team-rules', rulesetId, teamId], async () => {
+    // TODO
+  });
+};
+
+export const useGetProjectRulesInRuleset = (rulesetId: string, projectId: string) => {
+  return useQuery<SharedRule[], Error>(
+    ['rules', 'project-rules', rulesetId, projectId], 
+    async () => {
+      const { data } = await getProjectRulesInRuleset(rulesetId, projectId);
+      return data;
+    }
+  );
+};
+
+export const useGetUnassignedTeamRulesInRuleset = (rulesetId: string, teamId: string) => {
+  return useQuery<SharedRule[], Error>(
+    ['rules', 'unassigned-team-rules', rulesetId, teamId], 
+    async () => {
+      const { data } = await getUnassignedTeamRulesInRuleset(rulesetId, teamId);
+      return data;
+    }
+  );
 };
 
 /**

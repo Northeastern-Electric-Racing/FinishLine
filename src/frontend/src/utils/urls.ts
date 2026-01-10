@@ -442,6 +442,10 @@ const rulesTopLevel = (rulesetId: string) => `${rules()}/${rulesetId}/parentRule
 const rulesToggleTeam = (ruleId: string) => `${rules()}/rule/${ruleId}/toggle-team`;
 const rulesChildRules = (ruleId: string) => `${rules()}/${ruleId}/subrules`;
 const rulesTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => `${rules()}/${rulesetTypeId}/team/${teamId}`;
+const projectRulesInRuleset = (rulesetId: string, projectId: string) =>
+  `${rules()}/ruleset/${rulesetId}/project/${projectId}/rules`;
+const unassignedTeamRulesInRuleset = (rulesetId: string, teamId: string) =>
+  `${rules()}/ruleset/${rulesetId}/team/${teamId}/rules/unassigned`;
 const rulesetTypes = () => `${rules()}/rulesetTypes`;
 const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
 const ruleset = () => `${rules()}/ruleset`;
@@ -761,6 +765,8 @@ export const apiUrls = {
   rulesToggleTeam,
   rulesChildRules,
   rulesTeamRulesInRulesetType,
+  projectRulesInRuleset,
+  unassignedTeamRulesInRuleset,
   ruleset,
   rulesetTypes,
   rulesetsByType,

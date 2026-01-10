@@ -46,6 +46,22 @@ export const getTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string)
 };
 
 /**
+ * Gets project rules for a specific ruleset
+ */
+export const getProjectRulesInRuleset = (rulesetId: string, projectId: string) => {
+  return axios.get<SharedRule[]>(apiUrls.projectRulesInRuleset(rulesetId, projectId));
+};
+
+/**
+ * Gets unassigned team rules for a specific ruleset
+ */
+export const getUnassignedTeamRulesInRuleset = (rulesetId: string, teamId: string) => {
+  return axios.get<SharedRule[]>(apiUrls.unassignedTeamRulesInRuleset(rulesetId, teamId));
+};
+
+
+
+/**
  * Creates a new ruleset type
  *
  * @param payload the data for creating the ruleset type
