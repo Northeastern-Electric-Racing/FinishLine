@@ -3,13 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, UserPreview } from './user-types';
-import { ImplementedChange } from './change-request-types';
-import { WorkPackageStage } from './work-package-types';
-import { TeamPreview } from './team-types';
-import { Task } from './task-types';
-import { DesignReviewPreview, TeamType } from './design-review-types';
-
+import {
+  DesignReviewPreview,
+  ImplementedChange,
+  Task,
+  TeamPreview,
+  TeamType,
+  User,
+  UserPreview,
+  WorkPackageStage
+} from '../..';
 export interface WbsNumber {
   carNumber: number;
   projectNumber: number;

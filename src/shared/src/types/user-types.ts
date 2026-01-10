@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AvailabilityCreateArgs } from './design-review-types';
+import { AvailabilityCreateArgs } from '../..';
 
 export interface User {
   userId: string;

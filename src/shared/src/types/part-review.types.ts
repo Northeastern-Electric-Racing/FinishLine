@@ -1,4 +1,4 @@
-import { User } from './user-types';
+import { User } from '../..';
 
 export enum Review_Status {
   IN_PROGRESS = 'IN_PROGRESS',

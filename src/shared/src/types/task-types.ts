@@ -3,8 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber } from './project-types';
-import { User } from './user-types';
+import { User, WbsNumber } from '../..';
 
 export enum TaskPriority {
   Low = 'LOW',

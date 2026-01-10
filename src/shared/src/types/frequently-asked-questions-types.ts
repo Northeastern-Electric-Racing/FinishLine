@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from './user-types';
+import { User } from '../..';
 
 export interface FrequentlyAskedQuestion {
   faqId: string;

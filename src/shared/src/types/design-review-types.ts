@@ -1,5 +1,4 @@
-import { WbsNumber } from './project-types';
-import { User, UserWithScheduleSettings } from './user-types';
+import { WbsNumber, User, UserWithScheduleSettings } from '../..';
 
 export interface DesignReview {
   designReviewId: string;

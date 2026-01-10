@@ -1,5 +1,4 @@
-import { WbsNumber } from './project-types';
-import { User } from './user-types';
+import { WbsNumber, User } from '../..';
 
 export interface IndexCode {
   indexCodeId: string;
