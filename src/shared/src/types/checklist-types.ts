@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamType, Team, User } from '../..';
+import { TeamType, Team, User } from '../../';
 
-export const enum ChecklistItemType {
+export enum ChecklistItemType {
   TASK = 'TASK',
   INFO = 'INFO'
 }

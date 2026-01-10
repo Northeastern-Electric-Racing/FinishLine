@@ -21,6 +21,9 @@ resource "aws_amplify_app" "frontend" {
             - yarn install --frozen-lockfile
             - echo 'Building shared package...'
             - yarn workspace shared build
+            - echo 'Checking shared build output:'
+            - ls -la src/shared/dist/
+            - grep -n "checklist" src/shared/dist/index.js || echo "ChecklistItemType NOT FOUND"
         build:
           commands:
             - echo 'Building frontend...'
