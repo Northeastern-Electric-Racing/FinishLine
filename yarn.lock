@@ -7915,7 +7915,7 @@ __metadata:
     nodemailer: ^6.9.1
     nodemon: ^2.0.16
     prisma: ^6.2.1
-    shared: 1.0.0
+    shared: "*"
     supertest: ^6.2.4
     ts-node: ^8.10.1
     typescript: ^5.7.3
@@ -19496,7 +19496,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"shared@*, shared@1.0.0, shared@workspace:src/shared":
+"shared@*, shared@workspace:src/shared":
   version: 0.0.0-use.local
   resolution: "shared@workspace:src/shared"
   dependencies:
