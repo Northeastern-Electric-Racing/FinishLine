@@ -5,7 +5,7 @@
 
 import { TeamType, Team, User } from '../..';
 
-export enum ChecklistItemType {
+export const enum ChecklistItemType {
   TASK = 'TASK',
   INFO = 'INFO'
 }
