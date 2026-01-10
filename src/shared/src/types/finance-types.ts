@@ -1,4 +1,4 @@
-import { User } from '../..';
+import { User } from 'shared';
 
 export interface Sponsor {
   sponsorId: string;

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamType, Team, User } from '../../';
+import { TeamType, Team, User } from 'shared';
 
 export enum ChecklistItemType {
   TASK = 'TASK',

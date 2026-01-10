@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from './user-types';
 import {
+  User,
   AccountCode,
   LinkCreateArgs,
   OtherProductReason,
@@ -12,7 +12,7 @@ import {
   WbsNumber,
   WorkPackageProposedChanges,
   WorkPackageStage
-} from '../..';
+} from 'shared';
 
 export interface ChangeRequest {
   crId: string;

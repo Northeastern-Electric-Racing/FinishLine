@@ -12,7 +12,7 @@ import {
   User,
   UserPreview,
   WorkPackageStage
-} from '../..';
+} from 'shared';
 export interface WbsNumber {
   carNumber: number;
   projectNumber: number;

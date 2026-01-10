@@ -1,4 +1,4 @@
-import { WbsNumber, User } from '../..';
+import { WbsNumber, User } from 'shared';
 
 export interface IndexCode {
   indexCodeId: string;

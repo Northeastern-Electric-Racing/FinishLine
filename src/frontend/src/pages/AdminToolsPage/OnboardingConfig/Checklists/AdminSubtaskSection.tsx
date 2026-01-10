@@ -1,7 +1,7 @@
 import { Typography, useTheme, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
-import { Checklist, ChecklistPreview, ChecklistItemType } from '../../../../../../shared';
+import { Checklist, ChecklistPreview, ChecklistItemType } from 'shared';
 import { GridDragIcon } from '@mui/x-data-grid';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CreateSubtaskModal from './CreateSubtaskModal';

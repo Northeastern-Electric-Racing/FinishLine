@@ -1,4 +1,4 @@
-import { WbsNumber, User, UserWithScheduleSettings } from '../..';
+import { WbsNumber, User, UserWithScheduleSettings } from 'shared';
 
 export interface DesignReview {
   designReviewId: string;

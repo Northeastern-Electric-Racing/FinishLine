@@ -3,7 +3,7 @@ import NERFormModal from '../../../../components/NERFormModal';
 import { FormControl, FormLabel, Box, TextField, useTheme, Checkbox, InputAdornment } from '@mui/material';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Checklist, ChecklistItemType, ChecklistPreview } from '../../../../../../shared';
+import { Checklist, ChecklistItemType, ChecklistPreview } from 'shared';
 import { ChecklistCreateArgs, SubtaskCreateArgs } from '../../../../hooks/onboarding.hook';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import React from 'react';

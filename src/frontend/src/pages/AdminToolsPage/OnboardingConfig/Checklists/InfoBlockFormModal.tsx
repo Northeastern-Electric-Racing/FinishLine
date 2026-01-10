@@ -6,7 +6,7 @@ import * as yup from 'yup';
 import NERFormModal from '../../../../components/NERFormModal';
 import { ChecklistCreateArgs } from '../../../../hooks/onboarding.hook';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { Checklist, ChecklistItemType, ChecklistPreview } from '../../../../../../shared';
+import { Checklist, ChecklistItemType, ChecklistPreview } from 'shared';
 import NERMarkdown from '../../../../components/NERMarkdown';
 
 interface InfoBlockFormModalProps {

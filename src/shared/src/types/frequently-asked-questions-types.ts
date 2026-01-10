@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from '../..';
+import { User } from 'shared';
 
 export interface FrequentlyAskedQuestion {
   faqId: string;

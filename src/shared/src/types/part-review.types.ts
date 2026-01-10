@@ -1,4 +1,4 @@
-import { User } from '../..';
+import { User } from 'shared';
 
 export enum Review_Status {
   IN_PROGRESS = 'IN_PROGRESS',

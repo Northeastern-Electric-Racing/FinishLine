@@ -1,4 +1,4 @@
-import { User } from '../..';
+import { User } from 'shared';
 
 export enum GraphDisplayType {
   BAR = 'BAR',
