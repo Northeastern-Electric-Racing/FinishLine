@@ -2,7 +2,7 @@ import { Typography, useTheme, IconButton } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/system';
 import React from 'react';
-import { Checklist, ChecklistItemType } from 'shared';
+import { Checklist, ChecklistItemType } from '../../../../../shared';
 import { GridDragIcon } from '@mui/x-data-grid';
 import { useToggleChecklist } from '../../../hooks/onboarding.hook';
 import { useToast } from '../../../hooks/toasts.hooks';
