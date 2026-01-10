@@ -25,7 +25,7 @@ import { DragDropContext, Droppable, Draggable, OnDragEndResponder } from '@hell
 import { GridDragIcon } from '@mui/x-data-grid';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import InfoIcon from '@mui/icons-material/Info';
-import { ChecklistItemType } from 'shared';
+import { ChecklistItemType } from '../../../../../../shared';
 
 interface CreateChecklistModalProps {
   open: boolean;

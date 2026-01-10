@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Checklist, ChecklistItemType, ChecklistPreview, User } from 'shared';
+import { Checklist, ChecklistItemType, ChecklistPreview, User } from '../../../shared';
 import {
   getAllChecklists,
   getGeneralChecklists,
