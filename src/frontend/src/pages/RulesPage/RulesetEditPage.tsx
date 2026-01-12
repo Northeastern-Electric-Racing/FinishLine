@@ -49,14 +49,6 @@ const RulesetEditPage: React.FC = () => {
   // TODO: update delete logic to use actual ruleset rules (will need endpoint to fetch all ruleset rules)
   const { data: rulesetMock, isError, error, isLoading } = useSingleRuleset(rulesetId);
 
-  if (isError) {
-    return <ErrorPage error={error} />;
-  }
-
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
-
   const {
     data: ruleset,
     isLoading: rulesetLoading,
@@ -75,6 +67,14 @@ const RulesetEditPage: React.FC = () => {
     { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
     { tabUrlValue: 'assign-rules', tabName: 'Assign Rules' }
   ];
+
+  if (isError) {
+    return <ErrorPage error={error} />;
+  }
+
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
 
   if (rulesetError) {
     return <ErrorPage error={rulesetErrorMsg} />;
