@@ -260,8 +260,6 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleOpenAddMenu = (ruleId: string, anchorEl: HTMLElement) => {
-    console.log('=== handleOpenAddMenu ===');
-    console.log('ruleId:', ruleId);
 
     if (showAddMenu && addMenuAnchorEl === anchorEl) {
       handleCloseAddMenu();
@@ -284,8 +282,6 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleAddRuleFromMenu = () => {
-    console.log('=== handleAddRuleFromMenu ===');
-    console.log('activeRuleId:', activeRuleId);
     setShowAddRuleModal(true);
     handleCloseAddMenu();
   };

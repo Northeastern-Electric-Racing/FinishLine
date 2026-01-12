@@ -82,7 +82,6 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
       handleClose();
     } catch (error) {
       toast.error('Failed to create rule');
-      console.error('Error creating rule:', error);
     }
   };
 
