@@ -17,9 +17,7 @@ import AddRuleSectionModal from './components/AddRuleSectionModal';
 import AddRuleModal from './components/AddRuleModal';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
-import { useDeleteRule, useGetRuleset, useGetTopLevelRules } from '../../hooks/rules.hooks';
-import DeleteRuleModal from './components/DeleteRuleModal';
-import { countRulesToDelete } from '../../utils/rules.utils';
+import { useGetRuleset, useGetTopLevelRules } from '../../hooks/rules.hooks';
 
 /**
  * Placeholder hook to fetch a single ruleset.
