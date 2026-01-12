@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, FormControl, Select, MenuItem, SelectChangeEvent, useTheme, TextField } from '@mui/material';
+import { Box, Typography, useTheme, TextField } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import NERFormModal from '../../../components/NERFormModal';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCreateRule } from '../../../hooks/rules.hooks';
-import { useGetTopLevelRules, useGetChildRules } from '../../../hooks/rules.hooks';
-import { Rule } from 'shared';
 
 interface AddRuleModalProps {
   open: boolean;
@@ -54,17 +52,15 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
     }
   }, [open, initialParentRuleId]);
 
-  // Fetch top-level rules
-  const { data: topLevelRules = [], isLoading: topLevelLoading } = useGetTopLevelRules(rulesetId);
+  // // Fetch top-level rules
+  // const { data: topLevelRules = [], isLoading: topLevelLoading } = useGetTopLevelRules(rulesetId);
 
-  // Fetch child rules for the last selected rule in the REFERENCE hierarchy
-  const lastSelectedReferenceRuleId =
-    selectedReferenceHierarchy.length > 0 ? selectedReferenceHierarchy[selectedReferenceHierarchy.length - 1] : null;
-
-  const { data: currentChildRules = [] } = useGetChildRules(
-    lastSelectedReferenceRuleId || '',
-    !!lastSelectedReferenceRuleId
-  );
+  // // Get the children of the most recently selected rule (if any)
+  // const lastSelectedRuleId = selectedReferenceHierarchy[selectedReferenceHierarchy.length - 1];
+  // const { data: currentChildRules = [] } = useGetChildRules(
+  //   lastSelectedRuleId || '',
+  //   !!lastSelectedRuleId // only fetch if we have a selected rule
+  // );
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -72,10 +68,6 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
       // Referenced rules are the ones selected in the dropdowns (optional)
       const referencedRules =
         selectedReferenceHierarchy.length > 0 ? [selectedReferenceHierarchy[selectedReferenceHierarchy.length - 1]] : [];
-
-      console.log('Creating rule with:');
-      console.log('  parentRuleId:', initialParentRuleId);
-      console.log('  referencedRules:', referencedRules);
 
       await createRule({
         ruleCode: data.ruleCode,
@@ -95,35 +87,35 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
   };
 
   const handleClose = () => {
-    reset();
     setSelectedReferenceHierarchy([]);
     onClose();
   };
 
-  const handleReferenceSelect = (level: number) => (event: SelectChangeEvent<string>) => {
-    const selectedRuleId = event.target.value;
+  // const handleReferenceSelect = (level: number) => (event: SelectChangeEvent<string>) => {
+  //   const selectedRuleId = event.target.value;
 
-    // Update reference hierarchy - keep rules up to this level, replace current level
-    const newHierarchy = [...selectedReferenceHierarchy.slice(0, level), selectedRuleId];
-    setSelectedReferenceHierarchy(newHierarchy);
-  };
+  //   // Update reference hierarchy - keep rules up to this level, add/replace at current level
+  //   // This automatically truncates any selections below this level
+  //   const newHierarchy = [...selectedReferenceHierarchy.slice(0, level), selectedRuleId];
+  //   setSelectedReferenceHierarchy(newHierarchy);
+  // };
 
   // Styling
-  const selectStyles = {
-    backgroundColor: theme.palette.action.hover,
-    borderRadius: '8px',
-    color: theme.palette.text.primary,
-    '& .MuiSelect-select': {
-      py: 1.5,
-      px: 2.5
-    },
-    '& .MuiOutlinedInput-notchedOutline': {
-      border: 'none'
-    },
-    '& .MuiSvgIcon-root': {
-      color: theme.palette.text.primary
-    }
-  };
+  // const selectStyles = {
+  //   backgroundColor: theme.palette.action.hover,
+  //   borderRadius: '8px',
+  //   color: theme.palette.text.primary,
+  //   '& .MuiSelect-select': {
+  //     py: 1.5,
+  //     px: 2.5
+  //   },
+  //   '& .MuiOutlinedInput-notchedOutline': {
+  //     border: 'none'
+  //   },
+  //   '& .MuiSvgIcon-root': {
+  //     color: theme.palette.text.primary
+  //   }
+  // };
 
   const textFieldStyles = {
     '& .MuiOutlinedInput-root': {
@@ -210,16 +202,17 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
         </Box>
 
         {/* Select Referenced Rule - Cascading Dropdowns (OPTIONAL) */}
+        {/*
         <Box>
           <Typography
             variant="h4"
             sx={{ color: theme.palette.primary.main, textDecoration: 'underline', fontSize: 30, mb: 2 }}
           >
             Select Referenced Rule
-          </Typography>
+            </Typography>
 
           {/* Level 0: Top-level rules */}
-          <FormControl fullWidth sx={{ mb: 2 }}>
+        {/* <FormControl fullWidth sx={{ mb: 2 }}>
             <Select
               value={selectedReferenceHierarchy[0] || ''}
               onChange={handleReferenceSelect(0)}
@@ -241,10 +234,11 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
                 </MenuItem>
               ))}
             </Select>
-          </FormControl>
+          </FormControl> */}
 
-          {/* Dynamic child rule dropdown - only show one level at a time */}
-          {selectedReferenceHierarchy.length > 0 && currentChildRules.length > 0 && (
+        {/* Dynamic child rule dropdown - only show one level at a time */}
+        {/*
+          {selectedReferenceHierarchy.length > 0 && (
             <FormControl fullWidth sx={{ mb: 2 }}>
               <Select
                 value={selectedReferenceHierarchy[selectedReferenceHierarchy.length] || ''}
@@ -268,7 +262,7 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
               </Select>
             </FormControl>
           )}
-        </Box>
+        </Box> */}
       </Box>
     </NERFormModal>
   );
