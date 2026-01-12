@@ -3,9 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamType } from './design-review-types';
-import { ProjectGantt } from './project-types';
-import { User } from './user-types';
+import { TeamType, ProjectGantt, User } from 'shared';
 
 export interface Team {
   teamId: string;

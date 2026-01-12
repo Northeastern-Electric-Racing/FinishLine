@@ -1,6 +1,5 @@
 import { Decimal } from 'decimal.js';
-import { User } from './user-types';
-import { ReimbursementRequest } from './reimbursement-requests-types';
+import { User, ReimbursementRequest } from 'shared';
 
 export enum MaterialStatus {
   Ordered = 'ORDERED',
@@ -52,7 +51,6 @@ export type ManufacturerPreview = Omit<Manufacturer, 'materials' | 'userCreated'
 export interface Material {
   materialId: string;
   assemblyId?: string;
-  assembly?: AssemblyPreview;
   name: string;
   wbsElementId: string;
   dateDeleted?: Date;

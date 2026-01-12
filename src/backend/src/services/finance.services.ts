@@ -434,13 +434,32 @@ export default class FinanceServices {
       },
       select: {
         reimbursementStatuses: true,
-        totalCost: true
+        totalCost: true,
+        reimbursementProducts: {
+          where: {
+            dateDeleted: null,
+            reimbursementProductReason: {
+              wbsElement: {
+                project: {
+                  projectId
+                }
+              }
+            }
+          },
+          select: {
+            cost: true
+          }
+        }
       }
     });
 
     const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
 
-    const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+    const totalBalance =
+      reimbursementRequests.reduce((acc, curr) => {
+        const projectProductsCost = curr.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
+        return acc + projectProductsCost;
+      }, 0) / 100;
 
     const available = project.budget - totalBalance;
 
@@ -507,7 +526,26 @@ export default class FinanceServices {
       },
       select: {
         reimbursementStatuses: true,
-        totalCost: true
+        totalCost: true,
+        reimbursementProducts: {
+          where: {
+            dateDeleted: null,
+            reimbursementProductReason: {
+              wbsElement: {
+                project: {
+                  teams: {
+                    some: {
+                      teamId
+                    }
+                  }
+                }
+              }
+            }
+          },
+          select: {
+            cost: true
+          }
+        }
       }
     });
 
@@ -515,7 +553,11 @@ export default class FinanceServices {
 
     const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
 
-    const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+    const totalBalance =
+      reimbursementRequests.reduce((acc, curr) => {
+        const teamProductsCost = curr.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
+        return acc + teamProductsCost;
+      }, 0) / 100;
 
     const available = totalBudget - totalBalance;
 
@@ -910,7 +952,18 @@ export default class FinanceServices {
       },
       select: {
         reimbursementStatuses: true,
-        totalCost: true
+        totalCost: true,
+        reimbursementProducts: {
+          where: {
+            dateDeleted: null,
+            reimbursementProductReason: {
+              otherReasonId
+            }
+          },
+          select: {
+            cost: true
+          }
+        }
       }
     });
 
@@ -935,7 +988,8 @@ export default class FinanceServices {
       const lastStatus = req.reimbursementStatuses.at(-1)?.type;
 
       if (lastStatus && totals[lastStatus] !== undefined) {
-        totals[lastStatus] += req.totalCost;
+        const categoryProductsCost = req.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
+        totals[lastStatus] += categoryProductsCost;
       }
     });
 
@@ -944,7 +998,10 @@ export default class FinanceServices {
     const submittedToSabo = totals[Reimbursement_Status_Type.SABO_SUBMITTED] ?? 0;
     const reimbursed = totals[Reimbursement_Status_Type.REIMBURSED] ?? 0;
 
-    const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+    const totalBalance = reimbursementRequests.reduce((acc, curr) => {
+      const categoryProductsCost = curr.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
+      return acc + categoryProductsCost;
+    }, 0);
 
     const available = totalBudget - totalBalance;
 

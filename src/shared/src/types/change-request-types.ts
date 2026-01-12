@@ -3,10 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from './user-types';
-import { LinkCreateArgs, ProjectProposedChanges, WbsNumber, WorkPackageProposedChanges } from './project-types';
-import { WorkPackageStage } from './work-package-types';
-import { AccountCode, OtherProductReason } from './reimbursement-requests-types';
+import {
+  User,
+  AccountCode,
+  LinkCreateArgs,
+  OtherProductReason,
+  ProjectProposedChanges,
+  WbsNumber,
+  WorkPackageProposedChanges,
+  WorkPackageStage
+} from 'shared';
 
 export interface ChangeRequest {
   crId: string;

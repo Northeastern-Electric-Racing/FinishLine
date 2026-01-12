@@ -1,4 +1,4 @@
-import { User } from './user-types';
+import { User } from 'shared';
 
 export interface Sponsor {
   sponsorId: string;

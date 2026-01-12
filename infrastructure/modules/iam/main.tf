@@ -163,6 +163,18 @@ resource "aws_iam_role_policy" "eb_ecr_access" {
   })
 }
 
+# Attach AWS managed policy for CloudWatch Agent
+# This policy includes permissions for:
+# - cloudwatch:PutMetricData
+# - ec2:DescribeVolumes, ec2:DescribeTags
+# - logs:* (CreateLogGroup, CreateLogStream, PutLogEvents, etc.)
+# - xray:* (for traces)
+# - ssm:GetParameter (for configs in Parameter Store)
+resource "aws_iam_role_policy_attachment" "eb_cloudwatch_agent" {
+  role       = aws_iam_role.eb_ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
 # EC2 Instance Profile
 resource "aws_iam_instance_profile" "eb_ec2_profile" {
   name = "${var.project_name}-${var.environment}-eb-ec2-profile"

@@ -5,8 +5,6 @@ import { useState } from 'react';
 import { Checklist } from 'shared';
 import { GridDragIcon } from '@mui/x-data-grid';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import EditIcon from '@mui/icons-material/Edit';
-import EditChecklistModal from './EditChecklistModal';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { useDeleteChecklist } from '../../../../hooks/onboarding.hook';
 import NERDeleteModal from '../../../../components/NERDeleteModal';
@@ -18,7 +16,6 @@ interface AdminTaskProps {
 
 const AdminTask: React.FC<AdminTaskProps> = ({ parentTask }) => {
   const [showSubtasks, setShowSubtasks] = useState(false);
-  const [showEdit, setShowEdit] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Checklist | null>(null);
   const toast = useToast();
 
@@ -47,13 +44,10 @@ const AdminTask: React.FC<AdminTaskProps> = ({ parentTask }) => {
           <IconButton>
             <GridDragIcon sx={{ color: 'black' }} />
           </IconButton>
-          <Typography sx={{ color: 'black', fontWeight: 'bold', fontSize: '1.1em' }}>{parentTask.name}</Typography>
+          <Typography sx={{ color: 'black', fontWeight: 'bold', fontSize: '1.1em' }}>{parentTask.content}</Typography>
           <Box sx={{ ml: 'auto', display: 'flex' }}>
             <IconButton onClick={() => setTaskToDelete(parentTask)}>
               <RemoveCircleOutlineIcon sx={{ color: 'black' }} />
-            </IconButton>
-            <IconButton onClick={() => setShowEdit(true)}>
-              <EditIcon sx={{ color: 'black' }} />
             </IconButton>
             <IconButton onClick={toggleShowSubtasks}>
               {showSubtasks ? <KeyboardArrowDown sx={{ color: 'black' }} /> : <KeyboardArrowRight sx={{ color: 'black' }} />}
@@ -62,15 +56,6 @@ const AdminTask: React.FC<AdminTaskProps> = ({ parentTask }) => {
         </Box>
         {showSubtasks && <AdminSubtaskSection parentTask={parentTask} />}
       </Box>
-      {showEdit && (
-        <EditChecklistModal
-          open={showEdit}
-          handleClose={() => setShowEdit(false)}
-          teamId={parentTask.team?.teamId}
-          teamTypeId={parentTask.teamType?.teamTypeId}
-          defaultValues={parentTask}
-        />
-      )}
       {taskToDelete && (
         <NERDeleteModal
           open={!!taskToDelete}

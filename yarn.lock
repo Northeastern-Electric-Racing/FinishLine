@@ -11997,7 +11997,7 @@ __metadata:
     react-scripts: ^5.0.1
     react-use-measure: ^2.1.1
     sass: ^1.54.0
-    shared: 1.0.0
+    shared: "*"
     typed-scss-modules: ^8.1.1
     typescript: 5.7.3
     uuid: ^11.1.0
@@ -19496,7 +19496,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"shared@1.0.0, shared@workspace:src/shared":
+"shared@*, shared@1.0.0, shared@workspace:src/shared":
   version: 0.0.0-use.local
   resolution: "shared@workspace:src/shared"
   dependencies:

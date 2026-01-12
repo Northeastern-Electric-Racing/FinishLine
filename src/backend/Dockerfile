@@ -3,7 +3,7 @@ FROM node:20
 
 WORKDIR /base
 
-COPY package.json .yarn tsconfig.build.json ./
+COPY package.json tsconfig.build.json ./
 COPY ./src/backend src/backend
 COPY ./src/shared src/shared
 

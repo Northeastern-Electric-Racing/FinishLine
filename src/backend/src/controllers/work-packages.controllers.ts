@@ -20,7 +20,7 @@ export default class WorkPackagesController {
   // Fetch the work package for the specified WBS number
   static async getSingleWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum);
+      const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const wp: WorkPackage = await WorkPackagesService.getSingleWorkPackage(parsedWbs, req.organization);
 
@@ -99,10 +99,10 @@ export default class WorkPackagesController {
   // Delete a work package that corresponds to the given wbs number
   static async deleteWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNum = validateWBS(req.params.wbsNum);
+      const wbsNum = validateWBS(req.params.wbsNum as string);
 
       await WorkPackagesService.deleteWorkPackage(req.currentUser, wbsNum, req.organization);
-      res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
+      res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum as string}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -111,7 +111,7 @@ export default class WorkPackagesController {
   // Get all work packages that are blocked by the given work package
   static async getBlockingWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNum = validateWBS(req.params.wbsNum);
+      const wbsNum = validateWBS(req.params.wbsNum as string);
 
       const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(
         wbsNum,
@@ -137,7 +137,7 @@ export default class WorkPackagesController {
 
   static async getHomePageWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const { selection } = req.params;
+      const { selection } = req.params as Record<string, string>;
 
       const workPackages: WorkPackagePreview[] = await WorkPackagesService.getHomePageWorkPackages(
         req.currentUser,

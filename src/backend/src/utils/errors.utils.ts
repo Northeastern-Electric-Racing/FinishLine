@@ -1,4 +1,6 @@
 import { ErrorRequestHandler, Request, Response, NextFunction } from 'express';
+import multer from 'multer';
+import { MAX_FILE_SIZE } from 'shared';
 
 /**
  * Custom Error type that has a status code and a message (from the default Error class)
@@ -97,11 +99,43 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request,
     return next(error);
   }
 
+  if (error instanceof multer.MulterError) {
+    const httpError = handleMulterError(error);
+    res.status(httpError.status).json({ message: httpError.message });
+    return;
+  }
+
   if (error instanceof HttpException) {
     res.status(error.status).json({ message: error.message });
   } else {
     res.status(500).json({ message: JSON.stringify(error) });
     throw error;
+  }
+};
+
+/**
+ * Handles Multer-specific errors and converts them to appropriate HTTP responses
+ * @param error - The Multer error object
+ * @returns multer error as HttpException
+ */
+export const handleMulterError = (error: multer.MulterError): HttpException => {
+  switch (error.code) {
+    case 'LIMIT_FILE_SIZE':
+      return new HttpException(400, `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB`);
+    case 'LIMIT_UNEXPECTED_FILE':
+      return new HttpException(400, 'Unexpected field name for file upload');
+    case 'LIMIT_FILE_COUNT':
+      return new HttpException(400, 'Too many files uploaded');
+    case 'LIMIT_PART_COUNT':
+      return new HttpException(400, 'Too many parts in upload');
+    case 'LIMIT_FIELD_KEY':
+      return new HttpException(400, 'Field name too long');
+    case 'LIMIT_FIELD_VALUE':
+      return new HttpException(400, 'Field value too long');
+    case 'LIMIT_FIELD_COUNT':
+      return new HttpException(400, 'Too many fields');
+    default:
+      return new HttpException(400, `File upload error: ${error.message}`);
   }
 };
 
