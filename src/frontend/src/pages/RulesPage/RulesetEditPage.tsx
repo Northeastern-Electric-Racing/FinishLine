@@ -18,6 +18,9 @@ import AddRuleSectionModal from './components/AddRuleSectionModal';
 import AddRuleModal from './components/AddRuleModal';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
+import DeleteRuleModal from './components/DeleteRuleModal';
+import { useDeleteRule } from '../../hooks/rules.hooks';
+import { countRulesToDelete } from '../../utils/rules.utils';
 
 /**
  * Placeholder hook to fetch a single ruleset.
@@ -32,6 +35,24 @@ export const useSingleRuleset = (rulesetId: string) => {
       ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
+      subRuleIds: ['1.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '1.1',
+      ruleCode: 'G.1',
+      ruleContent: 'Content for G.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '1', ruleCode: 'GR - General Regulations' },
+      subRuleIds: ['1.1.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '1.1.1',
+      ruleCode: 'G.1.1',
+      ruleContent: 'Content for G.1.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '1.1', ruleCode: 'G.1' },
       subRuleIds: [],
       referencedRuleIds: []
     },
@@ -41,6 +62,15 @@ export const useSingleRuleset = (rulesetId: string) => {
       ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
+      subRuleIds: ['2.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '2.1',
+      ruleCode: 'AD.1',
+      ruleContent: 'Content for AD.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '2', ruleCode: 'AD - Administrative Regulations' },
       subRuleIds: [],
       referencedRuleIds: []
     },
@@ -50,6 +80,15 @@ export const useSingleRuleset = (rulesetId: string) => {
       ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
+      subRuleIds: ['3.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '3.1',
+      ruleCode: 'DR.1',
+      ruleContent: 'Content for DR.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '3', ruleCode: 'DR - Document Requirements' },
       subRuleIds: [],
       referencedRuleIds: []
     },
@@ -142,6 +181,15 @@ export const useSingleRuleset = (rulesetId: string) => {
       ruleContent: '',
       imageFileIds: [],
       parentRule: undefined,
+      subRuleIds: ['13.1'],
+      referencedRuleIds: []
+    },
+    {
+      ruleId: '13.1',
+      ruleCode: 'F.1',
+      ruleContent: 'Content for F.1 Rule',
+      imageFileIds: [],
+      parentRule: { ruleId: '13', ruleCode: 'F - Chassis and Structural' },
       subRuleIds: [],
       referencedRuleIds: []
     }
@@ -172,7 +220,12 @@ const RulesetEditPage: React.FC = () => {
   const [showAddRuleSectionModal, setShowAddRuleSectionModal] = useState(false);
   const [showAddRuleModal, setShowAddRuleModal] = useState(false);
 
+  // Delete modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [ruleToDelete, setRuleToDelete] = useState<Rule | null>(null);
+
   const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
+  const { mutateAsync: deleteRuleMutation } = useDeleteRule();
 
   const tabs = [
     { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
@@ -219,14 +272,36 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleRemoveRule = (ruleId: string) => {
-    // Placeholder
-    console.log('Remove rule:', ruleId);
+    const rule = ruleset.rules.find((r) => r.ruleId === ruleId);
+    if (rule) {
+      setRuleToDelete(rule);
+      setDeleteModalOpen(true);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!ruleToDelete) return;
+
+    try {
+      await deleteRuleMutation(ruleToDelete.ruleId);
+      setDeleteModalOpen(false);
+      setRuleToDelete(null);
+    } catch (err) {
+      console.error('Failed to delete rule:', err);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalOpen(false);
+    setRuleToDelete(null);
   };
 
   const handleEditRule = (ruleId: string) => {
     // Placeholder
     console.log('Edit rule:', ruleId);
   };
+
+  const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, ruleset.rules) : 0;
 
   // Filter to only show top-level rules
   const topLevelRules = ruleset.rules.filter((rule) => !rule.parentRule);
@@ -287,6 +362,16 @@ const RulesetEditPage: React.FC = () => {
 
             <AddRuleSectionModal open={showAddRuleSectionModal} onClose={() => setShowAddRuleSectionModal(false)} />
             <AddRuleModal open={showAddRuleModal} onClose={() => setShowAddRuleModal(false)} />
+
+            {ruleToDelete && (
+              <DeleteRuleModal
+                open={deleteModalOpen}
+                onHide={handleDeleteCancel}
+                onConfirm={handleDeleteConfirm}
+                rule={ruleToDelete}
+                totalRulesToDelete={totalRulesToDelete}
+              />
+            )}
 
             <Box
               sx={{

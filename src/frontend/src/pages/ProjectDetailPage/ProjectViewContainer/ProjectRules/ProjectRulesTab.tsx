@@ -92,10 +92,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     project.id
   );
 
-  const { mutateAsync: createProjectRuleMutation, isLoading: isCreating } = useCreateProjectRule(
-    activeRuleset?.rulesetId || '',
-    project.id
-  );
+  const { mutateAsync: createProjectRuleMutation, isLoading: isCreating } = useCreateProjectRule();
 
   // Get the first team's ID for fetching unassigned rules
   const teamId = project.teams[0]?.teamId || '';

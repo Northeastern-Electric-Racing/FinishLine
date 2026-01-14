@@ -19,10 +19,12 @@ import {
   toggleRuleTeam,
   getTeamRulesInRulesetType,
   getRulesetsByRulesetType,
+  deleteRule,
   updateRuleset,
   deleteRuleset,
   deleteRulesetType
 } from '../apis/rules.api';
+import { useToast } from './toasts.hooks';
 
 /**
  * Hook to supply all ruleset types.
@@ -172,7 +174,7 @@ export const useCreateRulesetType = () => {
 /**
  * Hook to create a project rule (assign a rule to a project).
  */
-export const useCreateProjectRule = (rulesetId: string, projectId: string) => {
+export const useCreateProjectRule = () => {
   const queryClient = useQueryClient();
   return useMutation<ProjectRule, Error, { ruleId: string; projectId: string }>(
     ['rules', 'projectRules', 'create'],
@@ -182,7 +184,7 @@ export const useCreateProjectRule = (rulesetId: string, projectId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
+        queryClient.invalidateQueries(['rules', 'projectRules']);
         queryClient.invalidateQueries(['rules', 'unassigned']);
       }
     }
@@ -239,6 +241,31 @@ export const useRulesetsByType = (rulesetTypeId: string) => {
     const { data } = await getRulesetsByRulesetType(rulesetTypeId);
     return data;
   });
+};
+
+/**
+ * React Query hook to delete a rule
+ */
+export const useDeleteRule = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<void, Error, string>(
+    ['rules', 'delete'],
+    async (ruleId: string) => {
+      await deleteRule(ruleId);
+    },
+    {
+      onSuccess: () => {
+        toast.success('Rule deleted successfully');
+        queryClient.invalidateQueries(['rules']);
+        queryClient.invalidateQueries(['rulesets']);
+      },
+      onError: (error: Error) => {
+        toast.error(error.message);
+      }
+    }
+  );
 };
 
 export const useUpdateRuleset = () => {

@@ -3,11 +3,11 @@ import FullPageTabs from '../../components/FullPageTabs';
 import PageLayout from '../../components/PageLayout';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
-import { Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useSingleRuleset } from './RulesetEditPage';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import RulesetGeneralView from './components/RulesetGeneralView';
 import { Rule } from 'shared';
 import RulesetTeamView, { TeamRules } from './components/RulesetTeamView';
 
@@ -99,7 +99,7 @@ const RulesetViewPage = () => {
           {tabIndex === 0 ? (
             <RulesetTeamView allRules={ruleset.rules} teamRules={teamRules} unassignedToTeam={unassignedToTeam} />
           ) : (
-            <Typography>General View rules table PLACEHOLDER</Typography>
+            <RulesetGeneralView allRules={ruleset.rules} />
           )}
         </Box>
       </PageLayout>
