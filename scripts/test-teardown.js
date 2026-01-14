@@ -1,15 +1,10 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 
 const filePath = './src/backend/.env';
 const lineToMatch = 'DATABASE_URL="postgresql://postgres:docker@localhost:5433/nerpm?schema=public"';
 
-fs.readFile(filePath, 'utf8', (err, data) => {
-  if (err) {
-    console.error('Error reading file:', err);
-    return;
-  }
-
-  // Split file contents into lines
+async function teardownTest() {
+  const data = await fs.readFile(filePath, 'utf8');
   const lines = data.trim().split('\n');
 
   // Check if the last line matches the lineToMatch
@@ -18,11 +13,11 @@ fs.readFile(filePath, 'utf8', (err, data) => {
     lines.pop();
 
     // Write modified contents back to the file
-    fs.writeFile(filePath, lines.join('\n'), 'utf8', (err) => {
-      if (err) {
-        console.error('Error writing file:', err);
-        return;
-      }
-    });
+    await fs.writeFile(filePath, lines.join('\n'), 'utf8');
+    console.log('Removed test DATABASE_URL from .env file');
+  } else {
+    console.log('Test DATABASE_URL not found as last line in .env file');
   }
-});
+}
+
+await teardownTest();

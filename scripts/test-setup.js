@@ -1,25 +1,20 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 
 const filePath = './src/backend/.env';
 const lineToAdd = 'DATABASE_URL="postgresql://postgres:docker@localhost:5433/nerpm?schema=public"';
 
-fs.readFile(filePath, 'utf8', (err, data) => {
-  if (err) {
-    console.error('Error reading file:', err);
-    return;
-  }
-
-  // Split file contents into lines
+async function setupTest() {
+  const data = await fs.readFile(filePath, 'utf8');
   const lines = data.trim().split('\n');
 
   // Check if the last line matches the lineToAdd
   if (lines[lines.length - 1] !== lineToAdd) {
     // Append the line if it's not already the last line
-    fs.appendFile(filePath, `\n${lineToAdd}`, 'utf8', (err) => {
-      if (err) {
-        console.error('Error appending line to file:', err);
-        return;
-      }
-    });
+    await fs.appendFile(filePath, `\n${lineToAdd}`, 'utf8');
+    console.log('Added test DATABASE_URL to .env file');
+  } else {
+    console.log('Test DATABASE_URL already present in .env file');
   }
-});
+}
+
+await setupTest();
