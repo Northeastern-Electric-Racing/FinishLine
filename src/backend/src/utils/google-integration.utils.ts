@@ -1,13 +1,13 @@
 import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import { HttpException } from './errors.utils';
+
+import { HttpException } from './errors.utils.js';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
 import { User, WBS_Element } from '@prisma/client';
-import { transformDate } from './datetime.utils';
-import { transformStartTime } from './design-reviews.utils';
-import { getUsers } from './users.utils';
+import { transformDate } from './datetime.utils.js';
+import { transformStartTime } from './design-reviews.utils.js';
+import { getUsers } from './users.utils.js';
 
 const { OAuth2 } = google.auth;
 const {
@@ -63,7 +63,7 @@ export const sendMailToAdvisor = async (subject: string, text: string, advisor: 
       text
     };
 
-    const emailTransporter = (await createTransporter()) as nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
+    const emailTransporter = (await createTransporter()) as nodemailer.Transporter<any>;
     await emailTransporter.sendMail(mailOptions);
   } catch (err) {
     console.log('Error: ' + err);

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import OrganizationsService from '../services/organizations.services';
-import { HttpException } from '../utils/errors.utils';
+import OrganizationsService from '../services/organizations.services.js';
+import { HttpException } from '../utils/errors.utils.js';
 
 export default class OrganizationsController {
   static async getCurrentOrganization(req: Request, res: Response, next: NextFunction) {

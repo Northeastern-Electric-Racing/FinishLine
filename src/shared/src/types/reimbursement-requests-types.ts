@@ -1,4 +1,5 @@
-import { WbsNumber, User } from 'shared';
+import { WbsNumber } from './project-types.js';
+import { User } from './user-types.js';
 
 export interface IndexCode {
   indexCodeId: string;

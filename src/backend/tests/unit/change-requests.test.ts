@@ -1,10 +1,10 @@
 import { CR_Type, Organization, Scope_CR_Why_Type, User, WBS_Element_Status } from '@prisma/client';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import ChangeRequestsService from '../../src/services/change-requests.services';
-import { supermanAdmin, aquamanLeadership, greenlanternHead, flashAdmin, robinMember } from '../test-data/users.test-data';
+import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
+import ChangeRequestsService from '../../src/services/change-requests.services.js';
+import { supermanAdmin, aquamanLeadership, greenlanternHead, flashAdmin, robinMember } from '../test-data/users.test-data.js';
 import { ProjectProposedChangesCreateArgs, WorkPackageProposedChangesCreateArgs } from 'shared';
-import prisma from '../../src/prisma/prisma';
-import { AccessDeniedException } from '../../src/utils/errors.utils';
+import prisma from '../../src/prisma/prisma.js';
+import { AccessDeniedException } from '../../src/utils/errors.utils.js';
 
 describe('Change Request Tests', () => {
   let orgId: string;

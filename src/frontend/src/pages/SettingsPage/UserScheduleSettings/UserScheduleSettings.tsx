@@ -23,7 +23,7 @@ import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useSingleDesignReview } from '../../../hooks/design-reviews.hooks';
 import { useQuery } from '../../../hooks/utils.hooks';
-import { deeplyCopy } from 'shared/src/utils';
+import { deeplyCopy } from 'shared';
 import { availabilityTransformer } from '../../../apis/transformers/users.transformers';
 
 export interface ScheduleSettingsFormInput {

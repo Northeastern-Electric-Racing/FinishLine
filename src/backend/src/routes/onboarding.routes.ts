@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { nonEmptyString, validateInputs } from '../utils/validation.utils';
-import OnboardingController from '../controllers/onboarding.controllers';
+import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
+import OnboardingController from '../controllers/onboarding.controllers.js';
 
 const onboardingRouter = express.Router();
 

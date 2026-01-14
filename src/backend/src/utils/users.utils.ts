@@ -1,6 +1,6 @@
 import { Prisma, User_Settings } from '@prisma/client';
-import prisma from '../prisma/prisma';
-import { HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils';
+import prisma from '../prisma/prisma.js';
+import { HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
 import {
   AvailabilityCreateArgs,
   getPermissionsForRoleType,
@@ -11,8 +11,8 @@ import {
   User,
   RoleEnum
 } from 'shared';
-import { UserWithId } from './teams.utils';
-import { UserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
+import { UserWithId } from './teams.utils.js';
+import { UserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
 
 type UserWithSettings = {
   userSettings: User_Settings | null;

@@ -1,13 +1,13 @@
 import { Project, WBS_Element_Status } from '@prisma/client';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import { DescriptionBulletPreview, LinkCreateArgs, WbsElementStatus } from 'shared';
-import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils';
-import { ChangeCreateArgs, createChange, createListChanges, getDescriptionBulletChanges } from './changes.utils';
-import { DescriptionBulletDestination, addRawDescriptionBullets, editDescriptionBullets } from './description-bullets.utils';
-import { linkToChangeListValue, updateLinks } from './links.utils';
-import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
-import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
-import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
+import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
+import { ChangeCreateArgs, createChange, createListChanges, getDescriptionBulletChanges } from './changes.utils.js';
+import { DescriptionBulletDestination, addRawDescriptionBullets, editDescriptionBullets } from './description-bullets.utils.js';
+import { linkToChangeListValue, updateLinks } from './links.utils.js';
+import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
+import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
+import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args.js';
 
 export type ProjectWithId = {
   projectId: String;

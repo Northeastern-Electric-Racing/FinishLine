@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import UsersService from '../services/users.services';
-import { AccessDeniedException } from '../utils/errors.utils';
+import UsersService from '../services/users.services.js';
+import { AccessDeniedException } from '../utils/errors.utils.js';
 import { Task } from 'shared';
 export default class UsersController {
   static async getAllUsers(_req: Request, res: Response, next: NextFunction) {

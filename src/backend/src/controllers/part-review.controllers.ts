@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import PartReviewService from '../services/part-review.services';
+import PartReviewService from '../services/part-review.services.js';
 import { WbsNumber, validateWBS } from 'shared';
-import { HttpException } from '../utils/errors.utils';
+import { HttpException } from '../utils/errors.utils.js';
 
 export default class PartReviewController {
   static async getPart(req: Request, res: Response, next: NextFunction) {

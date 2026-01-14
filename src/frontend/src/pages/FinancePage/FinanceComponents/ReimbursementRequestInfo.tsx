@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import { useLocation, useHistory } from 'react-router-dom';
 import { useState } from 'react';
 import { isGuest, ReimbursementRequest } from 'shared';
-import { ReimbursementProduct, ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
+import { ReimbursementProduct, ReimbursementStatusType } from 'shared';
 import {
   undefinedPipe,
   fullNamePipe,

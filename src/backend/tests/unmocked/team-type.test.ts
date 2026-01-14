@@ -1,15 +1,15 @@
-import prisma from '../../src/prisma/prisma';
+import prisma from '../../src/prisma/prisma.js';
 import { Organization } from '@prisma/client';
-import TeamsService from '../../src/services/teams.services';
+import TeamsService from '../../src/services/teams.services.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   HttpException,
   NotFoundException,
   DeletedException
-} from '../../src/utils/errors.utils';
-import { batmanAppAdmin, supermanAdmin, wonderwomanGuest, flashAdmin } from '../test-data/users.test-data';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+} from '../../src/utils/errors.utils.js';
+import { batmanAppAdmin, supermanAdmin, wonderwomanGuest, flashAdmin } from '../test-data/users.test-data.js';
+import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
 import { vi } from 'vitest';
 
 vi.mock('../../src/utils/google-integration.utils', async () => {

@@ -10,8 +10,8 @@ import {
   createTestTeamType,
   createTestUser,
   resetUsers
-} from '../test-utils';
-import PartReviewService from '../../src/services/part-review.services';
+} from '../test-utils.js';
+import PartReviewService from '../../src/services/part-review.services.js';
 import {
   batmanAppAdmin,
   supermanAdmin,
@@ -19,18 +19,18 @@ import {
   flashAdmin,
   financeMember,
   wonderwomanGuest
-} from '../test-data/users.test-data';
-import prisma from '../../src/prisma/prisma';
+} from '../test-data/users.test-data.js';
+import prisma from '../../src/prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   DeletedException,
   NotFoundException
-} from '../../src/utils/errors.utils';
+} from '../../src/utils/errors.utils.js';
 import { validateWBS, WbsNumber } from 'shared';
 import { Review_Status } from 'shared';
-import ProjectsService from '../../src/services/projects.services';
-import { uploadFile } from '../../src/utils/google-integration.utils';
+import ProjectsService from '../../src/services/projects.services.js';
+import { uploadFile } from '../../src/utils/google-integration.utils.js';
 import { Mock, vi } from 'vitest';
 
 vi.mock('../../src/utils/google-integration.utils', () => ({

@@ -6,8 +6,8 @@ import {
   projectValidators,
   validateInputs,
   materialValidators
-} from '../utils/validation.utils';
-import ProjectsController from '../controllers/projects.controllers';
+} from '../utils/validation.utils.js';
+import ProjectsController from '../controllers/projects.controllers.js';
 
 const projectRouter = express.Router();
 

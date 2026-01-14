@@ -1,4 +1,4 @@
-import { User } from 'shared';
+import { User } from './user-types.js';
 
 export enum Review_Status {
   IN_PROGRESS = 'IN_PROGRESS',

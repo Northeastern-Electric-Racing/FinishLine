@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { validateWBS, WbsNumber, WorkPackage, WorkPackagePreview, WorkPackageSelection } from 'shared';
-import WorkPackagesService from '../services/work-packages.services';
+import WorkPackagesService from '../services/work-packages.services.js';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {

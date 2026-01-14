@@ -1,9 +1,9 @@
 import { Organization } from '@prisma/client';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import { batmanAppAdmin, supermanAdmin } from '../test-data/users.test-data';
-import { NotFoundException } from '../../src/utils/errors.utils';
-import prisma from '../../src/prisma/prisma';
-import { PopUpService } from '../../src/services/pop-up.services';
+import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
+import { batmanAppAdmin, supermanAdmin } from '../test-data/users.test-data.js';
+import { NotFoundException } from '../../src/utils/errors.utils.js';
+import prisma from '../../src/prisma/prisma.js';
+import { PopUpService } from '../../src/services/pop-up.services.js';
 
 describe('Pop Ups Tests', () => {
   let orgId: string;

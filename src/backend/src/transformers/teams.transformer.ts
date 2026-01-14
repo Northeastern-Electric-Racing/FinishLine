@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { Team, TeamPreview } from 'shared';
-import { TeamPreviewQueryArgs, TeamQueryArgs } from '../prisma-query-args/teams.query-args';
-import { userTransformer } from './user.transformer';
-import { teamTypeTransformer } from './team-types.transformer';
-import { projectGanttTransformer } from './projects.transformer';
+import { TeamPreviewQueryArgs, TeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
+import { userTransformer } from './user.transformer.js';
+import { teamTypeTransformer } from './team-types.transformer.js';
+import { projectGanttTransformer } from './projects.transformer.js';
 
 const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
   return {

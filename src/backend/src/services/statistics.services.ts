@@ -1,13 +1,13 @@
 import { Organization, Graph_Type, Measure, Graph_Display_Type, Special_Permission, Prisma } from '@prisma/client';
-import prisma from '../prisma/prisma';
-import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
-import graphTransformer from '../transformers/statistics-graph.transformer';
-import { getGraphQueryArgs, getGraphCollectionQueryArgs, GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
-import { userHasPermissionNew } from '../utils/users.utils';
-import { AccessDeniedException, HttpException } from '../utils/errors.utils';
+import prisma from '../prisma/prisma.js';
+import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils.js';
+import graphTransformer from '../transformers/statistics-graph.transformer.js';
+import { getGraphQueryArgs, getGraphCollectionQueryArgs, GraphQueryArgs } from '../prisma-query-args/statistics.query-args.js';
+import { userHasPermissionNew } from '../utils/users.utils.js';
+import { AccessDeniedException, HttpException } from '../utils/errors.utils.js';
 import { Graph, GraphCollection, GraphData, isSubset, isUnderWordCount, Permission, User } from 'shared';
-import { getGraphCollectionAndVerifyPermissions, getGraphData } from '../utils/statistics.utils';
-import { graphCollectionTransformer } from '../transformers/statistics-graph-collection.transformer';
+import { getGraphCollectionAndVerifyPermissions, getGraphData } from '../utils/statistics.utils.js';
+import { graphCollectionTransformer } from '../transformers/statistics-graph-collection.transformer.js';
 
 export default class StatisticsService {
   /**
