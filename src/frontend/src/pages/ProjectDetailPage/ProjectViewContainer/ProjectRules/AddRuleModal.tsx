@@ -112,11 +112,10 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModa
   };
 
   const labelStyles = {
-    color: '#ef4345',
-    fontWeight: 700,
+    color: theme.palette.primary.main,
     textDecoration: 'underline',
-    fontSize: '20px',
-    mb: 1.5
+    fontSize: '2rem',
+    mb: '10px'
   };
 
   // Selected rule row styling
@@ -155,7 +154,9 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModa
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Select Section */}
             <Box>
-              <Typography sx={labelStyles}>Select Section</Typography>
+              <Typography variant="h4" sx={labelStyles}>
+                Select Section
+              </Typography>
               <FormControl fullWidth>
                 <Select
                   value={selectedParentId}
@@ -183,7 +184,9 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModa
 
             {/* Select Rules */}
             <Box>
-              <Typography sx={labelStyles}>Select Rules</Typography>
+              <Typography variant="h4" sx={labelStyles}>
+                Select Rules
+              </Typography>
 
               {/* Selected Rules */}
               {selectedRuleIds.map((ruleId) => (
