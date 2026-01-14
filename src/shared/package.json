@@ -1,19 +1,30 @@
 {
   "name": "shared",
   "version": "1.0.0",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/cjs/index.d.ts",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./src/*": {
+      "types": "./dist/src/*.d.ts",
+      "import": "./dist/src/*.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
-    "build": "npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc --project tsconfig.cjs.json",
-    "build:esm": "tsc --project tsconfig.esm.json"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc --noEmit false"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "18.17.1",
     "ts-node": "^8.10.1",
-    "typescript": "^4.1.5"
+    "typescript": "^5.7.3"
   }
 }

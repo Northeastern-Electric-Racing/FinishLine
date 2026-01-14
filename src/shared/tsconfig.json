@@ -1,10 +1,14 @@
 {
   "extends": "../../tsconfig.build.json",
   "compilerOptions": {
-    "module": "ESNext",
-    "target": "ES2019",
-    "outDir": "./dist/esm",
+    "module": "NodeNext",
+    "target": "ES2022",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "rootDir": ".",
     "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
     "types": []
   },
   "exclude": ["node_modules", "dist"],

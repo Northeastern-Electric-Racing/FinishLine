@@ -27,7 +27,7 @@
     "prisma:manual": "yarn workspace backend prisma:manual",
     "prisma:studio": "cd src/backend; npx prisma studio",
     "docker:prisma:studio": "cd devContainerization && docker compose -f docker-compose.dev.yml exec -T backend sh -c \"cd /src/backend && npx prisma studio\"",
-    "containerize": "cd containerization; docker compose down && docker compose build && docker compose up -d && sleep 5 && cd ../ && yarn containerize:psql:init && yarn prisma:migrate",
+    "containerize": "cd containerization; docker compose down && docker compose build && docker compose up -d && sleep 5 && cd ../ && yarn containerize:psql:init && docker exec backend sh -c 'cd /base/src/backend && npx prisma migrate deploy'",
     "containerize:psql:init": "docker exec database psql -U postgres -c \"CREATE DATABASE nerpm;\" && yarn database:setup:script",
     "containerize:test:e2e": "yarn containerize && yarn prisma:reset:force && yarn test:e2e",
     "lint": "npx eslint .",
