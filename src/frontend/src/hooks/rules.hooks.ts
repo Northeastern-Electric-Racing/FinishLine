@@ -22,7 +22,8 @@ import {
   deleteRule,
   updateRuleset,
   deleteRuleset,
-  deleteRulesetType
+  deleteRulesetType,
+  getRulesetType
 } from '../apis/rules.api';
 import { useToast } from './toasts.hooks';
 
@@ -309,4 +310,11 @@ export const useDeleteRulesetType = () => {
       }
     }
   );
+};
+
+export const useRulesetType = (rulesetTypeId: string) => {
+  return useQuery<RulesetType, Error>(['rulesetType', rulesetTypeId], async () => {
+    const { data } = await getRulesetType(rulesetTypeId);
+    return data;
+  });
 };

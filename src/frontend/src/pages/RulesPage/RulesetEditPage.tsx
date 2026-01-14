@@ -310,6 +310,13 @@ const RulesetEditPage: React.FC = () => {
   return (
     <PageLayout
       title={`${ruleset.name} Rules`}
+      previousPages={[
+        { name: 'Rules', route: routes.RULES },
+        {
+          name: 'this will be replaced once we use the getRulesetById hook',
+          route: `${routes.RULESET_BY_ID.replace(':rulesetTypeId', rulesetId)}` // <-- rulesetId variable should eventually be replaced by ruleset.rulestType.rulesetTypeId or somethign like that
+        }
+      ]}
       tabs={
         <Box sx={{ width: 'fit-content', mt: 2 }}>
           <FullPageTabs

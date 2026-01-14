@@ -21,10 +21,6 @@ const RulesetTypePage: React.FC = () => {
 
   return (
     <>
-      {/* Breadcrumb Placeholder */}
-      <Typography variant="body2" sx={{ color: '#999', mb: 1 }}>
-        Rules
-      </Typography>
       <PageLayout title="Ruleset Types">
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 120px)' }}>
           <Box sx={{ flexGrow: 1 }}>

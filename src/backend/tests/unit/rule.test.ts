@@ -1942,4 +1942,13 @@ describe('Rule Tests', () => {
       expect(rules.length).toEqual(0);
     });
   });
+
+  describe('Get Ruleset Type', () => {
+    it('Successfully gets a ruleset type by ID', async () => {
+      const rulesetType = await RulesService.getRulesetType(fsaeRulesetType.rulesetTypeId, organization.organizationId);
+      expect(rulesetType).toBeDefined();
+      expect(rulesetType.rulesetTypeId).toBe(fsaeRulesetType.rulesetTypeId);
+      expect(rulesetType.name).toBe(fsaeRulesetType.name);
+    });
+  });
 });

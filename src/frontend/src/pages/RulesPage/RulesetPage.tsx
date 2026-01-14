@@ -8,6 +8,10 @@ import AddNewFileModal from './components/AddNewFileModal';
 import PageLayout from '../../components/PageLayout';
 import { Box, Typography } from '@mui/material';
 import RulesetTable from './components/RulesetTable';
+import { routes } from '../../utils/routes';
+import { useParams } from 'react-router-dom';
+import { useRulesetType } from '../../hooks/rules.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
@@ -16,18 +20,24 @@ import RulesetTable from './components/RulesetTable';
 const RulesetPage: React.FC = () => {
   const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
 
+  interface ParamTypes {
+    rulesetTypeId: string;
+  }
+  const { rulesetTypeId } = useParams<ParamTypes>();
+  const { data: rulesetType, isLoading, error } = useRulesetType(rulesetTypeId);
+
+  console.log(rulesetType);
+
   const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
     setAddFileModalShow(false);
     console.log('Added data: ' + data); // delete this later, once data is used properly
   };
 
+  if (isLoading) return <LoadingIndicator />;
+
   return (
     <>
-      {/* Breadcrumb Placeholder */}
-      <Typography variant="body2" sx={{ color: '#999', mb: 1 }}>
-        Rules / FSAE Ruleset
-      </Typography>
-      <PageLayout title="Rulesets">
+      <PageLayout title={`${rulesetType?.name} Rulesets`} previousPages={[{ name: 'Rules', route: routes.RULES }]}>
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 120px)' }}>
           <Box sx={{ flexGrow: 1 }}>
             <RulesetTable />
