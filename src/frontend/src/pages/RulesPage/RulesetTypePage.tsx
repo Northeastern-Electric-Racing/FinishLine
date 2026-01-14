@@ -1,5 +1,5 @@
 import PageLayout from '../../components/PageLayout';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import RulesetTypeTable from './components/RulesetTypeTable';
 import { NERButton } from '../../components/NERButton';
 import AddRulesetTypeModal from './components/AddRulesetTypeModal';

@@ -6,12 +6,13 @@ import React from 'react';
 import { NERButton } from '../../components/NERButton';
 import AddNewFileModal from './components/AddNewFileModal';
 import PageLayout from '../../components/PageLayout';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import RulesetTable from './components/RulesetTable';
 import { routes } from '../../utils/routes';
 import { useParams } from 'react-router-dom';
 import { useRulesetType } from '../../hooks/rules.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
@@ -24,7 +25,7 @@ const RulesetPage: React.FC = () => {
     rulesetTypeId: string;
   }
   const { rulesetTypeId } = useParams<ParamTypes>();
-  const { data: rulesetType, isLoading, error } = useRulesetType(rulesetTypeId);
+  const { data: rulesetType, isLoading, isError, error } = useRulesetType(rulesetTypeId);
 
   const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
     setAddFileModalShow(false);
@@ -32,6 +33,7 @@ const RulesetPage: React.FC = () => {
   };
 
   if (isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
 
   return (
     <>
