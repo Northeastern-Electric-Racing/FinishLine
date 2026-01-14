@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
-
+import SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
 import { HttpException } from './errors.utils.js';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
@@ -63,7 +63,7 @@ export const sendMailToAdvisor = async (subject: string, text: string, advisor: 
       text
     };
 
-    const emailTransporter = (await createTransporter()) as nodemailer.Transporter<any>;
+    const emailTransporter = (await createTransporter()) as nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
     await emailTransporter.sendMail(mailOptions);
   } catch (err) {
     console.log('Error: ' + err);
