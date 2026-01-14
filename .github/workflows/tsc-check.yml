@@ -28,5 +28,8 @@ jobs:
       - name: Install dependencies
         run: yarn install && yarn prisma:generate
 
+      - name: Build shared package
+        run: yarn build:shared
+
       - name: Run tsc check
         run: npm run tsc-check # You need to define this script in your package.json
