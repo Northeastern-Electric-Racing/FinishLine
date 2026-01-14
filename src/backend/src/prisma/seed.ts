@@ -42,7 +42,7 @@ import DesignReviewsService from '../services/design-reviews.services.js';
 import BillOfMaterialsService from '../services/boms.services.js';
 import UsersService from '../services/users.services.js';
 import { transformDate } from '../utils/datetime.utils.js';
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 import WbsElementTemplatesService from '../services/wbs-element-templates.services.js';
 import RecruitmentServices from '../services/recruitment.services.js';
 import OrganizationsService from '../services/organizations.services.js';
@@ -332,17 +332,25 @@ const performSeed: () => Promise<void> = async () => {
     changeRequest1.proposedSolutions[0].id
   );
 
-  /** Gets the current content of the .env file */
-  const currentEnv = process.env;
+  /** Set the organization ID in the current process environment and update .env */
+  process.env.DEV_ORGANIZATION_ID = organizationId;
 
-  currentEnv.DEV_ORGANIZATION_ID = organizationId;
+  // Read existing .env file
+  const envContent = readFileSync('.env', 'utf-8');
 
-  /** Write the new .env file with the organization ID */
-  let stringifiedEnv = '';
-  Object.keys(currentEnv).forEach((key) => {
-    stringifiedEnv += `${key}=${currentEnv[key]}\n`;
+  const lines = envContent.split('\n');
+  const updatedLines = lines.map((line) => {
+    if (line.startsWith('DEV_ORGANIZATION_ID=')) {
+      return `DEV_ORGANIZATION_ID=${organizationId}`;
+    }
+    return line;
   });
-  writeFileSync('.env', stringifiedEnv);
+
+  if (!updatedLines.some((line) => line.startsWith('DEV_ORGANIZATION_ID='))) {
+    updatedLines.push(`DEV_ORGANIZATION_ID=${organizationId}`);
+  }
+
+  writeFileSync('.env', updatedLines.join('\n'));
 
   /**
    * TEAMS
