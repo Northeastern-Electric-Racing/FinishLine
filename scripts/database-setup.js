@@ -5,7 +5,7 @@ const lineToAdd = 'DATABASE_URL="postgresql://postgres:docker@localhost:5432/ner
 
 if (!fs.existsSync(filePath)) {
   fs.writeFileSync(filePath, lineToAdd, 'utf8');
-  process.exit(0);
+  return;
 }
 
 fs.readFile(filePath, 'utf8', (err, data) => {
