@@ -37,15 +37,30 @@ export default class OnboardingServices {
    * @returns all the checklists that this user has checked
    */
   static async getCheckedChecklists(user: User, organization: Organization) {
-    const allChecklists = await prisma.checklist.findMany({
-      where: { organizationId: organization.organizationId, dateDeleted: null },
-      include: { subtasks: { where: { dateDeleted: null }, orderBy: { displayIndex: 'asc' } }, usersChecked: true },
+    const checkedChecklists = await prisma.checklist.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        // A checklist is checked if the user has checked it, it is an info block, or all its subtasks are checked
+        OR: [
+          { usersChecked: { some: { userId: user.userId } } },
+          { itemType: ChecklistItemType.INFO },
+          {
+            // Checks if the checklist has subtasks and if all subtasks are checked by the user
+            AND: [
+              { subtasks: { some: {} } },
+              {
+                subtasks: {
+                  every: { OR: [{ usersChecked: { some: { userId: user.userId } } }, { itemType: ChecklistItemType.INFO }] }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      include: { subtasks: { where: { dateDeleted: null }, orderBy: { displayIndex: 'asc' } } },
       orderBy: { displayIndex: 'asc' }
     });
-
-    const checkedChecklists = allChecklists.filter((checklist) =>
-      checklist.usersChecked.some((userChecked) => userChecked.userId === user.userId)
-    );
 
     return checkedChecklists;
   }

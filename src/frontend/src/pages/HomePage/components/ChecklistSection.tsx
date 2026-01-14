@@ -42,36 +42,36 @@ const ChecklistSection: React.FC<ChecklistSectionProps> = ({ usersChecklists, ch
             <Grid item xs={12} padding={2}>
               <Checklist parentChecklists={checklists} checkedChecklists={checkedChecklists} checklistName={checklistName} />
             </Grid>
-            {checklistName === 'General' && newMemberImageUrl && (
-              <Grid item xs={12} padding={2}>
-                <Box
-                  sx={{
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: '10px',
-                    padding: 3,
-                    width: '100%'
-                  }}
-                >
-                  <Typography variant="h5" sx={{ mb: 2 }}>
-                    New Member Events
-                  </Typography>
-                  <Box
-                    component="img"
-                    sx={{
-                      display: 'block',
-                      width: '100%',
-                      maxHeight: '500px',
-                      objectFit: 'contain',
-                      borderRadius: '8px'
-                    }}
-                    alt="New Member Events"
-                    src={newMemberImageUrl}
-                  />
-                </Box>
-              </Grid>
-            )}
           </React.Fragment>
         ))}
+        {newMemberImageUrl && (
+          <Grid item xs={12} padding={2}>
+            <Box
+              sx={{
+                backgroundColor: theme.palette.background.paper,
+                borderRadius: '10px',
+                padding: 3,
+                width: '100%'
+              }}
+            >
+              <Typography variant="h5" sx={{ mb: 2 }}>
+                New Member Events
+              </Typography>
+              <Box
+                component="img"
+                sx={{
+                  display: 'block',
+                  width: '100%',
+                  maxHeight: '500px',
+                  objectFit: 'contain',
+                  borderRadius: '8px'
+                }}
+                alt="New Member Events"
+                src={newMemberImageUrl}
+              />
+            </Box>
+          </Grid>
+        )}
       </Grid>
       {!usersChecklists.length && (
         <Box
