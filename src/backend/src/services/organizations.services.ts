@@ -1,23 +1,23 @@
 import { Organization } from '@prisma/client';
 import { Link, LinkCreateArgs, ProjectPreview, RoleEnum, isAdmin, isAtLeastRank, User } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   DeletedException,
   HttpException,
   NotFoundException
-} from '../utils/errors.utils';
-import { userHasPermission } from '../utils/users.utils';
-import { createUsefulLinks } from '../utils/organizations.utils';
-import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
-import { uploadFile } from '../utils/google-integration.utils';
-import { getProjects } from '../utils/projects.utils';
-import { getProjectPreviewQueryArgs } from '../prisma-query-args/projects.query-args';
-import { projectPreviewTransformer } from '../transformers/projects.transformer';
-import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
-import { userTransformer } from '../transformers/user.transformer';
-import { organizationTransformer } from '../transformers/organizationTransformer';
+} from '../utils/errors.utils.js';
+import { userHasPermission } from '../utils/users.utils.js';
+import { createUsefulLinks } from '../utils/organizations.utils.js';
+import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
+import { uploadFile } from '../utils/google-integration.utils.js';
+import { getProjects } from '../utils/projects.utils.js';
+import { getProjectPreviewQueryArgs } from '../prisma-query-args/projects.query-args.js';
+import { projectPreviewTransformer } from '../transformers/projects.transformer.js';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { userTransformer } from '../transformers/user.transformer.js';
+import { organizationTransformer } from '../transformers/organizationTransformer.js';
 
 export default class OrganizationsService {
   /**

@@ -1,9 +1,14 @@
 import { Checklist, Organization } from '@prisma/client';
-import prisma from '../prisma/prisma';
-import { userHasPermission } from '../utils/users.utils';
+import prisma from '../prisma/prisma.js';
+import { userHasPermission } from '../utils/users.utils.js';
 import { ChecklistItemType, isAdmin, User } from 'shared';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
-import { downloadFile } from '../utils/google-integration.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../utils/errors.utils.js';
+import { downloadFile } from '../utils/google-integration.utils.js';
 
 export default class OnboardingServices {
   /**

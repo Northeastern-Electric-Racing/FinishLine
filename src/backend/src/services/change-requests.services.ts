@@ -17,7 +17,7 @@ import {
   WorkPackageProposedChangesCreateArgs,
   User
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -27,8 +27,8 @@ import {
   NotFoundException,
   DeletedException,
   InvalidOrganizationException
-} from '../utils/errors.utils';
-import changeRequestTransformer, { changeRequestManyTransformer } from '../transformers/change-requests.transformer';
+} from '../utils/errors.utils.js';
+import changeRequestTransformer, { changeRequestManyTransformer } from '../transformers/change-requests.transformer.js';
 import {
   allChangeRequestsReviewed,
   validateProposedChangesFields,
@@ -40,26 +40,26 @@ import {
   validateWbsElement,
   validateNoUnreviewedOpenOtherReasonCRs,
   validateNoUnreviewedOpenAccountCodeCRs
-} from '../utils/change-requests.utils';
+} from '../utils/change-requests.utils.js';
 import { CR_Type, WBS_Element_Status, Scope_CR_Why_Type, Prisma, Organization } from '@prisma/client';
-import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils';
-import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
-import { buildChangeDetail } from '../utils/changes.utils';
+import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils.js';
+import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils.js';
+import { buildChangeDetail } from '../utils/changes.utils.js';
 import {
   addSlackThreadsToChangeRequest,
   sendAndGetSlackCRNotifications,
   sendSlackCRStatusToThread,
   sendSlackRequestedReviewNotification
-} from '../utils/slack.utils';
+} from '../utils/slack.utils.js';
 import {
   ChangeRequestWithProjectAndWorkPackageQueryArgs,
   getChangeRequestQueryArgs,
   getChangeRequestWithProjectAndWorkPackageQueryArgs,
   getManyChangeRequestQueryArgs
-} from '../prisma-query-args/change-requests.query-args';
-import proposedSolutionTransformer from '../transformers/proposed-solutions.transformer';
-import { getProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args';
-import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils';
+} from '../prisma-query-args/change-requests.query-args.js';
+import proposedSolutionTransformer from '../transformers/proposed-solutions.transformer.js';
+import { getProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args.js';
+import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils.js';
 
 export default class ChangeRequestsService {
   /**

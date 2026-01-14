@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { PopUpService } from '../services/pop-up.services';
+import { PopUpService } from '../services/pop-up.services.js';
 
 export default class PopUpsController {
   static async getUserUnreadPopUps(req: Request, res: Response, next: NextFunction) {

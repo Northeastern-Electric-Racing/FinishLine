@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import DesignReviewsService from '../services/design-reviews.services';
-import { getCurrentUserWithUserSettings } from '../utils/auth.utils';
+import DesignReviewsService from '../services/design-reviews.services.js';
+import { getCurrentUserWithUserSettings } from '../utils/auth.utils.js';
 
 export default class DesignReviewsController {
   static async getAllDesignReviews(req: Request, res: Response, next: NextFunction) {

@@ -1,7 +1,7 @@
 import { LinkCreateArgs } from 'shared';
-import { ChangeCreateArgs } from './changes.utils';
-import prisma from '../prisma/prisma';
-import { NotFoundException } from './errors.utils';
+import { ChangeCreateArgs } from './changes.utils.js';
+import prisma from '../prisma/prisma.js';
+import { NotFoundException } from './errors.utils.js';
 
 /**
  * updates the given links in the database

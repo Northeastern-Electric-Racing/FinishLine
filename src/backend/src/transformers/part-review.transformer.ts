@@ -15,8 +15,8 @@ import {
   PartReviewQueryArgs,
   PartReviewRequestQueryArgs,
   PartSubmissionQueryArgs
-} from '../prisma-query-args/part-review.query-args';
-import { userTransformer } from './user.transformer';
+} from '../prisma-query-args/part-review.query-args.js';
+import { userTransformer } from './user.transformer.js';
 
 export const partsReviewCommonMistakeTransformer = (commonMistake: Part_Review_Common_Mistake): SharedCommonMistake => {
   return commonMistake;

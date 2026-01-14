@@ -15,7 +15,7 @@ import {
   User,
   WorkPackageSelection
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   NotFoundException,
   HttpException,
@@ -23,21 +23,21 @@ import {
   AccessDeniedAdminOnlyException,
   DeletedException,
   InvalidOrganizationException
-} from '../utils/errors.utils';
-import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer';
-import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils';
-import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
-import { getWorkPackageChanges } from '../utils/changes.utils';
+} from '../utils/errors.utils.js';
+import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer.js';
+import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils.js';
+import { getWorkPackageChanges } from '../utils/changes.utils.js';
 import {
   DescriptionBulletDestination,
   addRawDescriptionBullets,
   editDescriptionBullets
-} from '../utils/description-bullets.utils';
-import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packages.utils';
-import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
-import { userHasPermission } from '../utils/users.utils';
-import { getUserPreviewQueryArgs } from '../prisma-query-args/user.query-args';
+} from '../utils/description-bullets.utils.js';
+import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packages.utils.js';
+import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
+import { userHasPermission } from '../utils/users.utils.js';
+import { getUserPreviewQueryArgs } from '../prisma-query-args/user.query-args.js';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {

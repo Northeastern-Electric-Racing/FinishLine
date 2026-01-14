@@ -5,7 +5,7 @@ import {
   CR_Type as PrismaCRType
 } from '@prisma/client';
 import { ChangeRequest as SharedChangeRequest, ChangeRequestStatus, ChangeRequestType } from 'shared';
-import { sharedBatman } from './users.test-data';
+import { sharedBatman } from './users.test-data.js';
 
 export const prismaChangeRequest1: PrismaChangeRequest = {
   crId: '1',

@@ -1,12 +1,12 @@
 import { WBS_Element } from '@prisma/client';
 import { DescriptionBulletPreview, WorkPackageStage, wbsPipe } from 'shared';
-import { getUserFullName } from './users.utils';
+import { getUserFullName } from './users.utils.js';
 import {
   DescriptionBulletWithType,
   descriptionBulletToChangeListValue,
   descriptionBulletsToChangeListValues,
   separateDescriptionBulletsByType
-} from './description-bullets.utils';
+} from './description-bullets.utils.js';
 
 export enum ChangeType {
   ADDED = 'Added new',

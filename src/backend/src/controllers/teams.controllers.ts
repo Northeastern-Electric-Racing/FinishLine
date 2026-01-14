@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import TeamsService from '../services/teams.services';
-import { HttpException } from '../utils/errors.utils';
+import TeamsService from '../services/teams.services.js';
+import { HttpException } from '../utils/errors.utils.js';
 
 export default class TeamsController {
   static async getAllTeams(req: Request, res: Response, next: NextFunction) {

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import OnboardingServices from '../services/onboarding.services';
+import OnboardingServices from '../services/onboarding.services.js';
 
 export default class OnboardingController {
   /* Checklists section */

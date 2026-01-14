@@ -9,7 +9,7 @@ import {
   AvailabilityCreateArgs,
   User
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   NotFoundException,
   AccessDeniedMemberException,
@@ -18,29 +18,29 @@ import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   InvalidOrganizationException
-} from '../utils/errors.utils';
+} from '../utils/errors.utils.js';
 import {
   getUsers,
   getPrismaQueryUserIds,
   userHasPermission,
   areUsersinList,
   updateUserAvailability
-} from '../utils/users.utils';
-import { isUserOnDesignReview, validateMeetingTimes } from '../utils/design-reviews.utils';
-import { designReviewTransformer } from '../transformers/design-reviews.transformer';
+} from '../utils/users.utils.js';
+import { isUserOnDesignReview, validateMeetingTimes } from '../utils/design-reviews.utils.js';
+import { designReviewTransformer } from '../transformers/design-reviews.transformer.js';
 import {
   sendDRConfirmationToThread,
   sendDRScheduledSlackNotif,
   sendDRUserConfirmationToThread,
   sendSlackDRNotifications,
   sendSlackDesignReviewConfirmNotification
-} from '../utils/slack.utils';
-import { getDesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args';
-import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import { UserWithSettings } from '../utils/auth.utils';
-import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
-import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from '../utils/google-integration.utils';
-import { sendDrPopUp } from '../utils/pop-up.utils';
+} from '../utils/slack.utils.js';
+import { getDesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args.js';
+import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+import { UserWithSettings } from '../utils/auth.utils.js';
+import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from '../utils/google-integration.utils.js';
+import { sendDrPopUp } from '../utils/pop-up.utils.js';
 
 export default class DesignReviewsService {
   /**

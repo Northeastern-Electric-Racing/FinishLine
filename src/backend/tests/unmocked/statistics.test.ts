@@ -1,5 +1,5 @@
 import { Graph_Type, Organization, User, Graph_Display_Type, Special_Permission } from '@prisma/client';
-import { batmanAppAdmin, supermanAdmin, theVisitorGuest, wonderwomanGuest } from '../test-data/users.test-data';
+import { batmanAppAdmin, supermanAdmin, theVisitorGuest, wonderwomanGuest } from '../test-data/users.test-data.js';
 import {
   createTestCar,
   createTestOrganization,
@@ -8,11 +8,11 @@ import {
   createTestTeamType,
   createTestUser,
   resetUsers
-} from '../test-utils';
-import StatisticsService from '../../src/services/statistics.services';
-import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+} from '../test-utils.js';
+import StatisticsService from '../../src/services/statistics.services.js';
+import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
 import { Graph, Measure, SpecialPermission } from 'shared';
-import prisma from '../../src/prisma/prisma';
+import prisma from '../../src/prisma/prisma.js';
 
 describe('Statistics Tests', () => {
   let orgId: string;

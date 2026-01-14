@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
-import TasksController from '../controllers/tasks.controllers';
-import { nonEmptyString, isTaskPriority, isTaskStatus, validateInputs, isOptionalDate } from '../utils/validation.utils';
+import TasksController from '../controllers/tasks.controllers.js';
+import { nonEmptyString, isTaskPriority, isTaskStatus, validateInputs, isOptionalDate } from '../utils/validation.utils.js';
 
 const tasksRouter = express.Router();
 

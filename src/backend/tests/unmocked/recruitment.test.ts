@@ -1,7 +1,7 @@
-import prisma from '../../src/prisma/prisma';
+import prisma from '../../src/prisma/prisma.js';
 import { Organization } from '@prisma/client';
-import RecruitmentServices from '../../src/services/recruitment.services';
-import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
+import RecruitmentServices from '../../src/services/recruitment.services.js';
+import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../../src/utils/errors.utils.js';
 import {
   createTestMilestone,
   createTestFaq,
@@ -9,7 +9,7 @@ import {
   createTestOrganization,
   createTestUser,
   resetUsers
-} from '../test-utils';
+} from '../test-utils.js';
 import {
   batmanAppAdmin,
   wonderwomanGuest,
@@ -18,7 +18,7 @@ import {
   theVisitorGuest,
   flashAdmin,
   alfred
-} from '../test-data/users.test-data';
+} from '../test-data/users.test-data.js';
 
 describe('Recruitment Tests', () => {
   let orgId: string;

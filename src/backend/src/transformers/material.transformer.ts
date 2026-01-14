@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { Assembly, Material, MaterialPreview, MaterialStatus } from 'shared';
-import { AssemblyQueryArgs, MaterialPreviewQueryArgs, MaterialQueryArgs } from '../prisma-query-args/bom.query-args';
-import { userTransformer } from './user.transformer';
-import { reimbursementRequestTransformer } from './reimbursement-requests.transformer';
+import { AssemblyQueryArgs, MaterialPreviewQueryArgs, MaterialQueryArgs } from '../prisma-query-args/bom.query-args.js';
+import { userTransformer } from './user.transformer.js';
+import { reimbursementRequestTransformer } from './reimbursement-requests.transformer.js';
 
 export const assemblyTransformer = (assembly: Prisma.AssemblyGetPayload<AssemblyQueryArgs>): Assembly => {
   return {

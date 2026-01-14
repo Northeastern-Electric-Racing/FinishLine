@@ -1,5 +1,5 @@
 import { DesignReview } from 'shared';
-import { HttpException } from './errors.utils';
+import { HttpException } from './errors.utils.js';
 import { User } from 'shared';
 
 /**

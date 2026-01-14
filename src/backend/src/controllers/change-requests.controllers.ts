@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import ChangeRequestsService from '../services/change-requests.services';
+import ChangeRequestsService from '../services/change-requests.services.js';
 import { validateWBS, WbsNumber } from 'shared';
 
 export default class ChangeRequestsController {

@@ -1,4 +1,4 @@
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   Scope_CR_Why_Type,
   Prisma,
@@ -22,26 +22,26 @@ import {
   WorkPackageStage,
   User
 } from 'shared';
-import { DeletedException, HttpException, NotFoundException } from './errors.utils';
+import { DeletedException, HttpException, NotFoundException } from './errors.utils.js';
 import { ChangeRequestStatus } from 'shared';
-import { buildChangeDetail, createChange } from './changes.utils';
-import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { buildChangeDetail, createChange } from './changes.utils.js';
+import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 import {
   ChangeRequestManyQueryArgs,
   ChangeRequestQueryArgs,
   ChangeRequestWithProjectAndWorkPackageQueryArgs
-} from '../prisma-query-args/change-requests.query-args';
+} from '../prisma-query-args/change-requests.query-args.js';
 import {
   ProjectProposedChangesQueryArgs,
   WbsProposedChangeQueryArgs,
   WorkPackageProposedChangesQueryArgs
-} from '../prisma-query-args/scope-change-requests.query-args';
-import ProjectsService from '../services/projects.services';
-import WorkPackagesService from '../services/work-packages.services';
-import { transformDate } from './datetime.utils';
-import { descriptionBulletToDescriptionBulletPreview } from './description-bullets.utils';
-import { sendSlackCRReviewedNotification } from './slack.utils';
-import { validateBlockedBys } from './work-packages.utils';
+} from '../prisma-query-args/scope-change-requests.query-args.js';
+import ProjectsService from '../services/projects.services.js';
+import WorkPackagesService from '../services/work-packages.services.js';
+import { transformDate } from './datetime.utils.js';
+import { descriptionBulletToDescriptionBulletPreview } from './description-bullets.utils.js';
+import { sendSlackCRReviewedNotification } from './slack.utils.js';
+import { validateBlockedBys } from './work-packages.utils.js';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({

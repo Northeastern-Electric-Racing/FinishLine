@@ -1,8 +1,8 @@
 import { Description_Bullet, Prisma, WBS_Element, Work_Package_Template } from '@prisma/client';
-import prisma from '../prisma/prisma';
-import { HttpException, NotFoundException } from './errors.utils';
+import prisma from '../prisma/prisma.js';
+import { HttpException, NotFoundException } from './errors.utils.js';
 import { WbsNumber, User } from 'shared';
-import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 
 export const calculateWorkPackageProgress = (
   deliverables: Description_Bullet[],

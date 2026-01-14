@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from 'shared';
+import { User } from './user-types.js';
 
 export interface Milestone {
   milestoneId: string;

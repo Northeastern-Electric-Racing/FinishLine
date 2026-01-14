@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import FinanceServices from '../services/finance.services';
+import FinanceServices from '../services/finance.services.js';
 
 export default class FinanceController {
   static async createSponsor(req: Request, res: Response, next: NextFunction) {

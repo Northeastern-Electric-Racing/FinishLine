@@ -17,11 +17,11 @@ import {
   Team,
   Part_Tag
 } from '@prisma/client';
-import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
-import { dbSeedAllTeams } from './seed-data/teams.seed';
-import { seedReimbursementRequests } from './seed-data/reimbursement-requests.seed';
-import ChangeRequestsService from '../services/change-requests.services';
-import TeamsService from '../services/teams.services';
+import { createUser, dbSeedAllUsers } from './seed-data/users.seed.js';
+import { dbSeedAllTeams } from './seed-data/teams.seed.js';
+import { seedReimbursementRequests } from './seed-data/reimbursement-requests.seed.js';
+import ChangeRequestsService from '../services/change-requests.services.js';
+import TeamsService from '../services/teams.services.js';
 import {
   DesignReviewStatus,
   MaterialStatus,
@@ -32,24 +32,24 @@ import {
   WbsElementStatus,
   WorkPackageStage
 } from 'shared';
-import TasksService from '../services/tasks.services';
-import { seedProject } from './seed-data/projects.seed';
-import { seedWorkPackage } from './seed-data/work-packages.seed';
-import ReimbursementRequestService from '../services/reimbursement-requests.services';
-import ProjectsService from '../services/projects.services';
+import TasksService from '../services/tasks.services.js';
+import { seedProject } from './seed-data/projects.seed.js';
+import { seedWorkPackage } from './seed-data/work-packages.seed.js';
+import ReimbursementRequestService from '../services/reimbursement-requests.services.js';
+import ProjectsService from '../services/projects.services.js';
 import { Decimal } from 'decimal.js';
-import DesignReviewsService from '../services/design-reviews.services';
-import BillOfMaterialsService from '../services/boms.services';
-import UsersService from '../services/users.services';
-import { transformDate } from '../utils/datetime.utils';
-import { writeFileSync } from 'fs';
-import WbsElementTemplatesService from '../services/wbs-element-templates.services';
-import RecruitmentServices from '../services/recruitment.services';
-import OrganizationsService from '../services/organizations.services';
-import AnnouncementService from '../services/announcement.services';
-import OnboardingServices from '../services/onboarding.services';
-import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
-import FinanceServices from '../services/finance.services';
+import DesignReviewsService from '../services/design-reviews.services.js';
+import BillOfMaterialsService from '../services/boms.services.js';
+import UsersService from '../services/users.services.js';
+import { transformDate } from '../utils/datetime.utils.js';
+import { writeFileSync, readFileSync } from 'fs';
+import WbsElementTemplatesService from '../services/wbs-element-templates.services.js';
+import RecruitmentServices from '../services/recruitment.services.js';
+import OrganizationsService from '../services/organizations.services.js';
+import AnnouncementService from '../services/announcement.services.js';
+import OnboardingServices from '../services/onboarding.services.js';
+import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed.js';
+import FinanceServices from '../services/finance.services.js';
 
 const prisma = new PrismaClient();
 
@@ -332,17 +332,25 @@ const performSeed: () => Promise<void> = async () => {
     changeRequest1.proposedSolutions[0].id
   );
 
-  /** Gets the current content of the .env file */
-  const currentEnv = require('dotenv').config().parsed;
+  /** Set the organization ID in the current process environment and update .env */
+  process.env.DEV_ORGANIZATION_ID = organizationId;
 
-  currentEnv.DEV_ORGANIZATION_ID = organizationId;
+  // Read existing .env file
+  const envContent = readFileSync('.env', 'utf-8');
 
-  /** Write the new .env file with the organization ID */
-  let stringifiedEnv = '';
-  Object.keys(currentEnv).forEach((key) => {
-    stringifiedEnv += `${key}=${currentEnv[key]}\n`;
+  const lines = envContent.split('\n');
+  const updatedLines = lines.map((line) => {
+    if (line.startsWith('DEV_ORGANIZATION_ID=')) {
+      return `DEV_ORGANIZATION_ID=${organizationId}`;
+    }
+    return line;
   });
-  writeFileSync('.env', stringifiedEnv);
+
+  if (!updatedLines.some((line) => line.startsWith('DEV_ORGANIZATION_ID='))) {
+    updatedLines.push(`DEV_ORGANIZATION_ID=${organizationId}`);
+  }
+
+  writeFileSync('.env', updatedLines.join('\n'));
 
   /**
    * TEAMS
