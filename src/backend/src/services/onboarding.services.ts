@@ -51,7 +51,13 @@ export default class OnboardingServices {
               { subtasks: { some: {} } },
               {
                 subtasks: {
-                  every: { OR: [{ usersChecked: { some: { userId: user.userId } } }, { itemType: ChecklistItemType.INFO }] }
+                  every: {
+                    OR: [
+                      { isOptional: true },
+                      { usersChecked: { some: { userId: user.userId } } },
+                      { itemType: ChecklistItemType.INFO }
+                    ]
+                  }
                 }
               }
             ]
