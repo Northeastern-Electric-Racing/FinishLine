@@ -26,8 +26,6 @@ const RulesetPage: React.FC = () => {
   const { rulesetTypeId } = useParams<ParamTypes>();
   const { data: rulesetType, isLoading, error } = useRulesetType(rulesetTypeId);
 
-  console.log(rulesetType);
-
   const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
     setAddFileModalShow(false);
     console.log('Added data: ' + data); // delete this later, once data is used properly
