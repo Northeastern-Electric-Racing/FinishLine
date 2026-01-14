@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ProjectGantt, WbsElementPreview, WbsNumber, WorkPackagePreview } from "./types/project-types.js";
+import { ProjectGantt, WbsElementPreview, WbsNumber, WorkPackagePreview } from './types/project-types.js';
 
 /**
  * Compares two wbs numbers in ascending order

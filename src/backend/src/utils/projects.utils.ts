@@ -3,7 +3,11 @@ import prisma from '../prisma/prisma.js';
 import { DescriptionBulletPreview, LinkCreateArgs, WbsElementStatus } from 'shared';
 import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
 import { ChangeCreateArgs, createChange, createListChanges, getDescriptionBulletChanges } from './changes.utils.js';
-import { DescriptionBulletDestination, addRawDescriptionBullets, editDescriptionBullets } from './description-bullets.utils.js';
+import {
+  DescriptionBulletDestination,
+  addRawDescriptionBullets,
+  editDescriptionBullets
+} from './description-bullets.utils.js';
 import { linkToChangeListValue, updateLinks } from './links.utils.js';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';

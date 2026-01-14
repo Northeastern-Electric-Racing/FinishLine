@@ -1,5 +1,5 @@
 import { User_Settings, Organization, Role_Type } from '@prisma/client';
-import { OAuth2Client } from 'google-auth-library';
+import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client.js';
 import {
   Role,
   ThemeName,

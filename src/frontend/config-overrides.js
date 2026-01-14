@@ -1,6 +1,6 @@
 /* eslint-disable */
-import path from 'path'
-import fs from 'fs'
+import path from 'path';
+import fs from 'fs';
 import { override, babelInclude } from 'customize-cra';
 module.exports = (config, env) => {
   return Object.assign(

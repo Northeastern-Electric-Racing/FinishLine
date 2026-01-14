@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamType } from "./design-review-types.js";
-import { ProjectGantt } from "./project-types.js";
-import { User } from "./user-types.js";
+import { TeamType } from './design-review-types.js';
+import { ProjectGantt } from './project-types.js';
+import { User } from './user-types.js';
 
 export interface Team {
   teamId: string;

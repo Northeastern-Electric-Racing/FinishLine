@@ -2,7 +2,11 @@ import { Organization, Graph_Type, Measure, Graph_Display_Type, Special_Permissi
 import prisma from '../prisma/prisma.js';
 import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils.js';
 import graphTransformer from '../transformers/statistics-graph.transformer.js';
-import { getGraphQueryArgs, getGraphCollectionQueryArgs, GraphQueryArgs } from '../prisma-query-args/statistics.query-args.js';
+import {
+  getGraphQueryArgs,
+  getGraphCollectionQueryArgs,
+  GraphQueryArgs
+} from '../prisma-query-args/statistics.query-args.js';
 import { userHasPermissionNew } from '../utils/users.utils.js';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils.js';
 import { Graph, GraphCollection, GraphData, isSubset, isUnderWordCount, Permission, User } from 'shared';

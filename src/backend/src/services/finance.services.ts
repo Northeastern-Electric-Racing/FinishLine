@@ -28,7 +28,11 @@ import {
 import prisma from '../prisma/prisma.js';
 import { sponsorTransformer } from '../transformers/finance.transformer.js';
 import sponsorTaskTransformer from '../transformers/sponsor-task.transformer.js';
-import { computeRRTotals, getProjectSegmentedWhereInput, getReimbursementRequestWhereInput } from '../utils/finance.utils.js';
+import {
+  computeRRTotals,
+  getProjectSegmentedWhereInput,
+  getReimbursementRequestWhereInput
+} from '../utils/finance.utils.js';
 import { notifySponsorTaskAssignee } from '../utils/slack.utils.js';
 
 export default class FinanceServices {
