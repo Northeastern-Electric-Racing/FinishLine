@@ -73,7 +73,7 @@ const RulesetTypeTable: React.FC = () => {
     }
   ];
 
-  const handleViewRulesetType = (rulesetTypeId: string) => {
+  const handleViewRuleset = (rulesetTypeId: string) => {
     history.push(routes.RULESET_BY_ID.replace(':rulesetTypeId', rulesetTypeId));
   };
 
@@ -168,9 +168,9 @@ const RulesetTypeTable: React.FC = () => {
                         lineHeight: 1,
                         borderRadius: '6px'
                       }}
-                      onClick={() => handleViewRulesetType(rulesetType.rulesetTypeId)}
+                      onClick={() => handleViewRuleset(rulesetType.rulesetTypeId)}
                     >
-                      View Rulesets
+                      View Ruleset
                     </NERButton>
                     <RulesetTypeDeleteButton
                       rulesetTypeId={rulesetType.rulesetTypeId}
@@ -233,9 +233,9 @@ const RulesetTypeTable: React.FC = () => {
                           lineHeight: 1,
                           borderRadius: '6px'
                         }}
-                        onClick={() => handleViewRulesetType(rulesetType.rulesetTypeId)}
+                        onClick={() => handleViewRuleset(rulesetType.rulesetTypeId)}
                       >
-                        View Rulesets
+                        View Ruleset
                       </NERButton>
                     </TableCell>
                     <TableCell align="center" sx={{ width: '60px', paddingLeft: '0px' }}>
