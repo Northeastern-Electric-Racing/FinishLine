@@ -449,6 +449,7 @@ const unassignedTeamRulesInRuleset = (rulesetId: string, teamId: string) =>
 const rulesetTypes = () => `${rules()}/rulesetTypes`;
 const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
 const ruleset = () => `${rules()}/ruleset`;
+const rulesetsById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
 const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
 const rulesetsCreate = () => `${rules()}/ruleset/create`;
 const rulesetById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
@@ -457,6 +458,8 @@ const uploadRulesetFile = () => `${rules()}/upload/file`;
 const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
 const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
 const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
+const parseRuleset = (rulesetId: string) => `${API_URL}/rules/ruleset/${rulesetId}/parse`;
+const uploadRulesetFile = () => `${rules()}/upload/file`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -768,6 +771,7 @@ export const apiUrls = {
   projectRulesInRuleset,
   unassignedTeamRulesInRuleset,
   ruleset,
+  rulesetsById,
   rulesetTypes,
   rulesetsByType,
   rulesetById,
