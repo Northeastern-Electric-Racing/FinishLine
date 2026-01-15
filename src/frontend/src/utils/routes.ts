@@ -154,7 +154,7 @@ export const routes = {
   RETROSPECTIVE,
 
   RULES,
-  RULESET_BY_ID,
+  RULESET_TYPE,
   RULESET_VIEW,
   RULESET_EDIT
 };

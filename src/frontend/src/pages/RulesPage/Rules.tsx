@@ -11,7 +11,7 @@ const RulesPage: React.FC = () => {
     <Switch>
       <Route path={routes.RULESET_EDIT} component={RulesetEditPage} />
       <Route path={routes.RULESET_VIEW} component={RulesetViewPage} />
-      <Route path={routes.RULESET_BY_ID} component={RulesetPage} />
+      <Route path={routes.RULESET_TYPE} component={RulesetPage} />
       <Route path={routes.RULES} component={RulesetTypePage} />
     </Switch>
   );
