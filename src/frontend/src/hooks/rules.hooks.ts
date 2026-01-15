@@ -21,8 +21,10 @@ import {
   createRuleset,
   getRulesetById,
   getProjectRulesInRuleset,
-  getUnassignedTeamRulesInRuleset
+  getUnassignedTeamRulesInRuleset,
+  deleteRule
 } from '../apis/rules.api';
+import { useToast } from './toasts.hooks';
 
 interface CreateRulesetTypePayload {
   name: string;
@@ -246,4 +248,29 @@ export const useUploadRulesetFile = () => {
     const { data } = await uploadRulesetFile(file);
     return data;
   });
+};
+
+/**
+ * React Query hook to delete a rule
+ */
+export const useDeleteRule = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<void, Error, string>(
+    ['rules', 'delete'],
+    async (ruleId: string) => {
+      await deleteRule(ruleId);
+    },
+    {
+      onSuccess: () => {
+        toast.success('Rule deleted successfully');
+        queryClient.invalidateQueries(['rules']);
+        queryClient.invalidateQueries(['rulesets']);
+      },
+      onError: (error: Error) => {
+        toast.error(error.message);
+      }
+    }
+  );
 };
