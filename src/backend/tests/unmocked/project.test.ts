@@ -31,11 +31,6 @@ describe('Material Tests', () => {
         '100k Resistor',
         MaterialStatus.ReadyToOrder,
         materialType.name,
-        manufacturer.name,
-        'lalsd',
-        new Decimal(5),
-        10,
-        50,
         'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
         {
           carNumber: 0,
@@ -43,6 +38,11 @@ describe('Material Tests', () => {
           workPackageNumber: 0
         },
         org,
+        manufacturer.name,
+        'lalsd',
+        new Decimal(5),
+        10,
+        50,
         undefined,
         undefined,
         undefined,
@@ -54,7 +54,10 @@ describe('Material Tests', () => {
       expect(material.linkUrl).toEqual('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
       expect(material.userCreated.userId).toEqual(createdUser.userId);
       expect(material.price).toEqual(10);
-      expect(material.subtotal).toMatchObject(50);
+      expect(material.subtotal).toEqual(50);
+      expect(material.manufacturerName).toEqual('Digikey');
+      expect(material.manufacturerPartNumber).toEqual('lalsd');
+      expect(material.quantity?.toString()).toEqual('5');
       expect(material.reimbursementRequest?.reimbursementRequestId).toEqual(reimbursementRequest.reimbursementRequestId);
     });
 
@@ -68,11 +71,6 @@ describe('Material Tests', () => {
             '100k Resistor',
             MaterialStatus.ReadyToOrder,
             materialType.name,
-            manufacturer.name,
-            'lalsd',
-            new Decimal(5),
-            10,
-            50,
             'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
             {
               carNumber: 0,
@@ -80,6 +78,11 @@ describe('Material Tests', () => {
               workPackageNumber: 0
             },
             org,
+            manufacturer.name,
+            'lalsd',
+            new Decimal(5),
+            10,
+            50,
             undefined,
             undefined,
             undefined,
@@ -99,18 +102,18 @@ describe('Material Tests', () => {
         '100k Resistor',
         MaterialStatus.ReadyToOrder,
         materialType.name,
-        manufacturer.name,
-        'lalsd',
-        new Decimal(5),
-        10,
-        50,
         'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
         {
           carNumber: 0,
           projectNumber: 1,
           workPackageNumber: 0
         },
-        org
+        org,
+        manufacturer.name,
+        'lalsd',
+        new Decimal(5),
+        10,
+        50
       );
 
       expect(oldMaterial.reimbursementRequest?.reimbursementRequestId).toBeUndefined();
@@ -121,13 +124,13 @@ describe('Material Tests', () => {
         '100k Resistor',
         MaterialStatus.ReadyToOrder,
         materialType.name,
+        'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        org,
         manufacturer.name,
         'lalsd',
         new Decimal(5),
         10,
         50,
-        'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        org,
         undefined,
         undefined,
         undefined,
@@ -149,18 +152,18 @@ describe('Material Tests', () => {
         '100k Resistor',
         MaterialStatus.ReadyToOrder,
         materialType.name,
-        manufacturer.name,
-        'lalsd',
-        new Decimal(5),
-        10,
-        50,
         'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
         {
           carNumber: 0,
           projectNumber: 1,
           workPackageNumber: 0
         },
-        org
+        org,
+        manufacturer.name,
+        'lalsd',
+        new Decimal(5),
+        10,
+        50
       );
       await expect(
         async () =>
@@ -170,13 +173,13 @@ describe('Material Tests', () => {
             '100k Resistor',
             MaterialStatus.ReadyToOrder,
             materialType.name,
+            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            org,
             manufacturer.name,
             'lalsd',
             new Decimal(5),
             10,
             50,
-            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            org,
             undefined,
             undefined,
             undefined,

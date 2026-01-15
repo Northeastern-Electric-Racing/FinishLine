@@ -15,7 +15,7 @@ import ErrorPage from '../../ErrorPage';
 import { useGetAssembliesForWbsElement, useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 
 export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialPreview) =>
-  currentMaterial.subtotal + accumulator;
+  currentMaterial.subtotal ?? 0 + accumulator;
 
 const BOMTab = ({ project }: { project: Project }) => {
   const initialHideColumn = new Array(12).fill(false);

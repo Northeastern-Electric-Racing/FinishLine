@@ -21,10 +21,10 @@ const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
   status: yup.mixed<MaterialStatus>().oneOf(Object.values(MaterialStatus)).required('Select a status!'),
   materialTypeName: yup.string().required('Select a Material Type!'),
-  manufacturerName: yup.string().required('Select a Manufacturer!'),
-  manufacturerPartNumber: yup.string().required('Manufacturer Part Number is required!'),
-  quantity: yup.number().required('Enter a quantity!'),
-  price: yup.number().required('Price per Unit is required!'),
+  manufacturerName: yup.string().optional(),
+  manufacturerPartNumber: yup.string().optional(),
+  quantity: yup.number().optional(),
+  price: yup.number().optional(),
   unitName: yup.string().optional(),
   linkUrl: yup.string().required('URL is required!'),
   notes: yup.string().optional(),
@@ -37,11 +37,11 @@ export interface MaterialFormInput {
   name: string;
   status: MaterialStatus;
   materialTypeName: string;
-  manufacturerName: string;
-  manufacturerPartNumber: string;
+  manufacturerName?: string;
+  manufacturerPartNumber?: string;
   pdmFileName?: string;
-  price: number;
-  quantity: number;
+  price?: number;
+  quantity?: number;
   unitName?: string;
   linkUrl: string;
   notes?: string;
@@ -53,16 +53,16 @@ export interface MaterialDataSubmission {
   name: string;
   status: MaterialStatus;
   materialTypeName: string;
-  manufacturerName: string;
-  manufacturerPartNumber: string;
+  manufacturerName?: string;
+  manufacturerPartNumber?: string;
   pdmFileName?: string;
-  price: number;
-  quantity: Decimal;
+  price?: number;
+  quantity?: Decimal;
   unitName?: string;
   linkUrl: string;
   notes?: string;
   assemblyId?: string;
-  subtotal: number;
+  subtotal?: number;
   reimbursementRequestId?: string;
 }
 
@@ -138,9 +138,9 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
   }
 
   const onSubmitWrapper = (data: MaterialFormInput): void => {
-    const price = Math.round(data.price * 100);
-    const subtotal = parseFloat((data.quantity * price).toFixed(2));
-    onSubmit({ ...data, subtotal, price, quantity: new Decimal(data.quantity) });
+    const price = data.price ? Math.round(data.price * 100) : undefined;
+    const subtotal = price ? (data.quantity ? parseFloat((data.quantity * price).toFixed(2)) : undefined) : undefined;
+    onSubmit({ ...data, subtotal, price, quantity: data.quantity ? new Decimal(data.quantity) : undefined });
   };
 
   const createManufacturerWrapper = async (manufacturerName: string): Promise<void> => {
