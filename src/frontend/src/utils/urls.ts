@@ -450,6 +450,7 @@ const rulesetTypes = () => `${rules()}/rulesetTypes`;
 const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
 const ruleset = () => `${rules()}/ruleset`;
 const rulesetsById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
+const rulesetById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
 const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
 const rulesetsCreate = () => `${rules()}/ruleset/create`;
 const rulesetById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
