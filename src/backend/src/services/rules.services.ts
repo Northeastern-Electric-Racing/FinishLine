@@ -558,7 +558,7 @@ export default class RulesService {
       orderBy: {
         dateCreated: 'desc'
       },
-      ...getRulesetQueryArgs()
+      ...getRulesetQueryArgs(organizationId)
     });
 
     return rulesets.map(rulesetTransformer);
