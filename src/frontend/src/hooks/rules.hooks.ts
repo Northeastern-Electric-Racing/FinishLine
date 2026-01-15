@@ -22,7 +22,8 @@ import {
   deleteRule,
   updateRuleset,
   deleteRuleset,
-  deleteRulesetType
+  deleteRulesetType,
+  getSingleRuleset
 } from '../apis/rules.api';
 import { useToast } from './toasts.hooks';
 
@@ -308,5 +309,54 @@ export const useDeleteRulesetType = () => {
         queryClient.invalidateQueries(['rulesetTypes']);
       }
     }
+  );
+};
+
+/**
+ * Hook to get a single ruleset by ID
+ */
+export const useSingleRuleset = (rulesetId: string) => {
+  return useQuery<Ruleset, Error>(
+    ['rules', 'ruleset', rulesetId],
+    async () => {
+      const { data } = await getSingleRuleset(rulesetId);
+      return data;
+    },
+    { enabled: !!rulesetId }
+  );
+};
+
+/**
+ * Helper function to recursively fetch all child rules
+ */
+const fetchAllChildRules = async (rule: Rule, allRules: Rule[]): Promise<void> => {
+  if (rule.subRuleIds.length === 0) return;
+
+  const { data: children } = await getChildRules(rule.ruleId);
+  allRules.push(...children);
+
+  for (const child of children) {
+    await fetchAllChildRules(child, allRules);
+  }
+};
+
+/**
+ * Hook to get all rules for a ruleset by fetching top-level rules
+ * and recursively fetching all children
+ */
+export const useAllRulesForRuleset = (rulesetId: string) => {
+  return useQuery<Rule[], Error>(
+    ['rules', 'allRules', rulesetId],
+    async () => {
+      const { data: topLevelRules } = await getTopLevelRules(rulesetId);
+      const allRules: Rule[] = [...topLevelRules];
+
+      for (const rule of topLevelRules) {
+        await fetchAllChildRules(rule, allRules);
+      }
+
+      return allRules;
+    },
+    { enabled: !!rulesetId }
   );
 };
