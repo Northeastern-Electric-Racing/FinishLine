@@ -77,6 +77,7 @@ import { getIndexCodeQueryArgs } from '../prisma-query-args/index-code.query-arg
 import { getReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
 import { getReimbursementRequestCommentQueryArgs } from '../prisma-query-args/reimbursement-comment.query-args';
 import { encrypt } from '../utils/encryption.utils';
+import { Description } from '@slack/web-api/dist/types/response/StarsListResponse';
 
 export default class ReimbursementRequestService {
   /**
@@ -239,7 +240,8 @@ export default class ReimbursementRequestService {
     acccountCodeId: string,
     totalCost: number,
     organization: Organization,
-    dateOfExpense?: Date
+    dateOfExpense?: Date,
+    description?: string
   ): Promise<ReimbursementRequest> {
     if (await userHasPermission(recipient.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create a reimbursement request');
@@ -280,7 +282,8 @@ export default class ReimbursementRequestService {
           }
         },
         identifier: numReimbursementRequests + 1,
-        organization: { connect: { organizationId: organization.organizationId } }
+        organization: { connect: { organizationId: organization.organizationId } },
+        description
       }
     });
 
@@ -375,7 +378,8 @@ export default class ReimbursementRequestService {
     receiptPictures: ReimbursementReceiptCreateArgs[],
     submitter: User,
     organization: Organization,
-    dateOfExpense?: Date
+    dateOfExpense?: Date,
+    description?: string
   ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
