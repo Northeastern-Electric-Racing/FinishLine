@@ -1,5 +1,5 @@
-import { WbsNumber } from './types/project-types';
-import { wbsPipe } from './validate-wbs';
+import { WbsNumber } from './types/project-types.js';
+import { wbsPipe } from './validate-wbs.js';
 
 export const deeplyCopy = <T>(obj: T | T[], transformer: (obj: T) => T = (obj) => obj): T | T[] => {
   if (Array.isArray(obj)) {

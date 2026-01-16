@@ -1,7 +1,7 @@
 import express from 'express';
-import { isDate, nonEmptyString, validateInputs } from '../utils/validation.utils';
+import { isDate, nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 import { body } from 'express-validator';
-import RecruitmentController from '../controllers/recruitment.controllers';
+import RecruitmentController from '../controllers/recruitment.controllers.js';
 
 const recruitmentRouter = express.Router();
 

@@ -13,20 +13,20 @@ import {
   WorkPackageStage,
   ProjectOverview
 } from 'shared';
-import { convertStatus, wbsNumOf } from '../utils/utils';
-import taskTransformer from './tasks.transformer';
-import { calculateProjectStatus } from '../utils/projects.utils';
-import { descBulletConverter } from '../utils/description-bullets.utils';
-import { userTransformer } from './user.transformer';
+import { convertStatus, wbsNumOf } from '../utils/utils.js';
+import taskTransformer from './tasks.transformer.js';
+import { calculateProjectStatus } from '../utils/projects.utils.js';
+import { descBulletConverter } from '../utils/description-bullets.utils.js';
+import { userTransformer } from './user.transformer.js';
 import {
   ProjectGanttQueryArgs,
   ProjectOverviewQueryArgs,
   ProjectPreviewQueryArgs,
   ProjectQueryArgs
-} from '../prisma-query-args/projects.query-args';
-import { teamPreviewTransformer } from './teams.transformer';
-import workPackageTransformer, { retrospectiveWorkPackageTransformer } from './work-packages.transformer';
-import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+} from '../prisma-query-args/projects.query-args.js';
+import { teamPreviewTransformer } from './teams.transformer.js';
+import workPackageTransformer, { retrospectiveWorkPackageTransformer } from './work-packages.transformer.js';
+import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>): Project => {
   const { wbsElement } = project;

@@ -1,11 +1,11 @@
 import { Prisma } from '@prisma/client';
 import { calculateEndDate, RetrospectiveWorkPackage, WorkPackage, WorkPackagePreview, WorkPackageStage } from 'shared';
-import descriptionBulletTransformer from '../transformers/description-bullets.transformer';
-import { convertStatus, wbsNumOf } from '../utils/utils';
-import { userTransformer } from './user.transformer';
-import { WorkPackageQueryArgs, WorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import { teamTypeTransformer } from './team-types.transformer';
-import { eventPreviewTransformer } from './calendar.transformer';
+import descriptionBulletTransformer from '../transformers/description-bullets.transformer.js';
+import { convertStatus, wbsNumOf } from '../utils/utils.js';
+import { userTransformer } from './user.transformer.js';
+import { WorkPackageQueryArgs, WorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+import { teamTypeTransformer } from './team-types.transformer.js';
+import { eventPreviewTransformer } from './calendar.transformer.js';
 
 const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
   const wbsNum = wbsNumOf(wpInput.wbsElement);

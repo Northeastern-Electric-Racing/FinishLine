@@ -1,8 +1,8 @@
 import { Theme } from '@prisma/client';
 import express from 'express';
 import { body } from 'express-validator';
-import UsersController from '../controllers/users.controllers';
-import { isRole, nonEmptyString, intMinZero, validateInputs, isDate } from '../utils/validation.utils';
+import UsersController from '../controllers/users.controllers.js';
+import { isRole, nonEmptyString, intMinZero, validateInputs, isDate } from '../utils/validation.utils.js';
 
 const userRouter = express.Router();
 

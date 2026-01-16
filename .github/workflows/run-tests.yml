@@ -37,5 +37,7 @@ jobs:
         run: docker exec finishline psql -U postgres -c "CREATE DATABASE nerpm;"
       - name: Install modules
         run: yarn install && yarn prisma:generate && yarn prisma:migrate:prod
+      - name: Build shared package
+        run: yarn build:shared
       - name: Run tests
         run: yarn test:backend; yarn test:frontend

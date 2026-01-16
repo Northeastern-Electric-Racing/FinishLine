@@ -1,10 +1,10 @@
 import { Organization } from '@prisma/client';
 import { isAdmin, User } from 'shared';
-import { getCarQueryArgs } from '../prisma-query-args/cars.query-args';
-import prisma from '../prisma/prisma';
-import { carTransformer } from '../transformers/cars.transformer';
-import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
-import { userHasPermission } from '../utils/users.utils';
+import { getCarQueryArgs } from '../prisma-query-args/cars.query-args.js';
+import prisma from '../prisma/prisma.js';
+import { carTransformer } from '../transformers/cars.transformer.js';
+import { AccessDeniedAdminOnlyException } from '../utils/errors.utils.js';
+import { userHasPermission } from '../utils/users.utils.js';
 
 export default class CarsService {
   static async getAllCars(organization: Organization) {

@@ -18,18 +18,18 @@ import {
   reactToMessage,
   replyToMessageInThread,
   sendMessage
-} from '../integrations/slack';
-import { getUserSlackId, getUserSlackMentionOrName } from './users.utils';
-import prisma from '../prisma/prisma';
-import { HttpException } from './errors.utils';
+} from '../integrations/slack.js';
+import { getUserSlackId, getUserSlackMentionOrName } from './users.utils.js';
+import prisma from '../prisma/prisma.js';
+import { HttpException } from './errors.utils.js';
 import { Change_Request, Team, WBS_Element } from '@prisma/client';
-import { UserWithSettings } from './auth.utils';
-import { usersToSlackPings, userToSlackPing } from './notifications.utils';
-import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { UserWithSettings } from './auth.utils.js';
+import { usersToSlackPings, userToSlackPing } from './notifications.utils.js';
+import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 import { Prisma } from '@prisma/client';
-import { userTransformer } from '../transformers/user.transformer';
-import { SlackRichTextBlock } from '../services/slack.services';
-import UsersService from '../services/users.services';
+import { userTransformer } from '../transformers/user.transformer.js';
+import { SlackRichTextBlock } from '../services/slack.services.js';
+import UsersService from '../services/users.services.js';
 
 interface SlackMessageThread {
   messageInfoId: string;

@@ -11,12 +11,12 @@ import {
   User
 } from 'shared';
 import { Organization, Sponsor_Task, Reimbursement_Status_Type } from '@prisma/client';
-import { userHasPermission } from '../utils/users.utils';
+import { userHasPermission } from '../utils/users.utils.js';
 import {
   getSponsorQueryArgs,
   getSponsorTaskQueryArgs,
   getSponsorTierQueryArgs
-} from '../prisma-query-args/sponsor.query.args';
+} from '../prisma-query-args/sponsor.query.args.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -24,12 +24,16 @@ import {
   HttpException,
   InvalidOrganizationException,
   NotFoundException
-} from '../utils/errors.utils';
-import prisma from '../prisma/prisma';
-import { sponsorTransformer } from '../transformers/finance.transformer';
-import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
-import { computeRRTotals, getProjectSegmentedWhereInput, getReimbursementRequestWhereInput } from '../utils/finance.utils';
-import { notifySponsorTaskAssignee } from '../utils/slack.utils';
+} from '../utils/errors.utils.js';
+import prisma from '../prisma/prisma.js';
+import { sponsorTransformer } from '../transformers/finance.transformer.js';
+import sponsorTaskTransformer from '../transformers/sponsor-task.transformer.js';
+import {
+  computeRRTotals,
+  getProjectSegmentedWhereInput,
+  getReimbursementRequestWhereInput
+} from '../utils/finance.utils.js';
+import { notifySponsorTaskAssignee } from '../utils/slack.utils.js';
 
 export default class FinanceServices {
   /**
@@ -437,6 +441,7 @@ export default class FinanceServices {
         totalCost: true,
         reimbursementProducts: {
           where: {
+            dateDeleted: null,
             reimbursementProductReason: {
               wbsElement: {
                 project: {
@@ -528,6 +533,7 @@ export default class FinanceServices {
         totalCost: true,
         reimbursementProducts: {
           where: {
+            dateDeleted: null,
             reimbursementProductReason: {
               wbsElement: {
                 project: {
@@ -953,6 +959,7 @@ export default class FinanceServices {
         totalCost: true,
         reimbursementProducts: {
           where: {
+            dateDeleted: null,
             reimbursementProductReason: {
               otherReasonId
             }

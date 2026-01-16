@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args';
-import { getShopQueryArgs } from './shop.query-args';
+import { getUserQueryArgs } from './user.query-args.js';
+import { getShopQueryArgs } from './shop.query-args.js';
 
 export type ShopMachineryQueryArgs = ReturnType<typeof getShopMachineryQueryArgs>;
 export type MachineryQueryArgs = ReturnType<typeof getMachineryQueryArgs>;

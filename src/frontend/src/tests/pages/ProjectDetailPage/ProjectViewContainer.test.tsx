@@ -7,7 +7,7 @@ import { render, screen, routerWrapperBuilder, fireEvent, waitFor } from '../../
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import ProjectViewContainer from '../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer';
-import { WorkPackageStage } from 'shared/src/types/work-package-types';
+import { WorkPackageStage } from 'shared';
 import * as userHooks from '../../../hooks/users.hooks';
 import * as financeHooks from '../../../hooks/finance.hooks';
 import * as authHooks from '../../../hooks/auth.hooks';

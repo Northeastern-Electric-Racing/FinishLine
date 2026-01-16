@@ -1,4 +1,4 @@
-import { User, UserWithScheduleSettings } from './user-types';
+import { User, UserWithScheduleSettings } from './user-types.js';
 
 export interface EventDocumentCreateArgs {
   googleFileId: string;

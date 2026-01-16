@@ -1,6 +1,6 @@
 import express from 'express';
 import { body, param } from 'express-validator';
-import WorkPackagesController from '../controllers/work-packages.controllers';
+import WorkPackagesController from '../controllers/work-packages.controllers.js';
 import {
   blockedByValidators,
   descriptionBulletsValidators,
@@ -9,7 +9,7 @@ import {
   isWorkPackageStageOrNone,
   nonEmptyString,
   validateInputs
-} from '../utils/validation.utils';
+} from '../utils/validation.utils.js';
 import { WorkPackageSelection } from 'shared';
 const workPackagesRouter = express.Router();
 

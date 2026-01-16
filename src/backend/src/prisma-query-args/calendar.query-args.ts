@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args';
-import { getEventTypeQueryArgs } from './event-type.query-args';
+import { getEventTypeQueryArgs } from './event-type.query-args.js';
+import { getUserQueryArgs } from './user.query-args.js';
 
 export type CalendarQueryArgs = ReturnType<typeof getCalendarQueryArgs>;
 

@@ -1,5 +1,5 @@
 import { Material_Status, Material_Type, Organization } from '@prisma/client';
-import Decimal from 'decimal.js';
+import { Decimal } from 'decimal.js';
 import {
   Manufacturer,
   Assembly,
@@ -14,7 +14,7 @@ import {
   Unit,
   User
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedException,
   AccessDeniedGuestException,
@@ -22,21 +22,25 @@ import {
   HttpException,
   InvalidOrganizationException,
   NotFoundException
-} from '../utils/errors.utils';
-import { userHasPermission } from '../utils/users.utils';
-import { isUserPartOfTeams } from '../utils/teams.utils';
-import ProjectsService from './projects.services';
-import { assemblyTransformer, materialPreviewTransformer, materialTransformer } from '../transformers/material.transformer';
-import manufacturerTransformer from '../transformers/manufacturer.transformer';
-import { materialTypeTransformer } from '../transformers/material-type.transformer';
+} from '../utils/errors.utils.js';
+import { userHasPermission } from '../utils/users.utils.js';
+import { isUserPartOfTeams } from '../utils/teams.utils.js';
+import ProjectsService from './projects.services.js';
+import {
+  assemblyTransformer,
+  materialPreviewTransformer,
+  materialTransformer
+} from '../transformers/material.transformer.js';
+import manufacturerTransformer from '../transformers/manufacturer.transformer.js';
+import { materialTypeTransformer } from '../transformers/material-type.transformer.js';
 import {
   getAssemblyQueryArgs,
   getMaterialPreviewQueryArgs,
   getMaterialQueryArgs
-} from '../prisma-query-args/bom.query-args';
-import { getManufacturerQueryArgs } from '../prisma-query-args/manufacturers.query-args';
-import { getMaterialTypeQueryArgs } from '../prisma-query-args/material-type.query-args';
-import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
+} from '../prisma-query-args/bom.query-args.js';
+import { getManufacturerQueryArgs } from '../prisma-query-args/manufacturers.query-args.js';
+import { getMaterialTypeQueryArgs } from '../prisma-query-args/material-type.query-args.js';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 
 export default class BillOfMaterialsService {
   /**

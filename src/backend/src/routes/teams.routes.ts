@@ -1,7 +1,7 @@
 import express from 'express';
-import TeamsController from '../controllers/teams.controllers';
+import TeamsController from '../controllers/teams.controllers.js';
 import { body } from 'express-validator';
-import { nonEmptyString, validateInputs } from '../utils/validation.utils';
+import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 import multer, { memoryStorage } from 'multer';
 import { MAX_FILE_SIZE } from 'shared';
 

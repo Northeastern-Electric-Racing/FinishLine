@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import CalendarService from '../services/calendar.services';
-import { getCurrentUserWithUserSettings } from '../utils/auth.utils';
+import CalendarService from '../services/calendar.services.js';
+import { getCurrentUserWithUserSettings } from '../utils/auth.utils.js';
 
 export default class CalendarController {
   static async createEventType(req: Request, res: Response, next: NextFunction) {
@@ -65,7 +65,7 @@ export default class CalendarController {
 
   static async editMachinery(req: Request, res: Response, next: NextFunction) {
     try {
-      const { machineryId } = req.params;
+      const { machineryId } = req.params as Record<string, string>;
       const { name } = req.body;
 
       const machinery = await CalendarService.editMachinery(req.currentUser, machineryId, name, req.organization);
@@ -77,7 +77,7 @@ export default class CalendarController {
 
   static async addMachineryToShop(req: Request, res: Response, next: NextFunction) {
     try {
-      const { machineryId } = req.params;
+      const { machineryId } = req.params as Record<string, string>;
       const { shopId, quantity, originalShopId } = req.body;
 
       const machinery = await CalendarService.addMachineryToShop(
@@ -126,7 +126,7 @@ export default class CalendarController {
 
   static async editShop(req: Request, res: Response, next: NextFunction) {
     try {
-      const { shopId } = req.params;
+      const { shopId } = req.params as Record<string, string>;
       const { name, description } = req.body;
 
       const updatedShop = await CalendarService.editShop(req.currentUser, shopId, name, description, req.organization);
@@ -156,7 +156,7 @@ export default class CalendarController {
 
   static async editCalendar(req: Request, res: Response, next: NextFunction) {
     try {
-      const { calendarId } = req.params;
+      const { calendarId } = req.params as Record<string, string>;
       const { name, colorHexCode, description } = req.body;
 
       const updatedCalendar = await CalendarService.editCalendar(
@@ -176,7 +176,7 @@ export default class CalendarController {
 
   static async deleteCalendar(req: Request, res: Response, next: NextFunction) {
     try {
-      const { calendarId } = req.params;
+      const { calendarId } = req.params as Record<string, string>;
 
       const updatedCalendar = await CalendarService.deleteCalendar(req.currentUser, calendarId, req.organization);
 
@@ -188,7 +188,7 @@ export default class CalendarController {
 
   static async editEventType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { eventTypeId } = req.params;
+      const { eventTypeId } = req.params as Record<string, string>;
       const {
         name,
         calendarIds,
@@ -239,7 +239,7 @@ export default class CalendarController {
 
   static async deleteEventType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { eventTypeId } = req.params;
+      const { eventTypeId } = req.params as Record<string, string>;
 
       const deletedEventType = await CalendarService.deleteEventType(req.currentUser, eventTypeId, req.organization);
 
@@ -251,7 +251,7 @@ export default class CalendarController {
 
   static async deleteShop(req: Request, res: Response, next: NextFunction) {
     try {
-      const { shopId } = req.params;
+      const { shopId } = req.params as Record<string, string>;
 
       const shop = await CalendarService.deleteShop(req.currentUser, shopId, req.organization);
 
@@ -313,7 +313,7 @@ export default class CalendarController {
 
   static async editEvent(req: Request, res: Response, next: NextFunction) {
     try {
-      const { eventId } = req.params;
+      const { eventId } = req.params as Record<string, string>;
 
       const {
         title,
@@ -369,7 +369,7 @@ export default class CalendarController {
   static async uploadDocument(req: Request, res: Response, next: NextFunction) {
     try {
       const { file } = req;
-      const { eventId } = req.params;
+      const { eventId } = req.params as Record<string, string>;
       const document = await CalendarService.uploadDocument(eventId, file!, req.currentUser, req.organization);
 
       res.status(200).json(document);
@@ -380,7 +380,7 @@ export default class CalendarController {
 
   static async downloadDocument(req: Request, res: Response, next: NextFunction) {
     try {
-      const { fileId } = req.params;
+      const { fileId } = req.params as Record<string, string>;
 
       const imageData = await CalendarService.downloadDocument(fileId);
 
@@ -397,7 +397,7 @@ export default class CalendarController {
 
   static async approveEvent(req: Request, res: Response, next: NextFunction) {
     try {
-      const { eventId } = req.params;
+      const { eventId } = req.params as Record<string, string>;
 
       const event = await CalendarService.approveEvent(req.currentUser, eventId, req.organization);
       res.status(200).json(event);
@@ -408,7 +408,7 @@ export default class CalendarController {
 
   static async denyEvent(req: Request, res: Response, next: NextFunction) {
     try {
-      const { eventId } = req.params;
+      const { eventId } = req.params as Record<string, string>;
 
       const event = await CalendarService.denyEvent(req.currentUser, eventId, req.organization);
       res.status(200).json(event);
@@ -421,7 +421,7 @@ export default class CalendarController {
   static async markUserConfirmed(req: Request, res: Response, next: NextFunction) {
     try {
       const { availability } = req.body;
-      const { eventId } = req.params;
+      const { eventId } = req.params as Record<string, string>;
       const user = await getCurrentUserWithUserSettings(res);
 
       const updatedEvent = await CalendarService.markUserConfirmed(eventId, availability, user, req.organization);
@@ -434,7 +434,7 @@ export default class CalendarController {
   // Set a new status for the event
   static async setStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const { eventId } = req.params;
+      const { eventId } = req.params as Record<string, string>;
       const { status } = req.body;
 
       const updatedEvent = await CalendarService.setStatus(req.currentUser, eventId, status, req.organization);
@@ -465,7 +465,7 @@ export default class CalendarController {
 
   static async deleteEvent(req: Request, res: Response, next: NextFunction) {
     try {
-      const { eventId } = req.params;
+      const { eventId } = req.params as Record<string, string>;
 
       const event = await CalendarService.deleteEvent(req.currentUser, eventId, req.organization);
 
@@ -477,7 +477,7 @@ export default class CalendarController {
 
   static async deleteMachinery(req: Request, res: Response, next: NextFunction) {
     try {
-      const { machineryId } = req.params;
+      const { machineryId } = req.params as Record<string, string>;
 
       const machinery = await CalendarService.deleteMachinery(req.currentUser, machineryId, req.organization);
 
@@ -489,7 +489,7 @@ export default class CalendarController {
 
   static async getSingleEvent(req: Request, res: Response, next: NextFunction) {
     try {
-      const { eventId } = req.params;
+      const { eventId } = req.params as Record<string, string>;
 
       const event = await CalendarService.getSingleEvent(req.currentUser, eventId, req.organization);
       res.status(200).json(event);
@@ -500,7 +500,7 @@ export default class CalendarController {
 
   static async getSingleEventWithMembers(req: Request, res: Response, next: NextFunction) {
     try {
-      const { eventId } = req.params;
+      const { eventId } = req.params as Record<string, string>;
 
       const event = await CalendarService.getSingleEventWithMembers(req.currentUser, eventId, req.organization);
       res.status(200).json(event);
@@ -511,7 +511,7 @@ export default class CalendarController {
 
   static async getConflictingEvent(req: Request, res: Response, next: NextFunction) {
     try {
-      const { eventId } = req.params;
+      const { eventId } = req.params as Record<string, string>;
 
       const event = await CalendarService.getConflictingEvent(req.currentUser, eventId, req.organization);
       res.status(200).json(event);

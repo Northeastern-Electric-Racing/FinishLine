@@ -1,19 +1,19 @@
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   TaskWithAssignees,
   endOfDayTomorrow,
   startOfDayTomorrow,
   usersToSlackPings,
   EventWithAttendees
-} from '../utils/notifications.utils';
-import { sendMessage } from '../integrations/slack';
+} from '../utils/notifications.utils.js';
+import { sendMessage } from '../integrations/slack.js';
 import { daysBetween, meetingStartTimePipeNumbers, startOfDay, wbsPipe } from 'shared';
-import { buildDueString, sendThreadResponse } from '../utils/slack.utils';
-import WorkPackagesService from './work-packages.services';
+import { buildDueString, sendThreadResponse } from '../utils/slack.utils.js';
+import WorkPackagesService from './work-packages.services.js';
 import { addWeeksToDate } from 'shared';
-import { HttpException } from '../utils/errors.utils';
+import { HttpException } from '../utils/errors.utils.js';
 import { Reimbursement_Status_Type } from '@prisma/client';
-import { scheduleTimesTransformer } from '../transformers/calendar.transformer';
+import { scheduleTimesTransformer } from '../transformers/calendar.transformer.js';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {

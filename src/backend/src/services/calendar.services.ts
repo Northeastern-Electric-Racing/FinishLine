@@ -1,69 +1,74 @@
 import {
-  calendarTransformer,
-  eventTransformer,
-  eventWithMembersTransformer,
-  machineryTransformer
-} from '../transformers/calendar.transformer';
-import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
-import { Conflict_Status, Event_Status, Organization } from '@prisma/client';
-import {
+  User,
   isAdmin,
   isHead,
+  isGuest,
+  AvailabilityCreateArgs,
+  Event,
   EventType,
+  ScheduleSlotCreateArgs,
+  EventDocumentCreateArgs,
+  EventStatus,
   Shop,
   Calendar,
-  User,
-  ScheduleSlotCreateArgs,
-  Event,
   FilterArgs,
-  Machinery,
-  AvailabilityCreateArgs,
-  EventStatus,
-  EventDocumentCreateArgs,
-  isGuest
+  Machinery
 } from 'shared';
-import prisma from '../prisma/prisma';
+import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
+import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
+import { getEventQueryArgs, getEventWithMembersQueryArgs } from '../prisma-query-args/event.query-args.js';
+import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args.js';
+import { getShopQueryArgs } from '../prisma-query-args/shop.query-args.js';
+import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
+import prisma from '../prisma/prisma.js';
+import {
+  eventTypeTransformer,
+  machineryTransformer,
+  eventTransformer,
+  eventWithMembersTransformer,
+  shopTransformer,
+  calendarTransformer
+} from '../transformers/calendar.transformer.js';
+import { UserWithSettings } from '../utils/auth.utils.js';
+import {
+  validateEventTypeConfiguration,
+  checkEventConflicts,
+  removeDeletedEventDocuments,
+  isUserOnEvent,
+  buildScheduledTimesOverlap
+} from '../utils/calendar.utils.js';
 import {
   AccessDeniedAdminOnlyException,
-  AccessDeniedException,
-  AccessDeniedGuestException,
-  DeletedException,
-  HttpException,
+  NotFoundException,
   InvalidOrganizationException,
-  NotFoundException
-} from '../utils/errors.utils';
+  HttpException,
+  DeletedException,
+  AccessDeniedException,
+  AccessDeniedGuestException
+} from '../utils/errors.utils.js';
 import {
-  areUsersinList,
+  createCalendarEvent,
+  updateCalendarEvent,
+  uploadFile,
+  downloadFile,
+  deleteCalendarEvents
+} from '../utils/google-integration.utils.js';
+import { sendEventPopUp } from '../utils/pop-up.utils.js';
+import {
+  sendSlackEventConfirmNotification,
+  sendEventConfirmationToThread,
+  sendSlackEventNotifications,
+  sendEventScheduledSlackNotif,
+  sendEventUserConfirmationToThread
+} from '../utils/slack.utils.js';
+import {
+  userHasPermission,
   getPrismaQueryUserIds,
   getUsers,
   updateUserAvailability,
-  userHasPermission
-} from '../utils/users.utils';
-import { eventTypeTransformer } from '../transformers/calendar.transformer';
-import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
-import { shopTransformer } from '../transformers/calendar.transformer';
-import { getShopQueryArgs } from '../prisma-query-args/shop.query-args';
-import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
-import { getEventQueryArgs, getEventWithMembersQueryArgs } from '../prisma-query-args/event.query-args';
-import {
-  buildScheduledTimesOverlap,
-  checkEventConflicts,
-  isUserOnEvent,
-  removeDeletedEventDocuments,
-  validateEventTypeConfiguration
-} from '../utils/calendar.utils';
-import { UserWithSettings } from '../utils/auth.utils';
-import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
-import {
-  sendEventConfirmationToThread,
-  sendEventScheduledSlackNotif,
-  sendEventUserConfirmationToThread,
-  sendSlackEventNotifications,
-  sendSlackEventConfirmNotification
-} from '../utils/slack.utils';
-import { sendEventPopUp } from '../utils/pop-up.utils';
-import { createCalendarEvent, deleteCalendarEvents, updateCalendarEvent } from '../utils/google-integration.utils';
-import { downloadFile, uploadFile } from '../utils/google-integration.utils';
+  areUsersinList
+} from '../utils/users.utils.js';
+import { Conflict_Status, Event_Status, Organization } from '@prisma/client';
 
 export default class CalendarService {
   /**
@@ -911,7 +916,7 @@ export default class CalendarService {
       } else {
         // If all required members are confirmed, set the status to SCHEDULED
         const allRequiredMembersConfirmed = updatedRequiredMembers.every((member) =>
-          foundEvent.confirmedMembers.map((user) => user.userId).includes(member.userId)
+          foundEvent.confirmedMembers.map((user: { userId: string }) => user.userId).includes(member.userId)
         );
 
         if (status === Event_Status.CONFIRMED && allRequiredMembersConfirmed) {
@@ -1185,7 +1190,7 @@ export default class CalendarService {
     await updateUserAvailability(availabilities, userSettings, submitter);
 
     // set submitter as confirmed if they're not already
-    if (!event.confirmedMembers.map((user) => user.userId).includes(submitter.userId)) {
+    if (!event.confirmedMembers.map((user: { userId: string }) => user.userId).includes(submitter.userId)) {
       const updatedEvent = await prisma.event.update({
         where: { eventId },
         ...getEventQueryArgs(organization.organizationId),

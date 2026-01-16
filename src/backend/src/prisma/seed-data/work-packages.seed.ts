@@ -6,7 +6,7 @@
 import { Organization } from '@prisma/client';
 import { DescriptionBulletPreview, WbsElementStatus, WbsNumber, WorkPackage, User } from 'shared';
 import { WorkPackageStage } from 'shared';
-import WorkPackagesService from '../../services/work-packages.services';
+import WorkPackagesService from '../../services/work-packages.services.js';
 
 /**
  * Creates a work package with the given data using service functions. This has to be done by:

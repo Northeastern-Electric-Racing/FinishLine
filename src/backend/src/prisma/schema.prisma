@@ -9,7 +9,6 @@ datasource db {
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["relationJoins"]
-  engineType      = "library"
   binaryTargets   = ["native", "linux-arm64-openssl-1.1.x"]
 }
 

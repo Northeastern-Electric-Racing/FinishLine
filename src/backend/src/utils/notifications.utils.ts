@@ -1,5 +1,5 @@
 import { Task as Prisma_Task, WBS_Element, Event, Work_Package } from '@prisma/client';
-import { UserWithSettings } from './auth.utils';
+import { UserWithSettings } from './auth.utils.js';
 import { ScheduleSlot } from 'shared';
 
 export type TaskWithAssignees = Prisma_Task & {

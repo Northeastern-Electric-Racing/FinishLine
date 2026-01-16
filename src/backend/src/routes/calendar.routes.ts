@@ -9,8 +9,8 @@ import {
   isEventStatus,
   isConflictStatus,
   requireFile
-} from '../utils/validation.utils';
-import CalendarController from '../controllers/calendar.controllers';
+} from '../utils/validation.utils.js';
+import CalendarController from '../controllers/calendar.controllers.js';
 import multer, { memoryStorage } from 'multer';
 import { MAX_FILE_SIZE } from 'shared';
 

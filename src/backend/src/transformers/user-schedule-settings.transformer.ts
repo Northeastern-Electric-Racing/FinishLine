@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { UserScheduleSettings } from 'shared';
-import { UserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
+import { UserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
 
 const userScheduleSettingsTransformer = (
   settings: Prisma.Schedule_SettingsGetPayload<UserScheduleSettingsQueryArgs>

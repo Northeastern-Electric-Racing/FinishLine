@@ -12,8 +12,8 @@ import {
   nonEmptyString,
   validateInputs,
   validateReimbursementProducts
-} from '../utils/validation.utils';
-import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
+} from '../utils/validation.utils.js';
+import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers.js';
 import multer, { memoryStorage } from 'multer';
 import { MAX_FILE_SIZE } from 'shared';
 

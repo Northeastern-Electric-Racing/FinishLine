@@ -1,11 +1,12 @@
 import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import { HttpException } from './errors.utils';
+import SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
+import { HttpException } from './errors.utils.js';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
-import { Schedule_Slot, User } from '@prisma/client';
-import { getUsers } from './users.utils';
+import { User } from 'shared';
+import { Schedule_Slot } from '@prisma/client';
+import { getUsers } from './users.utils.js';
 
 const { OAuth2 } = google.auth;
 const {

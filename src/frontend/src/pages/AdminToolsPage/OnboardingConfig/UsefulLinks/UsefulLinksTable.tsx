@@ -11,7 +11,7 @@ import {
   TableContainer,
   Button
 } from '@mui/material';
-import { isAdmin } from 'shared/src/permission-utils';
+import { isAdmin } from 'shared';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';

@@ -1,12 +1,12 @@
 import { Prisma } from '@prisma/client';
-import { getReimbursementStatusQueryArgs } from './reimbursement-statuses.query-args';
-import { getVendorQueryArgs } from './vendor.query-args';
-import { getUserQueryArgs } from './user.query-args';
-import { getReceiptQueryArgs } from './receipt-query.args';
-import { getReimbursementProductQueryArgs } from './reimbursement-products.query-args';
-import { getIndexCodeQueryArgs } from './index-code.query-args';
-import { getAccountCodeQueryArgs } from './account-code.query-args';
-import { getReimbursementRequestCommentQueryArgs } from './reimbursement-comment.query-args';
+import { getReimbursementStatusQueryArgs } from './reimbursement-statuses.query-args.js';
+import { getVendorQueryArgs } from './vendor.query-args.js';
+import { getUserQueryArgs } from './user.query-args.js';
+import { getReceiptQueryArgs } from './receipt-query.args.js';
+import { getReimbursementProductQueryArgs } from './reimbursement-products.query-args.js';
+import { getIndexCodeQueryArgs } from './index-code.query-args.js';
+import { getAccountCodeQueryArgs } from './account-code.query-args.js';
+import { getReimbursementRequestCommentQueryArgs } from './reimbursement-comment.query-args.js';
 
 export type ReimbursementRequestQueryArgs = ReturnType<typeof getReimbursementRequestQueryArgs>;
 

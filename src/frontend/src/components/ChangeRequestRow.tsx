@@ -5,7 +5,7 @@
 
 import { Typography, Grid, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
-import { ChangeRequest } from 'shared/src/types/change-request-types';
+import { ChangeRequest } from 'shared';
 import ChangeRequestDetailCard from './ChangeRequestDetailCard';
 
 interface ChangeRequestRowProps {

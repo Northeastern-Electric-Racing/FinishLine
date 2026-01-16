@@ -5,9 +5,9 @@
 
 import { Prisma } from '@prisma/client';
 import { MaterialType } from 'shared';
-import { materialPreviewTransformer } from './material.transformer';
-import { MaterialTypeQueryArgs } from '../prisma-query-args/material-type.query-args';
-import { userTransformer } from './user.transformer';
+import { materialPreviewTransformer } from './material.transformer.js';
+import { MaterialTypeQueryArgs } from '../prisma-query-args/material-type.query-args.js';
+import { userTransformer } from './user.transformer.js';
 
 export const materialTypeTransformer = (
   materialType: Prisma.Material_TypeGetPayload<MaterialTypeQueryArgs>

@@ -1,9 +1,14 @@
 import { Checklist, Organization } from '@prisma/client';
-import prisma from '../prisma/prisma';
-import { userHasPermission } from '../utils/users.utils';
-import { isAdmin, User } from 'shared';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
-import { downloadFile } from '../utils/google-integration.utils';
+import prisma from '../prisma/prisma.js';
+import { userHasPermission } from '../utils/users.utils.js';
+import { ChecklistItemType, isAdmin, User } from 'shared';
+import {
+  AccessDeniedAdminOnlyException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../utils/errors.utils.js';
+import { downloadFile } from '../utils/google-integration.utils.js';
 
 export default class OnboardingServices {
   /**
@@ -32,15 +37,36 @@ export default class OnboardingServices {
    * @returns all the checklists that this user has checked
    */
   static async getCheckedChecklists(user: User, organization: Organization) {
-    const allChecklists = await prisma.checklist.findMany({
-      where: { organizationId: organization.organizationId, dateDeleted: null },
-      include: { subtasks: { where: { dateDeleted: null }, orderBy: { displayIndex: 'asc' } }, usersChecked: true },
+    const checkedChecklists = await prisma.checklist.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        // A checklist is checked if the user has checked it, it is an info block, or all its subtasks are checked
+        OR: [
+          { usersChecked: { some: { userId: user.userId } } },
+          { itemType: ChecklistItemType.INFO },
+          {
+            // Checks if the checklist has subtasks and if all subtasks are checked by the user
+            AND: [
+              { subtasks: { some: {} } },
+              {
+                subtasks: {
+                  every: {
+                    OR: [
+                      { isOptional: true },
+                      { usersChecked: { some: { userId: user.userId } } },
+                      { itemType: ChecklistItemType.INFO }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      include: { subtasks: { where: { dateDeleted: null }, orderBy: { displayIndex: 'asc' } } },
       orderBy: { displayIndex: 'asc' }
     });
-
-    const checkedChecklists = allChecklists.filter((checklist) =>
-      checklist.usersChecked.some((userChecked) => userChecked.userId === user.userId)
-    );
 
     return checkedChecklists;
   }
@@ -122,7 +148,7 @@ export default class OnboardingServices {
     parentChecklistId: string | null,
     organization: Organization,
     isOptional?: boolean,
-    itemType?: 'TASK' | 'INFO'
+    itemType?: ChecklistItemType
   ) {
     if (!(await userHasPermission(creator.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create a checklist');
@@ -194,7 +220,7 @@ export default class OnboardingServices {
         content,
         isOptional,
         displayIndex: nextDisplayIndex,
-        itemType: itemType ?? 'TASK',
+        itemType: itemType ?? ChecklistItemType.TASK,
         organizationId: organization.organizationId,
         teamId,
         teamTypeId,
@@ -227,7 +253,7 @@ export default class OnboardingServices {
     parentChecklistId: string | null,
     organization: Organization,
     isOptional?: boolean,
-    itemType?: 'TASK' | 'INFO'
+    itemType?: ChecklistItemType
   ) {
     if (!(await userHasPermission(editor.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('edit a checklist');
@@ -363,7 +389,7 @@ export default class OnboardingServices {
     const isChecked = checklist.usersChecked.some((user) => user.userId === userId);
 
     // Only check TASK items (not INFO blocks) when validating subtasks are complete
-    const taskSubtasks = checklist.subtasks.filter((subtask) => subtask.itemType === 'TASK');
+    const taskSubtasks = checklist.subtasks.filter((subtask) => subtask.itemType === ChecklistItemType.TASK);
     if (
       taskSubtasks.length > 0 &&
       !taskSubtasks.every((subtask) => subtask.usersChecked.some((user) => user.userId === userId))
@@ -423,7 +449,7 @@ export default class OnboardingServices {
 
       if (parentChecklist) {
         const allSubtasksChecked = parentChecklist.subtasks
-          .filter((subtask) => !subtask.isOptional && subtask.itemType === 'TASK')
+          .filter((subtask) => !subtask.isOptional && subtask.itemType === ChecklistItemType.TASK)
           .every((subtask) => subtask.usersChecked.some((user) => user.userId === userId));
         if (allSubtasksChecked) {
           await prisma.checklist.update({

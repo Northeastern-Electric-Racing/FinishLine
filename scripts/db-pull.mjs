@@ -1,5 +1,5 @@
-const { execSync } = require('child_process');
-const readline = require('readline');
+import { execSync } from 'child_process';
+import readline from 'readline';
 
 function promptUser(question) {
   const rl = readline.createInterface({
@@ -19,7 +19,7 @@ async function main() {
   console.log('🚀 Database Migration Script\n');
 
   try {
-    const targetUrl = "postgresql://postgres:docker@localhost:5432/nerpm"
+    const targetUrl = 'postgresql://postgres:docker@localhost:5432/nerpm';
 
     console.log(`📍 Target database: ${targetUrl.replace(/\/\/[^@]*@/, '//***:***@')}`);
 
@@ -41,7 +41,7 @@ async function main() {
 
     // First, clear the target database completely
     const clearCommand = `psql "${targetUrl}" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"`;
-    console.log(targetUrl)
+    console.log(targetUrl);
 
     try {
       execSync(clearCommand, { stdio: 'inherit' });
@@ -57,7 +57,6 @@ async function main() {
     execSync(dumpCommand, { stdio: 'inherit' });
 
     console.log('✅ Migration complete!');
-
   } catch (error) {
     console.error('❌ Error:', error.message);
     process.exit(1);

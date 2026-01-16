@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 import { Availability, SetUserScheduleSettingsArgs } from 'shared';
 import ExternalLink from '../../../components/ExternalLink';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { deeplyCopy } from 'shared/src/utils';
+import { deeplyCopy } from 'shared';
 import { availabilityTransformer } from '../../../apis/transformers/users.transformers';
 
 interface UserScheduleSettingsEditProps {

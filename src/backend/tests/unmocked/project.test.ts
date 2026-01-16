@@ -1,9 +1,9 @@
-import { createTestReimbursementRequest, resetUsers } from '../test-utils';
+import { createTestReimbursementRequest, resetUsers } from '../test-utils.js';
 import { Organization, User } from '@prisma/client';
-import BillOfMaterials from '../../src/services/boms.services';
+import BillOfMaterials from '../../src/services/boms.services.js';
 import Decimal from 'decimal.js';
 import { MaterialStatus, ReimbursementRequest } from 'shared';
-import { NotFoundException } from '../../src/utils/errors.utils';
+import { NotFoundException } from '../../src/utils/errors.utils.js';
 
 describe('Material Tests', () => {
   let org: Organization;

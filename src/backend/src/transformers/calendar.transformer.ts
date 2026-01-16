@@ -19,12 +19,12 @@ import {
   Document,
   EventWithMembers
 } from 'shared';
-import { MachineryQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
-import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer';
-import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
-import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
-import { EventQueryArgs, EventWithMembersQueryArgs } from '../prisma-query-args/event.query-args';
-import { ShopQueryArgs } from '../prisma-query-args/shop.query-args';
+import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
+import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
+import { EventQueryArgs, EventWithMembersQueryArgs } from '../prisma-query-args/event.query-args.js';
+import { ShopMachineryQueryArgs, MachineryQueryArgs } from '../prisma-query-args/machinery.query-args.js';
+import { ShopQueryArgs } from '../prisma-query-args/shop.query-args.js';
+import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer.js';
 
 export const documentTransformer = (document: Prisma.DocumentGetPayload<null>): Document => {
   return { documentId: document.documentId, googleFileId: document.googleFileId, name: document.name };

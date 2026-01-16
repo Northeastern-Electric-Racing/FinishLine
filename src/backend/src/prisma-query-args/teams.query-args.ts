@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args';
-import { getProjectGanttQueryArgs } from './projects.query-args';
+import { getUserQueryArgs } from './user.query-args.js';
+import { getProjectGanttQueryArgs } from './projects.query-args.js';
 
 export type TeamQueryArgs = ReturnType<typeof getTeamQueryArgs>;
 

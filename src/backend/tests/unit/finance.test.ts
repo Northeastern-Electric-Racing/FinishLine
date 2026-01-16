@@ -1,9 +1,9 @@
 import { Organization } from '@prisma/client';
-import FinanceServices from '../../src/services/finance.services';
-import { AccessDeniedException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import prisma from '../../src/prisma/prisma';
+import FinanceServices from '../../src/services/finance.services.js';
+import { AccessDeniedException, DeletedException, NotFoundException } from '../../src/utils/errors.utils.js';
+import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data.js';
+import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
+import prisma from '../../src/prisma/prisma.js';
 
 describe('Finance Tests', () => {
   let orgId: string;

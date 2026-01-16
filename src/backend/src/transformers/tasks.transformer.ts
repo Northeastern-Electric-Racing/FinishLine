@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { Task, TaskCardPreview } from 'shared';
-import { wbsNumOf } from '../utils/utils';
-import { convertTaskPriority, convertTaskStatus } from '../utils/tasks.utils';
-import { userTransformer } from './user.transformer';
-import { TaskQueryArgs, TaskPreviewQueryArgs } from '../prisma-query-args/tasks.query-args';
+import { wbsNumOf } from '../utils/utils.js';
+import { convertTaskPriority, convertTaskStatus } from '../utils/tasks.utils.js';
+import { userTransformer } from './user.transformer.js';
+import { TaskQueryArgs, TaskPreviewQueryArgs } from '../prisma-query-args/tasks.query-args.js';
 
 const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
   const wbsNum = wbsNumOf(task.wbsElement);

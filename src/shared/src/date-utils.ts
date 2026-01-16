@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Availability } from './types/user-types';
+import { Availability } from './types/user-types.js';
 
 /**
  * Add the given number of weeks to the given date and return the outcome.

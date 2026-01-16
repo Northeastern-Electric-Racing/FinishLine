@@ -1,19 +1,6 @@
 import { Pie } from 'react-chartjs-2';
-import {
-  Chart,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  CoreChartOptions,
-  ElementChartOptions,
-  PluginChartOptions,
-  DatasetChartOptions,
-  ScaleChartOptions,
-  BarControllerChartOptions
-} from 'chart.js';
+import { Chart, ArcElement, Title, Tooltip, Legend, ChartOptions } from 'chart.js';
 import { Box } from '@mui/material';
-import { _DeepPartialObject } from 'chart.js/dist/types/utils';
 
 Chart.register(ArcElement, Title, Tooltip, Legend);
 
@@ -64,14 +51,7 @@ const StatsPieChart: React.FC<StatsPieChartProps> = ({ xAxisData, yAxisData, wid
     ]
   };
 
-  const options: _DeepPartialObject<
-    CoreChartOptions<'pie'> &
-      ElementChartOptions<'pie'> &
-      PluginChartOptions<'pie'> &
-      DatasetChartOptions<'pie'> &
-      ScaleChartOptions<'pie'> &
-      BarControllerChartOptions
-  > = {
+  const options: ChartOptions<'pie'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {

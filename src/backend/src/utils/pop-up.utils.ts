@@ -1,6 +1,6 @@
 import { Change_Request, Event } from '@prisma/client';
 import { User } from 'shared';
-import { PopUpService } from '../services/pop-up.services';
+import { PopUpService } from '../services/pop-up.services.js';
 
 /**
  * Sends a pop up that a design review event was scheduled

@@ -1,4 +1,4 @@
-import { DayOfWeek, Event_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
+import { Event_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
 import { Request, Response } from 'express';
 import { body, query, ValidationChain, validationResult } from 'express-validator';
 import {
@@ -8,6 +8,7 @@ import {
   WorkPackageStage,
   RoleEnum,
   WbsElementStatus,
+  DayOfWeek,
   ConflictStatus
 } from 'shared';
 

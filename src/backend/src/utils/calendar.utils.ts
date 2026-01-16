@@ -8,10 +8,10 @@ import {
   Event,
   EventWithMembers
 } from 'shared';
-import { InvalidEventTypeConfigurationException } from './errors.utils';
-import prisma from '../prisma/prisma';
-import { getEventQueryArgs } from '../prisma-query-args/event.query-args';
-import { eventTransformer } from '../transformers/calendar.transformer';
+import { InvalidEventTypeConfigurationException } from './errors.utils.js';
+import prisma from '../prisma/prisma.js';
+import { getEventQueryArgs } from '../prisma-query-args/event.query-args.js';
+import { eventTransformer } from '../transformers/calendar.transformer.js';
 
 export function buildScheduledTimesOverlap(start?: Date, end?: Date): Prisma.Schedule_SlotListRelationFilter | undefined {
   if (!start && !end) return undefined;

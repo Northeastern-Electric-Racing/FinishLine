@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamType } from './design-review-types';
-import { Team } from './team-types';
-import { User } from './user-types';
+import { TeamType } from './design-review-types.js';
+import { Team } from './team-types.js';
+import { User } from './user-types.js';
 
 export enum ChecklistItemType {
   TASK = 'TASK',

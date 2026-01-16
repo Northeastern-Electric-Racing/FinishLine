@@ -1,10 +1,10 @@
 /*
 import { Prisma } from '@prisma/client';
 import { DesignReview, DesignReviewPreview, DesignReviewStatus, isProjectWbs } from 'shared';
-import { wbsNumOf } from '../utils/utils';
-import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer';
-import { DesignReviewPreviewQueryArgs, DesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args';
-import { teamTypeTransformer } from './team-types.transformer';
+import { wbsNumOf } from '../utils/utils.js';
+import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer.js';
+import { DesignReviewPreviewQueryArgs, DesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args.js';
+import { teamTypeTransformer } from './team-types.transformer.js';
 
 export const designReviewTransformer = (
   designReview: Prisma.Design_ReviewGetPayload<DesignReviewQueryArgs>
