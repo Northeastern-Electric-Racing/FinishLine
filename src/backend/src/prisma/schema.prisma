@@ -798,6 +798,7 @@ model Sponsor {
   activeYears    Int[]
   taxExempt      Boolean
   sponsorTasks   Sponsor_Task[]
+  logoImageId    String?
 
   @@unique([name, organizationId], name: "uniqueSponsor")
   @@index([sponsorTierId])

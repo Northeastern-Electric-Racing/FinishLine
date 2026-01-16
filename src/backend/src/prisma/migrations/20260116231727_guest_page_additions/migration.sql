@@ -1,3 +1,6 @@
+-- AlterTable
+ALTER TABLE "Sponsor" ADD COLUMN     "logoImageId" TEXT;
+
 -- CreateTable
 CREATE TABLE "Term_Definition" (
     "definitionId" TEXT NOT NULL,
