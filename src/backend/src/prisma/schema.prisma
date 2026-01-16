@@ -737,7 +737,7 @@ model Reimbursement_Product {
   dateDeleted                  DateTime?
   cost                         Int
   material                     Material?                    @relation(fields: [materialId], references: [materialId])
-  materialId                   String?                      @unique
+  materialId                   String?                      
   reimbursementProductReasonId String                       @unique
   reimbursementProductReason   Reimbursement_Product_Reason @relation(fields: [reimbursementProductReasonId], references: [reimbursementProductReasonId])
   reimbursementRequestId       String
@@ -924,7 +924,7 @@ model Material {
   notes                  String?
   reimbursementRequest   Reimbursement_Request? @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
   reimbursementRequestId String?
-  reimbursementProduct   Reimbursement_Product?
+  reimbursementProducts  Reimbursement_Product[]
 
   @@index([assemblyId])
   @@index([materialTypeId])
