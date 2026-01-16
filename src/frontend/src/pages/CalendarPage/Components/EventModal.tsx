@@ -19,23 +19,13 @@ import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  DayOfWeek,
-  EventDocumentUploadArgs,
-  WbsElementStatus,
-  wbsNamePipe,
-  wbsNumComparator,
-  EventType,
-  isHead,
-  MAX_FILE_SIZE
-} from 'shared';
+import { DayOfWeek, EventDocumentUploadArgs, WbsElementStatus, wbsNamePipe, EventType, isHead, MAX_FILE_SIZE } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
-import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
+import { useAllWorkPackagesPreview } from '../../../hooks/work-packages.hooks';
 import { useAllTeams } from '../../../hooks/teams.hooks';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
 import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import NERFormModal from '../../../components/NERFormModal';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import PeopleIcon from '@mui/icons-material/People';
@@ -156,27 +146,18 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const [optionalMembers, setOptionalMembers] = useState<Array<{ id: string; label: string }>>([]);
   const [selectedTeams, setSelectedTeams] = useState<Array<{ id: string; label: string }>>([]);
 
+  // Lazy load all data needed for the form so users can start filling out instantly
   const { isLoading: usersLoading, isError: usersError, error: usersErrorMsg, data: users } = useAllUsers();
   const { isLoading: shopsLoading, isError: shopsError, error: shopsErrorMsg, data: shops } = useAllShops();
-  const {
-    isLoading: machineryLoading,
-    isError: machineryError,
-    error: machineryErrorMsg,
-    data: machinery
-  } = useAllMachines();
+  const { isError: machineryError, error: machineryErrorMsg, data: machinery } = useAllMachines();
   const {
     isLoading: workPackagesLoading,
     isError: workPackagesError,
     error: workPackagesErrorMsg,
     data: allWorkPackages
-  } = useAllWorkPackages();
+  } = useAllWorkPackagesPreview();
   const { isLoading: teamsLoading, isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeams();
-  const {
-    isLoading: teamTypesLoading,
-    isError: teamTypesError,
-    error: teamTypesErrorMsg,
-    data: teamTypes
-  } = useAllTeamTypes();
+  const { isError: teamTypesError, error: teamTypesErrorMsg, data: teamTypes } = useAllTeamTypes();
 
   const defaultFormData = useMemo(
     () => ({
@@ -440,6 +421,22 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     }
   };
 
+  // When data loads from endpoint, update the options for the autocomplete fields
+  const memberOptions = useMemo(() => {
+    if (usersLoading || !users) return [{ id: 'loading', label: 'Loading users...' }];
+    return users.map(userToAutocompleteOption);
+  }, [users, usersLoading]);
+
+  const teamOptions = useMemo(() => {
+    if (teamsLoading || !teams) return [{ id: 'loading', label: 'Loading teams...' }];
+    return teams.map((t) => ({ id: t.teamId, label: t.teamName }));
+  }, [teams, teamsLoading]);
+
+  const shopOptions = useMemo(() => {
+    if (shopsLoading || !shops) return [{ id: 'loading', label: 'Loading shops...' }];
+    return shops.map((s) => ({ id: s.shopId, label: s.name }));
+  }, [shops, shopsLoading]);
+
   if (usersError) return <ErrorPage error={usersErrorMsg} message={usersErrorMsg?.message} />;
   if (workPackagesError) return <ErrorPage error={workPackagesErrorMsg} message={workPackagesErrorMsg?.message} />;
   if (teamsError) return <ErrorPage error={teamsErrorMsg} message={teamsErrorMsg?.message} />;
@@ -447,34 +444,20 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   if (shopsError) return <ErrorPage error={shopsErrorMsg} message={shopsErrorMsg?.message} />;
   if (machineryError) return <ErrorPage error={machineryErrorMsg} message={machineryErrorMsg?.message} />;
 
-  if (
-    usersLoading ||
-    workPackagesLoading ||
-    teamsLoading ||
-    teamTypesLoading ||
-    !users ||
-    !allWorkPackages ||
-    !teams ||
-    !teamTypes ||
-    shopsLoading ||
-    machineryLoading ||
-    !shops ||
-    !machinery
-  ) {
-    return <LoadingIndicator />;
-  }
-
-  const memberOptions = users.map(userToAutocompleteOption);
-  const teamOptions = teams.map((t) => ({ id: t.teamId, label: t.teamName }));
-  const shopOptions = shops.map((s) => ({ id: s.shopId, label: s.name }));
-
-  const workPackageOptions = allWorkPackages
-    .filter((wp) => wp.status === WbsElementStatus.Active)
-    .map((wp) => ({
-      label: wbsNamePipe(wp),
-      id: wp.id
-    }))
-    .sort((a, b) => wbsNumComparator(b.id, a.id));
+  const workPackageOptions = workPackagesLoading
+    ? [{ id: 'loading', label: 'Loading work packages...' }]
+    : (allWorkPackages || [])
+        .filter((wp) => wp.status === WbsElementStatus.Active)
+        .map((wp) => ({
+          label: wbsNamePipe(wp),
+          id: wp.id,
+          wbsNum: wp.wbsNum
+        }))
+        .sort((a, b) => {
+          if (a.wbsNum.carNumber !== b.wbsNum.carNumber) return b.wbsNum.carNumber - a.wbsNum.carNumber;
+          if (a.wbsNum.projectNumber !== b.wbsNum.projectNumber) return b.wbsNum.projectNumber - a.wbsNum.projectNumber;
+          return b.wbsNum.workPackageNumber - a.wbsNum.workPackageNumber;
+        });
 
   return (
     <NERFormModal
@@ -930,7 +913,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   <MenuItem value="">
                     <em>Select Team Type</em>
                   </MenuItem>
-                  {teamTypes.map((tt) => (
+                  {teamTypes?.map((tt) => (
                     <MenuItem key={tt.teamTypeId} value={tt.teamTypeId}>
                       {tt.name}
                     </MenuItem>
@@ -991,8 +974,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Autocomplete
-                    options={shopOptions}
-                    value={shopOptions.find((s) => value?.[0] === s.id) || null}
+                    options={shopOptions ? shopOptions : []}
+                    value={shopOptions?.find((s) => value?.[0] === s.id) || null}
                     onChange={(_, newValue) => onChange(newValue ? [newValue.id] : [])}
                     getOptionLabel={(option) => option.label}
                     renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Shop" />}
@@ -1004,7 +987,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             {shopIds.length > 0 && (
               <Box sx={{ ml: 5 }}>
                 {(() => {
-                  const shop = shops.find((s) => s.shopId === shopIds[0]);
+                  const shop = shops?.find((s) => s.shopId === shopIds[0]);
                   if (!shop || !shop.description) return null;
                   return (
                     <Box
@@ -1058,8 +1041,13 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 <Autocomplete
                   options={workPackageOptions}
                   value={workPackageOptions.find((wp) => value?.[0] === wp.id) || null}
-                  onChange={(_, newValue) => onChange(newValue ? [newValue.id] : [])}
+                  onChange={(_, newValue) => {
+                    if (newValue?.id !== 'loading') {
+                      onChange(newValue ? [newValue.id] : []);
+                    }
+                  }}
                   getOptionLabel={(option) => option.label}
+                  getOptionDisabled={(option) => option.id === 'loading'}
                   renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Work Package" />}
                   sx={{ flex: 1 }}
                 />

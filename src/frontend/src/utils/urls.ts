@@ -113,6 +113,8 @@ const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
 const workPackagesMany = () => `${workPackages()}/get-many`;
+const workPackagesAllPreview = (status?: string) =>
+  `${API_URL}/work-packages/all-preview${status ? `?status=${status}` : ''}`;
 const homePageWorkPackages = (selection: WorkPackageSelection) => `${workPackages()}/home-page/${selection}`;
 
 /**************** Change Requests Endpoints ****************/
@@ -570,6 +572,7 @@ export const apiUrls = {
   workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
   workPackagesMany,
+  workPackagesAllPreview,
   homePageWorkPackages,
 
   changeRequests,
