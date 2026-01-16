@@ -2239,6 +2239,7 @@ export default class CalendarService {
 
     if (teamIds?.length) {
       memberOrTeamFilter.push({ teams: { some: { teamId: { in: teamIds } } } });
+      memberOrTeamFilter.push({ workPackages: { some: { project: { teams: { some: { teamId: { in: teamIds } } } } } } });
     }
 
     // filters for selected calendars
