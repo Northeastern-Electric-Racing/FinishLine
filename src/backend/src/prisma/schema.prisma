@@ -266,6 +266,8 @@ model User {
   deletedSponsorTiers                     Sponsor_Tier[]
   financeDelegateForOrganizations         Organization[]                       @relation(name: "financeDelegates")
   assignedReimbursementRequests           Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
+  deletedTermDefinitions                  Term_Definition[]                    @relation(name: "termDefinitionDeleter")
+  createdtermDefinitions                  Term_Definition[]                    @relation(name: "termDefinitionCreator")
 }
 
 model Role {
@@ -1218,6 +1220,7 @@ model Organization {
   sponsorTiers             Sponsor_Tier[]
   indexCodes               Index_Code[]
   financeDelegates         User[]                       @relation(name: "financeDelegates")
+  termDefinitions          Term_Definition[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1554,4 +1557,20 @@ model Reimbursement_Request_Comment {
   reimbursementRequest          Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 
   @@index([reimbursementRequestId])
+}
+
+model Term_Definition {
+  definitionId   String       @id @default(uuid())
+  term           String
+  description    String
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "termDefinitionDeleter")
+  userDeletedId  String?
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "termDefinitionCreator")
+  userCreatedId  String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@index([organizationId])
 }
