@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { TextField, FormControl, FormLabel, TableCell, TableRow, Grid, Typography } from '@mui/material';
 import NERTable from '../../components/NERTable';
-import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
@@ -12,13 +11,10 @@ import { EventStatus } from 'shared';
 const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: allTeams, isLoading: teamsIsLoading, isError: teamsIsError, error: teamsError } = useAllTeams();
   const { data: allMembers, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const { data: allEvents, isLoading: eventsIsLoading, isError: eventsIsError, error: eventsError } = useAllEvents();
 
-  if (!allTeams || teamsIsLoading || !allMembers || usersIsLoading || !allEvents || eventsIsLoading)
-    return <LoadingIndicator />;
-  if (teamsIsError) return <ErrorPage message={teamsError.message} />;
+  if (!allMembers || usersIsLoading || !allEvents || eventsIsLoading) return <LoadingIndicator />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;
   if (eventsIsError) return <ErrorPage message={eventsError.message} />;
 

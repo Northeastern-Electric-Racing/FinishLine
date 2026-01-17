@@ -137,6 +137,7 @@ const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/
 
 /**************** Teams Endpoints ****************/
 const teams = () => `${API_URL}/teams`;
+const teamPreviews = () => `${API_URL}/teams/previews/`;
 const teamsById = (id: string) => `${teams()}/${id}`;
 const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
@@ -591,6 +592,7 @@ export const apiUrls = {
   approvedChangeRequests,
 
   teams,
+  teamPreviews,
   teamsById,
   teamsDelete,
   teamsSetMembers,

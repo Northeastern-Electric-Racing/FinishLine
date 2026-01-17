@@ -23,7 +23,7 @@ import { DayOfWeek, EventDocumentUploadArgs, WbsElementStatus, wbsNamePipe, Even
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
 import { useAllWorkPackagesPreview } from '../../../hooks/work-packages.hooks';
-import { useAllTeams } from '../../../hooks/teams.hooks';
+import { useAllTeamPreviews } from '../../../hooks/teams.hooks';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
 import ErrorPage from '../../ErrorPage';
 import NERFormModal from '../../../components/NERFormModal';
@@ -156,7 +156,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     error: workPackagesErrorMsg,
     data: allWorkPackages
   } = useAllWorkPackagesPreview();
-  const { isLoading: teamsLoading, isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeams();
+  const { isLoading: teamsLoading, isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamPreviews();
   const { isError: teamTypesError, error: teamTypesErrorMsg, data: teamTypes } = useAllTeamTypes();
 
   const defaultFormData = useMemo(

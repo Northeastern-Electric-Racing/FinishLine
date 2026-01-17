@@ -3,7 +3,8 @@ import { Autocomplete, Box, Button, Checkbox, TextField, Typography } from '@mui
 import NERModal from '../../components/NERModal';
 import PeopleIcon from '@mui/icons-material/People';
 import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
-import { useAllTeams } from '../../hooks/teams.hooks';
+import { useAllTeamPreviews, useAllTeams } from '../../hooks/teams.hooks';
+import ErrorPage from '../ErrorPage';
 
 export interface FilterArgs {
   memberIds: string[];
@@ -141,7 +142,10 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
 
   const TeamDropdown = () => {
     const teamIds = filterValues?.teamIds ?? [];
-    const { data: allTeams } = useAllTeams();
+    const { data: allTeams, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
+
+    if (allTeamsIsError) <ErrorPage message={allTeamsError.message} />;
+
     const teamList =
       allTeams
         ?.filter((team) => {
