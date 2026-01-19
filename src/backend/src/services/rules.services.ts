@@ -78,11 +78,11 @@ export default class RulesService {
    * @param organizationId The ID of the organization the ruleset belongs to
    * @returns The ruleset if found, otherwise throws an error
    */
-  static async getRulesetById(rulesetId: string, organizationId: string): Promise<RulesetPreview> {
+  static async getRulesetById(rulesetId: string, organizationId: string): Promise<Ruleset> {
     const ruleset = await prisma.ruleset.findFirst({
       where: {
         rulesetId,
-        deletedBy: null,
+        deletedByUserId: null,
         rulesetType: {
           organizationId
         }
@@ -531,7 +531,7 @@ export default class RulesService {
     const rulesets = await prisma.ruleset_Type.findMany({
       where: {
         organizationId: organization.organizationId,
-        deletedBy: null
+        deletedByUserId: null
       },
       include: {
         revisionFiles: true
@@ -550,7 +550,7 @@ export default class RulesService {
     const rulesets = await prisma.ruleset.findMany({
       where: {
         rulesetTypeId,
-        deletedBy: null,
+        deletedByUserId: null,
         rulesetType: {
           organizationId
         }
@@ -604,7 +604,7 @@ export default class RulesService {
       where: {
         rulesetTypeId,
         active: true,
-        deletedBy: null
+        deletedByUserId: null
       },
       ...getRulesetQueryArgs()
     });
@@ -1155,7 +1155,7 @@ export default class RulesService {
         projects: {
           none: {}
         },
-        deletedBy: null
+        deletedByUserId: null
       },
       ...getRulePreviewQueryArgs(),
       orderBy: {
@@ -1335,6 +1335,13 @@ export default class RulesService {
         throw new HttpException(400, 'No rules found in provided file');
       }
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      if (process.env && process.env.NODE_ENV === 'development') {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        throw new HttpException(500, `Error parsing rules from PDF file: ${message}`);
+      }
       throw new HttpException(500, 'Error parsing rules from PDF file');
     }
 

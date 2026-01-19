@@ -7,25 +7,21 @@ export interface ParsedRule {
 }
 
 export const parseRulesFromPdf = async (buffer: Buffer, parserType: 'FSAE' | 'FHE'): Promise<ParsedRule[]> => {
-  try {
-    const options = {
-      // max page number to parse, 0 = all pages
-      max: 0,
-      // errors: 0, warnings: 1, infos: 5
-      verbosityLevel: 0 as const
-    };
-    const pdfData = await pdf(buffer, options);
+  const options = {
+    // max page number to parse, 0 = all pages
+    max: 0,
+    // errors: 0, warnings: 1, infos: 5
+    verbosityLevel: 0 as const
+  };
+  const pdfData = await pdf(buffer, options);
 
-    if (parserType === 'FSAE') {
-      return parseFSAERules(pdfData.text);
-    }
-    if (parserType === 'FHE') {
-      return parseFHERules(pdfData.text);
-    }
-    throw new Error(`Invalid parser type: ${parserType}. Must be 'FSAE' or 'FHE'`);
-  } catch (error) {
-    throw error;
+  if (parserType === 'FSAE') {
+    return parseFSAERules(pdfData.text);
   }
+  if (parserType === 'FHE') {
+    return parseFHERules(pdfData.text);
+  }
+  throw new Error(`Invalid parser type: ${parserType}. Must be 'FSAE' or 'FHE'`);
 };
 
 /**

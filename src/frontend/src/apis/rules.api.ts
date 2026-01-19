@@ -12,7 +12,7 @@ import {
   rulesetTransformer,
   rulesetTypeTransformer,
   ruleTransformer
-} from '../../../backend/src/transformers/rules.transformer';
+} from './transformers/rules.transformers';
 
 /**
  * Gets a ruleset by its ID
