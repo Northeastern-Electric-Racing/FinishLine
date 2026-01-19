@@ -181,3 +181,14 @@ export const deleteRuleset = (rulesetId: string) => {
 export const deleteRulesetType = (rulesetTypeId: string) => {
   return axios.post(apiUrls.rulesetTypeDelete(rulesetTypeId));
 };
+
+/**
+ * Gets a single ruleset by ID
+ *
+ * @param rulesetId The ID of the ruleset.
+ */
+export const getSingleRuleset = (rulesetId: string) => {
+  return axios.get<Ruleset>(apiUrls.singleRuleset(rulesetId), {
+    transformResponse: (data) => rulesetTransformer(JSON.parse(data))
+  });
+};

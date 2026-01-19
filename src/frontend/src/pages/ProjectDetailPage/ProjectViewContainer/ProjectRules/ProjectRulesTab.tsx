@@ -16,7 +16,8 @@ import {
   TableBody,
   TableContainer,
   Paper,
-  useTheme
+  useTheme,
+  IconButton
 } from '@mui/material';
 import { Project, ProjectRule, Rule, RuleCompletion } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
@@ -32,6 +33,8 @@ import {
   useCreateProjectRule
 } from '../../../../hooks/rules.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
+import { InfoOutlined } from '@mui/icons-material';
+import { RuleHistoryModal } from './RuleHistoryModal';
 
 interface ProjectRulesTabProps {
   project: Project;
@@ -61,6 +64,9 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
   const [selectedProjectRule, setSelectedProjectRule] = useState<ProjectRule | null>(null);
+
+  const [selectedRuleForHistory, setSelectedRuleForHistory] = useState<Rule | null>(null);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Fetch all ruleset types
   const { data: rulesetTypes, isLoading: rulesetTypesLoading, isError: rulesetTypesError } = useAllRulesetTypes();
@@ -221,37 +227,60 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       : getAggregatedStatus(rule);
     const statusConfig = getStatusConfig(status);
 
+    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
+
     return (
-      <Box
-        onClick={
-          isLeafRule
-            ? (e: React.MouseEvent<HTMLElement>) => {
-                e.stopPropagation();
-                handleStatusClick(e, rule);
+      <>
+        <Box
+          onClick={
+            isLeafRule
+              ? (e: React.MouseEvent<HTMLElement>) => {
+                  e.stopPropagation();
+                  handleStatusClick(e, rule);
+                }
+              : undefined
+          }
+          sx={{
+            backgroundColor: statusConfig.color,
+            color: 'white',
+            fontSize: '11px',
+            fontWeight: 600,
+            px: 0.75,
+            py: 0.25,
+            borderRadius: '3px',
+            cursor: isLeafRule ? 'pointer' : 'default',
+            display: 'inline-flex',
+            alignItems: 'center',
+            whiteSpace: 'nowrap',
+            '&:hover': isLeafRule
+              ? {
+                  opacity: 0.85
+                }
+              : {}
+          }}
+        >
+          {statusConfig.label}
+        </Box>
+        {isLeafRule && projectRule && projectRule.statusHistory && projectRule.statusHistory.length > 0 && (
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedRuleForHistory(rule);
+              setShowHistoryModal(true);
+            }}
+            sx={{
+              padding: '2px',
+              color: 'text.secondary',
+              '&:hover': {
+                color: 'primary.main'
               }
-            : undefined
-        }
-        sx={{
-          backgroundColor: statusConfig.color,
-          color: 'white',
-          fontSize: '11px',
-          fontWeight: 600,
-          px: 0.75,
-          py: 0.25,
-          borderRadius: '3px',
-          cursor: isLeafRule ? 'pointer' : 'default',
-          display: 'inline-flex',
-          alignItems: 'center',
-          whiteSpace: 'nowrap',
-          '&:hover': isLeafRule
-            ? {
-                opacity: 0.85
-              }
-            : {}
-        }}
-      >
-        {statusConfig.label}
-      </Box>
+            }}
+          >
+            <InfoOutlined fontSize="small" />
+          </IconButton>
+        )}
+      </>
     );
   };
 
@@ -372,6 +401,16 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           onStatusChange={handleStatusUpdate}
         />
       )}
+
+      <RuleHistoryModal
+        open={showHistoryModal}
+        onClose={() => {
+          setShowHistoryModal(false);
+          setSelectedRuleForHistory(null);
+        }}
+        rule={selectedRuleForHistory}
+        projectRules={projectRules}
+      />
 
       {/* Add Rule Modal */}
       {activeRuleset && teamId && (
