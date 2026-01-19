@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Button, Paper, Table, TableBody, TableContainer, TextField } from '@mui/material';
+import { Box, Button, Paper, Table, TableBody, TableContainer, TextField, useTheme } from '@mui/material';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
@@ -46,6 +46,8 @@ const RulesetEditPage: React.FC = () => {
   // Editing state
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState<string>('');
+
+  const theme = useTheme();
 
   const {
     data: ruleset,
@@ -136,7 +138,7 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleEditRule = (ruleId: string) => {
-    const rule = ruleset.rules.find((r) => r.ruleId === ruleId);
+    const rule = allRules.find((r) => r.ruleId === ruleId);
     if (rule) {
       setEditingRuleId(ruleId);
       setEditedContent(rule.ruleContent);
@@ -190,7 +192,7 @@ const RulesetEditPage: React.FC = () => {
                     <RuleRow
                       key={rule.ruleId}
                       rule={rule}
-                      allRules={ruleset.rules}
+                      allRules={allRules}
                       middleContent={(currentRule) => {
                         const isEditing = editingRuleId === currentRule.ruleId;
                         if (isEditing) {
@@ -204,8 +206,9 @@ const RulesetEditPage: React.FC = () => {
                               size="small"
                               autoFocus
                               sx={{
-                                backgroundColor: '#ffffff',
+                                backgroundColor: theme.palette.grey[100],
                                 '& .MuiOutlinedInput-root': {
+                                  color: '#000000',
                                   '& fieldset': {
                                     borderColor: '#dd514c'
                                   },
