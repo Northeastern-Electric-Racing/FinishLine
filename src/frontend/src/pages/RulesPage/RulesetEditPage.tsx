@@ -387,7 +387,9 @@ const RulesetEditPage: React.FC = () => {
                             />
                           );
                         }
-                        return currentRule.ruleContent && <span style={{ color: '#000000' }}>{currentRule.ruleContent}</span>;
+                        return (
+                          currentRule.ruleContent && <span style={{ color: '#000000' }}>{currentRule.ruleContent}</span>
+                        );
                       }}
                       rightContent={(currentRule) => (
                         <RuleActions
@@ -398,7 +400,7 @@ const RulesetEditPage: React.FC = () => {
                           iconColor="#000000"
                         />
                       )}
-                      backgroundColor={(currentRule) => editingRuleId === currentRule.ruleId ? '#c0c0c0' : '#9d9d9d'}
+                      backgroundColor={(currentRule) => (editingRuleId === currentRule.ruleId ? '#c0c0c0' : '#9d9d9d')}
                       textColor="#000000"
                       hoverColor="#5e5e5e"
                       rowHeight="10px"
