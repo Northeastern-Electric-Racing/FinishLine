@@ -41,7 +41,7 @@ const EditMaterialModal: React.FC<EditMaterialModalProps> = ({ open, onHide, mat
         ...material,
         quantity: Number(material.quantity),
         pdmFileName: material.pdmFileName,
-        price: material.price / 100
+        price: material.price ? material.price / 100 : undefined
       }}
       onHide={onHide}
       open={open}

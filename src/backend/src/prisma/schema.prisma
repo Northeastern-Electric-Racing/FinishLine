@@ -736,6 +736,8 @@ model Reimbursement_Product {
   name                         String
   dateDeleted                  DateTime?
   cost                         Int
+  material                     Material?                    @relation(fields: [materialId], references: [materialId])
+  materialId                   String?                      
   reimbursementProductReasonId String                       @unique
   reimbursementProductReason   Reimbursement_Product_Reason @relation(fields: [reimbursementProductReasonId], references: [reimbursementProductReasonId])
   reimbursementRequestId       String
@@ -744,6 +746,7 @@ model Reimbursement_Product {
 
   @@index([reimbursementRequestId])
   @@index([reimbursementProductReasonId])
+  @@index([materialId])
 }
 
 model Refund_Source {
@@ -908,19 +911,20 @@ model Material {
   status                 Material_Status
   materialType           Material_Type          @relation(fields: [materialTypeId], references: [id])
   materialTypeId         String
-  manufacturer           Manufacturer           @relation(fields: [manufacturerId], references: [id])
-  manufacturerId         String
-  manufacturerPartNumber String
+  manufacturer           Manufacturer?          @relation(fields: [manufacturerId], references: [id])
+  manufacturerId         String?
+  manufacturerPartNumber String?
   pdmFileName            String?
-  quantity               Decimal
+  quantity               Decimal?
   unit                   Unit?                  @relation(fields: [unitId], references: [id])
   unitId                 String?
-  price                  Int
-  subtotal               Int
+  price                  Int?
+  subtotal               Int?
   linkUrl                String
   notes                  String?
   reimbursementRequest   Reimbursement_Request? @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
   reimbursementRequestId String?
+  reimbursementProducts  Reimbursement_Product[]
 
   @@index([assemblyId])
   @@index([materialTypeId])

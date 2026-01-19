@@ -49,19 +49,19 @@ export default class BillOfMaterialsService {
    * @param name the name of the material
    * @param status the Material Status of the material
    * @param materialTypeName the name of the Material Type
-   * @param manufacturerName the name of the material's manufacturer
-   * @param manufacturerPartNumber the manufacturer part number for the material
-   * @param quantity the quantity of material as a number
-   * @param price the price of the material in whole cents
-   * @param subtotal the subtotal of the price for the material in whole cents
    * @param linkUrl the url for the material's link as a string
-   * @param notes any notes about the material as a string
    * @param wbsNumber the WBS number of the project associated with this material
-   * @param organizationId the id of the organization the user is currently in
-   * @param assemblyId the id of the Assembly for the material
-   * @param pdmFileName the name of the pdm file for the material
-   * @param unitName the name of the Quantity Unit the quantity is measured in
-   * @param reimbursementRequestId the id of the Reimbursement Request for the material
+   * @param organization the organization the user is currently in
+   * @param manufacturerName the name of the material's manufacturer (optional)
+   * @param manufacturerPartNumber the manufacturer part number for the material (optional)
+   * @param quantity the quantity of material as a number (optional)
+   * @param price the price of the material in whole cents (optional)
+   * @param subtotal the subtotal of the price for the material in whole cents (optional)
+   * @param notes any notes about the material as a string (optional)
+   * @param assemblyId the id of the Assembly for the material (optional)
+   * @param pdmFileName the name of the pdm file for the material (optional)
+   * @param unitName the name of the Quantity Unit the quantity is measured in (optional)
+   * @param reimbursementRequestId the id of the Reimbursement Request for the material (optional)
    * @returns the created material
    */
   static async createMaterial(
@@ -69,14 +69,14 @@ export default class BillOfMaterialsService {
     name: string,
     status: Material_Status,
     materialTypeName: string,
-    manufacturerName: string,
-    manufacturerPartNumber: string,
-    quantity: Decimal,
-    price: number,
-    subtotal: number,
     linkUrl: string,
     wbsNumber: WbsNumber,
     organization: Organization,
+    manufacturerName?: string,
+    manufacturerPartNumber?: string,
+    quantity?: Decimal,
+    price?: number,
+    subtotal?: number,
     notes?: string,
     assemblyId?: string,
     pdmFileName?: string,
@@ -98,11 +98,14 @@ export default class BillOfMaterialsService {
     if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
     if (materialType.dateDeleted) throw new DeletedException('Material Type', materialTypeName);
 
-    const manufacturer = await prisma.manufacturer.findUnique({
-      where: { uniqueManufacturer: { name: manufacturerName, organizationId: organization.organizationId } }
-    });
-    if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
-    if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturerName);
+    let manufacturer = null;
+    if (manufacturerName) {
+      manufacturer = await prisma.manufacturer.findUnique({
+        where: { uniqueManufacturer: { name: manufacturerName, organizationId: organization.organizationId } }
+      });
+      if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
+      if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturerName);
+    }
 
     let unit = null;
     if (unitName) {
@@ -135,7 +138,7 @@ export default class BillOfMaterialsService {
         assemblyId,
         status,
         materialTypeId: materialType.id,
-        manufacturerId: manufacturer.id,
+        manufacturerId: manufacturer ? manufacturer.id : null,
         manufacturerPartNumber,
         pdmFileName,
         quantity,
@@ -542,18 +545,18 @@ export default class BillOfMaterialsService {
    * @param name the name of the edited material
    * @param status the status of the edited material
    * @param materialTypeName the material type of the edited material
-   * @param manufacturerName the manufacturerName of the edited material
-   * @param manufacturerPartNumber the manufacturerPartNumber of the edited material
-   * @param quantity the quantity of the edited material
-   * @param price the price of the edited material
-   * @param subtotal the subtotal of the edited material
    * @param linkUrl the linkUrl of the edited material
-   * @param organizationId the organization the user is currently in
-   * @param notes the notes of the edited material
-   * @param unitName the unit name of the edited material
-   * @param assemblyId the assembly id of the edited material
-   * @param pdmFileName the pdm file name of the edited material
-   * @param reimbursementRequestId the id of the Reimbursement Request for the material
+   * @param organization the organization the user is currently in
+   * @param manufacturerName the manufacturerName of the edited material (optional)
+   * @param manufacturerPartNumber the manufacturerPartNumber of the edited material (optional)
+   * @param quantity the quantity of the edited material (optional)
+   * @param price the price of the edited material (optional)
+   * @param subtotal the subtotal of the edited material (optional)
+   * @param notes the notes of the edited material (optional)
+   * @param unitName the unit name of the edited material (optional)
+   * @param assemblyId the assembly id of the edited material (optional)
+   * @param pdmFileName the pdm file name of the edited material (optional)
+   * @param reimbursementRequestId the id of the Reimbursement Request for the material (optional)
    * @throws if permission denied or material's wbsElement is undefined/deleted
    * @returns the updated material
    */
@@ -563,13 +566,13 @@ export default class BillOfMaterialsService {
     name: string,
     status: Material_Status,
     materialTypeName: string,
-    manufacturerName: string,
-    manufacturerPartNumber: string,
-    quantity: Decimal,
-    price: number,
-    subtotal: number,
     linkUrl: string,
     organization: Organization,
+    manufacturerName?: string,
+    manufacturerPartNumber?: string,
+    quantity?: Decimal,
+    price?: number,
+    subtotal?: number,
     notes?: string,
     unitName?: string,
     assemblyId?: string,
@@ -614,7 +617,10 @@ export default class BillOfMaterialsService {
       }
     }
 
-    const manufacturer = await BillOfMaterialsService.getSingleManufacturerWithQueryArgs(manufacturerName, organization);
+    let manufacturer = null;
+    if (manufacturerName) {
+      manufacturer = await BillOfMaterialsService.getSingleManufacturerWithQueryArgs(manufacturerName, organization);
+    }
 
     const updatedMaterial = await prisma.material.update({
       where: { materialId },
@@ -622,7 +628,7 @@ export default class BillOfMaterialsService {
         name,
         status,
         materialTypeId: materialType.id,
-        manufacturerId: manufacturer.id,
+        manufacturerId: manufacturer ? manufacturer.id : null,
         manufacturerPartNumber,
         quantity,
         unitId: unit ? unit.id : null,
