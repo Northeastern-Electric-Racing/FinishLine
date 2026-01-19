@@ -309,9 +309,19 @@ export default class RulesController {
       if (!req.file) {
         throw new HttpException(400, 'Invalid or undefined file data');
       }
-      const fileId = await RulesService.uploadRulesetFile(req.file, req.currentUser, req.organization);
 
+      const fileId = await RulesService.uploadRulesetFile(req.file, req.currentUser, req.organization);
       res.status(200).json(fileId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSingleRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const ruleset = await RulesService.getSingleRuleset(req.currentUser, rulesetId, req.organization);
+      res.status(200).json(ruleset);
     } catch (error: unknown) {
       next(error);
     }

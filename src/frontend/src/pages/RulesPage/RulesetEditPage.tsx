@@ -20,7 +20,7 @@ import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
 import { useGetRuleset, useGetTopLevelRules } from '../../hooks/rules.hooks';
 import DeleteRuleModal from './components/DeleteRuleModal';
-import { useDeleteRule } from '../../hooks/rules.hooks';
+import { useDeleteRule, useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
 import { countRulesToDelete } from '../../utils/rules.utils';
 import { useSingleRuleset } from './RulesetViewPage';
 
@@ -44,6 +44,19 @@ const RulesetEditPage: React.FC = () => {
   // Delete modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [ruleToDelete, setRuleToDelete] = useState<Rule | null>(null);
+
+  const {
+    data: ruleset,
+    isError: isRulesetError,
+    error: rulesetError,
+    isLoading: isRulesetLoading
+  } = useSingleRuleset(rulesetId!);
+  const {
+    data: allRules,
+    isError: isRulesError,
+    error: rulesError,
+    isLoading: isRulesLoading
+  } = useAllRulesForRuleset(rulesetId!);
   const { mutateAsync: deleteRuleMutation } = useDeleteRule();
 
   // TODO: update delete logic to use actual ruleset rules (will need endpoint to fetch all ruleset rules)
@@ -68,8 +81,12 @@ const RulesetEditPage: React.FC = () => {
     { tabUrlValue: 'assign-rules', tabName: 'Assign Rules' }
   ];
 
-  if (isError) {
-    return <ErrorPage error={error} />;
+  if (isRulesetError) {
+    return <ErrorPage error={rulesetError} />;
+  }
+
+  if (isRulesError) {
+    return <ErrorPage error={rulesError} />;
   }
 
   if (isLoading) {
@@ -93,7 +110,6 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleOpenAddMenu = (ruleId: string, anchorEl: HTMLElement) => {
-    // trying to make tests run lol this comment can get deleted later
     if (showAddMenu && addMenuAnchorEl === anchorEl) {
       handleCloseAddMenu();
       return;
@@ -160,7 +176,7 @@ const RulesetEditPage: React.FC = () => {
           <FullPageTabs
             setTab={setTabValue}
             tabsLabels={tabs}
-            baseUrl={routes.RULESET_EDIT.replace(':rulesetId', rulesetId)}
+            baseUrl={routes.RULESET_EDIT.replace(':rulesetId', rulesetId!)}
             defaultTab={defaultTab}
             id="rules-tabs"
           />

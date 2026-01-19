@@ -1314,6 +1314,7 @@ export default class RulesService {
     if (!ruleset) {
       throw new NotFoundException('Ruleset', rulesetId);
     }
+
     if (ruleset.deletedByUserId) {
       throw new DeletedException('Ruleset', rulesetId);
     }
@@ -1402,5 +1403,36 @@ export default class RulesService {
     }
     const data = await uploadFile(file);
     return data.id;
+  }
+
+  /**
+   * Gets a single ruleset by ID
+   * @param rulesetId the id of the ruleset
+   * @param user the user requesting the ruleset
+   * @param organization the organization the user belongs to
+   * @returns the ruleset with the given id
+   */
+  static async getSingleRuleset(user: User, rulesetId: string, organization: Organization): Promise<Ruleset> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest)))
+      throw new AccessDeniedException('Only members and above can view rulesets!');
+
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      ...getRulesetQueryArgs()
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.deletedByUserId) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    return rulesetTransformer(ruleset);
   }
 }
