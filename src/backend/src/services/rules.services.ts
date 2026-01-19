@@ -379,7 +379,7 @@ export default class RulesService {
    * @param ruleCode The rule code to update (optional, keeps existing if not provided)
    * @param imageFileIds The image files to update (optional, keeps existing if not provided)
    * @param parentRuleId The parent rule ID to update
-   * @param organizationId the organization Id
+   * @param organization the organization the rule belongs to
    * @returns the edited rule
    */
   static async editRule(
