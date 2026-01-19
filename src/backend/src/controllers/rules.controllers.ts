@@ -273,4 +273,14 @@ export default class RulesController {
       next(error);
     }
   }
+
+  static async getSingleRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const ruleset = await RulesService.getSingleRuleset(req.currentUser, rulesetId, req.organization);
+      res.status(200).json(ruleset);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
