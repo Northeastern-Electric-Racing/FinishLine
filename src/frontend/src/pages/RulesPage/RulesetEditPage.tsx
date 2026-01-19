@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Button, Paper, Table, TableBody, TableContainer } from '@mui/material';
+import { Box, Button, Paper, Table, TableBody, TableContainer, TextField } from '@mui/material';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
@@ -19,7 +19,7 @@ import AddRuleModal from './components/AddRuleModal';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
 import DeleteRuleModal from './components/DeleteRuleModal';
-import { useDeleteRule } from '../../hooks/rules.hooks';
+import { useDeleteRule, useEditRule } from '../../hooks/rules.hooks';
 import { countRulesToDelete } from '../../utils/rules.utils';
 
 /**
@@ -224,8 +224,13 @@ const RulesetEditPage: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [ruleToDelete, setRuleToDelete] = useState<Rule | null>(null);
 
+  // Editing state
+  const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
+  const [editedContent, setEditedContent] = useState<string>('');
+
   const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
   const { mutateAsync: deleteRuleMutation } = useDeleteRule();
+  const { mutateAsync: editRuleMutation } = useEditRule();
 
   const tabs = [
     { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
@@ -298,8 +303,28 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleEditRule = (ruleId: string) => {
-    // Placeholder
-    console.log('Edit rule:', ruleId);
+    const rule = ruleset.rules.find((r) => r.ruleId === ruleId);
+    if (rule) {
+      setEditingRuleId(ruleId);
+      setEditedContent(rule.ruleContent);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingRuleId) return;
+
+    try {
+      await editRuleMutation({ ruleId: editingRuleId, ruleContent: editedContent });
+      setEditingRuleId(null);
+      setEditedContent('');
+    } catch (err) {
+      console.error('Failed to update rule:', err);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRuleId(null);
+    setEditedContent('');
   };
 
   const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, ruleset.rules) : 0;
@@ -333,6 +358,37 @@ const RulesetEditPage: React.FC = () => {
                       key={rule.ruleId}
                       rule={rule}
                       allRules={ruleset.rules}
+                      middleContent={(currentRule) => {
+                        const isEditing = editingRuleId === currentRule.ruleId;
+                        if (isEditing) {
+                          return (
+                            <TextField
+                              fullWidth
+                              multiline
+                              value={editedContent}
+                              onChange={(e) => setEditedContent(e.target.value)}
+                              variant="outlined"
+                              size="small"
+                              autoFocus
+                              sx={{
+                                backgroundColor: '#ffffff',
+                                '& .MuiOutlinedInput-root': {
+                                  '& fieldset': {
+                                    borderColor: '#dd514c'
+                                  },
+                                  '&:hover fieldset': {
+                                    borderColor: '#dd514c'
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#dd514c'
+                                  }
+                                }
+                              }}
+                            />
+                          );
+                        }
+                        return currentRule.ruleContent && <span style={{ color: '#000000' }}>{currentRule.ruleContent}</span>;
+                      }}
                       rightContent={(currentRule) => (
                         <RuleActions
                           ruleId={currentRule.ruleId}
@@ -342,7 +398,7 @@ const RulesetEditPage: React.FC = () => {
                           iconColor="#000000"
                         />
                       )}
-                      backgroundColor="#9d9d9d"
+                      backgroundColor={(currentRule) => editingRuleId === currentRule.ruleId ? '#c0c0c0' : '#9d9d9d'}
                       textColor="#000000"
                       hoverColor="#5e5e5e"
                       rowHeight="10px"
@@ -391,25 +447,67 @@ const RulesetEditPage: React.FC = () => {
                   ml: '30px'
                 }}
               />
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 1 }}>
-                <Button
-                  variant="contained"
-                  onClick={handleAddRuleSection}
-                  sx={{
-                    borderRadius: '8px',
-                    color: '#ededed',
-                    backgroundColor: '#dd514c',
-                    padding: '2px 15px',
-                    fontSize: '16px',
-                    fontWeight: 700,
-                    textTransform: 'none',
-                    '&:hover': {
-                      backgroundColor: '#c74340'
-                    }
-                  }}
-                >
-                  Add Rule Section
-                </Button>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pr: '30px', pb: 1 }}>
+                {editingRuleId ? (
+                  <>
+                    <Button
+                      variant="outlined"
+                      onClick={handleCancelEdit}
+                      sx={{
+                        borderRadius: '8px',
+                        color: '#ededed',
+                        borderColor: '#ededed',
+                        padding: '2px 15px',
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        textTransform: 'none',
+                        '&:hover': {
+                          borderColor: '#ededed',
+                          backgroundColor: 'rgba(237, 237, 237, 0.1)'
+                        }
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={handleSaveEdit}
+                      sx={{
+                        borderRadius: '8px',
+                        color: '#ededed',
+                        backgroundColor: '#dd514c',
+                        padding: '2px 15px',
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        textTransform: 'none',
+                        '&:hover': {
+                          backgroundColor: '#c74340'
+                        }
+                      }}
+                    >
+                      Save
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="contained"
+                    onClick={handleAddRuleSection}
+                    sx={{
+                      borderRadius: '8px',
+                      color: '#ededed',
+                      backgroundColor: '#dd514c',
+                      padding: '2px 15px',
+                      fontSize: '16px',
+                      fontWeight: 700,
+                      textTransform: 'none',
+                      '&:hover': {
+                        backgroundColor: '#c74340'
+                      }
+                    }}
+                  >
+                    Add Rule Section
+                  </Button>
+                )}
               </Box>
             </Box>
           </Box>

@@ -20,6 +20,7 @@ import {
   getTeamRulesInRulesetType,
   getRulesetsByRulesetType,
   deleteRule,
+  editRule,
   updateRuleset,
   deleteRuleset,
   deleteRulesetType
@@ -263,6 +264,32 @@ export const useDeleteRule = () => {
       },
       onError: (error: Error) => {
         toast.error(error.message);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to edit a rule's content
+ */
+export const useEditRule = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<Rule, Error, { ruleId: string; ruleContent: string }>(
+    ['rules', 'edit'],
+    async ({ ruleId, ruleContent }) => {
+      const { data } = await editRule(ruleId, ruleContent);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        toast.success('Rule updated successfully');
+        queryClient.invalidateQueries(['rules']);
+        queryClient.invalidateQueries(['rulesets']);
+      },
+      onError: (error: Error) => {
+        toast.error(`Failed to update rule: ${error.message}`);
       }
     }
   );
