@@ -8,8 +8,7 @@ import {
   User,
   Rule as SharedRule,
   isHead,
-  Ruleset,
-  RulesetPreview
+  Ruleset
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {

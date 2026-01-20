@@ -313,7 +313,7 @@ const parseRuleNumberFHE = (line: string): ParsedRule | null => {
   }
 
   // "ARTICLE A1 FORMULA HYBRID + ELECTRIC OVERVIEW"
-  // Caputres "A1" as rule code, removes "ARTICLE" and adds rest as content
+  // Captures "A1" as rule code, removes "ARTICLE" and adds rest as content
   const articleMatch = line.match(/^ARTICLE\s+([A-Z]+\d+)\s+(.+)$/);
   if (articleMatch) {
     return {
