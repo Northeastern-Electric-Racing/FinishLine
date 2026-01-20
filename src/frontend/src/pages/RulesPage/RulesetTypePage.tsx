@@ -1,3 +1,4 @@
+import React from 'react';
 import PageLayout from '../../components/PageLayout';
 import { Box } from '@mui/material';
 import RulesetTypeTable from './components/RulesetTypeTable';

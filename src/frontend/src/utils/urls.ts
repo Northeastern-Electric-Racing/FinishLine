@@ -447,6 +447,10 @@ const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${ruleset
 const ruleset = () => `${rules()}/ruleset`;
 const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
 const rulesetsCreate = () => `${ruleset()}/create`;
+const rulesetById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
+const ruleCreate = () => `${rules()}/rule/create`;
+const parseRuleset = (rulesetId: string) => `${rulesetById(rulesetId)}/parse`;
+const uploadRulesetFile = () => `${rules()}/upload/file`;
 const rulesGetActiveRuleset = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/active`;
 const rulesGetProjectRules = (rulesetId: string, projectId: string) =>
   `${rules()}/ruleset/${rulesetId}/project/${projectId}/rules`;
@@ -455,10 +459,13 @@ const rulesGetUnassignedRulesForRuleset = (rulesetId: string, teamId: string) =>
 const rulesCreateProjectRule = () => `${rules()}/projectRule/create`;
 const rulesDeleteProjectRule = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/delete`;
 const rulesEditProjectRuleStatus = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/editStatus`;
+const rulesEdit = (ruleId: string) => `${rules()}/rule/${ruleId}/edit`;
+const rulesDelete = (ruleId: string) => `${rules()}/rule/${ruleId}/delete`;
 const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
 const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
 const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
 const rulesetType = (rulesetTypeId: string) => `${rules()}/${rulesetTypeId}`;
+const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -772,16 +779,23 @@ export const apiUrls = {
   rulesetsByType,
   rulesetTypeCreate,
   rulesetsCreate,
+  rulesetById,
+  ruleCreate,
   rulesGetActiveRuleset,
   rulesGetProjectRules,
   rulesGetUnassignedRulesForRuleset,
   rulesCreateProjectRule,
   rulesDeleteProjectRule,
   rulesEditProjectRuleStatus,
+  rulesEdit,
+  rulesDelete,
   rulesetUpdate,
   rulesetDelete,
   rulesetTypeDelete,
   rulesetType,
+  parseRuleset,
+  uploadRulesetFile,
+  singleRuleset,
 
   version
 };

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Button, Paper, Table, TableBody, TableContainer } from '@mui/material';
+import { Box, Button, Paper, Table, TableBody, TableContainer, TextField, useTheme } from '@mui/material';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
@@ -11,7 +11,6 @@ import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
 import RuleRow from './RuleRow';
 import RuleActions from './RuleActions';
-import { Rule } from 'shared';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import AddRuleSectionModal from './components/AddRuleSectionModal';
@@ -19,196 +18,16 @@ import AddRuleModal from './components/AddRuleModal';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
 import DeleteRuleModal from './components/DeleteRuleModal';
-import { useDeleteRule } from '../../hooks/rules.hooks';
+import { useDeleteRule, useEditRule, useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
 import { countRulesToDelete } from '../../utils/rules.utils';
-
-/**
- * Placeholder hook to fetch a single ruleset.
- * @param rulesetId - The ID of the ruleset to fetch.
- * @returns The ruleset data.
- */
-export const useSingleRuleset = (rulesetId: string) => {
-  const placeholderRules: Rule[] = [
-    {
-      ruleId: '1',
-      ruleCode: 'GR - General Regulations',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: ['1.1'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '1.1',
-      ruleCode: 'G.1',
-      ruleContent: 'Content for G.1 Rule',
-      imageFileIds: [],
-      parentRule: { ruleId: '1', ruleCode: 'GR - General Regulations' },
-      subRuleIds: ['1.1.1'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '1.1.1',
-      ruleCode: 'G.1.1',
-      ruleContent: 'Content for G.1.1 Rule',
-      imageFileIds: [],
-      parentRule: { ruleId: '1.1', ruleCode: 'G.1' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '2',
-      ruleCode: 'AD - Administrative Regulations',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: ['2.1'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '2.1',
-      ruleCode: 'AD.1',
-      ruleContent: 'Content for AD.1 Rule',
-      imageFileIds: [],
-      parentRule: { ruleId: '2', ruleCode: 'AD - Administrative Regulations' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '3',
-      ruleCode: 'DR - Document Requirements',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: ['3.1'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '3.1',
-      ruleCode: 'DR.1',
-      ruleContent: 'Content for DR.1 Rule',
-      imageFileIds: [],
-      parentRule: { ruleId: '3', ruleCode: 'DR - Document Requirements' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '4',
-      ruleCode: 'V - Vehicle Requirements',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: ['5', '6', '7'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '5',
-      ruleCode: 'V.1 - Configuration',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '6',
-      ruleCode: 'V.2 - Driver',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '7',
-      ruleCode: 'V.3 - Suspension and Steering',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '4', ruleCode: 'V - Vehicle Requirements' },
-      subRuleIds: ['8', '9'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '8',
-      ruleCode: 'V.3.1 - Suspension',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '9',
-      ruleCode: 'V.3.2 - Steering',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: { ruleId: '7', ruleCode: 'V.3 - Suspension and Steering' },
-      subRuleIds: ['10', '11', '12'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '10',
-      ruleCode: 'V.3.2.1',
-      ruleContent:
-        'Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line, Some super long rule content that should wrap to the next line',
-      imageFileIds: [],
-      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '11',
-      ruleCode: 'V.3.2.2',
-      ruleContent: 'Electrically actuated steering of the front wheels is prohibited',
-      imageFileIds: [],
-      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '12',
-      ruleCode: 'V.3.2.3',
-      ruleContent:
-        'Steering systems must use a rigid mechanical linkage capable of tension and compression loads for operation',
-      imageFileIds: [],
-      parentRule: { ruleId: '9', ruleCode: 'V.3.2 - Steering' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '13',
-      ruleCode: 'F - Chassis and Structural',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: undefined,
-      subRuleIds: ['13.1'],
-      referencedRuleIds: []
-    },
-    {
-      ruleId: '13.1',
-      ruleCode: 'F.1',
-      ruleContent: 'Content for F.1 Rule',
-      imageFileIds: [],
-      parentRule: { ruleId: '13', ruleCode: 'F - Chassis and Structural' },
-      subRuleIds: [],
-      referencedRuleIds: []
-    }
-  ];
-
-  return {
-    data: { name: 'FSAE Original Version', rulesetId, rules: placeholderRules },
-    isLoading: false,
-    isError: false,
-    error: undefined
-  };
-};
+import { Rule } from 'shared';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
  * Supports editing and assigning rules to projects and teams.
  */
 const RulesetEditPage: React.FC = () => {
-  const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>();
+  const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>(); //why tab value??
   const [tabValue, setTabValue] = useState(0);
   const defaultTab = 'edit-rules';
 
@@ -224,28 +43,49 @@ const RulesetEditPage: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [ruleToDelete, setRuleToDelete] = useState<Rule | null>(null);
 
-  const { data: ruleset, isError, error, isLoading } = useSingleRuleset(rulesetId);
+  // Editing state
+  const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
+  const [editedContent, setEditedContent] = useState<string>('');
+
+  const theme = useTheme();
+
+  const {
+    data: ruleset,
+    isError: isRulesetError,
+    error: rulesetError,
+    isLoading: isRulesetLoading
+  } = useSingleRuleset(rulesetId!);
+  const {
+    data: allRules,
+    isError: isRulesError,
+    error: rulesError,
+    isLoading: isRulesLoading
+  } = useAllRulesForRuleset(rulesetId!);
   const { mutateAsync: deleteRuleMutation } = useDeleteRule();
+  const { mutateAsync: editRuleMutation } = useEditRule();
 
   const tabs = [
     { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
     { tabUrlValue: 'assign-rules', tabName: 'Assign Rules' }
   ];
 
-  if (isError) {
-    return <ErrorPage error={error} />;
+  if (isRulesetError) {
+    return <ErrorPage error={rulesetError} />;
   }
 
-  if (isLoading || !ruleset) {
+  if (isRulesError) {
+    return <ErrorPage error={rulesError} />;
+  }
+
+  if (isRulesetLoading || isRulesLoading || !ruleset || !allRules) {
     return <LoadingIndicator />;
   }
 
   const handleAddRuleSection = () => {
-    // Placeholder
+    setShowAddRuleSectionModal(true);
   };
 
   const handleOpenAddMenu = (ruleId: string, anchorEl: HTMLElement) => {
-    // trying to make tests run lol this comment can get deleted later
     if (showAddMenu && addMenuAnchorEl === anchorEl) {
       handleCloseAddMenu();
       return;
@@ -261,19 +101,13 @@ const RulesetEditPage: React.FC = () => {
     setAddMenuAnchorEl(null);
   };
 
-  const handleAddRuleSectionFromMenu = () => {
-    setShowAddRuleSectionModal(true);
-    handleCloseAddMenu();
-  };
-
   const handleAddRuleFromMenu = () => {
-    console.log('Add rule to:', activeRuleId);
     setShowAddRuleModal(true);
     handleCloseAddMenu();
   };
 
   const handleRemoveRule = (ruleId: string) => {
-    const rule = ruleset.rules.find((r) => r.ruleId === ruleId);
+    const rule = allRules.find((r) => r.ruleId === ruleId);
     if (rule) {
       setRuleToDelete(rule);
       setDeleteModalOpen(true);
@@ -298,14 +132,34 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleEditRule = (ruleId: string) => {
-    // Placeholder
-    console.log('Edit rule:', ruleId);
+    const rule = allRules.find((r) => r.ruleId === ruleId);
+    if (rule) {
+      setEditingRuleId(ruleId);
+      setEditedContent(rule.ruleContent);
+    }
   };
 
-  const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, ruleset.rules) : 0;
+  const handleSaveEdit = async () => {
+    if (!editingRuleId) return;
+
+    try {
+      await editRuleMutation({ ruleId: editingRuleId, ruleContent: editedContent });
+      setEditingRuleId(null);
+      setEditedContent('');
+    } catch (err) {
+      console.error('Failed to update rule:', err);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRuleId(null);
+    setEditedContent('');
+  };
+
+  const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, allRules) : 0;
 
   // Filter to only show top-level rules
-  const topLevelRules = ruleset.rules.filter((rule) => !rule.parentRule);
+  const topLevelRules = allRules.filter((rule) => !rule.parentRule);
 
   return (
     <PageLayout
@@ -322,7 +176,7 @@ const RulesetEditPage: React.FC = () => {
           <FullPageTabs
             setTab={setTabValue}
             tabsLabels={tabs}
-            baseUrl={routes.RULESET_EDIT.replace(':rulesetId', rulesetId)}
+            baseUrl={routes.RULESET_EDIT.replace(':rulesetId', rulesetId!)}
             defaultTab={defaultTab}
             id="rules-tabs"
           />
@@ -339,7 +193,41 @@ const RulesetEditPage: React.FC = () => {
                     <RuleRow
                       key={rule.ruleId}
                       rule={rule}
-                      allRules={ruleset.rules}
+                      allRules={allRules}
+                      middleContent={(currentRule) => {
+                        const isEditing = editingRuleId === currentRule.ruleId;
+                        if (isEditing) {
+                          return (
+                            <TextField
+                              fullWidth
+                              multiline
+                              value={editedContent}
+                              onChange={(e) => setEditedContent(e.target.value)}
+                              variant="outlined"
+                              size="small"
+                              autoFocus
+                              sx={{
+                                backgroundColor: theme.palette.grey[100],
+                                '& .MuiOutlinedInput-root': {
+                                  color: '#000000',
+                                  '& fieldset': {
+                                    borderColor: '#dd514c'
+                                  },
+                                  '&:hover fieldset': {
+                                    borderColor: '#dd514c'
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#dd514c'
+                                  }
+                                }
+                              }}
+                            />
+                          );
+                        }
+                        return (
+                          currentRule.ruleContent && <span style={{ color: '#000000' }}>{currentRule.ruleContent}</span>
+                        );
+                      }}
                       rightContent={(currentRule) => (
                         <RuleActions
                           ruleId={currentRule.ruleId}
@@ -349,7 +237,7 @@ const RulesetEditPage: React.FC = () => {
                           iconColor="#000000"
                         />
                       )}
-                      backgroundColor="#9d9d9d"
+                      backgroundColor={(currentRule) => (editingRuleId === currentRule.ruleId ? '#c0c0c0' : '#9d9d9d')}
                       textColor="#000000"
                       hoverColor="#5e5e5e"
                       rowHeight="10px"
@@ -364,12 +252,21 @@ const RulesetEditPage: React.FC = () => {
               open={showAddMenu}
               anchorEl={addMenuAnchorEl}
               onClose={handleCloseAddMenu}
-              onAddRuleSection={handleAddRuleSectionFromMenu}
               onAddRule={handleAddRuleFromMenu}
             />
 
-            <AddRuleSectionModal open={showAddRuleSectionModal} onClose={() => setShowAddRuleSectionModal(false)} />
-            <AddRuleModal open={showAddRuleModal} onClose={() => setShowAddRuleModal(false)} />
+            <AddRuleSectionModal
+              open={showAddRuleSectionModal}
+              onClose={() => setShowAddRuleSectionModal(false)}
+              rulesetId={rulesetId}
+            />
+
+            <AddRuleModal
+              open={showAddRuleModal}
+              onClose={() => setShowAddRuleModal(false)}
+              rulesetId={rulesetId}
+              initialParentRuleId={activeRuleId || undefined}
+            />
 
             {ruleToDelete && (
               <DeleteRuleModal
@@ -398,30 +295,72 @@ const RulesetEditPage: React.FC = () => {
                   ml: '30px'
                 }}
               />
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 1 }}>
-                <Button
-                  variant="contained"
-                  onClick={handleAddRuleSection}
-                  sx={{
-                    borderRadius: '8px',
-                    color: '#ededed',
-                    backgroundColor: '#dd514c',
-                    padding: '2px 15px',
-                    fontSize: '16px',
-                    fontWeight: 700,
-                    textTransform: 'none',
-                    '&:hover': {
-                      backgroundColor: '#c74340'
-                    }
-                  }}
-                >
-                  Add Rule Section
-                </Button>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pr: '30px', pb: 1 }}>
+                {editingRuleId ? (
+                  <>
+                    <Button
+                      variant="outlined"
+                      onClick={handleCancelEdit}
+                      sx={{
+                        borderRadius: '8px',
+                        color: '#ededed',
+                        borderColor: '#ededed',
+                        padding: '2px 15px',
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        textTransform: 'none',
+                        '&:hover': {
+                          borderColor: '#ededed',
+                          backgroundColor: 'rgba(237, 237, 237, 0.1)'
+                        }
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={handleSaveEdit}
+                      sx={{
+                        borderRadius: '8px',
+                        color: '#ededed',
+                        backgroundColor: '#dd514c',
+                        padding: '2px 15px',
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        textTransform: 'none',
+                        '&:hover': {
+                          backgroundColor: '#c74340'
+                        }
+                      }}
+                    >
+                      Save
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="contained"
+                    onClick={handleAddRuleSection}
+                    sx={{
+                      borderRadius: '8px',
+                      color: '#ededed',
+                      backgroundColor: '#dd514c',
+                      padding: '2px 15px',
+                      fontSize: '16px',
+                      fontWeight: 700,
+                      textTransform: 'none',
+                      '&:hover': {
+                        backgroundColor: '#c74340'
+                      }
+                    }}
+                  >
+                    Add Rule Section
+                  </Button>
+                )}
               </Box>
             </Box>
           </Box>
         ) : (
-          <AssignRulesTab rules={ruleset.rules} />
+          <AssignRulesTab rules={allRules} />
         )}
       </Box>
     </PageLayout>

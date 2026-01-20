@@ -1299,7 +1299,6 @@ describe('Rule Tests', () => {
 
     it('Successfully deletes the ruleset type', async () => {
       let rulesetTypes = await RulesService.getAllRulesetTypes(organization);
-      console.log(rulesetTypes);
       expect(rulesetTypes.length).toEqual(2);
 
       const appAdmin = await createTestUser(batmanAppAdmin, orgId);

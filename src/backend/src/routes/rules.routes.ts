@@ -2,10 +2,13 @@ import express from 'express';
 import RulesController from '../controllers/rules.controllers';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
 import { body } from 'express-validator';
+import { MAX_FILE_SIZE } from 'shared';
+import multer, { memoryStorage } from 'multer';
 
 const rulesRouter = express.Router();
 
 rulesRouter.get('/rulesetType/:rulesetTypeId/active', RulesController.getActiveRuleset);
+rulesRouter.get('/ruleset/:rulesetId', RulesController.getRulesetById);
 
 rulesRouter.post(
   '/rule/create',
@@ -23,9 +26,9 @@ rulesRouter.post(
 rulesRouter.post(
   '/rule/:ruleId/edit',
   nonEmptyString(body('ruleContent')),
-  nonEmptyString(body('ruleCode')),
-  body('imageFileIds').isArray(),
-  nonEmptyString(body('imageFileIds.*')),
+  body('ruleCode').optional().isString(),
+  body('imageFileIds').optional().isArray(),
+  body('imageFileIds.*').optional().isString(),
   body('parentRuleId').optional().isString(),
   validateInputs,
   RulesController.editRule
@@ -88,6 +91,17 @@ rulesRouter.get('/ruleset/:rulesetId/project/:projectId/rules', RulesController.
 
 rulesRouter.get('/:ruleId/subrules', RulesController.getChildRules);
 rulesRouter.get('/:rulesetId/parentRules', RulesController.getTopLevelRules);
-rulesRouter.get('/:rulesetTypeId', RulesController.getRulesetType);
+rulesRouter.get('/ruleset/:rulesetId', RulesController.getSingleRuleset);
+
+rulesRouter.post(
+  '/ruleset/:rulesetId/parse',
+  nonEmptyString(body('fileId')),
+  nonEmptyString(body('parserType')), // 'FSAE' or 'FHE'
+  validateInputs,
+  RulesController.parseRuleset
+);
+
+const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
+rulesRouter.post('/upload/file', upload.single('file'), RulesController.uploadRulesetFile);
 
 export default rulesRouter;

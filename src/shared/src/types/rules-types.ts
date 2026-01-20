@@ -30,6 +30,7 @@ export interface Ruleset {
     carId: string;
     name: string;
   };
+  ruleAmount: number;
 }
 
 export interface Rule {
@@ -43,6 +44,10 @@ export interface Rule {
   };
   subRuleIds: string[];
   referencedRuleIds: string[];
+  teams?: Array<{
+    teamId: string;
+    teamName: string;
+  }>;
 }
 
 export interface RuleStatusChange {

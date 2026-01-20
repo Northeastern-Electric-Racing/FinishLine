@@ -15,7 +15,7 @@ import {
   Typography,
   useTheme
 } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Rule, TeamPreview } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -25,6 +25,7 @@ import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
 import { NERButton } from '../../components/NERButton';
 import RuleRow from './RuleRow';
+import { useBulkToggleRuleTeam } from '../../hooks/rules.hooks';
 
 /*
  * Props for the assign rules tab.
@@ -96,13 +97,27 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
   const toast = useToast();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<Set<string>>(new Set());
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [originalAssignments, setOriginalAssignments] = useState<Set<string>>(new Set());
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const { data: teams, isLoading: teamsLoading, isError: teamsError, error: teamsErrorData } = useAllTeams();
+  const { mutate: bulkToggle, isLoading: isSaving } = useBulkToggleRuleTeam();
 
-  // TODO: Fetch all team assignments on mount and populate originalAssignments and assignments
-  // Not implemented yet since we do not use an actual ruleset yet
+  // Load initial team assignments from rule data
+  useEffect(() => {
+    if (isInitialized || !teams || teams.length === 0) return;
+
+    const initialAssignments = new Set<string>();
+    rules.forEach((rule) => {
+      rule.teams?.forEach((team) => {
+        initialAssignments.add(`${team.teamId}:${rule.ruleId}`);
+      });
+    });
+
+    setOriginalAssignments(initialAssignments);
+    setAssignments(new Set(initialAssignments));
+    setIsInitialized(true);
+  }, [rules, teams, isInitialized]);
 
   const handleTeamSelect = (teamId: string) => setSelectedTeamId(teamId);
 
@@ -180,12 +195,25 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
       return;
     }
 
-    // TODO: Save changes via backend
-    if (toAdd.length > 0 || toRemove.length > 0) {
-      toast.success(`Placeholder: Would save ${toAdd.length} additions and ${toRemove.length} removals`);
-    }
+    // Build array of toggles to execute
+    const toggles: Array<{ ruleId: string; teamId: string }> = [];
 
-    history.push(routes.RULESET_EDIT.replace(':rulesetId', rulesetId));
+    toAdd.forEach((key) => {
+      const [teamId, ruleId] = key.split(':');
+      toggles.push({ ruleId, teamId });
+    });
+
+    toRemove.forEach((key) => {
+      const [teamId, ruleId] = key.split(':');
+      toggles.push({ ruleId, teamId });
+    });
+
+    // Execute bulk toggle and navigate on success
+    bulkToggle(toggles, {
+      onSuccess: () => {
+        history.push(routes.RULESET_EDIT.replace(':rulesetId', rulesetId));
+      }
+    });
   };
 
   if (teamsLoading) {
@@ -299,12 +327,13 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
           <NERButton
             variant="contained"
             onClick={handleSaveAndExit}
+            disabled={isSaving}
             sx={{
               backgroundColor: '#dd514c',
               '&:hover': { backgroundColor: '#c74340' }
             }}
           >
-            Save & Exit
+            {isSaving ? 'Saving...' : 'Save & Exit'}
           </NERButton>
         </Box>
       </Box>

@@ -15,7 +15,11 @@ export const ruleTransformer = (rule: Prisma.RuleGetPayload<RulePreviewQueryArgs
         }
       : undefined,
     subRuleIds: rule.subRules.map((subRule) => subRule.ruleId),
-    referencedRuleIds: rule.referencedRule.map((ref) => ref.ruleId)
+    referencedRuleIds: rule.referencedRule.map((ref) => ref.ruleId),
+    teams: rule.teams?.map((team) => ({
+      teamId: team.teamId,
+      teamName: team.teamName
+    }))
   };
 };
 
@@ -56,6 +60,7 @@ export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQuer
     car: {
       carId: ruleset.car.carId,
       name: ruleset.car.wbsElement.name
-    }
+    },
+    ruleAmount: totalRulesLength
   };
 };
