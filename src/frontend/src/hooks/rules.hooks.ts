@@ -23,8 +23,7 @@ import {
   updateRuleset,
   deleteRuleset,
   deleteRulesetType,
-  getRulesetById,
-  createRule
+  createRule,
   getSingleRuleset
 } from '../apis/rules.api';
 import { useToast } from './toasts.hooks';
@@ -76,7 +75,7 @@ export const useProjectRules = (rulesetId: string, projectId: string) => {
  * Hook to get unassigned rules for a ruleset and team.
  */
 export const useUnassignedRulesForRuleset = (rulesetId: string, teamId: string) => {
-  return useQuery<Rule[], Error>(
+  return useQuery<SharedRule[], Error>(
     ['rules', 'unassigned', rulesetId, teamId],
     async () => {
       const { data } = await getUnassignedRulesForRuleset(rulesetId, teamId);
@@ -90,7 +89,7 @@ export const useUnassignedRulesForRuleset = (rulesetId: string, teamId: string) 
  * Hook to get child rules of a rule.
  */
 export const useChildRules = (ruleId: string) => {
-  return useQuery<Rule[], Error>(
+  return useQuery<SharedRule[], Error>(
     ['rules', 'children', ruleId],
     async () => {
       const { data } = await getChildRules(ruleId);
@@ -104,7 +103,7 @@ export const useChildRules = (ruleId: string) => {
  * Hook to get top-level rules for a ruleset.
  */
 export const useTopLevelRules = (rulesetId: string) => {
-  return useQuery<Rule[], Error>(
+  return useQuery<SharedRule[], Error>(
     ['rules', 'topLevel', rulesetId],
     async () => {
       const { data } = await getTopLevelRules(rulesetId);
@@ -145,13 +144,6 @@ export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
       enabled // only fetch when true
     }
   );
-};
-
-export const useGetRuleset = (rulesetId: string) => {
-  return useQuery<Ruleset, Error>(['ruleset', rulesetId], async () => {
-    const { data } = await getRulesetById(rulesetId);
-    return data;
-  });
 };
 
 export const useToggleRuleTeam = () => {
@@ -373,7 +365,7 @@ export const useSingleRuleset = (rulesetId: string) => {
 /**
  * Helper function to recursively fetch all child rules
  */
-const fetchAllChildRules = async (rule: Rule, allRules: Rule[]): Promise<void> => {
+const fetchAllChildRules = async (rule: SharedRule, allRules: SharedRule[]): Promise<void> => {
   if (rule.subRuleIds.length === 0) return;
 
   const { data: children } = await getChildRules(rule.ruleId);
@@ -389,11 +381,11 @@ const fetchAllChildRules = async (rule: Rule, allRules: Rule[]): Promise<void> =
  * and recursively fetching all children
  */
 export const useAllRulesForRuleset = (rulesetId: string) => {
-  return useQuery<Rule[], Error>(
+  return useQuery<SharedRule[], Error>(
     ['rules', 'allRules', rulesetId],
     async () => {
       const { data: topLevelRules } = await getTopLevelRules(rulesetId);
-      const allRules: Rule[] = [...topLevelRules];
+      const allRules: SharedRule[] = [...topLevelRules];
 
       for (const rule of topLevelRules) {
         await fetchAllChildRules(rule, allRules);

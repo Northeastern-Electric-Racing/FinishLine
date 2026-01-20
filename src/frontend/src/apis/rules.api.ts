@@ -90,7 +90,7 @@ export const getProjectRules = (rulesetId: string, projectId: string) => {
  * @param teamId The ID of the team.
  */
 export const getUnassignedRulesForRuleset = (rulesetId: string, teamId: string) => {
-  return axios.get<Rule[]>(apiUrls.rulesGetUnassignedRulesForRuleset(rulesetId, teamId), {
+  return axios.get<SharedRule[]>(apiUrls.rulesGetUnassignedRulesForRuleset(rulesetId, teamId), {
     transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
   });
 };
@@ -130,7 +130,7 @@ export const editProjectRuleStatus = (projectRuleId: string, newStatus: RuleComp
  * @param ruleId The ID of the parent rule.
  */
 export const getChildRules = (ruleId: string) => {
-  return axios.get<Rule[]>(apiUrls.rulesChildRules(ruleId), {
+  return axios.get<SharedRule[]>(apiUrls.rulesChildRules(ruleId), {
     transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
   });
 };
@@ -141,7 +141,7 @@ export const getChildRules = (ruleId: string) => {
  * @param rulesetId The ID of the ruleset.
  */
 export const getTopLevelRules = (rulesetId: string) => {
-  return axios.get<Rule[]>(apiUrls.rulesTopLevel(rulesetId), {
+  return axios.get<SharedRule[]>(apiUrls.rulesTopLevel(rulesetId), {
     transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
   });
 };

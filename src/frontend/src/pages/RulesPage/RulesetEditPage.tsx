@@ -20,6 +20,7 @@ import AssignRulesTab from './AssignRulesTab';
 import DeleteRuleModal from './components/DeleteRuleModal';
 import { useDeleteRule, useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
 import { countRulesToDelete } from '../../utils/rules.utils';
+import { Rule } from 'shared';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
