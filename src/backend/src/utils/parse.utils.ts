@@ -98,13 +98,16 @@ const findParentRuleCode = (ruleCode: string): string | undefined => {
 
 /**
  * Updates rules with duplicate rule codes by appending .duplicate suffix
+ * and updates parent references to maintain parent-child relationships
  * @param rules array of parsed rules
- * @returns array of rules without duplicate rule codes
+ * @returns array of rules without duplicate rule codes and updated parent references
  */
 const handleDuplicateCodes = (rules: ParsedRule[]): ParsedRule[] => {
   const seenRuleCodes = new Map<string, number>();
+  const codeMapping = new Map<string, string>(); // Maps original code to new code for duplicates
 
-  return rules.map((rule) => {
+  // First pass: rename duplicates and track the mapping
+  const renamedRules = rules.map((rule) => {
     const originalCode = rule.ruleCode;
 
     if (seenRuleCodes.has(originalCode)) {
@@ -112,13 +115,28 @@ const handleDuplicateCodes = (rules: ParsedRule[]): ParsedRule[] => {
       const count = seenRuleCodes.get(originalCode)!;
       seenRuleCodes.set(originalCode, count + 1);
       const suffix = count === 1 ? '.duplicate' : `.duplicate${count}`;
+      const newCode = `${originalCode}${suffix}`;
+
+      // Track that this code was renamed
+      codeMapping.set(originalCode, newCode);
 
       return {
         ...rule,
-        ruleCode: `${originalCode}${suffix}`
+        ruleCode: newCode
       };
     }
     seenRuleCodes.set(originalCode, 1);
+    return rule;
+  });
+
+  // Second pass: update parent references for rules whose parent was renamed
+  return renamedRules.map((rule) => {
+    if (rule.parentRuleCode && codeMapping.has(rule.parentRuleCode)) {
+      return {
+        ...rule,
+        parentRuleCode: codeMapping.get(rule.parentRuleCode)
+      };
+    }
     return rule;
   });
 };
