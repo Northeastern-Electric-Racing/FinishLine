@@ -163,7 +163,14 @@ const RulesetEditPage: React.FC = () => {
 
   return (
     <PageLayout
-      title={`${ruleset.name} Rules`}
+      title={`${ruleset?.name} - ${tabValue === 0 ? 'Edit Rules' : 'Assign Rules'}`}
+      previousPages={[
+        { name: 'Rules', route: routes.RULES },
+        {
+          name: `${ruleset.rulesetType?.name} Rulesets`,
+          route: `${routes.RULESET_BY_ID.replace(':rulesetTypeId', ruleset.rulesetType.rulesetTypeId)}` // <-- rulesetId variable should eventually be replaced by ruleset.rulestType.rulesetTypeId or somethign like that
+        }
+      ]}
       tabs={
         <Box sx={{ width: 'fit-content', mt: 2 }}>
           <FullPageTabs

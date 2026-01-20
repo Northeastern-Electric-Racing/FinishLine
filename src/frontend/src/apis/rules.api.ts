@@ -187,6 +187,13 @@ export const deleteRulesetType = (rulesetTypeId: string) => {
 };
 
 /**
+ * Gets a ruleset type given its ID
+ */
+export const getRulesetType = (rulesetTypeId: string) => {
+  return axios.get(apiUrls.rulesetType(rulesetTypeId));
+};
+
+/**
  * Creates a new ruleset
  */
 export const createRuleset = (payload: CreateRulesetPayload) => {

@@ -66,7 +66,14 @@ const RulesetViewPage = () => {
   return (
     <Box>
       <PageLayout
-        title={ruleset.name}
+        title={`${ruleset.name} View`}
+        previousPages={[
+          { name: 'Rules', route: routes.RULES },
+          {
+            name: `${ruleset.rulesetType?.name} Rulesets`,
+            route: `${routes.RULESET_BY_ID.replace(':rulesetTypeId', ruleset.rulesetType.rulesetTypeId)}`
+          }
+        ]}
         tabs={
           <Box borderBottom={1} borderColor={'divider'}>
             <FullPageTabs

@@ -464,6 +464,7 @@ const rulesDelete = (ruleId: string) => `${rules()}/rule/${ruleId}/delete`;
 const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
 const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
 const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
+const rulesetType = (rulesetTypeId: string) => `${rules()}/${rulesetTypeId}`;
 const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
 
 /**************** Other Endpoints ****************/
@@ -791,6 +792,7 @@ export const apiUrls = {
   rulesetUpdate,
   rulesetDelete,
   rulesetTypeDelete,
+  rulesetType,
   parseRuleset,
   uploadRulesetFile,
   singleRuleset,

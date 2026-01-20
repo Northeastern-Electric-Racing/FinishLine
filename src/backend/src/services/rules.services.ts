@@ -540,6 +540,35 @@ export default class RulesService {
   }
 
   /**
+   * Gets a ruleset type for a given ruleset type ID
+   * @param rulesetTypeId id of ruleset type
+   * @param organizationId id of organization
+   * @returns ruleset type associated with provided ruleset type ID
+   */
+  static async getRulesetType(rulesetTypeId: string, organizationId: string): Promise<RulesetType> {
+    const rulesetType = await prisma.ruleset_Type.findUnique({
+      where: {
+        rulesetTypeId,
+        organizationId,
+        deletedBy: null
+      },
+      include: {
+        revisionFiles: true
+      }
+    });
+
+    if (!organizationId) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    if (!rulesetType) {
+      throw new NotFoundException('Ruleset Type', rulesetTypeId);
+    }
+
+    return rulesetTypeTransformer(rulesetType);
+  }
+
+  /**
    * Gets rulesets for a given ruleset type
    * @param rulesetTypeId id of ruleset type
    * @param organizationId id of organization

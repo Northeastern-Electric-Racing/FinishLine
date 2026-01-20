@@ -9,8 +9,12 @@ import { useCreateRuleset, useDeleteRuleset, useParseRuleset } from '../../hooks
 import { NERButton } from '../../components/NERButton';
 import AddNewFileModal from './components/AddNewFileModal';
 import PageLayout from '../../components/PageLayout';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import RulesetTable from './components/RulesetTable';
+import { routes } from '../../utils/routes';
+import { useRulesetType } from '../../hooks/rules.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
@@ -25,6 +29,7 @@ const RulesetPage: React.FC = () => {
   const toast = useToast();
 
   const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
+  const { data: rulesetType, isLoading, isError, error } = useRulesetType(rulesetTypeId);
 
   const handleFileConfirm = async (data: { fileId: string; name: string; carNumber: number; parserType: string }) => {
     setAddFileModalShow(false);
@@ -68,13 +73,15 @@ const RulesetPage: React.FC = () => {
     }
   };
 
+  if (isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
   return (
     <>
-      {/* Breadcrumb Placeholder */}
-      <Typography variant="body2" sx={{ color: '#999', mb: 1 }}>
-        Rules / FSAE Ruleset
-      </Typography>
-      <PageLayout title="Rulesets">
+      <PageLayout
+        title={rulesetType?.name ? `${rulesetType.name} Rulesets` : 'Rulesets'}
+        previousPages={[{ name: 'Rules', route: routes.RULES }]}
+      >
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 120px)' }}>
           <Box sx={{ flexGrow: 1 }}>
             <RulesetTable />
