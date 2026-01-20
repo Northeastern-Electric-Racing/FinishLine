@@ -22,7 +22,6 @@ import { useGetRuleset, useGetTopLevelRules } from '../../hooks/rules.hooks';
 import DeleteRuleModal from './components/DeleteRuleModal';
 import { useDeleteRule, useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
 import { countRulesToDelete } from '../../utils/rules.utils';
-import { useSingleRuleset } from './RulesetViewPage';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
@@ -59,23 +58,6 @@ const RulesetEditPage: React.FC = () => {
   } = useAllRulesForRuleset(rulesetId!);
   const { mutateAsync: deleteRuleMutation } = useDeleteRule();
 
-  // TODO: update delete logic to use actual ruleset rules (will need endpoint to fetch all ruleset rules)
-  const { data: rulesetMock, isError, error, isLoading } = useSingleRuleset(rulesetId);
-
-  const {
-    data: ruleset,
-    isLoading: rulesetLoading,
-    isError: rulesetError,
-    error: rulesetErrorMsg
-  } = useGetRuleset(rulesetId);
-
-  const {
-    data: topLevelRules = [],
-    isError: rulesError,
-    error: rulesErrorMsg,
-    isLoading: rulesLoading
-  } = useGetTopLevelRules(rulesetId);
-
   const tabs = [
     { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
     { tabUrlValue: 'assign-rules', tabName: 'Assign Rules' }
@@ -89,19 +71,7 @@ const RulesetEditPage: React.FC = () => {
     return <ErrorPage error={rulesError} />;
   }
 
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
-
-  if (rulesetError) {
-    return <ErrorPage error={rulesetErrorMsg} />;
-  }
-
-  if (rulesError) {
-    return <ErrorPage error={rulesErrorMsg} />;
-  }
-
-  if (rulesetLoading || rulesLoading || !ruleset) {
+  if (isRulesetLoading || isRulesLoading || !ruleset || !allRules) {
     return <LoadingIndicator />;
   }
 
@@ -137,7 +107,7 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleRemoveRule = (ruleId: string) => {
-    const rule = rulesetMock.rules.find((r) => r.ruleId === ruleId);
+    const rule = allRules.find((r) => r.ruleId === ruleId);
     if (rule) {
       setRuleToDelete(rule);
       setDeleteModalOpen(true);
@@ -166,7 +136,10 @@ const RulesetEditPage: React.FC = () => {
     console.log('Edit rule:', ruleId);
   };
 
-  const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, rulesetMock.rules) : 0;
+  const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, allRules) : 0;
+
+  // Filter to only show top-level rules
+  const topLevelRules = allRules.filter((rule) => !rule.parentRule);
 
   return (
     <PageLayout
@@ -193,6 +166,7 @@ const RulesetEditPage: React.FC = () => {
                     <RuleRow
                       key={rule.ruleId}
                       rule={rule}
+                      allRules={allRules}
                       rightContent={(currentRule) => (
                         <RuleActions
                           ruleId={currentRule.ruleId}
@@ -274,7 +248,7 @@ const RulesetEditPage: React.FC = () => {
             </Box>
           </Box>
         ) : (
-          <AssignRulesTab rules={topLevelRules} />
+          <AssignRulesTab rules={allRules} />
         )}
       </Box>
     </PageLayout>
