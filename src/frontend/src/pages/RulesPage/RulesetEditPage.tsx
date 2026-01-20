@@ -11,7 +11,6 @@ import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
 import RuleRow from './RuleRow';
 import RuleActions from './RuleActions';
-import { Rule } from 'shared';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import AddRuleSectionModal from './components/AddRuleSectionModal';
@@ -21,13 +20,14 @@ import AssignRulesTab from './AssignRulesTab';
 import DeleteRuleModal from './components/DeleteRuleModal';
 import { useDeleteRule, useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
 import { countRulesToDelete } from '../../utils/rules.utils';
+import { Rule } from 'shared';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
  * Supports editing and assigning rules to projects and teams.
  */
 const RulesetEditPage: React.FC = () => {
-  const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>();
+  const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>(); //why tab value??
   const [tabValue, setTabValue] = useState(0);
   const defaultTab = 'edit-rules';
 
@@ -100,7 +100,6 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleAddRuleFromMenu = () => {
-    console.log('Add rule to:', activeRuleId);
     setShowAddRuleModal(true);
     handleCloseAddMenu();
   };
@@ -195,7 +194,12 @@ const RulesetEditPage: React.FC = () => {
             />
 
             <AddRuleSectionModal open={showAddRuleSectionModal} onClose={() => setShowAddRuleSectionModal(false)} />
-            <AddRuleModal open={showAddRuleModal} onClose={() => setShowAddRuleModal(false)} />
+            <AddRuleModal
+              open={showAddRuleModal}
+              onClose={() => setShowAddRuleModal(false)}
+              rulesetId={rulesetId}
+              initialParentRuleId={activeRuleId || undefined}
+            />
 
             {ruleToDelete && (
               <DeleteRuleModal

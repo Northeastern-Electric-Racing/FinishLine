@@ -446,7 +446,10 @@ const rulesetTypes = () => `${rules()}/rulesetTypes`;
 const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
 const ruleset = () => `${rules()}/ruleset`;
 const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
-const rulesetsCreate = () => `${ruleset()}/create`;
+const rulesetsCreate = () => `${rules()}/ruleset/create`;
+const ruleCreate = () => `${rules()}/rule/create`;
+const rulesetById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
+const rulesetCreate = () => `${ruleset()}/create`;
 const rulesGetActiveRuleset = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/active`;
 const rulesGetProjectRules = (rulesetId: string, projectId: string) =>
   `${rules()}/ruleset/${rulesetId}/project/${projectId}/rules`;
@@ -772,6 +775,9 @@ export const apiUrls = {
   rulesetsByType,
   rulesetTypeCreate,
   rulesetsCreate,
+  rulesetCreate,
+  ruleCreate,
+  rulesetById,
   rulesGetActiveRuleset,
   rulesGetProjectRules,
   rulesGetUnassignedRulesForRuleset,
