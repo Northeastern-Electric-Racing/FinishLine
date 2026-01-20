@@ -441,8 +441,7 @@ const rules = () => `${API_URL}/rules`;
 const rulesTopLevel = (rulesetId: string) => `${rules()}/${rulesetId}/parentRules`;
 const rulesToggleTeam = (ruleId: string) => `${rules()}/rule/${ruleId}/toggle-team`;
 const rulesChildRules = (ruleId: string) => `${rules()}/${ruleId}/subrules`;
-const rulesTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) =>
-  `${rules()}/${rulesetTypeId}/team/${teamId}`;
+const rulesTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => `${rules()}/${rulesetTypeId}/team/${teamId}`;
 const rulesetTypes = () => `${rules()}/rulesetTypes`;
 const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
 const ruleset = () => `${rules()}/ruleset`;
@@ -461,11 +460,11 @@ const rulesCreateProjectRule = () => `${rules()}/projectRule/create`;
 const rulesDeleteProjectRule = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/delete`;
 const rulesEditProjectRuleStatus = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/editStatus`;
 const rulesEdit = (ruleId: string) => `${rules()}/rule/${ruleId}/edit`;
+const rulesDelete = (ruleId: string) => `${rules()}/rule/${ruleId}/delete`;
 const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
 const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
 const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
 const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
-
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -788,6 +787,7 @@ export const apiUrls = {
   rulesDeleteProjectRule,
   rulesEditProjectRuleStatus,
   rulesEdit,
+  rulesDelete,
   rulesetUpdate,
   rulesetDelete,
   rulesetTypeDelete,
