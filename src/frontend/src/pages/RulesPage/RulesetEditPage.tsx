@@ -200,7 +200,7 @@ const RulesetEditPage: React.FC = () => {
               initialParentRuleId={activeRuleId || undefined}
             />
 
-            {/* {ruleToDelete && (
+            {ruleToDelete && (
               <DeleteRuleModal
                 open={deleteModalOpen}
                 onHide={handleDeleteCancel}
@@ -208,7 +208,7 @@ const RulesetEditPage: React.FC = () => {
                 rule={ruleToDelete}
                 totalRulesToDelete={totalRulesToDelete}
               />
-            )} */}
+            )}
 
             <Box
               sx={{
