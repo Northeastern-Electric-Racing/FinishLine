@@ -297,12 +297,18 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
           <FormHelperText error> {errors.discountCode?.message}</FormHelperText>
         </FormControl>
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid item xs={12}>
         <FormControl fullWidth>
           <Typography variant="h5" color="#EF4345">
             Sponsor Notes:
           </Typography>
-          <ReactHookTextField name="sponsorNotes" control={control} placeholder="Enter Additional Information" />
+          <ReactHookTextField
+            name="sponsorNotes"
+            control={control}
+            placeholder="Enter Additional Information"
+            multiline
+            rows={4}
+          />
           <FormHelperText error> {errors.sponsorNotes?.message}</FormHelperText>
         </FormControl>
       </Grid>

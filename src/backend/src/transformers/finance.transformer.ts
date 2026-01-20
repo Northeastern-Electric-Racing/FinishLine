@@ -7,6 +7,7 @@ export const sponsorTransformer = (sponsor: Prisma.SponsorGetPayload<SponsorQuer
   return {
     ...sponsor,
     sponsorContact: sponsor.vendorContact,
+    sponsorNotes: sponsor.sponsorNotes ?? undefined,
     discountCode: sponsor.discountCode ?? undefined,
     sponsorTasks: sponsor.sponsorTasks.map(sponsorTaskTranformer)
   };
