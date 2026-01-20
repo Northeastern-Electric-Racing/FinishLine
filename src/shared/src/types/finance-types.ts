@@ -10,6 +10,7 @@ export interface Sponsor {
   activeYears: number[];
   taxExempt: boolean;
   discountCode?: string;
+  sponsorNotes: string;
   sponsorTasks: SponsorTask[];
   tier: SponsorTier;
 }

@@ -45,6 +45,7 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       sponsorContact: sponsor.sponsorContact,
       taxExempt: sponsor.taxExempt,
       discountCode: sponsor.discountCode ?? undefined,
+      sponsorNotes: sponsor.sponsorNotes ?? undefined,
       sponsorTasks: defaultSponsorTasks
     }
   });
