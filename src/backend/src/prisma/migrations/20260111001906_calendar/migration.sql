@@ -44,13 +44,10 @@ CREATE TABLE "public"."Shop_Machinery" (
 -- CreateTable
 CREATE TABLE "public"."Schedule_Slot" (
     "scheduleSlotId" TEXT NOT NULL,
-    "days" "public"."DayOfWeek"[],
-    "startTime" TIMESTAMP(3),
-    "endTime" TIMESTAMP(3),
-    "recurrenceNumber" INTEGER NOT NULL,
-    "initialDateScheduled" DATE NOT NULL,
-    "endDate" DATE NOT NULL,
+    "startTime" TIMESTAMP(3) NOT NULL,
+    "endTime" TIMESTAMP(3) NOT NULL,
     "allDay" BOOLEAN NOT NULL DEFAULT false,
+    "eventId" TEXT NOT NULL,
 
     CONSTRAINT "Schedule_Slot_pkey" PRIMARY KEY ("scheduleSlotId")
 );
@@ -82,6 +79,7 @@ CREATE TABLE "public"."Event" (
     "approvalRequiredFromUserId" TEXT,
     "location" TEXT,
     "zoomLink" TEXT,
+    "initialDateScheduled" DATE NOT NULL,
     "questionDocumentLink" TEXT,
     "description" TEXT,
     "teamTypeId" TEXT,
@@ -138,14 +136,6 @@ CREATE TYPE "public"."Event_Status" AS ENUM ('UNCONFIRMED', 'CONFIRMED', 'SCHEDU
 
 -- AlterTable
 ALTER TABLE "public"."Event" ADD COLUMN     "status" "public"."Event_Status" NOT NULL;
-
--- CreateTable
-CREATE TABLE "public"."_EventToSchedule_Slot" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
-
-    CONSTRAINT "_EventToSchedule_Slot_AB_pkey" PRIMARY KEY ("A","B")
-);
 
 -- CreateTable
 CREATE TABLE "public"."_affiliatedTeam" (
@@ -277,10 +267,10 @@ CREATE INDEX "Shop_Machinery_machineryId_idx" ON "public"."Shop_Machinery"("mach
 CREATE UNIQUE INDEX "Shop_Machinery_shopId_machineryId_key" ON "public"."Shop_Machinery"("shopId", "machineryId");
 
 -- CreateIndex
-CREATE INDEX "Schedule_Slot_initialDateScheduled_endDate_idx" ON "public"."Schedule_Slot"("initialDateScheduled", "endDate");
+CREATE INDEX "Schedule_Slot_endTime_idx" ON "public"."Schedule_Slot"("endTime");
 
 -- CreateIndex
-CREATE INDEX "_EventToSchedule_Slot_B_index" ON "public"."_EventToSchedule_Slot"("B");
+CREATE INDEX "Schedule_Slot_startTime_idx" ON "public"."Schedule_Slot"("startTime");
 
 -- CreateIndex
 CREATE INDEX "_affiliatedTeam_B_index" ON "public"."_affiliatedTeam"("B");
@@ -355,10 +345,7 @@ ALTER TABLE "public"."Event_Type" ADD CONSTRAINT "Event_Type_userDeletedId_fkey"
 ALTER TABLE "public"."Event_Type" ADD CONSTRAINT "Event_Type_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."_EventToSchedule_Slot" ADD CONSTRAINT "_EventToSchedule_Slot_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."_EventToSchedule_Slot" ADD CONSTRAINT "_EventToSchedule_Slot_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."Schedule_Slot"("scheduleSlotId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."Schedule_Slot" ADD CONSTRAINT "Schedule_Slot_EventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("eventId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_affiliatedTeam" ADD CONSTRAINT "_affiliatedTeam_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -504,6 +491,7 @@ INSERT INTO "public"."Event" (
     "zoomLink",
     "questionDocumentLink",
     "description",
+    "initialDateScheduled",
     "status",
     "teamTypeId",
     "calendarEventIds"
@@ -526,6 +514,7 @@ SELECT
     dr."zoomLink",
     dr."docTemplateLink", -- questionDocument uses docTemplateLink
     NULL, -- description (not in Design_Review)
+    dr."initialDateScheduled",
     dr."status"::"text"::"public"."Event_Status",
     dr."teamTypeId",
     CASE WHEN dr."calendarEventId" IS NOT NULL THEN ARRAY[dr."calendarEventId"] ELSE ARRAY[]::TEXT[] END
@@ -534,25 +523,12 @@ JOIN "public"."WBS_Element" w ON dr."wbsElementId" = w."wbsElementId";
 
 -- Create Schedule_Slot records for Design Reviews
 -- This creates one slot per time per design review
--- Design Reviews are non-recurring, so endDate = dateScheduled
 CREATE TEMP TABLE temp_dr_schedule_slots AS
 SELECT 
     dr."designReviewId" as event_id,
     gen_random_uuid() as slot_id,
-    ARRAY[CASE EXTRACT(DOW FROM dr."dateScheduled")
-        WHEN 0 THEN 'SUNDAY'::public."DayOfWeek"
-        WHEN 1 THEN 'MONDAY'::public."DayOfWeek"
-        WHEN 2 THEN 'TUESDAY'::public."DayOfWeek"
-        WHEN 3 THEN 'WEDNESDAY'::public."DayOfWeek"
-        WHEN 4 THEN 'THURSDAY'::public."DayOfWeek"
-        WHEN 5 THEN 'FRIDAY'::public."DayOfWeek"
-        WHEN 6 THEN 'SATURDAY'::public."DayOfWeek"
-    END] as days,
     dr."dateScheduled" + ((10 + time_slot) * INTERVAL '1 hour') as start_time,
     dr."dateScheduled" + ((11 + time_slot) * INTERVAL '1 hour') as end_time,
-    0 as recurrence_number,
-    dr."initialDateScheduled" as initial_date,
-    dr."dateScheduled" as end_date,
     false as all_day
 FROM "public"."Design_Review" dr
 CROSS JOIN LATERAL unnest(dr."meetingTimes") AS time_slot;
@@ -560,28 +536,17 @@ CROSS JOIN LATERAL unnest(dr."meetingTimes") AS time_slot;
 -- Insert schedule slots from temp table
 INSERT INTO "public"."Schedule_Slot" (
     "scheduleSlotId",
-    "days",
     "startTime",
     "endTime",
-    "recurrenceNumber",
-    "initialDateScheduled",
-    "endDate",
-    "allDay"
+    "allDay",
+    "eventId"
 )
 SELECT 
     slot_id,
-    days,
     start_time,
     end_time,
-    recurrence_number,
-    initial_date,
-    end_date,
-    all_day
-FROM temp_dr_schedule_slots;
-
--- Link Schedule_Slots to Events using the temp table
-INSERT INTO "public"."_EventToSchedule_Slot" ("A", "B")
-SELECT event_id, slot_id
+    all_day,
+    event_id
 FROM temp_dr_schedule_slots;
 
 -- Drop temp table
@@ -614,92 +579,7 @@ SELECT dr."designReviewId", wp."workPackageId"
 FROM "public"."Design_Review" dr
 JOIN "public"."Work_Package" wp ON dr."wbsElementId" = wp."wbsElementId";
 
---  Migrate Meeting records to Event table
-INSERT INTO "public"."Event" (
-    "eventId",
-    "dateCreated",
-    "title",
-    "userCreatedId",
-    "eventTypeId",
-    "approved",
-    "status"
-)
-SELECT 
-    m."meetingId",
-    NOW(),
-    m."title",
-    t."headId", -- Use the team head as the creator
-    (SELECT et."eventTypeId" 
-     FROM "public"."Event_Type" et 
-     WHERE et."name" = 'Meeting' 
-     AND et."organizationId" = t."organizationId"
-     LIMIT 1),
-    'NO_CONFLICT'::public."Conflict_Status" , 
-    'UNCONFIRMED'::public."Event_Status"
-FROM "public"."Meeting" m
-JOIN "public"."Team" t ON m."teamId" = t."teamId";
-
--- Create Schedule_Slot records for Meetings
--- This creates one slot per time per meeting
-CREATE TEMP TABLE temp_meeting_schedule_slots AS
-SELECT 
-    m."meetingId" as event_id,
-    gen_random_uuid() as slot_id,
-    ARRAY[CASE EXTRACT(DOW FROM m."dateSet")
-        WHEN 0 THEN 'SUNDAY'::public."DayOfWeek"
-        WHEN 1 THEN 'MONDAY'::public."DayOfWeek"
-        WHEN 2 THEN 'TUESDAY'::public."DayOfWeek"
-        WHEN 3 THEN 'WEDNESDAY'::public."DayOfWeek"
-        WHEN 4 THEN 'THURSDAY'::public."DayOfWeek"
-        WHEN 5 THEN 'FRIDAY'::public."DayOfWeek"
-        WHEN 6 THEN 'SATURDAY'::public."DayOfWeek"
-    END] as days,
-    m."dateSet" + ((10 + time_slot) * INTERVAL '1 hour') as start_time,
-    m."dateSet" + ((11 + time_slot) * INTERVAL '1 hour') as end_time,
-    CASE WHEN m."recurringInterval" > 0 THEN m."recurringInterval" ELSE 0 END as recurrence_number,
-    m."dateSet"::DATE as initial_date,
-    CASE 
-        WHEN m."recurringInterval" > 0 THEN (m."dateSet" + INTERVAL '1 year')::DATE 
-        ELSE m."dateSet"::DATE 
-    END as end_date,
-    false as all_day
-FROM "public"."Meeting" m
-CROSS JOIN LATERAL unnest(m."meetingTimes") AS time_slot;
-
--- Insert schedule slots from temp table
-INSERT INTO "public"."Schedule_Slot" (
-    "scheduleSlotId",
-    "days",
-    "startTime",
-    "endTime",
-    "recurrenceNumber",
-    "initialDateScheduled",
-    "endDate",
-    "allDay"
-)
-SELECT 
-    slot_id,
-    days,
-    start_time,
-    end_time,
-    recurrence_number,
-    initial_date,
-    end_date,
-    all_day
-FROM temp_meeting_schedule_slots;
-
--- Link Schedule_Slots to Events using the temp table
-INSERT INTO "public"."_EventToSchedule_Slot" ("A", "B")
-SELECT event_id, slot_id
-FROM temp_meeting_schedule_slots;
-
--- Drop temp table
-DROP TABLE temp_meeting_schedule_slots;
-
--- Link Meetings to Teams
-INSERT INTO "public"."_affiliatedTeam" ("A", "B")
-SELECT m."meetingId", m."teamId"
-FROM "public"."Meeting" m;
+--  Skip Meetings migration because there are no existing meetings
 
 ALTER TABLE "Message_Info" ADD COLUMN     "eventId" TEXT;
 

@@ -6,7 +6,8 @@ import {
   Document,
   ConflictStatus,
   Event,
-  EventWithMembers
+  EventWithMembers,
+  DayOfWeek
 } from 'shared';
 import { InvalidEventTypeConfigurationException } from './errors.utils.js';
 import prisma from '../prisma/prisma.js';
@@ -16,9 +17,28 @@ import { eventTransformer } from '../transformers/calendar.transformer.js';
 export function buildScheduledTimesOverlap(start?: Date, end?: Date): Prisma.Schedule_SlotListRelationFilter | undefined {
   if (!start && !end) return undefined;
 
+  // With the new schema, we check if the slot's time range overlaps with the query range
   const AND: Prisma.Schedule_SlotWhereInput[] = [];
-  if (end) AND.push({ initialDateScheduled: { lte: end } });
-  if (start) AND.push({ endDate: { gte: start } });
+
+  // For all-day events, we just check the date portion
+  // For timed events, we check the full datetime
+  if (start) {
+    AND.push({
+      OR: [
+        { allDay: true, startTime: { gte: start } },
+        { allDay: false, endTime: { gte: start } }
+      ]
+    });
+  }
+
+  if (end) {
+    AND.push({
+      OR: [
+        { allDay: true, startTime: { lte: end } },
+        { allDay: false, startTime: { lte: end } }
+      ]
+    });
+  }
 
   return { some: { AND } };
 }
@@ -84,7 +104,8 @@ export function validateEventTypeConfiguration(
     machineryIds: string[];
     workPackageIds: string[];
     documents: EventDocumentCreateArgs[];
-    scheduleSlot: ScheduleSlotCreateArgs[];
+    scheduleSlots: ScheduleSlotCreateArgs[];
+    initialDateScheduled?: Date;
     teamTypeId?: string;
     location?: string;
     zoomLink?: string;
@@ -112,8 +133,11 @@ export function validateEventTypeConfiguration(
   if (eventType.questionDocument && !eventData.questionDocumentLink) {
     throw new InvalidEventTypeConfigurationException('a question document');
   }
-  if (eventData.scheduleSlot.length === 0) {
-    throw new InvalidEventTypeConfigurationException('at least one schedule slot');
+
+  // For requiresConfirmation events, schedule slots are optional initially
+  // For normal events, we need at least the initialDateScheduled
+  if (!eventType.requiresConfirmation && !eventData.initialDateScheduled) {
+    throw new InvalidEventTypeConfigurationException('an initial date scheduled');
   }
 
   // Check disallowed fields (inverse validation)
@@ -153,11 +177,11 @@ export function validateEventTypeConfiguration(
  * Checks if there are any scheduling conflicts with existing events.
  * A conflict occurs when events overlap in both time and location.
  *
- * @param eventId The event ID to exclude from conflict check (for edits)
- * @param scheduleSlots The schedule slots to check
+ * @param scheduleSlots The schedule slots to check (individual occurrences with full datetimes)
  * @param location The location to check
  * @param organization The organization
- * @returns An object with hasConflict boolean and the user who should approve (if any)
+ * @param eventId The event ID to exclude from conflict check (for edits)
+ * @returns An object with hasConflict boolean and the conflicting event (if any)
  */
 export async function checkEventConflicts(
   scheduleSlots: ScheduleSlotCreateArgs[],
@@ -175,51 +199,77 @@ export async function checkEventConflicts(
     return { hasConflict: false };
   }
 
+  // To limit speed issues, find min start and max end across time slots being checked, and limit potential conflicts to that range
+  let minStart: Date | null = null;
+  let maxEnd: Date | null = null;
+
+  for (const slot of scheduleSlots) {
+    if (slot.startTime) {
+      if (!minStart || slot.startTime < minStart) {
+        minStart = slot.startTime;
+      }
+    }
+    if (slot.endTime) {
+      if (!maxEnd || slot.endTime > maxEnd) {
+        maxEnd = slot.endTime;
+      }
+    }
+  }
+
   // Find all events in the same organization with the same location
   const potentialConflicts = await prisma.event.findMany({
     where: {
-      eventId: eventId ? { not: eventId } : undefined, // Exclude current event if editing
+      eventId: eventId ? { not: eventId } : undefined,
       location,
       dateDeleted: null,
       approved: { in: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT] },
       eventType: {
         organizationId: organization.organizationId
-      }
+      },
+      scheduledTimes: buildScheduledTimesOverlap(minStart ?? undefined, maxEnd ?? undefined)
     },
     ...getEventQueryArgs(organization.organizationId)
   });
 
-  // Check each schedule slot against existing events
+  // Check each new schedule slot against existing event slots
   for (const newSlot of scheduleSlots) {
     for (const event of potentialConflicts) {
       for (const existingSlot of event.scheduledTimes) {
-        // Check if there's a day overlap
-        const dayOverlap = newSlot.days.some((day) => existingSlot.days.includes(day));
+        if (!existingSlot.startTime || !existingSlot.endTime) continue;
 
-        if (!dayOverlap) continue;
-
-        // Check if there's a date range overlap
-        const newStartDate = new Date(newSlot.initialDateScheduled);
-        const newEndDate = new Date(newStartDate.getTime() + (newSlot.recurrenceNumber ?? 0) * 7 * 24 * 60 * 60 * 1000);
-        const existingStartDate = new Date(existingSlot.initialDateScheduled);
-        const existingEndDate = new Date(existingSlot.endDate);
-
-        const dateOverlap = newStartDate <= existingEndDate && newEndDate >= existingStartDate;
-
-        if (!dateOverlap) continue;
-
-        // If both are all-day events, they conflict
+        // Check if events overlap
+        // If both are all-day events on the same day, they conflict
         if (newSlot.allDay && existingSlot.allDay) {
-          return { hasConflict: true, conflictingEvent: eventTransformer(event) };
-        }
+          const newDate = new Date(newSlot.startTime);
+          const existingDate = new Date(existingSlot.startTime);
 
-        // If one is all-day and the other isn't, they conflict
-        if (newSlot.allDay || existingSlot.allDay) {
-          return { hasConflict: true, conflictingEvent: eventTransformer(event) };
-        }
+          // Normalize to compare dates only
+          newDate.setHours(0, 0, 0, 0);
+          existingDate.setHours(0, 0, 0, 0);
 
-        // Check time overlap (both have specific times)
-        if (newSlot.startTime && newSlot.endTime && existingSlot.startTime && existingSlot.endTime) {
+          if (newDate.getTime() === existingDate.getTime()) {
+            return { hasConflict: true, conflictingEvent: eventTransformer(event) };
+          }
+        }
+        // If one is all-day, check if the all-day event's date overlaps with the timed event
+        else if (newSlot.allDay || existingSlot.allDay) {
+          const allDaySlot = newSlot.allDay ? newSlot : existingSlot;
+          const timedSlot = newSlot.allDay ? existingSlot : newSlot;
+
+          const allDayDate = new Date(allDaySlot.startTime!);
+          allDayDate.setHours(0, 0, 0, 0);
+
+          const timedStart = new Date(timedSlot.startTime!);
+          const timedEnd = new Date(timedSlot.endTime!);
+          const timedDate = new Date(timedStart);
+          timedDate.setHours(0, 0, 0, 0);
+
+          if (allDayDate.getTime() === timedDate.getTime()) {
+            return { hasConflict: true, conflictingEvent: eventTransformer(event) };
+          }
+        }
+        // Both have specific times - check for time overlap
+        else {
           const newStart = new Date(newSlot.startTime).getTime();
           const newEnd = new Date(newSlot.endTime).getTime();
           const existingStart = new Date(existingSlot.startTime).getTime();

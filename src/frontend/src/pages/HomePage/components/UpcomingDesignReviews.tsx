@@ -34,7 +34,7 @@ const UpcomingEvents: React.FC<UpcomingEventProps> = ({ user }) => {
 
   const filteredEvents = events.filter((event) => {
     // Get the first scheduled date
-    const scheduledDate = event.scheduledTimes[0]?.initialDateScheduled;
+    const scheduledDate = event.scheduledTimes[0]?.startTime;
     if (!scheduledDate) return false;
 
     const currentDate = new Date();

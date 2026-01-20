@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ConflictStatus, DayOfWeek, Event, EventStatus, TeamType } from 'shared';
+import { ConflictStatus, Event, EventStatus, TeamType } from 'shared';
 import { exampleAdminUser, exampleAppAdminUser } from './users.stub';
 
 export const teamType1: TeamType = {
@@ -28,42 +28,26 @@ export const exampleDesignReviewEvent1: Event = {
   scheduledTimes: [
     {
       scheduleSlotId: 'slot-1',
-      days: [DayOfWeek.TUESDAY],
       startTime: new Date('2024-03-25T10:00:00'),
       endTime: new Date('2024-03-25T11:00:00'),
-      recurrenceNumber: 0,
-      initialDateScheduled: new Date('2024-03-25'),
-      endDate: new Date('2024-03-25'),
       allDay: false
     },
     {
       scheduleSlotId: 'slot-2',
-      days: [DayOfWeek.TUESDAY],
       startTime: new Date('2024-03-25T11:00:00'),
       endTime: new Date('2024-03-25T12:00:00'),
-      recurrenceNumber: 0,
-      initialDateScheduled: new Date('2024-03-25'),
-      endDate: new Date('2024-03-25'),
       allDay: false
     },
     {
       scheduleSlotId: 'slot-3',
-      days: [DayOfWeek.TUESDAY],
       startTime: new Date('2024-03-25T12:00:00'),
       endTime: new Date('2024-03-25T13:00:00'),
-      recurrenceNumber: 0,
-      initialDateScheduled: new Date('2024-03-25'),
-      endDate: new Date('2024-03-25'),
       allDay: false
     },
     {
       scheduleSlotId: 'slot-4',
-      days: [DayOfWeek.TUESDAY],
       startTime: new Date('2024-03-25T13:00:00'),
       endTime: new Date('2024-03-25T14:00:00'),
-      recurrenceNumber: 0,
-      initialDateScheduled: new Date('2024-03-25'),
-      endDate: new Date('2024-03-25'),
       allDay: false
     }
   ],
@@ -104,22 +88,14 @@ export const exampleDesignReviewEvent2: Event = {
   scheduledTimes: [
     {
       scheduleSlotId: 'slot-5',
-      days: [DayOfWeek.TUESDAY],
       startTime: new Date('2024-03-25T10:00:00'),
       endTime: new Date('2024-03-25T11:00:00'),
-      recurrenceNumber: 0,
-      initialDateScheduled: new Date('2024-03-25'),
-      endDate: new Date('2024-03-25'),
       allDay: false
     },
     {
       scheduleSlotId: 'slot-6',
-      days: [DayOfWeek.TUESDAY],
       startTime: new Date('2024-03-25T14:00:00'),
       endTime: new Date('2024-03-25T15:00:00'),
-      recurrenceNumber: 0,
-      initialDateScheduled: new Date('2024-03-25'),
-      endDate: new Date('2024-03-25'),
       allDay: false
     }
   ],

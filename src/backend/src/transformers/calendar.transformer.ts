@@ -103,12 +103,8 @@ export const calendarTransformer = (calendar: Prisma.CalendarGetPayload<Calendar
 export const scheduleTimesTransformer = (scheduleTimes: Prisma.Schedule_SlotGetPayload<null>): ScheduleSlot => {
   return {
     scheduleSlotId: scheduleTimes.scheduleSlotId,
-    days: scheduleTimes.days.map(dayOfWeekTransformer),
     startTime: scheduleTimes.startTime ?? undefined,
     endTime: scheduleTimes.endTime ?? undefined,
-    recurrenceNumber: scheduleTimes.recurrenceNumber,
-    initialDateScheduled: scheduleTimes.initialDateScheduled,
-    endDate: scheduleTimes.endDate,
     allDay: scheduleTimes.allDay
   };
 };
@@ -137,7 +133,8 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     zoomLink: event.zoomLink ?? undefined,
     questionDocumentLink: event.questionDocumentLink ?? undefined,
     description: event.description ?? undefined,
-    status: eventStatusTransformer(event.status)
+    status: eventStatusTransformer(event.status),
+    initialDateScheduled: event.initialDateScheduled ?? undefined
   };
 };
 
@@ -180,13 +177,17 @@ export const eventWithMembersTransformer = (event: Prisma.EventGetPayload<EventW
     zoomLink: event.zoomLink ?? undefined,
     questionDocumentLink: event.questionDocumentLink ?? undefined,
     description: event.description ?? undefined,
-    status: eventStatusTransformer(event.status)
+    status: eventStatusTransformer(event.status),
+    initialDateScheduled: event.initialDateScheduled ?? undefined
   };
 };
 
 export const eventPreviewTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>, wbsName: string): EventPreview => {
-  // Get the earliest scheduled date from scheduledTimes
-  const dateScheduled = event.scheduledTimes.length > 0 ? event.scheduledTimes[0].initialDateScheduled : new Date();
+  // Use first scheduled time's startTime, or fall back to initialDateScheduled (for confirmation events), or current date
+  const dateScheduled =
+    (event.scheduledTimes.length > 0 && event.scheduledTimes[0].startTime ? event.scheduledTimes[0].startTime : null) ??
+    event.initialDateScheduled ??
+    new Date();
 
   return {
     eventId: event.eventId,

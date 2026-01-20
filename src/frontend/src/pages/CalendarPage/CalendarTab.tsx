@@ -102,27 +102,27 @@ const CalendarTab: React.FC = () => {
     if (!event) return;
 
     try {
-      const { scheduleSlot, documentFiles, ...eventData } = data;
-
-      if (!scheduleSlot || scheduleSlot.length === 0) {
-        throw new Error('Missing scheduleSlot');
-      }
+      const { documentFiles, ...eventData } = data;
 
       // Convert EventRoutePayload to EditEventArgs format
+      // Note: scheduleSlot and initialDateScheduled are only in EventCreatePayload, not EventEditPayload
       const editArgs: EditEventArgs = {
-        ...eventData,
+        title: eventData.title,
+        requiredMemberIds: eventData.requiredMemberIds,
+        optionalMemberIds: eventData.optionalMemberIds,
+        teamIds: eventData.teamIds,
+        teamTypeId: eventData.teamTypeId,
+        location: eventData.location,
+        zoomLink: eventData.zoomLink,
+        shopIds: eventData.shopIds,
+        machineryIds: eventData.machineryIds,
+        workPackageIds: eventData.workPackageIds,
+        questionDocumentLink: eventData.questionDocumentLink,
+        description: eventData.description,
         status: event.status, // Use existing event status
         documents: event.documents.map((doc) => ({
           name: doc.name,
           googleFileId: doc.googleFileId
-        })),
-        scheduleSlot: scheduleSlot.map((slot) => ({
-          days: slot.days,
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-          recurrenceNumber: slot.recurrenceNumber,
-          initialDateScheduled: slot.initialDateScheduled,
-          allDay: slot.allDay
         }))
       };
 

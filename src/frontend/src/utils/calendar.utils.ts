@@ -18,8 +18,6 @@ export const convertDayToInt = (day: DayOfWeek) => {
       return 6;
     case DayOfWeek.SUNDAY:
       return 0;
-    default:
-      return -1;
   }
 };
 
@@ -66,44 +64,22 @@ export const convertDayToDayShorthand = (day: DayOfWeek) => {
 };
 
 // Get a list of dates for user viewing purposes (formatted to their timezone, with date and start/end time)
-// If start/end time is not needed, then only use the provided day
+// After the recurring events refactor, each schedule slot contains the actual date/time
 // Should be used when events need to be populated/displayed
 export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
   const times: Date[] = [];
+
   event.scheduledTimes.forEach((schedule) => {
     const specificTime = startTimes ? schedule.startTime : schedule.endTime;
 
-    schedule.days.forEach((day) => {
-      const startTimeDate = new Date(schedule.initialDateScheduled);
-      const timezoneOffset = startTimeDate.getTimezoneOffset() * 60000;
-
-      // get the initial date (adjusted to match UTC)
-      // this is done to ensure offset is properly calculated
-      const startDate = new Date(startTimeDate.getTime() + timezoneOffset);
-
-      // set the hour and minutes using UTC to match the adjusted date
-      startDate.setHours(specificTime?.getUTCHours() ?? 0);
-      startDate.setMinutes(specificTime?.getUTCMinutes() ?? 0);
-
-      // Calculate offset based on the current day being checked
-      const offset = startDate.getDay() - convertDayToInt(day);
-
-      // apply offset to get the true date of this specific event
-      startDate.setDate(startDate.getDate() - offset);
-
-      // adjust for the users time
-      const startDateAdjusted = new Date(startDate.getTime() - timezoneOffset);
-
-      // potentially needed to prevent extra events from showing up before the initial date
-      times.push(startDateAdjusted);
-
-      // add additional events for each recurrence on this day
-      for (let i = 1; i <= schedule.recurrenceNumber; i++) {
-        const nextDate = new Date(startDateAdjusted);
-        nextDate.setDate(nextDate.getDate() + 7 * i);
-        times.push(nextDate);
-      }
-    });
+    // With the new schema, startTime and endTime contain the full date/time
+    // Just return the dates directly
+    if (specificTime) {
+      times.push(new Date(specificTime));
+    } else if (schedule.allDay && schedule.startTime) {
+      // For all-day events, use startTime for the date
+      times.push(new Date(schedule.startTime));
+    }
   });
 
   return times;
@@ -160,7 +136,26 @@ export const getEventsFlattened = (events: Event[], startPeriod: Date, endPeriod
 };
 
 // converts an Event into Event Form Values
+// Note: After the recurring events refactor, we store individual schedule slots
+// When editing, we show the first occurrence and set recurrence to 0
+// Users will need to delete and recreate if they want to change recurring patterns
 export const convertEventToFormValues = (event: Event): Partial<EventFormValues> => {
+  // Use the first schedule slot for the form values
+  const [firstSlot] = event.scheduledTimes;
+
+  // Extract the date from the first slot's startTime
+  // For confirmation-required events, initialDateScheduled represents the start of the week range
+  // For regular events, we use the actual startTime from the first slot
+  let scheduleDate = new Date();
+  if (firstSlot?.startTime) {
+    scheduleDate = new Date(firstSlot.startTime);
+  } else if (firstSlot?.endTime) {
+    scheduleDate = new Date(firstSlot.endTime);
+  } else if (event.initialDateScheduled) {
+    // Only fall back to initialDateScheduled if no slot times exist (confirmation events)
+    scheduleDate = new Date(event.initialDateScheduled);
+  }
+
   return {
     title: event.title,
     eventTypeId: event.eventTypeId,
@@ -179,13 +174,13 @@ export const convertEventToFormValues = (event: Event): Partial<EventFormValues>
     })),
     questionDocumentLink: event.questionDocumentLink,
     description: event.description,
-    scheduleDate: event.scheduledTimes[0]?.initialDateScheduled
-      ? new Date(event.scheduledTimes[0].initialDateScheduled)
-      : new Date(),
-    startTime: event.scheduledTimes[0]?.startTime ? new Date(event.scheduledTimes[0].startTime) : undefined,
-    endTime: event.scheduledTimes[0]?.endTime ? new Date(event.scheduledTimes[0].endTime) : undefined,
-    allDay: event.scheduledTimes[0]?.allDay ?? false,
-    recurrenceNumber: event.scheduledTimes[0]?.recurrenceNumber ?? 0,
-    days: event.scheduledTimes[0]?.days ?? []
+    scheduleDate,
+    startTime: firstSlot?.startTime ? new Date(firstSlot.startTime) : undefined,
+    endTime: firstSlot?.endTime ? new Date(firstSlot.endTime) : undefined,
+    allDay: firstSlot?.allDay ?? false,
+    // Set recurrence to 0 since we've already expanded the schedule
+    recurrenceNumber: 0,
+    // No days since this is now a single occurrence
+    days: []
   };
 };

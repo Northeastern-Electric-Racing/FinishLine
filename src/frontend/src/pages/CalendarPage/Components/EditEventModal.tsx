@@ -11,7 +11,7 @@ export interface EditEventModalProps {
 }
 
 const EditEventModal: React.FC<EditEventModalProps> = (props) => {
-  return <EventModal {...props} />;
+  return <EventModal {...props} isEditMode={true} />;
 };
 
 export default EditEventModal;

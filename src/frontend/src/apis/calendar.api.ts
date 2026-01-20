@@ -200,6 +200,16 @@ export const postEditEvent = async (eventId: string, payload: EditEventArgs) => 
   });
 };
 
+export const postEditScheduleSlot = async (
+  eventId: string,
+  scheduleSlotId: string,
+  payload: { startTime?: Date; endTime?: Date; allDay: boolean }
+) => {
+  return axios.post<Event>(apiUrls.calendarEditScheduleSlot(eventId, scheduleSlotId), payload, {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
+};
+
 /**
  * Upload a document
  *

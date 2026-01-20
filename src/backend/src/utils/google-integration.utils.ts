@@ -229,42 +229,38 @@ export const createCalendarEvent = async (
     const calendarEventIds: string[] = [];
 
     for (const slot of scheduledSlots) {
-      const occurrences = generateOccurrences(slot);
-
-      for (const occurrence of occurrences) {
-        const eventInput = {
-          location: isInPerson ? location : zoomLink,
-          summary: eventTitle,
-          start: slot.allDay
-            ? { date: occurrence.date }
-            : {
-                dateTime: occurrence.startDateTime.toISOString(),
-                timeZone: 'America/New_York'
-              },
-          end: slot.allDay
-            ? { date: occurrence.date }
-            : {
-                dateTime: occurrence.endDateTime.toISOString(),
-                timeZone: 'America/New_York'
-              },
-          attendees,
-          reminders: {
-            useDefault: false,
-            overrides: [
-              { method: 'email', minutes: 24 * 60 },
-              { method: 'popup', minutes: 10 }
-            ]
-          }
-        };
-
-        const calendarEvent = await calendar.events.insert({
-          calendarId,
-          requestBody: eventInput
-        });
-
-        if (calendarEvent.data.id) {
-          calendarEventIds.push(calendarEvent.data.id);
+      const eventInput = {
+        location: isInPerson ? location : zoomLink,
+        summary: eventTitle,
+        start: slot.allDay
+          ? { date: slot.startTime ? slot.startTime.toISOString().split('T')[0] : undefined }
+          : {
+              dateTime: slot.startTime ? slot.startTime.toISOString() : undefined,
+              timeZone: 'America/New_York'
+            },
+        end: slot.allDay
+          ? { date: slot.endTime ? slot.endTime.toISOString().split('T')[0] : undefined }
+          : {
+              dateTime: slot.endTime ? slot.endTime.toISOString() : undefined,
+              timeZone: 'America/New_York'
+            },
+        attendees,
+        reminders: {
+          useDefault: false,
+          overrides: [
+            { method: 'email', minutes: 24 * 60 },
+            { method: 'popup', minutes: 10 }
+          ]
         }
+      };
+
+      const calendarEvent = await calendar.events.insert({
+        calendarId,
+        requestBody: eventInput
+      });
+
+      if (calendarEvent.data.id) {
+        calendarEventIds.push(calendarEvent.data.id);
       }
     }
 
@@ -323,64 +319,6 @@ export const updateCalendarEvent = async (
   } catch (error: unknown) {
     throw error;
   }
-};
-
-/**
- * Helper function to generate all occurrences for a schedule slot
- */
-const generateOccurrences = (slot: Schedule_Slot) => {
-  const occurrences: Array<{
-    date: string;
-    startDateTime: Date;
-    endDateTime: Date;
-  }> = [];
-
-  const startDate = new Date(slot.initialDateScheduled);
-  const endDate = new Date(slot.endDate);
-  const currentDate = new Date(startDate);
-
-  const dayOfWeekMap: Record<string, number> = {
-    SUNDAY: 0,
-    MONDAY: 1,
-    TUESDAY: 2,
-    WEDNESDAY: 3,
-    THURSDAY: 4,
-    FRIDAY: 5,
-    SATURDAY: 6
-  };
-
-  const targetDays = slot.days.map((day) => dayOfWeekMap[day]);
-
-  while (currentDate <= endDate) {
-    const currentDayOfWeek = currentDate.getDay();
-
-    if (targetDays.includes(currentDayOfWeek)) {
-      const [dateStr] = currentDate.toISOString().split('T');
-
-      if (slot.startTime && slot.endTime) {
-        const startTime = new Date(slot.startTime);
-        const endTime = new Date(slot.endTime);
-
-        const startDateTime = new Date(currentDate);
-        startDateTime.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
-
-        const endDateTime = new Date(currentDate);
-        endDateTime.setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
-
-        occurrences.push({ date: dateStr, startDateTime, endDateTime });
-      } else {
-        occurrences.push({
-          date: dateStr,
-          startDateTime: currentDate,
-          endDateTime: currentDate
-        });
-      }
-    }
-
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-
-  return occurrences;
 };
 
 /**

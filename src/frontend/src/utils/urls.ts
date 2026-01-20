@@ -477,6 +477,8 @@ const calendarApproveEvent = (id: string) => `${calendar()}/event/${id}/approve`
 const calendarDenyEvent = (id: string) => `${calendar()}/event/${id}/deny`;
 const calendarCreateEvent = () => `${calendar()}/event/create`;
 const calendarEditEvent = (eventId: string) => `${calendar()}/event/${eventId}/edit`;
+const calendarEditScheduleSlot = (eventId: string, scheduleSlotId: string) =>
+  `${calendar()}/event/${eventId}/schedule-slot/${scheduleSlotId}/edit`;
 const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
 const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 
@@ -820,6 +822,7 @@ export const apiUrls = {
   calendarApproveEvent,
   calendarDenyEvent,
   calendarEditEvent,
+  calendarEditScheduleSlot,
 
   version
 };

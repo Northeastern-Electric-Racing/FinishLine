@@ -23,12 +23,11 @@ import HelpIcon from '@mui/icons-material/Help';
 import EditIcon from '@mui/icons-material/Edit';
 import PeopleIcon from '@mui/icons-material/People';
 import DeleteIcon from '@mui/icons-material/Delete';
-
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
 import { EditEventArgs, useApproveEvent, useDeleteEvent, useDenyEvent, useEditEvent } from '../../hooks/calendar.hooks';
-import { convertDayToDayShorthand, convertEventToFormValues } from '../../utils/calendar.utils';
+import { convertEventToFormValues } from '../../utils/calendar.utils';
 import EditEventModal from './Components/EditEventModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import NERDeleteModal from '../../components/NERDeleteModal';
@@ -98,9 +97,7 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
 
   const showAvailabilityButton = true;
 
-  const eventDate =
-    clickedDate ||
-    (event.scheduledTimes[0]?.initialDateScheduled ? new Date(event.scheduledTimes[0].initialDateScheduled) : new Date());
+  const eventDate = clickedDate || (event.scheduledTimes[0]?.startTime ? event.scheduledTimes[0].startTime : new Date());
 
   const availabilityUrl = `${routes.NEW_CALENDAR}/event/${event.eventId}?date=${eventDate.toISOString()}`;
 
@@ -190,14 +187,18 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
           {!dayOfWeek && <AccessTimeIcon fontSize="small" />}
           {!dayOfWeek && (
             <Stack spacing={1.25} direction="column">
-              {event.scheduledTimes.map((slot) => (
-                <Typography variant="body2">
-                  {slot.startTime?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) ?? 'N/A'} –{' '}
-                  {slot.endTime?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) ?? 'N/A'}
-                  {' : '}
-                  {slot.days.map((day) => convertDayToDayShorthand(day)).join(', ')}
-                </Typography>
-              ))}
+              {event.scheduledTimes.map((slot, index) => {
+                const slotDate = slot.startTime ? new Date(slot.startTime) : null;
+                const dateStr = slotDate
+                  ? slotDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                  : 'N/A';
+                return (
+                  <Typography key={index} variant="body2">
+                    {dateStr} {slot.startTime?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) ?? 'N/A'}{' '}
+                    – {slot.endTime?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) ?? 'N/A'}
+                  </Typography>
+                );
+              })}
             </Stack>
           )}
           {hasValue(locationText) && (
@@ -524,9 +525,7 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
           initialValues={convertEventToFormValues(clickedEvent)}
           eventTypes={eventTypes}
           defaultDate={
-            clickedEvent.scheduledTimes[0]?.initialDateScheduled
-              ? new Date(clickedEvent.scheduledTimes[0].initialDateScheduled)
-              : new Date()
+            clickedEvent.scheduledTimes[0]?.startTime ? new Date(clickedEvent.scheduledTimes[0].startTime) : new Date()
           }
         />
       )}

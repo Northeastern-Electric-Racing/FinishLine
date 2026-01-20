@@ -43,6 +43,7 @@ import {
   uploadSingleDocument,
   downloadDocumentPdf,
   postEditEvent,
+  postEditScheduleSlot,
   getSingleEventWithMembers
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
@@ -72,6 +73,7 @@ export interface EventCreateArgs {
   documentIds: string[];
   questionDocument?: string;
   description?: string;
+  initialDateScheduled: Date;
   scheduleSlot: ScheduleSlotCreateArgs[];
 }
 
@@ -90,7 +92,12 @@ export interface EditEventArgs {
   documents: Array<{ name: string; googleFileId: string }>;
   questionDocumentLink?: string;
   description?: string;
-  scheduleSlot: ScheduleSlotCreateArgs[];
+}
+
+export interface EditScheduleSlotArgs {
+  startTime?: Date;
+  endTime?: Date;
+  allDay: boolean;
 }
 
 export interface DownloadDocumentsFormInput {
@@ -475,6 +482,24 @@ export const useEditEvent = (eventId: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['filter-events']);
         queryClient.invalidateQueries(EVENT_KEY);
+      }
+    }
+  );
+};
+
+export const useEditScheduleSlot = (eventId: string, scheduleSlotId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Event, Error, EditScheduleSlotArgs>(
+    ['events', 'edit-schedule-slot', eventId, scheduleSlotId],
+    async (payload) => {
+      const { data } = await postEditScheduleSlot(eventId, scheduleSlotId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['filter-events']);
+        queryClient.invalidateQueries(EVENT_KEY);
+        queryClient.invalidateQueries(['events', eventId]);
       }
     }
   );

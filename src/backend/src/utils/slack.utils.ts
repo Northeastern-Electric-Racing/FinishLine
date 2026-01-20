@@ -426,7 +426,11 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
     throw new HttpException(400, 'Event has no scheduled times');
   }
 
-  const dateScheduled = firstScheduledTime.initialDateScheduled;
+  const dateScheduled = firstScheduledTime.startTime;
+
+  if (!dateScheduled) {
+    throw new HttpException(400, 'Event scheduled time has no start time');
+  }
 
   // Extract meeting times from scheduled slots
   const meetingTimes = event.scheduledTimes

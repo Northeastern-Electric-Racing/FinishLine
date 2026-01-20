@@ -210,4 +210,5 @@ export type ExceptionObjectNames =
   | 'Reimbursement Request Comment'
   | 'Calendar'
   | 'Event Type'
-  | 'Event';
+  | 'Event'
+  | 'Schedule Slot';

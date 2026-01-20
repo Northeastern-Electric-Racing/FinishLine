@@ -27,7 +27,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   const totalUsers = usersToAvailabilities.size;
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
   // Use displayDate if provided, otherwise fall back to event's initial date
-  const initialDate = displayDate || event.scheduledTimes[0]?.initialDateScheduled || new Date();
+  const initialDate = displayDate || event.initialDateScheduled || new Date();
   const potentialDays = getNextSevenDays(initialDate);
 
   const handleTimeslotClick = (index: number, _day: Date) => {

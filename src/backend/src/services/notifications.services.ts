@@ -133,10 +133,7 @@ export default class NotificationsService {
         },
         scheduledTimes: {
           some: {
-            initialDateScheduled: {
-              lte: endOfToday,
-              gte: startOfToday
-            }
+            AND: [{ endTime: { gte: startOfToday } }, { startTime: { lte: endOfToday } }]
           }
         }
       },

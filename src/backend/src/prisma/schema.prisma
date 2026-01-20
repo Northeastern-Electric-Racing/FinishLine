@@ -1024,16 +1024,14 @@ enum DayOfWeek {
 
 model Schedule_Slot {
   scheduleSlotId       String      @id @default(uuid())
-  days                 DayOfWeek[]
-  startTime            DateTime? // time of day (just use a DateTime, ignore the date portion)
-  endTime              DateTime? // time of day (just use a DateTime, ignore the date portion)
-  recurrenceNumber     Int
-  initialDateScheduled DateTime    @db.Date
-  endDate              DateTime    @db.Date
+  startTime            DateTime
+  endTime              DateTime
   allDay               Boolean     @default(false)
-  ScheduledEvents      Event[]
+  eventId              String
+  event                Event       @relation(fields: [eventId], references: [eventId])
 
-  @@index([initialDateScheduled, endDate])
+  @@index([endTime])
+  @@index([startTime])
 }
 
 enum Conflict_Status {
@@ -1088,6 +1086,7 @@ model Event {
   workPackages               Work_Package[]
   documents                  Document[]      
   status                     Event_Status
+  initialDateScheduled       DateTime?
   questionDocumentLink       String?
   description                String?
   notificationSlackThreads   Message_Info[]

@@ -10,7 +10,7 @@ import {
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest, alfred } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { DayOfWeek, EventType, Machinery, ScheduleSlotCreateArgs, Shop, Event } from 'shared';
+import { EventType, Machinery, ScheduleSlotCreateArgs, Shop, Event } from 'shared';
 
 describe('Calendar Tests', () => {
   let orgId: string;
@@ -866,11 +866,8 @@ describe('Calendar Tests', () => {
     it('succeeds for admin with valid inputs', async () => {
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -906,7 +903,6 @@ describe('Calendar Tests', () => {
       expect(result.machinery[0].machineryId).toBe(machinery.machineryId);
       expect(result.workPackages).toHaveLength(0);
       expect(result.scheduledTimes).toHaveLength(1);
-      expect(result.scheduledTimes[0].days).toEqual([DayOfWeek.MONDAY, DayOfWeek.TUESDAY]);
       expect(result.teamType).toBe(undefined);
       expect(result.approved).toBe(Conflict_Status.NO_CONFLICT);
       expect(result.approvalRequiredFrom).toBe(undefined);
@@ -919,11 +915,8 @@ describe('Calendar Tests', () => {
     it('fails if eventTypeId does not exist', async () => {
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -940,7 +933,8 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
-          scheduleSlots
+          scheduleSlots,
+          undefined
         )
       ).rejects.toThrow(new NotFoundException('Event Type', 'non-existent-event-type-id'));
     });
@@ -948,11 +942,8 @@ describe('Calendar Tests', () => {
     it('fails if organization is invalid', async () => {
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -969,7 +960,8 @@ describe('Calendar Tests', () => {
           [shop.shopId],
           [],
           [],
-          scheduleSlots
+          scheduleSlots,
+          undefined
         )
       ).rejects.toThrow(new InvalidOrganizationException('Event Type'));
     });
@@ -977,11 +969,8 @@ describe('Calendar Tests', () => {
     it('succeeds with minimal inputs', async () => {
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -1027,11 +1016,8 @@ describe('Calendar Tests', () => {
     it('fails if memberIds are invalid', async () => {
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -1061,11 +1047,8 @@ describe('Calendar Tests', () => {
     it('fails if memberIds belong to a different organization', async () => {
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -1095,11 +1078,8 @@ describe('Calendar Tests', () => {
     it('fails if shopIds are inputted', async () => {
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -1129,11 +1109,8 @@ describe('Calendar Tests', () => {
     it('fails if shopIds belong to a different organization', async () => {
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -1163,11 +1140,8 @@ describe('Calendar Tests', () => {
     it('fails if machineryIds belong to a different organization', async () => {
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -1203,11 +1177,8 @@ describe('Calendar Tests', () => {
 
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -1250,11 +1221,8 @@ describe('Calendar Tests', () => {
 
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -1288,11 +1256,8 @@ describe('Calendar Tests', () => {
 
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -1351,11 +1316,8 @@ describe('Calendar Tests', () => {
 
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -1400,11 +1362,8 @@ describe('Calendar Tests', () => {
 
       const scheduleSlots2 = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
-          startTime: new Date('2025-10-13T09:00:00Z'),
-          endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 5,
-          initialDateScheduled: new Date('2029-10-01'),
+          startTime: new Date('2029-10-01T09:00:00Z'),
+          endTime: new Date('2029-10-01T10:00:00Z'),
           allDay: false
         }
       ];
@@ -1446,11 +1405,8 @@ describe('Calendar Tests', () => {
 
       const scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -1495,11 +1451,8 @@ describe('Calendar Tests', () => {
 
       const scheduleSlots2 = [
         {
-          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
-          startTime: new Date('2025-10-13T09:00:00Z'),
-          endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 5,
-          initialDateScheduled: new Date('2029-10-01'),
+          startTime: new Date('2029-10-01T09:00:00Z'),
+          endTime: new Date('2029-10-01T10:00:00Z'),
           allDay: false
         }
       ];
@@ -1678,11 +1631,8 @@ describe('Calendar Tests', () => {
       member = await createTestUser(supermanAdmin, orgId);
       scheduleSlots = [
         {
-          days: [DayOfWeek.MONDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];
@@ -1721,8 +1671,7 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
-          [],
-          scheduleSlots
+          []
         )
       ).rejects.toThrow(new NotFoundException('Event', 'non-existent-id'));
     });
@@ -1746,8 +1695,7 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
-          [],
-          scheduleSlots
+          []
         )
       ).rejects.toThrow(new DeletedException('Event', event.eventId));
     });
@@ -1767,7 +1715,6 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
-          scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1792,7 +1739,6 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
-          scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1823,7 +1769,7 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
-          scheduleSlots,
+          undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1847,7 +1793,6 @@ describe('Calendar Tests', () => {
           ['non-existent-machinery-id'],
           [],
           [],
-          scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1878,7 +1823,6 @@ describe('Calendar Tests', () => {
           [deletedMachinery.machineryId],
           [],
           [],
-          scheduleSlots,
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1890,16 +1834,6 @@ describe('Calendar Tests', () => {
 
     it('succeeds for admin and updates event', async () => {
       const newMember = await createTestUser(alfred, orgId);
-      const newScheduleSlots: ScheduleSlotCreateArgs[] = [
-        {
-          days: [DayOfWeek.WEDNESDAY],
-          startTime: new Date('2025-10-15T14:00:00Z'),
-          endTime: new Date('2025-10-15T15:00:00Z'),
-          recurrenceNumber: 2,
-          initialDateScheduled: new Date('2025-10-15'),
-          allDay: true
-        }
-      ];
 
       const result = await CalendarService.editEvent(
         adminUser,
@@ -1914,7 +1848,6 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         [],
-        newScheduleSlots,
         undefined,
         'https://updated.com/questions.pdf',
         'Updated Location',
@@ -1946,11 +1879,8 @@ describe('Calendar Tests', () => {
       member = await createTestUser(wonderwomanGuest, orgId);
       const scheduleSlots: ScheduleSlotCreateArgs[] = [
         {
-          days: [DayOfWeek.MONDAY],
           startTime: new Date('2025-10-13T09:00:00Z'),
           endTime: new Date('2025-10-13T10:00:00Z'),
-          recurrenceNumber: 1,
-          initialDateScheduled: new Date('2025-10-13'),
           allDay: false
         }
       ];

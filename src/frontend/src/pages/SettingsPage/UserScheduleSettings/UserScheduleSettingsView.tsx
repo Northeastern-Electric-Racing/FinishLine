@@ -29,8 +29,8 @@ const UserScheduleSettingsView = ({
 
   // Get first scheduled date from event
   let firstScheduledDate: Date | undefined;
-  if (event && event.scheduledTimes && event.scheduledTimes.length > 0 && event.scheduledTimes[0].initialDateScheduled) {
-    firstScheduledDate = new Date(event.scheduledTimes[0].initialDateScheduled);
+  if (event && event.scheduledTimes && event.scheduledTimes.length > 0 && event.scheduledTimes[0].startTime) {
+    firstScheduledDate = new Date(event.scheduledTimes[0].startTime);
   }
 
   // Get work package names for the event title
@@ -56,7 +56,7 @@ const UserScheduleSettingsView = ({
   };
 
   const firstDate = useMemo(() => {
-    const raw = event?.scheduledTimes?.[0]?.initialDateScheduled;
+    const raw = event?.scheduledTimes?.[0]?.startTime;
     return raw ? new Date(raw as any) : new Date();
   }, [event?.scheduledTimes]);
 

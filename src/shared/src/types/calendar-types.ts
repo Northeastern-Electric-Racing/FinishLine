@@ -99,21 +99,14 @@ export interface Calendar {
 
 export interface ScheduleSlot {
   scheduleSlotId: string;
-  days: DayOfWeek[];
-  startTime?: Date;
-  endTime?: Date;
-  recurrenceNumber: number;
-  initialDateScheduled: Date;
-  endDate: Date;
+  startTime: Date;
+  endTime: Date;
   allDay: boolean;
 }
 
 export interface ScheduleSlotCreateArgs {
-  days: DayOfWeek[];
-  startTime?: Date;
-  endTime?: Date;
-  recurrenceNumber: number;
-  initialDateScheduled: Date;
+  startTime: Date;
+  endTime: Date;
   allDay: boolean;
 }
 
@@ -219,6 +212,7 @@ export interface Event {
   questionDocumentLink?: string;
   description?: string;
   status: EventStatus;
+  initialDateScheduled?: Date;
 }
 
 export type EventPreview = {
@@ -254,4 +248,5 @@ export interface EventWithMembers {
   questionDocumentLink?: string;
   description?: string;
   status: EventStatus;
+  initialDateScheduled?: Date;
 }

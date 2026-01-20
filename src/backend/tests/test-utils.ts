@@ -615,22 +615,17 @@ export const createTestDesignReviewEvent = async () => {
     [testWorkPackage.workPackageId], // workPackageIds
     [
       {
-        days: [DayOfWeek.TUESDAY],
         startTime: new Date('2027-03-25T10:00:00'),
         endTime: new Date('2027-03-25T11:00:00'),
-        recurrenceNumber: 0,
-        initialDateScheduled: new Date('2027-03-25'),
         allDay: false
       },
       {
-        days: [DayOfWeek.TUESDAY],
         startTime: new Date('2027-03-25T11:00:00'),
         endTime: new Date('2027-03-25T12:00:00'),
-        recurrenceNumber: 0,
-        initialDateScheduled: new Date('2027-03-25'),
         allDay: false
       }
     ], // scheduleSlot - two 1-hour time slots
+    undefined,
     teamType.teamTypeId, // team type id
     'https://docs.google.com/document/d/test-design-review-questions', // questionDocument
     'Campus Center Room 101', // location

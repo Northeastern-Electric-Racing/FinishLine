@@ -3245,14 +3245,12 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [
       {
-        days: [DayOfWeek.MONDAY],
-        startTime: new Date('2025-10-21T10:00:00.000Z'),
-        endTime: new Date('2025-10-21T11:00:00.000Z'),
-        recurrenceNumber: 1,
-        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
+        startTime: new Date(),
+        endTime: new Date(new Date().getTime() + 60 * 60 * 1000),
         allDay: false
       }
     ],
+    undefined,
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -3273,14 +3271,27 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [
       {
-        days: [DayOfWeek.MONDAY],
-        startTime: new Date('2025-12-21T10:00:00.000Z'),
-        endTime: new Date('2025-12-21T11:00:00.000Z'),
-        recurrenceNumber: 2,
-        initialDateScheduled: new Date('2025-12-21T00:00:00.000Z'),
+        startTime: new Date(new Date().getTime() + 105 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 106 * 60 * 60 * 1000),
+        allDay: false
+      },
+      {
+        startTime: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 25 * 60 * 60 * 1000),
+        allDay: false
+      },
+      {
+        startTime: new Date(new Date().getTime() + 50 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 51 * 60 * 60 * 1000),
+        allDay: false
+      },
+      {
+        startTime: new Date(new Date().getTime() + 85 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 87 * 60 * 60 * 1000),
         allDay: false
       }
     ],
+    undefined,
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -3301,22 +3312,12 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [
       {
-        days: [DayOfWeek.MONDAY],
         startTime: new Date('2025-10-21T10:00:00.000Z'),
         endTime: new Date('2025-10-21T11:00:00.000Z'),
-        recurrenceNumber: 2,
-        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
-        allDay: false
-      },
-      {
-        days: [DayOfWeek.WEDNESDAY],
-        startTime: new Date('2025-10-21T10:00:00.000Z'),
-        endTime: new Date('2025-10-21T11:00:00.000Z'),
-        recurrenceNumber: 2,
-        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
         allDay: false
       }
     ],
+    undefined,
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -3337,14 +3338,12 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [
       {
-        days: [DayOfWeek.MONDAY],
         startTime: new Date('2025-10-21T10:00:00.000Z'),
         endTime: new Date('2025-10-21T11:00:00.000Z'),
-        recurrenceNumber: 2,
-        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
         allDay: false
       }
     ],
+    undefined,
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -3365,14 +3364,12 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [
       {
-        days: [DayOfWeek.MONDAY],
         startTime: new Date('2025-10-21T10:00:00.000Z'),
         endTime: new Date('2025-10-21T11:00:00.000Z'),
-        recurrenceNumber: 7,
-        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
         allDay: false
       }
     ],
+    undefined,
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -3393,14 +3390,12 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [
       {
-        days: [DayOfWeek.MONDAY],
         startTime: new Date('2025-10-21T10:00:00.000Z'),
         endTime: new Date('2025-10-21T11:00:00.000Z'),
-        recurrenceNumber: 2,
-        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
         allDay: false
       }
     ],
+    undefined,
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -3421,14 +3416,12 @@ const performSeed: () => Promise<void> = async () => {
     [workPackage1.id],
     [
       {
-        days: [DayOfWeek.TUESDAY],
         startTime: new Date('2025-10-22T14:00:00.000Z'),
         endTime: new Date('2025-10-22T16:00:00.000Z'),
-        recurrenceNumber: 1,
-        initialDateScheduled: new Date('2025-10-22T00:00:00.000Z'),
         allDay: false
       }
     ],
+    undefined,
     software.teamTypeId,
     'https://docs.google.com/document/d/2_example',
     'Conference Room B',
@@ -3449,14 +3442,12 @@ const performSeed: () => Promise<void> = async () => {
     [workPackage3.id],
     [
       {
-        days: [DayOfWeek.WEDNESDAY],
         startTime: new Date('2025-10-23T09:00:00.000Z'),
         endTime: new Date('2025-10-23T12:00:00.000Z'),
-        recurrenceNumber: 1,
-        initialDateScheduled: new Date('2025-10-23T00:00:00.000Z'),
         allDay: false
       }
     ],
+    undefined,
     electrical.teamTypeId,
     'https://docs.google.com/document/d/3_example',
     undefined,
@@ -3477,14 +3468,12 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [
       {
-        days: [DayOfWeek.THURSDAY],
         startTime: new Date('2025-10-24T13:00:00.000Z'),
         endTime: new Date('2025-10-24T17:00:00.000Z'),
-        recurrenceNumber: 1,
-        initialDateScheduled: new Date('2025-10-24T00:00:00.000Z'),
         allDay: false
       }
     ],
+    undefined,
     mechanical.teamTypeId,
     undefined,
     undefined,

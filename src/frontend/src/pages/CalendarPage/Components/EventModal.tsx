@@ -19,7 +19,16 @@ import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { DayOfWeek, EventDocumentUploadArgs, WbsElementStatus, wbsNamePipe, EventType, isHead, MAX_FILE_SIZE } from 'shared';
+import {
+  DayOfWeek,
+  EventDocumentUploadArgs,
+  WbsElementStatus,
+  wbsNamePipe,
+  EventType,
+  isHead,
+  MAX_FILE_SIZE,
+  getNextSevenDays
+} from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
 import { useAllWorkPackagesPreview } from '../../../hooks/work-packages.hooks';
@@ -39,6 +48,11 @@ import { ClearIcon } from '@mui/x-date-pickers';
 import { useAllMachines, useAllShops } from '../../../hooks/calendar.hooks';
 import StoreIcon from '@mui/icons-material/Store';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import Tooltip from '@mui/material/Tooltip';
+import { convertDayToInt, convertIntToDay } from '../../../utils/calendar.utils';
+import { getDay } from 'date-fns';
 
 export interface EventFormValues {
   title: string;
@@ -56,14 +70,14 @@ export interface EventFormValues {
   questionDocumentLink?: string;
   description?: string;
   scheduleDate: Date;
-  startTime?: Date;
-  endTime?: Date;
+  startTime: Date;
+  endTime: Date;
   allDay: boolean;
   recurrenceNumber: number;
   days: DayOfWeek[];
 }
 
-export interface EventRoutePayload {
+export interface EventCreatePayload {
   title: string;
   eventTypeId: string;
   requiredMemberIds: string[];
@@ -78,15 +92,33 @@ export interface EventRoutePayload {
   documentFiles: EventDocumentUploadArgs[];
   questionDocumentLink?: string;
   description?: string;
+  initialDateScheduled: Date;
   scheduleSlot: Array<{
-    days: DayOfWeek[];
-    startTime?: Date;
-    endTime?: Date;
-    recurrenceNumber: number;
-    initialDateScheduled: Date;
+    startTime: Date;
+    endTime: Date;
     allDay: boolean;
   }>;
 }
+
+export interface EventEditPayload {
+  title: string;
+  eventTypeId: string;
+  requiredMemberIds: string[];
+  optionalMemberIds: string[];
+  teamIds: string[];
+  teamTypeId?: string;
+  location?: string;
+  zoomLink?: string;
+  shopIds: string[];
+  machineryIds: string[];
+  workPackageIds: string[];
+  documentFiles: EventDocumentUploadArgs[];
+  questionDocumentLink?: string;
+  description?: string;
+}
+
+// Union type for backward compatibility
+export type EventRoutePayload = EventCreatePayload | EventEditPayload;
 
 const schema = yup.object().shape({
   title: yup.string().required('Title is required'),
@@ -104,16 +136,8 @@ const schema = yup.object().shape({
   questionDocumentLink: yup.string().optional(),
   description: yup.string().optional(),
   scheduleDate: yup.date().required('Date is required'),
-  startTime: yup.date().when('allDay', {
-    is: false,
-    then: (schema) => schema.required('Start time is required'),
-    otherwise: (schema) => schema.optional()
-  }),
-  endTime: yup.date().when('allDay', {
-    is: false,
-    then: (schema) => schema.required('End time is required').min(yup.ref('startTime'), 'End time must be after start time'),
-    otherwise: (schema) => schema.optional()
-  }),
+  startTime: yup.date().required('Start time is required'),
+  endTime: yup.date().required('End time is required'),
   allDay: yup.boolean().required(),
   recurrenceNumber: yup.number().min(0).required('Recurrence is required'),
   days: yup.array().of(yup.mixed<DayOfWeek>().required()).default([])
@@ -126,6 +150,7 @@ export interface BaseEventModalProps {
   initialValues?: Partial<EventFormValues>;
   eventTypes: EventType[];
   defaultDate?: Date;
+  isEditMode?: boolean;
 }
 
 const EventModal: React.FC<BaseEventModalProps> = ({
@@ -134,7 +159,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   onSubmit,
   initialValues,
   eventTypes,
-  defaultDate = new Date()
+  defaultDate = new Date(),
+  isEditMode = false
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -176,10 +202,10 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       questionDocumentLink: initialValues?.questionDocumentLink,
       description: initialValues?.description,
       scheduleDate: initialValues?.scheduleDate ?? defaultDate,
-      startTime: initialValues?.startTime,
-      endTime: initialValues?.endTime,
+      startTime: initialValues?.startTime ?? new Date(),
+      endTime: initialValues?.endTime ?? new Date(),
       allDay: initialValues?.allDay ?? false,
-      recurrenceNumber: initialValues?.recurrenceNumber ?? 0,
+      recurrenceNumber: initialValues?.recurrenceNumber ?? 1,
       days: initialValues?.days ?? []
     }),
     [initialValues, defaultDate]
@@ -207,6 +233,11 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const shopIds = watch('shopIds');
   const selectedEventTypeId = watch('eventTypeId');
   const documentFiles = watch('documentFiles');
+
+  const selectedEventType = useMemo(
+    () => allowedEventTypes.find((et) => et.eventTypeId === selectedEventTypeId),
+    [allowedEventTypes, selectedEventTypeId]
+  );
 
   // Filter machinery based on selected shops
   const filteredMachineryOptions = useMemo(() => {
@@ -265,13 +296,84 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     }
   }, [open, initialValues?.days]);
 
-  const selectedEventType = useMemo(
-    () => allowedEventTypes.find((et) => et.eventTypeId === selectedEventTypeId),
-    [allowedEventTypes, selectedEventTypeId]
-  );
-
-  const isEditMode = !!initialValues?.eventTypeId;
   const computedTitle = isEditMode ? 'Edit Event' : 'Add Event';
+
+  // Handle recurring dropdown toggle
+  const handleRecurringToggle = () => {
+    if (showRecurringOptions) {
+      // Closing the dropdown - reset to 0
+      setValue('recurrenceNumber', 0);
+      setValue('days', []);
+    } else {
+      // Opening the dropdown - set to 1
+      setValue('recurrenceNumber', 1);
+      const startDate = watch('scheduleDate') ?? new Date();
+      setValue('days', [convertIntToDay(getDay(startDate))]);
+    }
+    setShowRecurringOptions(!showRecurringOptions);
+  };
+
+  // Handle event type change
+  const handleEventTypeChange = (newEventTypeId: string) => {
+    const newEventType = allowedEventTypes.find((et) => et.eventTypeId === newEventTypeId);
+
+    const selectedDate = watch('scheduleDate');
+
+    // If switching to a confirmation event type, clear time-related fields
+    if (newEventType?.requiresConfirmation) {
+      setValue('startTime', selectedDate);
+      setValue('endTime', selectedDate);
+      setValue('allDay', false);
+      setValue('recurrenceNumber', 0);
+      setValue('days', []);
+      setShowRecurringOptions(false);
+    }
+
+    // Update the event type
+    setValue('eventTypeId', newEventTypeId);
+  };
+
+  // Calculate the last occurrence date for recurring events
+  const calculateLastOccurrenceDate = () => {
+    const recurrenceNum = watch('recurrenceNumber');
+    const startDate = watch('scheduleDate');
+    const selectedDays = watch('days');
+
+    if (!recurrenceNum || recurrenceNum === 0 || selectedDays.length === 0) return null;
+
+    // Convert to day indices (0 = Sunday, 1 = Monday, etc.)
+    const dayIndices: number[] = selectedDays.map(convertDayToInt).sort((a, b) => a - b);
+
+    // Start from the initial date
+    const currentDate = new Date(startDate);
+    let occurrencesFound = 0;
+    let lastOccurrenceDate = currentDate;
+
+    // Find all occurrences
+    const searchDate = new Date(currentDate);
+
+    // Search for up to a year (52 weeks * 7 days = 364 days)
+    const maxDaysToSearch = 365;
+    let daysSearched = 0;
+
+    while (occurrencesFound < recurrenceNum && daysSearched < maxDaysToSearch) {
+      const currentDayIndex = searchDate.getDay();
+
+      if (dayIndices.includes(currentDayIndex)) {
+        occurrencesFound++;
+        lastOccurrenceDate = new Date(searchDate);
+
+        if (occurrencesFound >= recurrenceNum) {
+          break;
+        }
+      }
+
+      searchDate.setDate(searchDate.getDate() + 1);
+      daysSearched++;
+    }
+
+    return lastOccurrenceDate;
+  };
 
   const handleClose = () => {
     reset(defaultFormData);
@@ -314,89 +416,50 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const onFormSubmit = async (data: EventFormValues) => {
     try {
       const scheduleSlots: Array<{
-        days: DayOfWeek[];
-        startTime?: Date;
-        endTime?: Date;
-        recurrenceNumber: number;
-        initialDateScheduled: Date;
+        startTime: Date;
+        endTime: Date;
         allDay: boolean;
       }> = [];
 
-      // If recurrence is 0, automatically determine the day from the initial date
-      if (data.recurrenceNumber === 0) {
-        const dayOfWeek = data.scheduleDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
-        const dayOfWeekEnum = [
-          DayOfWeek.SUNDAY,
-          DayOfWeek.MONDAY,
-          DayOfWeek.TUESDAY,
-          DayOfWeek.WEDNESDAY,
-          DayOfWeek.THURSDAY,
-          DayOfWeek.FRIDAY,
-          DayOfWeek.SATURDAY
-        ][dayOfWeek];
+      // Helper function to create a date/time for a specific occurrence
+      const createSlotDateTime = (baseDate: Date, time: Date): Date => {
+        const result = new Date(baseDate);
+        result.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
+        return result;
+      };
 
-        // Create a schedule slot with just the initial date's day
-        scheduleSlots.push({
-          days: [dayOfWeekEnum],
-          startTime: data.startTime,
-          endTime: data.endTime,
-          recurrenceNumber: 0,
-          initialDateScheduled: data.scheduleDate,
-          allDay: data.allDay
-        });
-      } else {
-        // If there are recurring days selected
-        const dayOfWeek = data.scheduleDate.getDay();
-        const dayOfWeekEnum = [
-          DayOfWeek.SUNDAY,
-          DayOfWeek.MONDAY,
-          DayOfWeek.TUESDAY,
-          DayOfWeek.WEDNESDAY,
-          DayOfWeek.THURSDAY,
-          DayOfWeek.FRIDAY,
-          DayOfWeek.SATURDAY
-        ][dayOfWeek];
+      // Generate schedule slots for recurring events
+      const dayOfWeekEnum = convertIntToDay(data.scheduleDate.getDay());
+      const selectedDays = data.days.length > 0 ? data.days : [dayOfWeekEnum];
 
-        const selectedDays = data.days.length > 0 ? data.days : [];
-        const initialDayMatchesSelected = selectedDays.includes(dayOfWeekEnum);
+      // Convert selected days to day indices for comparison
+      const dayIndices = selectedDays.map(convertDayToInt);
 
-        // If the initial date's day is NOT in the selected recurring days,
-        // create a separate slot for just the initial occurrence
-        if (!initialDayMatchesSelected && selectedDays.length > 0) {
+      // Generate additional recurring occurrences
+      let occurrencesGenerated = 0;
+      const searchDate = new Date(data.scheduleDate);
+
+      const maxDaysToSearch = 365; // Search up to a year
+      let daysSearched = 0;
+
+      while (occurrencesGenerated < data.recurrenceNumber && daysSearched < maxDaysToSearch) {
+        const currentDayIndex = searchDate.getDay();
+
+        if ((dayIndices as number[]).includes(currentDayIndex)) {
           scheduleSlots.push({
-            days: [dayOfWeekEnum],
-            startTime: data.startTime,
-            endTime: data.endTime,
-            recurrenceNumber: 0,
-            initialDateScheduled: data.scheduleDate,
+            startTime: createSlotDateTime(searchDate, data.startTime),
+            endTime: createSlotDateTime(searchDate, data.endTime),
             allDay: data.allDay
           });
+          occurrencesGenerated++;
         }
 
-        // Create the recurring schedule slot
-        if (selectedDays.length > 0) {
-          scheduleSlots.push({
-            days: selectedDays,
-            startTime: data.startTime,
-            endTime: data.endTime,
-            recurrenceNumber: data.recurrenceNumber,
-            initialDateScheduled: data.scheduleDate,
-            allDay: data.allDay
-          });
-        } else {
-          // If no days selected, use the initial date's day for recurring
-          scheduleSlots.push({
-            days: [dayOfWeekEnum],
-            startTime: data.startTime,
-            endTime: data.endTime,
-            recurrenceNumber: data.recurrenceNumber,
-            initialDateScheduled: data.scheduleDate,
-            allDay: data.allDay
-          });
-        }
+        searchDate.setDate(searchDate.getDate() + 1);
+        daysSearched++;
       }
 
-      const submitData: EventRoutePayload = {
+      // Build the appropriate payload based on mode
+      const basePayload = {
         title: data.title,
         eventTypeId: data.eventTypeId,
         requiredMemberIds: requiredMembers.map((m) => m.id),
@@ -410,10 +473,16 @@ const EventModal: React.FC<BaseEventModalProps> = ({
         workPackageIds: data.workPackageIds,
         documentFiles: data.documentFiles,
         questionDocumentLink: data.questionDocumentLink,
-        description: data.description,
-        scheduleSlot: scheduleSlots
+        description: data.description
       };
 
+      const submitData: EventRoutePayload = isEditMode
+        ? basePayload
+        : {
+            ...basePayload,
+            initialDateScheduled: data.scheduleDate,
+            scheduleSlot: scheduleSlots
+          };
       await onSubmit(submitData);
       handleClose();
     } catch (e: unknown) {
@@ -472,336 +541,462 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 500, p: 2 }}>
         {/* Title Input with red placeholder styling */}
-        <Controller
-          name="title"
-          control={control}
-          render={({ field: { onChange, value } }) => (
-            <TextField
-              value={value}
-              onChange={onChange}
-              placeholder="Add Title"
-              variant="standard"
-              fullWidth
-              error={!!errors.title}
-              sx={{
-                '& .MuiInput-input': {
-                  fontSize: '2rem',
-                  fontWeight: 500,
-                  color: value ? 'text.primary' : '#ef5350',
-                  '&::placeholder': {
-                    color: '#ef5350',
-                    opacity: 0.7
+        <FormControl fullWidth>
+          <Controller
+            name="title"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <TextField
+                value={value}
+                onChange={onChange}
+                placeholder="Add Title"
+                variant="standard"
+                fullWidth
+                error={!!errors.title}
+                sx={{
+                  '& .MuiInput-input': {
+                    fontSize: '2rem',
+                    fontWeight: 500,
+                    color: value ? 'text.primary' : '#ef5350',
+                    '&::placeholder': {
+                      color: '#ef5350',
+                      opacity: 0.7
+                    }
                   }
-                }
-              }}
-            />
-          )}
-        />
-        {/* Event Type Tabs */}
-        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-          {allowedEventTypes.map((et) => (
-            <Controller
-              key={et.eventTypeId}
-              name="eventTypeId"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Button
-                  onClick={() => onChange(et.eventTypeId)}
-                  variant={value === et.eventTypeId ? 'contained' : 'outlined'}
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    bgcolor: value === et.eventTypeId ? 'grey.600' : 'transparent',
-                    color: value === et.eventTypeId ? 'white' : 'text.primary',
-                    borderColor: 'grey.400',
-                    '&:hover': {
-                      bgcolor: value === et.eventTypeId ? 'grey.700' : 'grey.100'
-                    }
-                  }}
-                >
-                  {et.name}
-                </Button>
-              )}
-            />
-          ))}
-        </Stack>
-        {/* Date and Time Section */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-            <CalendarTodayIcon sx={{ color: 'text.secondary' }} />
-            <Controller
-              name="scheduleDate"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <DatePicker
-                  value={value}
-                  open={datePickerOpen}
-                  onClose={() => setDatePickerOpen(false)}
-                  onOpen={() => setDatePickerOpen(true)}
-                  onChange={(newValue) => onChange(newValue ?? defaultDate)}
-                  slotProps={{
-                    textField: {
-                      variant: 'standard',
-                      error: !!errors.scheduleDate,
-                      onClick: () => setDatePickerOpen(true),
-                      sx: { minWidth: 150 }
-                    },
-                    day: {
-                      sx: {
-                        '&.Mui-selected': {
-                          backgroundColor: '#EF4345 !important',
-                          '&:hover': {
-                            backgroundColor: '#d32f2f !important'
-                          },
-                          '&:focus': {
-                            backgroundColor: '#EF4345 !important'
-                          }
-                        }
-                      }
-                    }
-                  }}
-                />
-              )}
-            />
-
-            {!watch('allDay') && (
-              <>
-                <Controller
-                  name="startTime"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <TimePicker
-                      value={value}
-                      open={startTimePickerOpen}
-                      onClose={() => setStartTimePickerOpen(false)}
-                      onOpen={() => setStartTimePickerOpen(true)}
-                      onChange={(newValue) => onChange(newValue)}
-                      slotProps={{
-                        textField: {
-                          variant: 'standard',
-                          error: !!errors.startTime,
-                          onClick: () => setStartTimePickerOpen(true),
-                          sx: { width: 100 }
-                        },
-                        layout: {
-                          sx: {
-                            '& .MuiPickersLayout-contentWrapper .MuiClock-pin': {
-                              backgroundColor: '#EF4345'
-                            },
-                            '& .MuiPickersLayout-contentWrapper .MuiClockPointer-root': {
-                              backgroundColor: '#EF4345'
-                            },
-                            '& .MuiPickersLayout-contentWrapper .MuiClockPointer-thumb': {
-                              backgroundColor: '#EF4345',
-                              borderColor: '#EF4345'
-                            },
-                            '& .MuiPickersLayout-contentWrapper .MuiClockNumber-root.Mui-selected': {
-                              backgroundColor: '#EF4345 !important'
-                            },
-                            '& .MuiPickersLayout-contentWrapper .MuiPickersArrowSwitcher-button.Mui-selected': {
-                              backgroundColor: '#EF4345 !important',
-                              color: 'white'
-                            },
-                            '& .MuiMultiSectionDigitalClock-root .MuiMenuItem-root.Mui-selected': {
-                              backgroundColor: '#EF4345 !important',
-                              color: 'white'
-                            }
-                          }
-                        }
-                      }}
-                    />
-                  )}
-                />
-                <Typography>-</Typography>
-                <Controller
-                  name="endTime"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <TimePicker
-                      value={value}
-                      open={endTimePickerOpen}
-                      onClose={() => setEndTimePickerOpen(false)}
-                      onOpen={() => setEndTimePickerOpen(true)}
-                      onChange={(newValue) => onChange(newValue)}
-                      slotProps={{
-                        textField: {
-                          variant: 'standard',
-                          error: !!errors.endTime,
-                          onClick: () => setEndTimePickerOpen(true),
-                          sx: { width: 100 }
-                        },
-                        layout: {
-                          sx: {
-                            '& .MuiPickersLayout-contentWrapper .MuiClock-pin': {
-                              backgroundColor: '#EF4345'
-                            },
-                            '& .MuiPickersLayout-contentWrapper .MuiClockPointer-root': {
-                              backgroundColor: '#EF4345'
-                            },
-                            '& .MuiPickersLayout-contentWrapper .MuiClockPointer-thumb': {
-                              backgroundColor: '#EF4345',
-                              borderColor: '#EF4345'
-                            },
-                            '& .MuiPickersLayout-contentWrapper .MuiClockNumber-root.Mui-selected': {
-                              backgroundColor: '#EF4345 !important'
-                            },
-                            '& .MuiPickersLayout-contentWrapper .MuiPickersArrowSwitcher-button.Mui-selected': {
-                              backgroundColor: '#EF4345 !important',
-                              color: 'white'
-                            },
-                            '& .MuiMultiSectionDigitalClock-root .MuiMenuItem-root.Mui-selected': {
-                              backgroundColor: '#EF4345 !important',
-                              color: 'white'
-                            }
-                          }
-                        }
-                      }}
-                    />
-                  )}
-                />
-              </>
-            )}
-
-            <Controller
-              name="allDay"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <FormControlLabel
-                  control={<Checkbox checked={value} onChange={(e) => onChange(e.target.checked)} />}
-                  label="All Day"
-                />
-              )}
-            />
-
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setShowRecurringOptions(!showRecurringOptions)}
-              sx={{
-                borderRadius: 2,
-                textTransform: 'none',
-                borderColor: 'grey.400',
-                color: 'text.primary',
-                bgcolor: showRecurringOptions || watch('days').length > 0 ? 'grey.400' : 'transparent'
-              }}
-            >
-              Recurring ▼
-            </Button>
-          </Box>
-
-          {/* Recurring Options */}
-          {showRecurringOptions && (
-            <Box sx={{ ml: 5, p: 2, bgcolor: 'grey.50', borderRadius: 2, border: '1px solid', borderColor: 'grey.300' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                <Typography variant="body2" color="#000">
-                  Repeat
-                </Typography>
-                <Controller
-                  name="recurrenceNumber"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <TextField
-                      type="number"
-                      value={value}
-                      onChange={onChange}
-                      size="small"
-                      sx={{
-                        width: 80,
-                        '& .MuiInputBase-input': {
-                          color: '#424242'
-                        },
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': {
-                            borderColor: '#9e9e9e'
-                          },
-                          '&:hover fieldset': {
-                            borderColor: '#757575'
-                          }
-                        }
-                      }}
-                      inputProps={{ min: 1 }}
-                    />
-                  )}
-                />
-                <Typography variant="body2" color="#000">
-                  more time(s)
-                </Typography>
-              </Box>
-
-              <Typography variant="body2" fontWeight={500} mb={1} color="#000">
-                Repeat on:
-              </Typography>
-              <Controller
-                name="days"
-                control={control}
-                render={({ field: { onChange, value } }) => {
-                  const weekDays: DayOfWeek[] = [
-                    DayOfWeek.SUNDAY,
-                    DayOfWeek.MONDAY,
-                    DayOfWeek.TUESDAY,
-                    DayOfWeek.WEDNESDAY,
-                    DayOfWeek.THURSDAY,
-                    DayOfWeek.FRIDAY,
-                    DayOfWeek.SATURDAY
-                  ];
-                  const dayLabels = ['S', 'M', 'T', 'W', 'TH', 'F', 'S'];
-
-                  const toggleDay = (day: DayOfWeek) => {
-                    const currentDays = value || [];
-                    if (currentDays.includes(day)) {
-                      onChange(currentDays.filter((d) => d !== day));
-                    } else {
-                      onChange([...currentDays, day]);
-                    }
-                  };
-
-                  return (
-                    <Stack direction="row" spacing={1}>
-                      {weekDays.map((day, index) => {
-                        const isSelected = (value || []).includes(day);
-                        return (
-                          <Button
-                            key={day}
-                            onClick={() => toggleDay(day)}
-                            variant={isSelected ? 'contained' : 'outlined'}
-                            sx={{
-                              minWidth: 40,
-                              width: 40,
-                              height: 40,
-                              borderRadius: '50%',
-                              p: 0,
-                              bgcolor: isSelected ? '#EF4345' : 'transparent',
-                              color: isSelected ? 'white' : '#000',
-                              borderColor: '#9e9e9e',
-                              '&:hover': {
-                                bgcolor: isSelected ? '#d32f2f' : '#e0e0e0'
-                              }
-                            }}
-                          >
-                            {dayLabels[index]}
-                          </Button>
-                        );
-                      })}
-                    </Stack>
-                  );
                 }}
               />
-
-              {errors.days && (
-                <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
-                  {errors.days.message}
-                </Typography>
-              )}
-
-              <Box sx={{ mt: 2, p: 1.5, bgcolor: '#EF4345', borderRadius: 1 }}>
-                <Typography variant="caption" color="text.secondary">
-                  <strong>Note:</strong> This event will repeat {watch('recurrenceNumber')} time(s){' '}
-                  {watch('days').length > 0 && `on ${watch('days').join(', ')}`}
-                </Typography>
+            )}
+          />
+          <FormHelperText error>{errors.title?.message}</FormHelperText>
+        </FormControl>
+        {/* Event Type Tabs */}
+        <FormControl fullWidth>
+          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+            {allowedEventTypes.map((et) => (
+              <Button
+                key={et.eventTypeId}
+                onClick={() => handleEventTypeChange(et.eventTypeId)}
+                variant={watch('eventTypeId') === et.eventTypeId ? 'contained' : 'outlined'}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  bgcolor: watch('eventTypeId') === et.eventTypeId ? 'grey.600' : 'transparent',
+                  color: watch('eventTypeId') === et.eventTypeId ? 'white' : 'text.primary',
+                  borderColor: 'grey.400',
+                  '&:hover': {
+                    bgcolor: watch('eventTypeId') === et.eventTypeId ? 'grey.700' : 'grey.100'
+                  }
+                }}
+              >
+                {et.name}
+              </Button>
+            ))}
+          </Stack>
+          <FormHelperText error>{errors.eventTypeId?.message}</FormHelperText>
+        </FormControl>
+        {/* Date and Time Section - Only show when event type is selected */}
+        {selectedEventType && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {selectedEventType.requiresConfirmation ? (
+              <Box>
+                {/* Header with info tooltip */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Tooltip
+                    title="This event type requires confirmation, so users will provide their availability for the following week. Once confirmed, the event will be scheduled for a specific time within this date range."
+                    arrow
+                    placement="top"
+                  >
+                    <HelpOutlineIcon sx={{ fontSize: 18, color: 'grey.400', cursor: 'help' }} />
+                  </Tooltip>
+                  <Typography variant="body2" color="white" fontWeight={500}>
+                    To be scheduled within:
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                  <CalendarTodayIcon sx={{ color: 'text.secondary' }} />
+                  <Controller
+                    name="scheduleDate"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <DatePicker
+                        value={value}
+                        open={datePickerOpen}
+                        onClose={() => setDatePickerOpen(false)}
+                        onOpen={() => setDatePickerOpen(true)}
+                        onChange={(newValue) => onChange(newValue ?? defaultDate)}
+                        slotProps={{
+                          textField: {
+                            variant: 'standard',
+                            error: !!errors.scheduleDate,
+                            onClick: () => setDatePickerOpen(true),
+                            sx: { minWidth: 150 }
+                          },
+                          day: {
+                            sx: {
+                              '&.Mui-selected': {
+                                backgroundColor: '#EF4345 !important',
+                                '&:hover': {
+                                  backgroundColor: '#d32f2f !important'
+                                },
+                                '&:focus': {
+                                  backgroundColor: '#EF4345 !important'
+                                }
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    )}
+                  />
+                  <ArrowForwardIcon sx={{ color: 'text.secondary' }} />
+                  <Controller
+                    name="scheduleDate"
+                    control={control}
+                    render={({ field: { value } }) => {
+                      const weekDates = getNextSevenDays(value);
+                      const endDate = weekDates.at(-1);
+                      return (
+                        <DatePicker
+                          value={endDate}
+                          disabled
+                          slotProps={{
+                            textField: {
+                              variant: 'standard',
+                              sx: { minWidth: 150 }
+                            },
+                            day: {
+                              sx: {
+                                '&.Mui-selected': {
+                                  backgroundColor: '#EF4345 !important'
+                                }
+                              }
+                            }
+                          }}
+                        />
+                      );
+                    }}
+                  />
+                </Box>
               </Box>
-            </Box>
-          )}
-        </Box>
+            ) : (
+              /* Normal Event Type - Full date/time selection */
+              <>
+                {/* Date and Time Row */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                  <CalendarTodayIcon sx={{ color: 'text.secondary' }} />
+                  <Controller
+                    name="scheduleDate"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <DatePicker
+                        value={value}
+                        open={datePickerOpen}
+                        onClose={() => setDatePickerOpen(false)}
+                        onOpen={() => setDatePickerOpen(true)}
+                        onChange={(newValue) => onChange(newValue ?? defaultDate)}
+                        slotProps={{
+                          textField: {
+                            variant: 'standard',
+                            error: !!errors.scheduleDate,
+                            onClick: () => setDatePickerOpen(true),
+                            sx: { minWidth: 150 }
+                          },
+                          day: {
+                            sx: {
+                              '&.Mui-selected': {
+                                backgroundColor: '#EF4345 !important',
+                                '&:hover': {
+                                  backgroundColor: '#d32f2f !important'
+                                },
+                                '&:focus': {
+                                  backgroundColor: '#EF4345 !important'
+                                }
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    )}
+                  />
+
+                  {!watch('allDay') && (
+                    <>
+                      <Controller
+                        name="startTime"
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                          <TimePicker
+                            value={value}
+                            open={startTimePickerOpen}
+                            onClose={() => setStartTimePickerOpen(false)}
+                            onOpen={() => setStartTimePickerOpen(true)}
+                            onChange={(newValue) => onChange(newValue)}
+                            slotProps={{
+                              textField: {
+                                variant: 'standard',
+                                error: !!errors.startTime,
+                                onClick: () => setStartTimePickerOpen(true),
+                                sx: { width: 100 }
+                              },
+                              layout: {
+                                sx: {
+                                  '& .MuiPickersLayout-contentWrapper .MuiClock-pin': {
+                                    backgroundColor: '#EF4345'
+                                  },
+                                  '& .MuiPickersLayout-contentWrapper .MuiClockPointer-root': {
+                                    backgroundColor: '#EF4345'
+                                  },
+                                  '& .MuiPickersLayout-contentWrapper .MuiClockPointer-thumb': {
+                                    backgroundColor: '#EF4345',
+                                    borderColor: '#EF4345'
+                                  },
+                                  '& .MuiPickersLayout-contentWrapper .MuiClockNumber-root.Mui-selected': {
+                                    backgroundColor: '#EF4345 !important'
+                                  },
+                                  '& .MuiPickersLayout-contentWrapper .MuiPickersArrowSwitcher-button.Mui-selected': {
+                                    backgroundColor: '#EF4345 !important',
+                                    color: 'white'
+                                  },
+                                  '& .MuiMultiSectionDigitalClock-root .MuiMenuItem-root.Mui-selected': {
+                                    backgroundColor: '#EF4345 !important',
+                                    color: 'white'
+                                  }
+                                }
+                              }
+                            }}
+                          />
+                        )}
+                      />
+                      <Typography>-</Typography>
+                      <Controller
+                        name="endTime"
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                          <TimePicker
+                            value={value}
+                            open={endTimePickerOpen}
+                            onClose={() => setEndTimePickerOpen(false)}
+                            onOpen={() => setEndTimePickerOpen(true)}
+                            onChange={(newValue) => onChange(newValue)}
+                            slotProps={{
+                              textField: {
+                                variant: 'standard',
+                                error: !!errors.endTime,
+                                onClick: () => setEndTimePickerOpen(true),
+                                sx: { width: 100 }
+                              },
+                              layout: {
+                                sx: {
+                                  '& .MuiPickersLayout-contentWrapper .MuiClock-pin': {
+                                    backgroundColor: '#EF4345'
+                                  },
+                                  '& .MuiPickersLayout-contentWrapper .MuiClockPointer-root': {
+                                    backgroundColor: '#EF4345'
+                                  },
+                                  '& .MuiPickersLayout-contentWrapper .MuiClockPointer-thumb': {
+                                    backgroundColor: '#EF4345',
+                                    borderColor: '#EF4345'
+                                  },
+                                  '& .MuiPickersLayout-contentWrapper .MuiClockNumber-root.Mui-selected': {
+                                    backgroundColor: '#EF4345 !important'
+                                  },
+                                  '& .MuiPickersLayout-contentWrapper .MuiPickersArrowSwitcher-button.Mui-selected': {
+                                    backgroundColor: '#EF4345 !important',
+                                    color: 'white'
+                                  },
+                                  '& .MuiMultiSectionDigitalClock-root .MuiMenuItem-root.Mui-selected': {
+                                    backgroundColor: '#EF4345 !important',
+                                    color: 'white'
+                                  }
+                                }
+                              }
+                            }}
+                          />
+                        )}
+                      />
+                    </>
+                  )}
+                </Box>
+
+                {/* All Day and Recurring Row */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 5 }}>
+                  <Controller
+                    name="allDay"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <FormControlLabel
+                        control={<Checkbox checked={value} onChange={(e) => onChange(e.target.checked)} />}
+                        label="All Day"
+                      />
+                    )}
+                  />
+
+                  {/* Hide recurring options when editing */}
+                  {!isEditMode && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={handleRecurringToggle}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        borderColor: 'grey.400',
+                        color: 'text.primary',
+                        bgcolor: showRecurringOptions || watch('days').length > 0 ? 'grey.400' : 'transparent'
+                      }}
+                    >
+                      Recurring ▼
+                    </Button>
+                  )}
+                </Box>
+
+                {/* Recurring Options */}
+                {showRecurringOptions && (
+                  <Box
+                    sx={{
+                      ml: 5,
+                      p: 2,
+                      bgcolor: 'rgba(0, 0, 0, 0.04)',
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: 'grey.300'
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <Typography variant="body2" color="text.primary">
+                        Repeat
+                      </Typography>
+                      <Controller
+                        name="recurrenceNumber"
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                          <TextField
+                            type="number"
+                            value={value}
+                            onChange={onChange}
+                            size="small"
+                            sx={{
+                              width: 80,
+                              '& .MuiInputBase-input': {
+                                color: 'text.primary'
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                  borderColor: 'grey.400'
+                                },
+                                '&:hover fieldset': {
+                                  borderColor: 'grey.600'
+                                }
+                              }
+                            }}
+                            inputProps={{ min: 1 }}
+                          />
+                        )}
+                      />
+                      <Typography variant="body2" color="text.primary">
+                        more time(s)
+                      </Typography>
+                    </Box>
+
+                    <Typography variant="body2" fontWeight={500} mb={1} color="text.primary">
+                      Repeat on:
+                    </Typography>
+                    <Controller
+                      name="days"
+                      control={control}
+                      render={({ field: { onChange, value } }) => {
+                        const weekDays: DayOfWeek[] = [
+                          DayOfWeek.SUNDAY,
+                          DayOfWeek.MONDAY,
+                          DayOfWeek.TUESDAY,
+                          DayOfWeek.WEDNESDAY,
+                          DayOfWeek.THURSDAY,
+                          DayOfWeek.FRIDAY,
+                          DayOfWeek.SATURDAY
+                        ];
+                        const dayLabels = ['S', 'M', 'T', 'W', 'TH', 'F', 'S'];
+
+                        const toggleDay = (day: DayOfWeek) => {
+                          const currentDays = value || [];
+                          if (currentDays.includes(day)) {
+                            onChange(currentDays.filter((d) => d !== day));
+                          } else {
+                            onChange([...currentDays, day]);
+                          }
+                        };
+
+                        return (
+                          <Stack direction="row" spacing={1} mb={2}>
+                            {weekDays.map((day, index) => {
+                              const isSelected = (value || []).includes(day);
+                              return (
+                                <Button
+                                  key={day}
+                                  onClick={() => toggleDay(day)}
+                                  variant={isSelected ? 'contained' : 'outlined'}
+                                  sx={{
+                                    minWidth: 40,
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: '50%',
+                                    p: 0,
+                                    bgcolor: isSelected ? '#EF4345' : 'transparent',
+                                    color: isSelected ? 'white' : 'text.primary',
+                                    borderColor: 'grey.400',
+                                    '&:hover': {
+                                      bgcolor: isSelected ? '#d32f2f' : 'rgba(0, 0, 0, 0.08)'
+                                    }
+                                  }}
+                                >
+                                  {dayLabels[index]}
+                                </Button>
+                              );
+                            })}
+                          </Stack>
+                        );
+                      }}
+                    />
+
+                    {errors.days && (
+                      <Typography variant="caption" color="error" sx={{ display: 'block', mb: 2 }}>
+                        {errors.days.message}
+                      </Typography>
+                    )}
+
+                    {/* Last Occurrence Info */}
+                    {watch('recurrenceNumber') > 0 && watch('days').length > 0 ? (
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          bgcolor: 'rgba(239, 67, 69, 0.08)',
+                          borderRadius: 1,
+                          border: '1px solid',
+                          borderColor: 'rgba(239, 67, 69, 0.2)'
+                        }}
+                      >
+                        <Typography variant="body2" color="text.secondary">
+                          <strong>Last occurrence:</strong>{' '}
+                          {calculateLastOccurrenceDate()?.toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        {watch('days').length === 0
+                          ? 'Select at least one day to see the last occurrence date.'
+                          : "Select the number of times you'd like this event to recur."}
+                      </Typography>
+                    )}
+                  </Box>
+                )}
+              </>
+            )}
+          </Box>
+        )}
         {/* Required Members Section */}
         {selectedEventType?.requiredMembers && (
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
@@ -947,22 +1142,23 @@ const EventModal: React.FC<BaseEventModalProps> = ({
         {selectedEventType?.zoomLink && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <VideocamIcon sx={{ color: 'text.secondary' }} />
-            <Controller
-              name="zoomLink"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <TextField
-                  value={value || ''}
-                  onChange={onChange}
-                  placeholder="Zoom Link"
-                  variant="standard"
-                  fullWidth
-                  error={!!errors.zoomLink}
-                  helperText={errors.zoomLink?.message}
-                  sx={{ flex: 1 }}
-                />
-              )}
-            />
+            <FormControl fullWidth sx={{ flex: 1 }}>
+              <Controller
+                name="zoomLink"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <TextField
+                    value={value || ''}
+                    onChange={onChange}
+                    placeholder="Zoom Link"
+                    variant="standard"
+                    fullWidth
+                    error={!!errors.zoomLink}
+                  />
+                )}
+              />
+              <FormHelperText error>{errors.zoomLink?.message}</FormHelperText>
+            </FormControl>
           </Box>
         )}
         {selectedEventType?.shop && (

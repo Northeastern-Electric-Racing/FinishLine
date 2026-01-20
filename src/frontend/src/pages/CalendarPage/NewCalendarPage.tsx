@@ -304,24 +304,18 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
 
   const handleCreateEvent = async (data: EventRoutePayload) => {
     try {
-      const { scheduleSlot, documentFiles, ...eventData } = data;
-
-      if (!scheduleSlot || scheduleSlot.length === 0) {
-        throw new Error('Missing scheduleSlot');
+      // Type guard to ensure we have a create payload with schedule slots
+      if (!('scheduleSlot' in data) || !('initialDateScheduled' in data)) {
+        throw new Error('Invalid payload for creating event');
       }
 
+      const { documentFiles, ...eventData } = data;
+
       // Create the event first without documents
+      // EventModal already generates the schedule slots with actual dates/times
       const createArgs = {
         ...eventData,
-        documentIds: [],
-        scheduleSlot: scheduleSlot.map((slot) => ({
-          days: slot.days,
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-          recurrenceNumber: slot.recurrenceNumber,
-          initialDateScheduled: slot.initialDateScheduled,
-          allDay: slot.allDay
-        }))
+        documentIds: []
       };
 
       const createdEvent = await createEvent(createArgs);

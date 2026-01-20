@@ -69,7 +69,7 @@ const removeYear = (str: string): string => {
 
 const UpcomingEventCard: React.FC<EventProps> = ({ event, user }) => {
   const theme = useTheme();
-  const firstScheduledDate = event.scheduledTimes[0]?.initialDateScheduled;
+  const firstScheduledDate = event.initialDateScheduled || event.scheduledTimes[0]?.startTime;
   const timezoneAdjustedDate = firstScheduledDate ? timezoneOffset(firstScheduledDate) : new Date();
 
   const [firstWorkPackage] = event.workPackages;

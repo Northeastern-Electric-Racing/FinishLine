@@ -274,6 +274,7 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         scheduleSlot,
+        initialDateScheduled,
         questionDocumentLink,
         location,
         zoomLink,
@@ -281,11 +282,12 @@ export default class CalendarController {
       } = req.body;
 
       const parsedScheduleSlot = scheduleSlot.map((slot: any) => ({
-        ...slot,
         startTime: slot.startTime ? new Date(slot.startTime) : undefined,
         endTime: slot.endTime ? new Date(slot.endTime) : undefined,
-        initialDateScheduled: new Date(slot.initialDateScheduled)
+        allDay: slot.allDay
       }));
+
+      const parsedInitialDateScheduled = initialDateScheduled ? new Date(initialDateScheduled) : undefined;
 
       const event = await CalendarService.createEvent(
         req.currentUser,
@@ -299,6 +301,7 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         parsedScheduleSlot,
+        parsedInitialDateScheduled,
         teamTypeId,
         questionDocumentLink,
         location,
@@ -326,19 +329,11 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         documents,
-        scheduleSlot,
         questionDocumentLink,
         location,
         zoomLink,
         description
       } = req.body;
-
-      const parsedScheduleSlot = scheduleSlot.map((slot: any) => ({
-        ...slot,
-        startTime: slot.startTime ? new Date(slot.startTime) : undefined,
-        endTime: slot.endTime ? new Date(slot.endTime) : undefined,
-        initialDateScheduled: new Date(slot.initialDateScheduled)
-      }));
 
       const event = await CalendarService.editEvent(
         req.currentUser,
@@ -353,12 +348,30 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         documents,
-        parsedScheduleSlot,
         teamTypeId,
         questionDocumentLink,
         location,
         zoomLink,
         description
+      );
+      res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editScheduleSlot(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { scheduleSlotId } = req.params as Record<string, string>;
+      const { startTime, endTime, allDay } = req.body;
+
+      const event = await CalendarService.editScheduleSlot(
+        req.currentUser,
+        scheduleSlotId,
+        new Date(startTime),
+        new Date(endTime),
+        allDay,
+        req.organization
       );
       res.status(200).json(event);
     } catch (error: unknown) {

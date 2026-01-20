@@ -265,7 +265,8 @@ export default class CalendarService {
     shopIds: string[],
     machineryIds: string[],
     workPackageIds: string[],
-    scheduleSlot: ScheduleSlotCreateArgs[],
+    scheduleSlots: ScheduleSlotCreateArgs[],
+    initialDateScheduled: Date | undefined,
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
@@ -299,7 +300,8 @@ export default class CalendarService {
       machineryIds,
       workPackageIds,
       documents: [],
-      scheduleSlot,
+      scheduleSlots,
+      initialDateScheduled,
       teamTypeId,
       location,
       zoomLink,
@@ -416,13 +418,8 @@ export default class CalendarService {
       }
     }
 
-    // Check for conflicts
-    const { hasConflict, conflictingEvent } = await checkEventConflicts(scheduleSlot, organization, location, undefined);
-
-    const computeEndDate = (initial: Date, recurrenceNumber: number) => {
-      const weeks = Math.max(1, recurrenceNumber ?? 0);
-      return new Date(initial.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
-    };
+    // Check for conflicts using expanded slots
+    const { hasConflict, conflictingEvent } = await checkEventConflicts(scheduleSlots, organization, location, undefined);
 
     const duplicate = await prisma.event.findFirst({
       where: {
@@ -462,16 +459,13 @@ export default class CalendarService {
           connect: workPackageIds.map((workPackageId) => ({ workPackageId }))
         },
         scheduledTimes: {
-          create: scheduleSlot.map((s) => ({
-            days: s.days,
+          create: scheduleSlots.map((s) => ({
             startTime: s.startTime ?? null,
             endTime: s.endTime ?? null,
-            recurrenceNumber: s.recurrenceNumber,
-            initialDateScheduled: s.initialDateScheduled,
-            endDate: computeEndDate(s.initialDateScheduled, s.recurrenceNumber),
             allDay: s.allDay
           }))
         },
+        initialDateScheduled,
         status: foundEventType.requiresConfirmation ? Event_Status.UNCONFIRMED : Event_Status.CONFIRMED,
         approved: hasConflict ? Conflict_Status.PENDING : Conflict_Status.NO_CONFLICT,
         approvalRequiredFromUserId: hasConflict ? conflictingEvent?.userCreated.userId : null,
@@ -580,7 +574,7 @@ export default class CalendarService {
   }
 
   /**
-   * Edits an event.
+   * Edits an event (excluding schedule slots - use editScheduleSlot for that).
    *
    * @param submitter The user submitting the request, who must be an admin.
    * @param eventId The id of the event to edit.
@@ -595,7 +589,6 @@ export default class CalendarService {
    * @param machineryIds An array of machinery associated with the event.
    * @param workPackageIds An array of work packages associated with the event.
    * @param documents An array of documents associated with the event.
-   * @param scheduleSlots An array of schedule slots associated with the event.
    * @param questionDocumentLink The link to the question document.
    * @param location Location of the event.
    * @param zoomLink Zoom Link if the event is online.
@@ -619,7 +612,6 @@ export default class CalendarService {
     machineryIds: string[],
     workPackageIds: string[],
     documents: EventDocumentCreateArgs[],
-    scheduleSlot: ScheduleSlotCreateArgs[],
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
@@ -643,22 +635,8 @@ export default class CalendarService {
     if (!foundEventType) throw new NotFoundException('Event Type', eventTypeId);
     if (foundEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
 
-    // Validate event follows event type configuration
-    validateEventTypeConfiguration(foundEventType, {
-      requiredMemberIds,
-      optionalMemberIds,
-      teamIds,
-      shopIds,
-      machineryIds,
-      workPackageIds,
-      documents,
-      scheduleSlot,
-      teamTypeId,
-      location,
-      zoomLink,
-      questionDocumentLink,
-      description
-    });
+    // Note: Schedule validation is removed since editEvent doesn't modify schedules
+    // Use editScheduleSlot to modify individual schedule slots
 
     // question document is required if the status is scheduled or done
     if (foundEventType.requiresConfirmation) {
@@ -798,180 +776,53 @@ export default class CalendarService {
       }
     }
 
-    // Use transaction for the update
-    const updatedEvent = await prisma.$transaction(async (tx) => {
-      // Fetch existing schedule slots
-      const [existingSlots] = await Promise.all([
-        tx.schedule_Slot.findMany({
-          where: { ScheduledEvents: { some: { eventId } } },
-          select: {
-            days: true,
-            startTime: true,
-            endTime: true,
-            recurrenceNumber: true,
-            initialDateScheduled: true,
-            allDay: true
-          }
-        })
-      ]);
+    // throw if a user isn't found, then build prisma queries for connecting userIds
+    const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMemberIds));
+    const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
 
-      // Checks if all schedule slots are the same (ie no changes)
-      const haveDifferentSlots = (a: typeof existingSlots, b: typeof scheduleSlot) => {
-        if (a.length !== b.length) return true;
-        return a.some((oldSlot, idx) => {
-          const newSlot = b[idx];
-          return (
-            oldSlot.days !== newSlot.days ||
-            oldSlot.startTime !== newSlot.startTime ||
-            oldSlot.endTime !== newSlot.endTime ||
-            oldSlot.recurrenceNumber !== newSlot.recurrenceNumber ||
-            oldSlot.initialDateScheduled !== newSlot.initialDateScheduled ||
-            oldSlot.allDay !== newSlot.allDay
-          );
-        });
-      };
+    let newStatus = status;
 
-      const computeEndDate = (initial: Date, recurrenceNumber: number) => {
-        const weeks = Math.max(1, recurrenceNumber ?? 0);
-        return new Date(initial.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
-      };
+    // If all required members are confirmed, set the status to SCHEDULED
+    const allRequiredMembersConfirmed = updatedRequiredMembers.every((member) =>
+      foundEvent.confirmedMembers.map((user: { userId: string }) => user.userId).includes(member.userId)
+    );
 
-      const scheduleChanged = haveDifferentSlots(existingSlots, scheduleSlot);
-      const locationChanged = foundEvent.location !== location;
+    if (status === Event_Status.CONFIRMED && allRequiredMembersConfirmed) {
+      newStatus = Event_Status.SCHEDULED;
+    }
 
-      let hasConflict = false;
-      let approverUserId: string | undefined;
-
-      if (scheduleChanged || locationChanged) {
-        const { hasConflict: conflict, conflictingEvent } = await checkEventConflicts(
-          scheduleSlot,
-          organization,
-          location,
-          eventId
-        );
-
-        hasConflict = conflict;
-        approverUserId = conflictingEvent?.userCreated.userId;
-      }
-
-      if (scheduleChanged) {
-        await tx.schedule_Slot.deleteMany({
-          where: { ScheduledEvents: { some: { eventId } } }
-        });
-        await Promise.all(
-          scheduleSlot.map((s) =>
-            tx.schedule_Slot.create({
-              data: {
-                days: s.days,
-                startTime: s.startTime ?? null,
-                endTime: s.endTime ?? null,
-                endDate: computeEndDate(s.initialDateScheduled, s.recurrenceNumber),
-                recurrenceNumber: s.recurrenceNumber,
-                initialDateScheduled: s.initialDateScheduled,
-                allDay: s.allDay,
-                ScheduledEvents: { connect: { eventId } }
-              }
-            })
-          )
-        );
-      }
-
-      let calendarEventIds = foundEvent.calendarEventIds || [];
-
-      // If schedule changed, update Google Calendar events
-      if (scheduleChanged && process.env.NODE_ENV === 'production') {
-        try {
-          const allMemberIds = [...requiredMemberIds, ...optionalMemberIds];
-          const isInPerson = !!location;
-
-          // Get the newly created schedule slots
-          const updatedSlots = await tx.schedule_Slot.findMany({
-            where: { ScheduledEvents: { some: { eventId } } }
-          });
-
-          calendarEventIds = await updateCalendarEvent(
-            process.env.GOOGLE_CALENDAR_ID!,
-            foundEvent.calendarEventIds || [],
-            allMemberIds,
-            updatedSlots,
-            isInPerson,
-            zoomLink ?? null,
-            location ?? null,
-            title
-          );
-        } catch (error) {
-          console.error('Failed to update Google Calendar events:', error);
-        }
-      }
-
-      // throw if a user isn't found, then build prisma queries for connecting userIds
-      const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMemberIds));
-      const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
-
-      let newStatus = status;
-
-      // If schedule or location changed and event type requires confirmation, reset to UNCONFIRMED
-      if ((scheduleChanged || locationChanged) && foundEventType.requiresConfirmation) {
-        newStatus = Event_Status.UNCONFIRMED;
-      } else {
-        // If all required members are confirmed, set the status to SCHEDULED
-        const allRequiredMembersConfirmed = updatedRequiredMembers.every((member) =>
-          foundEvent.confirmedMembers.map((user: { userId: string }) => user.userId).includes(member.userId)
-        );
-
-        if (status === Event_Status.CONFIRMED && allRequiredMembersConfirmed) {
-          newStatus = Event_Status.SCHEDULED;
-        }
-      }
-
-      // Update the event with new data
-      return await tx.event.update({
-        where: { eventId },
-        data: {
-          title,
-          eventTypeId,
-          requiredMembers: {
-            set: updatedRequiredMembers
-          },
-          optionalMembers: {
-            set: updatedOptionalMembers
-          },
-          teams: {
-            set: teamIds.map((teamId) => ({ teamId }))
-          },
-          ...(teamTypeId !== undefined && { teamTypeId }),
-          status: newStatus,
-          shops: {
-            set: shopIds.map((shopId) => ({ shopId }))
-          },
-          machinery: {
-            set: machineryIds.map((machineryId) => ({ machineryId }))
-          },
-          workPackages: {
-            set: workPackageIds.map((workPackageId) => ({ workPackageId }))
-          },
-          // If schedule/location changed and there's a conflict, set approved=false and track who needs to approve
-          // Otherwise keep existing approval state
-          approved:
-            scheduleChanged || locationChanged
-              ? hasConflict
-                ? Conflict_Status.PENDING
-                : Conflict_Status.NO_CONFLICT
-              : foundEvent.approved,
-          approvalRequiredFromUserId:
-            scheduleChanged || locationChanged
-              ? hasConflict
-                ? approverUserId
-                : null
-              : foundEvent.approvalRequiredFromUserId,
-          location,
-          zoomLink,
-          questionDocumentLink,
-          description,
-          calendarEventIds
+    // Update the event with new data (excluding schedule slots)
+    const updatedEvent = await prisma.event.update({
+      where: { eventId },
+      data: {
+        title,
+        eventTypeId,
+        requiredMembers: {
+          set: updatedRequiredMembers
         },
-        ...getEventQueryArgs(organization.organizationId)
-      });
+        optionalMembers: {
+          set: updatedOptionalMembers
+        },
+        teams: {
+          set: teamIds.map((teamId) => ({ teamId }))
+        },
+        ...(teamTypeId !== undefined && { teamTypeId }),
+        status: newStatus,
+        shops: {
+          set: shopIds.map((shopId) => ({ shopId }))
+        },
+        machinery: {
+          set: machineryIds.map((machineryId) => ({ machineryId }))
+        },
+        workPackages: {
+          set: workPackageIds.map((workPackageId) => ({ workPackageId }))
+        },
+        location,
+        zoomLink,
+        questionDocumentLink,
+        description
+      },
+      ...getEventQueryArgs(organization.organizationId)
     });
 
     //set any deleted documents with a dateDeleted
@@ -988,6 +839,93 @@ export default class CalendarService {
     }
 
     return edittedEvent;
+  }
+
+  /**
+   * Edits a specific schedule slot of an event.
+   * Used when a user wants to change the time/date of a single occurrence in a recurring event.
+   *
+   * @param submitter The user submitting the request.
+   * @param scheduleSlotId The id of the specific schedule slot to edit.
+   * @param startTime The new start time.
+   * @param endTime The new end time.
+   * @param allDay Whether this is an all-day event.
+   * @param organization The organization context.
+   *
+   * @returns The updated event.
+   *
+   * @throws NotFoundException If the event or schedule slot is not found.
+   * @throws AccessDeniedException If the user doesn't have permission to edit.
+   */
+  static async editScheduleSlot(
+    submitter: User,
+    scheduleSlotId: string,
+    startTime: Date,
+    endTime: Date,
+    allDay: boolean,
+    organization: Organization
+  ): Promise<Event> {
+    // Validate schedule slot exists and belongs to this event
+    const scheduleSlot = await prisma.schedule_Slot.findUnique({
+      where: { scheduleSlotId },
+      include: { event: true }
+    });
+
+    if (!scheduleSlot) throw new NotFoundException('Schedule Slot', scheduleSlotId);
+
+    // Check permissions
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isHead)) ||
+      submitter.userId === scheduleSlot.event.userCreatedId;
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only admins, heads, or the event creator can edit the times of an event!');
+    }
+
+    // Check for conflicts with the new time
+    const newSlotData: ScheduleSlotCreateArgs = {
+      startTime,
+      endTime,
+      allDay
+    };
+
+    const { hasConflict, conflictingEvent } = await checkEventConflicts(
+      [newSlotData],
+      organization,
+      scheduleSlot.event.location ?? undefined,
+      scheduleSlot.event.eventId
+    );
+
+    // Update the schedule slot
+    await prisma.schedule_Slot.update({
+      where: { scheduleSlotId },
+      data: {
+        startTime: startTime ?? null,
+        endTime: endTime ?? null,
+        allDay
+      }
+    });
+
+    // Update conflict status if needed
+    if (hasConflict) {
+      await prisma.event.update({
+        where: { eventId: scheduleSlot.event.eventId },
+        data: {
+          approved: Conflict_Status.PENDING,
+          approvalRequiredFromUserId: conflictingEvent?.userCreated.userId
+        }
+      });
+    }
+
+    // Fetch and return the updated event
+    const updatedEvent = await prisma.event.findUnique({
+      where: { eventId: scheduleSlot.event.eventId },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    if (!updatedEvent) throw new NotFoundException('Event', scheduleSlot.event.eventId);
+
+    return eventTransformer(updatedEvent);
   }
 
   /**

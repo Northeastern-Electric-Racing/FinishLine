@@ -65,27 +65,88 @@ export const isPastEvent = (startDate: Date, endDate: Date) => {
   return startDate < endDate;
 };
 
-// gets the start time of an event for a given day
-export const getConvertedStart = (event: Event, dayOfWeek: DayOfWeek) => {
-  const specificSlot = event.scheduledTimes.find((slot) => slot.days.find((day) => day === dayOfWeek));
+// Gets the start time of an event for a given date
+// With the new schema, we find the schedule slot that occurs on the specified date
+export const getConvertedStart = (event: Event, dateOrDayOfWeek: Date | DayOfWeek) => {
+  // If passed a DayOfWeek enum, we need to find a slot on that day of the week
+  // This is for backward compatibility with components that don't have the specific date
+  if (typeof dateOrDayOfWeek === 'string') {
+    // It's a DayOfWeek enum - find any slot that matches this day
+    const dayOfWeekMap: { [key in DayOfWeek]: number } = {
+      [DayOfWeek.SUNDAY]: 0,
+      [DayOfWeek.MONDAY]: 1,
+      [DayOfWeek.TUESDAY]: 2,
+      [DayOfWeek.WEDNESDAY]: 3,
+      [DayOfWeek.THURSDAY]: 4,
+      [DayOfWeek.FRIDAY]: 5,
+      [DayOfWeek.SATURDAY]: 6
+    };
+    const targetDayIndex = dayOfWeekMap[dateOrDayOfWeek];
 
-  const startTime = specificSlot?.startTime ? new Date(specificSlot.startTime) : new Date(Date.now());
+    const specificSlot = event.scheduledTimes.find((slot) => {
+      if (!slot.startTime) return false;
+      const slotDate = new Date(slot.startTime);
+      return slotDate.getDay() === targetDayIndex;
+    });
 
-  const convertedStartTime = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const startTime = specificSlot?.startTime ? new Date(specificSlot.startTime) : new Date();
+    return startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  }
 
-  return convertedStartTime;
-};
+  // It's a Date object - find the slot for this specific date
+  const targetDate = dateOrDayOfWeek;
+  targetDate.setHours(0, 0, 0, 0);
 
-// gets the end time of an event for a given day
-export const getConvertedEnd = (event: Event, dayOfWeek: DayOfWeek) => {
-  const specificSlot = event.scheduledTimes.find((slot) => slot.days.find((day) => day === dayOfWeek));
-
-  const endTime = new Date(specificSlot?.endTime ?? Date.now());
-
-  const convertedEndTime = endTime.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit'
+  const specificSlot = event.scheduledTimes.find((slot) => {
+    if (!slot.startTime) return false;
+    const slotDate = new Date(slot.startTime);
+    slotDate.setHours(0, 0, 0, 0);
+    return slotDate.getTime() === targetDate.getTime();
   });
 
-  return convertedEndTime;
+  const startTime = specificSlot?.startTime ? new Date(specificSlot.startTime) : new Date();
+  return startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+};
+
+// Gets the end time of an event for a given date
+// With the new schema, we find the schedule slot that occurs on the specified date
+export const getConvertedEnd = (event: Event, dateOrDayOfWeek: Date | DayOfWeek) => {
+  // If passed a DayOfWeek enum, we need to find a slot on that day of the week
+  // This is for backward compatibility with components that don't have the specific date
+  if (typeof dateOrDayOfWeek === 'string') {
+    // It's a DayOfWeek enum - find any slot that matches this day
+    const dayOfWeekMap: { [key in DayOfWeek]: number } = {
+      [DayOfWeek.SUNDAY]: 0,
+      [DayOfWeek.MONDAY]: 1,
+      [DayOfWeek.TUESDAY]: 2,
+      [DayOfWeek.WEDNESDAY]: 3,
+      [DayOfWeek.THURSDAY]: 4,
+      [DayOfWeek.FRIDAY]: 5,
+      [DayOfWeek.SATURDAY]: 6
+    };
+    const targetDayIndex = dayOfWeekMap[dateOrDayOfWeek];
+
+    const specificSlot = event.scheduledTimes.find((slot) => {
+      if (!slot.endTime) return false;
+      const slotDate = new Date(slot.endTime);
+      return slotDate.getDay() === targetDayIndex;
+    });
+
+    const endTime = specificSlot?.endTime ? new Date(specificSlot.endTime) : new Date();
+    return endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  }
+
+  // It's a Date object - find the slot for this specific date
+  const targetDate = dateOrDayOfWeek;
+  targetDate.setHours(0, 0, 0, 0);
+
+  const specificSlot = event.scheduledTimes.find((slot) => {
+    if (!slot.endTime) return false;
+    const slotDate = new Date(slot.endTime);
+    slotDate.setHours(0, 0, 0, 0);
+    return slotDate.getTime() === targetDate.getTime();
+  });
+
+  const endTime = specificSlot?.endTime ? new Date(specificSlot.endTime) : new Date();
+  return endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 };

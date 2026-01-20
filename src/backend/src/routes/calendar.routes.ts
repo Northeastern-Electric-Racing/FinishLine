@@ -114,13 +114,10 @@ calendarRouter.post(
   body('workPackageIds.*').isString(),
   body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),
+  isDate(body('initialDateScheduled')),
   body('scheduleSlot').isArray(),
-  body('scheduleSlot.*.days').isArray(),
-  isDayOfWeek(body('scheduleSlot.*.days.*')),
-  isDate(body('scheduleSlot.*.startTime')).optional(),
-  isDate(body('scheduleSlot.*.endTime')).optional(),
-  intMinZero(body('scheduleSlot.*.recurrenceNumber')),
-  isDate(body('scheduleSlot.*.initialDateScheduled')),
+  isDate(body('scheduleSlot.*.startTime')),
+  isDate(body('scheduleSlot.*.endTime')),
   body('scheduleSlot.*.allDay').isBoolean(),
   validateInputs,
   CalendarController.createEvent
@@ -150,16 +147,17 @@ calendarRouter.post(
   nonEmptyString(body('documents.*.googleFileId')),
   body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),
-  body('scheduleSlot').isArray(),
-  body('scheduleSlot.*.days').isArray(),
-  isDayOfWeek(body('scheduleSlot.*.days.*')),
-  isDate(body('scheduleSlot.*.startTime')).optional(),
-  isDate(body('scheduleSlot.*.endTime')).optional(),
-  intMinZero(body('scheduleSlot.*.recurrenceNumber')),
-  isDate(body('scheduleSlot.*.initialDateScheduled')),
-  body('scheduleSlot.*.allDay').isBoolean(),
   validateInputs,
   CalendarController.editEvent
+);
+
+calendarRouter.post(
+  '/event/:eventId/schedule-slot/:scheduleSlotId/edit',
+  isDate(body('startTime')),
+  isDate(body('endTime')),
+  body('allDay').isBoolean(),
+  validateInputs,
+  CalendarController.editScheduleSlot
 );
 
 calendarRouter.get('/document/:fileId', CalendarController.downloadDocument);

@@ -15,8 +15,8 @@ export const filterEventTransformer = (event: Event): Event => {
     dateCreated: new Date(event.dateCreated),
     scheduledTimes: event.scheduledTimes.map((schedule) => ({
       ...schedule,
-      startTime: schedule.startTime ? new Date(schedule.startTime) : undefined,
-      endTime: schedule.endTime ? new Date(schedule.endTime) : undefined
+      startTime: new Date(schedule.startTime),
+      endTime: new Date(schedule.endTime)
     }))
   };
 };
@@ -31,12 +31,11 @@ export const eventWithMembersTransformer = (event: EventWithMembers): EventWithM
   return {
     ...event,
     dateCreated: new Date(event.dateCreated),
+    initialDateScheduled: event.initialDateScheduled ? new Date(event.initialDateScheduled) : undefined,
     scheduledTimes: event.scheduledTimes.map((slot: any) => ({
       ...slot,
-      startTime: slot.startTime ? new Date(slot.startTime) : undefined,
-      endTime: slot.endTime ? new Date(slot.endTime) : undefined,
-      initialDateScheduled: new Date(slot.initialDateScheduled),
-      endDate: new Date(slot.endDate)
+      startTime: new Date(slot.startTime),
+      endTime: new Date(slot.endTime)
     }))
   };
 };

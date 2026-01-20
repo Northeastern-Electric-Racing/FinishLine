@@ -128,9 +128,8 @@ export const EventAvailabilityPage: React.FC = () => {
     if (dateParam) {
       return new Date(dateParam);
     }
-    const raw = event?.scheduledTimes?.[0]?.initialDateScheduled;
-    return raw ? new Date(raw as any) : new Date();
-  }, [dateParam, event?.scheduledTimes]);
+    return event?.initialDateScheduled ?? new Date();
+  }, [dateParam, event]);
 
   const isUserMember = useMemo(() => {
     if (!event) return false;
