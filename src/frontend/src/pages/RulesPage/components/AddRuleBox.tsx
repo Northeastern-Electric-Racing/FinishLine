@@ -6,11 +6,10 @@ type AddRuleBoxProps = {
   open: boolean;
   anchorEl: HTMLElement | null;
   onClose: () => void;
-  onAddRuleSection: () => void;
   onAddRule: () => void;
 };
 
-export const AddRuleBox: React.FC<AddRuleBoxProps> = ({ open, anchorEl, onClose, onAddRuleSection, onAddRule }) => {
+export const AddRuleBox: React.FC<AddRuleBoxProps> = ({ open, anchorEl, onClose, onAddRule }) => {
   const theme = useTheme();
 
   return (
@@ -39,22 +38,7 @@ export const AddRuleBox: React.FC<AddRuleBoxProps> = ({ open, anchorEl, onClose,
           minWidth: 'auto'
         }}
       >
-        <NERButton
-          onClick={onAddRuleSection}
-          sx={{
-            borderRadius: 0,
-            backgroundColor: 'transparent',
-            color: theme.palette.common.white,
-            lineHeight: 1.1,
-            justifyContent: 'flex-end',
-            '&:hover': { backgroundColor: 'rgba(255,255,255,0.12)' }
-          }}
-        >
-          Add Rule Section
-        </NERButton>
-
         <Box sx={{ height: 1, backgroundColor: 'rgba(255,255,255,0.18)' }} />
-
         <NERButton
           onClick={onAddRule}
           sx={{
