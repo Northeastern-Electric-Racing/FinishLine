@@ -26,9 +26,9 @@ rulesRouter.post(
 rulesRouter.post(
   '/rule/:ruleId/edit',
   nonEmptyString(body('ruleContent')),
-  nonEmptyString(body('ruleCode')),
-  body('imageFileIds').isArray(),
-  nonEmptyString(body('imageFileIds.*')),
+  body('ruleCode').optional().isString(),
+  body('imageFileIds').optional().isArray(),
+  body('imageFileIds.*').optional().isString(),
   body('parentRuleId').optional().isString(),
   validateInputs,
   RulesController.editRule

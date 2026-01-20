@@ -22,11 +22,13 @@ import {
   uploadRulesetFile,
   getRulesetsByRulesetType,
   deleteRule,
+  editRule,
   updateRuleset,
   deleteRuleset,
   deleteRulesetType,
   createRuleset,
   getRulesetById,
+  createRule,
   getSingleRuleset
 } from '../apis/rules.api';
 import { useToast } from './toasts.hooks';
@@ -134,6 +136,15 @@ export interface CreateRulesetPayload {
   active: boolean;
 }
 
+export interface CreateRulePayload {
+  ruleCode: string;
+  ruleContent: string;
+  rulesetId: string;
+  parentRuleId?: string;
+  referencedRules?: string[];
+  imageFileIds?: string[];
+}
+
 export const useGetTopLevelRules = (rulesetId: string) => {
   return useQuery<SharedRule[], Error>(['rules', 'top-level', rulesetId], async () => {
     const { data } = await getTopLevelRules(rulesetId);
@@ -154,11 +165,19 @@ export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
   );
 };
 
+/**
+ * Hook to get a ruleset by ID.
+ * (Kept because some parts of the app may still call getRulesetById)
+ */
 export const useGetRuleset = (rulesetId: string) => {
-  return useQuery<Ruleset, Error>(['ruleset', rulesetId], async () => {
-    const { data } = await getRulesetById(rulesetId);
-    return data;
-  });
+  return useQuery<Ruleset, Error>(
+    ['ruleset', rulesetId],
+    async () => {
+      const { data } = await getRulesetById(rulesetId);
+      return data;
+    },
+    { enabled: !!rulesetId }
+  );
 };
 
 /**
@@ -212,6 +231,26 @@ export const useCreateRulesetType = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['rules', 'rulesetTypes']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to create a new rule
+ */
+export const useCreateRule = () => {
+  const queryClient = useQueryClient();
+  return useMutation<SharedRule, Error, CreateRulePayload>(
+    ['rules', 'create'],
+    async (payload: CreateRulePayload) => {
+      const { data } = await createRule(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rules']);
+        queryClient.invalidateQueries(['ruleset']);
       }
     }
   );
@@ -309,6 +348,32 @@ export const useDeleteRule = () => {
       },
       onError: (error: Error) => {
         toast.error(error.message);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to edit a rule's content
+ */
+export const useEditRule = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<SharedRule, Error, { ruleId: string; ruleContent: string }>(
+    ['rules', 'edit'],
+    async ({ ruleId, ruleContent }) => {
+      const { data } = await editRule(ruleId, ruleContent);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        toast.success('Rule updated successfully');
+        queryClient.invalidateQueries(['rules']);
+        queryClient.invalidateQueries(['rulesets']);
+      },
+      onError: (error: Error) => {
+        toast.error(`Failed to update rule: ${error.message}`);
       }
     }
   );

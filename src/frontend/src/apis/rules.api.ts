@@ -6,7 +6,7 @@
 import axios from '../utils/axios';
 import { ProjectRule, Rule as SharedRule, RuleCompletion, RulesetType, Ruleset } from 'shared';
 import { apiUrls } from '../utils/urls';
-import { CreateRulesetPayload, ParseRulesetPayload } from '../hooks/rules.hooks';
+import { CreateRulesetPayload, ParseRulesetPayload, CreateRulePayload } from '../hooks/rules.hooks';
 import {
   projectRuleTransformer,
   rulesetTransformer,
@@ -54,7 +54,19 @@ export const createRulesetType = (payload: { name: string }) => {
 };
 
 /**
- * Fetches all ruleset types
+ * Creates a new rule
+ *
+ * @param payload the data for creating the rule
+ * @returns the created rule
+ */
+export const createRule = (payload: CreateRulePayload) => {
+  return axios.post<SharedRule>(apiUrls.ruleCreate(), { ...payload });
+};
+
+/**
+ * Fetches all Ruleset Types for the current organization.
+ *
+ * @returns A list of Ruleset Types.
  */
 export const getAllRulesetTypes = () => {
   return axios.get<RulesetType[]>(apiUrls.rulesetTypes(), {
@@ -141,11 +153,20 @@ export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
  * Deletes a rule
  */
 export const deleteRule = (ruleId: string) => {
-  return axios.post(`/rules/rule/${ruleId}/delete`);
+  return axios.post(apiUrls.rulesDelete(ruleId));
 };
 
 /**
- * Updates a ruleset
+ * Edits a rule's content
+ * @param ruleId - The ID of the rule to edit
+ * @param ruleContent - The new content for the rule
+ */
+export const editRule = (ruleId: string, ruleContent: string) => {
+  return axios.post<SharedRule>(apiUrls.rulesEdit(ruleId), { ruleContent });
+};
+
+/**
+ * Updates a rulesets active status
  */
 export const updateRuleset = (rulesetId: string, name: string, isActive: boolean) => {
   return axios.post<Ruleset>(apiUrls.rulesetUpdate(rulesetId), { name, isActive });

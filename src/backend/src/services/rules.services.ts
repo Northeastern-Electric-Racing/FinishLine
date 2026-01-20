@@ -403,18 +403,18 @@ export default class RulesService {
    * @param submitter a user who is making this request
    * @param ruleContent the rule content to edit
    * @param ruleId The rule ID being edited
-   * @param ruleCode The rule code to update
-   * @param imageFileIds The image files to update
+   * @param ruleCode The rule code to update (optional, keeps existing if not provided)
+   * @param imageFileIds The image files to update (optional, keeps existing if not provided)
    * @param parentRuleId The parent rule ID to update
-   * @param organizationId the organization Id
+   * @param organization the organization the rule belongs to
    * @returns the edited rule
    */
   static async editRule(
     submitter: User,
     ruleContent: string,
     ruleId: string,
-    ruleCode: string,
-    imageFileIds: string[],
+    ruleCode: string | undefined,
+    imageFileIds: string[] | undefined,
     organization: Organization,
     parentRuleId?: string
   ) {
@@ -467,8 +467,8 @@ export default class RulesService {
       },
       data: {
         ruleContent,
-        ruleCode,
-        imageFileIds,
+        ...(ruleCode !== undefined && { ruleCode }),
+        ...(imageFileIds !== undefined && { imageFileIds }),
         ...(parentRuleId && { parentRuleId }),
         dateUpdated: new Date(),
         updatedByUserId: submitter.userId
