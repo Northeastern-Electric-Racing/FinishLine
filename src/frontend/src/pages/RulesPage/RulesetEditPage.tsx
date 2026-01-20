@@ -82,7 +82,7 @@ const RulesetEditPage: React.FC = () => {
   }
 
   const handleAddRuleSection = () => {
-    // Placeholder
+    setShowAddRuleSectionModal(true);
   };
 
   const handleOpenAddMenu = (ruleId: string, anchorEl: HTMLElement) => {
@@ -99,11 +99,6 @@ const RulesetEditPage: React.FC = () => {
   const handleCloseAddMenu = () => {
     setShowAddMenu(false);
     setAddMenuAnchorEl(null);
-  };
-
-  const handleAddRuleSectionFromMenu = () => {
-    setShowAddRuleSectionModal(true);
-    handleCloseAddMenu();
   };
 
   const handleAddRuleFromMenu = () => {
@@ -250,11 +245,15 @@ const RulesetEditPage: React.FC = () => {
               open={showAddMenu}
               anchorEl={addMenuAnchorEl}
               onClose={handleCloseAddMenu}
-              onAddRuleSection={handleAddRuleSectionFromMenu}
               onAddRule={handleAddRuleFromMenu}
             />
 
-            <AddRuleSectionModal open={showAddRuleSectionModal} onClose={() => setShowAddRuleSectionModal(false)} />
+            <AddRuleSectionModal
+              open={showAddRuleSectionModal}
+              onClose={() => setShowAddRuleSectionModal(false)}
+              rulesetId={rulesetId}
+            />
+
             <AddRuleModal
               open={showAddRuleModal}
               onClose={() => setShowAddRuleModal(false)}
