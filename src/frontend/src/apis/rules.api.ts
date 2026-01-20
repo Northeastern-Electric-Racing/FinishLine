@@ -167,6 +167,15 @@ export const deleteRule = (ruleId: string) => {
 };
 
 /**
+ * Edits a rule's content
+ * @param ruleId - The ID of the rule to edit
+ * @param ruleContent - The new content for the rule
+ */
+export const editRule = (ruleId: string, ruleContent: string) => {
+  return axios.post<Rule>(apiUrls.rulesEdit(ruleId), { ruleContent });
+};
+
+/**
  * Updates a rulesets active status
  */
 export const updateRuleset = (rulesetId: string, name: string, isActive: boolean) => {
