@@ -26,12 +26,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
-import { EditEventArgs, useApproveEvent, useDeleteEvent, useDenyEvent, useEditEvent } from '../../hooks/calendar.hooks';
-import { convertEventToFormValues } from '../../utils/calendar.utils';
+import { useApproveEvent, useDeleteEvent, useDenyEvent } from '../../hooks/calendar.hooks';
 import EditEventModal from './Components/EditEventModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import NERDeleteModal from '../../components/NERDeleteModal';
-import { EventRoutePayload } from './Components/EventModal';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
@@ -432,12 +430,6 @@ export interface EventClickPopupProps {
   disable?: boolean;
   addApprovalButtons?: boolean;
   clickedDate?: Date;
-  handleEditSubmit: (
-    data: EventRoutePayload,
-    event: Event,
-    editEvent: (editArgs: EditEventArgs) => Promise<Event>,
-    onClose: () => void
-  ) => Promise<void>;
 }
 
 export const EventClickPopup: React.FC<EventClickPopupProps> = ({
@@ -449,15 +441,13 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
   dayOfWeek,
   disable = false,
   addApprovalButtons = false,
-  clickedDate,
-  handleEditSubmit
+  clickedDate
 }) => {
   const toast = useToast();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const { mutateAsync: deleteEvent } = useDeleteEvent(clickedEvent?.eventId ?? '');
-  const { mutateAsync: editEvent } = useEditEvent(clickedEvent?.eventId ?? '');
 
   const handleEdit = () => {
     setShowEditModal(true);
@@ -516,13 +506,7 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
             setShowEditModal(false);
             onClose();
           }}
-          onSubmit={(data) =>
-            handleEditSubmit(data, clickedEvent, editEvent, () => {
-              setShowEditModal(false);
-              onClose();
-            })
-          }
-          initialValues={convertEventToFormValues(clickedEvent)}
+          event={clickedEvent}
           eventTypes={eventTypes}
           defaultDate={
             clickedEvent.scheduledTimes[0]?.startTime ? new Date(clickedEvent.scheduledTimes[0].startTime) : new Date()

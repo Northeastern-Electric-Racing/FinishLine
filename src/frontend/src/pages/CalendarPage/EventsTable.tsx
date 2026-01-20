@@ -21,11 +21,10 @@ import React, { useEffect, useState } from 'react';
 import { Calendar, ConflictStatus, EventType } from 'shared';
 import { Event } from 'shared';
 import WarningTooltip from './YourEventsComponents/WarningTooltip';
-import { convertEventToFormValues, getMeetingDates } from '../../utils/calendar.utils';
+import { getMeetingDates } from '../../utils/calendar.utils';
 import { EventClickPopup } from './EventClickPopup';
-import { EditEventArgs, useDeleteEvent, useEditEvent } from '../../hooks/calendar.hooks';
+import { useDeleteEvent } from '../../hooks/calendar.hooks';
 import EditEventModal from './Components/EditEventModal';
-import { EventRoutePayload } from './Components/EventModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -58,12 +57,6 @@ export interface EventTableArgs {
   allEventTypes: EventType[];
   allCalendars: Calendar[];
   tab: number;
-  handleEditSubmit: (
-    data: EventRoutePayload,
-    event: Event,
-    editEvent: (editArgs: EditEventArgs) => Promise<Event>,
-    onClose: () => void
-  ) => Promise<void>;
 }
 
 // trigger re-renders specifically for the timer
@@ -103,14 +96,7 @@ const CountdownElement = ({ targetDate }: { targetDate: Date }) => {
   );
 };
 
-const EventsTable: React.FC<EventTableArgs> = ({
-  tab,
-  yourEvents,
-  reviewEvents,
-  allEventTypes,
-  allCalendars,
-  handleEditSubmit
-}) => {
+const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, allEventTypes, allCalendars }) => {
   // Convert to include proper dates
   // Done this way to allow the old events transformer to function properly
   // but provide better utility to this file (without breaking other files that may rely on eventTransformer)
@@ -124,8 +110,6 @@ const EventsTable: React.FC<EventTableArgs> = ({
   const [showEditModal, setShowEditModal] = useState(false);
 
   const [eventToDelete, setEventToDelete] = useState<Event | undefined>(undefined);
-
-  const { mutateAsync: editEvent } = useEditEvent(clickedEditEvent?.eventId ?? '');
 
   const handleOpenClickPopup = (event: Event) => {
     setClickedEvent(event);
@@ -400,21 +384,12 @@ const EventsTable: React.FC<EventTableArgs> = ({
         onClose={handleCloseClickPopup}
         eventTypes={allEventTypes}
         calendars={allCalendars}
-        disable={true}
-        addApprovalButtons={true}
-        handleEditSubmit={handleEditSubmit}
       />
       {clickedEditEvent && showEditModal && (
         <EditEventModal
           open={showEditModal}
           onClose={handleCloseEdit}
-          onSubmit={(data) => {
-            handleEditSubmit(data, clickedEditEvent, editEvent, () => {
-              setShowEditModal(false);
-              handleCloseEdit();
-            });
-          }}
-          initialValues={convertEventToFormValues(clickedEditEvent)}
+          event={clickedEditEvent}
           eventTypes={allEventTypes}
           defaultDate={new Date()}
         />

@@ -20,13 +20,7 @@ import PageLayout from '../../components/PageLayout';
 import { Calendar, ConflictStatus, DayOfWeek, Event, EventType } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import {
-  useConflictingEvents,
-  useFilterEvents,
-  useCreateEvent,
-  useUploadManyDocuments,
-  EditEventArgs
-} from '../../hooks/calendar.hooks';
+import { useConflictingEvents, useFilterEvents } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -38,8 +32,6 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
 import { convertIntToDay, getEventsFlattened, getMeetingDates, getOverlapTime } from '../../utils/calendar.utils';
 import CreateEventModal from './Components/CreateEventModal';
-import { EventRoutePayload } from './Components/EventModal';
-import { useToast } from '../../hooks/toasts.hooks';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useHistory } from 'react-router-dom';
@@ -53,22 +45,9 @@ interface NewCalendarPageProps {
   yourEvents: Event[];
   reviewEvents: Event[];
   allCalendars: Calendar[];
-  handleEditSubmit: (
-    data: EventRoutePayload,
-    event: Event,
-    editEvent: (editArgs: EditEventArgs) => Promise<Event>,
-    onClose: () => void
-  ) => Promise<void>;
 }
 
-const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
-  allEventTypes,
-  yourEvents,
-  reviewEvents,
-  allCalendars,
-  handleEditSubmit
-}) => {
-  const toast = useToast();
+const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEvents, reviewEvents, allCalendars }) => {
   const theme = useTheme();
   const {
     data: allTeamTypes,
@@ -168,9 +147,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
 
   const conflictingReviewEvents = untransformedConflictingReviewEvents?.map(filterEventTransformer);
 
-  const { mutateAsync: createEvent } = useCreateEvent();
-  const { isLoading: documentsIsLoading, mutateAsync: uploadDocuments } = useUploadManyDocuments();
-
   const [upcomingStartPeriod] = useState(() => new Date());
 
   const [upcomingEndPeriod] = useState(() => {
@@ -237,8 +213,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     conflictingDeniedEventsLoading ||
     !conflictingDeniedEvents ||
     conflictingReviewEventsLoading ||
-    !conflictingReviewEvents ||
-    documentsIsLoading
+    !conflictingReviewEvents
   )
     return <LoadingIndicator />;
 
@@ -302,49 +277,12 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   if (!allTeams || allTeamsLoading) return <LoadingIndicator />;
   if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError?.message} />;
 
-  const handleCreateEvent = async (data: EventRoutePayload) => {
-    try {
-      // Type guard to ensure we have a create payload with schedule slots
-      if (!('scheduleSlot' in data) || !('initialDateScheduled' in data)) {
-        throw new Error('Invalid payload for creating event');
-      }
-
-      const { documentFiles, ...eventData } = data;
-
-      // Create the event first without documents
-      // EventModal already generates the schedule slots with actual dates/times
-      const createArgs = {
-        ...eventData,
-        documentIds: []
-      };
-
-      const createdEvent = await createEvent(createArgs);
-
-      const filesToUpload = documentFiles.map((doc) => doc.file).filter((file): file is File => file !== undefined);
-
-      if (filesToUpload.length > 0) {
-        await uploadDocuments({
-          id: createdEvent.eventId,
-          files: filesToUpload
-        });
-      }
-
-      toast.success('Event created successfully!');
-      setIsCreateModalOpen(false);
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      }
-    }
-  };
-
   return (
     <>
       {isCreateModalOpen && (
         <CreateEventModal
           open={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
-          onSubmit={handleCreateEvent}
           eventTypes={allEventTypes}
           defaultDate={displayMonthYear}
         />
@@ -547,7 +485,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                                 dayDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
                                 DayOfWeek.SUNDAY
                               }
-                              handleEditSubmit={handleEditSubmit}
                             />
                           </Box>
                         </Grid>
@@ -566,49 +503,68 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
               gap: 2
             }}
           >
-            <DateCalendar
-              value={displayMonthYear}
-              onMonthChange={(newDate) => setDisplayMonthYear(newDate)}
-              onChange={(newDate) => {
-                if (newDate) setDisplayMonthYear(newDate);
-              }}
-              slotProps={{
-                day: {
-                  sx: {
-                    '&.Mui-selected': {
-                      bgcolor: 'red',
-                      '&:hover': {
-                        bgcolor: 'darkred'
-                      },
-                      '&:focus': {
-                        bgcolor: 'red'
+            <Box>
+              <DateCalendar
+                value={displayMonthYear}
+                onMonthChange={(newDate) => setDisplayMonthYear(newDate)}
+                onChange={(newDate) => {
+                  if (newDate) setDisplayMonthYear(newDate);
+                }}
+                slotProps={{
+                  day: {
+                    sx: {
+                      '&.Mui-selected': {
+                        bgcolor: 'red',
+                        '&:hover': {
+                          bgcolor: 'darkred'
+                        },
+                        '&:focus': {
+                          bgcolor: 'red'
+                        }
                       }
                     }
                   }
-                }
+                }}
+              />
+            </Box>
+            <Box sx={{ flexShrink: 0 }}>
+              <SchedulingConflictsWarning
+                memberIds={memberIds.concat(additionalMemberIds)}
+                teamIds={teamIds.concat(additionalTeamIds)}
+                startPeriod={startPeriod}
+                endPeriod={endPeriod}
+              />
+            </Box>
+
+            {/* Upcoming Meetings Section */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '15vh',
+                maxHeight: '30vh'
               }}
-            />
-            <SchedulingConflictsWarning
-              memberIds={memberIds.concat(additionalMemberIds)}
-              teamIds={teamIds.concat(additionalTeamIds)}
-              startPeriod={startPeriod}
-              endPeriod={endPeriod}
-            />
-            <Box sx={{ width: 320, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 0.5 }}>
+            >
+              <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 1, flexShrink: 0 }}>
                 My Upcoming Meetings:
               </Typography>
 
               {upcomingOccurences && (
                 <Box
                   sx={{
-                    mt: 2,
-                    flex: 1,
-                    flexDirection: 'column',
                     overflowX: 'hidden',
                     overflowY: 'auto',
                     scrollbarColor: `${theme.palette.primary.main} transparent`,
-                    maxHeight: 'calc(50%)'
+                    '&::-webkit-scrollbar': {
+                      width: '8px'
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'transparent'
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: theme.palette.primary.main,
+                      borderRadius: '4px'
+                    }
                   }}
                 >
                   {upcomingOccurences?.map((event) => (
@@ -621,46 +577,79 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                   ))}
                 </Box>
               )}
-              {/* Calendar Selector */}
-              <Box sx={{ p: 2, borderRadius: 2 }}>
-                <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontFamily: (t) => t.typography.h4.fontFamily,
-                      fontWeight: 400,
-                      fontSize: 22
-                    }}
-                  >
-                    Calendars:
-                  </Typography>
+            </Box>
 
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    id="filter-events-button"
-                    onClick={() => setOpenFilterModal(true)}
-                    sx={{
-                      px: 1,
-                      py: 0,
-                      color: 'white',
+            {/* Calendar Selector Section */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '15vh',
+                maxHeight: '30vh'
+              }}
+            >
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ mb: 1, flexShrink: 0 }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontFamily: (t) => t.typography.h4.fontFamily,
+                    fontWeight: 400,
+                    fontSize: 22
+                  }}
+                >
+                  Calendars:
+                </Typography>
+
+                <Button
+                  size="small"
+                  variant="outlined"
+                  id="filter-events-button"
+                  onClick={() => setOpenFilterModal(true)}
+                  sx={{
+                    px: 1,
+                    py: 0,
+                    color: 'white',
+                    borderColor: 'white',
+                    backgroundColor: 'transparent',
+                    textTransform: 'none',
+                    fontSize: 14,
+                    fontFamily: (t) => t.typography.h4.fontFamily,
+                    '&:hover': {
                       borderColor: 'white',
-                      backgroundColor: 'transparent',
-                      textTransform: 'none',
-                      fontSize: 14,
-                      fontFamily: (t) => t.typography.h4.fontFamily,
-                      '&:hover': {
-                        borderColor: 'white',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                      },
-                      mb: 2
-                    }}
-                  >
-                    More Filters
-                  </Button>
-                </Stack>
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                    }
+                  }}
+                >
+                  More Filters
+                </Button>
+              </Stack>
 
-                {calendars.length > 0 && (
+              {calendars.length > 0 && (
+                <Box
+                  sx={{
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                    p: 2,
+                    borderRadius: 2,
+                    scrollbarColor: `${theme.palette.primary.main} transparent`,
+                    '&::-webkit-scrollbar': {
+                      width: '8px'
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'transparent'
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: theme.palette.primary.main,
+                      borderRadius: '4px'
+                    }
+                  }}
+                >
                   <FormGroup>
                     {calendars.map((cal) => {
                       const { calendarId, color } = cal;
@@ -702,8 +691,8 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                       );
                     })}
                   </FormGroup>
-                )}
-              </Box>
+                </Box>
+              )}
             </Box>
           </Box>
         </Box>

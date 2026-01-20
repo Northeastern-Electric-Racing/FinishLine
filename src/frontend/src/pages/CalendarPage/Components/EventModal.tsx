@@ -117,8 +117,18 @@ export interface EventEditPayload {
   description?: string;
 }
 
-// Union type for backward compatibility
 export type EventRoutePayload = EventCreatePayload | EventEditPayload;
+
+export interface EventFormSubmitResult {
+  basePayload: EventEditPayload;
+  scheduleSlots: Array<{
+    startTime: Date;
+    endTime: Date;
+    allDay: boolean;
+  }>;
+  scheduleDate: Date;
+  requiresConfirmation: boolean;
+}
 
 const schema = yup.object().shape({
   title: yup.string().required('Title is required'),
@@ -146,11 +156,10 @@ const schema = yup.object().shape({
 export interface BaseEventModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: EventRoutePayload) => Promise<unknown> | unknown;
+  onSubmit: (data: EventFormSubmitResult) => Promise<unknown> | unknown;
   initialValues?: Partial<EventFormValues>;
   eventTypes: EventType[];
   defaultDate?: Date;
-  isEditMode?: boolean;
 }
 
 const EventModal: React.FC<BaseEventModalProps> = ({
@@ -159,8 +168,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   onSubmit,
   initialValues,
   eventTypes,
-  defaultDate = new Date(),
-  isEditMode = false
+  defaultDate = new Date()
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -296,6 +304,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     }
   }, [open, initialValues?.days]);
 
+  const isEditMode = !!initialValues;
   const computedTitle = isEditMode ? 'Edit Event' : 'Add Event';
 
   // Handle recurring dropdown toggle
@@ -415,51 +424,54 @@ const EventModal: React.FC<BaseEventModalProps> = ({
 
   const onFormSubmit = async (data: EventFormValues) => {
     try {
+      const requiresConfirmation = selectedEventType?.requiresConfirmation ?? false;
       const scheduleSlots: Array<{
         startTime: Date;
         endTime: Date;
         allDay: boolean;
       }> = [];
 
-      // Helper function to create a date/time for a specific occurrence
-      const createSlotDateTime = (baseDate: Date, time: Date): Date => {
-        const result = new Date(baseDate);
-        result.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
-        return result;
-      };
+      // If the event requires confirmation, use startTime for initialDateScheduled and don't add any schedule slots
+      if (!requiresConfirmation) {
+        // Helper function to create a date/time for a specific occurrence
+        const createSlotDateTime = (baseDate: Date, time: Date): Date => {
+          const result = new Date(baseDate);
+          result.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
+          return result;
+        };
 
-      // Generate schedule slots for recurring events
-      const dayOfWeekEnum = convertIntToDay(data.scheduleDate.getDay());
-      const selectedDays = data.days.length > 0 ? data.days : [dayOfWeekEnum];
+        // Generate schedule slots for recurring events
+        const dayOfWeekEnum = convertIntToDay(data.scheduleDate.getDay());
+        const selectedDays = data.days.length > 0 ? data.days : [dayOfWeekEnum];
 
-      // Convert selected days to day indices for comparison
-      const dayIndices = selectedDays.map(convertDayToInt);
+        // Convert selected days to day indices for comparison
+        const dayIndices = selectedDays.map(convertDayToInt);
 
-      // Generate additional recurring occurrences
-      let occurrencesGenerated = 0;
-      const searchDate = new Date(data.scheduleDate);
+        // Generate additional recurring occurrences
+        let occurrencesGenerated = 0;
+        const searchDate = new Date(data.scheduleDate);
 
-      const maxDaysToSearch = 365; // Search up to a year
-      let daysSearched = 0;
+        const maxDaysToSearch = 365; // Search up to a year
+        let daysSearched = 0;
 
-      while (occurrencesGenerated < data.recurrenceNumber && daysSearched < maxDaysToSearch) {
-        const currentDayIndex = searchDate.getDay();
+        while (occurrencesGenerated < data.recurrenceNumber && daysSearched < maxDaysToSearch) {
+          const currentDayIndex = searchDate.getDay();
 
-        if ((dayIndices as number[]).includes(currentDayIndex)) {
-          scheduleSlots.push({
-            startTime: createSlotDateTime(searchDate, data.startTime),
-            endTime: createSlotDateTime(searchDate, data.endTime),
-            allDay: data.allDay
-          });
-          occurrencesGenerated++;
+          if ((dayIndices as number[]).includes(currentDayIndex)) {
+            scheduleSlots.push({
+              startTime: createSlotDateTime(searchDate, data.startTime),
+              endTime: createSlotDateTime(searchDate, data.endTime),
+              allDay: data.allDay
+            });
+            occurrencesGenerated++;
+          }
+
+          searchDate.setDate(searchDate.getDate() + 1);
+          daysSearched++;
         }
-
-        searchDate.setDate(searchDate.getDate() + 1);
-        daysSearched++;
       }
 
-      // Build the appropriate payload based on mode
-      const basePayload = {
+      const basePayload: EventEditPayload = {
         title: data.title,
         eventTypeId: data.eventTypeId,
         requiredMemberIds: requiredMembers.map((m) => m.id),
@@ -476,14 +488,12 @@ const EventModal: React.FC<BaseEventModalProps> = ({
         description: data.description
       };
 
-      const submitData: EventRoutePayload = isEditMode
-        ? basePayload
-        : {
-            ...basePayload,
-            initialDateScheduled: data.scheduleDate,
-            scheduleSlot: scheduleSlots
-          };
-      await onSubmit(submitData);
+      await onSubmit({
+        basePayload,
+        scheduleSlots,
+        scheduleDate: data.scheduleDate,
+        requiresConfirmation
+      });
       handleClose();
     } catch (e: unknown) {
       if (e instanceof Error) toast.error(e.message);
