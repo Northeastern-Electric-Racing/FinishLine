@@ -16,10 +16,35 @@ import { useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks
  * Rules without team assignments are shown in the unassigned section.
  */
 const getTeamOrganization = (allRules: Rule[]): { teamRules: TeamRules[]; unassignedToTeam: Rule[] } => {
-  const teamRules: TeamRules[] = [];
-  const unassignedToTeam = allRules.filter((r) => !r.parentRule);
+  const teamMap = new Map<string, TeamRules>();
+  const unassignedToTeam: Rule[] = [];
 
-  return { teamRules, unassignedToTeam };
+  // Iterate through all rules and organize by team
+  allRules.forEach((rule) => {
+    if (rule.subRuleIds.length === 0) {
+      if (!rule.teams || rule.teams.length === 0) {
+        unassignedToTeam.push(rule);
+      } else {
+        // Add rule to each assigned team
+        rule.teams.forEach((team) => {
+          if (!teamMap.has(team.teamId)) {
+            teamMap.set(team.teamId, {
+              teamId: team.teamId,
+              teamName: team.teamName,
+              projects: [],
+              unassignedRules: []
+            });
+          }
+
+          const teamRules = teamMap.get(team.teamId)!;
+          // Rules are assigned to teams but not to specific projects
+          teamRules.unassignedRules.push(rule);
+        });
+      }
+    }
+  });
+
+  return { teamRules: Array.from(teamMap.values()), unassignedToTeam };
 };
 
 const RulesetViewPage = () => {
