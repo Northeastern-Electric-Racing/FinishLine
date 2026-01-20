@@ -172,7 +172,7 @@ export const deleteRule = (ruleId: string) => {
  * @param ruleContent - The new content for the rule
  */
 export const editRule = (ruleId: string, ruleContent: string) => {
-  return axios.post<Rule>(apiUrls.rulesEdit(ruleId), { ruleContent });
+  return axios.post<SharedRule>(apiUrls.rulesEdit(ruleId), { ruleContent });
 };
 
 /**

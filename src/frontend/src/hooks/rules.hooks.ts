@@ -313,7 +313,7 @@ export const useEditRule = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  return useMutation<Rule, Error, { ruleId: string; ruleContent: string }>(
+  return useMutation<SharedRule, Error, { ruleId: string; ruleContent: string }>(
     ['rules', 'edit'],
     async ({ ruleId, ruleContent }) => {
       const { data } = await editRule(ruleId, ruleContent);
