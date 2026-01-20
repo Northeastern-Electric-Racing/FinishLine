@@ -12,7 +12,6 @@ import PageLayout from '../../components/PageLayout';
 import { Box } from '@mui/material';
 import RulesetTable from './components/RulesetTable';
 import { routes } from '../../utils/routes';
-import { useParams } from 'react-router-dom';
 import { useRulesetType } from '../../hooks/rules.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -30,11 +29,6 @@ const RulesetPage: React.FC = () => {
   const toast = useToast();
 
   const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
-
-  interface ParamTypes {
-    rulesetTypeId: string;
-  }
-  const { rulesetTypeId } = useParams<ParamTypes>();
   const { data: rulesetType, isLoading, isError, error } = useRulesetType(rulesetTypeId);
 
   const handleFileConfirm = async (data: { fileId: string; name: string; carNumber: number; parserType: string }) => {
@@ -84,7 +78,10 @@ const RulesetPage: React.FC = () => {
 
   return (
     <>
-      <PageLayout title={`${rulesetType?.name} Rulesets`} previousPages={[{ name: 'Rules', route: routes.RULES }]}>
+      <PageLayout
+        title={rulesetType?.name ? `${rulesetType.name} Rulesets` : 'Rulesets'}
+        previousPages={[{ name: 'Rules', route: routes.RULES }]}
+      >
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 120px)' }}>
           <Box sx={{ flexGrow: 1 }}>
             <RulesetTable />

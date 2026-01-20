@@ -92,6 +92,7 @@ rulesRouter.get('/ruleset/:rulesetId/project/:projectId/rules', RulesController.
 rulesRouter.get('/:ruleId/subrules', RulesController.getChildRules);
 rulesRouter.get('/:rulesetId/parentRules', RulesController.getTopLevelRules);
 rulesRouter.get('/ruleset/:rulesetId', RulesController.getSingleRuleset);
+rulesRouter.get('/:rulesetTypeId', RulesController.getRulesetType);
 
 rulesRouter.post(
   '/ruleset/:rulesetId/parse',
