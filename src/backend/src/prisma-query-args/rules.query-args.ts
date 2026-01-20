@@ -21,6 +21,12 @@ export const getRulePreviewQueryArgs = () =>
         select: {
           ruleId: true
         }
+      },
+      teams: {
+        select: {
+          teamId: true,
+          teamName: true
+        }
       }
     }
   });

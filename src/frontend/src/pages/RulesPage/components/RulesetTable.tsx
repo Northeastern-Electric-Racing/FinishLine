@@ -277,7 +277,7 @@ const RulesetTable: React.FC = () => {
                       {ruleset.name}
                     </TableCell>
                     <TableCell align="center">{datePipe(ruleset.dateCreated)}</TableCell>
-                    <TableCell align="center">{ruleset.assignedPercentage}%</TableCell>
+                    <TableCell align="center">{ruleset.assignedPercentage?.toFixed(2) ?? '0'}%</TableCell>
                     <TableCell align="center">{ruleset.car.name}</TableCell>
                     <TableCell align="center">
                       <Checkbox
