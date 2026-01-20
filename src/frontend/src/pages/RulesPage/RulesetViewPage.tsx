@@ -21,26 +21,28 @@ const getTeamOrganization = (allRules: Rule[]): { teamRules: TeamRules[]; unassi
 
   // Iterate through all rules and organize by team
   allRules.forEach((rule) => {
-    if (rule.subRuleIds.length === 0) {
-      if (!rule.teams || rule.teams.length === 0) {
+    if (!rule.teams || rule.teams.length === 0) {
+      // Only add to unassigned if it's a top-level rule (no parent)
+      if (!rule.parentRule) {
         unassignedToTeam.push(rule);
-      } else {
-        // Add rule to each assigned team
-        rule.teams.forEach((team) => {
-          if (!teamMap.has(team.teamId)) {
-            teamMap.set(team.teamId, {
-              teamId: team.teamId,
-              teamName: team.teamName,
-              projects: [],
-              unassignedRules: []
-            });
-          }
-
-          const teamRules = teamMap.get(team.teamId)!;
-          // Rules are assigned to teams but not to specific projects
-          teamRules.unassignedRules.push(rule);
-        });
       }
+    } else {
+      // Add rule to each assigned team (includes both parents and children)
+      rule.teams.forEach((team) => {
+        if (!teamMap.has(team.teamId)) {
+          teamMap.set(team.teamId, {
+            teamId: team.teamId,
+            teamName: team.teamName,
+            projects: [],
+            unassignedRules: []
+          });
+        }
+
+        const teamRules = teamMap.get(team.teamId)!;
+        if (!rule.parentRule) {
+          teamRules.unassignedRules.push(rule);
+        }
+      });
     }
   });
 
