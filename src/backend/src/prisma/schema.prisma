@@ -795,6 +795,7 @@ model Sponsor {
   discountCode   String?
   activeYears    Int[]
   taxExempt      Boolean
+  sponsorNotes   String?
   sponsorTasks   Sponsor_Task[]
 
   @@unique([name, organizationId], name: "uniqueSponsor")
