@@ -42,7 +42,7 @@ const AddRuleSectionModal: React.FC<AddRuleSectionModalProps> = ({ open, onClose
     try {
       await createRule({
         ruleCode: data.name,
-        ruleContent: '_',
+        ruleContent: 'content placeholder',
         rulesetId,
         referencedRules: [],
         imageFileIds: []
