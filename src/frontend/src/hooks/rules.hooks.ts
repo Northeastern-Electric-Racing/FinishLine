@@ -163,6 +163,54 @@ export const useToggleRuleTeam = () => {
   );
 };
 
+/**
+ * Hook to toggle multiple rule-team assignments in bulk
+ * Processes each toggle sequentially and returns aggregate results
+ */
+export const useBulkToggleRuleTeam = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<
+    { successful: number; failed: number; errors: string[] },
+    Error,
+    Array<{ ruleId: string; teamId: string }>
+  >(
+    ['rules', 'bulk-toggle-team'],
+    async (toggles) => {
+      let successful = 0;
+      let failed = 0;
+      const errors: string[] = [];
+
+      for (const { ruleId, teamId } of toggles) {
+        try {
+          await toggleRuleTeam(ruleId, teamId);
+          successful++;
+        } catch (error) {
+          failed++;
+          errors.push(`Failed to toggle rule ${ruleId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+
+      return { successful, failed, errors };
+    },
+    {
+      onSuccess: (result) => {
+        queryClient.invalidateQueries(['rules']);
+
+        if (result.failed > 0) {
+          toast.error(`${result.failed} assignment(s) failed to save. ${result.successful} succeeded.`);
+        } else if (result.successful > 0) {
+          toast.success(`Successfully saved ${result.successful} assignment change(s)`);
+        }
+      },
+      onError: (error: Error) => {
+        toast.error(`Failed to save assignments: ${error.message}`);
+      }
+    }
+  );
+};
+
 export const useGetTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => {
   return useQuery<SharedRule[], Error>(['rules', 'team-rules', rulesetTypeId, teamId], async () => {
     const { data } = await getTeamRulesInRulesetType(rulesetTypeId, teamId);

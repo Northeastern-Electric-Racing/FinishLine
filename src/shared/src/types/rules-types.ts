@@ -43,6 +43,10 @@ export interface Rule {
   };
   subRuleIds: string[];
   referencedRuleIds: string[];
+  teams?: Array<{
+    teamId: string;
+    teamName: string;
+  }>;
 }
 
 export interface RuleStatusChange {
