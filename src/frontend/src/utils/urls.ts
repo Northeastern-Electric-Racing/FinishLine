@@ -446,10 +446,11 @@ const rulesetTypes = () => `${rules()}/rulesetTypes`;
 const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
 const ruleset = () => `${rules()}/ruleset`;
 const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
-const rulesetsCreate = () => `${rules()}/ruleset/create`;
-const ruleCreate = () => `${rules()}/rule/create`;
+const rulesetsCreate = () => `${ruleset()}/create`;
 const rulesetById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
-const rulesetCreate = () => `${ruleset()}/create`;
+const ruleCreate = () => `${rules()}/rule/create`;
+const parseRuleset = (rulesetId: string) => `${rulesetById(rulesetId)}/parse`;
+const uploadRulesetFile = () => `${rules()}/upload/file`;
 const rulesGetActiveRuleset = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/active`;
 const rulesGetProjectRules = (rulesetId: string, projectId: string) =>
   `${rules()}/ruleset/${rulesetId}/project/${projectId}/rules`;
@@ -459,6 +460,7 @@ const rulesCreateProjectRule = () => `${rules()}/projectRule/create`;
 const rulesDeleteProjectRule = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/delete`;
 const rulesEditProjectRuleStatus = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/editStatus`;
 const rulesEdit = (ruleId: string) => `${rules()}/rule/${ruleId}/edit`;
+const rulesDelete = (ruleId: string) => `${rules()}/rule/${ruleId}/delete`;
 const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
 const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
 const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
@@ -776,9 +778,8 @@ export const apiUrls = {
   rulesetsByType,
   rulesetTypeCreate,
   rulesetsCreate,
-  rulesetCreate,
-  ruleCreate,
   rulesetById,
+  ruleCreate,
   rulesGetActiveRuleset,
   rulesGetProjectRules,
   rulesGetUnassignedRulesForRuleset,
@@ -786,9 +787,12 @@ export const apiUrls = {
   rulesDeleteProjectRule,
   rulesEditProjectRuleStatus,
   rulesEdit,
+  rulesDelete,
   rulesetUpdate,
   rulesetDelete,
   rulesetTypeDelete,
+  parseRuleset,
+  uploadRulesetFile,
   singleRuleset,
 
   version

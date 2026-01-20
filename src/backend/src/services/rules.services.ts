@@ -32,6 +32,8 @@ import {
   rulesetTransformer,
   rulesetTypeTransformer
 } from '../transformers/rules.transformer';
+import { ParsedRule, parseRulesFromPdf } from '../utils/parse.utils';
+import { uploadFile, downloadFile } from '../utils/google-integration.utils';
 
 export default class RulesService {
   /**
@@ -67,6 +69,31 @@ export default class RulesService {
     }
 
     return rulesetTransformer(activeRuleset);
+  }
+
+  /**
+   * Gets a single ruleset by its ID
+   * @param rulesetId  The ID of the ruleset to retrieve
+   * @param organizationId The ID of the organization the ruleset belongs to
+   * @returns The ruleset if found, otherwise throws an error
+   */
+  static async getRulesetById(rulesetId: string, organizationId: string): Promise<Ruleset> {
+    const ruleset = await prisma.ruleset.findFirst({
+      where: {
+        rulesetId,
+        deletedByUserId: null,
+        rulesetType: {
+          organizationId
+        }
+      },
+      ...getRulesetQueryArgs()
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    return rulesetTransformer(ruleset);
   }
 
   /**
@@ -503,7 +530,7 @@ export default class RulesService {
     const rulesets = await prisma.ruleset_Type.findMany({
       where: {
         organizationId: organization.organizationId,
-        deletedBy: null
+        deletedByUserId: null
       },
       include: {
         revisionFiles: true
@@ -522,7 +549,7 @@ export default class RulesService {
     const rulesets = await prisma.ruleset.findMany({
       where: {
         rulesetTypeId,
-        deletedBy: null,
+        deletedByUserId: null,
         rulesetType: {
           organizationId
         }
@@ -576,7 +603,7 @@ export default class RulesService {
       where: {
         rulesetTypeId,
         active: true,
-        deletedBy: null
+        deletedByUserId: null
       },
       ...getRulesetQueryArgs()
     });
@@ -750,20 +777,24 @@ export default class RulesService {
     active: boolean,
     fileId: string
   ) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
       throw new AccessDeniedException('only leadership and above can create ruleset!');
+    }
 
     const rulesetType = await prisma.ruleset_Type.findUnique({
       where: {
-        rulesetTypeId,
-        deletedBy: null,
-        organizationId: organization.organizationId
+        rulesetTypeId
       }
     });
 
     if (!rulesetType) {
       throw new NotFoundException('Ruleset Type', rulesetTypeId);
     }
+    if (rulesetType.dateDeleted !== null) {
+      throw new DeletedException('Ruleset Type', rulesetTypeId);
+    }
+
+    if (rulesetType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Ruleset Type');
 
     const car = await prisma.car.findFirst({
       where: {
@@ -1123,7 +1154,7 @@ export default class RulesService {
         projects: {
           none: {}
         },
-        deletedBy: null
+        deletedByUserId: null
       },
       ...getRulePreviewQueryArgs(),
       orderBy: {
@@ -1238,6 +1269,139 @@ export default class RulesService {
     });
 
     return rules.map(ruleTransformer);
+  }
+
+  /**
+   * Parses a PDF ruleset file and saves the extracted rules to the database.
+   * Extracts rules based on parser type (FSAE or FHE).
+   * Creates all rules in the database and then sets up parent-child relationships
+   * @param user user who uploaded the ruleset pdf
+   * @param organizationId organization id of the ruleset
+   * @param fileId google drive file id of the ruleset pdf
+   * @param rulesetId id of the ruleset to save the parsed rules into
+   * @param parserType type of parser to use (FSAE or FHE)
+   * @returns array of saved rules with parent relationships established
+   * @throws AccessDeniedException if user lacks permissions or ruleset belongs to another organization
+   * @throws NotFoundException if ruleset doesn't exist
+   * @throws DeletedException if ruleset has been deleted
+   * @throws HttpException(400) if file is not a PDF or contains no rules
+   * @throws HttpException(500) if PDF parsing fails
+   */
+  static async parseRuleset(
+    user: User,
+    organizationId: string,
+    fileId: string,
+    rulesetId: string,
+    parserType: 'FSAE' | 'FHE'
+  ): Promise<SharedRule[]> {
+    if (!(await userHasPermission(user.userId, organizationId, isLeadership))) {
+      throw new AccessDeniedException('You do not have permissions to upload and parse rulesets');
+    }
+
+    // Verify ruleset exists and belongs to organization
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      include: {
+        car: {
+          include: {
+            wbsElement: true
+          }
+        }
+      }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.deletedByUserId) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+    if (ruleset.car.wbsElement.organizationId !== organizationId) {
+      throw new AccessDeniedException('Cannot parse rules into a ruleset from another organization');
+    }
+
+    // get file from Google Drive
+    const { buffer, type } = await downloadFile(fileId);
+
+    // ensure the file is a PDF
+    if (type !== 'application/pdf') {
+      throw new HttpException(400, 'Ruleset File must be a PDF');
+    }
+    let parsedRules: ParsedRule[];
+    try {
+      parsedRules = await parseRulesFromPdf(buffer, parserType);
+      if (parsedRules.length === 0) {
+        throw new HttpException(400, 'No rules found in provided file');
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      if (process.env && process.env.NODE_ENV === 'development') {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        throw new HttpException(500, `Error parsing rules from PDF file: ${message}`);
+      }
+      throw new HttpException(500, 'Error parsing rules from PDF file');
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.rule.createMany({
+        data: parsedRules.map((rule) => ({
+          ruleCode: rule.ruleCode,
+          ruleContent: rule.ruleContent,
+          imageFileIds: [],
+          rulesetId,
+          createdByUserId: user.userId
+        }))
+      });
+
+      const createdRules = await tx.rule.findMany({
+        where: { rulesetId },
+        select: {
+          ruleId: true,
+          ruleCode: true
+        }
+      });
+
+      const ruleMap = new Map<string, string>();
+      createdRules.forEach((rule) => {
+        ruleMap.set(rule.ruleCode, rule.ruleId);
+      });
+
+      // update parent relationships
+      const parentUpdates = parsedRules
+        .filter((rule) => rule.parentRuleCode)
+        .map((rule) => {
+          const parentId = ruleMap.get(rule.parentRuleCode!);
+          const ruleId = ruleMap.get(rule.ruleCode);
+
+          if (!parentId || !ruleId) return null;
+
+          return tx.rule.update({
+            where: { ruleId },
+            data: { parentRuleId: parentId }
+          });
+        })
+        .filter(Boolean);
+
+      await Promise.all(parentUpdates);
+    });
+
+    const savedRules = await prisma.rule.findMany({
+      where: { rulesetId },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return savedRules.map(ruleTransformer);
+  }
+
+  static async uploadRulesetFile(file: Express.Multer.File, uploader: User, organization: Organization) {
+    if (!(await userHasPermission(uploader.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('Only leadership and above can upload ruleset files');
+    }
+    const data = await uploadFile(file);
+    return data.id;
   }
 
   /**

@@ -30,6 +30,7 @@ export interface Ruleset {
     carId: string;
     name: string;
   };
+  ruleAmount: number;
 }
 
 export interface Rule {

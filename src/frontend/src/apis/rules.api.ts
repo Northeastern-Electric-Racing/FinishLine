@@ -4,15 +4,33 @@
  */
 
 import axios from '../utils/axios';
-import { Rule as SharedRule, ProjectRule, RuleCompletion, Ruleset, RulesetType } from 'shared';
+import { ProjectRule, Rule as SharedRule, RuleCompletion, RulesetType, Ruleset } from 'shared';
 import { apiUrls } from '../utils/urls';
+import { CreateRulesetPayload, ParseRulesetPayload, CreateRulePayload } from '../hooks/rules.hooks';
 import {
   projectRuleTransformer,
   rulesetTransformer,
   rulesetTypeTransformer,
   ruleTransformer
 } from './transformers/rules.transformers';
-import { CreateRulePayload } from '../hooks/rules.hooks';
+
+/**
+ * Gets a ruleset by its ID
+ */
+export const getRulesetById = (rulesetId: string) => {
+  return axios.get<Ruleset>(apiUrls.rulesetById(rulesetId), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * Gets a single ruleset by ID (dashboard usage)
+ */
+export const getSingleRuleset = (rulesetId: string) => {
+  return axios.get<Ruleset>(apiUrls.singleRuleset(rulesetId), {
+    transformResponse: (data) => rulesetTransformer(JSON.parse(data))
+  });
+};
 
 /**
  * Toggles team assignment for a rule
@@ -30,9 +48,6 @@ export const getTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string)
 
 /**
  * Creates a new ruleset type
- *
- * @param payload the data for creating the ruleset type.
- * @returns the created ruleset type
  */
 export const createRulesetType = (payload: { name: string }) => {
   return axios.post<RulesetType>(apiUrls.rulesetTypeCreate(), payload);
@@ -52,7 +67,6 @@ export const createRule = (payload: CreateRulePayload) => {
  * Fetches all Ruleset Types for the current organization.
  *
  * @returns A list of Ruleset Types.
- * Fetches all ruleset types for the organization.
  */
 export const getAllRulesetTypes = () => {
   return axios.get<RulesetType[]>(apiUrls.rulesetTypes(), {
@@ -62,8 +76,6 @@ export const getAllRulesetTypes = () => {
 
 /**
  * Gets the active ruleset for a given ruleset type.
- *
- * @param rulesetTypeId The ID of the ruleset type.
  */
 export const getActiveRuleset = (rulesetTypeId: string) => {
   return axios.get<Ruleset>(apiUrls.rulesGetActiveRuleset(rulesetTypeId), {
@@ -73,9 +85,6 @@ export const getActiveRuleset = (rulesetTypeId: string) => {
 
 /**
  * Gets all project rules for a given ruleset and project.
- *
- * @param rulesetId The ID of the ruleset.
- * @param projectId The ID of the project.
  */
 export const getProjectRules = (rulesetId: string, projectId: string) => {
   return axios.get<ProjectRule[]>(apiUrls.rulesGetProjectRules(rulesetId, projectId), {
@@ -85,9 +94,6 @@ export const getProjectRules = (rulesetId: string, projectId: string) => {
 
 /**
  * Gets unassigned rules for a ruleset and team.
- *
- * @param rulesetId The ID of the ruleset.
- * @param teamId The ID of the team.
  */
 export const getUnassignedRulesForRuleset = (rulesetId: string, teamId: string) => {
   return axios.get<SharedRule[]>(apiUrls.rulesGetUnassignedRulesForRuleset(rulesetId, teamId), {
@@ -96,38 +102,28 @@ export const getUnassignedRulesForRuleset = (rulesetId: string, teamId: string) 
 };
 
 /**
- * Creates a project rule (assigns a rule to a project).
- *
- * @param ruleId The ID of the rule to assign.
- * @param projectId The ID of the project.
+ * Creates a project rule
  */
 export const createProjectRule = (ruleId: string, projectId: string) => {
   return axios.post<ProjectRule>(apiUrls.rulesCreateProjectRule(), { ruleId, projectId });
 };
 
 /**
- * Deletes a project rule.
- *
- * @param projectRuleId The ID of the project rule to delete.
+ * Deletes a project rule
  */
 export const deleteProjectRule = (projectRuleId: string) => {
   return axios.post<ProjectRule>(apiUrls.rulesDeleteProjectRule(projectRuleId));
 };
 
 /**
- * Updates the status of a project rule.
- *
- * @param projectRuleId The ID of the project rule.
- * @param newStatus The new status to set.
+ * Updates project rule status
  */
 export const editProjectRuleStatus = (projectRuleId: string, newStatus: RuleCompletion) => {
   return axios.post<ProjectRule>(apiUrls.rulesEditProjectRuleStatus(projectRuleId), { newStatus });
 };
 
 /**
- * Gets all child rules of a given rule.
- *
- * @param ruleId The ID of the parent rule.
+ * Gets child rules
  */
 export const getChildRules = (ruleId: string) => {
   return axios.get<SharedRule[]>(apiUrls.rulesChildRules(ruleId), {
@@ -136,9 +132,7 @@ export const getChildRules = (ruleId: string) => {
 };
 
 /**
- * Gets all top-level rules (rules with no parent) for a ruleset.
- *
- * @param rulesetId The ID of the ruleset.
+ * Gets top-level rules
  */
 export const getTopLevelRules = (rulesetId: string) => {
   return axios.get<SharedRule[]>(apiUrls.rulesTopLevel(rulesetId), {
@@ -147,10 +141,7 @@ export const getTopLevelRules = (rulesetId: string) => {
 };
 
 /**
- * Fetches all Rulesets for a specific Ruleset Type.
- *
- * @param rulesetTypeId ID of the ruleset type.
- * @returns A list of Rulesets for that ruleset type.
+ * Fetch rulesets by type
  */
 export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
   return axios.get<Ruleset[]>(apiUrls.rulesetsByType(rulesetTypeId), {
@@ -159,11 +150,10 @@ export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
 };
 
 /**
- * Deletes a rule by its ID
- * @param ruleId - The ID of the rule to delete
+ * Deletes a rule
  */
 export const deleteRule = (ruleId: string) => {
-  return axios.post(`/rules/rule/${ruleId}/delete`);
+  return axios.post(apiUrls.rulesDelete(ruleId));
 };
 
 /**
@@ -183,26 +173,44 @@ export const updateRuleset = (rulesetId: string, name: string, isActive: boolean
 };
 
 /**
- * Deletes a ruleset given its ID
+ * Deletes a ruleset
  */
 export const deleteRuleset = (rulesetId: string) => {
   return axios.post(apiUrls.rulesetDelete(rulesetId));
 };
 
 /**
- * Deletes a ruleset type given its ID
+ * Deletes a ruleset type
  */
 export const deleteRulesetType = (rulesetTypeId: string) => {
   return axios.post(apiUrls.rulesetTypeDelete(rulesetTypeId));
 };
 
 /**
- * Gets a single ruleset by ID
- *
- * @param rulesetId The ID of the ruleset.
+ * Creates a new ruleset
  */
-export const getSingleRuleset = (rulesetId: string) => {
-  return axios.get<Ruleset>(apiUrls.singleRuleset(rulesetId), {
-    transformResponse: (data) => rulesetTransformer(JSON.parse(data))
+export const createRuleset = (payload: CreateRulesetPayload) => {
+  return axios.post<Ruleset>(apiUrls.rulesetsCreate(), payload);
+};
+
+/**
+ * Parses a ruleset PDF
+ */
+export const parseRuleset = (payload: ParseRulesetPayload) => {
+  return axios.post<SharedRule[]>(apiUrls.parseRuleset(payload.rulesetId), {
+    fileId: payload.fileId,
+    parserType: payload.parserType
+  });
+};
+
+/**
+ * Upload ruleset PDF file
+ */
+export const uploadRulesetFile = (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return axios.post(apiUrls.uploadRulesetFile(), formData, {
+    transformResponse: (data) => JSON.parse(data)
   });
 };

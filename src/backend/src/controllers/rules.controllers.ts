@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services';
 import { ProjectRule, Rule, Ruleset } from 'shared';
+import { HttpException } from '../utils/errors.utils';
 
 export default class RulesController {
   static async getActiveRuleset(req: Request, res: Response, next: NextFunction) {
@@ -8,6 +9,16 @@ export default class RulesController {
       const { rulesetTypeId } = req.params;
       const rulesetType = await RulesService.getActiveRuleset(req.currentUser, rulesetTypeId, req.organization);
       res.status(200).json(rulesetType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getRulesetById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const ruleset = await RulesService.getRulesetById(rulesetId, req.organization.organizationId);
+      res.status(200).json(ruleset);
     } catch (error: unknown) {
       next(error);
     }
@@ -269,6 +280,38 @@ export default class RulesController {
       const { rulesetId } = req.params;
       const rules = await RulesService.getTopLevelRules(rulesetId, req.organization.organizationId);
       res.status(200).json(rules);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async parseRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { fileId, parserType } = req.body;
+      const { rulesetId } = req.params;
+
+      const parseResult = await RulesService.parseRuleset(
+        req.currentUser,
+        req.organization.organizationId,
+        fileId,
+        rulesetId,
+        parserType
+      );
+
+      res.status(200).json(parseResult);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async uploadRulesetFile(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.file) {
+        throw new HttpException(400, 'Invalid or undefined file data');
+      }
+
+      const fileId = await RulesService.uploadRulesetFile(req.file, req.currentUser, req.organization);
+      res.status(200).json(fileId);
     } catch (error: unknown) {
       next(error);
     }

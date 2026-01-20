@@ -61,6 +61,14 @@ const rulesetType1 = (userCreatedId: string, organizationId: string): Prisma.Rul
   };
 };
 
+const rulesetType2 = (userCreatedId: string, organizationId: string): Prisma.Ruleset_TypeCreateInput => {
+  return {
+    name: 'FHE',
+    createdBy: { connect: { userId: userCreatedId } },
+    organization: { connect: { organizationId } }
+  };
+};
+
 const emptyRulesetType = (userCreatedId: string, organizationId: string): Prisma.Ruleset_TypeCreateInput => {
   return {
     name: 'Empty Ruleset Type',
@@ -115,7 +123,6 @@ const projectRule2 = (projectId: string, ruleId: string, createdByUserId: string
 
 export const seedRulesetType = async (submitter: User, name: string, organization: Organization) => {
   const createdRulesetType = await RulesService.createRulesetType(submitter, name, organization);
-
   return createdRulesetType;
 };
 
@@ -125,6 +132,7 @@ export const ruleSeedData = {
   thirdLevelRule,
   leafRule,
   rulesetType1,
+  rulesetType2,
   emptyRulesetType,
   ruleset1,
   secondActiveRuleset,

@@ -30,12 +30,14 @@ const RulesetViewPage = () => {
   ];
 
   const { rulesetId } = useParams<{ rulesetId: string }>();
+
   const {
     data: ruleset,
     isError: isRulesetError,
     error: rulesetError,
     isLoading: isRulesetLoading
   } = useSingleRuleset(rulesetId!);
+
   const {
     data: allRules,
     isError: isRulesError,

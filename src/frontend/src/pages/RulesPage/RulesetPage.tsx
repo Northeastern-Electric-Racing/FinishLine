@@ -2,7 +2,10 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
+import { useParams } from 'react-router-dom';
 import React from 'react';
+import { useToast } from '../../hooks/toasts.hooks';
+import { useCreateRuleset, useDeleteRuleset, useParseRuleset } from '../../hooks/rules.hooks';
 import { NERButton } from '../../components/NERButton';
 import AddNewFileModal from './components/AddNewFileModal';
 import PageLayout from '../../components/PageLayout';
@@ -14,11 +17,55 @@ import RulesetTable from './components/RulesetTable';
  * Supports editing and assigning rules to projects and teams.
  */
 const RulesetPage: React.FC = () => {
+  const { rulesetTypeId } = useParams<{ rulesetTypeId: string }>();
+
+  const { mutateAsync: createRuleset } = useCreateRuleset();
+  const { mutateAsync: parseRuleset } = useParseRuleset();
+  const { mutateAsync: deleteRuleset } = useDeleteRuleset();
+  const toast = useToast();
+
   const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
 
-  const handleFileConfirm = async (data: { file: File; name: string; car: string; isActive: boolean }) => {
+  const handleFileConfirm = async (data: { fileId: string; name: string; carNumber: number; parserType: string }) => {
     setAddFileModalShow(false);
-    console.log('Added data: ' + data); // delete this later, once data is used properly
+    toast.info('Creating ruleset and parsing rules...');
+
+    let createdRulesetId: string | null = null;
+
+    try {
+      const ruleset = await createRuleset({
+        fileId: data.fileId,
+        name: data.name,
+        rulesetTypeId,
+        carNumber: data.carNumber,
+        active: false
+      });
+      const { rulesetId } = ruleset;
+
+      if (!rulesetId) {
+        throw new Error('Error creating Ruleset');
+      }
+
+      createdRulesetId = rulesetId;
+
+      const parsedRules = await parseRuleset({
+        rulesetId,
+        fileId: data.fileId,
+        parserType: data.parserType as 'FSAE' | 'FHE'
+      });
+      toast.success(`Successfully parsed ${parsedRules.length} rules!`);
+    } catch (e) {
+      if (createdRulesetId) {
+        try {
+          await deleteRuleset(createdRulesetId);
+          toast.error('Parsing failed. Ruleset has been removed. ' + (e instanceof Error ? e.message : 'Unknown error'));
+        } catch (deleteError) {
+          toast.error('Error during cleanup: ' + (deleteError instanceof Error ? deleteError.message : 'Unknown error'));
+        }
+      } else {
+        toast.error('Error creating ruleset: ' + (e instanceof Error ? e.message : 'Unknown error'));
+      }
+    }
   };
 
   return (
@@ -61,8 +108,7 @@ const RulesetPage: React.FC = () => {
               <AddNewFileModal
                 open={AddFileModalShow}
                 onHide={() => setAddFileModalShow(false)}
-                onConfirm={handleFileConfirm}
-                carOptions={['1', '2']}
+                onFormSubmit={handleFileConfirm}
               />
             </Box>
           </Box>

@@ -15,9 +15,7 @@ import {
   Task_Priority,
   Task_Status,
   Team,
-  Part_Tag,
-  Prisma,
-  Ruleset_Type
+  Part_Tag
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
@@ -51,7 +49,6 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
-import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
 import { ruleSeedData } from './seed-data/rules.seed';
 import RulesService from '../services/rules.services';
 import { seedRulesetType } from './seed-data/rules.seed';
@@ -806,16 +803,6 @@ const performSeed: () => Promise<void> = async () => {
     glen.userId,
     ner
   );
-
-  /**
-   * Ruleset Types
-   */
-
-  /** FSAE ruleset type */
-  const rulesetTypeFSAE = await seedRulesetType(joeShmoe, 'FSAE', ner);
-
-  /** FHE ruleset type */
-  const rulesetTypeFHE = await seedRulesetType(joeBlow, 'FHE', ner);
 
   /**
    * Graphs
@@ -3073,43 +3060,6 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  /**
-   * Rules
-   */
-
-  // ruleset types
-  const fsaeRulesetType = await prisma.ruleset_Type.create({
-    data: ruleSeedData.rulesetType1(batman.userId, ner.organizationId)
-  });
-
-  const emptyRulesetType = await prisma.ruleset_Type.create({
-    data: ruleSeedData.emptyRulesetType(batman.userId, ner.organizationId)
-  });
-
-  // rulesets
-  const ruleset1 = await prisma.ruleset.create({
-    data: ruleSeedData.ruleset1(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
-  });
-
-  const secondActiveRuleset = await prisma.ruleset.create({
-    data: ruleSeedData.secondActiveRuleset(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
-  });
-
-  // rules
-  const ruleT = await prisma.rule.create({ data: ruleSeedData.topLevelRule(ruleset1.rulesetId, batman.userId) });
-  const ruleT2 = await prisma.rule.create({
-    data: ruleSeedData.secondLevelRule(ruleset1.rulesetId, batman.userId, ruleT.ruleId)
-  });
-  const ruleT21 = await prisma.rule.create({
-    data: ruleSeedData.thirdLevelRule(ruleset1.rulesetId, batman.userId, ruleT2.ruleId)
-  });
-  const ruleT211 = await prisma.rule.create({
-    data: ruleSeedData.leafRule(ruleset1.rulesetId, batman.userId, ruleT21.ruleId)
-  });
-
-  // project rules
-  await RulesService.createProjectRule(batman, ner, ruleT211.ruleId, project1Id);
-
   const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156', 3000);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32', 10);
@@ -3140,18 +3090,31 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /**
-   * RULESET TYPES AND RULESETS
+   * Rules
    */
 
-  const formulaStudentRulesetType = await prisma.ruleset_Type.create({
-    data: {
-      name: 'Formula Student Rules',
-      createdByUserId: superman.userId,
-      organizationId: ner.organizationId
-    }
+  // ruleset types
+  const fsaeRulesetType = await prisma.ruleset_Type.create({
+    data: ruleSeedData.rulesetType1(batman.userId, ner.organizationId)
   });
 
-  // Create rulesets
+  await prisma.ruleset_Type.create({
+    data: ruleSeedData.rulesetType2(batman.userId, ner.organizationId)
+  });
+
+  await prisma.ruleset_Type.create({
+    data: ruleSeedData.emptyRulesetType(batman.userId, ner.organizationId)
+  });
+
+  // rulesets
+  const ruleset1 = await prisma.ruleset.create({
+    data: ruleSeedData.ruleset1(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
+  });
+
+  await prisma.ruleset.create({
+    data: ruleSeedData.secondActiveRuleset(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
+  });
+
   const fsae2025Ruleset = await prisma.ruleset.create({
     data: {
       fileId: 'fsae-2025-rules-file-id',
@@ -3174,9 +3137,21 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  /**
-   * RULES
-   */
+  // rules
+  const ruleT = await prisma.rule.create({ data: ruleSeedData.topLevelRule(ruleset1.rulesetId, batman.userId) });
+  const ruleT2 = await prisma.rule.create({
+    data: ruleSeedData.secondLevelRule(ruleset1.rulesetId, batman.userId, ruleT.ruleId)
+  });
+  const ruleT21 = await prisma.rule.create({
+    data: ruleSeedData.thirdLevelRule(ruleset1.rulesetId, batman.userId, ruleT2.ruleId)
+  });
+  const ruleT211 = await prisma.rule.create({
+    data: ruleSeedData.leafRule(ruleset1.rulesetId, batman.userId, ruleT21.ruleId)
+  });
+
+  // project rules
+  await RulesService.createProjectRule(batman, ner, ruleT211.ruleId, project1Id);
+
   // Technical Rules Section
   const techRule = await prisma.rule.create({
     data: {
@@ -3225,13 +3200,6 @@ const performSeed: () => Promise<void> = async () => {
       rulesetId: fsae2025Ruleset.rulesetId,
       parentRuleId: vehicleConfigRule.ruleId,
       createdByUserId: thomasEmrax.userId
-    }
-  });
-  const rulesetType = await prisma.ruleset_Type.create({
-    data: {
-      name: 'FSAE',
-      createdByUserId: thomasEmrax.userId,
-      organizationId: ner.organizationId
     }
   });
 
@@ -3510,30 +3478,6 @@ const performSeed: () => Promise<void> = async () => {
       rulesetId: fsae2024Ruleset.rulesetId,
       parentRuleId: tech2024Rule.ruleId,
       createdByUserId: thomasEmrax.userId
-    }
-  });
-
-  const ruleset = await prisma.ruleset.create({
-    data: {
-      name: 'FSAE Rules 2025',
-      fileId: 'fsae-rules-2025',
-      active: true,
-      dateCreated: new Date('2025-01-01T10:00:00Z'),
-      rulesetTypeId: rulesetType.rulesetTypeId,
-      createdByUserId: thomasEmrax.userId,
-      carId: fergus.carId
-    }
-  });
-
-  await prisma.rule.create({
-    data: {
-      ruleCode: 'T2.1.1',
-      ruleContent:
-        'The vehicle must be open-wheeled and open-cockpit (a formula style body) with four (4) wheels that are not in a straight line.',
-      imageFileIds: [],
-      dateCreated: new Date('2025-09-01T10:00:00Z'),
-      ruleset: { connect: { rulesetId: ruleset.rulesetId } },
-      createdBy: { connect: { userId: thomasEmrax.userId } }
     }
   });
 };

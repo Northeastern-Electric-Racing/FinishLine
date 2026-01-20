@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { Rule as SharedRule, Ruleset, RulesetType, ProjectRule, RuleCompletion } from 'shared';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { ProjectRule, Rule as SharedRule, RuleCompletion, Ruleset, RulesetType } from 'shared';
 import {
   createRulesetType,
   getAllRulesetTypes,
@@ -18,12 +18,16 @@ import {
   getTopLevelRules,
   toggleRuleTeam,
   getTeamRulesInRulesetType,
+  parseRuleset,
+  uploadRulesetFile,
   getRulesetsByRulesetType,
   deleteRule,
   editRule,
   updateRuleset,
   deleteRuleset,
   deleteRulesetType,
+  createRuleset,
+  getRulesetById,
   createRule,
   getSingleRuleset
 } from '../apis/rules.api';
@@ -118,6 +122,20 @@ interface CreateRulesetTypePayload {
   name: string;
 }
 
+export interface ParseRulesetPayload {
+  rulesetId: string;
+  fileId: string;
+  parserType: 'FSAE' | 'FHE';
+}
+
+export interface CreateRulesetPayload {
+  fileId: string;
+  name: string;
+  rulesetTypeId: string;
+  carNumber: number;
+  active: boolean;
+}
+
 export interface CreateRulePayload {
   ruleCode: string;
   ruleContent: string;
@@ -144,6 +162,35 @@ export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
     {
       enabled // only fetch when true
     }
+  );
+};
+
+/**
+ * Hook to get a ruleset by ID.
+ * (Kept because some parts of the app may still call getRulesetById)
+ */
+export const useGetRuleset = (rulesetId: string) => {
+  return useQuery<Ruleset, Error>(
+    ['ruleset', rulesetId],
+    async () => {
+      const { data } = await getRulesetById(rulesetId);
+      return data;
+    },
+    { enabled: !!rulesetId }
+  );
+};
+
+/**
+ * Hook to get a single ruleset by ID (kept for compatibility with feature branch usage)
+ */
+export const useSingleRuleset = (rulesetId: string) => {
+  return useQuery<Ruleset, Error>(
+    ['rules', 'ruleset', rulesetId],
+    async () => {
+      const { data } = await getSingleRuleset(rulesetId);
+      return data;
+    },
+    { enabled: !!rulesetId }
   );
 };
 
@@ -375,18 +422,47 @@ export const useDeleteRulesetType = () => {
   );
 };
 
-/**
- * Hook to get a single ruleset by ID
- */
-export const useSingleRuleset = (rulesetId: string) => {
-  return useQuery<Ruleset, Error>(
-    ['rules', 'ruleset', rulesetId],
-    async () => {
-      const { data } = await getSingleRuleset(rulesetId);
+export const useCreateRuleset = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Ruleset, Error, CreateRulesetPayload>(
+    ['rulesets', 'create'],
+    async (payload: CreateRulesetPayload) => {
+      const { data } = await createRuleset(payload);
       return data;
     },
-    { enabled: !!rulesetId }
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rulesets']);
+      }
+    }
   );
+};
+
+export const useParseRuleset = () => {
+  const queryClient = useQueryClient();
+  return useMutation<SharedRule[], Error, ParseRulesetPayload>(
+    ['rulesets', 'parse'],
+    async (payload: ParseRulesetPayload) => {
+      const { data } = await parseRuleset(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rules']);
+        queryClient.invalidateQueries(['rulesets']);
+      }
+    }
+  );
+};
+
+/**
+ * Uploads a file to the drive and returns the fileId
+ */
+export const useUploadRulesetFile = () => {
+  return useMutation<string, Error, File>(['ruleset-file', 'upload'], async (file: File) => {
+    const { data } = await uploadRulesetFile(file);
+    return data;
+  });
 };
 
 /**
