@@ -93,11 +93,9 @@ const BOMTab = ({ project }: { project: Project }) => {
             >
               Show All Columns
             </NERButton>
-            {isAtMostRank('MEMBER', user.role) ? null : (
-              <NERButton variant="contained" onClick={() => {}} disabled={false}>
-                Copy Existing BOM
-              </NERButton>
-            )}
+            <NERButton variant="contained" onClick={() => {}} disabled={isAtMostRank('MEMBER', user.role)}>
+              Copy Existing BOM
+            </NERButton>
           </Box>
           <Box display="flex" gap="20px" alignItems="center">
             <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '8px 14px 8px 14px', borderRadius: '6px' }}>
