@@ -1,5 +1,5 @@
 import { Box } from '@mui/system';
-import { MaterialPreview, Project, isGuest } from 'shared';
+import { MaterialPreview, Project, isGuest, isAtMostRank } from 'shared';
 import { NERButton } from '../../../components/NERButton';
 import WarningIcon from '@mui/icons-material/Warning';
 import { Tooltip, useTheme } from '@mui/material';
@@ -93,6 +93,11 @@ const BOMTab = ({ project }: { project: Project }) => {
             >
               Show All Columns
             </NERButton>
+            {isAtMostRank('MEMBER', user.role) ? null : (
+              <NERButton variant="contained" onClick={() => {}} disabled={false}>
+                Copy Existing BOM
+              </NERButton>
+            )}
           </Box>
           <Box display="flex" gap="20px" alignItems="center">
             <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '8px 14px 8px 14px', borderRadius: '6px' }}>
