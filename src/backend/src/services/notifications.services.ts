@@ -182,7 +182,7 @@ export default class NotificationsService {
           return (
             `${usersToSlackPings(designReview.attendees ?? [])} ${
               designReview.wbsElement.name
-            } will be having a design review today at ${meetingStartTimePipe(designReview.meetingTimes)}! ` +
+            } will be having a design review today at EST ${meetingStartTimePipe(designReview.meetingTimes)}! ` +
             zoomLink +
             questionDocLink
           );
