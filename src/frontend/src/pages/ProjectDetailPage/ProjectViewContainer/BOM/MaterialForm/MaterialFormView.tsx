@@ -181,7 +181,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <FormControl fullWidth>
             <FormLabel>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -277,12 +277,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             </Typography>
             <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="right">
               <HelpIcon
-                sx={{
-                  fontSize: 'medium',
-                  ml: 1,
-                  color: 'lightgray',
-                  cursor: 'pointer'
-                }}
+                sx={{ marginBottom: '-1.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }}
               />
             </Tooltip>
           </Box>
