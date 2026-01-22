@@ -1,25 +1,18 @@
 import { useState } from 'react';
-import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Grid, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import { Calendar, DayOfWeek, EventInstance, EventType } from 'shared';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import TerminalIcon from '@mui/icons-material/Terminal';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import GroupIcon from '@mui/icons-material/Group';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
-import LinkIcon from '@mui/icons-material/Link';
-import StorefrontIcon from '@mui/icons-material/Storefront';
-import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
-import DescriptionIcon from '@mui/icons-material/Description';
-import ArticleIcon from '@mui/icons-material/Article';
 import HelpIcon from '@mui/icons-material/Help';
-import GroupsIcon from '@mui/icons-material/Groups';
-import { EventClickPopup } from './EventClickPopup';
+import { EventClickContent } from './EventClickPopup';
 import EventPartialInfoView from './EventPartialInfoView';
-import { formatTime } from '../../utils/datetime.utils';
+import EditEventModal from './Components/EditEventModal';
+import NERDeleteModal from '../../components/NERDeleteModal';
+import { useDeleteEvent } from '../../hooks/calendar.hooks';
+import { useToast } from '../../hooks/toasts.hooks';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -65,24 +58,36 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const isCurrentDay = cardDate.toDateString() === today;
   const isFutureDay = cardDate >= new Date();
 
-  const [clickedEvent, setClickedEvent] = useState<EventInstance>();
-  const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number }>();
+  // Track which event's tooltip is locked open after clicking
+  const [lockedTooltipEventId, setLockedTooltipEventId] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<EventInstance | null>(null);
+  const toast = useToast();
 
-  const handleOpenClickPopup = (event: EventInstance) => {
-    setClickedEvent(event);
-    if (typeof window !== 'undefined') {
-      setAnchorPosition({
-        top: window.innerHeight / 2,
-        left: window.innerWidth / 2
-      });
-    } else {
-      setAnchorPosition({ top: 0, left: 0 });
-    }
+  const { mutateAsync: deleteEvent } = useDeleteEvent(selectedEvent?.eventId ?? '');
+
+  const handleEdit = (event: EventInstance) => {
+    setSelectedEvent(event);
+    setShowEditModal(true);
   };
 
-  const handleCloseClickPopup = () => {
-    setClickedEvent(undefined);
-    setAnchorPosition(undefined);
+  const handleDelete = (event: EventInstance) => {
+    setSelectedEvent(event);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      setShowDeleteModal(false);
+      setLockedTooltipEventId(null);
+      await deleteEvent();
+      toast.success('Event deleted successfully!');
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    }
   };
 
   const DayCardTitle = () => (
@@ -102,209 +107,35 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     </Grid>
   );
 
-  const EventPopupInfo = ({ event, color }: { event: EventInstance; color: string }) => {
-    const name = event.title;
-
-    return (
-      <>
-        <Stack direction="column" spacing={2}>
-          <Stack direction="row">
-            <Typography marginX={0.5} marginY={0.1} lineHeight="120%" fontSize={24} fontWeight="bold" noWrap align="left">
-              {getTeamTypeIcon(event.teamType?.name ?? '', true)}
-            </Typography>
-
-            <Typography
-              marginX={0.5}
-              marginY={0.5}
-              lineHeight="120%"
-              fontSize={24}
-              fontWeight="bold"
-              noWrap
-              align="left"
-              color={color}
-            >
-              {name}
-            </Typography>
-          </Stack>
-
-          <Stack direction="row">
-            <AccessTimeIcon />
-            <Typography
-              marginX={0.5}
-              marginY={0.5}
-              marginRight={8}
-              lineHeight="120%"
-              fontSize={14}
-              fontWeight="bold"
-              noWrap
-              align="left"
-            >
-              {event.allDay ? 'All Day' : `${formatTime(event.startTime)} - ${formatTime(event.endTime)}`}
-            </Typography>
-            <LocationOnIcon />
-            <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-              {event.location ?? 'N/A'}
-            </Typography>
-          </Stack>
-
-          {event.requiredMembers.length > 0 && (
-            <Stack direction="row">
-              <GroupIcon />
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-                Required :
-              </Typography>
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-                {event.requiredMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
-              </Typography>
-            </Stack>
-          )}
-
-          {event.optionalMembers.length > 0 && (
-            <Stack direction="row">
-              <GroupIcon />
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-                Optional :
-              </Typography>
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-                {event.optionalMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
-              </Typography>
-            </Stack>
-          )}
-
-          {event.confirmedMembers.length > 0 && (
-            <Stack direction="row">
-              <CheckCircleIcon />
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-                {event.confirmedMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
-              </Typography>
-            </Stack>
-          )}
-
-          {event.deniedMembers.length > 0 && (
-            <Stack direction="row">
-              <DoNotDisturbIcon />
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-                {event.deniedMembers.map((member) => `${member.firstName} ${member.lastName}`).join(', ')}
-              </Typography>
-            </Stack>
-          )}
-
-          {event.teams.length > 0 && (
-            <Stack direction="row">
-              <GroupsIcon />
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-                Teams :
-              </Typography>
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-                {event.teams.map((team) => team.teamName).join(', ')}
-              </Typography>
-            </Stack>
-          )}
-
-          {event.machinery.length > 0 && (
-            <Stack direction="row">
-              <ConstructionIcon />
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-                {event.machinery.map((machine) => machine.name).join(', ')}
-              </Typography>
-            </Stack>
-          )}
-
-          {event.shops.length > 0 && (
-            <Stack direction="row">
-              <StorefrontIcon />
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-                {event.shops.map((shop) => shop.name).join(', ')}
-              </Typography>
-            </Stack>
-          )}
-
-          {event.workPackages.length > 0 && (
-            <Stack direction="row">
-              <BusinessCenterIcon />
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" align="left">
-                {event.workPackages.map((wp) => wp.wbsElement.name).join(', ')}
-              </Typography>
-            </Stack>
-          )}
-
-          {event.zoomLink && (
-            <Stack direction="row">
-              <LinkIcon />
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-                <Link href={event.zoomLink} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener">
-                  Zoom Link
-                </Link>
-              </Typography>
-            </Stack>
-          )}
-          {event.questionDocumentLink && (
-            <Stack direction="row">
-              <ArticleIcon />
-              <Typography
-                marginX={0.5}
-                marginY={0.5}
-                lineHeight={'120%'}
-                fontSize={14}
-                fontWeight="bold"
-                noWrap
-                align="left"
-              >
-                {event.questionDocumentLink ? (
-                  <Link
-                    href={event.questionDocumentLink}
-                    onClick={(e) => e.stopPropagation()}
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    Question Document Link
-                  </Link>
-                ) : (
-                  'N/A'
-                )}
-              </Typography>
-            </Stack>
-          )}
-
-          {event.description && (
-            <Stack direction="row">
-              <DescriptionIcon />
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-                {event.description.substring(0, name.length * 2)}
-                {event.description.length > name.length * 2 && '...'}
-              </Typography>
-            </Stack>
-          )}
-
-          {event.status && (
-            <Stack direction="row">
-              {getStatusIcon(event.status)}
-              <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
-                {event.status}
-              </Typography>
-            </Stack>
-          )}
-        </Stack>
-      </>
-    );
-  };
 
   const EventCard = ({ event }: { event: EventInstance }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const [tooltipHovered, setTooltipHovered] = useState(false);
     const specificEventType = eventTypes.find((eventType) => eventType.eventTypeId === event.eventTypeId);
     const specificCalendar = calendars.find((calendar) =>
       calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)
     );
 
     const bgColor = specificCalendar?.color ?? 'gray';
+    const isLocked = lockedTooltipEventId === event.eventId;
+    const shouldBeOpen = isLocked || isHovered || tooltipHovered;
 
     return (
       <Box
         marginLeft={0.5}
         marginBottom={0.5}
         marginRight={0.5}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => {
+          setTimeout(() => {
+            if (!isLocked && !tooltipHovered) {
+              setIsHovered(false);
+            }
+          }, 100);
+        }}
         onClick={(e) => {
           e.stopPropagation();
-          handleOpenClickPopup(event);
+          setLockedTooltipEventId(event.eventId);
         }}
         sx={{
           position: 'relative',
@@ -324,16 +155,40 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           <Tooltip
             placement="right"
             arrow
-            title={<EventPopupInfo event={event} color={bgColor} />}
+            open={shouldBeOpen}
+            disableHoverListener
+            disableFocusListener
+            disableTouchListener
+            enterDelay={0}
+            leaveDelay={200}
+            title={
+              <Box
+                onMouseEnter={() => setTooltipHovered(true)}
+                onMouseLeave={() => setTooltipHovered(false)}
+              >
+                <EventClickContent
+                  event={event}
+                  eventTypes={eventTypes}
+                  calendars={calendars}
+                  dayOfWeek={dayOfWeek}
+                  disable={false}
+                  addApprovalButtons={false}
+                  onClose={() => setLockedTooltipEventId(null)}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  clickedDate={cardDate}
+                />
+              </Box>
+            }
             slotProps={{
               popper: { sx: { zIndex: 1200 } },
               tooltip: {
                 sx: {
                   maxWidth: 'none',
                   borderRadius: 4,
-                  p: 2,
+                  p: 0,
                   cursor: 'pointer',
-                  bgcolor: theme.palette.grey[900],
+                  bgcolor: 'transparent',
                   boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
                 }
               },
@@ -343,6 +198,16 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                   fontSize: 16
                 }
               }
+            }}
+            PopperProps={{
+              modifiers: [
+                {
+                  name: 'offset',
+                  options: {
+                    offset: [0, 4]
+                  }
+                }
+              ]
             }}
           >
             <Typography
@@ -363,22 +228,103 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     );
   };
 
+  const ExtraEventItem = ({ event }: { event: EventInstance }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const [tooltipHovered, setTooltipHovered] = useState(false);
+    const isLocked = lockedTooltipEventId === event.eventId;
+    const shouldBeOpen = isLocked || isHovered || tooltipHovered;
+
+    return (
+      <Tooltip
+        placement="right"
+        arrow
+        open={shouldBeOpen}
+        disableHoverListener
+        disableFocusListener
+        disableTouchListener
+        enterDelay={0}
+        leaveDelay={200}
+        title={
+          <Box
+            onMouseEnter={() => setTooltipHovered(true)}
+            onMouseLeave={() => setTooltipHovered(false)}
+          >
+            <EventClickContent
+              event={event}
+              eventTypes={eventTypes}
+              calendars={calendars}
+              dayOfWeek={dayOfWeek}
+              disable={false}
+              addApprovalButtons={false}
+              onClose={() => setLockedTooltipEventId(null)}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              clickedDate={cardDate}
+            />
+          </Box>
+        }
+        slotProps={{
+          popper: { sx: { zIndex: 1300 } },
+          tooltip: {
+            sx: {
+              maxWidth: 'none',
+              borderRadius: 4,
+              p: 0,
+              cursor: 'pointer',
+              bgcolor: 'transparent',
+              boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
+            }
+          },
+          arrow: {
+            sx: {
+              color: theme.palette.grey[900],
+              fontSize: 16
+            }
+          }
+        }}
+        PopperProps={{
+          modifiers: [
+            {
+              name: 'offset',
+              options: {
+                offset: [0, 4]
+              }
+            }
+          ]
+        }}
+      >
+        <Box
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => {
+            setTimeout(() => {
+              if (!isLocked && !tooltipHovered) {
+                setIsHovered(false);
+              }
+            }, 100);
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setLockedTooltipEventId(event.eventId);
+          }}
+        >
+          <EventPartialInfoView event={event} onClick={() => {}} calendars={calendars} eventTypes={eventTypes} />
+        </Box>
+      </Tooltip>
+    );
+  };
+
   const ExtraEventsCard = ({ extraEvents }: { extraEvents: EventInstance[] }) => {
     return (
       <Box marginLeft={0.5} marginRight={0.5} marginBottom={0.2} sx={{ position: 'relative', zIndex: 2 }}>
         <Tooltip
           placement="right"
           arrow
+          enterDelay={0}
+          leaveDelay={200}
           title={
             <Stack direction="column">
               {extraEvents.map((event) => (
-                <EventPartialInfoView
-                  key={event.eventId}
-                  event={event}
-                  onClick={() => handleOpenClickPopup(event)}
-                  calendars={calendars}
-                  eventTypes={eventTypes}
-                />
+                <ExtraEventItem key={event.eventId} event={event} />
               ))}
             </Stack>
           }
@@ -399,6 +345,16 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                 fontSize: 16
               }
             }
+          }}
+          PopperProps={{
+            modifiers: [
+              {
+                name: 'offset',
+                options: {
+                  offset: [0, 4]
+                }
+              }
+            ]
           }}
         >
           <Card
@@ -424,6 +380,22 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
 
   return (
     <>
+      {/* Backdrop for locked tooltips to handle click-away */}
+      {lockedTooltipEventId && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 1199,
+            pointerEvents: 'all'
+          }}
+          onClick={() => setLockedTooltipEventId(null)}
+        />
+      )}
+
       <Card
         sx={{
           position: 'relative',
@@ -464,15 +436,30 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         </CardContent>
       </Card>
 
-      <EventClickPopup
-        clickedEvent={clickedEvent}
-        anchorPosition={anchorPosition}
-        onClose={handleCloseClickPopup}
-        eventTypes={eventTypes}
-        calendars={calendars}
-        dayOfWeek={dayOfWeek}
-        clickedDate={cardDate}
-      />
+      {selectedEvent && showEditModal && (
+        <EditEventModal
+          open={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setLockedTooltipEventId(null);
+          }}
+          event={selectedEvent}
+          eventTypes={eventTypes}
+        />
+      )}
+
+      {selectedEvent && showDeleteModal && (
+        <NERDeleteModal
+          open={showDeleteModal}
+          onHide={() => {
+            setShowDeleteModal(false);
+            setLockedTooltipEventId(null);
+          }}
+          formId="delete-event-form"
+          dataType={selectedEvent.title}
+          onFormSubmit={handleDeleteConfirm}
+        />
+      )}
     </>
   );
 };

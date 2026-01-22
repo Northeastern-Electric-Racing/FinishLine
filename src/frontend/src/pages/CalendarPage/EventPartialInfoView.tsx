@@ -5,7 +5,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import { Stack } from '@mui/system';
 import { getTeamTypeIcon } from './CalendarDayCard';
 import { Typography } from '@mui/material';
-import { datePipe } from '../../utils/pipes';
+import { formatTime } from '../../utils/datetime.utils';
 
 interface EventInfoProps {
   event: EventInstance;
@@ -50,7 +50,7 @@ const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, cal
             </Typography>
           ) : (
             <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
-              {datePipe(event.startTime)} - {datePipe(event.endTime)}
+              {formatTime(event.startTime)} - {formatTime(event.endTime)}
             </Typography>
           )}
         </Stack>

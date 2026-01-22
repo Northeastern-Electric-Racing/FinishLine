@@ -26,7 +26,7 @@ import { useApproveEvent, useDeleteEvent, useDenyEvent } from '../../hooks/calen
 import EditEventModal from './Components/EditEventModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import NERDeleteModal from '../../components/NERDeleteModal';
-import { datePipe } from '../../utils/pipes';
+import { formatTime } from '../../utils/datetime.utils';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
@@ -63,7 +63,7 @@ const hasValue = (v?: string | null) => {
   return s.length > 0 && s.toLowerCase() !== 'n/a';
 };
 
-const EventClickContent: React.FC<EventClickContentProps> = ({
+export const EventClickContent: React.FC<EventClickContentProps> = ({
   event,
   eventTypes,
   calendars,
@@ -174,7 +174,7 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
           {dayOfWeek && <AccessTimeIcon fontSize="small" />}
           {dayOfWeek && !event.allDay && (
             <Typography variant="body2">
-              {datePipe(event.startTime)} – {datePipe(event.endTime)}
+              {formatTime(event.startTime)} – {formatTime(event.endTime)}
             </Typography>
           )}
           {dayOfWeek && event.allDay && <Typography variant="body2">All day</Typography>}

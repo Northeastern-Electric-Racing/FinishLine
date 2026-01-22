@@ -64,3 +64,5 @@ eb-deploy/
 # Docker
 *.bak
 *.backup
+
+CLAUDE.md
