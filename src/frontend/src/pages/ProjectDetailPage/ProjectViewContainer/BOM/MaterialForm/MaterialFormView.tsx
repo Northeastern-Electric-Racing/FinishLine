@@ -276,9 +276,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               Part Details:
             </Typography>
             <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="right">
-              <HelpIcon
-                sx={{ marginBottom: '-1.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }}
-              />
+              <HelpIcon sx={{ marginBottom: '-1.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
             </Tooltip>
           </Box>
         </Grid>
@@ -407,7 +405,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
       </Grid>
       <Grid item xs={12}>
-      <Grid item xs={12} mt={2}>
+        <Grid item xs={12} mt={2}>
           <FormControl fullWidth>
             <Controller
               name="reimbursementRequestId"
