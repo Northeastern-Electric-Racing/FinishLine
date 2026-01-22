@@ -1,4 +1,5 @@
 import {
+  Button,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -39,6 +40,7 @@ export interface MaterialFormViewProps {
   watch: UseFormWatch<MaterialFormInput>;
   createManufacturer: (name: string) => void;
   setValue: UseFormSetValue<MaterialFormInput>;
+  copyFromExistingBomAction?: React.ReactNode;
 }
 
 const manufacturersToAutocomplete = (manufacturer: Manufacturer): { label: string; id: string } => {
@@ -80,6 +82,21 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
       onFormSubmit={onSubmit}
       formId={submitText + '-material-form'}
       showCloseButton
+      copyFromExistingBomAction={
+        <Button 
+          variant="contained"
+          onClick={() => {}} 
+          sx={{
+            mx: 1,
+            textTransform: 'none',
+            bgcolor: (t) => '#EF4345',
+            color: (t) => t.palette.getContrastText('#EF4345'),
+            '&:hover': { bgcolor: (t) => t.palette.error.dark }
+          }}
+        >
+          COPY FROM EXISTING BOM
+        </Button>
+      }
     >
       <Grid container spacing={2}>
         <Grid item xs={7}>

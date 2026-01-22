@@ -23,6 +23,7 @@ export interface NERModalProps {
   hideBackDrop?: boolean;
   icon?: JSX.Element | null;
   paperProps?: any;
+  copyFromExistingBomAction?: ReactNode;
 }
 
 const NERModal = ({
@@ -40,7 +41,8 @@ const NERModal = ({
   hideBackDrop = false,
   icon,
   paperProps,
-  titleChildren
+  titleChildren,
+  copyFromExistingBomAction
 }: NERModalProps) => {
   return (
     <Dialog
@@ -111,6 +113,11 @@ const NERModal = ({
       </DialogContent>
       {!hideFormButtons && (
         <DialogActions>
+          <Box sx={{ display: 'flex', alighItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <Box sx={{ ml: 1 }}>
+              {copyFromExistingBomAction}
+            </Box>
+          
           <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
             <NERFailButton sx={{ mx: 1 }} form={formId} onClick={onHide}>
               {cancelText || 'Cancel'}
@@ -118,6 +125,7 @@ const NERModal = ({
             <NERSuccessButton sx={{ mx: 1 }} type="submit" form={formId} onClick={onSubmit} disabled={disabled}>
               {submitText || 'Submit'}
             </NERSuccessButton>
+            </Box>
           </Box>
         </DialogActions>
       )}
