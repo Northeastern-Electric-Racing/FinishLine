@@ -83,9 +83,9 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
       formId={submitText + '-material-form'}
       showCloseButton
       copyFromExistingBomAction={
-        <Button 
+        <Button
           variant="contained"
-          onClick={() => {}} 
+          onClick={() => {}}
           sx={{
             mx: 1,
             textTransform: 'none',
