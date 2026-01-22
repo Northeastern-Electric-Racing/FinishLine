@@ -42,6 +42,7 @@ interface CalendarDayCardProps {
   eventTypes?: EventType[];
   calendars?: Calendar[];
   dayOfWeek?: DayOfWeek;
+  onCreateEventClick: () => void;
 }
 
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
@@ -49,9 +50,9 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   events,
   eventTypes = [],
   calendars = [],
-  dayOfWeek = DayOfWeek.MONDAY
+  dayOfWeek = DayOfWeek.MONDAY,
+  onCreateEventClick
 }) => {
-  const [, setIsCreateModalOpen] = useState(false);
   const theme = useTheme();
 
   const today = new Date().toDateString();
@@ -94,11 +95,13 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     <Grid container alignItems="center" margin={0} padding={0}>
       <Grid item xs display="flex" justifyContent="flex-end">
         <Typography
-          variant="h5"
-          margin={1}
+          variant="body1"
+          margin={0.5}
           noWrap
           sx={{
-            color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[100] : theme.palette.grey[600]
+            color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[100] : theme.palette.grey[600],
+            fontSize: 16,
+            fontWeight: 500
           }}
         >
           {cardDate.getDate()}
@@ -106,7 +109,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
       </Grid>
     </Grid>
   );
-
 
   const EventCard = ({ event }: { event: EventInstance }) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -162,10 +164,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
             enterDelay={0}
             leaveDelay={200}
             title={
-              <Box
-                onMouseEnter={() => setTooltipHovered(true)}
-                onMouseLeave={() => setTooltipHovered(false)}
-              >
+              <Box onMouseEnter={() => setTooltipHovered(true)} onMouseLeave={() => setTooltipHovered(false)}>
                 <EventClickContent
                   event={event}
                   eventTypes={eventTypes}
@@ -245,10 +244,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         enterDelay={0}
         leaveDelay={200}
         title={
-          <Box
-            onMouseEnter={() => setTooltipHovered(true)}
-            onMouseLeave={() => setTooltipHovered(false)}
-          >
+          <Box onMouseEnter={() => setTooltipHovered(true)} onMouseLeave={() => setTooltipHovered(false)}>
             <EventClickContent
               event={event}
               eventTypes={eventTypes}
@@ -401,7 +397,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           position: 'relative',
           backgroundColor: !(isFutureDay || isCurrentDay) ? theme.palette.grey[900] : 'inherit',
           borderRadius: 2,
-          width: { xs: '95%', md: '80%' },
+          width: { xs: '98%', md: '90%' },
           height: { xs: '10vh', sm: '12vh' },
           border: isCurrentDay ? '2px solid gray' : 'none',
           cursor: isFutureDay || isCurrentDay ? 'pointer' : 'default',
@@ -411,7 +407,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
       >
         <Box
           onClick={() => {
-            if (isFutureDay || isCurrentDay) setIsCreateModalOpen(true);
+            if (isFutureDay || isCurrentDay) onCreateEventClick();
           }}
           sx={{
             position: 'absolute',
@@ -424,15 +420,14 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
 
         <CardContent sx={{ padding: 0 }}>
           <DayCardTitle />
-          {events.length < 3 ? (
-            events.map((event) => <EventCard key={event.eventId} event={event} />)
-          ) : (
+          {events.length === 1 ? (
+            <EventCard event={events[0]} />
+          ) : events.length >= 2 ? (
             <>
               <EventCard event={events[0]} />
-              <EventCard event={events[1]} />
-              <ExtraEventsCard extraEvents={events.slice(2)} />
+              <ExtraEventsCard extraEvents={events.slice(1)} />
             </>
-          )}
+          ) : null}
         </CardContent>
       </Card>
 

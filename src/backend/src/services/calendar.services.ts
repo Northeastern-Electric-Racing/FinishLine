@@ -46,12 +46,7 @@ import {
   AccessDeniedException,
   AccessDeniedGuestException
 } from '../utils/errors.utils.js';
-import {
-  createCalendarEvent,
-  uploadFile,
-  downloadFile,
-  deleteCalendarEvents
-} from '../utils/google-integration.utils.js';
+import { createCalendarEvent, uploadFile, downloadFile, deleteCalendarEvents } from '../utils/google-integration.utils.js';
 import { sendEventPopUp } from '../utils/pop-up.utils.js';
 import {
   sendSlackEventConfirmNotification,

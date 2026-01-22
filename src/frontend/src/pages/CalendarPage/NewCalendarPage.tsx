@@ -25,13 +25,11 @@ import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
 import { convertIntToDay, getOverlapTime } from '../../utils/calendar.utils';
-import CreateEventModal from './Components/CreateEventModal';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useHistory } from 'react-router-dom';
@@ -46,9 +44,16 @@ interface NewCalendarPageProps {
   yourEvents: EventInstance[];
   reviewEvents: Event[];
   allCalendars: Calendar[];
+  onCreateEventClick: () => void;
 }
 
-const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEvents, reviewEvents, allCalendars }) => {
+const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
+  allEventTypes,
+  yourEvents,
+  reviewEvents,
+  allCalendars,
+  onCreateEventClick
+}) => {
   const theme = useTheme();
   const {
     data: allTeamTypes,
@@ -65,7 +70,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
   const [openFilterModal, setOpenFilterModal] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
   const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>([]);
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
@@ -279,14 +283,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
 
   return (
     <>
-      {isCreateModalOpen && (
-        <CreateEventModal
-          open={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          eventTypes={allEventTypes}
-          defaultDate={displayMonthYear}
-        />
-      )}
       <Stack
         spacing={1}
         sx={{
@@ -412,33 +408,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
         )}
       </Stack>
       <PageLayout hidePageTitle>
-        <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
-          <Typography variant="h4"></Typography>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', columnGap: 1, rowGap: 1 }}>
-            <Button
-              variant="contained"
-              disableElevation
-              onClick={() => setIsCreateModalOpen(true)}
-              endIcon={<AddCircleOutlineIcon sx={{ fontSize: { xs: 24, sm: 30 } }} />}
-              sx={{
-                flexShrink: 0,
-                height: { xs: 36, sm: 40 },
-                px: { xs: 1, sm: 1 },
-                textTransform: 'none',
-                fontFamily: (t) => t.typography.h4.fontFamily,
-                fontSize: { xs: 20, sm: 25 },
-                fontWeight: 800,
-                color: (t) => t.palette.common.white,
-                bgcolor: '#F44336',
-                '&:hover': { bgcolor: '#FF0000' },
-                '& .MuiButton-endIcon svg': { fontSize: 30 }
-              }}
-              aria-label="Create New Event"
-            >
-              New Event
-            </Button>
-          </Stack>
-        </Stack>
         <Box
           sx={{
             display: 'flex',
@@ -471,7 +440,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
                       );
                       return (
                         <Grid item xs={12 / 7} key={dayIndex}>
-                          <Box marginTop={6} sx={{ justifyContent: 'center', display: 'flex' }}>
+                          <Box marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
                             <CalendarDayCard
                               cardDate={cardDate}
                               events={
@@ -485,6 +454,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
                                 dayDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
                                 DayOfWeek.SUNDAY
                               }
+                              onCreateEventClick={onCreateEventClick}
                             />
                           </Box>
                         </Grid>
