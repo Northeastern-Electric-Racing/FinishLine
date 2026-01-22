@@ -262,51 +262,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             </Typography>
           </Box>
         </Grid>
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <Typography
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.75rem',
-                color: '#EF4345'
-              }}
-              variant="h5"
-            >
-              Reimbursement #:
-            </Typography>
-            <Controller
-              name="reimbursementRequestId"
-              control={control}
-              defaultValue={control._defaultValues.reimbursementRequestId}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  variant="outlined"
-                  error={!!errors.reimbursementRequestId}
-                  helperText={errors.reimbursementRequestId?.message}
-                  SelectProps={{
-                    displayEmpty: true,
-                    renderValue: (selected) =>
-                      selected ? (
-                        reimbursementRequests.find((rr) => rr.reimbursementRequestId === selected)?.identifier
-                      ) : (
-                        <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>
-                          Select Corresponding RR
-                        </Typography>
-                      )
-                  }}
-                >
-                  {reimbursementRequests.map((rr: ReimbursementRequest) => (
-                    <MenuItem key={rr.reimbursementRequestId} value={rr.reimbursementRequestId}>
-                      {rr.identifier}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
-          </FormControl>
-        </Grid>
         <Grid item xs={12}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography
@@ -457,6 +412,41 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
       </Grid>
       <Grid item xs={12}>
+      <Grid item xs={12} mt={2}>
+          <FormControl fullWidth>
+            <Controller
+              name="reimbursementRequestId"
+              control={control}
+              defaultValue={control._defaultValues.reimbursementRequestId}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  select
+                  variant="outlined"
+                  error={!!errors.reimbursementRequestId}
+                  helperText={errors.reimbursementRequestId?.message}
+                  SelectProps={{
+                    displayEmpty: true,
+                    renderValue: (selected) =>
+                      selected ? (
+                        reimbursementRequests.find((rr) => rr.reimbursementRequestId === selected)?.identifier
+                      ) : (
+                        <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>
+                          Select Corresponding Reimbursement Request Number
+                        </Typography>
+                      )
+                  }}
+                >
+                  {reimbursementRequests.map((rr: ReimbursementRequest) => (
+                    <MenuItem key={rr.reimbursementRequestId} value={rr.reimbursementRequestId}>
+                      {rr.identifier}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </FormControl>
+        </Grid>
         <Box display={'flex'} justifyContent={'flex-end'} mt={2}>
           <FormControl fullWidth>
             <Controller
