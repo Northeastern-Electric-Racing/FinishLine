@@ -226,7 +226,7 @@ export default class ProjectsController {
         subtotal,
         notes,
         assemblyId,
-        pdmFileName === '' ? undefined : pdmFileName,
+        pdmFileName,
         unitName,
         reimbursementRequestId
       );
@@ -379,8 +379,8 @@ export default class ProjectsController {
         name,
         status,
         materialTypeName,
-        linkUrl,
         req.organization,
+        linkUrl,
         manufacturerName,
         manufacturerPartNumber,
         quantity,
@@ -389,7 +389,7 @@ export default class ProjectsController {
         notes,
         unitName,
         assemblyId,
-        pdmFileName === '' ? undefined : pdmFileName,
+        pdmFileName,
         reimbursementRequestId
       );
       res.status(200).json(updatedMaterial);

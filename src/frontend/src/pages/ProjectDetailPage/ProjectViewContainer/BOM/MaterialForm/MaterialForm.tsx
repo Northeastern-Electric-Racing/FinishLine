@@ -26,7 +26,7 @@ const schema = yup.object().shape({
   quantity: yup.number().optional(),
   price: yup.number().optional(),
   unitName: yup.string().optional(),
-  linkUrl: yup.string().required('URL is required!'),
+  linkUrl: yup.string().optional(),
   notes: yup.string().optional(),
   pdmFileName: yup.string().optional(),
   assemblyId: yup.string().optional(),
@@ -43,7 +43,7 @@ export interface MaterialFormInput {
   price?: number;
   quantity?: number;
   unitName?: string;
-  linkUrl: string;
+  linkUrl?: string;
   notes?: string;
   assemblyId?: string;
   reimbursementRequestId?: string;
@@ -59,7 +59,7 @@ export interface MaterialDataSubmission {
   price?: number;
   quantity?: Decimal;
   unitName?: string;
-  linkUrl: string;
+  linkUrl?: string;
   notes?: string;
   assemblyId?: string;
   subtotal?: number;
