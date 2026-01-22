@@ -89,7 +89,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           sx={{
             mx: 1,
             textTransform: 'none',
-            bgcolor: (t) => '#EF4345',
+            bgcolor: '#EF4345',
             color: (t) => t.palette.getContrastText('#EF4345'),
             '&:hover': { bgcolor: (t) => t.palette.error.dark }
           }}
