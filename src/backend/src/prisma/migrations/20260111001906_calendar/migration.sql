@@ -79,7 +79,7 @@ CREATE TABLE "public"."Event" (
     "approvalRequiredFromUserId" TEXT,
     "location" TEXT,
     "zoomLink" TEXT,
-    "initialDateScheduled" DATE NOT NULL,
+    "initialDateScheduled" TIMESTAMP(3),
     "questionDocumentLink" TEXT,
     "description" TEXT,
     "teamTypeId" TEXT,

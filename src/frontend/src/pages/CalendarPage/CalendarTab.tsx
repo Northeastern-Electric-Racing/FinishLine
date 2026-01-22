@@ -103,7 +103,10 @@ const CalendarTab: React.FC = () => {
         <NewCalendarPage
           allEventTypes={allEventTypes}
           reviewEvents={reviewEvents ?? []}
-          yourEvents={yourEvents ?? []}
+          yourEvents={
+            yourEvents.flatMap((event) => event.scheduledTimes.map((scheduledTime) => ({ ...event, ...scheduledTime }))) ??
+            []
+          }
           allCalendars={allCalendars}
         />
       ) : (

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { Calendar, DayOfWeek, Event, EventType } from 'shared';
+import { Calendar, DayOfWeek, EventInstance, EventType } from 'shared';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
@@ -17,10 +17,9 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import ArticleIcon from '@mui/icons-material/Article';
 import HelpIcon from '@mui/icons-material/Help';
 import GroupsIcon from '@mui/icons-material/Groups';
-
 import { EventClickPopup } from './EventClickPopup';
 import EventPartialInfoView from './EventPartialInfoView';
-import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
+import { formatTime } from '../../utils/datetime.utils';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -46,7 +45,7 @@ export const getStatusIcon = (status: string, isLarge?: boolean) => {
 
 interface CalendarDayCardProps {
   cardDate: Date;
-  events: Event[];
+  events: EventInstance[];
   eventTypes?: EventType[];
   calendars?: Calendar[];
   dayOfWeek?: DayOfWeek;
@@ -66,10 +65,10 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const isCurrentDay = cardDate.toDateString() === today;
   const isFutureDay = cardDate >= new Date();
 
-  const [clickedEvent, setClickedEvent] = useState<Event>();
+  const [clickedEvent, setClickedEvent] = useState<EventInstance>();
   const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number }>();
 
-  const handleOpenClickPopup = (event: Event) => {
+  const handleOpenClickPopup = (event: EventInstance) => {
     setClickedEvent(event);
     if (typeof window !== 'undefined') {
       setAnchorPosition({
@@ -103,10 +102,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     </Grid>
   );
 
-  const EventPopupInfo = ({ event, color }: { event: Event; color: string }) => {
+  const EventPopupInfo = ({ event, color }: { event: EventInstance; color: string }) => {
     const name = event.title;
-    const convertedStartTime = getConvertedStart(event, dayOfWeek);
-    const convertedEndTime = getConvertedEnd(event, dayOfWeek);
 
     return (
       <>
@@ -142,7 +139,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
               noWrap
               align="left"
             >
-              {convertedStartTime} - {convertedEndTime}
+              {event.allDay ? 'All Day' : `${formatTime(event.startTime)} - ${formatTime(event.endTime)}`}
             </Typography>
             <LocationOnIcon />
             <Typography marginX={0.5} marginY={0.5} lineHeight="120%" fontSize={14} fontWeight="bold" noWrap align="left">
@@ -292,7 +289,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     );
   };
 
-  const EventCard = ({ event }: { event: Event }) => {
+  const EventCard = ({ event }: { event: EventInstance }) => {
     const specificEventType = eventTypes.find((eventType) => eventType.eventTypeId === event.eventTypeId);
     const specificCalendar = calendars.find((calendar) =>
       calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)
@@ -366,7 +363,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     );
   };
 
-  const ExtraEventsCard = ({ extraEvents }: { extraEvents: Event[] }) => {
+  const ExtraEventsCard = ({ extraEvents }: { extraEvents: EventInstance[] }) => {
     return (
       <Box marginLeft={0.5} marginRight={0.5} marginBottom={0.2} sx={{ position: 'relative', zIndex: 2 }}>
         <Tooltip
@@ -379,7 +376,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                   key={event.eventId}
                   event={event}
                   onClick={() => handleOpenClickPopup(event)}
-                  dayOfWeek={dayOfWeek}
                   calendars={calendars}
                   eventTypes={eventTypes}
                 />

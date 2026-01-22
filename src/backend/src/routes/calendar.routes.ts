@@ -5,7 +5,6 @@ import {
   isDate,
   nonEmptyString,
   validateInputs,
-  isDayOfWeek,
   isEventStatus,
   isConflictStatus,
   requireFile
@@ -115,10 +114,10 @@ calendarRouter.post(
   body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),
   isDate(body('initialDateScheduled')),
-  body('scheduleSlot').isArray(),
-  isDate(body('scheduleSlot.*.startTime')),
-  isDate(body('scheduleSlot.*.endTime')),
-  body('scheduleSlot.*.allDay').isBoolean(),
+  body('scheduleSlots').isArray(),
+  isDate(body('scheduleSlots.*.startTime')),
+  isDate(body('scheduleSlots.*.endTime')),
+  body('scheduleSlots.*.allDay').isBoolean(),
   validateInputs,
   CalendarController.createEvent
 );

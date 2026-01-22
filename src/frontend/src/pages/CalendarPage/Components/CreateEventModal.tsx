@@ -1,8 +1,9 @@
 import React from 'react';
-import EventModal, { EventFormSubmitResult } from './EventModal';
-import type { EventType } from 'shared';
+import EventModal, { EventPayload } from './EventModal';
+import type { EventType, EventDocumentUploadArgs } from 'shared';
 import { useCreateEvent, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { convertDayToInt } from '../../../utils/calendar.utils';
 
 interface CreateEventModalProps {
   open: boolean;
@@ -16,32 +17,93 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, even
   const { mutateAsync: createEvent } = useCreateEvent();
   const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
 
-  const handleSubmit = async ({ basePayload, scheduleSlots, scheduleDate, requiresConfirmation }: EventFormSubmitResult) => {
-    const { documentFiles, ...eventData } = basePayload;
+  const handleSubmit = async (payload: EventPayload) => {
+    try {
+      const { documentFiles, createScheduleSlotArgs, initialDateScheduled, ...eventData } = payload;
 
-    const createArgs = {
-      ...eventData,
-      initialDateScheduled: scheduleDate,
-      scheduleSlot: requiresConfirmation ? [] : scheduleSlots,
-      documentIds: []
-    };
+      const scheduleSlots: Array<{
+        startTime: Date;
+        endTime: Date;
+        allDay: boolean;
+      }> = [];
 
-    // Don't wrap in try catch because we want errors to propagate to the modal
-    const createdEvent = await createEvent(createArgs);
+      // Generate schedule slots from createScheduleSlotArgs if provided
+      if (createScheduleSlotArgs) {
+        const { startTime, endTime, days, recurrenceNumber, allDay } = createScheduleSlotArgs;
 
-    const filesToUpload = documentFiles.map((doc) => doc.file).filter((file): file is File => file !== undefined);
-    if (filesToUpload.length > 0) {
-      await uploadDocuments({
-        id: createdEvent.eventId,
-        files: filesToUpload
-      });
+        // Helper function to create a date/time for a specific occurrence
+        const createSlotDateTime = (baseDate: Date, time: Date): Date => {
+          const result = new Date(baseDate);
+          result.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
+          return result;
+        };
+
+        // Convert selected days to day indices for comparison
+        const dayIndices = days.map(convertDayToInt);
+
+        // Generate recurring occurrences
+        let occurrencesGenerated = 0;
+        const searchDate = new Date(startTime);
+
+        const maxDaysToSearch = 365; // Search up to a year
+        let daysSearched = 0;
+
+        while (occurrencesGenerated < recurrenceNumber && daysSearched < maxDaysToSearch) {
+          const currentDayIndex = searchDate.getDay();
+
+          if ((dayIndices as number[]).includes(currentDayIndex)) {
+            scheduleSlots.push({
+              startTime: createSlotDateTime(searchDate, startTime),
+              endTime: createSlotDateTime(searchDate, endTime),
+              allDay
+            });
+            occurrencesGenerated++;
+          }
+
+          searchDate.setDate(searchDate.getDate() + 1);
+          daysSearched++;
+        }
+      }
+
+      const createArgs = {
+        ...eventData,
+        initialDateScheduled: initialDateScheduled ?? new Date(),
+        scheduleSlots,
+        documentIds: []
+      };
+
+      const createdEvent = await createEvent(createArgs);
+
+      const filesToUpload = documentFiles
+        .map((doc: EventDocumentUploadArgs) => doc.file)
+        .filter((file: File | undefined): file is File => file !== undefined);
+      if (filesToUpload.length > 0) {
+        await uploadDocuments({
+          id: createdEvent.eventId,
+          files: filesToUpload
+        });
+      }
+
+      toast.success('Event created successfully!');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 5000);
+      } else {
+        toast.error('Failed to create event', 5000);
+      }
+      throw e;
     }
-
-    toast.success('Event created successfully!');
   };
 
   return (
-    <EventModal open={open} onClose={onClose} onSubmit={handleSubmit} eventTypes={eventTypes} defaultDate={defaultDate} />
+    <EventModal
+      key={open ? 'create-event-open' : 'create-event-closed'}
+      open={open}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      eventTypes={eventTypes}
+      defaultDate={defaultDate}
+    />
   );
 };
 

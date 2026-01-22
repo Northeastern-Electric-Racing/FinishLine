@@ -3205,7 +3205,7 @@ const performSeed: () => Promise<void> = async () => {
     true,
     false,
     false,
-    true,
+    false,
     false
   );
 
@@ -3414,14 +3414,8 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [],
     [workPackage1.id],
-    [
-      {
-        startTime: new Date('2025-10-22T14:00:00.000Z'),
-        endTime: new Date('2025-10-22T16:00:00.000Z'),
-        allDay: false
-      }
-    ],
-    undefined,
+    [],
+    weeksFromNow(1),
     software.teamTypeId,
     'https://docs.google.com/document/d/2_example',
     'Conference Room B',

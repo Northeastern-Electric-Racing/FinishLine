@@ -273,7 +273,7 @@ export default class CalendarController {
         shopIds,
         machineryIds,
         workPackageIds,
-        scheduleSlot,
+        scheduleSlots,
         initialDateScheduled,
         questionDocumentLink,
         location,
@@ -281,7 +281,7 @@ export default class CalendarController {
         description
       } = req.body;
 
-      const parsedScheduleSlot = scheduleSlot.map((slot: any) => ({
+      const parsedScheduleSlots = scheduleSlots.map((slot: any) => ({
         startTime: slot.startTime ? new Date(slot.startTime) : undefined,
         endTime: slot.endTime ? new Date(slot.endTime) : undefined,
         allDay: slot.allDay
@@ -300,7 +300,7 @@ export default class CalendarController {
         shopIds,
         machineryIds,
         workPackageIds,
-        parsedScheduleSlot,
+        parsedScheduleSlots,
         parsedInitialDateScheduled,
         teamTypeId,
         questionDocumentLink,
@@ -363,7 +363,7 @@ export default class CalendarController {
   static async editScheduleSlot(req: Request, res: Response, next: NextFunction) {
     try {
       const { scheduleSlotId } = req.params as Record<string, string>;
-      const { startTime, endTime, allDay } = req.body;
+      const { startTime, endTime, allDay, editAllInSeries } = req.body;
 
       const event = await CalendarService.editScheduleSlot(
         req.currentUser,
@@ -371,6 +371,7 @@ export default class CalendarController {
         new Date(startTime),
         new Date(endTime),
         allDay,
+        editAllInSeries ?? false,
         req.organization
       );
       res.status(200).json(event);

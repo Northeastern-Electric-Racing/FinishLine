@@ -134,10 +134,14 @@ export function validateEventTypeConfiguration(
     throw new InvalidEventTypeConfigurationException('a question document');
   }
 
-  // For requiresConfirmation events, schedule slots are optional initially
-  // For normal events, we need at least the initialDateScheduled
-  if (!eventType.requiresConfirmation && !eventData.initialDateScheduled) {
+  // For requiresConfirmation events, the event must have an initialDateScheduled
+  if (eventType.requiresConfirmation && !eventData.initialDateScheduled) {
     throw new InvalidEventTypeConfigurationException('an initial date scheduled');
+  }
+
+  // For non-requiresConfirmation events, there must be at least one schedule slot
+  if (!eventType.requiresConfirmation && eventData.scheduleSlots.length === 0) {
+    throw new InvalidEventTypeConfigurationException('at least one schedule slot');
   }
 
   // Check disallowed fields (inverse validation)

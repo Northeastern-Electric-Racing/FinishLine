@@ -1,5 +1,4 @@
-import { DayOfWeek, Event } from 'shared';
-import { filterEventTransformer } from '../apis/transformers/calendar.transformer';
+import { DayOfWeek, Event, EventInstance } from 'shared';
 import { EventFormValues } from '../pages/CalendarPage/Components/EventModal';
 
 export const convertDayToInt = (day: DayOfWeek) => {
@@ -114,47 +113,13 @@ export const getOverlapTime = (event1: Event, event2: Event) => {
   return overlaps;
 };
 
-// Returns a flat list of event occurrences within a given period
-export const getEventsFlattened = (events: Event[], startPeriod: Date, endPeriod: Date): Event[] => {
-  const occurrences: { event: Event; date: Date }[] = [];
-
-  events.forEach((event) => {
-    const eventDates = getMeetingDates(filterEventTransformer(event));
-
-    eventDates.forEach((date) => {
-      if (date >= startPeriod && date <= endPeriod) {
-        occurrences.push({ event, date });
-      }
-    });
-  });
-
-  // Sort by date
-  occurrences.sort((a, b) => a.date.getTime() - b.date.getTime());
-
-  // Return only the events, possibly repeated for multiple occurrences
-  return occurrences.map(({ event }) => event);
-};
-
 // converts an Event into Event Form Values
-// Note: After the recurring events refactor, we store individual schedule slots
-// When editing, we show the first occurrence and set recurrence to 0
-// Users will need to delete and recreate if they want to change recurring patterns
-export const convertEventToFormValues = (event: Event): Partial<EventFormValues> => {
-  // Use the first schedule slot for the form values
-  const [firstSlot] = event.scheduledTimes;
-
-  // Extract the date from the first slot's startTime
-  // For confirmation-required events, initialDateScheduled represents the start of the week range
-  // For regular events, we use the actual startTime from the first slot
-  let scheduleDate = new Date();
-  if (firstSlot?.startTime) {
-    scheduleDate = new Date(firstSlot.startTime);
-  } else if (firstSlot?.endTime) {
-    scheduleDate = new Date(firstSlot.endTime);
-  } else if (event.initialDateScheduled) {
-    // Only fall back to initialDateScheduled if no slot times exist (confirmation events)
-    scheduleDate = new Date(event.initialDateScheduled);
-  }
+// Note: Because users can only edit a single instaces time, editModal is always populated with an event instance
+// representing a single occurrence of the event. However, event edits will effect the entire series for all values
+// except for the schedule slot (date/time), and users are prompted if they want the time effects to propogate to other schedule slots
+export const convertEventToFormValues = (event: EventInstance): Partial<EventFormValues> => {
+  // For edit mode, use the actual scheduled date of this occurrence, not initialDateScheduled
+  const scheduleDate = event.startTime ? new Date(event.startTime) : undefined;
 
   return {
     title: event.title,
@@ -175,12 +140,13 @@ export const convertEventToFormValues = (event: Event): Partial<EventFormValues>
     questionDocumentLink: event.questionDocumentLink,
     description: event.description,
     scheduleDate,
-    startTime: firstSlot?.startTime ? new Date(firstSlot.startTime) : undefined,
-    endTime: firstSlot?.endTime ? new Date(firstSlot.endTime) : undefined,
-    allDay: firstSlot?.allDay ?? false,
+    startTime: event.startTime ? new Date(event.startTime) : undefined,
+    endTime: event.endTime ? new Date(event.endTime) : undefined,
+    allDay: event.allDay ?? false,
     // Set recurrence to 0 since we've already expanded the schedule
     recurrenceNumber: 0,
     // No days since this is now a single occurrence
-    days: []
+    days: [],
+    selectedScheduleSlotId: event.scheduleSlotId
   };
 };

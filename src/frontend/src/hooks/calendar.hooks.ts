@@ -74,7 +74,7 @@ export interface EventCreateArgs {
   questionDocument?: string;
   description?: string;
   initialDateScheduled: Date;
-  scheduleSlot: ScheduleSlotCreateArgs[];
+  scheduleSlots: ScheduleSlotCreateArgs[];
 }
 
 export interface EditEventArgs {
@@ -95,9 +95,10 @@ export interface EditEventArgs {
 }
 
 export interface EditScheduleSlotArgs {
-  startTime?: Date;
-  endTime?: Date;
+  startTime: Date;
+  endTime: Date;
   allDay: boolean;
+  editAllInSeries: boolean;
 }
 
 export interface DownloadDocumentsFormInput {

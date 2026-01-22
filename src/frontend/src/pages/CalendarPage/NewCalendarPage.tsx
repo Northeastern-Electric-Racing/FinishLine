@@ -17,7 +17,7 @@ import {
   FormGroup
 } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { Calendar, ConflictStatus, DayOfWeek, Event, EventType } from 'shared';
+import { Calendar, ConflictStatus, DayOfWeek, EventType, Event } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import { useConflictingEvents, useFilterEvents } from '../../hooks/calendar.hooks';
@@ -30,7 +30,7 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
-import { convertIntToDay, getEventsFlattened, getMeetingDates, getOverlapTime } from '../../utils/calendar.utils';
+import { convertIntToDay, getOverlapTime } from '../../utils/calendar.utils';
 import CreateEventModal from './Components/CreateEventModal';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -39,10 +39,11 @@ import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import SchedulingConflictsWarning from './SchedulingConflictsWarning';
+import { EventInstance } from 'shared';
 
 interface NewCalendarPageProps {
   allEventTypes: EventType[];
-  yourEvents: Event[];
+  yourEvents: EventInstance[];
   reviewEvents: Event[];
   allCalendars: Calendar[];
 }
@@ -164,7 +165,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
   });
 
   const upcomingOccurences = upcomingEvents
-    ? getEventsFlattened(upcomingEvents, upcomingStartPeriod, upcomingEndPeriod)
+    ? upcomingEvents.flatMap((event) => event.scheduledTimes.map((slot) => ({ ...event, ...slot })))
     : [];
 
   const toggleCalendar = (calendarId: string) => {
@@ -231,28 +232,27 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({ allEventTypes, yourEv
     return time1 - time2;
   });
 
-  const eventDict = new Map<string, Event[]>();
+  const eventDict = new Map<string, EventInstance[]>();
   const dayDict = new Map<string, DayOfWeek>();
+  const eventInstances: EventInstance[] = sortedEvents.flatMap((event) =>
+    event.scheduledTimes.map((slot) => ({
+      ...event,
+      ...slot
+    }))
+  );
 
-  sortedEvents.forEach((event) => {
-    const times: Date[] = getMeetingDates(event);
-
-    times.forEach((date) => {
-      const eventDate = new Date(date);
-      const dateString = datePipe(eventDate);
-      eventDate.setHours(0, 0, 0, 0);
-      const day = convertIntToDay(eventDate.getDay());
-      dayDict.set(dateString, day);
-      if (eventDict.has(dateString)) {
-        // Check if this event is already in this date's array to avoid duplicates
-        const existingEvents = eventDict.get(dateString)!;
-        if (!existingEvents.find((e) => e.eventId === event.eventId)) {
-          existingEvents.push(event);
-        }
-      } else {
-        eventDict.set(dateString, [event]);
-      }
-    });
+  eventInstances.forEach((event) => {
+    const eventDate = new Date(event.startTime);
+    const dateString = datePipe(eventDate);
+    eventDate.setHours(0, 0, 0, 0);
+    const day = convertIntToDay(eventDate.getDay());
+    dayDict.set(dateString, day);
+    if (eventDict.has(dateString)) {
+      const existingEvents = eventDict.get(dateString)!;
+      existingEvents.push(event);
+    } else {
+      eventDict.set(dateString, [event]);
+    }
   });
 
   const startOfEachWeek = [0, 7, 14, 21, 28, 35];

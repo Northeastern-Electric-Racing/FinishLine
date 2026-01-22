@@ -48,7 +48,6 @@ import {
 } from '../utils/errors.utils.js';
 import {
   createCalendarEvent,
-  updateCalendarEvent,
   uploadFile,
   downloadFile,
   deleteCalendarEvents
@@ -420,18 +419,6 @@ export default class CalendarService {
 
     // Check for conflicts using expanded slots
     const { hasConflict, conflictingEvent } = await checkEventConflicts(scheduleSlots, organization, location, undefined);
-
-    const duplicate = await prisma.event.findFirst({
-      where: {
-        dateDeleted: null,
-        title: { equals: title, mode: 'insensitive' },
-        // scope to org via related eventType
-        eventType: { organizationId: organization.organizationId }
-      }
-    });
-    if (duplicate) {
-      throw new HttpException(409, "Can't have two events with the same title");
-    }
 
     const newEvent = await prisma.event.create({
       data: {
@@ -850,6 +837,7 @@ export default class CalendarService {
    * @param startTime The new start time.
    * @param endTime The new end time.
    * @param allDay Whether this is an all-day event.
+   * @param editAllInSeries If true, edits all schedule slots with matching time-of-day.
    * @param organization The organization context.
    *
    * @returns The updated event.
@@ -863,20 +851,38 @@ export default class CalendarService {
     startTime: Date,
     endTime: Date,
     allDay: boolean,
+    editAllInSeries: boolean,
     organization: Organization
   ): Promise<Event> {
-    // Validate schedule slot exists and belongs to this event
+    // Validate schedule slot exists and get its eventId
     const scheduleSlot = await prisma.schedule_Slot.findUnique({
       where: { scheduleSlotId },
-      include: { event: true }
+      select: {
+        scheduleSlotId: true,
+        eventId: true
+      }
     });
 
     if (!scheduleSlot) throw new NotFoundException('Schedule Slot', scheduleSlotId);
 
+    // Now fetch the event separately to check permissions
+    const event = await prisma.event.findUnique({
+      where: { eventId: scheduleSlot.eventId },
+      select: {
+        eventId: true,
+        userCreatedId: true,
+        location: true,
+        dateDeleted: true
+      }
+    });
+
+    if (!event) throw new NotFoundException('Event', scheduleSlot.eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', scheduleSlot.eventId);
+
     // Check permissions
     const hasPermission =
       (await userHasPermission(submitter.userId, organization.organizationId, isHead)) ||
-      submitter.userId === scheduleSlot.event.userCreatedId;
+      submitter.userId === event.userCreatedId;
 
     if (!hasPermission) {
       throw new AccessDeniedException('Only admins, heads, or the event creator can edit the times of an event!');
@@ -892,24 +898,104 @@ export default class CalendarService {
     const { hasConflict, conflictingEvent } = await checkEventConflicts(
       [newSlotData],
       organization,
-      scheduleSlot.event.location ?? undefined,
-      scheduleSlot.event.eventId
+      event.location ?? undefined,
+      event.eventId
     );
 
-    // Update the schedule slot
-    await prisma.schedule_Slot.update({
-      where: { scheduleSlotId },
-      data: {
-        startTime: startTime ?? null,
-        endTime: endTime ?? null,
-        allDay
+    // Determine which slots to update
+    let slotsToUpdate: string[] = [scheduleSlotId];
+
+    if (editAllInSeries) {
+      // Fetch all schedule slots for this event
+      const allSlots = await prisma.schedule_Slot.findMany({
+        where: { eventId: scheduleSlot.eventId },
+        select: {
+          scheduleSlotId: true,
+          startTime: true,
+          endTime: true
+        }
+      });
+
+      // Get the original slot's time-of-day
+      const originalSlot = allSlots.find((s) => s.scheduleSlotId === scheduleSlotId);
+      if (originalSlot && originalSlot.startTime && originalSlot.endTime) {
+        const originalStartHour = originalSlot.startTime.getHours();
+        const originalStartMinute = originalSlot.startTime.getMinutes();
+        const originalEndHour = originalSlot.endTime.getHours();
+        const originalEndMinute = originalSlot.endTime.getMinutes();
+
+        // Find all slots that have the same time-of-day
+        slotsToUpdate = allSlots
+          .filter((slot) => {
+            if (!slot.startTime || !slot.endTime) return false;
+            return (
+              slot.startTime.getHours() === originalStartHour &&
+              slot.startTime.getMinutes() === originalStartMinute &&
+              slot.endTime.getHours() === originalEndHour &&
+              slot.endTime.getMinutes() === originalEndMinute
+            );
+          })
+          .map((slot) => slot.scheduleSlotId);
       }
+    }
+
+    // Calculate the time offset from the original slot to the new time
+    const originalSlot = await prisma.schedule_Slot.findUnique({
+      where: { scheduleSlotId },
+      select: { startTime: true, endTime: true }
     });
+
+    if (!originalSlot || !originalSlot.startTime) {
+      throw new NotFoundException('Schedule Slot', scheduleSlotId);
+    }
+
+    // Update all matching schedule slots
+    for (const slotId of slotsToUpdate) {
+      const currentSlot = await prisma.schedule_Slot.findUnique({
+        where: { scheduleSlotId: slotId },
+        select: { startTime: true, endTime: true }
+      });
+
+      if (!currentSlot || !currentSlot.startTime || !currentSlot.endTime) continue;
+
+      // For the clicked slot, use the exact new times provided
+      if (slotId === scheduleSlotId) {
+        await prisma.schedule_Slot.update({
+          where: { scheduleSlotId: slotId },
+          data: {
+            startTime,
+            endTime,
+            allDay
+          }
+        });
+      } else {
+        // For other slots in the series, preserve their date but update time-of-day
+        const newSlotStart = new Date(currentSlot.startTime);
+        newSlotStart.setHours(
+          startTime.getHours(),
+          startTime.getMinutes(),
+          startTime.getSeconds(),
+          startTime.getMilliseconds()
+        );
+
+        const newSlotEnd = new Date(currentSlot.endTime);
+        newSlotEnd.setHours(endTime.getHours(), endTime.getMinutes(), endTime.getSeconds(), endTime.getMilliseconds());
+
+        await prisma.schedule_Slot.update({
+          where: { scheduleSlotId: slotId },
+          data: {
+            startTime: newSlotStart,
+            endTime: newSlotEnd,
+            allDay
+          }
+        });
+      }
+    }
 
     // Update conflict status if needed
     if (hasConflict) {
       await prisma.event.update({
-        where: { eventId: scheduleSlot.event.eventId },
+        where: { eventId: event.eventId },
         data: {
           approved: Conflict_Status.PENDING,
           approvalRequiredFromUserId: conflictingEvent?.userCreated.userId
@@ -919,11 +1005,11 @@ export default class CalendarService {
 
     // Fetch and return the updated event
     const updatedEvent = await prisma.event.findUnique({
-      where: { eventId: scheduleSlot.event.eventId },
+      where: { eventId: event.eventId },
       ...getEventQueryArgs(organization.organizationId)
     });
 
-    if (!updatedEvent) throw new NotFoundException('Event', scheduleSlot.event.eventId);
+    if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
 
     return eventTransformer(updatedEvent);
   }

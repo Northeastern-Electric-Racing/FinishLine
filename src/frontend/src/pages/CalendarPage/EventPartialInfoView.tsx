@@ -1,24 +1,21 @@
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { Calendar, DayOfWeek, Event, EventType } from 'shared';
+import { Calendar, EventInstance, EventType } from 'shared';
 import GroupIcon from '@mui/icons-material/Group';
 import { Stack } from '@mui/system';
 import { getTeamTypeIcon } from './CalendarDayCard';
 import { Typography } from '@mui/material';
-import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
+import { datePipe } from '../../utils/pipes';
 
 interface EventInfoProps {
-  event: Event;
+  event: EventInstance;
   eventTypes?: EventType[];
   calendars?: Calendar[];
-  dayOfWeek: DayOfWeek;
   onClick: () => void;
 }
 
-const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, calendars, dayOfWeek, onClick }) => {
+const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, calendars, onClick }) => {
   const name = event.title;
-  const convertedStartTime = getConvertedStart(event, dayOfWeek);
-  const convertedEndTime = getConvertedEnd(event, dayOfWeek);
   const specificEventType = eventTypes?.find((eventType) => eventType.eventTypeId === event.eventTypeId);
   const specificCalendar = calendars?.find((calendar) =>
     calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)
@@ -47,9 +44,15 @@ const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, cal
         </Stack>
         <Stack direction="row" sx={{ minWidth: 150 }}>
           <AccessTimeIcon />
-          <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
-            {convertedStartTime} - {convertedEndTime}
-          </Typography>
+          {event.allDay ? (
+            <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
+              All Day
+            </Typography>
+          ) : (
+            <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
+              {datePipe(event.startTime)} - {datePipe(event.endTime)}
+            </Typography>
+          )}
         </Stack>
       </Stack>
       <Stack direction="row" spacing={5}>

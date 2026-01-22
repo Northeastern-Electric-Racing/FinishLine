@@ -75,9 +75,10 @@ export interface EventFormValues {
   allDay: boolean;
   recurrenceNumber: number;
   days: DayOfWeek[];
+  selectedScheduleSlotId?: string;
 }
 
-export interface EventCreatePayload {
+export interface EventPayload {
   title: string;
   eventTypeId: string;
   requiredMemberIds: string[];
@@ -92,42 +93,24 @@ export interface EventCreatePayload {
   documentFiles: EventDocumentUploadArgs[];
   questionDocumentLink?: string;
   description?: string;
-  initialDateScheduled: Date;
-  scheduleSlot: Array<{
+  // If the event type requires confirmation, only intialDateScheduled will be populated. If not,
+  // scheduleSlots will be populated based on if the event is being editted or created
+  initialDateScheduled?: Date;
+  createScheduleSlotArgs?: {
     startTime: Date;
     endTime: Date;
+    days: DayOfWeek[];
+    recurrenceNumber: number;
     allDay: boolean;
-  }>;
-}
-
-export interface EventEditPayload {
-  title: string;
-  eventTypeId: string;
-  requiredMemberIds: string[];
-  optionalMemberIds: string[];
-  teamIds: string[];
-  teamTypeId?: string;
-  location?: string;
-  zoomLink?: string;
-  shopIds: string[];
-  machineryIds: string[];
-  workPackageIds: string[];
-  documentFiles: EventDocumentUploadArgs[];
-  questionDocumentLink?: string;
-  description?: string;
-}
-
-export type EventRoutePayload = EventCreatePayload | EventEditPayload;
-
-export interface EventFormSubmitResult {
-  basePayload: EventEditPayload;
-  scheduleSlots: Array<{
-    startTime: Date;
-    endTime: Date;
-    allDay: boolean;
-  }>;
-  scheduleDate: Date;
-  requiresConfirmation: boolean;
+  };
+  // For editing, only single schedule slots can be editted (and optionally propogated)
+  editScheduleSlotArgs?: {
+    scheduleSlotId: string;
+    newStartTime: Date;
+    newEndTime: Date;
+    newAllDay: boolean;
+    editAllInSeries: boolean;
+  };
 }
 
 const schema = yup.object().shape({
@@ -150,13 +133,14 @@ const schema = yup.object().shape({
   endTime: yup.date().required('End time is required'),
   allDay: yup.boolean().required(),
   recurrenceNumber: yup.number().min(0).required('Recurrence is required'),
-  days: yup.array().of(yup.mixed<DayOfWeek>().required()).default([])
+  days: yup.array().of(yup.mixed<DayOfWeek>().required()).default([]),
+  selectedScheduleSlotId: yup.string().optional()
 });
 
 export interface BaseEventModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: EventFormSubmitResult) => Promise<unknown> | unknown;
+  onSubmit: (data: EventPayload) => Promise<unknown> | unknown;
   initialValues?: Partial<EventFormValues>;
   eventTypes: EventType[];
   defaultDate?: Date;
@@ -193,6 +177,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const { isLoading: teamsLoading, isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamPreviews();
   const { isError: teamTypesError, error: teamTypesErrorMsg, data: teamTypes } = useAllTeamTypes();
 
+  // Compute default form values - memo ensures stable reference
   const defaultFormData = useMemo(
     () => ({
       title: initialValues?.title ?? '',
@@ -213,8 +198,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       startTime: initialValues?.startTime ?? new Date(),
       endTime: initialValues?.endTime ?? new Date(),
       allDay: initialValues?.allDay ?? false,
-      recurrenceNumber: initialValues?.recurrenceNumber ?? 1,
-      days: initialValues?.days ?? []
+      recurrenceNumber: 0,
+      days: [],
+      selectedScheduleSlotId: initialValues?.selectedScheduleSlotId
     }),
     [initialValues, defaultDate]
   );
@@ -267,42 +253,37 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     });
   }, [machinery, shops, shopIds]);
 
+  // Initialize autocomplete states when data loads - runs only on mount or when dependencies change
   useEffect(() => {
-    if (open) {
-      reset(defaultFormData);
-
-      if (initialValues?.requiredMemberIds && users) {
-        const reqMembers = users
-          .filter((u) => initialValues.requiredMemberIds?.includes(u.userId))
-          .map(userToAutocompleteOption);
-        setRequiredMembers(reqMembers);
-      }
-
-      if (initialValues?.optionalMemberIds && users) {
-        const optMembers = users
-          .filter((u) => initialValues.optionalMemberIds?.includes(u.userId))
-          .map(userToAutocompleteOption);
-        setOptionalMembers(optMembers);
-      }
-
-      if (initialValues?.teamIds && teams) {
-        const teamOptions = teams
-          .filter((t) => initialValues.teamIds?.includes(t.teamId))
-          .map((t) => ({ id: t.teamId, label: t.teamName }));
-        setSelectedTeams(teamOptions);
-      }
-
-      if (initialValues?.days && initialValues.days.length > 0) {
-        setShowRecurringOptions(true);
-      }
+    // Set autocomplete state for required members
+    if (initialValues?.requiredMemberIds && users) {
+      const reqMembers = users
+        .filter((u) => initialValues.requiredMemberIds?.includes(u.userId))
+        .map(userToAutocompleteOption);
+      setRequiredMembers(reqMembers);
     }
-  }, [open, defaultFormData, initialValues, users, teams, reset]);
 
-  useEffect(() => {
-    if (open && initialValues?.days && initialValues.days.length > 0) {
+    // Set autocomplete state for optional members
+    if (initialValues?.optionalMemberIds && users) {
+      const optMembers = users
+        .filter((u) => initialValues.optionalMemberIds?.includes(u.userId))
+        .map(userToAutocompleteOption);
+      setOptionalMembers(optMembers);
+    }
+
+    // Set autocomplete state for teams
+    if (initialValues?.teamIds && teams) {
+      const teamOptions = teams
+        .filter((t) => initialValues.teamIds?.includes(t.teamId))
+        .map((t) => ({ id: t.teamId, label: t.teamName }));
+      setSelectedTeams(teamOptions);
+    }
+
+    // Set recurring options visibility
+    if (initialValues?.days && initialValues.days.length > 0) {
       setShowRecurringOptions(true);
     }
-  }, [open, initialValues?.days]);
+  }, [initialValues, users, teams]);
 
   const isEditMode = !!initialValues;
   const computedTitle = isEditMode ? 'Edit Event' : 'Add Event';
@@ -385,10 +366,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   };
 
   const handleClose = () => {
-    reset(defaultFormData);
-    setRequiredMembers([]);
-    setOptionalMembers([]);
-    setSelectedTeams([]);
+    reset();
     onClose();
   };
 
@@ -423,81 +401,50 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   };
 
   const onFormSubmit = async (data: EventFormValues) => {
-    try {
-      const requiresConfirmation = selectedEventType?.requiresConfirmation ?? false;
-      const scheduleSlots: Array<{
-        startTime: Date;
-        endTime: Date;
-        allDay: boolean;
-      }> = [];
+    const requiresConfirmation = selectedEventType?.requiresConfirmation ?? false;
 
-      // If the event requires confirmation, use startTime for initialDateScheduled and don't add any schedule slots
-      if (!requiresConfirmation) {
-        // Helper function to create a date/time for a specific occurrence
-        const createSlotDateTime = (baseDate: Date, time: Date): Date => {
-          const result = new Date(baseDate);
-          result.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
-          return result;
-        };
+    const payload: EventPayload = {
+      title: data.title,
+      eventTypeId: data.eventTypeId,
+      requiredMemberIds: requiredMembers.map((m) => m.id),
+      optionalMemberIds: optionalMembers.map((m) => m.id),
+      teamIds: selectedTeams.map((t) => t.id),
+      teamTypeId: data.teamTypeId,
+      location: data.location,
+      zoomLink: data.zoomLink,
+      shopIds: data.shopIds,
+      machineryIds: data.machineryIds,
+      workPackageIds: data.workPackageIds,
+      documentFiles: data.documentFiles,
+      questionDocumentLink: data.questionDocumentLink,
+      description: data.description
+    };
 
-        // Generate schedule slots for recurring events
-        const dayOfWeekEnum = convertIntToDay(data.scheduleDate.getDay());
-        const selectedDays = data.days.length > 0 ? data.days : [dayOfWeekEnum];
-
-        // Convert selected days to day indices for comparison
-        const dayIndices = selectedDays.map(convertDayToInt);
-
-        // Generate additional recurring occurrences
-        let occurrencesGenerated = 0;
-        const searchDate = new Date(data.scheduleDate);
-
-        const maxDaysToSearch = 365; // Search up to a year
-        let daysSearched = 0;
-
-        while (occurrencesGenerated < data.recurrenceNumber && daysSearched < maxDaysToSearch) {
-          const currentDayIndex = searchDate.getDay();
-
-          if ((dayIndices as number[]).includes(currentDayIndex)) {
-            scheduleSlots.push({
-              startTime: createSlotDateTime(searchDate, data.startTime),
-              endTime: createSlotDateTime(searchDate, data.endTime),
-              allDay: data.allDay
-            });
-            occurrencesGenerated++;
-          }
-
-          searchDate.setDate(searchDate.getDate() + 1);
-          daysSearched++;
-        }
-      }
-
-      const basePayload: EventEditPayload = {
-        title: data.title,
-        eventTypeId: data.eventTypeId,
-        requiredMemberIds: requiredMembers.map((m) => m.id),
-        optionalMemberIds: optionalMembers.map((m) => m.id),
-        teamIds: selectedTeams.map((t) => t.id),
-        teamTypeId: data.teamTypeId,
-        location: data.location,
-        zoomLink: data.zoomLink,
-        shopIds: data.shopIds,
-        machineryIds: data.machineryIds,
-        workPackageIds: data.workPackageIds,
-        documentFiles: data.documentFiles,
-        questionDocumentLink: data.questionDocumentLink,
-        description: data.description
+    // If the event requires confirmation, only populate initialDateScheduled
+    if (requiresConfirmation) {
+      payload.initialDateScheduled = data.scheduleDate;
+    } else if (isEditMode && data.selectedScheduleSlotId) {
+      // For edit mode, populate editScheduleSlotArgs
+      payload.editScheduleSlotArgs = {
+        scheduleSlotId: data.selectedScheduleSlotId,
+        newStartTime: data.startTime,
+        newEndTime: data.endTime,
+        newAllDay: data.allDay,
+        editAllInSeries: false // Always false for now as per requirements
       };
-
-      await onSubmit({
-        basePayload,
-        scheduleSlots,
-        scheduleDate: data.scheduleDate,
-        requiresConfirmation
-      });
-      handleClose();
-    } catch (e: unknown) {
-      if (e instanceof Error) toast.error(e.message);
+    } else if (!isEditMode) {
+      // For create mode, populate createScheduleSlotArgs
+      payload.createScheduleSlotArgs = {
+        startTime: data.startTime,
+        endTime: data.endTime,
+        days: data.days.length > 0 ? data.days : [convertIntToDay(data.scheduleDate.getDay())],
+        recurrenceNumber: data.recurrenceNumber > 0 ? data.recurrenceNumber : 1,
+        allDay: data.allDay
+      };
     }
+
+    await onSubmit(payload);
+    handleClose();
   };
 
   // When data loads from endpoint, update the options for the autocomplete fields
@@ -543,7 +490,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       open={open}
       onHide={handleClose}
       title={computedTitle}
-      reset={() => reset(defaultFormData)}
+      reset={handleClose}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId="event-form"

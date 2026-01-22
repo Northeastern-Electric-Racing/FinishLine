@@ -2,20 +2,15 @@ import { Card, Box, Typography, Stack } from '@mui/material';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
-import { Calendar, DayOfWeek, Event, EventType } from 'shared';
-import { getConvertedStart } from '../../utils/datetime.utils';
+import { Calendar, EventInstance, EventType } from 'shared';
 
 interface UpcomingMeetingProp {
   calendars: Calendar[];
-  event: Event;
+  event: EventInstance;
   eventTypes?: EventType[];
 }
 
-const dayOfWeek = DayOfWeek.MONDAY;
-
 const UpcomingMeetingsCard: React.FC<UpcomingMeetingProp> = ({ event, calendars = [], eventTypes = [] }) => {
-  const convertedStartTime = getConvertedStart(event, dayOfWeek);
-
   const specificEventType = eventTypes?.find((eventType) => eventType.eventTypeId === event.eventTypeId);
   const specificCalendar = calendars?.find((calendar) =>
     calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)
@@ -46,7 +41,7 @@ const UpcomingMeetingsCard: React.FC<UpcomingMeetingProp> = ({ event, calendars 
 
           {/* Event Time */}
           <Box marginLeft="auto" whiteSpace="nowrap">
-            {convertedStartTime}
+            {new Date(event.startTime).toLocaleTimeString()}
           </Box>
         </Box>
 

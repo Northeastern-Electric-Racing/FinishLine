@@ -215,6 +215,8 @@ export interface Event {
   initialDateScheduled?: Date;
 }
 
+export type EventInstance = Omit<Event, 'scheduledTimes'> & ScheduleSlot;
+
 export type EventPreview = {
   eventId: string;
   title: string;

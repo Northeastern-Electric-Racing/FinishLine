@@ -1,61 +1,81 @@
 import React from 'react';
-import EventModal, { EventFormSubmitResult } from './EventModal';
-import type { Event, EventType } from 'shared';
+import EventModal, { EventPayload } from './EventModal';
+import type { EventInstance, EventType, EventDocumentUploadArgs } from 'shared';
 import { convertEventToFormValues } from '../../../utils/calendar.utils';
-import { useEditEvent, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
+import { useEditEvent, useEditScheduleSlot, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 export interface EditEventModalProps {
   open: boolean;
   onClose: () => void;
-  event: Event;
+  event: EventInstance;
   eventTypes: EventType[];
-  defaultDate?: Date;
 }
 
-const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, eventTypes, defaultDate }) => {
+const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, eventTypes }) => {
   const toast = useToast();
   const { mutateAsync: editEvent } = useEditEvent(event.eventId);
+  const { mutateAsync: editScheduleSlot } = useEditScheduleSlot(event.eventId, event.scheduleSlotId);
   const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
 
   const initialValues = convertEventToFormValues(event);
-  const computedDefaultDate =
-    defaultDate ?? (event.scheduledTimes[0]?.startTime ? new Date(event.scheduledTimes[0].startTime) : new Date());
 
-  const handleSubmit = async ({ basePayload }: EventFormSubmitResult) => {
-    const { documentFiles, ...eventData } = basePayload;
+  const handleSubmit = async (payload: EventPayload) => {
+    try {
+      const { documentFiles, editScheduleSlotArgs, ...eventData } = payload;
 
-    const editArgs = {
-      ...eventData,
-      status: event.status,
-      documents: event.documents.map((doc) => ({
-        name: doc.name,
-        googleFileId: doc.googleFileId
-      }))
-    };
+      // First, update the event base information
+      const editArgs = {
+        ...eventData,
+        status: event.status,
+        documents: event.documents.map((doc) => ({
+          name: doc.name,
+          googleFileId: doc.googleFileId
+        }))
+      };
 
-    // Don't wrap in try catch because we want errors to propagate to the modal
-    const editedEvent = await editEvent(editArgs);
+      const editedEvent = await editEvent(editArgs);
 
-    const filesToUpload = documentFiles.map((doc) => doc.file).filter((file): file is File => file !== undefined);
-    if (filesToUpload.length > 0) {
-      await uploadDocuments({
-        id: editedEvent.eventId,
-        files: filesToUpload
-      });
+      // If there are schedule slot changes, update the schedule slot separately
+      if (editScheduleSlotArgs) {
+        await editScheduleSlot({
+          startTime: editScheduleSlotArgs.newStartTime,
+          endTime: editScheduleSlotArgs.newEndTime,
+          allDay: editScheduleSlotArgs.newAllDay,
+          editAllInSeries: editScheduleSlotArgs.editAllInSeries
+        });
+      }
+
+      // Handle document uploads
+      const filesToUpload = documentFiles
+        .map((doc: EventDocumentUploadArgs) => doc.file)
+        .filter((file: File | undefined): file is File => file !== undefined);
+      if (filesToUpload.length > 0) {
+        await uploadDocuments({
+          id: editedEvent.eventId,
+          files: filesToUpload
+        });
+      }
+
+      toast.success('Event updated successfully!');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 5000);
+      } else {
+        toast.error('Failed to update event', 5000);
+      }
+      throw e;
     }
-
-    toast.success('Event updated successfully!');
   };
 
   return (
     <EventModal
+      key={open ? `edit-event-${event.eventId}-${event.scheduleSlotId}` : 'edit-event-closed'}
       open={open}
       onClose={onClose}
       onSubmit={handleSubmit}
       initialValues={initialValues}
       eventTypes={eventTypes}
-      defaultDate={computedDefaultDate}
     />
   );
 };

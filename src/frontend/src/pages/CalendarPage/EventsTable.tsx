@@ -379,7 +379,17 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
         </Table>
       </TableContainer>
       <EventClickPopup
-        clickedEvent={clickedEvent}
+        clickedEvent={
+          clickedEvent
+            ? {
+                ...clickedEvent,
+                startTime: getNextMeetingTime(clickedEvent as Event),
+                endTime: getNextMeetingTime(clickedEvent as Event),
+                allDay: clickedEvent?.scheduledTimes[0]?.allDay ?? false,
+                scheduleSlotId: clickedEvent?.scheduledTimes[0]?.scheduleSlotId ?? ''
+              }
+            : undefined
+        }
         anchorPosition={anchorPosition}
         onClose={handleCloseClickPopup}
         eventTypes={allEventTypes}
@@ -389,9 +399,14 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
         <EditEventModal
           open={showEditModal}
           onClose={handleCloseEdit}
-          event={clickedEditEvent}
+          event={{
+            ...clickedEditEvent,
+            startTime: getNextMeetingTime(clickedEditEvent as Event),
+            endTime: getNextMeetingTime(clickedEditEvent as Event),
+            allDay: clickedEditEvent?.scheduledTimes[0]?.allDay ?? false,
+            scheduleSlotId: clickedEditEvent?.scheduledTimes[0]?.scheduleSlotId ?? ''
+          }}
           eventTypes={allEventTypes}
-          defaultDate={new Date()}
         />
       )}
       <NERDeleteModal

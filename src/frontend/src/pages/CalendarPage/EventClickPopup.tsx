@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
-import { Calendar, DayOfWeek, Event, EventType } from 'shared';
-
+import { Calendar, DayOfWeek, EventInstance, EventType } from 'shared';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-
 import { getTeamTypeIcon } from './CalendarDayCard';
-
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupIcon from '@mui/icons-material/Group';
@@ -23,13 +20,13 @@ import HelpIcon from '@mui/icons-material/Help';
 import EditIcon from '@mui/icons-material/Edit';
 import PeopleIcon from '@mui/icons-material/People';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { getConvertedEnd, getConvertedStart } from '../../utils/datetime.utils';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
 import { useApproveEvent, useDeleteEvent, useDenyEvent } from '../../hooks/calendar.hooks';
 import EditEventModal from './Components/EditEventModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import NERDeleteModal from '../../components/NERDeleteModal';
+import { datePipe } from '../../utils/pipes';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
@@ -46,15 +43,15 @@ const stopClick: React.MouseEventHandler<HTMLElement> = (e) => {
 };
 
 interface EventClickContentProps {
-  event: Event;
+  event: EventInstance;
   eventTypes: EventType[];
   calendars: Calendar[];
   dayOfWeek?: DayOfWeek;
   disable: boolean;
   addApprovalButtons: boolean;
   onClose: () => void;
-  onEdit: (event: Event) => void;
-  onDelete: (event: Event) => void;
+  onEdit: (event: EventInstance) => void;
+  onDelete: (event: EventInstance) => void;
   clickedDate?: Date;
 }
 
@@ -84,8 +81,6 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
   const theme = useTheme();
 
   const name = event.workPackages?.[0]?.wbsElement?.name || event.title;
-  const startTime = dayOfWeek ? getConvertedStart(event, dayOfWeek) : '';
-  const endTime = dayOfWeek ? getConvertedEnd(event, dayOfWeek) : '';
 
   const specificEventType = eventTypes.find((et) => et.eventTypeId === event.eventTypeId);
   const specificCalendar = calendars.find((calendar) =>
@@ -95,7 +90,7 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
 
   const showAvailabilityButton = true;
 
-  const eventDate = clickedDate || (event.scheduledTimes[0]?.startTime ? event.scheduledTimes[0].startTime : new Date());
+  const eventDate = clickedDate || event.startTime;
 
   const availabilityUrl = `${routes.NEW_CALENDAR}/event/${event.eventId}?date=${eventDate.toISOString()}`;
 
@@ -177,28 +172,13 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
 
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5, flexWrap: 'wrap' }}>
           {dayOfWeek && <AccessTimeIcon fontSize="small" />}
-          {dayOfWeek && (
+          {dayOfWeek && !event.allDay && (
             <Typography variant="body2">
-              {startTime} – {endTime}
+              {datePipe(event.startTime)} – {datePipe(event.endTime)}
             </Typography>
           )}
+          {dayOfWeek && event.allDay && <Typography variant="body2">All day</Typography>}
           {!dayOfWeek && <AccessTimeIcon fontSize="small" />}
-          {!dayOfWeek && (
-            <Stack spacing={1.25} direction="column">
-              {event.scheduledTimes.map((slot, index) => {
-                const slotDate = slot.startTime ? new Date(slot.startTime) : null;
-                const dateStr = slotDate
-                  ? slotDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                  : 'N/A';
-                return (
-                  <Typography key={index} variant="body2">
-                    {dateStr} {slot.startTime?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) ?? 'N/A'}{' '}
-                    – {slot.endTime?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) ?? 'N/A'}
-                  </Typography>
-                );
-              })}
-            </Stack>
-          )}
           {hasValue(locationText) && (
             <>
               <LocationOnIcon fontSize="small" sx={{ ml: 2 }} />
@@ -421,7 +401,7 @@ const EventClickContent: React.FC<EventClickContentProps> = ({
 };
 
 export interface EventClickPopupProps {
-  clickedEvent?: Event;
+  clickedEvent?: EventInstance;
   anchorPosition?: { top: number; left: number };
   onClose: () => void;
   eventTypes: EventType[];
@@ -449,7 +429,7 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
 
   const { mutateAsync: deleteEvent } = useDeleteEvent(clickedEvent?.eventId ?? '');
 
-  const handleEdit = () => {
+  const handleEdit = (_event: EventInstance) => {
     setShowEditModal(true);
   };
 
@@ -508,9 +488,6 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
           }}
           event={clickedEvent}
           eventTypes={eventTypes}
-          defaultDate={
-            clickedEvent.scheduledTimes[0]?.startTime ? new Date(clickedEvent.scheduledTimes[0].startTime) : new Date()
-          }
         />
       )}
 
