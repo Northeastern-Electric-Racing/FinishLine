@@ -132,7 +132,14 @@ const schema = yup.object().shape({
   description: yup.string().optional(),
   scheduleDate: yup.date().required('Date is required'),
   startTime: yup.date().required('Start time is required'),
-  endTime: yup.date().required('End time is required'),
+  endTime: yup
+    .date()
+    .required('End time is required')
+    .test('is-after-start', 'End time must be after start time', function (value) {
+      const { startTime } = this.parent;
+      if (!value || !startTime) return true;
+      return new Date(value).getTime() > new Date(startTime).getTime();
+    }),
   allDay: yup.boolean().required(),
   recurrenceNumber: yup.number().min(0).required('Recurrence is required'),
   days: yup.array().of(yup.mixed<DayOfWeek>().required()).default([]),
@@ -165,6 +172,21 @@ const hasTimeChanged = (initialValues: Partial<EventFormValues> | undefined, cur
     originalEndTime !== currentEndTime ||
     initialValues.allDay !== currentData.allDay
   );
+};
+
+/**
+ * Calculate default start and end times based on current time.
+ * Start time is the current hour (rounded up), end time is 1 hour later.
+ */
+const getDefaultTimes = (): { startTime: Date; endTime: Date } => {
+  const startTime = new Date();
+  startTime.setMinutes(0, 0, 0);
+  startTime.setHours(startTime.getHours() + 1); // Default to next hour;
+
+  const endTime = new Date(startTime);
+  endTime.setHours(endTime.getHours() + 1); // Default to 1 hour duration
+
+  return { startTime, endTime };
 };
 
 const EventModal: React.FC<BaseEventModalProps> = ({
@@ -214,8 +236,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const { isError: teamTypesError, error: teamTypesErrorMsg, data: teamTypes } = useAllTeamTypes();
 
   // Compute default form values - memo ensures stable reference
-  const defaultFormData = useMemo(
-    () => ({
+  const defaultFormData = useMemo(() => {
+    const defaultTimes = getDefaultTimes();
+    return {
       title: initialValues?.title ?? '',
       eventTypeId: initialValues?.eventTypeId ?? '',
       requiredMemberIds: initialValues?.requiredMemberIds ?? [],
@@ -231,15 +254,14 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       questionDocumentLink: initialValues?.questionDocumentLink,
       description: initialValues?.description,
       scheduleDate: initialValues?.scheduleDate ?? defaultDate,
-      startTime: initialValues?.startTime ?? new Date(),
-      endTime: initialValues?.endTime ?? new Date(),
+      startTime: initialValues?.startTime ?? defaultTimes.startTime,
+      endTime: initialValues?.endTime ?? defaultTimes.endTime,
       allDay: initialValues?.allDay ?? false,
       recurrenceNumber: 0,
       days: [],
       selectedScheduleSlotId: initialValues?.selectedScheduleSlotId
-    }),
-    [initialValues, defaultDate]
-  );
+    };
+  }, [initialValues, defaultDate]);
 
   const allowedEventTypes = useMemo(() => {
     return eventTypes.filter((et) => {

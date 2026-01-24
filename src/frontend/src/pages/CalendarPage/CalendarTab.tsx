@@ -18,6 +18,7 @@ import { useHistory } from 'react-router-dom';
 const CalendarTab: React.FC = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [createModalDate, setCreateModalDate] = useState<Date>(new Date());
   const user = useCurrentUser();
   const history = useHistory();
   const canViewReviews = isHead(user.role) || isLead(user.role);
@@ -88,10 +89,11 @@ const CalendarTab: React.FC = () => {
 
   if (canViewReviews) tabs.push({ tabUrlValue: 'reviews', tabName: 'Review Bookings' });
 
-  const handleNewEventClick = () => {
+  const handleNewEventClick = (date?: Date) => {
     if (tabIndex !== 0) {
       history.push(`${routes.NEW_CALENDAR}/mainCalendar`);
     }
+    setCreateModalDate(date || new Date());
     setIsCreateModalOpen(true);
   };
 
@@ -115,7 +117,7 @@ const CalendarTab: React.FC = () => {
           <Button
             variant="contained"
             disableElevation
-            onClick={handleNewEventClick}
+            onClick={() => handleNewEventClick()}
             endIcon={<AddCircleOutlineIcon sx={{ fontSize: { xs: 24, sm: 30 } }} />}
             sx={{
               flexShrink: 0,
@@ -163,7 +165,7 @@ const CalendarTab: React.FC = () => {
           open={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
           eventTypes={allEventTypes}
-          defaultDate={new Date()}
+          defaultDate={createModalDate}
         />
       )}
     </>

@@ -44,7 +44,7 @@ interface NewCalendarPageProps {
   yourEvents: EventInstance[];
   reviewEvents: Event[];
   allCalendars: Calendar[];
-  onCreateEventClick: () => void;
+  onCreateEventClick: (date: Date) => void;
 }
 
 const NewCalendarPage: React.FC<NewCalendarPageProps> = ({

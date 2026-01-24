@@ -43,7 +43,7 @@ interface CalendarDayCardProps {
   eventTypes?: EventType[];
   calendars?: Calendar[];
   dayOfWeek?: DayOfWeek;
-  onCreateEventClick: () => void;
+  onCreateEventClick: (date: Date) => void;
 }
 
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
@@ -418,7 +418,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
       >
         <Box
           onClick={() => {
-            if (isClickable) onCreateEventClick();
+            if (isClickable) onCreateEventClick(cardDate);
           }}
           sx={{
             position: 'absolute',
