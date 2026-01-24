@@ -479,6 +479,8 @@ const calendarCreateEvent = () => `${calendar()}/event/create`;
 const calendarEditEvent = (eventId: string) => `${calendar()}/event/${eventId}/edit`;
 const calendarEditScheduleSlot = (eventId: string, scheduleSlotId: string) =>
   `${calendar()}/event/${eventId}/schedule-slot/${scheduleSlotId}/edit`;
+const calendarPreviewScheduleSlotRecurringEdits = (eventId: string, scheduleSlotId: string) =>
+  `${calendar()}/event/${eventId}/schedule-slot/${scheduleSlotId}/preview-recurring-edits`;
 const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
 const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 
@@ -823,6 +825,7 @@ export const apiUrls = {
   calendarDenyEvent,
   calendarEditEvent,
   calendarEditScheduleSlot,
+  calendarPreviewScheduleSlotRecurringEdits,
 
   version
 };

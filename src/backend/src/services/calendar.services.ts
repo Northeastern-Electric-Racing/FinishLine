@@ -12,7 +12,8 @@ import {
   Shop,
   Calendar,
   FilterArgs,
-  Machinery
+  Machinery,
+  ScheduleSlot
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
@@ -35,7 +36,8 @@ import {
   checkEventConflicts,
   removeDeletedEventDocuments,
   isUserOnEvent,
-  buildScheduledTimesOverlap
+  buildScheduledTimesOverlap,
+  findMatchingTimeOfDaySlots
 } from '../utils/calendar.utils.js';
 import {
   AccessDeniedAdminOnlyException,
@@ -824,6 +826,93 @@ export default class CalendarService {
   }
 
   /**
+   * Previews which schedule slots would be affected when editing a slot with "edit all in series".
+   * Returns only the OTHER slots that would be edited (excludes the current slot being edited).
+   *
+   * @param submitter The user submitting the request.
+   * @param scheduleSlotId The id of the specific schedule slot being edited.
+   * @param organization The organization context.
+   *
+   * @returns Array of schedule slots (excluding the current one) that have the same time-of-day pattern.
+   *
+   * @throws NotFoundException If the schedule slot or event is not found.
+   * @throws AccessDeniedException If the user doesn't have permission.
+   */
+  static async previewScheduleSlotRecurringEdits(
+    submitter: User,
+    scheduleSlotId: string,
+    organization: Organization
+  ): Promise<ScheduleSlot[]> {
+    // Validate schedule slot exists and get its eventId
+    const scheduleSlot = await prisma.schedule_Slot.findUnique({
+      where: { scheduleSlotId },
+      select: {
+        scheduleSlotId: true,
+        eventId: true,
+        startTime: true,
+        endTime: true,
+        allDay: true
+      }
+    });
+
+    if (!scheduleSlot) throw new NotFoundException('Schedule Slot', scheduleSlotId);
+
+    // Now fetch the event separately to check permissions
+    const event = await prisma.event.findUnique({
+      where: { eventId: scheduleSlot.eventId },
+      select: {
+        eventId: true,
+        userCreatedId: true,
+        location: true,
+        dateDeleted: true
+      }
+    });
+
+    if (!event) throw new NotFoundException('Event', scheduleSlot.eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', scheduleSlot.eventId);
+
+    // Check permissions
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isHead)) ||
+      submitter.userId === event.userCreatedId;
+
+    if (!hasPermission) {
+      throw new AccessDeniedException(
+        'Only admins, heads, or the event creator can see how editing this schedule slot will affect the event.'
+      );
+    }
+
+    // Fetch all schedule slots for this event
+    const allSlots = await prisma.schedule_Slot.findMany({
+      where: { eventId: scheduleSlot.eventId },
+      select: {
+        scheduleSlotId: true,
+        startTime: true,
+        endTime: true,
+        allDay: true
+      }
+    });
+
+    // Find all slots with matching time-of-day pattern
+    const matchingSlots = findMatchingTimeOfDaySlots(allSlots, scheduleSlotId);
+
+    // Get today's date at midnight for comparison (day portion only)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Exclude the current slot and any slots in the past (based on day only)
+    const otherAffectedSlots = matchingSlots.filter((slot) => {
+      if (slot.scheduleSlotId === scheduleSlotId) return false;
+
+      const slotDate = new Date(slot.startTime);
+      slotDate.setHours(0, 0, 0, 0);
+      return slotDate >= today;
+    });
+
+    return otherAffectedSlots;
+  }
+
+  /**
    * Edits a specific schedule slot of an event.
    * Used when a user wants to change the time/date of a single occurrence in a recurring event.
    *
@@ -907,31 +996,14 @@ export default class CalendarService {
         select: {
           scheduleSlotId: true,
           startTime: true,
-          endTime: true
+          endTime: true,
+          allDay: true
         }
       });
 
-      // Get the original slot's time-of-day
-      const originalSlot = allSlots.find((s) => s.scheduleSlotId === scheduleSlotId);
-      if (originalSlot && originalSlot.startTime && originalSlot.endTime) {
-        const originalStartHour = originalSlot.startTime.getHours();
-        const originalStartMinute = originalSlot.startTime.getMinutes();
-        const originalEndHour = originalSlot.endTime.getHours();
-        const originalEndMinute = originalSlot.endTime.getMinutes();
-
-        // Find all slots that have the same time-of-day
-        slotsToUpdate = allSlots
-          .filter((slot) => {
-            if (!slot.startTime || !slot.endTime) return false;
-            return (
-              slot.startTime.getHours() === originalStartHour &&
-              slot.startTime.getMinutes() === originalStartMinute &&
-              slot.endTime.getHours() === originalEndHour &&
-              slot.endTime.getMinutes() === originalEndMinute
-            );
-          })
-          .map((slot) => slot.scheduleSlotId);
-      }
+      // Use helper function to find all slots with matching time-of-day
+      const matchingSlots = findMatchingTimeOfDaySlots(allSlots, scheduleSlotId);
+      slotsToUpdate = matchingSlots.map((slot) => slot.scheduleSlotId);
     }
 
     // Calculate the time offset from the original slot to the new time

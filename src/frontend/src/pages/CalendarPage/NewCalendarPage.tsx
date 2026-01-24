@@ -475,9 +475,8 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                             cardDate={cardDate}
                             displayMonth={displayMonthYear}
                             events={
-                              eventDict.get(
-                                datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
-                              ) ?? []
+                              eventDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
+                              []
                             }
                             eventTypes={allEventTypes ?? []}
                             calendars={allCalendars ?? []}

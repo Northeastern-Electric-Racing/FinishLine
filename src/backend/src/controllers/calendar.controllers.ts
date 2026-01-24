@@ -380,6 +380,21 @@ export default class CalendarController {
     }
   }
 
+  static async previewScheduleSlotRecurringEdits(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { scheduleSlotId } = req.params as Record<string, string>;
+
+      const affectedSlots = await CalendarService.previewScheduleSlotRecurringEdits(
+        req.currentUser,
+        scheduleSlotId,
+        req.organization
+      );
+      res.status(200).json(affectedSlots);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async uploadDocument(req: Request, res: Response, next: NextFunction) {
     try {
       const { file } = req;

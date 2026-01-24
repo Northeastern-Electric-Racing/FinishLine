@@ -406,11 +406,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         onMouseLeave={() => setIsHovered(false)}
         sx={{
           position: 'relative',
-          backgroundColor: !isCurrentMonth
-            ? '#1f1f1f'
-            : isHovered
-              ? '#383838'
-              : '#2a2a2a',
+          backgroundColor: !isCurrentMonth ? '#1f1f1f' : isHovered ? '#383838' : '#2a2a2a',
           borderRadius: 2,
           width: '100%',
           height: '100%',

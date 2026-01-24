@@ -9,7 +9,8 @@ import {
   EventStatus,
   EventTypeCreateArgs,
   Calendar,
-  FilterArgs
+  FilterArgs,
+  ScheduleSlot
 } from 'shared';
 import { eventTransformer } from './transformers/calendar.transformer';
 import { EditEventArgs, EditScheduleSlotArgs, EventCreateArgs } from '../hooks/calendar.hooks';
@@ -203,6 +204,17 @@ export const postEditEvent = async (eventId: string, payload: EditEventArgs) => 
 export const postEditScheduleSlot = async (eventId: string, scheduleSlotId: string, payload: EditScheduleSlotArgs) => {
   return axios.post<Event>(apiUrls.calendarEditScheduleSlot(eventId, scheduleSlotId), payload, {
     transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
+};
+
+export const previewScheduleSlotRecurringEdits = async (eventId: string, scheduleSlotId: string) => {
+  return axios.get<ScheduleSlot[]>(apiUrls.calendarPreviewScheduleSlotRecurringEdits(eventId, scheduleSlotId), {
+    transformResponse: (data) =>
+      JSON.parse(data).map((slot: { scheduleSlotId: string; startTime: string; endTime: string; allDay: boolean }) => ({
+        ...slot,
+        startTime: new Date(slot.startTime),
+        endTime: new Date(slot.endTime)
+      }))
   });
 };
 

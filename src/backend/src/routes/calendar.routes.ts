@@ -159,6 +159,11 @@ calendarRouter.post(
   CalendarController.editScheduleSlot
 );
 
+calendarRouter.get(
+  '/event/:eventId/schedule-slot/:scheduleSlotId/preview-recurring-edits',
+  CalendarController.previewScheduleSlotRecurringEdits
+);
+
 calendarRouter.get('/document/:fileId', CalendarController.downloadDocument);
 
 calendarRouter.post(

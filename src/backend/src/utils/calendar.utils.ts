@@ -6,8 +6,7 @@ import {
   Document,
   ConflictStatus,
   Event,
-  EventWithMembers,
-  DayOfWeek
+  EventWithMembers
 } from 'shared';
 import { InvalidEventTypeConfigurationException } from './errors.utils.js';
 import prisma from '../prisma/prisma.js';
@@ -264,7 +263,6 @@ export async function checkEventConflicts(
           allDayDate.setHours(0, 0, 0, 0);
 
           const timedStart = new Date(timedSlot.startTime!);
-          const timedEnd = new Date(timedSlot.endTime!);
           const timedDate = new Date(timedStart);
           timedDate.setHours(0, 0, 0, 0);
 
@@ -317,5 +315,43 @@ export const removeDeletedEventDocuments = async (
       dateDeleted: new Date(),
       deletedByUserId: submitter.userId
     }
+  });
+};
+
+/**
+ * Finds all schedule slots that have the same time-of-day pattern as the original slot.
+ * This is used for "edit all in series" functionality where we want to update all slots
+ * that were created with the same recurring time pattern.
+ *
+ * @param allSlots All schedule slots for an event
+ * @param originalSlotId The ID of the slot being edited
+ * @returns Array of schedule slots that match the original slot's time-of-day pattern
+ */
+export const findMatchingTimeOfDaySlots = <T extends { scheduleSlotId: string; startTime: Date; endTime: Date }>(
+  allSlots: T[],
+  originalSlotId: string
+): T[] => {
+  const originalSlot = allSlots.find((s) => s.scheduleSlotId === originalSlotId);
+
+  if (!originalSlot || !originalSlot.startTime || !originalSlot.endTime) {
+    // If we can't find the original slot or it has no times, return just that slot
+    const slot = allSlots.find((s) => s.scheduleSlotId === originalSlotId);
+    return slot ? [slot] : [];
+  }
+
+  const originalStartHour = originalSlot.startTime.getHours();
+  const originalStartMinute = originalSlot.startTime.getMinutes();
+  const originalEndHour = originalSlot.endTime.getHours();
+  const originalEndMinute = originalSlot.endTime.getMinutes();
+
+  // Find all slots that have the same time-of-day
+  return allSlots.filter((slot) => {
+    if (!slot.startTime || !slot.endTime) return false;
+    return (
+      slot.startTime.getHours() === originalStartHour &&
+      slot.startTime.getMinutes() === originalStartMinute &&
+      slot.endTime.getHours() === originalEndHour &&
+      slot.endTime.getMinutes() === originalEndMinute
+    );
   });
 };

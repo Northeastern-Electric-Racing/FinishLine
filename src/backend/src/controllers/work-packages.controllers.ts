@@ -7,9 +7,6 @@ export default class WorkPackagesController {
   // Fetch all work packages, optionally filtered by query parameters
   static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      setTimeout(() => {
-        console.log('This message appears after 1 second.');
-      }, 1000);
       const { query } = req;
 
       const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, req.organization);
@@ -24,10 +21,6 @@ export default class WorkPackagesController {
   static async getAllWorkPackagesPreview(req: Request, res: Response, next: NextFunction) {
     try {
       const { status } = req.query as { status?: string };
-
-      setTimeout(() => {
-        console.log('This message appears after 1 second.');
-      }, 1000);
 
       const outputWorkPackages: WorkPackagePreview[] = await WorkPackagesService.getAllWorkPackagesPreview(
         status,
@@ -56,10 +49,6 @@ export default class WorkPackagesController {
   static async getManyWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNums } = req.body;
-
-      setTimeout(() => {
-        console.log('This message appears after 1 second.');
-      }, 1000);
 
       const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization);
       res.status(200).json(workPackages);

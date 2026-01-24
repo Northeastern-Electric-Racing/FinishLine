@@ -76,6 +76,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
       onSubmit={handleSubmit}
       initialValues={initialValues}
       eventTypes={eventTypes}
+      eventId={event.eventId}
     />
   );
 };

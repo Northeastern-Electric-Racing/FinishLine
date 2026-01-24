@@ -27,7 +27,8 @@ import {
   EventType,
   isHead,
   MAX_FILE_SIZE,
-  getNextSevenDays
+  getNextSevenDays,
+  ScheduleSlot
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
@@ -45,7 +46,7 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import BusinessIcon from '@mui/icons-material/Business';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
 import { ClearIcon } from '@mui/x-date-pickers';
-import { useAllMachines, useAllShops } from '../../../hooks/calendar.hooks';
+import { useAllMachines, useAllShops, usePreviewScheduleSlotRecurringEdits } from '../../../hooks/calendar.hooks';
 import StoreIcon from '@mui/icons-material/Store';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -53,6 +54,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Tooltip from '@mui/material/Tooltip';
 import { convertDayToInt, convertIntToDay } from '../../../utils/calendar.utils';
 import { getDay } from 'date-fns';
+import EditSeriesConfirmationModal from './EditSeriesConfirmationModal';
 
 export interface EventFormValues {
   title: string;
@@ -144,7 +146,26 @@ export interface BaseEventModalProps {
   initialValues?: Partial<EventFormValues>;
   eventTypes: EventType[];
   defaultDate?: Date;
+  eventId?: string; // Required for edit mode to fetch preview of affected schedule slots
 }
+
+/**
+ * Checks if the time has changed between initial values and current form data
+ */
+const hasTimeChanged = (initialValues: Partial<EventFormValues> | undefined, currentData: EventFormValues): boolean => {
+  if (!initialValues?.startTime || !initialValues?.endTime) return false;
+
+  const originalStartTime = new Date(initialValues.startTime).getTime();
+  const originalEndTime = new Date(initialValues.endTime).getTime();
+  const currentStartTime = new Date(currentData.startTime).getTime();
+  const currentEndTime = new Date(currentData.endTime).getTime();
+
+  return (
+    originalStartTime !== currentStartTime ||
+    originalEndTime !== currentEndTime ||
+    initialValues.allDay !== currentData.allDay
+  );
+};
 
 const EventModal: React.FC<BaseEventModalProps> = ({
   open,
@@ -152,7 +173,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   onSubmit,
   initialValues,
   eventTypes,
-  defaultDate = new Date()
+  defaultDate = new Date(),
+  eventId
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -163,6 +185,20 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const [requiredMembers, setRequiredMembers] = useState<Array<{ id: string; label: string }>>([]);
   const [optionalMembers, setOptionalMembers] = useState<Array<{ id: string; label: string }>>([]);
   const [selectedTeams, setSelectedTeams] = useState<Array<{ id: string; label: string }>>([]);
+
+  // State for the series confirmation modal (only used in edit mode when time changes)
+  const [showSeriesConfirmModal, setShowSeriesConfirmModal] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<EventPayload | null>(null);
+  const [pendingFormData, setPendingFormData] = useState<EventFormValues | null>(null);
+
+  // Fetch preview of other schedule slots that would be affected when editing with "edit all in series"
+  const isEditMode = !!initialValues;
+  const scheduleSlotId = initialValues?.selectedScheduleSlotId;
+  const { data: affectedSlots = [] } = usePreviewScheduleSlotRecurringEdits(
+    eventId ?? '',
+    scheduleSlotId ?? '',
+    isEditMode && !!eventId && !!scheduleSlotId
+  );
 
   // Lazy load all data needed for the form so users can start filling out instantly
   const { isLoading: usersLoading, isError: usersError, error: usersErrorMsg, data: users } = useAllUsers();
@@ -285,7 +321,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     }
   }, [initialValues, users, teams]);
 
-  const isEditMode = !!initialValues;
   const computedTitle = isEditMode ? 'Edit Event' : 'Add Event';
 
   // Handle recurring dropdown toggle
@@ -400,7 +435,10 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     }
   };
 
-  const onFormSubmit = async (data: EventFormValues) => {
+  /**
+   * Builds the payload from form data
+   */
+  const buildPayload = (data: EventFormValues, editAllInSeries: boolean = false): EventPayload => {
     const requiresConfirmation = selectedEventType?.requiresConfirmation ?? false;
 
     const payload: EventPayload = {
@@ -430,7 +468,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
         newStartTime: data.startTime,
         newEndTime: data.endTime,
         newAllDay: data.allDay,
-        editAllInSeries: false // Always false for now as per requirements
+        editAllInSeries
       };
     } else if (!isEditMode) {
       // For create mode, populate createScheduleSlotArgs
@@ -443,8 +481,60 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       };
     }
 
+    return payload;
+  };
+
+  const onFormSubmit = async (data: EventFormValues) => {
+    // In edit mode, check if time has changed AND there are other affected slots
+    // Only show the confirmation modal if there are other slots that would be affected
+    if (isEditMode && data.selectedScheduleSlotId && hasTimeChanged(initialValues, data) && affectedSlots.length > 0) {
+      const payload = buildPayload(data, false);
+      setPendingPayload(payload);
+      setPendingFormData(data);
+      setShowSeriesConfirmModal(true);
+      // Return early - form stays open, confirmation modal will handle submission
+      return;
+    }
+
+    // No time change, not in edit mode, or no other affected slots - submit directly
+    const payload = buildPayload(data, false);
     await onSubmit(payload);
     handleClose();
+  };
+
+  /**
+   * Handles confirmation from the series confirmation modal
+   */
+  const handleSeriesConfirmation = async (editAllInSeries: boolean) => {
+    if (!pendingPayload) return;
+
+    // Update the payload with the user's choice
+    const updatedPayload: EventPayload = {
+      ...pendingPayload,
+      editScheduleSlotArgs: pendingPayload.editScheduleSlotArgs
+        ? {
+            ...pendingPayload.editScheduleSlotArgs,
+            editAllInSeries
+          }
+        : undefined
+    };
+
+    setShowSeriesConfirmModal(false);
+    setPendingPayload(null);
+    setPendingFormData(null);
+
+    await onSubmit(updatedPayload);
+    handleClose();
+  };
+
+  /**
+   * Handles cancellation of the series confirmation modal
+   */
+  const handleSeriesCancelConfirmation = () => {
+    setShowSeriesConfirmModal(false);
+    setPendingPayload(null);
+    setPendingFormData(null);
+    // Form stays open with user's changes preserved
   };
 
   // When data loads from endpoint, update the options for the autocomplete fields
@@ -486,850 +576,862 @@ const EventModal: React.FC<BaseEventModalProps> = ({
         });
 
   return (
-    <NERFormModal
-      open={open}
-      onHide={handleClose}
-      title={computedTitle}
-      reset={handleClose}
-      handleUseFormSubmit={handleSubmit}
-      onFormSubmit={onFormSubmit}
-      formId="event-form"
-      showCloseButton
-    >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 500, p: 2 }}>
-        {/* Title Input with red placeholder styling */}
-        <FormControl fullWidth>
-          <Controller
-            name="title"
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <TextField
-                value={value}
-                onChange={onChange}
-                placeholder="Add Title"
-                variant="standard"
-                fullWidth
-                error={!!errors.title}
-                sx={{
-                  '& .MuiInput-input': {
-                    fontSize: '2rem',
-                    fontWeight: 500,
-                    color: value ? 'text.primary' : '#ef5350',
-                    '&::placeholder': {
-                      color: '#ef5350',
-                      opacity: 0.7
+    <>
+      <EditSeriesConfirmationModal
+        open={showSeriesConfirmModal}
+        onCancel={handleSeriesCancelConfirmation}
+        onConfirm={handleSeriesConfirmation}
+        affectedSlots={affectedSlots}
+        originalStartTime={initialValues?.startTime}
+        originalEndTime={initialValues?.endTime}
+        newStartTime={pendingFormData?.startTime}
+        newEndTime={pendingFormData?.endTime}
+      />
+      <NERFormModal
+        open={open}
+        onHide={handleClose}
+        title={computedTitle}
+        reset={() => {}}
+        handleUseFormSubmit={handleSubmit}
+        onFormSubmit={onFormSubmit}
+        formId="event-form"
+        showCloseButton
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 500, p: 2 }}>
+          {/* Title Input with red placeholder styling */}
+          <FormControl fullWidth>
+            <Controller
+              name="title"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <TextField
+                  value={value}
+                  onChange={onChange}
+                  placeholder="Add Title"
+                  variant="standard"
+                  fullWidth
+                  error={!!errors.title}
+                  sx={{
+                    '& .MuiInput-input': {
+                      fontSize: '2rem',
+                      fontWeight: 500,
+                      color: value ? 'text.primary' : '#ef5350',
+                      '&::placeholder': {
+                        color: '#ef5350',
+                        opacity: 0.7
+                      }
                     }
-                  }
-                }}
-              />
-            )}
-          />
-          <FormHelperText error>{errors.title?.message}</FormHelperText>
-        </FormControl>
-        {/* Event Type Tabs */}
-        <FormControl fullWidth>
-          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-            {allowedEventTypes.map((et) => (
-              <Button
-                key={et.eventTypeId}
-                onClick={() => handleEventTypeChange(et.eventTypeId)}
-                variant={watch('eventTypeId') === et.eventTypeId ? 'contained' : 'outlined'}
-                sx={{
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  bgcolor: watch('eventTypeId') === et.eventTypeId ? 'grey.600' : 'transparent',
-                  color: watch('eventTypeId') === et.eventTypeId ? 'white' : 'text.primary',
-                  borderColor: 'grey.400',
-                  '&:hover': {
-                    bgcolor: watch('eventTypeId') === et.eventTypeId ? 'grey.700' : 'grey.100'
-                  }
-                }}
-              >
-                {et.name}
-              </Button>
-            ))}
-          </Stack>
-          <FormHelperText error>{errors.eventTypeId?.message}</FormHelperText>
-        </FormControl>
-        {/* Date and Time Section - Only show when event type is selected */}
-        {selectedEventType && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {selectedEventType.requiresConfirmation ? (
-              <Box>
-                {/* Header with info tooltip */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Tooltip
-                    title="This event type requires confirmation, so users will provide their availability for the following week. Once confirmed, the event will be scheduled for a specific time within this date range."
-                    arrow
-                    placement="top"
-                  >
-                    <HelpOutlineIcon sx={{ fontSize: 18, color: 'grey.400', cursor: 'help' }} />
-                  </Tooltip>
-                  <Typography variant="body2" color="white" fontWeight={500}>
-                    To be scheduled within:
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                  <CalendarTodayIcon sx={{ color: 'text.secondary' }} />
-                  <Controller
-                    name="scheduleDate"
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <DatePicker
-                        value={value}
-                        open={datePickerOpen}
-                        onClose={() => setDatePickerOpen(false)}
-                        onOpen={() => setDatePickerOpen(true)}
-                        onChange={(newValue) => onChange(newValue ?? defaultDate)}
-                        slotProps={{
-                          textField: {
-                            variant: 'standard',
-                            error: !!errors.scheduleDate,
-                            onClick: () => setDatePickerOpen(true),
-                            sx: { minWidth: 150 }
-                          },
-                          day: {
-                            sx: {
-                              '&.Mui-selected': {
-                                backgroundColor: '#EF4345 !important',
-                                '&:hover': {
-                                  backgroundColor: '#d32f2f !important'
-                                },
-                                '&:focus': {
-                                  backgroundColor: '#EF4345 !important'
-                                }
-                              }
-                            }
-                          }
-                        }}
-                      />
-                    )}
-                  />
-                  <ArrowForwardIcon sx={{ color: 'text.secondary' }} />
-                  <Controller
-                    name="scheduleDate"
-                    control={control}
-                    render={({ field: { value } }) => {
-                      const weekDates = getNextSevenDays(value);
-                      const endDate = weekDates.at(-1);
-                      return (
+                  }}
+                />
+              )}
+            />
+            <FormHelperText error>{errors.title?.message}</FormHelperText>
+          </FormControl>
+          {/* Event Type Tabs */}
+          <FormControl fullWidth>
+            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+              {allowedEventTypes.map((et) => (
+                <Button
+                  key={et.eventTypeId}
+                  onClick={() => handleEventTypeChange(et.eventTypeId)}
+                  variant={watch('eventTypeId') === et.eventTypeId ? 'contained' : 'outlined'}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    bgcolor: watch('eventTypeId') === et.eventTypeId ? 'grey.600' : 'transparent',
+                    color: watch('eventTypeId') === et.eventTypeId ? 'white' : 'text.primary',
+                    borderColor: 'grey.400',
+                    '&:hover': {
+                      bgcolor: watch('eventTypeId') === et.eventTypeId ? 'grey.700' : 'grey.100'
+                    }
+                  }}
+                >
+                  {et.name}
+                </Button>
+              ))}
+            </Stack>
+            <FormHelperText error>{errors.eventTypeId?.message}</FormHelperText>
+          </FormControl>
+          {/* Date and Time Section - Only show when event type is selected */}
+          {selectedEventType && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {selectedEventType.requiresConfirmation ? (
+                <Box>
+                  {/* Header with info tooltip */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Tooltip
+                      title="This event type requires confirmation, so users will provide their availability for the following week. Once confirmed, the event will be scheduled for a specific time within this date range."
+                      arrow
+                      placement="top"
+                    >
+                      <HelpOutlineIcon sx={{ fontSize: 18, color: 'grey.400', cursor: 'help' }} />
+                    </Tooltip>
+                    <Typography variant="body2" color="white" fontWeight={500}>
+                      To be scheduled within:
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                    <CalendarTodayIcon sx={{ color: 'text.secondary' }} />
+                    <Controller
+                      name="scheduleDate"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
                         <DatePicker
-                          value={endDate}
-                          disabled
+                          value={value}
+                          open={datePickerOpen}
+                          onClose={() => setDatePickerOpen(false)}
+                          onOpen={() => setDatePickerOpen(true)}
+                          onChange={(newValue) => onChange(newValue ?? defaultDate)}
                           slotProps={{
                             textField: {
                               variant: 'standard',
+                              error: !!errors.scheduleDate,
+                              onClick: () => setDatePickerOpen(true),
                               sx: { minWidth: 150 }
                             },
                             day: {
                               sx: {
                                 '&.Mui-selected': {
-                                  backgroundColor: '#EF4345 !important'
+                                  backgroundColor: '#EF4345 !important',
+                                  '&:hover': {
+                                    backgroundColor: '#d32f2f !important'
+                                  },
+                                  '&:focus': {
+                                    backgroundColor: '#EF4345 !important'
+                                  }
                                 }
                               }
                             }
                           }}
                         />
-                      );
-                    }}
-                  />
-                </Box>
-              </Box>
-            ) : (
-              /* Normal Event Type - Full date/time selection */
-              <>
-                {/* Date and Time Row */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                  <CalendarTodayIcon sx={{ color: 'text.secondary' }} />
-                  <Controller
-                    name="scheduleDate"
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <DatePicker
-                        value={value}
-                        open={datePickerOpen}
-                        onClose={() => setDatePickerOpen(false)}
-                        onOpen={() => setDatePickerOpen(true)}
-                        onChange={(newValue) => onChange(newValue ?? defaultDate)}
-                        slotProps={{
-                          textField: {
-                            variant: 'standard',
-                            error: !!errors.scheduleDate,
-                            onClick: () => setDatePickerOpen(true),
-                            sx: { minWidth: 150 }
-                          },
-                          day: {
-                            sx: {
-                              '&.Mui-selected': {
-                                backgroundColor: '#EF4345 !important',
-                                '&:hover': {
-                                  backgroundColor: '#d32f2f !important'
-                                },
-                                '&:focus': {
-                                  backgroundColor: '#EF4345 !important'
-                                }
-                              }
-                            }
-                          }
-                        }}
-                      />
-                    )}
-                  />
-
-                  {!watch('allDay') && (
-                    <>
-                      <Controller
-                        name="startTime"
-                        control={control}
-                        render={({ field: { onChange, value } }) => (
-                          <TimePicker
-                            value={value}
-                            open={startTimePickerOpen}
-                            onClose={() => setStartTimePickerOpen(false)}
-                            onOpen={() => setStartTimePickerOpen(true)}
-                            onChange={(newValue) => onChange(newValue)}
-                            slotProps={{
-                              textField: {
-                                variant: 'standard',
-                                error: !!errors.startTime,
-                                onClick: () => setStartTimePickerOpen(true),
-                                sx: { width: 100 }
-                              },
-                              layout: {
-                                sx: {
-                                  '& .MuiPickersLayout-contentWrapper .MuiClock-pin': {
-                                    backgroundColor: '#EF4345'
-                                  },
-                                  '& .MuiPickersLayout-contentWrapper .MuiClockPointer-root': {
-                                    backgroundColor: '#EF4345'
-                                  },
-                                  '& .MuiPickersLayout-contentWrapper .MuiClockPointer-thumb': {
-                                    backgroundColor: '#EF4345',
-                                    borderColor: '#EF4345'
-                                  },
-                                  '& .MuiPickersLayout-contentWrapper .MuiClockNumber-root.Mui-selected': {
-                                    backgroundColor: '#EF4345 !important'
-                                  },
-                                  '& .MuiPickersLayout-contentWrapper .MuiPickersArrowSwitcher-button.Mui-selected': {
-                                    backgroundColor: '#EF4345 !important',
-                                    color: 'white'
-                                  },
-                                  '& .MuiMultiSectionDigitalClock-root .MuiMenuItem-root.Mui-selected': {
-                                    backgroundColor: '#EF4345 !important',
-                                    color: 'white'
-                                  }
-                                }
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                      <Typography>-</Typography>
-                      <Controller
-                        name="endTime"
-                        control={control}
-                        render={({ field: { onChange, value } }) => (
-                          <TimePicker
-                            value={value}
-                            open={endTimePickerOpen}
-                            onClose={() => setEndTimePickerOpen(false)}
-                            onOpen={() => setEndTimePickerOpen(true)}
-                            onChange={(newValue) => onChange(newValue)}
-                            slotProps={{
-                              textField: {
-                                variant: 'standard',
-                                error: !!errors.endTime,
-                                onClick: () => setEndTimePickerOpen(true),
-                                sx: { width: 100 }
-                              },
-                              layout: {
-                                sx: {
-                                  '& .MuiPickersLayout-contentWrapper .MuiClock-pin': {
-                                    backgroundColor: '#EF4345'
-                                  },
-                                  '& .MuiPickersLayout-contentWrapper .MuiClockPointer-root': {
-                                    backgroundColor: '#EF4345'
-                                  },
-                                  '& .MuiPickersLayout-contentWrapper .MuiClockPointer-thumb': {
-                                    backgroundColor: '#EF4345',
-                                    borderColor: '#EF4345'
-                                  },
-                                  '& .MuiPickersLayout-contentWrapper .MuiClockNumber-root.Mui-selected': {
-                                    backgroundColor: '#EF4345 !important'
-                                  },
-                                  '& .MuiPickersLayout-contentWrapper .MuiPickersArrowSwitcher-button.Mui-selected': {
-                                    backgroundColor: '#EF4345 !important',
-                                    color: 'white'
-                                  },
-                                  '& .MuiMultiSectionDigitalClock-root .MuiMenuItem-root.Mui-selected': {
-                                    backgroundColor: '#EF4345 !important',
-                                    color: 'white'
-                                  }
-                                }
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </>
-                  )}
-                </Box>
-
-                {/* All Day and Recurring Row */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 5 }}>
-                  <Controller
-                    name="allDay"
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <FormControlLabel
-                        control={<Checkbox checked={value} onChange={(e) => onChange(e.target.checked)} />}
-                        label="All Day"
-                      />
-                    )}
-                  />
-
-                  {/* Hide recurring options when editing */}
-                  {!isEditMode && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={handleRecurringToggle}
-                      sx={{
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        borderColor: 'grey.400',
-                        color: 'text.primary',
-                        bgcolor: showRecurringOptions || watch('days').length > 0 ? 'grey.400' : 'transparent'
-                      }}
-                    >
-                      Recurring ▼
-                    </Button>
-                  )}
-                </Box>
-
-                {/* Recurring Options */}
-                {showRecurringOptions && (
-                  <Box
-                    sx={{
-                      ml: 5,
-                      p: 2,
-                      bgcolor: 'rgba(0, 0, 0, 0.04)',
-                      borderRadius: 2,
-                      border: '1px solid',
-                      borderColor: 'grey.300'
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                      <Typography variant="body2" color="text.primary">
-                        Repeat
-                      </Typography>
-                      <Controller
-                        name="recurrenceNumber"
-                        control={control}
-                        render={({ field: { onChange, value } }) => (
-                          <TextField
-                            type="number"
-                            value={value}
-                            onChange={onChange}
-                            size="small"
-                            sx={{
-                              width: 80,
-                              '& .MuiInputBase-input': {
-                                color: 'text.primary'
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                '& fieldset': {
-                                  borderColor: 'grey.400'
-                                },
-                                '&:hover fieldset': {
-                                  borderColor: 'grey.600'
-                                }
-                              }
-                            }}
-                            inputProps={{ min: 1 }}
-                          />
-                        )}
-                      />
-                      <Typography variant="body2" color="text.primary">
-                        more time(s)
-                      </Typography>
-                    </Box>
-
-                    <Typography variant="body2" fontWeight={500} mb={1} color="text.primary">
-                      Repeat on:
-                    </Typography>
+                      )}
+                    />
+                    <ArrowForwardIcon sx={{ color: 'text.secondary' }} />
                     <Controller
-                      name="days"
+                      name="scheduleDate"
                       control={control}
-                      render={({ field: { onChange, value } }) => {
-                        const weekDays: DayOfWeek[] = [
-                          DayOfWeek.SUNDAY,
-                          DayOfWeek.MONDAY,
-                          DayOfWeek.TUESDAY,
-                          DayOfWeek.WEDNESDAY,
-                          DayOfWeek.THURSDAY,
-                          DayOfWeek.FRIDAY,
-                          DayOfWeek.SATURDAY
-                        ];
-                        const dayLabels = ['S', 'M', 'T', 'W', 'TH', 'F', 'S'];
-
-                        const toggleDay = (day: DayOfWeek) => {
-                          const currentDays = value || [];
-                          if (currentDays.includes(day)) {
-                            onChange(currentDays.filter((d) => d !== day));
-                          } else {
-                            onChange([...currentDays, day]);
-                          }
-                        };
-
+                      render={({ field: { value } }) => {
+                        const weekDates = getNextSevenDays(value);
+                        const endDate = weekDates.at(-1);
                         return (
-                          <Stack direction="row" spacing={1} mb={2}>
-                            {weekDays.map((day, index) => {
-                              const isSelected = (value || []).includes(day);
-                              return (
-                                <Button
-                                  key={day}
-                                  onClick={() => toggleDay(day)}
-                                  variant={isSelected ? 'contained' : 'outlined'}
-                                  sx={{
-                                    minWidth: 40,
-                                    width: 40,
-                                    height: 40,
-                                    borderRadius: '50%',
-                                    p: 0,
-                                    bgcolor: isSelected ? '#EF4345' : 'transparent',
-                                    color: isSelected ? 'white' : 'text.primary',
-                                    borderColor: 'grey.400',
-                                    '&:hover': {
-                                      bgcolor: isSelected ? '#d32f2f' : 'rgba(0, 0, 0, 0.08)'
-                                    }
-                                  }}
-                                >
-                                  {dayLabels[index]}
-                                </Button>
-                              );
-                            })}
-                          </Stack>
+                          <DatePicker
+                            value={endDate}
+                            disabled
+                            slotProps={{
+                              textField: {
+                                variant: 'standard',
+                                sx: { minWidth: 150 }
+                              },
+                              day: {
+                                sx: {
+                                  '&.Mui-selected': {
+                                    backgroundColor: '#EF4345 !important'
+                                  }
+                                }
+                              }
+                            }}
+                          />
                         );
                       }}
                     />
+                  </Box>
+                </Box>
+              ) : (
+                /* Normal Event Type - Full date/time selection */
+                <>
+                  {/* Date and Time Row */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                    <CalendarTodayIcon sx={{ color: 'text.secondary' }} />
+                    <Controller
+                      name="scheduleDate"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <DatePicker
+                          value={value}
+                          open={datePickerOpen}
+                          onClose={() => setDatePickerOpen(false)}
+                          onOpen={() => setDatePickerOpen(true)}
+                          onChange={(newValue) => onChange(newValue ?? defaultDate)}
+                          slotProps={{
+                            textField: {
+                              variant: 'standard',
+                              error: !!errors.scheduleDate,
+                              onClick: () => setDatePickerOpen(true),
+                              sx: { minWidth: 150 }
+                            },
+                            day: {
+                              sx: {
+                                '&.Mui-selected': {
+                                  backgroundColor: '#EF4345 !important',
+                                  '&:hover': {
+                                    backgroundColor: '#d32f2f !important'
+                                  },
+                                  '&:focus': {
+                                    backgroundColor: '#EF4345 !important'
+                                  }
+                                }
+                              }
+                            }
+                          }}
+                        />
+                      )}
+                    />
 
-                    {errors.days && (
-                      <Typography variant="caption" color="error" sx={{ display: 'block', mb: 2 }}>
-                        {errors.days.message}
-                      </Typography>
-                    )}
-
-                    {/* Last Occurrence Info */}
-                    {watch('recurrenceNumber') > 0 && watch('days').length > 0 ? (
-                      <Box
-                        sx={{
-                          p: 1.5,
-                          bgcolor: 'rgba(239, 67, 69, 0.08)',
-                          borderRadius: 1,
-                          border: '1px solid',
-                          borderColor: 'rgba(239, 67, 69, 0.2)'
-                        }}
-                      >
-                        <Typography variant="body2" color="text.secondary">
-                          <strong>Last occurrence:</strong>{' '}
-                          {calculateLastOccurrenceDate()?.toLocaleDateString('en-US', {
-                            weekday: 'long',
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        {watch('days').length === 0
-                          ? 'Select at least one day to see the last occurrence date.'
-                          : "Select the number of times you'd like this event to recur."}
-                      </Typography>
+                    {!watch('allDay') && (
+                      <>
+                        <Controller
+                          name="startTime"
+                          control={control}
+                          render={({ field: { onChange, value } }) => (
+                            <TimePicker
+                              value={value}
+                              open={startTimePickerOpen}
+                              onClose={() => setStartTimePickerOpen(false)}
+                              onOpen={() => setStartTimePickerOpen(true)}
+                              onChange={(newValue) => onChange(newValue)}
+                              slotProps={{
+                                textField: {
+                                  variant: 'standard',
+                                  error: !!errors.startTime,
+                                  onClick: () => setStartTimePickerOpen(true),
+                                  sx: { width: 100 }
+                                },
+                                layout: {
+                                  sx: {
+                                    '& .MuiPickersLayout-contentWrapper .MuiClock-pin': {
+                                      backgroundColor: '#EF4345'
+                                    },
+                                    '& .MuiPickersLayout-contentWrapper .MuiClockPointer-root': {
+                                      backgroundColor: '#EF4345'
+                                    },
+                                    '& .MuiPickersLayout-contentWrapper .MuiClockPointer-thumb': {
+                                      backgroundColor: '#EF4345',
+                                      borderColor: '#EF4345'
+                                    },
+                                    '& .MuiPickersLayout-contentWrapper .MuiClockNumber-root.Mui-selected': {
+                                      backgroundColor: '#EF4345 !important'
+                                    },
+                                    '& .MuiPickersLayout-contentWrapper .MuiPickersArrowSwitcher-button.Mui-selected': {
+                                      backgroundColor: '#EF4345 !important',
+                                      color: 'white'
+                                    },
+                                    '& .MuiMultiSectionDigitalClock-root .MuiMenuItem-root.Mui-selected': {
+                                      backgroundColor: '#EF4345 !important',
+                                      color: 'white'
+                                    }
+                                  }
+                                }
+                              }}
+                            />
+                          )}
+                        />
+                        <Typography>-</Typography>
+                        <Controller
+                          name="endTime"
+                          control={control}
+                          render={({ field: { onChange, value } }) => (
+                            <TimePicker
+                              value={value}
+                              open={endTimePickerOpen}
+                              onClose={() => setEndTimePickerOpen(false)}
+                              onOpen={() => setEndTimePickerOpen(true)}
+                              onChange={(newValue) => onChange(newValue)}
+                              slotProps={{
+                                textField: {
+                                  variant: 'standard',
+                                  error: !!errors.endTime,
+                                  onClick: () => setEndTimePickerOpen(true),
+                                  sx: { width: 100 }
+                                },
+                                layout: {
+                                  sx: {
+                                    '& .MuiPickersLayout-contentWrapper .MuiClock-pin': {
+                                      backgroundColor: '#EF4345'
+                                    },
+                                    '& .MuiPickersLayout-contentWrapper .MuiClockPointer-root': {
+                                      backgroundColor: '#EF4345'
+                                    },
+                                    '& .MuiPickersLayout-contentWrapper .MuiClockPointer-thumb': {
+                                      backgroundColor: '#EF4345',
+                                      borderColor: '#EF4345'
+                                    },
+                                    '& .MuiPickersLayout-contentWrapper .MuiClockNumber-root.Mui-selected': {
+                                      backgroundColor: '#EF4345 !important'
+                                    },
+                                    '& .MuiPickersLayout-contentWrapper .MuiPickersArrowSwitcher-button.Mui-selected': {
+                                      backgroundColor: '#EF4345 !important',
+                                      color: 'white'
+                                    },
+                                    '& .MuiMultiSectionDigitalClock-root .MuiMenuItem-root.Mui-selected': {
+                                      backgroundColor: '#EF4345 !important',
+                                      color: 'white'
+                                    }
+                                  }
+                                }
+                              }}
+                            />
+                          )}
+                        />
+                      </>
                     )}
                   </Box>
-                )}
-              </>
-            )}
-          </Box>
-        )}
-        {/* Required Members Section */}
-        {selectedEventType?.requiredMembers && (
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-            <PeopleIcon sx={{ color: 'text.secondary', mt: 1 }} />
-            <Box sx={{ flex: 1, width: '100%' }}>
-              <Box sx={{ flex: 1 }}>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                  {requiredMembers.map((member) => (
-                    <Chip
-                      key={member.id}
-                      label={member.label}
-                      onDelete={() => setRequiredMembers((prev) => prev.filter((m) => m.id !== member.id))}
-                      sx={{ bgcolor: 'grey.700' }}
+
+                  {/* All Day and Recurring Row */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 5 }}>
+                    <Controller
+                      name="allDay"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <FormControlLabel
+                          control={<Checkbox checked={value} onChange={(e) => onChange(e.target.checked)} />}
+                          label="All Day"
+                        />
+                      )}
                     />
-                  ))}
-                  <Autocomplete
-                    options={memberOptions.filter((m) => !requiredMembers.find((rm) => rm.id === m.id))}
-                    onChange={(_, newValue) => {
-                      if (newValue) setRequiredMembers((prev) => [...prev, newValue]);
-                    }}
-                    getOptionLabel={(option) => option.label}
-                    renderInput={(params) => (
-                      <TextField {...params} variant="standard" placeholder="Add Required Member" sx={{ minWidth: 150 }} />
+
+                    {/* Hide recurring options when editing */}
+                    {!isEditMode && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={handleRecurringToggle}
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          borderColor: 'grey.400',
+                          color: 'text.primary',
+                          bgcolor: showRecurringOptions || watch('days').length > 0 ? 'grey.400' : 'transparent'
+                        }}
+                      >
+                        Recurring ▼
+                      </Button>
                     )}
-                    sx={{ flex: 1, minWidth: 150 }}
-                  />
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-        )}
-        {/* Optional Members Section */}
-        {selectedEventType?.optionalMembers && (
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-            <PeopleIcon sx={{ color: 'text.secondary', mt: 1, opacity: 0.7 }} />
-            <Box sx={{ flex: 1, width: '100%' }}>
-              <Box sx={{ flex: 1 }}>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                  {optionalMembers.map((member) => (
-                    <Chip
-                      key={member.id}
-                      label={member.label}
-                      onDelete={() => setOptionalMembers((prev) => prev.filter((m) => m.id !== member.id))}
-                      sx={{ bgcolor: 'grey.700', opacity: 0.7 }}
-                    />
-                  ))}
-                  <Autocomplete
-                    options={memberOptions.filter((m) => !optionalMembers.find((om) => om.id === m.id))}
-                    onChange={(_, newValue) => {
-                      if (newValue) setOptionalMembers((prev) => [...prev, newValue]);
-                    }}
-                    getOptionLabel={(option) => option.label}
-                    renderInput={(params) => (
-                      <TextField {...params} variant="standard" placeholder="Add Optional Member" sx={{ minWidth: 150 }} />
-                    )}
-                    sx={{ flex: 1, minWidth: 150 }}
-                  />
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-        )}
-        {/* Teams Section */}
-        {selectedEventType?.teams && (
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-            <BusinessIcon sx={{ color: 'text.secondary', mt: 1 }} />
-            <Box sx={{ flex: 1, width: '100%' }}>
-              <Box sx={{ flex: 1 }}>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                  {selectedTeams.map((team) => (
-                    <Chip
-                      key={team.id}
-                      label={team.label}
-                      onDelete={() => setSelectedTeams((prev) => prev.filter((t) => t.id !== team.id))}
-                      sx={{ bgcolor: 'grey.700', opacity: 0.7 }}
-                    />
-                  ))}
-                  <Autocomplete
-                    options={teamOptions.filter((t) => !selectedTeams.find((st) => st.id === t.id))}
-                    onChange={(_, newValue) => {
-                      if (newValue) setSelectedTeams((prev) => [...prev, newValue]);
-                    }}
-                    getOptionLabel={(option) => option.label}
-                    renderInput={(params) => (
-                      <TextField {...params} variant="standard" placeholder="Add Team" sx={{ minWidth: 120 }} />
-                    )}
-                    sx={{ flex: 1, minWidth: 150 }}
-                  />
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-        )}
-        {/* Team Type */}
-        {selectedEventType?.teamType && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <BusinessIcon sx={{ color: 'text.secondary' }} />
-            <Controller
-              name="teamTypeId"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Select
-                  value={value || ''}
-                  onChange={(e) => onChange(e.target.value)}
-                  variant="standard"
-                  displayEmpty
-                  sx={{ flex: 1 }}
-                >
-                  <MenuItem value="">
-                    <em>Select Team Type</em>
-                  </MenuItem>
-                  {teamTypes?.map((tt) => (
-                    <MenuItem key={tt.teamTypeId} value={tt.teamTypeId}>
-                      {tt.name}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  </Box>
+
+                  {/* Recurring Options */}
+                  {showRecurringOptions && (
+                    <Box
+                      sx={{
+                        ml: 5,
+                        p: 2,
+                        bgcolor: 'rgba(0, 0, 0, 0.04)',
+                        borderRadius: 2,
+                        border: '1px solid',
+                        borderColor: 'grey.300'
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                        <Typography variant="body2" color="text.primary">
+                          Repeat
+                        </Typography>
+                        <Controller
+                          name="recurrenceNumber"
+                          control={control}
+                          render={({ field: { onChange, value } }) => (
+                            <TextField
+                              type="number"
+                              value={value}
+                              onChange={onChange}
+                              size="small"
+                              sx={{
+                                width: 80,
+                                '& .MuiInputBase-input': {
+                                  color: 'text.primary'
+                                },
+                                '& .MuiOutlinedInput-root': {
+                                  '& fieldset': {
+                                    borderColor: 'grey.400'
+                                  },
+                                  '&:hover fieldset': {
+                                    borderColor: 'grey.600'
+                                  }
+                                }
+                              }}
+                              inputProps={{ min: 1 }}
+                            />
+                          )}
+                        />
+                        <Typography variant="body2" color="text.primary">
+                          more time(s)
+                        </Typography>
+                      </Box>
+
+                      <Typography variant="body2" fontWeight={500} mb={1} color="text.primary">
+                        Repeat on:
+                      </Typography>
+                      <Controller
+                        name="days"
+                        control={control}
+                        render={({ field: { onChange, value } }) => {
+                          const weekDays: DayOfWeek[] = [
+                            DayOfWeek.SUNDAY,
+                            DayOfWeek.MONDAY,
+                            DayOfWeek.TUESDAY,
+                            DayOfWeek.WEDNESDAY,
+                            DayOfWeek.THURSDAY,
+                            DayOfWeek.FRIDAY,
+                            DayOfWeek.SATURDAY
+                          ];
+                          const dayLabels = ['S', 'M', 'T', 'W', 'TH', 'F', 'S'];
+
+                          const toggleDay = (day: DayOfWeek) => {
+                            const currentDays = value || [];
+                            if (currentDays.includes(day)) {
+                              onChange(currentDays.filter((d) => d !== day));
+                            } else {
+                              onChange([...currentDays, day]);
+                            }
+                          };
+
+                          return (
+                            <Stack direction="row" spacing={1} mb={2}>
+                              {weekDays.map((day, index) => {
+                                const isSelected = (value || []).includes(day);
+                                return (
+                                  <Button
+                                    key={day}
+                                    onClick={() => toggleDay(day)}
+                                    variant={isSelected ? 'contained' : 'outlined'}
+                                    sx={{
+                                      minWidth: 40,
+                                      width: 40,
+                                      height: 40,
+                                      borderRadius: '50%',
+                                      p: 0,
+                                      bgcolor: isSelected ? '#EF4345' : 'transparent',
+                                      color: isSelected ? 'white' : 'text.primary',
+                                      borderColor: 'grey.400',
+                                      '&:hover': {
+                                        bgcolor: isSelected ? '#d32f2f' : 'rgba(0, 0, 0, 0.08)'
+                                      }
+                                    }}
+                                  >
+                                    {dayLabels[index]}
+                                  </Button>
+                                );
+                              })}
+                            </Stack>
+                          );
+                        }}
+                      />
+
+                      {errors.days && (
+                        <Typography variant="caption" color="error" sx={{ display: 'block', mb: 2 }}>
+                          {errors.days.message}
+                        </Typography>
+                      )}
+
+                      {/* Last Occurrence Info */}
+                      {watch('recurrenceNumber') > 0 && watch('days').length > 0 ? (
+                        <Box
+                          sx={{
+                            p: 1.5,
+                            bgcolor: 'rgba(239, 67, 69, 0.08)',
+                            borderRadius: 1,
+                            border: '1px solid',
+                            borderColor: 'rgba(239, 67, 69, 0.2)'
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary">
+                            <strong>Last occurrence:</strong>{' '}
+                            {calculateLastOccurrenceDate()?.toLocaleDateString('en-US', {
+                              weekday: 'long',
+                              month: 'long',
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          {watch('days').length === 0
+                            ? 'Select at least one day to see the last occurrence date.'
+                            : "Select the number of times you'd like this event to recur."}
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
+                </>
               )}
-            />
-          </Box>
-        )}
-        {/* Location */}
-        {selectedEventType?.location && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <LocationOnIcon sx={{ color: 'text.secondary' }} />
-            <Controller
-              name="location"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <TextField
-                  value={value || ''}
-                  onChange={onChange}
-                  placeholder="Location"
-                  variant="standard"
-                  fullWidth
-                  sx={{ flex: 1 }}
-                />
-              )}
-            />
-          </Box>
-        )}
-        {/* Zoom Link */}
-        {selectedEventType?.zoomLink && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <VideocamIcon sx={{ color: 'text.secondary' }} />
-            <FormControl fullWidth sx={{ flex: 1 }}>
+            </Box>
+          )}
+          {/* Required Members Section */}
+          {selectedEventType?.requiredMembers && (
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <PeopleIcon sx={{ color: 'text.secondary', mt: 1 }} />
+              <Box sx={{ flex: 1, width: '100%' }}>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                    {requiredMembers.map((member) => (
+                      <Chip
+                        key={member.id}
+                        label={member.label}
+                        onDelete={() => setRequiredMembers((prev) => prev.filter((m) => m.id !== member.id))}
+                        sx={{ bgcolor: 'grey.700' }}
+                      />
+                    ))}
+                    <Autocomplete
+                      options={memberOptions.filter((m) => !requiredMembers.find((rm) => rm.id === m.id))}
+                      onChange={(_, newValue) => {
+                        if (newValue) setRequiredMembers((prev) => [...prev, newValue]);
+                      }}
+                      getOptionLabel={(option) => option.label}
+                      renderInput={(params) => (
+                        <TextField {...params} variant="standard" placeholder="Add Required Member" sx={{ minWidth: 150 }} />
+                      )}
+                      sx={{ flex: 1, minWidth: 150 }}
+                    />
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          )}
+          {/* Optional Members Section */}
+          {selectedEventType?.optionalMembers && (
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <PeopleIcon sx={{ color: 'text.secondary', mt: 1, opacity: 0.7 }} />
+              <Box sx={{ flex: 1, width: '100%' }}>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                    {optionalMembers.map((member) => (
+                      <Chip
+                        key={member.id}
+                        label={member.label}
+                        onDelete={() => setOptionalMembers((prev) => prev.filter((m) => m.id !== member.id))}
+                        sx={{ bgcolor: 'grey.700', opacity: 0.7 }}
+                      />
+                    ))}
+                    <Autocomplete
+                      options={memberOptions.filter((m) => !optionalMembers.find((om) => om.id === m.id))}
+                      onChange={(_, newValue) => {
+                        if (newValue) setOptionalMembers((prev) => [...prev, newValue]);
+                      }}
+                      getOptionLabel={(option) => option.label}
+                      renderInput={(params) => (
+                        <TextField {...params} variant="standard" placeholder="Add Optional Member" sx={{ minWidth: 150 }} />
+                      )}
+                      sx={{ flex: 1, minWidth: 150 }}
+                    />
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          )}
+          {/* Teams Section */}
+          {selectedEventType?.teams && (
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <BusinessIcon sx={{ color: 'text.secondary', mt: 1 }} />
+              <Box sx={{ flex: 1, width: '100%' }}>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                    {selectedTeams.map((team) => (
+                      <Chip
+                        key={team.id}
+                        label={team.label}
+                        onDelete={() => setSelectedTeams((prev) => prev.filter((t) => t.id !== team.id))}
+                        sx={{ bgcolor: 'grey.700', opacity: 0.7 }}
+                      />
+                    ))}
+                    <Autocomplete
+                      options={teamOptions.filter((t) => !selectedTeams.find((st) => st.id === t.id))}
+                      onChange={(_, newValue) => {
+                        if (newValue) setSelectedTeams((prev) => [...prev, newValue]);
+                      }}
+                      getOptionLabel={(option) => option.label}
+                      renderInput={(params) => (
+                        <TextField {...params} variant="standard" placeholder="Add Team" sx={{ minWidth: 120 }} />
+                      )}
+                      sx={{ flex: 1, minWidth: 150 }}
+                    />
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          )}
+          {/* Team Type */}
+          {selectedEventType?.teamType && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <BusinessIcon sx={{ color: 'text.secondary' }} />
               <Controller
-                name="zoomLink"
+                name="teamTypeId"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Select
+                    value={value || ''}
+                    onChange={(e) => onChange(e.target.value)}
+                    variant="standard"
+                    displayEmpty
+                    sx={{ flex: 1 }}
+                  >
+                    <MenuItem value="">
+                      <em>Select Team Type</em>
+                    </MenuItem>
+                    {teamTypes?.map((tt) => (
+                      <MenuItem key={tt.teamTypeId} value={tt.teamTypeId}>
+                        {tt.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
+              />
+            </Box>
+          )}
+          {/* Location */}
+          {selectedEventType?.location && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <LocationOnIcon sx={{ color: 'text.secondary' }} />
+              <Controller
+                name="location"
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <TextField
                     value={value || ''}
                     onChange={onChange}
-                    placeholder="Zoom Link"
+                    placeholder="Location"
                     variant="standard"
                     fullWidth
-                    error={!!errors.zoomLink}
-                  />
-                )}
-              />
-              <FormHelperText error>{errors.zoomLink?.message}</FormHelperText>
-            </FormControl>
-          </Box>
-        )}
-        {selectedEventType?.shop && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <StoreIcon sx={{ color: 'text.secondary' }} />
-              <Controller
-                name="shopIds"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Autocomplete
-                    options={shopOptions ? shopOptions : []}
-                    value={shopOptions?.find((s) => value?.[0] === s.id) || null}
-                    onChange={(_, newValue) => onChange(newValue ? [newValue.id] : [])}
-                    getOptionLabel={(option) => option.label}
-                    renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Shop" />}
                     sx={{ flex: 1 }}
                   />
                 )}
               />
             </Box>
-            {shopIds.length > 0 && (
-              <Box sx={{ ml: 5 }}>
-                {(() => {
-                  const shop = shops?.find((s) => s.shopId === shopIds[0]);
-                  if (!shop || !shop.description) return null;
-                  return (
-                    <Box
-                      sx={{
-                        p: 1.5,
-                        bgcolor: 'rgba(239, 67, 69, 0.1)',
-                        borderRadius: 1,
-                        border: '1px solid',
-                        borderColor: 'rgba(239, 67, 69, 0.3)'
-                      }}
-                    >
-                      <Typography variant="caption" fontWeight={600} color="#EF4345">
-                        Reserve on Robin:
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                        {shop.description}
-                      </Typography>
-                    </Box>
-                  );
-                })()}
-              </Box>
-            )}
-          </Box>
-        )}
-        {selectedEventType?.machinery && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <PrecisionManufacturingIcon sx={{ color: 'text.secondary' }} />
-            <Controller
-              name="machineryIds"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Autocomplete
-                  options={filteredMachineryOptions}
-                  value={filteredMachineryOptions.find((m) => value?.[0] === m.id) || null}
-                  onChange={(_, newValue) => onChange(newValue ? [newValue.id] : [])}
-                  getOptionLabel={(option) => option.label}
-                  renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Machinery" />}
-                  sx={{ flex: 1 }}
+          )}
+          {/* Zoom Link */}
+          {selectedEventType?.zoomLink && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <VideocamIcon sx={{ color: 'text.secondary' }} />
+              <FormControl fullWidth sx={{ flex: 1 }}>
+                <Controller
+                  name="zoomLink"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <TextField
+                      value={value || ''}
+                      onChange={onChange}
+                      placeholder="Zoom Link"
+                      variant="standard"
+                      fullWidth
+                      error={!!errors.zoomLink}
+                    />
+                  )}
                 />
-              )}
-            />
-          </Box>
-        )}
-        {selectedEventType?.workPackage && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <WorkIcon sx={{ color: 'text.secondary' }} />
-            <Controller
-              name="workPackageIds"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Autocomplete
-                  options={workPackageOptions}
-                  value={workPackageOptions.find((wp) => value?.[0] === wp.id) || null}
-                  onChange={(_, newValue) => {
-                    if (newValue?.id !== 'loading') {
-                      onChange(newValue ? [newValue.id] : []);
-                    }
-                  }}
-                  getOptionLabel={(option) => option.label}
-                  getOptionDisabled={(option) => option.id === 'loading'}
-                  renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Work Package" />}
-                  sx={{ flex: 1 }}
-                />
-              )}
-            />
-          </Box>
-        )}
-        {/* Question Document Link */}
-        {selectedEventType?.questionDocument && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <DescriptionIcon sx={{ color: 'text.secondary' }} />
-            <Controller
-              name="questionDocumentLink"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <TextField
-                  value={value || ''}
-                  onChange={onChange}
-                  placeholder="Question Document Link"
-                  variant="standard"
-                  fullWidth
-                  error={!!errors.questionDocumentLink}
-                  helperText={errors.questionDocumentLink?.message}
-                  sx={{ flex: 1 }}
-                />
-              )}
-            />
-          </Box>
-        )}
-        {/* Documents */}
-        {selectedEventType?.documents && (
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-            <DescriptionIcon sx={{ color: 'text.secondary', mt: 1 }} />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="subtitle2" fontWeight={600} mb={1}>
-                Documents
-              </Typography>
-              <FormControl fullWidth>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {documentFiles.map((docFile, index) => (
-                    <li key={index}>
-                      <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          background: '#4c4c4c',
-                          borderRadius: '20px',
-                          padding: '2px 0px 2px 10px',
-                          marginBottom: '3px'
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            marginBottom: '4px',
-                            fontSize: 'medium'
-                          }}
-                        >
-                          {docFile.name}
-                        </Typography>
-                        <IconButton
-                          onClick={() => handleDocumentRemove(index)}
-                          sx={{
-                            padding: '0px',
-                            marginLeft: '2px'
-                          }}
-                        >
-                          <ClearIcon
-                            sx={{
-                              color: 'grey',
-                              transform: 'scale(0.7)'
-                            }}
-                          />
-                        </IconButton>
-                      </Stack>
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  variant="contained"
-                  color="success"
-                  component="label"
-                  sx={{
-                    width: 'fit-content',
-                    textTransform: 'none',
-                    color: 'white',
-                    marginTop: documentFiles.length > 0 ? '10px' : '0'
-                  }}
-                >
-                  Upload
-                  <input
-                    onChange={handleDocumentUpload}
-                    type="file"
-                    accept="image/png, image/jpeg, application/pdf"
-                    name="documentFiles"
-                    multiple
-                    hidden
-                  />
-                </Button>
-                <FormHelperText error>{errors.documentFiles?.message}</FormHelperText>
+                <FormHelperText error>{errors.zoomLink?.message}</FormHelperText>
               </FormControl>
             </Box>
-          </Box>
-        )}
-        {/* Description */}
-        {selectedEventType?.description && (
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-            <BusinessIcon sx={{ color: 'text.secondary', mt: 1 }} />
-            <Controller
-              name="description"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <TextField
-                  value={value || ''}
-                  onChange={onChange}
-                  placeholder="Add a description"
-                  variant="standard"
-                  fullWidth
-                  multiline
-                  rows={3}
-                  sx={{ flex: 1 }}
+          )}
+          {selectedEventType?.shop && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <StoreIcon sx={{ color: 'text.secondary' }} />
+                <Controller
+                  name="shopIds"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <Autocomplete
+                      options={shopOptions ? shopOptions : []}
+                      value={shopOptions?.find((s) => value?.[0] === s.id) || null}
+                      onChange={(_, newValue) => onChange(newValue ? [newValue.id] : [])}
+                      getOptionLabel={(option) => option.label}
+                      renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Shop" />}
+                      sx={{ flex: 1 }}
+                    />
+                  )}
                 />
+              </Box>
+              {shopIds.length > 0 && (
+                <Box sx={{ ml: 5 }}>
+                  {(() => {
+                    const shop = shops?.find((s) => s.shopId === shopIds[0]);
+                    if (!shop || !shop.description) return null;
+                    return (
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          bgcolor: 'rgba(239, 67, 69, 0.1)',
+                          borderRadius: 1,
+                          border: '1px solid',
+                          borderColor: 'rgba(239, 67, 69, 0.3)'
+                        }}
+                      >
+                        <Typography variant="caption" fontWeight={600} color="#EF4345">
+                          Reserve on Robin:
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                          {shop.description}
+                        </Typography>
+                      </Box>
+                    );
+                  })()}
+                </Box>
               )}
-            />
-          </Box>
-        )}
-      </Box>
-    </NERFormModal>
+            </Box>
+          )}
+          {selectedEventType?.machinery && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <PrecisionManufacturingIcon sx={{ color: 'text.secondary' }} />
+              <Controller
+                name="machineryIds"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Autocomplete
+                    options={filteredMachineryOptions}
+                    value={filteredMachineryOptions.find((m) => value?.[0] === m.id) || null}
+                    onChange={(_, newValue) => onChange(newValue ? [newValue.id] : [])}
+                    getOptionLabel={(option) => option.label}
+                    renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Machinery" />}
+                    sx={{ flex: 1 }}
+                  />
+                )}
+              />
+            </Box>
+          )}
+          {selectedEventType?.workPackage && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <WorkIcon sx={{ color: 'text.secondary' }} />
+              <Controller
+                name="workPackageIds"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Autocomplete
+                    options={workPackageOptions}
+                    value={workPackageOptions.find((wp) => value?.[0] === wp.id) || null}
+                    onChange={(_, newValue) => {
+                      if (newValue?.id !== 'loading') {
+                        onChange(newValue ? [newValue.id] : []);
+                      }
+                    }}
+                    getOptionLabel={(option) => option.label}
+                    getOptionDisabled={(option) => option.id === 'loading'}
+                    renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select Work Package" />}
+                    sx={{ flex: 1 }}
+                  />
+                )}
+              />
+            </Box>
+          )}
+          {/* Question Document Link */}
+          {selectedEventType?.questionDocument && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <DescriptionIcon sx={{ color: 'text.secondary' }} />
+              <Controller
+                name="questionDocumentLink"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <TextField
+                    value={value || ''}
+                    onChange={onChange}
+                    placeholder="Question Document Link"
+                    variant="standard"
+                    fullWidth
+                    error={!!errors.questionDocumentLink}
+                    helperText={errors.questionDocumentLink?.message}
+                    sx={{ flex: 1 }}
+                  />
+                )}
+              />
+            </Box>
+          )}
+          {/* Documents */}
+          {selectedEventType?.documents && (
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <DescriptionIcon sx={{ color: 'text.secondary', mt: 1 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" fontWeight={600} mb={1}>
+                  Documents
+                </Typography>
+                <FormControl fullWidth>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {documentFiles.map((docFile, index) => (
+                      <li key={index}>
+                        <Stack
+                          direction="row"
+                          justifyContent="space-between"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            background: '#4c4c4c',
+                            borderRadius: '20px',
+                            padding: '2px 0px 2px 10px',
+                            marginBottom: '3px'
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              marginBottom: '4px',
+                              fontSize: 'medium'
+                            }}
+                          >
+                            {docFile.name}
+                          </Typography>
+                          <IconButton
+                            onClick={() => handleDocumentRemove(index)}
+                            sx={{
+                              padding: '0px',
+                              marginLeft: '2px'
+                            }}
+                          >
+                            <ClearIcon
+                              sx={{
+                                color: 'grey',
+                                transform: 'scale(0.7)'
+                              }}
+                            />
+                          </IconButton>
+                        </Stack>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    component="label"
+                    sx={{
+                      width: 'fit-content',
+                      textTransform: 'none',
+                      color: 'white',
+                      marginTop: documentFiles.length > 0 ? '10px' : '0'
+                    }}
+                  >
+                    Upload
+                    <input
+                      onChange={handleDocumentUpload}
+                      type="file"
+                      accept="image/png, image/jpeg, application/pdf"
+                      name="documentFiles"
+                      multiple
+                      hidden
+                    />
+                  </Button>
+                  <FormHelperText error>{errors.documentFiles?.message}</FormHelperText>
+                </FormControl>
+              </Box>
+            </Box>
+          )}
+          {/* Description */}
+          {selectedEventType?.description && (
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <BusinessIcon sx={{ color: 'text.secondary', mt: 1 }} />
+              <Controller
+                name="description"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <TextField
+                    value={value || ''}
+                    onChange={onChange}
+                    placeholder="Add a description"
+                    variant="standard"
+                    fullWidth
+                    multiline
+                    rows={3}
+                    sx={{ flex: 1 }}
+                  />
+                )}
+              />
+            </Box>
+          )}
+        </Box>
+      </NERFormModal>
+    </>
   );
 };
 export default EventModal;

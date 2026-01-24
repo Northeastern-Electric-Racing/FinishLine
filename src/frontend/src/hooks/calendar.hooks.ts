@@ -10,7 +10,8 @@ import {
   EventType,
   FilterArgs,
   ScheduleSlotCreateArgs,
-  EventWithMembers
+  EventWithMembers,
+  ScheduleSlot
 } from 'shared';
 import {
   getAllShops,
@@ -44,7 +45,8 @@ import {
   downloadDocumentPdf,
   postEditEvent,
   postEditScheduleSlot,
-  getSingleEventWithMembers
+  getSingleEventWithMembers,
+  previewScheduleSlotRecurringEdits
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 import { PDFDocument } from 'pdf-lib';
@@ -502,6 +504,23 @@ export const useEditScheduleSlot = (eventId: string, scheduleSlotId: string) => 
         queryClient.invalidateQueries(EVENT_KEY);
         queryClient.invalidateQueries(['events', eventId]);
       }
+    }
+  );
+};
+
+/**
+ * Hook to get a preview of other schedule slots that would be affected
+ * when editing a schedule slot with "edit all in series" enabled.
+ */
+export const usePreviewScheduleSlotRecurringEdits = (eventId: string, scheduleSlotId: string, enabled: boolean = true) => {
+  return useQuery<ScheduleSlot[], Error>(
+    ['events', 'schedule-slot-recurring-edits-preview', eventId, scheduleSlotId],
+    async () => {
+      const { data } = await previewScheduleSlotRecurringEdits(eventId, scheduleSlotId);
+      return data;
+    },
+    {
+      enabled: enabled && !!eventId && !!scheduleSlotId
     }
   );
 };
