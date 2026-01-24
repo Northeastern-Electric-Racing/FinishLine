@@ -158,6 +158,12 @@ enum Review_Status {
   APPROVED
 }
 
+enum Definition_Type {
+  PROJECT_MANAGEMENT
+  DIVISIONS
+  HOME_PAGE
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -1561,17 +1567,25 @@ model Reimbursement_Request_Comment {
 }
 
 model Term_Definition {
-  definitionId   String       @id @default(uuid())
+  definitionId   String            @id @default(uuid())
   term           String
   description    String
-  dateCreated    DateTime     @default(now())
+  type           Definition_Type
+  buttonText     String?
+  buttonLink     String?
+  subTerms       Term_Definition[] @relation("TermDefinitionSubTerms")
+  dateCreated    DateTime          @default(now())
   dateDeleted    DateTime?
-  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "termDefinitionDeleter")
+  userDeleted    User?             @relation(fields: [userDeletedId], references: [userId], name: "termDefinitionDeleter")
   userDeletedId  String?
-  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "termDefinitionCreator")
+  userCreated    User              @relation(fields: [userCreatedId], references: [userId], name: "termDefinitionCreator")
   userCreatedId  String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organization   Organization      @relation(fields: [organizationId], references: [organizationId])
   organizationId String
+  parentTerm     Term_Definition?  @relation("TermDefinitionSubTerms", fields: [parentTermId], references: [definitionId])
+  parentTermId   String?
 
   @@index([organizationId])
+  @@index([type])
+  @@index([parentTermId])
 }
