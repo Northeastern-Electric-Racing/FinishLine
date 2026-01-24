@@ -412,11 +412,13 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
           sx={{
             display: 'flex',
             gap: 2,
-            height: '100vh'
+            height: 'calc(100vh - 120px)',
+            overflow: 'hidden',
+            pb: 2
           }}
         >
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Grid container>
+          <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+            <Grid container sx={{ flexShrink: 0 }}>
               {enumToArray(DAY_NAMES).map((day, index) => (
                 <Grid item xs={12 / 7} key={index}>
                   <Typography align={'center'} sx={{ fontWeight: 'bold', fontSize: 18 }}>
@@ -428,10 +430,29 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                 </Grid>
               ))}
             </Grid>
-            <Box sx={{ border: '2px solid white', borderRadius: 2, bgcolor: '#1a1a1a', p: 1 }}>
-              <Grid container marginBottom={2}>
-                {startOfEachWeek.map((week, weekIndex) => (
-                  <Grid container key={weekIndex}>
+            <Box
+              sx={{
+                border: '2px solid white',
+                borderRadius: 2,
+                bgcolor: '#1a1a1a',
+                p: 1,
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden'
+              }}
+            >
+              {startOfEachWeek
+                .filter((week) => daysThisMonth.slice(week, week + 7).length > 0)
+                .map((week, weekIndex) => (
+                  <Box
+                    key={weekIndex}
+                    sx={{
+                      display: 'flex',
+                      flex: 1,
+                      minHeight: 0
+                    }}
+                  >
                     {daysThisMonth.slice(week, week + 7).map((day, dayIndex) => {
                       const cardDate = new Date(
                         displayMonthYear.getFullYear(),
@@ -439,30 +460,38 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                         day
                       );
                       return (
-                        <Grid item xs={12 / 7} key={dayIndex}>
-                          <Box marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
-                            <CalendarDayCard
-                              cardDate={cardDate}
-                              events={
-                                eventDict.get(
-                                  datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
-                                ) ?? []
-                              }
-                              eventTypes={allEventTypes ?? []}
-                              calendars={allCalendars ?? []}
-                              dayOfWeek={
-                                dayDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
-                                DayOfWeek.SUNDAY
-                              }
-                              onCreateEventClick={onCreateEventClick}
-                            />
-                          </Box>
-                        </Grid>
+                        <Box
+                          key={dayIndex}
+                          sx={{
+                            flex: 1,
+                            minWidth: 0,
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'stretch',
+                            p: 0.5
+                          }}
+                        >
+                          <CalendarDayCard
+                            cardDate={cardDate}
+                            displayMonth={displayMonthYear}
+                            events={
+                              eventDict.get(
+                                datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
+                              ) ?? []
+                            }
+                            eventTypes={allEventTypes ?? []}
+                            calendars={allCalendars ?? []}
+                            dayOfWeek={
+                              dayDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
+                              DayOfWeek.SUNDAY
+                            }
+                            onCreateEventClick={onCreateEventClick}
+                          />
+                        </Box>
                       );
                     })}
-                  </Grid>
+                  </Box>
                 ))}
-              </Grid>
             </Box>
           </Box>
           <Box
@@ -470,10 +499,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
               width: 320,
               display: 'flex',
               flexDirection: 'column',
-              gap: 2
+              gap: 0,
+              overflow: 'hidden'
             }}
           >
-            <Box>
+            <Box sx={{ flexShrink: 0 }}>
               <DateCalendar
                 value={displayMonthYear}
                 onMonthChange={(newDate) => setDisplayMonthYear(newDate)}
@@ -511,17 +541,20 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
               sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                minHeight: '15vh',
-                maxHeight: '30vh'
+                flex: 1,
+                minHeight: 0,
+                overflow: 'hidden',
+                mt: -2
               }}
             >
-              <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 1, flexShrink: 0 }}>
+              <Typography align="left" sx={{ fontWeight: 'bold', fontSize: 22, mb: 0.5, flexShrink: 0 }}>
                 My Upcoming Meetings:
               </Typography>
 
               {upcomingOccurences && (
                 <Box
                   sx={{
+                    flex: 1,
                     overflowX: 'hidden',
                     overflowY: 'auto',
                     scrollbarColor: `${theme.palette.primary.main} transparent`,
@@ -554,8 +587,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
               sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                minHeight: '15vh',
-                maxHeight: '30vh'
+                flexShrink: 0
               }}
             >
               <Stack

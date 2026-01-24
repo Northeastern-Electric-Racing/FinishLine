@@ -38,6 +38,7 @@ export const getStatusIcon = (status: string, isLarge?: boolean) => {
 
 interface CalendarDayCardProps {
   cardDate: Date;
+  displayMonth: Date;
   events: EventInstance[];
   eventTypes?: EventType[];
   calendars?: Calendar[];
@@ -47,6 +48,7 @@ interface CalendarDayCardProps {
 
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   cardDate,
+  displayMonth,
   events,
   eventTypes = [],
   calendars = [],
@@ -55,9 +57,16 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
 }) => {
   const theme = useTheme();
 
-  const today = new Date().toDateString();
-  const isCurrentDay = cardDate.toDateString() === today;
-  const isFutureDay = cardDate >= new Date();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isCurrentDay = cardDate.toDateString() === today.toDateString();
+  const isCurrentMonth =
+    cardDate.getMonth() === displayMonth.getMonth() && cardDate.getFullYear() === displayMonth.getFullYear();
+  const isFutureDay = cardDate >= today;
+  const isClickable = isFutureDay || isCurrentDay;
+
+  // Track hover state for stable hover effect
+  const [isHovered, setIsHovered] = useState(false);
 
   // Track which event's tooltip is locked open after clicking
   const [lockedTooltipEventId, setLockedTooltipEventId] = useState<string | null>(null);
@@ -99,7 +108,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           margin={0.5}
           noWrap
           sx={{
-            color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[100] : theme.palette.grey[600],
+            color: isCurrentMonth ? theme.palette.grey[100] : theme.palette.grey[500],
             fontSize: 16,
             fontWeight: 500
           }}
@@ -393,21 +402,27 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
       )}
 
       <Card
+        onMouseEnter={() => isClickable && setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         sx={{
           position: 'relative',
-          backgroundColor: !(isFutureDay || isCurrentDay) ? theme.palette.grey[900] : 'inherit',
+          backgroundColor: !isCurrentMonth
+            ? '#1f1f1f'
+            : isHovered
+              ? '#383838'
+              : '#2a2a2a',
           borderRadius: 2,
-          width: { xs: '98%', md: '90%' },
-          height: { xs: '10vh', sm: '12vh' },
+          width: '100%',
+          height: '100%',
           border: isCurrentDay ? '2px solid gray' : 'none',
-          cursor: isFutureDay || isCurrentDay ? 'pointer' : 'default',
-          transition: 'background 0.2s',
-          '&:hover': isFutureDay || isCurrentDay ? { background: '#232323' } : {}
+          cursor: isClickable ? 'pointer' : 'default',
+          transition: 'background-color 0.15s ease-in-out',
+          opacity: isCurrentMonth ? 1 : 0.5
         }}
       >
         <Box
           onClick={() => {
-            if (isFutureDay || isCurrentDay) onCreateEventClick();
+            if (isClickable) onCreateEventClick();
           }}
           sx={{
             position: 'absolute',
