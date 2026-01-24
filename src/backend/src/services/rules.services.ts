@@ -19,21 +19,21 @@ import {
   HttpException,
   InvalidOrganizationException,
   NotFoundException
-} from '../utils/errors.utils';
-import { userHasPermission } from '../utils/users.utils';
+} from '../utils/errors.utils.js';
+import { userHasPermission } from '../utils/users.utils.js';
 import {
   getProjectRuleQueryArgs,
   getRulesetQueryArgs,
   getRulePreviewQueryArgs
-} from '../prisma-query-args/rules.query-args';
+} from '../prisma-query-args/rules.query-args.js';
 import {
   ruleTransformer,
   projectRuleTransformer,
   rulesetTransformer,
   rulesetTypeTransformer
-} from '../transformers/rules.transformer';
-import { ParsedRule, parseRulesFromPdf } from '../utils/parse.utils';
-import { uploadFile, downloadFile } from '../utils/google-integration.utils';
+} from '../transformers/rules.transformer.js';
+import { ParsedRule, parseRulesFromPdf } from '../utils/parse.utils.js';
+import { uploadFile, downloadFile } from '../utils/google-integration.utils.js';
 
 export default class RulesService {
   /**

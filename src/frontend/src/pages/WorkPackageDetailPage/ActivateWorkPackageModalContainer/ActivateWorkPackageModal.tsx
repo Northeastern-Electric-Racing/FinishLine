@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { useMemo } from 'react';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
@@ -70,6 +71,16 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     mode: 'onChange'
   });
 
+  // Memoize user options to prevent recreating on every render
+  const userOptions = useMemo(
+    () =>
+      allUsers.map((user) => ({
+        label: fullNamePipe(user),
+        id: user.userId.toString()
+      })),
+    [allUsers]
+  );
+
   /**
    * Wrapper function for onSubmit so that form data is reset after submit
    */
@@ -107,10 +118,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                 id="project-lead-autocomplete"
                 onChange={(_event, value) => onChange(value?.id)}
                 errorMessage={errors.leadId}
-                options={allUsers.map((p) => ({
-                  label: fullNamePipe(p),
-                  id: p.userId.toString()
-                }))}
+                options={userOptions}
                 size="small"
                 placeholder="Project Lead"
                 listboxProps={{ style: { maxHeight: '150px' } }}
@@ -127,10 +135,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                 id="project-manager-autocomplete"
                 onChange={(_event, value) => onChange(value?.id)}
                 errorMessage={errors.managerId}
-                options={allUsers.map((p) => ({
-                  label: fullNamePipe(p),
-                  id: p.userId.toString()
-                }))}
+                options={userOptions}
                 size="small"
                 placeholder="Project Manager"
                 listboxProps={{ style: { maxHeight: '150px' } }}

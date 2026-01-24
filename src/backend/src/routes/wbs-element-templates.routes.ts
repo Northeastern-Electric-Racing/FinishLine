@@ -5,9 +5,9 @@ import {
   isWorkPackageStageOrNone,
   nonEmptyString,
   validateInputs
-} from '../utils/validation.utils';
+} from '../utils/validation.utils.js';
 import { body } from 'express-validator';
-import WbsElementTemplatesController from '../controllers/wbs-element-templates.controllers';
+import WbsElementTemplatesController from '../controllers/wbs-element-templates.controllers.js';
 
 const wbsElementTemplatesRouter = express.Router();
 

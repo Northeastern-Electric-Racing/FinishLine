@@ -38,7 +38,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
-import { wbsNumComparator } from 'shared/src/validate-wbs';
+import { wbsNumComparator } from 'shared';
 import { ChangeEvent } from 'react';
 import { NERButton } from '../../components/NERButton';
 import { UseFormRegister, UseFormHandleSubmit, UseFormWatch, UseFormSetValue, FormState, Control } from 'react-hook-form';

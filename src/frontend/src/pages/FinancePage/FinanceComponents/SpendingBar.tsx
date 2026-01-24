@@ -1,14 +1,5 @@
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
-import {
-  BarControllerChartOptions,
-  CoreChartOptions,
-  DatasetChartOptions,
-  ElementChartOptions,
-  PluginChartOptions,
-  ScaleChartOptions,
-  Chart
-} from 'chart.js';
-import { _DeepPartialObject } from 'chart.js/dist/types/utils';
+import { ChartOptions, Chart } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { ReimbursementRequestData, SpendingBarData, TeamPreview } from 'shared';
@@ -118,14 +109,7 @@ const SpendingBar = ({ data, title, edit }: SpendingBarProps) => {
     }
   }, [hoveredIndex, average, setBarData, data]);
 
-  const config: _DeepPartialObject<
-    CoreChartOptions<'bar'> &
-      ElementChartOptions<'bar'> &
-      PluginChartOptions<'bar'> &
-      DatasetChartOptions<'bar'> &
-      ScaleChartOptions<'bar'> &
-      BarControllerChartOptions
-  > = {
+  const config: ChartOptions<'bar'> = {
     indexAxis: 'y',
     layout: {
       padding: 0

@@ -114,6 +114,7 @@ export const computeRRTotals = (
       reimbursementStatusId: string;
       userId: string;
     }[];
+    reimbursementProducts?: { cost: number }[];
   }[]
 ): {
   pendingFinance: number;
@@ -132,7 +133,11 @@ export const computeRRTotals = (
     const lastStatus = req.reimbursementStatuses.at(-1)?.type;
 
     if (lastStatus && totals[lastStatus] !== undefined) {
-      totals[lastStatus] += req.totalCost;
+      // If reimbursementProducts are provided, sum their costs; otherwise use totalCost
+      const costToAdd = req.reimbursementProducts
+        ? req.reimbursementProducts.reduce((acc, prod) => acc + prod.cost, 0)
+        : req.totalCost;
+      totals[lastStatus] += costToAdd;
     }
   });
 

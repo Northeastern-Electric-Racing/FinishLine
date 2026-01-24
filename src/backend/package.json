@@ -1,12 +1,13 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "yarn nodemon -L index.ts",
+    "dev": "nodemon -L",
     "test": "vitest",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' tsc --noEmit false",
     "start": "node -r dotenv/config dist/backend/index.js",
-    "prisma:manual": "ts-node ./src/prisma/manual.ts"
+    "prisma:manual": "tsx --import dotenv/config ./src/prisma/manual.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",
@@ -43,14 +44,14 @@
     "@types/supertest": "^2.0.12",
     "nodemon": "^2.0.16",
     "supertest": "^6.2.4",
-    "ts-node": "^8.10.1",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "vitest": "^3.0.0"
   },
   "main": "index.ts",
   "prisma": {
     "schema": "./src/prisma/schema.prisma",
-    "seed": "ts-node ./src/prisma/seed.ts"
+    "seed": "tsx ./src/prisma/seed.ts"
   },
   "testEnvironment": "node",
   "coveragePathIgnorePatterns": [

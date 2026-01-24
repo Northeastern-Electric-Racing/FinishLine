@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import RetrospectiveController from '../controllers/retrospectives.controllers';
+import RetrospectiveController from '../controllers/retrospectives.controllers.js';
 
 const retrospectiveRouter = Router();
 

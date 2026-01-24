@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { Car, WbsElementStatus } from 'shared';
-import { CarQueryArgs } from '../prisma-query-args/cars.query-args';
-import { descBulletConverter } from '../utils/description-bullets.utils';
-import { wbsNumOf } from '../utils/utils';
-import { userTransformer } from './user.transformer';
+import { CarQueryArgs } from '../prisma-query-args/cars.query-args.js';
+import { descBulletConverter } from '../utils/description-bullets.utils.js';
+import { wbsNumOf } from '../utils/utils.js';
+import { userTransformer } from './user.transformer.js';
 
 export const carTransformer = (car: Prisma.CarGetPayload<CarQueryArgs>): Car => {
   return {

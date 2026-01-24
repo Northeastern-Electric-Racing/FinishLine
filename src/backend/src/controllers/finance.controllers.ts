@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import FinanceServices from '../services/finance.services';
+import FinanceServices from '../services/finance.services.js';
 
 export default class FinanceController {
   static async createSponsor(req: Request, res: Response, next: NextFunction) {
@@ -14,7 +14,8 @@ export default class FinanceController {
         taxExempt,
         sponsorContact,
         sponsorTasks,
-        discountCode
+        discountCode,
+        sponsorNotes
       } = req.body;
 
       const sponsor = await FinanceServices.createSponsor(
@@ -29,7 +30,8 @@ export default class FinanceController {
         sponsorContact,
         sponsorTasks,
         req.organization,
-        discountCode
+        discountCode,
+        sponsorNotes
       );
       res.status(200).json(sponsor);
     } catch (error: unknown) {
@@ -48,7 +50,7 @@ export default class FinanceController {
 
   static async getSponsorTasks(req: Request, res: Response, next: NextFunction) {
     try {
-      const { sponsorId } = req.params;
+      const { sponsorId } = req.params as Record<string, string>;
       const { organizationId } = req.organization;
 
       const sponsorTasks = await FinanceServices.getSponsorTasks(sponsorId, organizationId);
@@ -60,7 +62,7 @@ export default class FinanceController {
 
   static async deleteSponsor(req: Request, res: Response, next: NextFunction) {
     try {
-      const { sponsorId } = req.params;
+      const { sponsorId } = req.params as Record<string, string>;
       const deletedSponsor = await FinanceServices.deleteSponsor(sponsorId, req.currentUser, req.organization);
       res.status(200).json(deletedSponsor);
     } catch (error: unknown) {
@@ -70,7 +72,7 @@ export default class FinanceController {
 
   static async editSponsorTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { sponsorTaskId } = req.params;
+      const { sponsorTaskId } = req.params as Record<string, string>;
       const { dueDate, notes, notifyDate, assigneeUserId } = req.body;
 
       const updatedSponsorTask = await FinanceServices.editSponsorTask(
@@ -90,7 +92,7 @@ export default class FinanceController {
 
   static async deleteSponsorTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { sponsorTaskId } = req.params;
+      const { sponsorTaskId } = req.params as Record<string, string>;
       const deleted = await FinanceServices.deleteSponsorTask(sponsorTaskId, req.currentUser, req.organization);
       res.status(200).json(deleted);
     } catch (error: unknown) {
@@ -118,7 +120,7 @@ export default class FinanceController {
   static async createSponsorTask(req: Request, res: Response, next: NextFunction) {
     try {
       const { dueDate, notes, notifyDate, assigneeUserId } = req.body;
-      const { sponsorId } = req.params;
+      const { sponsorId } = req.params as Record<string, string>;
 
       const sponsorTask = await FinanceServices.createSponsorTask(
         req.currentUser,
@@ -137,7 +139,7 @@ export default class FinanceController {
 
   static async getReimbursementRequestProjectData(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectId } = req.params;
+      const { projectId } = req.params as Record<string, string>;
       const { startDate, endDate } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
@@ -156,7 +158,7 @@ export default class FinanceController {
 
   static async getReimbursementRequestTeamData(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamId } = req.params;
+      const { teamId } = req.params as Record<string, string>;
       const { startDate, endDate, carNumber } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
@@ -177,7 +179,7 @@ export default class FinanceController {
 
   static async getReimbursementRequestTeamTypeData(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamTypeId } = req.params;
+      const { teamTypeId } = req.params as Record<string, string>;
       const { startDate, endDate, carNumber } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
@@ -198,7 +200,7 @@ export default class FinanceController {
 
   static async getSpendingBarTeamData(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamId } = req.params;
+      const { teamId } = req.params as Record<string, string>;
       const { startDate, endDate, carNumber } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
@@ -219,7 +221,7 @@ export default class FinanceController {
 
   static async getSpendingBarTeamTypeData(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamTypeId } = req.params;
+      const { teamTypeId } = req.params as Record<string, string>;
       const { startDate, endDate, carNumber } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
@@ -259,7 +261,7 @@ export default class FinanceController {
 
   static async getReimbursementRequestCategoryData(req: Request, res: Response, next: NextFunction) {
     try {
-      const { otherReasonId } = req.params;
+      const { otherReasonId } = req.params as Record<string, string>;
       const { startDate, endDate, carNumber } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
@@ -317,7 +319,7 @@ export default class FinanceController {
 
   static async editSponsor(req: Request, res: Response, next: NextFunction) {
     try {
-      const { sponsorId } = req.params;
+      const { sponsorId } = req.params as Record<string, string>;
       const {
         name,
         activeStatus,
@@ -328,7 +330,8 @@ export default class FinanceController {
         sponsorContact,
         taxExempt,
         sponsorTasks,
-        discountCode
+        discountCode,
+        sponsorNotes
       } = req.body;
 
       const updatedSponsor = await FinanceServices.editSponsor(
@@ -344,7 +347,8 @@ export default class FinanceController {
         sponsorContact,
         taxExempt,
         sponsorTasks,
-        discountCode
+        discountCode,
+        sponsorNotes
       );
 
       res.status(200).json(updatedSponsor);
@@ -355,7 +359,7 @@ export default class FinanceController {
 
   static async deleteSponsorTier(req: Request, res: Response, next: NextFunction) {
     try {
-      const { sponsorTierId } = req.params;
+      const { sponsorTierId } = req.params as Record<string, string>;
       const deletedSponsorTier = await FinanceServices.deleteSponsorTier(sponsorTierId, req.currentUser, req.organization);
       res.status(200).json(deletedSponsorTier);
     } catch (error: unknown) {
@@ -365,7 +369,7 @@ export default class FinanceController {
 
   static async editSponsorTier(req: Request, res: Response, next: NextFunction) {
     try {
-      const { sponsorTierId } = req.params;
+      const { sponsorTierId } = req.params as Record<string, string>;
       const { name, colorHexCode, minSupportValue } = req.body;
 
       const updatedSponsorTier = await FinanceServices.editSponsorTier(

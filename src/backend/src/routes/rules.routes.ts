@@ -1,6 +1,6 @@
 import express from 'express';
-import RulesController from '../controllers/rules.controllers';
-import { nonEmptyString, validateInputs } from '../utils/validation.utils';
+import RulesController from '../controllers/rules.controllers.js';
+import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 import { body } from 'express-validator';
 import { MAX_FILE_SIZE } from 'shared';
 import multer, { memoryStorage } from 'multer';

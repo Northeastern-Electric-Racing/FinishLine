@@ -5,9 +5,9 @@
 
 import { Prisma } from '@prisma/client';
 import { Manufacturer } from 'shared';
-import { ManufacturerQueryArgs } from '../prisma-query-args/manufacturers.query-args';
-import { materialPreviewTransformer } from './material.transformer';
-import { userTransformer } from './user.transformer';
+import { ManufacturerQueryArgs } from '../prisma-query-args/manufacturers.query-args.js';
+import { materialPreviewTransformer } from './material.transformer.js';
+import { userTransformer } from './user.transformer.js';
 
 const manufacturerTransformer = (manufacturer: Prisma.ManufacturerGetPayload<ManufacturerQueryArgs>): Manufacturer => {
   return {

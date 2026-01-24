@@ -8,7 +8,6 @@ import {
   FormControl,
   FormHelperText,
   IconButton,
-  InputAdornment,
   Table,
   TableBody,
   TableCell,
@@ -30,11 +29,10 @@ import {
   CreateRefundSourceArgs
 } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
-import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
 import { useEffect, useState, useRef } from 'react';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -49,7 +47,7 @@ interface ReimbursementProductTableProps {
     id: string;
   }[];
   register: UseFormRegister<ReimbursementRequestFormInput>;
-  watch: UseFormRegister<ReimbursementRequestFormInput>;
+  watch: UseFormWatch<ReimbursementRequestFormInput>;
   errors: FieldErrors<ReimbursementRequestFormInput>;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
   control: Control<ReimbursementRequestFormInput>;
@@ -86,6 +84,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       cost: number;
       index: number;
       id?: string;
+      reason: WbsNumber | OtherProductReason;
     }[]
   >();
 
@@ -105,9 +104,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as OtherProductReason).name;
     if (uniqueWbsElementsWithProducts.has(productReason)) {
       const products = uniqueWbsElementsWithProducts.get(productReason);
-      products?.push({ ...product, index, id: product.id });
+      products?.push({ ...product, index, id: product.id, reason: product.reason });
     } else {
-      uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index, id: product.id }]);
+      uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index, id: product.id, reason: product.reason }]);
     }
   });
 
@@ -148,54 +147,62 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const prevFirstRefundSourceName = useRef(firstRefundSourceName);
   const prevSecondRefundSourceName = useRef(secondRefundSourceName);
+  const prevHasMultipleRefundSources = useRef(hasMultipleRefundSources);
 
   const refundSources: CreateRefundSourceArgs[] = Array.from(
     new Set(reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0))
   );
 
-  // in the event the code was from a prior refund
+  // in the event the data was from a prior refund request
   const hasPreFilledData = useRef(false);
+  const hasInitializedRefundSources = useRef(false);
 
   useEffect(() => {
-    if (hasPreFilledData.current) return;
+    if (hasInitializedRefundSources.current) return;
 
     if (refundSources.length > 1) {
       reimbursementProducts.forEach((product, index) => {
-        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, product.refundSources[0]?.amount ?? 0 / 100);
-        setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, product.refundSources[1]?.amount ?? 0 / 100);
+        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, (product.refundSources[0]?.amount ?? 0) / 100);
+        setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, (product.refundSources[1]?.amount ?? 0) / 100);
       });
+      hasPreFilledData.current = true;
     }
 
-    hasPreFilledData.current = true;
+    hasInitializedRefundSources.current = true;
   }, [refundSources, setValue, reimbursementProducts]);
+
+  // Handle transition from single to multiple refund sources
+  useEffect(() => {
+    if (hasMultipleRefundSources && !prevHasMultipleRefundSources.current) {
+      setTimeout(() => {
+        const products = watch('reimbursementProducts') || [];
+        products.forEach((product: ReimbursementProductFormArgs, index: number) => {
+          const currentCost = product.cost ?? 0;
+          setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, currentCost);
+          setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
+        });
+      }, 0);
+    }
+    prevHasMultipleRefundSources.current = hasMultipleRefundSources;
+  }, [hasMultipleRefundSources, setValue, watch]);
 
   useEffect(() => {
     if (firstRefundSourceName) {
       setShowFirstSourceFields(true);
-      if (!hasPreFilledData.current && firstRefundSourceName !== prevFirstRefundSourceName.current) {
-        reimbursementProducts.forEach((_, index) => {
-          setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
-        });
-        prevFirstRefundSourceName.current = firstRefundSourceName;
-      }
+      prevFirstRefundSourceName.current = firstRefundSourceName;
     } else {
       setShowFirstSourceFields(false);
     }
-  }, [firstRefundSourceName, setValue, reimbursementProducts]);
+  }, [firstRefundSourceName]);
 
   useEffect(() => {
     if (secondRefundSourceName) {
       setShowSecondSourceFields(true);
-      if (!hasPreFilledData.current && secondRefundSourceName !== prevSecondRefundSourceName.current) {
-        reimbursementProducts.forEach((_, index) => {
-          setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
-        });
-        prevSecondRefundSourceName.current = secondRefundSourceName;
-      }
+      prevSecondRefundSourceName.current = secondRefundSourceName;
     } else {
       setShowSecondSourceFields(false);
     }
-  }, [secondRefundSourceName, setValue, reimbursementProducts]);
+  }, [secondRefundSourceName]);
   const {
     data: otherReasons,
     isLoading: otherReasonsIsLoading,
@@ -232,7 +239,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 fontWeight: 'bold'
               }}
             >
-              Items*
+              Purchased Items*
             </TableCell>
           </TableRow>
           <TableRow sx={{ width: '100%' }}>
@@ -244,7 +251,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 color: '#dd524c'
               }}
             >
-              Add item(s) from a project or from other categories
+              Associate each item with a project, or select a category from "Other Categories" if the item is not linked to a
+              project.
+              <br />
+              Multiple items can be added under the same project or category.
             </TableCell>
           </TableRow>
         </TableHead>
@@ -266,12 +276,15 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
               <Box
                 sx={{
                   display: 'flex',
-                  flexDirection: 'horizontal',
-                  gap: '10px'
+                  flexDirection: 'row',
+                  flexWrap: 'nowrap',
+                  alignItems: 'center',
+                  gap: 1,
+                  width: '100%'
                 }}
               >
                 <Autocomplete
-                  fullWidth
+                  sx={{ flex: 1 }}
                   options={wbsElementAutocompleteOptions}
                   onChange={(_e, value) => {
                     if (value) {
@@ -288,32 +301,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                   id={'append-product-autocomplete'}
                   size={'small'}
                   renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      sx={{
-                        background: '#4c4c4c',
-                        borderRadius: '20px',
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '20px',
-                          color: 'white',
-                          padding: '13px !important'
-                        }
-                      }}
-                      placeholder="Select Project"
-                      InputProps={{
-                        ...params.InputProps,
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <KeyboardArrowDownIcon sx={{ fontSize: 'xxx-large' }} />
-                          </InputAdornment>
-                        )
-                      }}
-                    />
+                    <TextField {...params} variant="outlined" placeholder="Select Project" fullWidth />
                   )}
                 />
-
+                <Typography fontWeight="bold" sx={{ whiteSpace: 'nowrap' }}>
+                  OR
+                </Typography>
                 <Autocomplete
-                  fullWidth
+                  sx={{ flex: 1 }}
                   options={otherReasons || []}
                   getOptionLabel={(option) => formatReasonName(option.name)}
                   onChange={(_e, value) => {
@@ -328,30 +323,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                   }}
                   value={null}
                   blurOnSelect={true}
-                  id={'append-product-autocomplete'}
+                  id={'append-other-category-autocomplete'}
                   size={'small'}
                   renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      sx={{
-                        background: '#4c4c4c',
-                        borderRadius: '20px',
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '20px',
-                          color: 'white',
-                          padding: '13px !important'
-                        }
-                      }}
-                      InputProps={{
-                        ...params.InputProps,
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <KeyboardArrowDownIcon sx={{ fontSize: 'xxx-large' }} />
-                          </InputAdornment>
-                        )
-                      }}
-                      placeholder="Select Other Category"
-                    />
+                    <TextField {...params} variant="outlined" placeholder="Select Other Category" fullWidth />
                   )}
                 />
               </Box>
@@ -468,17 +443,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                   render={({ field }) => (
                                     <TextField
                                       {...field}
-                                      sx={{
-                                        background: '#4c4c4c',
-                                        borderRadius: '20px',
-                                        '& .MuiOutlinedInput-root': {
-                                          borderRadius: '20px',
-                                          color: 'white'
-                                        }
-                                      }}
+                                      variant="outlined"
                                       placeholder={'Product Name/Description'}
                                       autoComplete="off"
-                                      variant={'outlined'}
                                       fullWidth
                                       error={!!errors.reimbursementProducts?.[product.index]?.name}
                                     />
@@ -503,24 +470,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                     render={({ field }) => (
                                       <TextField
                                         {...field}
-                                        sx={{
-                                          background: '#4c4c4c',
-                                          borderRadius: '20px',
-                                          '& .MuiOutlinedInput-root': {
-                                            borderRadius: '20px',
-                                            color: 'white'
-                                          },
-                                          '& input[type=number]': {
-                                            MozAppearance: 'textfield',
-                                            '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
-                                              WebkitAppearance: 'none',
-                                              margin: 0
-                                            }
-                                          }
-                                        }}
+                                        variant="outlined"
                                         value={field.value === 0 ? '' : field.value}
                                         placeholder={'$ Cost'}
-                                        variant={'outlined'}
                                         type="number"
                                         fullWidth
                                         onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
@@ -564,23 +516,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                             {...field}
                                             value={field.value === 0 ? '' : field.value}
                                             disabled={firstRefundSourceIndexCode === undefined}
-                                            sx={{
-                                              background: '#4c4c4c',
-                                              borderRadius: '20px',
-                                              '& .MuiOutlinedInput-root': {
-                                                borderRadius: '20px',
-                                                color: 'white'
-                                              },
-                                              '& input[type=number]': {
-                                                MozAppearance: 'textfield',
-                                                '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
-                                                  WebkitAppearance: 'none',
-                                                  margin: 0
-                                                }
-                                              }
-                                            }}
+                                            variant="outlined"
                                             placeholder={'$ Amt'}
-                                            variant={'outlined'}
                                             type="number"
                                             fullWidth
                                             onBlur={(e) =>
@@ -626,23 +563,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                             {...field}
                                             value={field.value === 0 ? '' : field.value}
                                             disabled={secondRefundSourceIndexCode === undefined}
-                                            sx={{
-                                              background: '#4c4c4c',
-                                              borderRadius: '20px',
-                                              '& .MuiOutlinedInput-root': {
-                                                borderRadius: '20px',
-                                                color: 'white'
-                                              },
-                                              '& input[type=number]': {
-                                                MozAppearance: 'textfield',
-                                                '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
-                                                  WebkitAppearance: 'none',
-                                                  margin: 0
-                                                }
-                                              }
-                                            }}
+                                            variant="outlined"
                                             placeholder={'$ Amt'}
-                                            variant={'outlined'}
                                             type="number"
                                             fullWidth
                                             onBlur={(e) =>
@@ -705,12 +627,15 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       />
                     }
                     onClick={(e) => {
-                      appendProduct({
-                        reason: key.includes('.') ? validateWBS(key) : ({ name: key } as OtherProductReason),
-                        name: '',
-                        cost: 0,
-                        refundSources: []
-                      });
+                      const existingProducts = uniqueWbsElementsWithProducts.get(key);
+                      if (existingProducts && existingProducts.length > 0) {
+                        appendProduct({
+                          reason: existingProducts[0].reason,
+                          name: '',
+                          cost: 0,
+                          refundSources: []
+                        });
+                      }
                       e.currentTarget.blur();
                     }}
                   >

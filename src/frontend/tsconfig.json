@@ -3,6 +3,7 @@
   "compilerOptions": {
     "types": ["vite/client", "vitest/globals"],
     "module": "esnext",
-    "target": "esnext"
+    "target": "esnext",
+    "moduleResolution": "bundler"
   }
 }

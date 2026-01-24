@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { getReimbursementProductOtherReasonQueryArgs } from './reimbursement-product-other-reason.query-args';
-import { getIndexCodeQueryArgs } from './index-code.query-args';
+import { getReimbursementProductOtherReasonQueryArgs } from './reimbursement-product-other-reason.query-args.js';
+import { getIndexCodeQueryArgs } from './index-code.query-args.js';
 
 export type ReimbursementProductQueryArgs = ReturnType<typeof getReimbursementProductQueryArgs>;
 export type RefundSourceQueryArgs = ReturnType<typeof getRefundSourceQueryArgs>;

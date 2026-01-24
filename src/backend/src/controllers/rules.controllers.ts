@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import RulesService from '../services/rules.services';
+import RulesService from '../services/rules.services.js';
 import { ProjectRule, Rule, Ruleset } from 'shared';
-import { HttpException } from '../utils/errors.utils';
+import { HttpException } from '../utils/errors.utils.js';
 
 export default class RulesController {
   static async getActiveRuleset(req: Request, res: Response, next: NextFunction) {

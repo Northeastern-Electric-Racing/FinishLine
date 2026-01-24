@@ -4,12 +4,12 @@ import {
   DeletedException,
   HttpException,
   NotFoundException
-} from '../../src/utils/errors.utils';
-import { createTestOrganization, createTestUser, createTestWorkPackageTemplate, resetUsers } from '../test-utils';
-import { batmanAppAdmin, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
-import { workPackageTemplateTransformer } from '../../src/transformers/work-package-template.transformer';
-import prisma from '../../src/prisma/prisma';
-import WorkPackageTemplatesService from '../../src/services/wbs-element-templates.services';
+} from '../../src/utils/errors.utils.js';
+import { createTestOrganization, createTestUser, createTestWorkPackageTemplate, resetUsers } from '../test-utils.js';
+import { batmanAppAdmin, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data.js';
+import { workPackageTemplateTransformer } from '../../src/transformers/work-package-template.transformer.js';
+import prisma from '../../src/prisma/prisma.js';
+import WorkPackageTemplatesService from '../../src/services/wbs-element-templates.services.js';
 import { Organization } from '@prisma/client';
 
 describe('Work Package Template Tests', () => {

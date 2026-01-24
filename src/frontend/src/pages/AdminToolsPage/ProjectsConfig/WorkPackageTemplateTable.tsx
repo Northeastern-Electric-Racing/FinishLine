@@ -1,7 +1,7 @@
 import { TableRow, TableCell, Box, IconButton, Typography } from '@mui/material';
 import NERTable from '../../../components/NERTable';
 import { NERButton } from '../../../components/NERButton';
-import { isAdmin } from 'shared/src/permission-utils';
+import { isAdmin } from 'shared';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';

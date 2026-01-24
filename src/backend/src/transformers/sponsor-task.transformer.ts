@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { SponsorTask } from 'shared';
-import { userTransformer } from './user.transformer';
-import { SponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args';
+import { userTransformer } from './user.transformer.js';
+import { SponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args.js';
 
 export const sponsorTaskTransformer = (sponsorTask: Prisma.Sponsor_TaskGetPayload<SponsorTaskQueryArgs>): SponsorTask => {
   return {

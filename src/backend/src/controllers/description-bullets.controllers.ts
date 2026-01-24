@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import DescriptionBulletsService from '../services/description-bullets.services';
+import DescriptionBulletsService from '../services/description-bullets.services.js';
 
 export default class DescriptionBulletsController {
   static async checkDescriptionBullet(req: Request, res: Response, next: NextFunction) {

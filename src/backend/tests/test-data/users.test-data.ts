@@ -1,6 +1,6 @@
 import { Theme, User_Settings, User_Secure_Settings, Team, Schedule_Settings } from '@prisma/client';
 import { Permission, RoleEnum, User as SharedUser, UserScheduleSettings } from 'shared';
-import { CreateTestUserParams } from '../test-utils';
+import { CreateTestUserParams } from '../test-utils.js';
 
 export const batmanAppAdmin: CreateTestUserParams = {
   firstName: 'Bruce',

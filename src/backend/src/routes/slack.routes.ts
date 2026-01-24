@@ -1,5 +1,5 @@
 import { createEventAdapter } from '@slack/events-api';
-import SlackController from '../controllers/slack.controllers';
+import SlackController from '../controllers/slack.controllers.js';
 
 export const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET || '');
 

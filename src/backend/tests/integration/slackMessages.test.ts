@@ -1,5 +1,5 @@
 import { Organization, User } from '@prisma/client';
-import { createSlackMessageEvent, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createSlackMessageEvent, createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
 import {
   batmanAppAdmin,
   batmanSettings,
@@ -7,12 +7,12 @@ import {
   supermanSettings,
   wonderwomanGuest,
   wonderwomanSettings
-} from '../test-data/users.test-data';
-import * as apiFunctions from '../../src/integrations/slack';
-import AnnouncementService from '../../src/services/announcement.services';
-import slackServices from '../../src/services/slack.services';
+} from '../test-data/users.test-data.js';
+import * as apiFunctions from '../../src/integrations/slack.js';
+import AnnouncementService from '../../src/services/announcement.services.js';
+import slackServices from '../../src/services/slack.services.js';
 import { vi } from 'vitest';
-import prisma from '../../src/prisma/prisma';
+import prisma from '../../src/prisma/prisma.js';
 
 vi.mock('../../src/integrations/slack', async (importOriginal) => {
   return {

@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
-import { getUserPreviewQueryArgs, getUserQueryArgs } from './user.query-args';
-import { getDescriptionBulletQueryArgs } from './description-bullets.query-args';
-import { getDesignReviewPreviewQueryArgs } from './design-reviews.query-args';
-import { getLinkQueryArgs } from './links.query-args';
+import { getUserPreviewQueryArgs, getUserQueryArgs } from './user.query-args.js';
+import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.js';
+import { getDesignReviewPreviewQueryArgs } from './design-reviews.query-args.js';
+import { getLinkQueryArgs } from './links.query-args.js';
 
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
 export type WorkPackagePreviewQueryArgs = ReturnType<typeof getWorkPackagePreviewQueryArgs>;

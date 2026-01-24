@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { GridRenderCellParams } from '@mui/x-data-grid';
 import type { MapRowResult } from '../../components/NERDataGrid';
 import type { MouseEvent } from 'react';
-import { Box, IconButton, Checkbox } from '@mui/material';
+import { Box, IconButton, Checkbox, Tooltip } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useEditSponsor, useGetAllSponsors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
@@ -19,6 +19,7 @@ import SponsorTasksModal from './FinanceComponents/SponsorTasksModal';
 import SidePagePopup from './FinanceComponents/SidePagePopup';
 import NERDataGrid from '../../components/NERDataGrid';
 import { useCurrentUser } from '../../hooks/users.hooks';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 const SponsorsTable = () => {
   const { data: sponsors, isLoading: sponsorIsLoading, isError: sponsorIsError, error: sponsorError } = useGetAllSponsors();
@@ -50,11 +51,13 @@ const SponsorsTable = () => {
   };
 
   const columns = [
-    { field: 'name', headerName: 'Sponsor', flex: 1 },
+    { field: 'name', headerName: 'Sponsor', flex: 1, minWidth: 50 },
     {
       field: 'activeStatus',
       headerName: 'Active?',
-      width: 160,
+      flex: 1,
+      minWidth: 50,
+      maxWidth: 100,
       renderCell: (p: GridRenderCellParams<boolean, MapRowResult<Sponsor>>) => (
         <Checkbox
           disabled={!canEditSponsors}
@@ -69,11 +72,12 @@ const SponsorsTable = () => {
         />
       )
     },
-    { field: 'sponsorContact', headerName: 'Contact', flex: 1 },
+    { field: 'sponsorContact', headerName: 'Contact', flex: 1, minWidth: 50 },
     {
       field: 'tier',
       headerName: 'Sponsor Tier',
-      width: 140,
+      flex: 1,
+      minWidth: 100,
       renderCell: (params: GridRenderCellParams<any, MapRowResult<Sponsor>>) => (
         <SponsorTierPill tier={(params.row as MapRowResult<Sponsor>).raw!.tier} />
       )
@@ -81,21 +85,25 @@ const SponsorsTable = () => {
     {
       field: 'sponsorValue',
       headerName: 'Sponsor Value',
-      width: 160,
+      flex: 1,
+      minWidth: 50,
       renderCell: (p: GridRenderCellParams<number, MapRowResult<Sponsor>>) => `$${p.value}`
     },
     {
       field: 'joinDate',
       headerName: 'Sponsor Join Date',
-      width: 180,
+      flex: 1,
+      minWidth: 100,
       renderCell: (p: GridRenderCellParams<string | null, MapRowResult<Sponsor>>) =>
         datePipe(new Date(String(p.value ?? '')))
     },
-    { field: 'discountCode', headerName: 'Discount', flex: 1 },
+    { field: 'discountCode', headerName: 'Discount', flex: 1, minWidth: 50 },
     {
       field: 'taxExempt',
       headerName: 'Tax Exempt?',
-      width: 120,
+      flex: 1,
+      minWidth: 50,
+      maxWidth: 100,
       renderCell: (p: GridRenderCellParams<boolean, MapRowResult<Sponsor>>) => {
         return (
           <Checkbox
@@ -113,9 +121,34 @@ const SponsorsTable = () => {
       }
     },
     {
+      field: 'sponsorNotes',
+      headerName: 'Notes',
+      flex: 1,
+      minWidth: 40,
+      maxWidth: 80,
+      sortable: false,
+      filterable: false,
+      renderCell: (p: GridRenderCellParams<string | null, MapRowResult<Sponsor>>) => {
+        const notes = (p.row as MapRowResult<Sponsor>).raw?.sponsorNotes;
+
+        if (!notes || notes.trim() === '') {
+          return null;
+        }
+
+        return (
+          <Tooltip title={notes} arrow placement="left">
+            <IconButton size="small" sx={{ p: 0.5, color: 'white' }}>
+              <InfoOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        );
+      }
+    },
+    {
       field: 'tasks',
       headerName: 'Sponsor Tasks',
-      width: 180,
+      flex: 1,
+      minWidth: 100,
       sortable: false,
       filterable: false,
       renderCell: (params: GridRenderCellParams<any, MapRowResult<Sponsor>>) => {
@@ -147,7 +180,9 @@ const SponsorsTable = () => {
     {
       field: 'actions',
       headerName: 'Delete',
-      width: 100,
+      flex: 1,
+      minWidth: 50,
+      maxWidth: 80,
       sortable: false,
       filterable: false,
       renderCell: (params: GridRenderCellParams<any, MapRowResult<Sponsor>>) => {

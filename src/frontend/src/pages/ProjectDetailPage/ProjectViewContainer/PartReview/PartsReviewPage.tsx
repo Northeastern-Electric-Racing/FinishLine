@@ -1,7 +1,7 @@
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { Grid, Box, FormControlLabel, Autocomplete, TextField, Button, Chip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
-import { useAllUsers, useCurrentUser } from '../../../../hooks/users.hooks';
+import { useAllMembers, useCurrentUser } from '../../../../hooks/users.hooks';
 import { isAtLeastRank, Project, rankUserRole, Review_Status, wbsPipe } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import { useGetAllPartTags, usePartsFromProject } from '../../../../hooks/part-review.hooks';
@@ -54,7 +54,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
     return 'full';
   }, [partsForMeToReview, myPartsUnderReview, allPartsUnderReview]);
   const { data: tags, isLoading: tagsLoading, isError: tagsIsError, error: tagsError } = useGetAllPartTags();
-  const { data: users, isLoading: usersLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  const { data: users, isLoading: usersLoading, isError: usersIsError, error: usersError } = useAllMembers();
 
   // filtering state
   const [showFilters, setShowFilters] = useState(false);

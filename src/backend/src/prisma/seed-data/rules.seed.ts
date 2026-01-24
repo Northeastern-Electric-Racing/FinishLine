@@ -1,6 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { Organization } from '@prisma/client';
-import RulesService from '../../services/rules.services';
+import RulesService from '../../services/rules.services.js';
 import { User } from 'shared';
 
 // rules

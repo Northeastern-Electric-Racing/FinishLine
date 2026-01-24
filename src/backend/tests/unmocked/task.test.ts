@@ -1,8 +1,8 @@
-import { financeMember, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
-import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils';
-import { createTestOrganization, createTestTask, createTestUser, resetUsers } from '../test-utils';
-import prisma from '../../src/prisma/prisma';
-import TasksService from '../../src/services/tasks.services';
+import { financeMember, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data.js';
+import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils.js';
+import { createTestOrganization, createTestTask, createTestUser, resetUsers } from '../test-utils.js';
+import prisma from '../../src/prisma/prisma.js';
+import TasksService from '../../src/services/tasks.services.js';
 
 describe('Task Test', () => {
   let organizationId: string;

@@ -1,5 +1,5 @@
 import { ChatPostMessageResponse, WebClient } from '@slack/web-api';
-import { HttpException } from '../utils/errors.utils';
+import { HttpException } from '../utils/errors.utils.js';
 
 const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
 

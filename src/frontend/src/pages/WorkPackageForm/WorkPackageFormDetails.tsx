@@ -112,7 +112,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
         </Grid>
         <Grid item xs={12} md={4}>
           <FormControl fullWidth>
-            <FormLabel>Duration</FormLabel>
+            <FormLabel>Duration (in weeks)</FormLabel>
             <ReactHookTextField
               name="duration"
               control={control}

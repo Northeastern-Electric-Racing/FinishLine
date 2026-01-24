@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import PageLayout from '../../../components/PageLayout';
 import AvailabilityView from './AvailabilityView';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
@@ -57,7 +57,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const [endTime, setEndTime] = useState((designReview.meetingTimes[designReview.meetingTimes.length - 1] % 12) + 1);
   const { mutateAsync: editDesignReview } = useEditDesignReview(designReview.designReviewId);
 
-  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
+  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allMembers } = useAllMembers();
   const {
     data: allDesignReviews,
     isError: allDesignReviewsIsError,
@@ -69,9 +69,9 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allDesignReviewsIsError) return <ErrorPage message={allDesignReviewsError?.message} />;
-  if (allUsersIsLoading || !allUsers || allDesignReviewsIsLoading || !allDesignReviews) return <LoadingIndicator />;
+  if (allUsersIsLoading || !allMembers || allDesignReviewsIsLoading || !allDesignReviews) return <LoadingIndicator />;
 
-  const users = allUsers.map(userToAutocompleteOption);
+  const users = allMembers.map(userToAutocompleteOption);
 
   const handleDateChange = (newDate: Date | null) => {
     if (newDate) {
