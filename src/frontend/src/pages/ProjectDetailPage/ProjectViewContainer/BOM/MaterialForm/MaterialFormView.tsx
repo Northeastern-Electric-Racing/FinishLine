@@ -82,21 +82,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
       onFormSubmit={onSubmit}
       formId={submitText + '-material-form'}
       showCloseButton
-      copyFromExistingBomAction={
-        <Button
-          variant="contained"
-          onClick={() => {}}
-          sx={{
-            mx: 1,
-            textTransform: 'none',
-            bgcolor: '#EF4345',
-            color: (t) => t.palette.getContrastText('#EF4345'),
-            '&:hover': { bgcolor: (t) => t.palette.error.dark }
-          }}
-        >
-          COPY FROM EXISTING BOM
-        </Button>
-      }
     >
       <Grid container spacing={2}>
         <Grid item xs={7}>
@@ -509,6 +494,28 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               )}
             />
           </FormControl>
+        </Box>
+      </Grid>
+      <Grid item xs={12} sx={{ pl: 0, pr: 0 }}>
+        <Box
+          sx={{
+            pt: 1
+          }}
+        >
+          <Button
+            variant="contained"
+            disableElevation
+            onClick={() => {}}
+            sx={{
+              mx: 0,
+              textTransform: 'none',
+              bgcolor: '#EF4345',
+              color: (t) => t.palette.getContrastText('#EF4345'),
+              '&:hover': { bgcolor: (t) => t.palette.error.dark }
+            }}
+          >
+            COPY FROM EXISTING BOM
+          </Button>
         </Box>
       </Grid>
     </NERFormModal>

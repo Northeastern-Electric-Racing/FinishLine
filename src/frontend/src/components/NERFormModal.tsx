@@ -25,8 +25,7 @@ const NERFormModal = ({
   children,
   showCloseButton,
   hideBackDrop = false,
-  paperProps,
-  copyFromExistingBomAction
+  paperProps
 }: NERFormModalProps<any>) => {
   /**
    * Wrapper function for onSubmit so that form data is reset after submit
@@ -57,7 +56,6 @@ const NERFormModal = ({
       showCloseButton={showCloseButton}
       hideBackDrop={hideBackDrop}
       paperProps={paperProps}
-      copyFromExistingBomAction={copyFromExistingBomAction}
     >
       <form id={formId} onSubmit={handleFormSubmit} noValidate>
         {children}
