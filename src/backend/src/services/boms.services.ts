@@ -158,6 +158,131 @@ export default class BillOfMaterialsService {
   }
 
   /**
+   * Copy materials to project
+   * @param user The user making the copy
+   * @param materialIds The ids of the materials to be copied
+   * @param destinationProjectId The id of the project to copy the materials to
+   * @param organization The organization the user is currently in
+   * @returns an array of the newly created material ids
+   * @throws errors that will be added here later
+   */
+  static async copyMaterialsToProject(
+    user: User,
+    materialIds: string[],
+    destinationProjectId: WbsNumber,
+    organization: Organization
+  ): Promise<string[]> {
+    // Fetch materials to be copied
+    const materials = await prisma.material.findMany({
+      where: {
+        materialId: { in: materialIds },
+        dateDeleted: null
+      },
+      ...getMaterialQueryArgs(organization.organizationId)
+    });
+
+    // Validate all materials were found
+    if (materials.length !== materialIds.length) throw new NotFoundException('Material', 'Not all materials found');
+
+    // Validate all materials are from the current organization
+    const invalidMaterials = materials.filter((material) => material.unit?.organizationId !== organization.organizationId);
+    if (invalidMaterials.length > 0) throw new HttpException(400, 'All materials must be from the current organization');
+
+    // Fetch destination project (validates project is in the user's organization)
+    const destinationProject = await ProjectsService.getSingleProjectWithQueryArgs(destinationProjectId, organization);
+
+    // Check user has correct permissions
+    const perms =
+      (await userHasPermission(user.userId, organization.organizationId, isLeadership)) ||
+      isUserPartOfTeams(destinationProject.teams, user);
+
+    if (!perms) throw new AccessDeniedException('Permission to copy materials denied');
+
+    // Create copied materials and assemblies (all or none)
+    return await prisma.$transaction(async (tx) => {
+      const assemblyMap = new Map<string, string>();
+      const newMaterialIds: string[] = [];
+
+      for (const material of materials) {
+        let newAssemblyId = null;
+
+        // Get or create assembly if needed
+        if (material.assemblyId) {
+          if (assemblyMap.has(material.assemblyId)) {
+            newAssemblyId = assemblyMap.get(material.assemblyId);
+          } else {
+            const oldAssembly = await tx.assembly.findUnique({
+              where: { assemblyId: material.assemblyId }
+            });
+            if (!oldAssembly) throw new NotFoundException('Assembly', material.assemblyId);
+            if (oldAssembly.dateDeleted) throw new DeletedException('Assembly', material.assemblyId);
+
+            const newAssembly = await tx.assembly.create({
+              data: {
+                name: oldAssembly.name,
+                dateCreated: new Date(),
+                userCreatedId: user.userId,
+                wbsElementId: destinationProject.wbsElementId,
+                pdmFileName: oldAssembly.pdmFileName
+              }
+            });
+            assemblyMap.set(material.assemblyId, newAssembly.assemblyId);
+            newAssemblyId = newAssembly.assemblyId;
+          }
+        }
+
+        const materialType = await tx.material_Type.findUnique({
+          where: { id: material.materialTypeId }
+        });
+        if (!materialType) throw new NotFoundException('Material Type', material.materialTypeId);
+        if (materialType.dateDeleted) throw new DeletedException('Material Type', materialType.name);
+
+        if (material.manufacturerId) {
+          const manufacturer = await tx.manufacturer.findUnique({
+            where: { id: material.manufacturerId }
+          });
+          if (!manufacturer) throw new NotFoundException('Manufacturer', material.manufacturerId);
+          if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturer.name);
+        }
+
+        if (material.unitId) {
+          const unit = await tx.unit.findUnique({
+            where: { id: material.unitId }
+          });
+          if (!unit) throw new NotFoundException('Unit', material.unitId);
+        }
+
+        // Create the new material
+        const newMaterial = await tx.material.create({
+          data: {
+            name: material.name,
+            status: 'NOT_READY_TO_ORDER',
+            materialTypeId: material.materialTypeId,
+            manufacturerId: material.manufacturerId,
+            manufacturerPartNumber: material.manufacturerPartNumber,
+            pdmFileName: material.pdmFileName,
+            quantity: material.quantity,
+            unitId: material.unitId,
+            price: material.price,
+            subtotal: material.subtotal,
+            linkUrl: material.linkUrl,
+            notes: material.notes,
+            dateCreated: new Date(),
+            userCreatedId: user.userId,
+            wbsElementId: destinationProject.wbsElementId,
+            assemblyId: newAssemblyId
+          },
+          ...getMaterialQueryArgs(organization.organizationId)
+        });
+
+        newMaterialIds.push(newMaterial.materialId);
+      }
+
+      return newMaterialIds;
+    });
+  }
+
+  /**
    * Create an assembly
    * @param name The name of the assembly to be created
    * @param userCreated The user creating the assembly

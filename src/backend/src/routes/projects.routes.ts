@@ -5,7 +5,8 @@ import {
   nonEmptyString,
   projectValidators,
   validateInputs,
-  materialValidators
+  materialValidators,
+  copyMaterialsValidators
 } from '../utils/validation.utils.js';
 import ProjectsController from '../controllers/projects.controllers.js';
 
@@ -93,6 +94,12 @@ projectRouter.post(
 );
 projectRouter.post('/bom/material/:wbsNum/create', ...materialValidators, validateInputs, ProjectsController.createMaterial);
 projectRouter.post('/bom/material/:materialId/edit', ...materialValidators, validateInputs, ProjectsController.editMaterial);
+projectRouter.post(
+  '/bom/material/copy',
+  ...copyMaterialsValidators,
+  validateInputs,
+  ProjectsController.copyMaterialsToProject
+);
 
 projectRouter.post(
   '/bom/assembly/:assemblyId/edit',

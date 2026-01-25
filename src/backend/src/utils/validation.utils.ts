@@ -209,6 +209,11 @@ export const materialValidators = [
   nonEmptyString(body('reimbursementRequestId')).optional(),
   body('notes').isString().optional()
 ];
+export const copyMaterialsValidators = [
+  body('materialIds').isArray({ min: 1 }),
+  body('materialIds.*').isString().notEmpty(),
+  nonEmptyString(body('destinationWbsNum'))
+];
 export const validateInputs = (req: Request, res: Response, next: Function): void => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
