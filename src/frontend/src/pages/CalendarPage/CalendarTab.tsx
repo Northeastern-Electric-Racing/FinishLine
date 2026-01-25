@@ -143,8 +143,14 @@ const CalendarTab: React.FC = () => {
             allEventTypes={allEventTypes}
             reviewEvents={reviewEvents ?? []}
             yourEvents={
-              yourEvents.flatMap((event) => event.scheduledTimes.map((scheduledTime) => ({ ...event, ...scheduledTime }))) ??
-              []
+              yourEvents.flatMap((event) =>
+                event.scheduledTimes.map((scheduledTime) => ({
+                  ...event,
+                  ...scheduledTime,
+                  recurring: event.scheduledTimes.length > 1,
+                  totalScheduledSlots: event.scheduledTimes.length
+                }))
+              ) ?? []
             }
             allCalendars={allCalendars}
             onCreateEventClick={handleNewEventClick}

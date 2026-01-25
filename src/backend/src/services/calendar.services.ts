@@ -1082,6 +1082,73 @@ export default class CalendarService {
   }
 
   /**
+   * Deletes a specific schedule slot from an event.
+   * If this is the last schedule slot, the entire event is deleted instead.
+   *
+   * @param submitter The user submitting the request.
+   * @param scheduleSlotId The id of the specific schedule slot to delete.
+   * @param organization The organization context.
+   *
+   * @returns The updated event (or the deleted event if it was the last slot).
+   *
+   * @throws NotFoundException If the event or schedule slot is not found.
+   * @throws DeletedException If the event has already been deleted.
+   * @throws AccessDeniedException If the user doesn't have permission to delete.
+   */
+  static async deleteScheduleSlot(submitter: User, scheduleSlotId: string, organization: Organization): Promise<Event> {
+    // Validate schedule slot exists and get its eventId
+    const scheduleSlot = await prisma.schedule_Slot.findUnique({
+      where: { scheduleSlotId },
+      select: {
+        scheduleSlotId: true,
+        eventId: true
+      }
+    });
+
+    if (!scheduleSlot) throw new NotFoundException('Schedule Slot', scheduleSlotId);
+
+    // Fetch the event to check permissions and slot count
+    const event = await prisma.event.findUnique({
+      where: { eventId: scheduleSlot.eventId },
+      include: {
+        scheduledTimes: true
+      }
+    });
+
+    if (!event) throw new NotFoundException('Event', scheduleSlot.eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', scheduleSlot.eventId);
+
+    // Check permissions - same as deleteEvent
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
+      submitter.userId === event.userCreatedId;
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only admins or the event creator can delete schedule slots!');
+    }
+
+    // If this is the last schedule slot, delete the entire event instead
+    if (event.scheduledTimes.length <= 1) {
+      return this.deleteEvent(submitter, event.eventId, organization);
+    }
+
+    // Delete the schedule slot (hard delete for schedule slots)
+    await prisma.schedule_Slot.delete({
+      where: { scheduleSlotId }
+    });
+
+    // Fetch and return the updated event
+    const updatedEvent = await prisma.event.findUnique({
+      where: { eventId: event.eventId },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
+
+    return eventTransformer(updatedEvent);
+  }
+
+  /**
    * Service function to upload a picture to the event documents folder in the NER google drive
    * @param eventId id for the event we're tying the document to
    * @param file The file data for the image

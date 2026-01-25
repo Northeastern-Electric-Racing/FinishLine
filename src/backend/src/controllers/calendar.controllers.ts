@@ -395,6 +395,17 @@ export default class CalendarController {
     }
   }
 
+  static async deleteScheduleSlot(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { scheduleSlotId } = req.params as Record<string, string>;
+
+      const event = await CalendarService.deleteScheduleSlot(req.currentUser, scheduleSlotId, req.organization);
+      res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async uploadDocument(req: Request, res: Response, next: NextFunction) {
     try {
       const { file } = req;

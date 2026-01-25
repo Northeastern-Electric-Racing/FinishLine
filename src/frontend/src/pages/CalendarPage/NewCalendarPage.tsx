@@ -39,6 +39,37 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import SchedulingConflictsWarning from './SchedulingConflictsWarning';
 import { EventInstance } from 'shared';
 
+// localStorage key for calendar filters
+const CALENDAR_FILTERS_KEY = 'calendar-filters';
+
+// Interface for stored filter settings
+interface CalendarFilterSettings {
+  allEventsMode: boolean;
+  memberIds: string[];
+  teamIds: string[];
+  showInvitedEvents: boolean;
+  showTeamEvents: boolean;
+  selectedCalendarIds: string[];
+}
+
+// Load filter settings from localStorage
+const loadFilterSettings = (): Partial<CalendarFilterSettings> => {
+  try {
+    const stored = localStorage.getItem(CALENDAR_FILTERS_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch {
+    // If parsing fails, return empty object
+  }
+  return {};
+};
+
+// Save filter settings to localStorage
+const saveFilterSettings = (settings: CalendarFilterSettings): void => {
+  localStorage.setItem(CALENDAR_FILTERS_KEY, JSON.stringify(settings));
+};
+
 interface NewCalendarPageProps {
   allEventTypes: EventType[];
   yourEvents: EventInstance[];
@@ -55,6 +86,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   onCreateEventClick
 }) => {
   const theme = useTheme();
+  const history = useHistory();
   const {
     data: allTeamTypes,
     isLoading: allTeamTypesLoading,
@@ -64,49 +96,76 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
 
   const user = useCurrentUser();
 
-  const [memberIds, setMemberIds] = useState<string[]>([]);
-  const [teamIds, setTeamIds] = useState<string[]>([]);
+  // Load initial filter settings from localStorage
+  const savedFilters = useMemo(() => loadFilterSettings(), []);
+
+  const [memberIds, setMemberIds] = useState<string[]>(savedFilters.memberIds ?? []);
+  const [teamIds, setTeamIds] = useState<string[]>(savedFilters.teamIds ?? []);
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
-  const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(true);
-  const [showTeamEvents, setShowTeamEvents] = useState<boolean>(true);
+  const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(savedFilters.showInvitedEvents ?? true);
+  const [showTeamEvents, setShowTeamEvents] = useState<boolean>(savedFilters.showTeamEvents ?? true);
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
   const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>([]);
+  const [allEventsMode, setAllEventsMode] = useState<boolean>(savedFilters.allEventsMode ?? false);
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
 
   const calendars = allCalendars ?? [];
 
-  const [selectedCalendarIds, setSelectedCalendarIds] = useState<string[]>(allCalendars.map((c) => c.calendarId));
+  const [selectedCalendarIds, setSelectedCalendarIds] = useState<string[]>(() => {
+    // Use saved calendar IDs if they exist and are valid, otherwise default to all calendars
+    if (savedFilters.selectedCalendarIds && savedFilters.selectedCalendarIds.length > 0) {
+      // Filter to only include IDs that still exist in allCalendars
+      const validIds = savedFilters.selectedCalendarIds.filter((id) => allCalendars.some((c) => c.calendarId === id));
+      return validIds.length > 0 ? validIds : allCalendars.map((c) => c.calendarId);
+    }
+    return allCalendars.map((c) => c.calendarId);
+  });
 
   const { data: allTeams, isLoading: allTeamsLoading, isError: allTeamsIsError, error: allTeamsError } = useGetUsersTeams();
 
   const teamList = useMemo(() => allTeams?.map((team) => team.teamId) ?? [], [allTeams]);
 
+  // Save filter settings to localStorage when they change
   useEffect(() => {
-    if (allTeams && additionalTeamIds.length === 0 && showTeamEvents) {
+    saveFilterSettings({
+      allEventsMode,
+      memberIds,
+      teamIds,
+      showInvitedEvents,
+      showTeamEvents,
+      selectedCalendarIds
+    });
+  }, [allEventsMode, memberIds, teamIds, showInvitedEvents, showTeamEvents, selectedCalendarIds]);
+
+  useEffect(() => {
+    if (allTeams && additionalTeamIds.length === 0 && showTeamEvents && !allEventsMode) {
       setAdditionalTeamIds(teamList);
     }
-  }, [allTeams, teamList, additionalTeamIds.length, showTeamEvents]);
+  }, [allTeams, teamList, additionalTeamIds.length, showTeamEvents, allEventsMode]);
 
   const startPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15);
   const endPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15);
 
-  const {
-    isLoading,
-    isError,
-    error,
-    data: allEvents
-  } = useFilterEvents({
-    startPeriod,
-    endPeriod,
-    memberIds: [...new Set(memberIds.concat(additionalMemberIds))],
-    teamIds: [...new Set(teamIds.concat(additionalTeamIds))],
-    statuses: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT],
-    calendarIds: selectedCalendarIds
-  });
+  // When allEventsMode is true, we don't filter by members/teams, but still filter by date and calendars
+  const filterArgs = allEventsMode
+    ? {
+        startPeriod,
+        endPeriod,
+        statuses: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT],
+        calendarIds: selectedCalendarIds
+      }
+    : {
+        startPeriod,
+        endPeriod,
+        memberIds: [...new Set(memberIds.concat(additionalMemberIds))],
+        teamIds: [...new Set(teamIds.concat(additionalTeamIds))],
+        statuses: [ConflictStatus.APPROVED, ConflictStatus.NO_CONFLICT],
+        calendarIds: selectedCalendarIds
+      };
 
-  const history = useHistory();
+  const { isLoading, isError, error, data: allEvents } = useFilterEvents(filterArgs);
 
   const [pendingEvent, setPendingEvent] = useState(
     yourEvents.filter((event) => event.approved === ConflictStatus.PENDING).length > 0
@@ -169,7 +228,14 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   });
 
   const upcomingOccurences = upcomingEvents
-    ? upcomingEvents.flatMap((event) => event.scheduledTimes.map((slot) => ({ ...event, ...slot })))
+    ? upcomingEvents.flatMap((event) =>
+        event.scheduledTimes.map((slot) => ({
+          ...event,
+          ...slot,
+          recurring: event.scheduledTimes.length > 1,
+          totalScheduledSlots: event.scheduledTimes.length
+        }))
+      )
     : [];
 
   const toggleCalendar = (calendarId: string) => {
@@ -241,7 +307,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   const eventInstances: EventInstance[] = sortedEvents.flatMap((event) =>
     event.scheduledTimes.map((slot) => ({
       ...event,
-      ...slot
+      ...slot,
+      recurring: event.scheduledTimes.length > 1,
+      totalScheduledSlots: event.scheduledTimes.length
     }))
   );
 
@@ -627,7 +695,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                     }
                   }}
                 >
-                  More Filters
+                  Filters
                 </Button>
               </Stack>
 
@@ -701,11 +769,12 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
         <FilterModal
           open={openFilterModal}
           onClose={() => setOpenFilterModal(false)}
-          filterValues={{ memberIds, teamIds, showInvited: showInvitedEvents, showTeam: showTeamEvents }}
+          filterValues={{ memberIds, teamIds, showInvited: showInvitedEvents, showTeam: showTeamEvents, allEventsMode }}
           setMemberIds={(ids: string[]) => setMemberIds(ids)}
           setTeamIds={(ids: string[]) => setTeamIds(ids)}
           setShowInvited={(changed: boolean) => updateAdditionalMemberIds(changed)}
           setShowTeam={(changed: boolean) => updateAdditionalTeamIds(changed)}
+          setAllEventsMode={(enabled: boolean) => setAllEventsMode(enabled)}
         />
       </PageLayout>
     </>

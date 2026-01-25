@@ -218,6 +218,16 @@ export const previewScheduleSlotRecurringEdits = async (eventId: string, schedul
   });
 };
 
+export const postDeleteScheduleSlot = async (eventId: string, scheduleSlotId: string) => {
+  return axios.post<Event>(
+    apiUrls.calendarDeleteScheduleSlot(eventId, scheduleSlotId),
+    {},
+    {
+      transformResponse: (data) => eventTransformer(JSON.parse(data))
+    }
+  );
+};
+
 /**
  * Upload a document
  *

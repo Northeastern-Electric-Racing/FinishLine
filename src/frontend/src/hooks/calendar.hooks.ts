@@ -46,7 +46,8 @@ import {
   postEditEvent,
   postEditScheduleSlot,
   getSingleEventWithMembers,
-  previewScheduleSlotRecurringEdits
+  previewScheduleSlotRecurringEdits,
+  postDeleteScheduleSlot
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 import { PDFDocument } from 'pdf-lib';
@@ -521,6 +522,28 @@ export const usePreviewScheduleSlotRecurringEdits = (eventId: string, scheduleSl
     },
     {
       enabled: enabled && !!eventId && !!scheduleSlotId
+    }
+  );
+};
+
+/**
+ * Hook to delete a single schedule slot from an event.
+ * If this is the last schedule slot, the entire event will be deleted instead.
+ */
+export const useDeleteScheduleSlot = (eventId: string, scheduleSlotId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Event, Error>(
+    ['events', 'delete-schedule-slot', eventId, scheduleSlotId],
+    async () => {
+      const { data } = await postDeleteScheduleSlot(eventId, scheduleSlotId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['filter-events']);
+        queryClient.invalidateQueries(EVENT_KEY);
+        queryClient.invalidateQueries(['events', eventId]);
+      }
     }
   );
 };

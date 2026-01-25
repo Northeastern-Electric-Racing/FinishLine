@@ -215,7 +215,11 @@ export interface Event {
   initialDateScheduled?: Date;
 }
 
-export type EventInstance = Omit<Event, 'scheduledTimes'> & ScheduleSlot;
+export type EventInstance = Omit<Event, 'scheduledTimes'> &
+  ScheduleSlot & {
+    recurring: boolean;
+    totalScheduledSlots: number;
+  };
 
 export type EventPreview = {
   eventId: string;

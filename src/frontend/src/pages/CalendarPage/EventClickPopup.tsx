@@ -22,8 +22,9 @@ import PeopleIcon from '@mui/icons-material/People';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
-import { useApproveEvent, useDeleteEvent, useDenyEvent } from '../../hooks/calendar.hooks';
+import { useApproveEvent, useDeleteEvent, useDeleteScheduleSlot, useDenyEvent } from '../../hooks/calendar.hooks';
 import EditEventModal from './Components/EditEventModal';
+import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmationModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import NERDeleteModal from '../../components/NERDeleteModal';
 import { formatTime } from '../../utils/datetime.utils';
@@ -426,15 +427,25 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
   const toast = useToast();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
 
   const { mutateAsync: deleteEvent } = useDeleteEvent(clickedEvent?.eventId ?? '');
+  const { mutateAsync: deleteScheduleSlot } = useDeleteScheduleSlot(
+    clickedEvent?.eventId ?? '',
+    clickedEvent?.scheduleSlotId ?? ''
+  );
 
   const handleEdit = (_event: EventInstance) => {
     setShowEditModal(true);
   };
 
   const handleDelete = () => {
-    setShowDeleteModal(true);
+    // If the event is recurring, show the series delete modal. Otherwise only show regular confirmation modal
+    if (clickedEvent?.recurring) {
+      setShowSeriesDeleteModal(true);
+    } else {
+      setShowDeleteModal(true);
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -443,6 +454,24 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
       onClose();
       await deleteEvent();
       toast.success('Event deleted successfully!');
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    }
+  };
+
+  const handleSeriesDeleteConfirm = async (deleteEntireEvent: boolean) => {
+    try {
+      setShowSeriesDeleteModal(false);
+      onClose();
+      if (deleteEntireEvent) {
+        await deleteEvent();
+        toast.success('Event deleted successfully!');
+      } else {
+        await deleteScheduleSlot();
+        toast.success('Event occurrence deleted successfully!');
+      }
     } catch (err) {
       if (err instanceof Error) {
         toast.error(err.message);
@@ -501,6 +530,19 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
           formId="delete-event-form"
           dataType={clickedEvent.title}
           onFormSubmit={handleDeleteConfirm}
+        />
+      )}
+
+      {clickedEvent && showSeriesDeleteModal && (
+        <DeleteSeriesConfirmationModal
+          open={showSeriesDeleteModal}
+          onCancel={() => {
+            setShowSeriesDeleteModal(false);
+            onClose();
+          }}
+          onConfirm={handleSeriesDeleteConfirm}
+          eventTitle={clickedEvent.title}
+          totalSlots={clickedEvent.totalScheduledSlots}
         />
       )}
     </Popover>

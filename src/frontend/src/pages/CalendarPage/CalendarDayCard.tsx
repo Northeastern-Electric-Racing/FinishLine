@@ -10,8 +10,9 @@ import HelpIcon from '@mui/icons-material/Help';
 import { EventClickContent } from './EventClickPopup';
 import EventPartialInfoView from './EventPartialInfoView';
 import EditEventModal from './Components/EditEventModal';
+import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmationModal';
 import NERDeleteModal from '../../components/NERDeleteModal';
-import { useDeleteEvent } from '../../hooks/calendar.hooks';
+import { useDeleteEvent, useDeleteScheduleSlot } from '../../hooks/calendar.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
@@ -72,10 +73,15 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const [lockedTooltipEventId, setLockedTooltipEventId] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventInstance | null>(null);
   const toast = useToast();
 
   const { mutateAsync: deleteEvent } = useDeleteEvent(selectedEvent?.eventId ?? '');
+  const { mutateAsync: deleteScheduleSlot } = useDeleteScheduleSlot(
+    selectedEvent?.eventId ?? '',
+    selectedEvent?.scheduleSlotId ?? ''
+  );
 
   const handleEdit = (event: EventInstance) => {
     setSelectedEvent(event);
@@ -84,7 +90,11 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
 
   const handleDelete = (event: EventInstance) => {
     setSelectedEvent(event);
-    setShowDeleteModal(true);
+    if (event.recurring) {
+      setShowSeriesDeleteModal(true);
+    } else {
+      setShowDeleteModal(true);
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -93,6 +103,24 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
       setLockedTooltipEventId(null);
       await deleteEvent();
       toast.success('Event deleted successfully!');
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    }
+  };
+
+  const handleSeriesDeleteConfirm = async (deleteEntireEvent: boolean) => {
+    try {
+      setShowSeriesDeleteModal(false);
+      setLockedTooltipEventId(null);
+      if (deleteEntireEvent) {
+        await deleteEvent();
+        toast.success('Event deleted successfully!');
+      } else {
+        await deleteScheduleSlot();
+        toast.success('Event occurrence deleted successfully!');
+      }
     } catch (err) {
       if (err instanceof Error) {
         toast.error(err.message);
@@ -433,7 +461,12 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           <DayCardTitle />
           {events.length === 1 ? (
             <EventCard event={events[0]} />
-          ) : events.length >= 2 ? (
+          ) : events.length === 2 ? (
+            <>
+              <EventCard event={events[0]} />
+              <EventCard event={events[1]} />
+            </>
+          ) : events.length >= 3 ? (
             <>
               <EventCard event={events[0]} />
               <ExtraEventsCard extraEvents={events.slice(1)} />
@@ -464,6 +497,19 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           formId="delete-event-form"
           dataType={selectedEvent.title}
           onFormSubmit={handleDeleteConfirm}
+        />
+      )}
+
+      {selectedEvent && showSeriesDeleteModal && (
+        <DeleteSeriesConfirmationModal
+          open={showSeriesDeleteModal}
+          onCancel={() => {
+            setShowSeriesDeleteModal(false);
+            setLockedTooltipEventId(null);
+          }}
+          onConfirm={handleSeriesDeleteConfirm}
+          eventTitle={selectedEvent.title}
+          totalSlots={selectedEvent.totalScheduledSlots}
         />
       )}
     </>

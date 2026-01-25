@@ -3,6 +3,8 @@ import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import { Calendar, EventInstance, EventType } from 'shared';
+import { datePipe } from '../../utils/pipes';
+import { formatTime } from '../../utils/datetime.utils';
 
 interface UpcomingMeetingProp {
   calendars: Calendar[];
@@ -41,14 +43,21 @@ const UpcomingMeetingsCard: React.FC<UpcomingMeetingProp> = ({ event, calendars 
 
           {/* Event Time */}
           <Box marginLeft="auto" whiteSpace="nowrap">
-            {new Date(event.startTime).toLocaleTimeString()}
+            {datePipe(event.startTime)}
           </Box>
         </Box>
 
-        {/* Event Location */}
-        <Typography sx={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '15px' }}>
-          <RoomOutlinedIcon /> {event.location ? event.location : event.zoomLink ? event.zoomLink : 'N/A'}
-        </Typography>
+        <Box display="flex" alignItems="flex-start" width="100%" fontSize="15px">
+          {/* Event Location */}
+          <Typography sx={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '15px' }}>
+            <RoomOutlinedIcon /> {event.location ? event.location : event.zoomLink ? event.zoomLink : 'N/A'}
+          </Typography>
+
+          {/* Event Time */}
+          <Box marginLeft="auto" whiteSpace="nowrap">
+            {formatTime(new Date(event.startTime))}
+          </Box>
+        </Box>
 
         {/* Event Members */}
         <Box display="flex" alignItems="center" gap="5px" maxWidth="100%" minWidth={0}>

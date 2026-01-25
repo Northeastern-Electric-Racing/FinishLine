@@ -386,7 +386,9 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
                 startTime: getNextMeetingTime(clickedEvent as Event),
                 endTime: getNextMeetingTime(clickedEvent as Event),
                 allDay: clickedEvent?.scheduledTimes[0]?.allDay ?? false,
-                scheduleSlotId: clickedEvent?.scheduledTimes[0]?.scheduleSlotId ?? ''
+                scheduleSlotId: clickedEvent?.scheduledTimes[0]?.scheduleSlotId ?? '',
+                recurring: clickedEvent.scheduledTimes.length > 1,
+                totalScheduledSlots: clickedEvent.scheduledTimes.length
               }
             : undefined
         }
@@ -404,7 +406,9 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
             startTime: getNextMeetingTime(clickedEditEvent as Event),
             endTime: getNextMeetingTime(clickedEditEvent as Event),
             allDay: clickedEditEvent?.scheduledTimes[0]?.allDay ?? false,
-            scheduleSlotId: clickedEditEvent?.scheduledTimes[0]?.scheduleSlotId ?? ''
+            scheduleSlotId: clickedEditEvent?.scheduledTimes[0]?.scheduleSlotId ?? '',
+            recurring: clickedEditEvent.scheduledTimes.length > 1,
+            totalScheduledSlots: clickedEditEvent.scheduledTimes.length
           }}
           eventTypes={allEventTypes}
         />

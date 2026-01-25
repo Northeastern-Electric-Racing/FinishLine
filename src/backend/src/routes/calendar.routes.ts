@@ -164,6 +164,8 @@ calendarRouter.get(
   CalendarController.previewScheduleSlotRecurringEdits
 );
 
+calendarRouter.post('/event/:eventId/schedule-slot/:scheduleSlotId/delete', CalendarController.deleteScheduleSlot);
+
 calendarRouter.get('/document/:fileId', CalendarController.downloadDocument);
 
 calendarRouter.post(
