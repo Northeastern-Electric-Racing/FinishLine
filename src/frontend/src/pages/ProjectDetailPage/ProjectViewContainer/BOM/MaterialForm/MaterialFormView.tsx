@@ -496,28 +496,30 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           </FormControl>
         </Box>
       </Grid>
-      <Grid item xs={12} sx={{ pl: 0, pr: 0 }}>
-        <Box
-          sx={{
-            pt: 1
-          }}
-        >
-          <Button
-            variant="contained"
-            disableElevation
-            onClick={() => {}}
+      {submitText === 'Add' && (
+        <Grid item xs={12} sx={{ pl: 0, pr: 0 }}>
+          <Box
             sx={{
-              mx: 0,
-              textTransform: 'none',
-              bgcolor: '#EF4345',
-              color: (t) => t.palette.getContrastText('#EF4345'),
-              '&:hover': { bgcolor: (t) => t.palette.error.dark }
+              pt: 1
             }}
           >
-            COPY FROM EXISTING BOM
-          </Button>
-        </Box>
-      </Grid>
+            <Button
+              variant="contained"
+              disableElevation
+              onClick={() => {}}
+              sx={{
+                mx: 0,
+                textTransform: 'none',
+                bgcolor: '#EF4345',
+                color: (t) => t.palette.getContrastText('#EF4345'),
+                '&:hover': { bgcolor: (t) => t.palette.error.dark }
+              }}
+            >
+              COPY FROM EXISTING BOM
+            </Button>
+          </Box>
+        </Grid>
+      )}
     </NERFormModal>
   );
 };
