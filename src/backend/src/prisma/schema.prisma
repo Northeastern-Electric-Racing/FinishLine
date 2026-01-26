@@ -158,12 +158,6 @@ enum Review_Status {
   APPROVED
 }
 
-enum Definition_Type {
-  PROJECT_MANAGEMENT
-  DIVISIONS
-  HOME_PAGE
-}
-
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -272,8 +266,8 @@ model User {
   deletedSponsorTiers                     Sponsor_Tier[]
   financeDelegateForOrganizations         Organization[]                       @relation(name: "financeDelegates")
   assignedReimbursementRequests           Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
-  deletedTermDefinitions                  Term_Definition[]                    @relation(name: "termDefinitionDeleter")
-  createdtermDefinitions                  Term_Definition[]                    @relation(name: "termDefinitionCreator")
+  deletedGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionDeleter")
+  createdGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionCreator")
 }
 
 model Role {
@@ -969,19 +963,21 @@ model Manufacturer {
 }
 
 model Team_Type {
-  teamTypeId      String          @id @default(uuid())
+  teamTypeId      String            @id @default(uuid())
   name            String
   iconName        String
   designReviews   Design_Review[]
   teams           Team[]
-  description     String          @default("")
+  description     String            @default("")
   imageFileId     String?
   organizationId  String
-  organization    Organization    @relation(fields: [organizationId], references: [organizationId])
+  organization    Organization      @relation(fields: [organizationId], references: [organizationId])
   calendarId      String?
   checklists      Checklist[]
-  usersOnboarding User[]          @relation(name: "onboardingTeamTypes")
-  usersOnboarded  User[]          @relation(name: "onboardedTeamTypes")
+  usersOnboarding User[]            @relation(name: "onboardingTeamTypes")
+  usersOnboarded  User[]            @relation(name: "onboardedTeamTypes")
+  definition      Guest_Definition? @relation(fields: [definitionId], references: [definitionId])
+  definitionId    String?
 
   dateDeleted DateTime?
   deletedById String?
@@ -1227,7 +1223,7 @@ model Organization {
   sponsorTiers             Sponsor_Tier[]
   indexCodes               Index_Code[]
   financeDelegates         User[]                       @relation(name: "financeDelegates")
-  termDefinitions          Term_Definition[]
+  guestDefinitions         Guest_Definition[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1566,26 +1562,22 @@ model Reimbursement_Request_Comment {
   @@index([reimbursementRequestId])
 }
 
-model Term_Definition {
-  definitionId   String            @id @default(uuid())
+model Guest_Definition {
+  definitionId   String       @id @default(uuid())
   term           String
   description    String
-  type           Definition_Type
   buttonText     String?
   buttonLink     String?
-  subTerms       Term_Definition[] @relation("TermDefinitionSubTerms")
-  dateCreated    DateTime          @default(now())
+  icon           String?
+  dateCreated    DateTime     @default(now())
   dateDeleted    DateTime?
-  userDeleted    User?             @relation(fields: [userDeletedId], references: [userId], name: "termDefinitionDeleter")
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "guestDefinitionDeleter")
   userDeletedId  String?
-  userCreated    User              @relation(fields: [userCreatedId], references: [userId], name: "termDefinitionCreator")
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "guestDefinitionCreator")
   userCreatedId  String
-  organization   Organization      @relation(fields: [organizationId], references: [organizationId])
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
   organizationId String
-  parentTerm     Term_Definition?  @relation("TermDefinitionSubTerms", fields: [parentTermId], references: [definitionId])
-  parentTermId   String?
+  teamTypes      Team_Type[]
 
   @@index([organizationId])
-  @@index([type])
-  @@index([parentTermId])
 }
