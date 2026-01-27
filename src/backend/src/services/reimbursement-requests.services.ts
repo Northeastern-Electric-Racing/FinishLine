@@ -418,6 +418,7 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
         dateOfExpense: dateOfExpense ?? null,
+        description: description ?? null,
         indexCodeId,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
@@ -494,6 +495,7 @@ export default class ReimbursementRequestService {
    * @param reimbursementId The id of the reimbursement to be edited
    * @param editor The user editing the reimbursement
    * @param amount The new amount of the reimbursement
+   * @param description The new description of the reimbursement
    * @param dateCreated The new date the reimbursement was created
    * @param organizationId The organization the user is currently in
    * @returns The updated reimbursement
