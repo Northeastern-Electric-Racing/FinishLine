@@ -29,7 +29,7 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
-import { convertIntToDay, getOverlapTime } from '../../utils/calendar.utils';
+import { convertIntToDay, eventsToEventInstances, getOverlapTime } from '../../utils/calendar.utils';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useHistory } from 'react-router-dom';
@@ -68,6 +68,11 @@ const loadFilterSettings = (): Partial<CalendarFilterSettings> => {
 // Save filter settings to localStorage
 const saveFilterSettings = (settings: CalendarFilterSettings): void => {
   localStorage.setItem(CALENDAR_FILTERS_KEY, JSON.stringify(settings));
+};
+
+// Clear filter settings from localStorage
+const clearFilterSettings = (): void => {
+  localStorage.removeItem(CALENDAR_FILTERS_KEY);
 };
 
 interface NewCalendarPageProps {
@@ -220,23 +225,15 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     return d;
   });
 
+  // Upcoming meetings is independent of filters - shows events where user is creator, member, or on associated team
   const { data: upcomingEvents } = useFilterEvents({
     startPeriod: upcomingStartPeriod,
     endPeriod: upcomingEndPeriod,
-    memberIds: [...new Set(memberIds.concat(additionalMemberIds))],
-    teamIds: [...new Set(teamIds.concat(additionalTeamIds))]
+    memberIds: [user.userId],
+    teamIds: teamList
   });
 
-  const upcomingOccurences = upcomingEvents
-    ? upcomingEvents.flatMap((event) =>
-        event.scheduledTimes.map((slot) => ({
-          ...event,
-          ...slot,
-          recurring: event.scheduledTimes.length > 1,
-          totalScheduledSlots: event.scheduledTimes.length
-        }))
-      )
-    : [];
+  const upcomingOccurences = eventsToEventInstances(upcomingEvents ?? []);
 
   const toggleCalendar = (calendarId: string) => {
     setSelectedCalendarIds((prev) =>
@@ -274,11 +271,26 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     [conflictingDeniedEvents, filteredToDenied]
   );
 
+  // If filter endpoint errors (e.g., deleted user/team in saved filters), clear filters and retry
+  if (isError) {
+    // Check if there are any filters that could be causing the error
+    if (memberIds.length > 0 || teamIds.length > 0) {
+      // Clear saved filters from localStorage and reset state
+      clearFilterSettings();
+      setMemberIds([]);
+      setTeamIds([]);
+      return <LoadingIndicator />;
+    }
+    // No filters to clear, show the error
+    return <ErrorPage message={error.message} />;
+  }
+  if (conflictingEventsIsError) return <ErrorPage message={conflictingEventsError.message} />;
+  if (conflictingDeniedEventsIsError) return <ErrorPage message={conflictingDeniedEventsError.message} />;
+  if (conflictingReviewEventsIsError) return <ErrorPage message={conflictingReviewEventsError.message} />;
+
   if (
     isLoading ||
     !allEvents ||
-    conflictingEventsLoading ||
-    !conflictingEvents ||
     conflictingEventsLoading ||
     !conflictingEvents ||
     conflictingDeniedEventsLoading ||
@@ -288,15 +300,28 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   )
     return <LoadingIndicator />;
 
-  if (isError) return <ErrorPage message={error.message} />;
-  if (conflictingEventsIsError) return <ErrorPage message={conflictingEventsError.message} />;
-  if (conflictingDeniedEventsIsError) return <ErrorPage message={conflictingDeniedEventsError.message} />;
-  if (conflictingReviewEventsIsError) return <ErrorPage message={conflictingReviewEventsError.message} />;
-
   const transformedEvents = allEvents.map(filterEventTransformer);
 
+  // Get user's pending conflict events that aren't already in allEvents
+  // These are events the user created that have conflicts requiring approval
+  const userPendingConflictEvents = yourEvents
+    .filter((event) => event.approved === ConflictStatus.PENDING)
+    .filter((event) => event.userCreated.userId === user.userId)
+    .filter((event) => {
+      // Check if event falls within the display period
+      const eventTime = new Date(event.startTime);
+      return eventTime >= startPeriod && eventTime <= endPeriod;
+    })
+    .filter((event) => {
+      // Only include if not already in transformedEvents
+      return !transformedEvents.some((e) => e.eventId === event.eventId);
+    });
+
+  // Merge pending events with regular events
+  const allDisplayEvents = [...transformedEvents, ...userPendingConflictEvents.map((e) => ({ ...e, scheduledTimes: [] }))];
+
   // Sort events by their first occurrence's start time
-  const sortedEvents = [...transformedEvents].sort((event1, event2) => {
+  const sortedEvents = [...allDisplayEvents].sort((event1, event2) => {
     const time1 = event1.scheduledTimes[0]?.startTime ? new Date(event1.scheduledTimes[0].startTime).getTime() : 0;
     const time2 = event2.scheduledTimes[0]?.startTime ? new Date(event2.scheduledTimes[0].startTime).getTime() : 0;
     return time1 - time2;
@@ -304,14 +329,29 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
 
   const eventDict = new Map<string, EventInstance[]>();
   const dayDict = new Map<string, DayOfWeek>();
-  const eventInstances: EventInstance[] = sortedEvents.flatMap((event) =>
-    event.scheduledTimes.map((slot) => ({
-      ...event,
-      ...slot,
-      recurring: event.scheduledTimes.length > 1,
-      totalScheduledSlots: event.scheduledTimes.length
-    }))
-  );
+
+  // Convert events to instances
+  const regularInstances = eventsToEventInstances(sortedEvents);
+
+  // For pending conflict events from yourEvents, they're already EventInstances
+  const pendingInstances = userPendingConflictEvents;
+
+  // Combine all instances, filtering by shouldShowPendingEvent for pending ones
+  const allEventInstances = [...regularInstances, ...pendingInstances].filter((event) => {
+    if (event.approved === ConflictStatus.PENDING || event.approved === ConflictStatus.DENIED) {
+      return event.userCreated.userId === user.userId;
+    }
+    return true;
+  });
+
+  // Remove duplicates (same eventId + same scheduleSlotId)
+  const seenKeys = new Set<string>();
+  const eventInstances = allEventInstances.filter((event) => {
+    const key = `${event.eventId}-${event.scheduleSlotId}`;
+    if (seenKeys.has(key)) return false;
+    seenKeys.add(key);
+    return true;
+  });
 
   eventInstances.forEach((event) => {
     const eventDate = new Date(event.startTime);
@@ -639,7 +679,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                 >
                   {upcomingOccurences?.map((event) => (
                     <UpcomingMeetingsCard
-                      key={event.eventId}
+                      key={event.eventId + event.scheduleSlotId}
                       event={event}
                       calendars={allCalendars ?? []}
                       eventTypes={allEventTypes ?? []}

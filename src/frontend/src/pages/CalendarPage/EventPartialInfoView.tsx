@@ -6,6 +6,7 @@ import { Stack } from '@mui/system';
 import { getTeamTypeIcon } from './CalendarDayCard';
 import { Typography } from '@mui/material';
 import { formatTime } from '../../utils/datetime.utils';
+import { getMutedColor } from '../../utils/calendar.utils';
 
 interface EventInfoProps {
   event: EventInstance;
@@ -21,11 +22,15 @@ const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, cal
     calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)
   );
 
+  const baseColor = specificCalendar?.color ?? 'gray';
+  const isPending = event.status === 'UNCONFIRMED' || event.approved === 'PENDING' || event.approved === 'DENIED';
+  const bgColor = isPending ? getMutedColor(baseColor, 0.35) : baseColor;
+
   return (
     <Stack
       direction="column"
       spacing={2}
-      bgcolor={specificCalendar?.color ?? 'gray'}
+      bgcolor={bgColor}
       margin={1}
       borderRadius={2}
       padding={1}
@@ -33,7 +38,14 @@ const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, cal
         e.stopPropagation();
         onClick();
       }}
-      sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
+      sx={{
+        cursor: 'pointer',
+        '&:hover': { opacity: 0.8 },
+        ...(isPending && {
+          border: `1px dashed ${baseColor}`,
+          opacity: 0.8
+        })
+      }}
     >
       <Stack direction="row" spacing={5}>
         <Stack direction="row" sx={{ minWidth: 200 }}>

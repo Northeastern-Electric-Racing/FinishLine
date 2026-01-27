@@ -1,5 +1,36 @@
-import { DayOfWeek, Event, EventInstance } from 'shared';
+import { ConflictStatus, DayOfWeek, Event, EventInstance, EventStatus } from 'shared';
 import { EventFormValues } from '../pages/CalendarPage/Components/EventModal';
+
+/**
+ * Gets the reason why an event is pending for display purposes.
+ */
+export const getPendingReason = (event: EventInstance): string | null => {
+  if (event.approved === ConflictStatus.PENDING) {
+    return 'This event has a scheduling conflict and requires approval.';
+  } else if (event.approved === ConflictStatus.DENIED) {
+    return 'This event was denied due to a scheduling conflict.';
+  } else if (event.status === EventStatus.UNCONFIRMED) {
+    return 'This event is unconfirmed and waiting to be scheduled.';
+  }
+  return null;
+};
+
+/**
+ * Converts a hex color to a muted (lighter, lower opacity) version.
+ * Used for pending events to show them in a less prominent way.
+ */
+export const getMutedColor = (hexColor: string, opacity: number = 0.35): string => {
+  // Remove # if present
+  const hex = hexColor.replace('#', '');
+
+  // Parse RGB values
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // Return rgba with reduced opacity
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
 
 export const convertDayToInt = (day: DayOfWeek) => {
   switch (day) {
@@ -111,6 +142,31 @@ export const getOverlapTime = (event1: Event, event2: Event) => {
   }
 
   return overlaps;
+};
+
+export const eventsToEventInstances = (events: Event[]): EventInstance[] => {
+  return events.flatMap((event) => {
+    if (event.scheduledTimes.length === 0 && event.initialDateScheduled) {
+      // unscheduled design review, include slot with start and end time as initialDateScheduled
+      return [
+        {
+          ...event,
+          startTime: event.initialDateScheduled,
+          endTime: event.initialDateScheduled,
+          recurring: false,
+          totalScheduledSlots: 0,
+          scheduleSlotId: event.eventId + '_unscheduled',
+          allDay: true
+        }
+      ];
+    }
+    return event.scheduledTimes.map((scheduledTime) => ({
+      ...event,
+      ...scheduledTime,
+      recurring: event.scheduledTimes.length > 1,
+      totalScheduledSlots: event.scheduledTimes.length
+    }));
+  });
 };
 
 // converts an Event into Event Form Values

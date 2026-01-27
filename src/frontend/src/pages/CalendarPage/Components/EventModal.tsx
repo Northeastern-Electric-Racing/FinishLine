@@ -27,8 +27,7 @@ import {
   EventType,
   isHead,
   MAX_FILE_SIZE,
-  getNextSevenDays,
-  ScheduleSlot
+  getNextSevenDays
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
@@ -138,7 +137,7 @@ const schema = yup.object().shape({
     .test('is-after-start', 'End time must be after start time', function (value) {
       const { startTime } = this.parent;
       if (!value || !startTime) return true;
-      return new Date(value).getTime() > new Date(startTime).getTime();
+      return new Date(value).getTime() >= new Date(startTime).getTime();
     }),
   allDay: yup.boolean().required(),
   recurrenceNumber: yup.number().min(0).required('Recurrence is required'),
@@ -494,9 +493,26 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       };
     } else if (!isEditMode) {
       // For create mode, populate createScheduleSlotArgs
+      // Combine scheduleDate (date portion) with startTime/endTime (time portion)
+      const combinedStartTime = new Date(data.scheduleDate);
+      combinedStartTime.setHours(
+        data.startTime.getHours(),
+        data.startTime.getMinutes(),
+        data.startTime.getSeconds(),
+        data.startTime.getMilliseconds()
+      );
+
+      const combinedEndTime = new Date(data.scheduleDate);
+      combinedEndTime.setHours(
+        data.endTime.getHours(),
+        data.endTime.getMinutes(),
+        data.endTime.getSeconds(),
+        data.endTime.getMilliseconds()
+      );
+
       payload.createScheduleSlotArgs = {
-        startTime: data.startTime,
-        endTime: data.endTime,
+        startTime: combinedStartTime,
+        endTime: combinedEndTime,
         days: data.days.length > 0 ? data.days : [convertIntToDay(data.scheduleDate.getDay())],
         recurrenceNumber: data.recurrenceNumber > 0 ? data.recurrenceNumber : 1,
         allDay: data.allDay
@@ -652,25 +668,37 @@ const EventModal: React.FC<BaseEventModalProps> = ({
           {/* Event Type Tabs */}
           <FormControl fullWidth>
             <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-              {allowedEventTypes.map((et) => (
-                <Button
-                  key={et.eventTypeId}
-                  onClick={() => handleEventTypeChange(et.eventTypeId)}
-                  variant={watch('eventTypeId') === et.eventTypeId ? 'contained' : 'outlined'}
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    bgcolor: watch('eventTypeId') === et.eventTypeId ? 'grey.600' : 'transparent',
-                    color: watch('eventTypeId') === et.eventTypeId ? 'white' : 'text.primary',
-                    borderColor: 'grey.400',
-                    '&:hover': {
-                      bgcolor: watch('eventTypeId') === et.eventTypeId ? 'grey.700' : 'grey.100'
-                    }
-                  }}
-                >
-                  {et.name}
-                </Button>
-              ))}
+              {allowedEventTypes.map((et) => {
+                const isSelected = watch('eventTypeId') === et.eventTypeId;
+                // In edit mode, disable all buttons except the selected one
+                const isDisabled = isEditMode && !isSelected;
+                return (
+                  <Button
+                    key={et.eventTypeId}
+                    onClick={() => handleEventTypeChange(et.eventTypeId)}
+                    disabled={isDisabled}
+                    variant={isSelected ? 'contained' : 'outlined'}
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      bgcolor: isSelected ? 'grey.600' : 'transparent',
+                      color: isSelected ? 'white' : 'text.primary',
+                      borderColor: 'grey.400',
+                      '&:hover': {
+                        bgcolor: isSelected ? 'grey.700' : 'grey.100'
+                      },
+                      '&.Mui-disabled': {
+                        bgcolor: 'transparent',
+                        color: 'text.disabled',
+                        borderColor: 'grey.700',
+                        opacity: 0.5
+                      }
+                    }}
+                  >
+                    {et.name}
+                  </Button>
+                );
+              })}
             </Stack>
             <FormHelperText error>{errors.eventTypeId?.message}</FormHelperText>
           </FormControl>
@@ -815,6 +843,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                                 textField: {
                                   variant: 'standard',
                                   error: !!errors.startTime,
+                                  helperText: errors.startTime?.message,
                                   onClick: () => setStartTimePickerOpen(true),
                                   sx: { width: 100 }
                                 },
@@ -862,6 +891,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                                 textField: {
                                   variant: 'standard',
                                   error: !!errors.endTime,
+                                  helperText: errors.endTime?.message,
                                   onClick: () => setEndTimePickerOpen(true),
                                   sx: { width: 100 }
                                 },

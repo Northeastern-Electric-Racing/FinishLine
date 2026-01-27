@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
-import { Calendar, DayOfWeek, EventInstance, EventType } from 'shared';
+import { Alert, Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
+import { Calendar, DayOfWeek, EventInstance, EventType, isAdmin, isHead } from 'shared';
+import { useCurrentUser } from '../../hooks/users.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { getTeamTypeIcon } from './CalendarDayCard';
@@ -20,6 +21,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import EditIcon from '@mui/icons-material/Edit';
 import PeopleIcon from '@mui/icons-material/People';
 import DeleteIcon from '@mui/icons-material/Delete';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
 import { useApproveEvent, useDeleteEvent, useDeleteScheduleSlot, useDenyEvent } from '../../hooks/calendar.hooks';
@@ -28,6 +30,7 @@ import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmation
 import { useToast } from '../../hooks/toasts.hooks';
 import NERDeleteModal from '../../components/NERDeleteModal';
 import { formatTime } from '../../utils/datetime.utils';
+import { getPendingReason } from '../../utils/calendar.utils';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
@@ -78,8 +81,14 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
 }) => {
   const { mutateAsync: approveEvent } = useApproveEvent(event.eventId);
   const { mutateAsync: denyEvent } = useDenyEvent(event.eventId);
+  const currentUser = useCurrentUser();
+  const toast = useToast();
 
   const theme = useTheme();
+
+  // User can approve if they are admin, head, or the user whose approval is required
+  const canApprove =
+    isAdmin(currentUser.role) || isHead(currentUser.role) || event.approvalRequiredFrom?.userId === currentUser.userId;
 
   const name = event.workPackages?.[0]?.wbsElement?.name || event.title;
 
@@ -109,6 +118,8 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
   const descriptionText = (event.description ?? '').trim();
   const locationText = (event.location ?? '').trim();
 
+  const pendingReason = getPendingReason(event);
+
   return (
     <Box
       sx={{
@@ -120,6 +131,26 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
         maxWidth: 520
       }}
     >
+      {pendingReason && (
+        <Alert
+          severity="warning"
+          icon={<WarningAmberIcon fontSize="small" />}
+          sx={{
+            mb: 1.5,
+            py: 0,
+            px: 1,
+            fontSize: 12,
+            bgcolor: 'rgba(255, 167, 38, 0.15)',
+            color: '#ffa726',
+            '& .MuiAlert-icon': {
+              color: '#ffa726',
+              py: 0.5
+            }
+          }}
+        >
+          {pendingReason}
+        </Alert>
+      )}
       <Box sx={{ position: 'relative', mb: 2 }}>
         {!disable && (
           <Box sx={{ position: 'absolute', top: 0, right: 0, display: 'flex', gap: 0.5 }}>
@@ -373,14 +404,19 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
             </Typography>
           </Stack>
         )}
-        {addApprovalButtons && (
+        {addApprovalButtons && canApprove && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <NERSuccessButton
               sx={{ mx: 1 }}
               type="submit"
               onClick={async () => {
-                await approveEvent();
-                onClose();
+                try {
+                  await approveEvent();
+                  toast.success('Event approved successfully');
+                  onClose();
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : 'Failed to approve event');
+                }
               }}
             >
               Approve
@@ -388,8 +424,13 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
             <NERFailButton
               sx={{ mx: 1 }}
               onClick={async () => {
-                await denyEvent();
-                onClose();
+                try {
+                  await denyEvent();
+                  toast.success('Event denied successfully');
+                  onClose();
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : 'Failed to deny event');
+                }
               }}
             >
               Deny

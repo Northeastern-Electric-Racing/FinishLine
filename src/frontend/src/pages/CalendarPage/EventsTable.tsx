@@ -396,6 +396,7 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
         onClose={handleCloseClickPopup}
         eventTypes={allEventTypes}
         calendars={allCalendars}
+        addApprovalButtons={tab === 2 && clickedEvent?.approved === ConflictStatus.PENDING}
       />
       {clickedEditEvent && showEditModal && (
         <EditEventModal

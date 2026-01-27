@@ -2385,7 +2385,7 @@ export default class CalendarService {
     }
 
     // filters for members/teams
-    const memberOrTeamFilter = [];
+    const memberOrTeamFilter: any[] = [];
 
     if (memberIds?.length) {
       memberOrTeamFilter.push(
@@ -2399,6 +2399,16 @@ export default class CalendarService {
       memberOrTeamFilter.push({ teams: { some: { teamId: { in: teamIds } } } });
       memberOrTeamFilter.push({ workPackages: { some: { project: { teams: { some: { teamId: { in: teamIds } } } } } } });
     }
+
+    // filters for timing, based on either schedule slots (confirmed events) or initial date scheduled (unconfirmed events)
+    const scheduleSlotsOrDateScheduled: any[] = [
+      {
+        scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod)
+      },
+      {
+        AND: [{ initialDateScheduled: { gte: startPeriod } }, { initialDateScheduled: { lte: endPeriod } }]
+      }
+    ];
 
     // filters for selected calendars
     const fromCalendar =
@@ -2425,9 +2435,8 @@ export default class CalendarService {
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
         approvalRequiredFromUserId: approvalIds?.length ? { in: approvalIds } : undefined,
-        OR: memberIds || teamIds ? memberOrTeamFilter : undefined,
         approved: statuses?.length ? { in: statuses } : undefined,
-        scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
+        OR: memberOrTeamFilter.concat(scheduleSlotsOrDateScheduled),
         ...fromCalendar
       },
       ...getEventQueryArgs(organization.organizationId),

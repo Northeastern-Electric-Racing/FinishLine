@@ -44,7 +44,7 @@ export const eventPreviewTransformer = (event: EventPreview): EventPreview => {
   return {
     eventId: event.eventId,
     title: event.title,
-    dateScheduled: event.dateScheduled,
+    dateScheduled: new Date(event.dateScheduled),
     status: event.status,
     userCreated: userTransformer(event.userCreated),
     wbsName: event.wbsName

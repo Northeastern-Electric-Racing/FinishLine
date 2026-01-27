@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Card, CardContent, Grid, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { Calendar, DayOfWeek, EventInstance, EventType } from 'shared';
+import { Calendar, ConflictStatus, DayOfWeek, EventInstance, EventStatus, EventType } from 'shared';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
@@ -14,6 +14,7 @@ import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmation
 import NERDeleteModal from '../../components/NERDeleteModal';
 import { useDeleteEvent, useDeleteScheduleSlot } from '../../hooks/calendar.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
+import { getMutedColor } from '../../utils/calendar.utils';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -155,7 +156,12 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
       calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)
     );
 
-    const bgColor = specificCalendar?.color ?? 'gray';
+    const baseColor = specificCalendar?.color ?? 'gray';
+    const isPending =
+      event.status === EventStatus.UNCONFIRMED ||
+      event.approved === ConflictStatus.PENDING ||
+      event.approved === ConflictStatus.DENIED;
+    const bgColor = isPending ? getMutedColor(baseColor, 0.35) : baseColor;
     const isLocked = lockedTooltipEventId === event.eventId;
     const shouldBeOpen = isLocked || isHovered || tooltipHovered;
 
@@ -188,7 +194,11 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
             borderRadius: 1,
             width: '100%',
             minHeight: 30,
-            maxHeight: 30
+            maxHeight: 30,
+            ...(isPending && {
+              border: `1px dashed ${baseColor}`,
+              opacity: 0.8
+            })
           }}
         >
           <Tooltip

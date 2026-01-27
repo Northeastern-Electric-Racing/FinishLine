@@ -2,9 +2,11 @@ import { Card, Box, Typography, Stack } from '@mui/material';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { Calendar, EventInstance, EventType } from 'shared';
 import { datePipe } from '../../utils/pipes';
 import { formatTime } from '../../utils/datetime.utils';
+import { getMutedColor, getPendingReason } from '../../utils/calendar.utils';
 
 interface UpcomingMeetingProp {
   calendars: Calendar[];
@@ -18,6 +20,11 @@ const UpcomingMeetingsCard: React.FC<UpcomingMeetingProp> = ({ event, calendars 
     calendar.eventTypes.some((eventType) => eventType.eventTypeId === specificEventType?.eventTypeId)
   );
 
+  const baseColor = specificCalendar?.color ?? 'gray';
+
+  const pendingReason = getPendingReason(event);
+  const bgColor = pendingReason ? getMutedColor(baseColor, 0.35) : baseColor;
+
   // optional and required members are combined and sorted by first name
   const members = Array.from(
     new Map([...event.requiredMembers, ...event.optionalMembers].map((u) => [u.userId, u])).values()
@@ -26,14 +33,24 @@ const UpcomingMeetingsCard: React.FC<UpcomingMeetingProp> = ({ event, calendars 
   return (
     <Card
       style={{
-        backgroundColor: specificCalendar?.color ?? 'gray',
+        backgroundColor: bgColor,
         margin: '10px',
         display: 'flex',
         alignItems: 'flex-start',
-        padding: '5px'
+        padding: '5px',
+        ...(pendingReason && {
+          border: `1px dashed ${baseColor}`,
+          opacity: 0.8
+        })
       }}
     >
       <Stack display="flex" width="100%">
+        {pendingReason && (
+          <Box display="flex" alignItems="center" gap="4px" mb={0.5} sx={{ color: '#ffa726' }}>
+            <WarningAmberIcon sx={{ fontSize: 14 }} />
+            <Typography sx={{ fontSize: 11, fontStyle: 'italic' }}>{pendingReason}</Typography>
+          </Box>
+        )}
         <Box display="flex" alignItems="flex-start" width="100%" fontSize="15px">
           {/* Event Title */}
           <Box display="flex" alignItems="center" gap="5px" maxWidth="100%" minWidth={0}>

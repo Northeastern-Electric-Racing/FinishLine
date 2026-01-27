@@ -1,19 +1,20 @@
 import { routes } from '../../utils/routes';
 import NewCalendarPage from './NewCalendarPage';
 import PageLayout from '../../components/PageLayout';
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import FullPageTabs from '../../components/FullPageTabs';
 import { useState } from 'react';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { ConflictStatus, isHead, isLead } from 'shared';
+import { ConflictStatus, isGuest, isHead, isLead } from 'shared';
 import { useAllCalendars, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import EventsTable from './EventsTable';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CreateEventModal from './Components/CreateEventModal';
 import { useHistory } from 'react-router-dom';
+import { NERButton } from '../../components/NERButton';
+import { Add } from '@mui/icons-material';
 
 const CalendarTab: React.FC = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -114,28 +115,14 @@ const CalendarTab: React.FC = () => {
           </Box>
         }
         headerRight={
-          <Button
+          <NERButton
             variant="contained"
-            disableElevation
+            disabled={isGuest(user.role)}
+            startIcon={<Add />}
             onClick={() => handleNewEventClick()}
-            endIcon={<AddCircleOutlineIcon sx={{ fontSize: { xs: 24, sm: 30 } }} />}
-            sx={{
-              flexShrink: 0,
-              height: { xs: 36, sm: 40 },
-              px: { xs: 1, sm: 1 },
-              textTransform: 'none',
-              fontFamily: (t) => t.typography.h4.fontFamily,
-              fontSize: { xs: 20, sm: 25 },
-              fontWeight: 800,
-              color: (t) => t.palette.common.white,
-              bgcolor: '#F44336',
-              '&:hover': { bgcolor: '#FF0000' },
-              '& .MuiButton-endIcon svg': { fontSize: 30 }
-            }}
-            aria-label="Create New Event"
           >
             New Event
-          </Button>
+          </NERButton>
         }
       >
         {tabIndex === 0 ? (
