@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import TableCellHuge from './YourEventsComponents/TableCellHuge';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Calendar, ConflictStatus, EventType } from 'shared';
 import { Event } from 'shared';
 import WarningTooltip from './YourEventsComponents/WarningTooltip';
@@ -35,20 +35,62 @@ interface YourEventsHeadCells {
   label: string;
 }
 
-const getNextMeetingTime = (event: Event) => {
+const getNextMeetingTime = (event: Event): Date => {
   const times: Date[] = getMeetingDates(event);
 
-  times.sort((a, b) => a.getUTCSeconds() - b.getUTCSeconds());
-  let result = times[times.length - 1];
-  times.forEach((date) => {
-    const now = new Date();
-    const diffMs = date.getTime() - now.getTime();
-    if (diffMs > 0 && date.getTime() < result.getTime()) {
-      result = date;
+  // If no scheduled times, fall back to initialDateScheduled (for unscheduled design reviews)
+  if (times.length === 0) {
+    if (event.initialDateScheduled) {
+      return new Date(event.initialDateScheduled);
     }
-  });
+    // If still no date, return a far future date so it sorts to the end
+    return new Date(9999, 11, 31);
+  }
 
-  return result;
+  const now = new Date();
+  // Find the next upcoming time
+  const futureTimes = times.filter((date) => date.getTime() > now.getTime());
+  if (futureTimes.length > 0) {
+    futureTimes.sort((a, b) => a.getTime() - b.getTime());
+    return futureTimes[0];
+  }
+
+  // If all times are in the past, return the most recent one
+  times.sort((a, b) => b.getTime() - a.getTime());
+  return times[0];
+};
+
+const isAllDayEvent = (event: Event): boolean => {
+  return event.scheduledTimes.length > 0 && event.scheduledTimes[0]?.allDay === true;
+};
+
+const isUnscheduledEvent = (event: Event): boolean => {
+  return event.scheduledTimes.length === 0;
+};
+
+const sortEvents = (events: Event[]): Event[] => {
+  const now = new Date();
+
+  return [...events].sort((a, b) => {
+    const timeA = getNextMeetingTime(a).getTime();
+    const timeB = getNextMeetingTime(b).getTime();
+    const nowTime = now.getTime();
+
+    const aIsFuture = timeA >= nowTime;
+    const bIsFuture = timeB >= nowTime;
+
+    // Future events come first
+    if (aIsFuture && !bIsFuture) return -1;
+    if (!aIsFuture && bIsFuture) return 1;
+
+    // Both future: soonest first (ascending)
+    if (aIsFuture && bIsFuture) {
+      return timeA - timeB;
+    }
+
+    // Both past: most recent first (descending)
+    return timeB - timeA;
+  });
 };
 
 export interface EventTableArgs {
@@ -59,41 +101,11 @@ export interface EventTableArgs {
   tab: number;
 }
 
-// trigger re-renders specifically for the timer
-const CountdownElement = ({ targetDate }: { targetDate: Date }) => {
-  const [now, setNow] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setNow(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const diffMs = targetDate.getTime() - now.getTime();
-
-  const seconds = Math.floor(diffMs / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  const timeAway = {
-    passed: diffMs <= 0,
-    days,
-    hours: hours % 24,
-    minutes: minutes % 60,
-    seconds: seconds % 60
-  };
-
-  if (timeAway.passed) {
-    return <>- Passed</>;
-  }
-
-  return (
-    <>
-      - In {timeAway.days}d {timeAway.hours}h {timeAway.minutes}m {timeAway.seconds}s
-    </>
-  );
+const formatEventDate = (date: Date): string => {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const year = date.getFullYear();
+  return `${month}/${day}/${year}`;
 };
 
 const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, allEventTypes, allCalendars }) => {
@@ -214,7 +226,7 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
       : [])
   ];
 
-  const events = tab === 1 ? yourEvents : reviewEvents;
+  const events = sortEvents(tab === 1 ? yourEvents : reviewEvents);
 
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
@@ -249,14 +261,16 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
               return (
                 <TableRow key={event.eventId} hover>
                   <TableCell align="center">{event.title}</TableCell>
+                  <TableCell align="center">{formatEventDate(earliestSchedule)}</TableCell>
                   <TableCell align="center">
-                    {new Date(earliestSchedule).toLocaleDateString()} {<CountdownElement targetDate={earliestSchedule} />}
-                  </TableCell>
-                  <TableCell align="center">
-                    {new Date(earliestSchedule).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit'
-                    })}
+                    {isUnscheduledEvent(event)
+                      ? 'TBD'
+                      : isAllDayEvent(event)
+                        ? 'All Day'
+                        : earliestSchedule.toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit'
+                          })}
                   </TableCell>
                   <TableCell align="center">
                     {event.location ? (

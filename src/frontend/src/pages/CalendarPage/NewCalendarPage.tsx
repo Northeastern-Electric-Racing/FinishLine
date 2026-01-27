@@ -36,7 +36,6 @@ import { useHistory } from 'react-router-dom';
 import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import SchedulingConflictsWarning from './SchedulingConflictsWarning';
 import { EventInstance } from 'shared';
 
 // localStorage key for calendar filters
@@ -185,11 +184,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   );
 
   const filteredToPending = yourEvents
-    .filter((event) => event.approved === ConflictStatus.PENDING)
+    .filter((event) => event.approved === ConflictStatus.PENDING && event.userCreated.userId === user.userId)
     .map((event) => event.eventId);
 
   const filteredToDenied = yourEvents
-    .filter((event) => event.approved === ConflictStatus.DENIED)
+    .filter((event) => event.approved === ConflictStatus.DENIED && event.userCreated.userId === user.userId)
     .map((event) => event.eventId);
 
   const {
@@ -233,7 +232,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     teamIds: teamList
   });
 
-  const upcomingOccurences = eventsToEventInstances(upcomingEvents ?? []);
+  const upcomingOccurences = eventsToEventInstances(upcomingEvents ?? [])
+    .filter((event) => new Date(event.startTime) >= new Date())
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
   const toggleCalendar = (calendarId: string) => {
     setSelectedCalendarIds((prev) =>
@@ -634,15 +635,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                 }}
               />
             </Box>
-            <Box sx={{ flexShrink: 0 }}>
-              <SchedulingConflictsWarning
-                memberIds={memberIds.concat(additionalMemberIds)}
-                teamIds={teamIds.concat(additionalTeamIds)}
-                startPeriod={startPeriod}
-                endPeriod={endPeriod}
-              />
-            </Box>
-
             {/* Upcoming Meetings Section */}
             <Box
               sx={{

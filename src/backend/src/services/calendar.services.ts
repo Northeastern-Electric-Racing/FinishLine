@@ -956,7 +956,8 @@ export default class CalendarService {
         eventId: true,
         userCreatedId: true,
         location: true,
-        dateDeleted: true
+        dateDeleted: true,
+        approved: true
       }
     });
 
@@ -1066,6 +1067,17 @@ export default class CalendarService {
         data: {
           approved: Conflict_Status.PENDING,
           approvalRequiredFromUserId: conflictingEvent?.userCreated.userId
+        }
+      });
+    }
+
+    // if event was changed to avoid conflict, update approved status
+    if ((event.approved === Conflict_Status.PENDING || event.approved === Conflict_Status.DENIED) && !hasConflict) {
+      await prisma.event.update({
+        where: { eventId: event.eventId },
+        data: {
+          approved: Conflict_Status.NO_CONFLICT,
+          approvalRequiredFromUserId: null
         }
       });
     }
