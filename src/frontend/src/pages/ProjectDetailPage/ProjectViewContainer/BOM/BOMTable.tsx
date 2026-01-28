@@ -98,10 +98,23 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
           backgroundColor: '#ef4345'
         },
         '& .super-app-theme--even': {
-          backgroundColor: theme.palette.grey[400]
+          backgroundColor: theme.palette.grey[600],
+          '&:hover': {
+            backgroundColor: theme.palette.grey[700]
+          },
+          '&:focus': {
+            backgroundColor: '#997570'
+          }
         },
+
         '& .super-app-theme--odd': {
-          backgroundColor: 'transparent'
+          backgroundColor: 'transparent',
+          '&:hover': {
+            backgroundColor: theme.palette.grey[200]
+          },
+          '&:focus': {
+            backgroundColor: '#997570'
+          }
         }
       }}
     >
