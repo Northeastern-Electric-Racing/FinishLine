@@ -69,6 +69,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
     assemblyMaterials.forEach((material, indx) => materialsWithAssemblies.push(materialToRow(material, indx)));
   });
 
+  // drag and drop mechanics
   const handleDragStart = (materialId: string) => {
     const material = materials.find((m) => m.materialId === materialId);
     if (material) {
@@ -120,6 +121,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
     >
       <BomStyledDataGrid
         onColumnVisibilityModelChange={(model: GridColumnVisibilityModel) => {
+          //store a state inside a parent array (array in a parent class), and then every time the state changes, update the parent state, add another part that, on reload, we check the parent state and update the child state
           const tempColumns: boolean[] = [];
           Object.keys(model).forEach((toDelete) => {
             tempColumns.push(!model[toDelete]);
