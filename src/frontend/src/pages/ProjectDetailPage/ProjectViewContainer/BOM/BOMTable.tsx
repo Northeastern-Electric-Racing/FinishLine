@@ -27,6 +27,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
   const theme = useTheme();
 
   const rows: BomRow[] = noAssemblyMaterials.map((material: Material, idx: number) => materialToRow(material, idx));
+
   const isAssemblyOpen = (row: BomRow) => {
     return !row.assemblyId || row.assemblyId === '' || openRows.includes(row.assemblyId) || row.id.startsWith('assembly');
   };
@@ -44,6 +45,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
 
   assemblies.forEach((assembly) => {
     const assemblyMaterials = materials.filter((material) => material.assemblyId === assembly.assemblyId);
+
     materialsWithAssemblies.push({
       reimbursementRequestId: undefined,
       id: `assembly-${assembly.name}`,
@@ -63,10 +65,9 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
       notes: '',
       assemblyId: assembly.assemblyId
     });
+
     assemblyMaterials.forEach((material, indx) => materialsWithAssemblies.push(materialToRow(material, indx)));
   });
-
-  // drag and drop mechanics
 
   const handleDragStart = (materialId: string) => {
     const material = materials.find((m) => m.materialId === materialId);
@@ -82,6 +83,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
   const handleDrop = (event: React.DragEvent, targetAssemblyId?: string) => {
     event.preventDefault();
     if (!draggedMaterial) return;
+
     assignMaterial(draggedMaterial.materialId, targetAssemblyId)().finally(() => {
       setDraggedMaterial(null);
     });
@@ -95,32 +97,30 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
         '& .super-app-theme--header': {
           backgroundColor: '#ef4345'
         },
-        '& .super-app-theme--assembly': {
-          backgroundColor: theme.palette.grey[600],
-          '&:hover': {
-            backgroundColor: theme.palette.grey[700]
-          },
-          '&:focus': {
-            backgroundColor: '#997570'
-          }
+        '& .super-app-theme--even': {
+          backgroundColor: theme.palette.grey[400]
+        },
+        '& .super-app-theme--odd': {
+          backgroundColor: 'transparent'
         }
       }}
     >
       <BomStyledDataGrid
         onColumnVisibilityModelChange={(model: GridColumnVisibilityModel) => {
-          //store a state inside a parent array (array in a parent class), and then every time the state changes, update the parent state, add another part that, on reload, we check the parent state and update the child state
           const tempColumns: boolean[] = [];
           Object.keys(model).forEach((toDelete) => {
             tempColumns.push(!model[toDelete]);
           });
+
           setHideColumn(tempColumns);
           localStorage.setItem('hideColumn', JSON.stringify(tempColumns));
         }}
         columns={columns as GridColumns<GridValidRowModel>}
         rows={rows.concat(materialsWithAssemblies.filter(isAssemblyOpen))}
-        getRowClassName={(params) =>
-          `super-app-theme--${String(params.row.id).includes('assembly') ? 'assembly' : 'material'}`
-        }
+        getRowClassName={(params) => {
+          const stripe = params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd';
+          return `super-app-theme--${stripe}`;
+        }}
         rowsPerPageOptions={[100]}
         sx={bomTableStyles.datagrid}
         disableSelectionOnClick
@@ -142,6 +142,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
               const rowIndex = parseInt(event.currentTarget.getAttribute('data-rowindex') || '0');
               const materials = rows.concat(materialsWithAssemblies.filter(isAssemblyOpen));
               const { assemblyId } = materials[rowIndex];
+
               if (assemblyId === 'assembly-misc') {
                 handleDrop(event);
               } else {
@@ -164,4 +165,5 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
     </Box>
   );
 };
+
 export default BOMTable;
