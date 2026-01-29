@@ -33,9 +33,10 @@ const Login = () => {
     const pageName: string = queryArgs.get('page')!;
     queryArgs.delete('page');
 
-    // collect all the &valueX=... args, in order, from login query args
+   
     const intermediatePathValues: string[] = [];
     for (let valueIdx = 1; queryArgs.has(`value${valueIdx}`); valueIdx++) {
+      // collect all the &valueX=... args, in order, from login query args
       intermediatePathValues.push(`/${queryArgs.get(`value${valueIdx}`)!}`);
       queryArgs.delete(`value${valueIdx}`);
     }
