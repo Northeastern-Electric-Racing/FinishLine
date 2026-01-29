@@ -266,6 +266,8 @@ model User {
   deletedSponsorTiers                     Sponsor_Tier[]
   financeDelegateForOrganizations         Organization[]                       @relation(name: "financeDelegates")
   assignedReimbursementRequests           Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
+  deletedGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionDeleter")
+  createdGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionCreator")
 }
 
 model Role {
@@ -797,6 +799,7 @@ model Sponsor {
   taxExempt      Boolean
   sponsorNotes   String?
   sponsorTasks   Sponsor_Task[]
+  logoImageId    String?
 
   @@unique([name, organizationId], name: "uniqueSponsor")
   @@index([sponsorTierId])
@@ -1219,6 +1222,7 @@ model Organization {
   sponsorTiers             Sponsor_Tier[]
   indexCodes               Index_Code[]
   financeDelegates         User[]                       @relation(name: "financeDelegates")
+  guestDefinitions         Guest_Definition[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1555,4 +1559,24 @@ model Reimbursement_Request_Comment {
   reimbursementRequest          Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 
   @@index([reimbursementRequestId])
+}
+
+model Guest_Definition {
+  definitionId   String       @id @default(uuid())
+  term           String
+  description    String
+  order          Int
+  buttonText     String?
+  buttonLink     String?
+  icon           String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "guestDefinitionDeleter")
+  userDeletedId  String?
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "guestDefinitionCreator")
+  userCreatedId  String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@index([organizationId])
 }
