@@ -963,21 +963,20 @@ model Manufacturer {
 }
 
 model Team_Type {
-  teamTypeId      String            @id @default(uuid())
+  teamTypeId      String          @id @default(uuid())
   name            String
   iconName        String
   designReviews   Design_Review[]
   teams           Team[]
-  description     String            @default("")
+  description     String          @default("")
   imageFileId     String?
   organizationId  String
-  organization    Organization      @relation(fields: [organizationId], references: [organizationId])
+  organization    Organization    @relation(fields: [organizationId], references: [organizationId])
   calendarId      String?
   checklists      Checklist[]
-  usersOnboarding User[]            @relation(name: "onboardingTeamTypes")
-  usersOnboarded  User[]            @relation(name: "onboardedTeamTypes")
-  definition      Guest_Definition? @relation(fields: [definitionId], references: [definitionId])
-  definitionId    String?
+  usersOnboarding User[]          @relation(name: "onboardingTeamTypes")
+  usersOnboarded  User[]          @relation(name: "onboardedTeamTypes")
+  buttonLink      String?
 
   dateDeleted DateTime?
   deletedById String?
@@ -1566,6 +1565,7 @@ model Guest_Definition {
   definitionId   String       @id @default(uuid())
   term           String
   description    String
+  order          Int
   buttonText     String?
   buttonLink     String?
   icon           String?
@@ -1577,7 +1577,6 @@ model Guest_Definition {
   userCreatedId  String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
   organizationId String
-  teamTypes      Team_Type[]
 
   @@index([organizationId])
 }

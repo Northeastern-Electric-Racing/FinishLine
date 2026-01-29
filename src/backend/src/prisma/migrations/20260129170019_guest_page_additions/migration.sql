@@ -2,13 +2,14 @@
 ALTER TABLE "Sponsor" ADD COLUMN     "logoImageId" TEXT;
 
 -- AlterTable
-ALTER TABLE "Team_Type" ADD COLUMN     "definitionId" TEXT;
+ALTER TABLE "Team_Type" ADD COLUMN     "buttonLink" TEXT;
 
 -- CreateTable
 CREATE TABLE "Guest_Definition" (
     "definitionId" TEXT NOT NULL,
     "term" TEXT NOT NULL,
     "description" TEXT NOT NULL,
+    "order" INTEGER NOT NULL,
     "buttonText" TEXT,
     "buttonLink" TEXT,
     "icon" TEXT,
@@ -23,9 +24,6 @@ CREATE TABLE "Guest_Definition" (
 
 -- CreateIndex
 CREATE INDEX "Guest_Definition_organizationId_idx" ON "Guest_Definition"("organizationId");
-
--- AddForeignKey
-ALTER TABLE "Team_Type" ADD CONSTRAINT "Team_Type_definitionId_fkey" FOREIGN KEY ("definitionId") REFERENCES "Guest_Definition"("definitionId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Guest_Definition" ADD CONSTRAINT "Guest_Definition_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
