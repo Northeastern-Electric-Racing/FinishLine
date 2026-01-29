@@ -976,7 +976,6 @@ model Team_Type {
   checklists      Checklist[]
   usersOnboarding User[]          @relation(name: "onboardingTeamTypes")
   usersOnboarded  User[]          @relation(name: "onboardedTeamTypes")
-  buttonLink      String?
 
   dateDeleted DateTime?
   deletedById String?

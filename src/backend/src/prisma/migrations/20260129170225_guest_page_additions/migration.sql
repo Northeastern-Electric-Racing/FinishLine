@@ -1,9 +1,6 @@
 -- AlterTable
 ALTER TABLE "Sponsor" ADD COLUMN     "logoImageId" TEXT;
 
--- AlterTable
-ALTER TABLE "Team_Type" ADD COLUMN     "buttonLink" TEXT;
-
 -- CreateTable
 CREATE TABLE "Guest_Definition" (
     "definitionId" TEXT NOT NULL,
