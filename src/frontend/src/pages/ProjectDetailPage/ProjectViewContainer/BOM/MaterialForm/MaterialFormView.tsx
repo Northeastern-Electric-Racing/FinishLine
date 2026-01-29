@@ -84,7 +84,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
       showCloseButton
     >
       <Grid container spacing={2}>
-        <Grid item xs={7}>
+        <Grid item xs={12}>
           <FormControl fullWidth>
             <Typography
               sx={{
@@ -101,51 +101,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               control={control}
               errorMessage={errors.name}
               placeholder="Enter Name for Material"
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={5}>
-          <FormControl fullWidth>
-            <Typography
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.75rem',
-                color: '#EF4345'
-              }}
-              variant="h5"
-            >
-              Reimbursement #:
-            </Typography>
-            <Controller
-              name="reimbursementRequestId"
-              control={control}
-              defaultValue={control._defaultValues.reimbursementRequestId}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  variant="outlined"
-                  error={!!errors.reimbursementRequestId}
-                  helperText={errors.reimbursementRequestId?.message}
-                  SelectProps={{
-                    displayEmpty: true,
-                    renderValue: (selected) =>
-                      selected ? (
-                        reimbursementRequests.find((rr) => rr.reimbursementRequestId === selected)?.identifier
-                      ) : (
-                        <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>
-                          Select Corresponding RR
-                        </Typography>
-                      )
-                  }}
-                >
-                  {reimbursementRequests.map((rr: ReimbursementRequest) => (
-                    <MenuItem key={rr.reimbursementRequestId} value={rr.reimbursementRequestId}>
-                      {rr.identifier}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
             />
           </FormControl>
         </Grid>
@@ -208,7 +163,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   setValue('materialTypeName', '');
                   onChange('');
                 };
-
                 return (
                   <Box sx={{ alignItems: 'center' }}>
                     <NERAutocomplete
@@ -241,7 +195,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   }}
                   variant="h5"
                 >
-                  Manufacturer:*
+                  Manufacturer:
                 </Typography>
                 <Tooltip
                   title={'Make sure not to enter the distributor (e.g. Amazon)'}
@@ -321,17 +275,10 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               }}
               variant="h5"
             >
-              Part Details:*
+              Part Details:
             </Typography>
             <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="right">
-              <HelpIcon
-                sx={{
-                  fontSize: 'medium',
-                  ml: 1,
-                  color: 'lightgray',
-                  cursor: 'pointer'
-                }}
-              />
+              <HelpIcon sx={{ marginBottom: '-1.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
             </Tooltip>
           </Box>
         </Grid>
@@ -460,6 +407,41 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
       </Grid>
       <Grid item xs={12}>
+        <Grid item xs={12} mt={2}>
+          <FormControl fullWidth>
+            <Controller
+              name="reimbursementRequestId"
+              control={control}
+              defaultValue={control._defaultValues.reimbursementRequestId}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  select
+                  variant="outlined"
+                  error={!!errors.reimbursementRequestId}
+                  helperText={errors.reimbursementRequestId?.message}
+                  SelectProps={{
+                    displayEmpty: true,
+                    renderValue: (selected) =>
+                      selected ? (
+                        reimbursementRequests.find((rr) => rr.reimbursementRequestId === selected)?.identifier
+                      ) : (
+                        <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>
+                          Select Corresponding Reimbursement Request Number
+                        </Typography>
+                      )
+                  }}
+                >
+                  {reimbursementRequests.map((rr: ReimbursementRequest) => (
+                    <MenuItem key={rr.reimbursementRequestId} value={rr.reimbursementRequestId}>
+                      {rr.identifier}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </FormControl>
+        </Grid>
         <Box display={'flex'} justifyContent={'flex-end'} mt={2}>
           <FormControl fullWidth>
             <Controller

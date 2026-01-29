@@ -26,7 +26,7 @@ const schema = yup.object().shape({
   quantity: yup.number().optional(),
   price: yup.number().optional(),
   unitName: yup.string().optional(),
-  linkUrl: yup.string().required('URL is required!'),
+  linkUrl: yup.string().optional(),
   notes: yup.string().optional(),
   pdmFileName: yup.string().optional(),
   assemblyId: yup.string().optional(),
@@ -43,7 +43,7 @@ export interface MaterialFormInput {
   price?: number;
   quantity?: number;
   unitName?: string;
-  linkUrl: string;
+  linkUrl?: string;
   notes?: string;
   assemblyId?: string;
   reimbursementRequestId?: string;
@@ -59,7 +59,7 @@ export interface MaterialDataSubmission {
   price?: number;
   quantity?: Decimal;
   unitName?: string;
-  linkUrl: string;
+  linkUrl?: string;
   notes?: string;
   assemblyId?: string;
   subtotal?: number;
@@ -139,8 +139,12 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
 
   const onSubmitWrapper = (data: MaterialFormInput): void => {
     const price = data.price ? Math.round(data.price * 100) : undefined;
-    const subtotal = price ? (data.quantity ? parseFloat((data.quantity * price).toFixed(2)) : undefined) : undefined;
-    onSubmit({ ...data, subtotal, price, quantity: data.quantity ? new Decimal(data.quantity) : undefined });
+    const subtotal = price
+      ? data.quantity != null
+        ? parseFloat((data.quantity * price).toFixed(2))
+        : undefined
+      : undefined;
+    onSubmit({ ...data, subtotal, price, quantity: data.quantity != null ? new Decimal(data.quantity) : undefined });
   };
 
   const createManufacturerWrapper = async (manufacturerName: string): Promise<void> => {
