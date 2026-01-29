@@ -68,6 +68,7 @@ interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
   workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
+  createAutoApprovedLeadershipCR: (data: any) => void;
   defaultValues?: WorkPackageFormViewPayload;
   wbsElement: WbsElement;
   leadOrManagerOptions: User[];
@@ -92,6 +93,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   exitActiveMode,
   workPackageMutateAsync,
   createWorkPackageScopeCR,
+  createAutoApprovedLeadershipCR,
   defaultValues,
   wbsElement,
   leadOrManagerOptions,
@@ -223,10 +225,53 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   if (workPackageTemplateisLoading || !workPackageTemplates) return <LoadingIndicator />;
   if (workPackageTemplateisError) return <ErrorPage message={workPackageTemplateError.message} />;
 
+  // Check if only lead/manager changed
+  const checkOnlyLeadershipChanged = (
+    formName: string,
+    formStartDate: Date,
+    formDuration: number,
+    formBlockedBy: string[],
+    formStage: string,
+    formDescriptionBullets: DescriptionBulletPreview[]
+  ) => {
+    if (!defaultValues) return false; // Only relevant for edits
+
+    return (
+      formName === defaultValues.name &&
+      transformDate(formStartDate) === transformDate(defaultValues.startDate) &&
+      formDuration === defaultValues.duration &&
+      JSON.stringify(formBlockedBy.sort()) === JSON.stringify((defaultValues.blockedBy || []).sort()) &&
+      formStage === defaultValues.stage &&
+      JSON.stringify(formDescriptionBullets) === JSON.stringify(defaultValues.descriptionBullets) &&
+      (leadId !== wbsElement.lead?.userId.toString() || managerId !== wbsElement.manager?.userId.toString())
+    );
+  };
+
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage, descriptionBullets } = data;
     const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
     try {
+      const onlyLeadershipChanged = checkOnlyLeadershipChanged(
+        name,
+        startDate,
+        duration,
+        blockedBy,
+        stage,
+        descriptionBullets
+      );
+
+      if (onlyLeadershipChanged) {
+        const autoCRPayload = {
+          wbsNum: wbsElement.wbsNum,
+          workPackageId: defaultValues?.workPackageId,
+          leadId,
+          managerId
+        };
+        // await createAutoApprovedLeadershipCR(autoCRPayload);
+        exitActiveMode();
+        return;
+      }
+
       const payload = {
         leadId,
         managerId,
@@ -270,6 +315,18 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const startDate = watch('startDate');
   const duration = watch('duration');
 
+  // Calculate for submit button status
+  const onlyLeadershipChanged = defaultValues
+    ? checkOnlyLeadershipChanged(
+        watch('name'),
+        watch('startDate'),
+        watch('duration'),
+        watch('blockedBy'),
+        watch('stage'),
+        watch('descriptionBullets')
+      )
+    : false;
+
   const calculatedEndDate = dayjs(startDate)
     .add(7 * duration, 'day')
     .toDate();
@@ -311,7 +368,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
                   <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
                 </Tooltip>
                 <NERButton
-                  disabled={!!changeRequestInputExists}
+                  disabled={!!changeRequestInputExists || onlyLeadershipChanged}
                   variant="contained"
                   onClick={() => setIsModalOpen(true)}
                   sx={{ mx: 1 }}
@@ -328,7 +385,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
                 variant="contained"
                 type="submit"
                 sx={{ mx: 1 }}
-                disabled={!changeRequestInputExists && !!defaultValues}
+                disabled={!changeRequestInputExists && !!defaultValues && !onlyLeadershipChanged}
               >
                 Submit
               </NERSuccessButton>

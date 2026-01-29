@@ -16,6 +16,7 @@ interface WorkPackageFormProps {
   crId?: string;
   workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
+  createAutoApprovedLeadershipCR: (data: any) => void; // update this to auto approved cr payload
   schema: ObjectSchema<any>;
   breadcrumbs: { name: string; route: string }[];
 }
@@ -24,6 +25,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   wbsNum,
   workPackageMutateAsync,
   createWorkPackageScopeCR,
+  createAutoApprovedLeadershipCR,
   exitActiveMode,
   crId,
   schema,
@@ -76,6 +78,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
       exitActiveMode={exitActiveMode}
       workPackageMutateAsync={workPackageMutateAsync}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
+      createAutoApprovedLeadershipCR={createAutoApprovedLeadershipCR}
       defaultValues={defaultValues}
       wbsElement={wbsElement}
       leadOrManagerOptions={leadOrManagerOptions}

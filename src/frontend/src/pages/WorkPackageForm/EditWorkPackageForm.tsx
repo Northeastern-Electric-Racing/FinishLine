@@ -20,8 +20,12 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, workP
   const { mutateAsync: editWorkPackage, isLoading } = useEditWorkPackage(wbsNum);
   const { mutateAsync: createWorkPackageScopeCR, isLoading: createStandardChangeRequestIsLoading } =
     useCreateStandardChangeRequest();
+  // TODO: Create auto-approved leadership CR hook for work packages
+  // const { mutateAsync: createAutoApprovedWPLeadershipCR, isLoading: createAutoApprovedWPIsLoading } =
+  //   useCreateAutoApprovedWPLeadershipCR();
 
   if (isLoading || createStandardChangeRequestIsLoading) return <LoadingIndicator />;
+  // if (isLoading || createStandardChangeRequestIsLoading || createAutoApprovedWPIsLoading) return <LoadingIndicator />;
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
@@ -53,6 +57,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, workP
       wbsNum={wbsNum}
       workPackageMutateAsync={editWorkPackageWrapper}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
+      createAutoApprovedLeadershipCR={/*createAutoApprovedWPLeadershipCR*/ () => {}}
       exitActiveMode={() => {
         setPageMode(false);
         history.push(`${history.location.pathname}`);
