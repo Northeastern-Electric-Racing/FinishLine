@@ -13,6 +13,9 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { useOrganization } from '../../hooks/organizations.hooks';
 import { CredentialResponse } from '@react-oauth/google';
 
+/**
+ * Page for unauthenticated users to do login.
+ */
 const Login = () => {
   const [devUserId, setDevUserId] = useState('');
   const history = useHistory();
@@ -21,10 +24,16 @@ const Login = () => {
   const auth = useAuth();
   const organizationContext = useOrganization();
 
+  /**
+   * Produce the path of the page redirected from the login page.
+   * @param queryArgs the query args sent from the login page, containing page, value1, value2, ..., and other args
+   * @returns the path, with args, redirected to
+   */
   const redirectQueryArgsToPath = (queryArgs: URLSearchParams): string => {
     const pageName: string = queryArgs.get('page')!;
     queryArgs.delete('page');
 
+    // collect all the &valueX=... args, in order, from login query args
     const intermediatePathValues: string[] = [];
     for (let valueIdx = 1; queryArgs.has(`value${valueIdx}`); valueIdx++) {
       intermediatePathValues.push(`/${queryArgs.get(`value${valueIdx}`)!}`);
