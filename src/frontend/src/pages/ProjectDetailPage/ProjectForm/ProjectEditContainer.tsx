@@ -42,6 +42,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
   const { mutateAsync, isLoading } = useEditSingleProject(project.wbsNum);
   const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
+  // TODO: Create auto-approved leadership CR hook
+  // const { mutateAsync: mutateAutoApprovedCR, isLoading: isAutoApprovedLoading } = useCreateAutoApprovedLeadershipCR();
+
   const {
     data: allLinkTypes,
     isLoading: allLinkTypesIsLoading,
@@ -163,6 +166,25 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     )
   });
 
+  // Check if only lead/manager changed
+  const checkOnlyLeadershipChanged = (
+    formName: string,
+    formBudget: number,
+    formSummary: string,
+    formLinks: any[],
+    formDescriptionBullets: any[]
+  ) => {
+    return (
+      formName === project.name &&
+      formBudget === project.budget &&
+      formSummary === project.summary &&
+      JSON.stringify(formLinks.map((l) => `${l.linkTypeName}:${l.url}`).sort()) ===
+        JSON.stringify(project.links.map((l) => `${l.linkType.name}:${l.url}`).sort()) &&
+      JSON.stringify(formDescriptionBullets) === JSON.stringify(bulletsToObject(project.descriptionBullets)) &&
+      (leadId !== project.lead?.userId.toString() || managerId !== project.manager?.userId.toString())
+    );
+  };
+
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
     const { name, budget, summary, links, type, what, why, descriptionBullets } = data;
 
@@ -199,6 +221,20 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     const { name, budget, summary, links, descriptionBullets, crId } = data;
 
     try {
+      const onlyLeadershipChanged = checkOnlyLeadershipChanged(name, budget, summary, links, descriptionBullets);
+
+      if (onlyLeadershipChanged) {
+        const autoCRPayload = {
+          wbsNum: project.wbsNum,
+          projectId: project.id,
+          leadId,
+          managerId
+        };
+        // await mutateAutoApprovedCR(autoCRPayload);
+        exitEditMode();
+        return;
+      }
+
       if (!crId) throw new Error('Change request id is required for editing project');
 
       const payload: EditSingleProjectPayload = {
@@ -221,6 +257,15 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     }
   };
 
+  // calculate for submit button status
+  const onlyLeadershipChanged = checkOnlyLeadershipChanged(
+    defaultValues.name,
+    defaultValues.budget,
+    defaultValues.summary,
+    defaultValues.links,
+    defaultValues.descriptionBullets
+  );
+
   return (
     <ProjectFormContainer
       requiredLinkTypeNames={requiredLinkTypeNames}
@@ -236,6 +281,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       managerId={managerId}
       onSubmitChangeRequest={onSubmitChangeRequest}
       setCarNumber={setCarNumber}
+      onlyLeadershipChanged={onlyLeadershipChanged}
     />
   );
 };
