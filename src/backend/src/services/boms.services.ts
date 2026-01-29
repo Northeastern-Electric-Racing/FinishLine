@@ -256,7 +256,7 @@ export default class BillOfMaterialsService {
         const newMaterial = await tx.material.create({
           data: {
             name: material.name,
-            status: 'NOT_READY_TO_ORDER',
+            status: Material_Status.NOT_READY_TO_ORDER,
             materialTypeId: material.materialTypeId,
             manufacturerId: material.manufacturerId,
             manufacturerPartNumber: material.manufacturerPartNumber,

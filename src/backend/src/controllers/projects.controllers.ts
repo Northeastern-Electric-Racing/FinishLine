@@ -239,11 +239,11 @@ export default class ProjectsController {
   static async copyMaterialsToProject(req: Request, res: Response, next: NextFunction) {
     try {
       const { materialIds, destinationWbsNum } = req.body;
-      const destinationWBS = validateWBS(destinationWbsNum as string);
+
       const newMaterialIds = await BillOfMaterialsService.copyMaterialsToProject(
         req.currentUser,
         materialIds,
-        destinationWBS,
+        destinationWbsNum,
         req.organization
       );
       res.status(200).json(newMaterialIds);

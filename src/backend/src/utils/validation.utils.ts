@@ -1,7 +1,7 @@
 import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
 import { Request, Response } from 'express';
 import { body, query, ValidationChain, validationResult } from 'express-validator';
-import { MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
+import { MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus, validateWBS } from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isInt({ min: 0 }).not().isString();
@@ -212,7 +212,10 @@ export const materialValidators = [
 export const copyMaterialsValidators = [
   body('materialIds').isArray({ min: 1 }),
   body('materialIds.*').isString().notEmpty(),
-  nonEmptyString(body('destinationWbsNum'))
+  body('destinationWbsNum').custom((value) => {
+    validateWBS(value);
+    return true;
+  })
 ];
 export const validateInputs = (req: Request, res: Response, next: Function): void => {
   const errors = validationResult(req);
