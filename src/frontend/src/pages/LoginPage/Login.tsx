@@ -2,8 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useToggleTheme } from '../../hooks/theme.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
@@ -14,9 +13,6 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { useOrganization } from '../../hooks/organizations.hooks';
 import { CredentialResponse } from '@react-oauth/google';
 
-/**
- * Page for unauthenticated users to do login.
- */
 const Login = () => {
   const [devUserId, setDevUserId] = useState('');
   const history = useHistory();
@@ -25,20 +21,12 @@ const Login = () => {
   const auth = useAuth();
   const organizationContext = useOrganization();
 
-  if (auth.isLoading) return <LoadingIndicator />;
-
-  /**
-   * Produce the path of the page redirected from the login page.
-   * @param queryArgs the query args sent from the login page, containing page, value1, value2, ..., and other args
-   * @returns the path, with args, redirected to
-   */
   const redirectQueryArgsToPath = (queryArgs: URLSearchParams): string => {
     const pageName: string = queryArgs.get('page')!;
     queryArgs.delete('page');
 
     const intermediatePathValues: string[] = [];
     for (let valueIdx = 1; queryArgs.has(`value${valueIdx}`); valueIdx++) {
-      // collect all the &valueX=... args, in order, from login query args
       intermediatePathValues.push(`/${queryArgs.get(`value${valueIdx}`)!}`);
       queryArgs.delete(`value${valueIdx}`);
     }
@@ -47,17 +35,27 @@ const Login = () => {
     return `${pathString}?${queryArgs.toString()}`;
   };
 
-  const redirectAfterLogin = () => {
-    if (!query.has('page')) {
-      history.push(routes.HOME);
-    } else {
-      history.push(redirectQueryArgsToPath(query));
+  useEffect(() => {
+    if (!auth.triedCurrent) {
+      auth.signInCurrent();
     }
-  };
+  }, [auth.triedCurrent, auth]);
+
+  useEffect(() => {
+    if (!auth.isLoading && auth.user) {
+      if (!query.has('page')) {
+        history.replace(routes.HOME);
+      } else {
+        history.replace(redirectQueryArgsToPath(query));
+      }
+    }
+  }, [auth.isLoading, auth.user, history, query]);
 
   const devFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const authedUser = await auth.devSignin(devUserId);
+    if (!authedUser) return;
+
     if (authedUser.defaultTheme && authedUser.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
       theme.toggleTheme();
     }
@@ -65,14 +63,19 @@ const Login = () => {
       const [defaultOrganization] = authedUser.organizations;
       organizationContext.selectOrganization(defaultOrganization);
     }
-    redirectAfterLogin();
+
+    if (!query.has('page')) {
+      history.replace(routes.HOME);
+    } else {
+      history.replace(redirectQueryArgsToPath(query));
+    }
   };
 
   const verifyLogin = async (response: CredentialResponse) => {
-    if (!response.credential) {
-      throw new Error('Failed to get credentials');
-    }
+    if (!response.credential) throw new Error('Failed to get credentials');
+
     const authedUser = await auth.signin(response.credential);
+
     if (authedUser.defaultTheme && authedUser.defaultTheme !== theme.activeTheme.toUpperCase()) {
       theme.toggleTheme();
     }
@@ -80,12 +83,20 @@ const Login = () => {
       const [defaultOrganization] = authedUser.organizations;
       organizationContext.selectOrganization(defaultOrganization);
     }
-    redirectAfterLogin();
+
+    if (!query.has('page')) {
+      history.replace(routes.HOME);
+    } else {
+      history.replace(redirectQueryArgsToPath(query));
+    }
   };
 
   const handleFailure = () => {
     console.log('Failed to login');
   };
+
+  if (auth.isLoading) return <LoadingIndicator />;
+  if (auth.user) return null;
 
   return (
     <LoginPage
