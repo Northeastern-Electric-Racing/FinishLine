@@ -33,7 +33,6 @@ const Login = () => {
     const pageName: string = queryArgs.get('page')!;
     queryArgs.delete('page');
 
-   
     const intermediatePathValues: string[] = [];
     for (let valueIdx = 1; queryArgs.has(`value${valueIdx}`); valueIdx++) {
       // collect all the &valueX=... args, in order, from login query args
