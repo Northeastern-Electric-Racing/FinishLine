@@ -257,6 +257,14 @@ const performSeed: () => Promise<void> = async () => {
   const francis = await createUser(dbSeedAllUsers.francis, RoleEnum.LEADERSHIP, organizationId);
   const victorPerkins = await createUser(dbSeedAllUsers.victorPerkins, RoleEnum.LEADERSHIP, organizationId);
   const kingJulian = await createUser(dbSeedAllUsers.kingJulian, RoleEnum.LEADERSHIP, organizationId);
+  const skipper = await createUser(dbSeedAllUsers.skipper, RoleEnum.LEADERSHIP, organizationId);
+  const kowalski = await createUser(dbSeedAllUsers.kowalski, RoleEnum.LEADERSHIP, organizationId);
+  const privat = await createUser(dbSeedAllUsers.privat, RoleEnum.LEADERSHIP, organizationId);
+  const rico = await createUser(dbSeedAllUsers.rico, RoleEnum.LEADERSHIP, organizationId);
+  const alex = await createUser(dbSeedAllUsers.alex, RoleEnum.LEADERSHIP, organizationId);
+  const marty = await createUser(dbSeedAllUsers.marty, RoleEnum.LEADERSHIP, organizationId);
+  const gloria = await createUser(dbSeedAllUsers.gloria, RoleEnum.LEADERSHIP, organizationId);
+  const melman = await createUser(dbSeedAllUsers.melman, RoleEnum.LEADERSHIP, organizationId);
   const gretchen = await createUser(dbSeedAllUsers.gretchen, RoleEnum.LEADERSHIP, organizationId);
   const karen = await createUser(dbSeedAllUsers.karen, RoleEnum.LEADERSHIP, organizationId);
   const janis = await createUser(dbSeedAllUsers.janis, RoleEnum.LEADERSHIP, organizationId);
@@ -273,6 +281,8 @@ const performSeed: () => Promise<void> = async () => {
   const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.MEMBER, organizationId);
   const patrick = await createUser(dbSeedAllUsers.patrick, RoleEnum.MEMBER, organizationId);
   const spongebob = await createUser(dbSeedAllUsers.spongebob, RoleEnum.MEMBER, organizationId);
+  const squidward = await createUser(dbSeedAllUsers.squidward, RoleEnum.MEMBER, organizationId);
+  const sandy = await createUser(dbSeedAllUsers.sandy, RoleEnum.MEMBER, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', ner);
 
@@ -391,7 +401,8 @@ const performSeed: () => Promise<void> = async () => {
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId, organizationId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId, organizationId));
   const slackBotTeam: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId, organizationId));
-
+  const krustykrabTeam: Team = await prisma.team.create(dbSeedAllTeams.krustyKrabers(mrKrabs.userId, organizationId));
+  const penguinTeam: Team = await prisma.team.create(dbSeedAllTeams.penguinsOfMadagascar(skipper.userId, organizationId));
   /** Setting Team Members */
   await TeamsService.setTeamMembers(
     batman,
@@ -539,6 +550,20 @@ const performSeed: () => Promise<void> = async () => {
     regina,
     slackBotTeam.teamId,
     [janis, cady, damian].map((user) => user.userId),
+    ner
+  );
+
+  await TeamsService.setTeamLeads(
+    regina,
+    slackBotTeam.teamId,
+    [mrKrabs, spongebob, squidward, sandy].map((user) => user.userId),
+    ner
+  );
+
+  await TeamsService.setTeamLeads(
+    regina,
+    slackBotTeam.teamId,
+    [skipper, kowalski, privat, rico, kingJulian, alex, marty, gloria, melman].map((user) => user.userId),
     ner
   );
 
@@ -815,6 +840,68 @@ const performSeed: () => Promise<void> = async () => {
     [],
     june.userId,
     glen.userId,
+    ner
+  );
+
+  /** Project 10 */
+  const { projectWbsNumber: project10WbsNumber } = await seedProject(
+    mrKrabs,
+    changeRequest1.crId,
+    fergus.wbsElement.carNumber,
+    'Krusty Crab 2 Construction',
+    'Need resources to construct a new Krusty Crab location.',
+    [krustykrabTeam.teamId],
+    squidward,
+    1,
+    [
+      {
+        linkId: '1234567890',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Confluence'
+      },
+      {
+        linkId: '-1234567890',
+        url: 'https://www.youtube.com/',
+        linkTypeName: 'Bill of Materials'
+      }
+    ],
+    [
+      /*{
+        description: 'Need enough resources to do project.'
+      },
+      {
+        description: 'Need to do so with the least amount of money spent.'
+      }*/
+    ],
+    squidward.userId,
+    spongebob.userId,
+    ner
+  );
+  /** Project 11 */
+  const { projectWbsNumber: project11WbsNumber, projectId: project11Id } = await seedProject(
+    skipper,
+    changeRequest1.crId,
+    0,
+    'Like to Move It Move It Party',
+    'Get people and resources for a big party.',
+    [penguinTeam.teamId],
+    rico,
+    10000000,
+    [
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Confluence'
+      },
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Bill of Materials'
+      }
+    ],
+    [],
+    skipper.userId,
+    kowalski.userId,
     ner
   );
 
@@ -1120,6 +1207,95 @@ const performSeed: () => Promise<void> = async () => {
 
   // approve the change request
   await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject9Id, 'LGTM', true, ner, proposedSolution9Id);
+
+  const changeRequestProject10 = await ChangeRequestsService.createStandardChangeRequest(
+    squidward,
+    project10WbsNumber.carNumber,
+    project10WbsNumber.projectNumber,
+    project10WbsNumber.workPackageNumber,
+    CR_Type.OTHER,
+    'Initial Change Request',
+    [
+      {
+        type: Scope_CR_Why_Type.INITIALIZATION,
+        explain: 'need this to initialize work packages'
+      }
+    ],
+    [
+      {
+        budgetImpact: 0,
+        description: 'Initializing seed data',
+        timelineImpact: 0,
+        scopeImpact: 'no scope impact'
+      }
+    ],
+    ner,
+    null,
+    null
+  );
+
+  const changeRequestProject10Id = changeRequestProject10.crId;
+
+  // make a proposed solution for it
+  const proposedSolution10 = await ChangeRequestsService.addProposedSolution(
+    cyborg,
+    changeRequestProject10Id,
+    0,
+    'Initializing seed data',
+    0,
+    'no scope impact',
+    ner
+  );
+
+  const proposedSolution10Id = proposedSolution10.id;
+
+  // approve the change request
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject10Id, 'LGTM', true, ner, proposedSolution10Id);
+
+  const changeRequestProject11 = await ChangeRequestsService.createStandardChangeRequest(
+    skipper,
+    project11WbsNumber.carNumber,
+    project11WbsNumber.projectNumber,
+    project11WbsNumber.workPackageNumber,
+    CR_Type.OTHER,
+    'Initial Change Request',
+    [
+      {
+        type: Scope_CR_Why_Type.INITIALIZATION,
+        explain: 'need this to initialize work packages'
+      }
+    ],
+    [
+      {
+        budgetImpact: 0,
+        description: 'Initializing seed data',
+        timelineImpact: 0,
+        scopeImpact: 'no scope impact'
+      }
+    ],
+    ner,
+    null,
+    null
+  );
+
+  const changeRequestProject11Id = changeRequestProject11.crId;
+
+  // make a proposed solution for it
+  const proposedSolution11 = await ChangeRequestsService.addProposedSolution(
+    cyborg,
+    changeRequestProject11Id,
+    0,
+    'Initializing seed data',
+    0,
+    'no scope impact',
+    ner
+  );
+
+  const proposedSolution11Id = proposedSolution11.id;
+
+  // approve the change request
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject11Id, 'LGTM', true, ner, proposedSolution11Id);
+
   /**
    * Work Packages
    */
@@ -1492,6 +1668,106 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
+  /** Work Packages for Project 10 */
+  /** Work Package 1 */
+  const { workPackage: project10WP1 } = await seedWorkPackage(
+    mrKrabs,
+    'Resource Scavenging',
+    changeRequestProject10Id,
+    WorkPackageStage.Research,
+    weeksAgo(6).toISOString().split('T')[0],
+    3,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrKrabs.userId,
+    squidward.userId,
+    project10WbsNumber,
+    ner
+  );
+
+  const project10WP1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
+    mrKrabs,
+    project10WP1.wbsNum.carNumber,
+    project10WP1.wbsNum.projectNumber,
+    project10WP1.wbsNum.workPackageNumber,
+    CR_Type.ACTIVATION,
+    mrKrabs.userId,
+    squidward.userId,
+    weeksAgo(6),
+    true,
+    ner
+  );
+
+  /** Work Package 2 */
+  await seedWorkPackage(
+    mrKrabs,
+    'Fundraising',
+    changeRequestProject10Id,
+    WorkPackageStage.Install,
+    weeksAgo(7).toISOString().split('T')[0],
+    6,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    squidward.userId,
+    squidward.userId,
+    project10WbsNumber,
+    ner
+  );
+
+  /** Work Package 3 */
+  await seedWorkPackage(
+    sandy,
+    'Restaurant Launch',
+    changeRequestProject10Id,
+    WorkPackageStage.Install,
+    weeksAgo(13).toISOString().split('T')[0],
+    6,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    sandy.userId,
+    squidward.userId,
+    project10WbsNumber,
+    ner
+  );
+
+  /** Work Packages for Project 11 */
+  /** Work Package 1 */
+  const { workPackage: project11WP1 } = await seedWorkPackage(
+    kingJulian,
+    'Party Music Set Up',
+    changeRequestProject11Id,
+    WorkPackageStage.Install,
+    weeksAgo(52).toISOString().split('T')[0],
+    365,
+    [],
+    [],
+    skipper,
+    WbsElementStatus.Active,
+    kowalski.userId,
+    rico.userId,
+    project11WbsNumber,
+    ner
+  );
+
+  const project11WP1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
+    kingJulian,
+    project11WP1.wbsNum.carNumber,
+    project11WP1.wbsNum.projectNumber,
+    project10WP1.wbsNum.workPackageNumber,
+    CR_Type.ACTIVATION,
+    rico.userId,
+    kowalski.userId,
+    weeksAgo(6),
+    true,
+    ner
+  );
+
   /**
    * Change Requests
    */
@@ -1821,6 +2097,32 @@ const performSeed: () => Promise<void> = async () => {
     daysAgo(10)
   );
 
+  await TasksService.createTask(
+    zatanna,
+    project7WbsNumber,
+    'Laser Funding',
+    'So this is where our funding goes',
+    Task_Priority.HIGH,
+    Task_Status.DONE,
+    [zatanna.userId],
+    ner,
+    daysAgo(10),
+    daysAgo(9)
+  );
+
+  await TasksService.createTask(
+    sandy,
+    project10WbsNumber,
+    'Opening Assessment',
+    'So we discuss Krusky Krab openin here',
+    Task_Priority.MEDIUM,
+    Task_Status.IN_PROGRESS,
+    [sandy.userId],
+    ner,
+    daysAgo(16),
+    daysAgo(1)
+  );
+
   /**
    * Reimbursements
    */
@@ -2133,7 +2435,9 @@ const performSeed: () => Promise<void> = async () => {
     { user: gretchen, varName: 'gretchen' },
     { user: karen, varName: 'karen' },
     { user: spongebob, varName: 'spongebob' },
-    { user: patrick, varName: 'patrick' }
+    { user: patrick, varName: 'patrick' },
+    { user: squidward, varName: 'squidward' },
+    { user: sandy, varName: 'sandy' }
   ];
 
   const updatedUsers: any = {};
@@ -2190,7 +2494,9 @@ const performSeed: () => Promise<void> = async () => {
       gretchen: updatedUsers.gretchen,
       karen: updatedUsers.karen,
       spongebob: updatedUsers.spongebob,
-      patrick: updatedUsers.patrick
+      patrick: updatedUsers.patrick,
+      squidward: updatedUsers.squidward,
+      sandy: updatedUsers.sandy
     },
     {
       tesla: vendorTesla,
