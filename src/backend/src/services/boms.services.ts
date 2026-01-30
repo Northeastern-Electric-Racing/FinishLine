@@ -200,7 +200,6 @@ export default class BillOfMaterialsService {
 
     // Create copied materials (all or none)
     return await prisma.$transaction(async (tx) => {
-      const assemblyMap = new Map<string, string>();
       const newMaterialIds: string[] = [];
 
       for (const material of materials) {
