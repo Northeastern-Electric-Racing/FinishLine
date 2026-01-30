@@ -198,39 +198,12 @@ export default class BillOfMaterialsService {
 
     if (!perms) throw new AccessDeniedException('Permission to copy materials denied');
 
-    // Create copied materials and assemblies (all or none)
+    // Create copied materials (all or none)
     return await prisma.$transaction(async (tx) => {
       const assemblyMap = new Map<string, string>();
       const newMaterialIds: string[] = [];
 
       for (const material of materials) {
-        let newAssemblyId = null;
-
-        // Get or create assembly if needed
-        if (material.assemblyId) {
-          if (assemblyMap.has(material.assemblyId)) {
-            newAssemblyId = assemblyMap.get(material.assemblyId);
-          } else {
-            const oldAssembly = await tx.assembly.findUnique({
-              where: { assemblyId: material.assemblyId }
-            });
-            if (!oldAssembly) throw new NotFoundException('Assembly', material.assemblyId);
-            if (oldAssembly.dateDeleted) throw new DeletedException('Assembly', material.assemblyId);
-
-            const newAssembly = await tx.assembly.create({
-              data: {
-                name: oldAssembly.name,
-                dateCreated: new Date(),
-                userCreatedId: user.userId,
-                wbsElementId: destinationProject.wbsElementId,
-                pdmFileName: oldAssembly.pdmFileName
-              }
-            });
-            assemblyMap.set(material.assemblyId, newAssembly.assemblyId);
-            newAssemblyId = newAssembly.assemblyId;
-          }
-        }
-
         const materialType = await tx.material_Type.findUnique({
           where: { id: material.materialTypeId }
         });
@@ -270,7 +243,7 @@ export default class BillOfMaterialsService {
             dateCreated: new Date(),
             userCreatedId: user.userId,
             wbsElementId: destinationProject.wbsElementId,
-            assemblyId: newAssemblyId
+            assemblyId: null
           },
           ...getMaterialQueryArgs(organization.organizationId)
         });
