@@ -213,12 +213,12 @@ const updateExistingProducts = async (
   for (const product of products) {
     const currentProduct = currentProducts.find((p) => p.reimbursementProductId === product.id);
 
-    // For material-based products 
+    // For material-based products
     if (product.materialId) {
       await prisma.reimbursement_Product.update({
         where: { reimbursementProductId: product.id },
         data: {
-          name: null, 
+          name: null,
           cost: product.cost,
           materialId: product.materialId
         }
@@ -244,7 +244,7 @@ const updateExistingProducts = async (
         }
       });
     }
-    // For string-based products 
+    // For string-based products
     else if (product.name) {
       await prisma.reimbursement_Product.update({
         where: { reimbursementProductId: product.id },
