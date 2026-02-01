@@ -9,7 +9,7 @@ datasource db {
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["relationJoins"]
-  engineType      = "library"
+  binaryTargets   = ["native", "linux-arm64-openssl-1.1.x"]
 }
 
 enum CR_Type {
@@ -145,6 +145,11 @@ enum Special_Permission {
   FINANCE_ONLY
 }
 
+enum Checklist_Item_Type {
+  TASK
+  INFO
+}
+
 enum Review_Status {
   IN_PROGRESS
   READY_FOR_REVIEW
@@ -261,6 +266,8 @@ model User {
   deletedSponsorTiers                     Sponsor_Tier[]
   financeDelegateForOrganizations         Organization[]                       @relation(name: "financeDelegates")
   assignedReimbursementRequests           Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
+  deletedGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionDeleter")
+  createdGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionCreator")
 }
 
 model Role {
@@ -790,7 +797,9 @@ model Sponsor {
   discountCode   String?
   activeYears    Int[]
   taxExempt      Boolean
+  sponsorNotes   String?
   sponsorTasks   Sponsor_Task[]
+  logoImageId    String?
 
   @@unique([name, organizationId], name: "uniqueSponsor")
   @@index([sponsorTierId])
@@ -1170,6 +1179,7 @@ model Organization {
   description                            String    @default("")
   applyInterestImageId                   String?
   exploreAsGuestImageId                  String?
+  newMemberImageId                       String?
   logoImageId                            String?
   slackWorkspaceId                       String?
   applicationLink                        String?
@@ -1212,6 +1222,7 @@ model Organization {
   sponsorTiers             Sponsor_Tier[]
   indexCodes               Index_Code[]
   financeDelegates         User[]                       @relation(name: "financeDelegates")
+  guestDefinitions         Guest_Definition[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1320,26 +1331,27 @@ model PopUp {
 }
 
 model Checklist {
-  checklistId       String       @id @default(uuid())
+  checklistId       String              @id @default(uuid())
   teamTypeId        String?
-  teamType          Team_Type?   @relation(fields: [teamTypeId], references: [teamTypeId])
+  teamType          Team_Type?          @relation(fields: [teamTypeId], references: [teamTypeId])
   teamId            String?
-  team              Team?        @relation(fields: [teamId], references: [teamId])
-  name              String
-  descriptions      String[]
-  isOptional        Boolean      @default(false)
-  subtasks          Checklist[]  @relation("subtasks")
-  parentChecklist   Checklist?   @relation("subtasks", fields: [parentChecklistId], references: [checklistId])
+  team              Team?               @relation(fields: [teamId], references: [teamId])
+  content           String
+  isOptional        Boolean             @default(false)
+  displayIndex      Int?
+  itemType          Checklist_Item_Type @default(TASK)
+  subtasks          Checklist[]         @relation("subtasks")
+  parentChecklist   Checklist?          @relation("subtasks", fields: [parentChecklistId], references: [checklistId])
   parentChecklistId String?
-  usersChecked      User[]       @relation(name: "checkedChecklists")
-  dateCreated       DateTime     @default(now())
+  usersChecked      User[]              @relation(name: "checkedChecklists")
+  dateCreated       DateTime            @default(now())
   dateDeleted       DateTime?
-  userCreated       User         @relation(fields: [userCreatedId], references: [userId], name: "checklistCreator")
+  userCreated       User                @relation(fields: [userCreatedId], references: [userId], name: "checklistCreator")
   userCreatedId     String
-  userDeleted       User?        @relation(fields: [userDeletedId], references: [userId], name: "checklistDeleter")
+  userDeleted       User?               @relation(fields: [userDeletedId], references: [userId], name: "checklistDeleter")
   userDeletedId     String?
   organizationId    String
-  organization      Organization @relation(fields: [organizationId], references: [organizationId])
+  organization      Organization        @relation(fields: [organizationId], references: [organizationId])
 
   @@index([organizationId])
   @@index([teamId])
@@ -1547,4 +1559,24 @@ model Reimbursement_Request_Comment {
   reimbursementRequest          Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 
   @@index([reimbursementRequestId])
+}
+
+model Guest_Definition {
+  definitionId   String       @id @default(uuid())
+  term           String
+  description    String
+  order          Int
+  buttonText     String?
+  buttonLink     String?
+  icon           String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "guestDefinitionDeleter")
+  userDeletedId  String?
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "guestDefinitionCreator")
+  userCreatedId  String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@index([organizationId])
 }

@@ -1,9 +1,9 @@
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import projectTransformer, {
   RetrospectiveProjectPreviewQueryArgs,
   retrospectiveProjectPreviewTransformer
-} from '../transformers/projects.transformer';
-import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
+} from '../transformers/projects.transformer.js';
+import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args.js';
 import { ProjectGantt, RetrospectiveProjectPreview } from 'shared';
 
 export default class RetrospectiveService {

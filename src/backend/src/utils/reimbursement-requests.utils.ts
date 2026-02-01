@@ -15,13 +15,13 @@ import {
   isHead,
   User
 } from 'shared';
-import prisma from '../prisma/prisma';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
+import prisma from '../prisma/prisma.js';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils.js';
 import { Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, Reimbursement_Status } from '@prisma/client';
-import { isUserOnTeam } from './teams.utils';
-import { userHasPermission } from './users.utils';
-import { AuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
-import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
+import { isUserOnTeam } from './teams.utils.js';
+import { userHasPermission } from './users.utils.js';
+import { AuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args.js';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 
 /**
  * This function removes any deleted receipts and adds any new receipts

@@ -2,7 +2,7 @@ import { Box } from '@mui/system';
 import { ElementType, ReactElement, useState } from 'react';
 import { NERButton } from './NERButton';
 import { ArrowDropDown } from '@mui/icons-material';
-import { Divider, ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { Divider, ListItemIcon, Menu, MenuItem, Tooltip } from '@mui/material';
 import { isGuest } from 'shared';
 import { useCurrentUser } from '../hooks/users.hooks';
 
@@ -14,6 +14,7 @@ export type ButtonInfo = {
   dividerTop?: boolean;
   component?: ElementType<any>;
   to?: string;
+  tooltip?: string;
 };
 
 interface ActionsMenuProps {
@@ -65,8 +66,7 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
         }}
       >
         {buttons.flatMap((button, index) => {
-          return [
-            button.dividerTop && <Divider key={`${index}-divider`} />,
+          const menuItem = (
             <MenuItem
               key={index}
               {...(button.component ? { component: button.component } : {})}
@@ -80,6 +80,17 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
               {button.icon && <ListItemIcon>{button.icon}</ListItemIcon>}
               {button.title}
             </MenuItem>
+          );
+
+          return [
+            button.dividerTop && <Divider key={`${index}-divider`} />,
+            button.tooltip && button.disabled ? (
+              <Tooltip key={index} title={button.tooltip} placement="left" arrow>
+                <span>{menuItem}</span>
+              </Tooltip>
+            ) : (
+              menuItem
+            )
           ];
         })}
       </Menu>

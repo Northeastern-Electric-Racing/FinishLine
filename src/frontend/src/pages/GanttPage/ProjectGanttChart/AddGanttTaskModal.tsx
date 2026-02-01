@@ -2,10 +2,10 @@ import React from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FormControl, FormHelperText, FormLabel, MenuItem, TextField, Autocomplete, Grid } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isUnderWordCount, notGuest, TaskPriority, TaskStatus } from 'shared';
+import { countWords, isUnderWordCount, TaskPriority, TaskStatus } from 'shared';
 import * as yup from 'yup';
 import NERFormModal from '../../../components/NERFormModal';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -38,7 +38,7 @@ interface AddGanttTaskModalProps {
 }
 
 const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handleClose, addTask }) => {
-  const { isLoading: usersIsLoading, isError: usersIsError, data: users, error: usersError } = useAllUsers();
+  const { isLoading: usersIsLoading, isError: usersIsError, data: users, error: usersError } = useAllMembers();
 
   const unUpperCase = (str: string) => str.charAt(0) + str.slice(1).toLowerCase();
 
@@ -63,9 +63,7 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
   if (!users || usersIsLoading) return <LoadingIndicator />;
   if (usersIsError) return <ErrorPage message={usersError?.message} />;
 
-  const options: { label: string; id: string }[] = users
-    .filter((user) => notGuest(user.role))
-    .map(taskUserToAutocompleteOption);
+  const options: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
 
   const onSubmit = async (data: CreateTaskFormData) => {
     addTask(data);

@@ -200,7 +200,7 @@ export const materialValidators = [
   nonEmptyString(body('materialTypeName')),
   nonEmptyString(body('manufacturerName')),
   nonEmptyString(body('manufacturerPartNumber')),
-  nonEmptyString(body('pdmFileName').optional()),
+  body('pdmFileName').optional().isString(),
   decimalMinZero(body('quantity')),
   nonEmptyString(body('unitName')).optional(),
   intMinZero(body('price')), // in cents

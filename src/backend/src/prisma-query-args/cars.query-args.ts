@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
-import { getDescriptionBulletQueryArgs } from './description-bullets.query-args';
-import { getLinkQueryArgs } from './links.query-args';
-import { getUserQueryArgs } from './user.query-args';
+import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.js';
+import { getLinkQueryArgs } from './links.query-args.js';
+import { getUserQueryArgs } from './user.query-args.js';
 
 export type CarQueryArgs = ReturnType<typeof getCarQueryArgs>;
 

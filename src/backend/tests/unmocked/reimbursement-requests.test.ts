@@ -1,11 +1,17 @@
-import { alfred, robinMember, cyborgMember, theVisitorGuest } from '../test-data/users.test-data';
-import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
-import prisma from '../../src/prisma/prisma';
+import { alfred, robinMember, cyborgMember, theVisitorGuest } from '../test-data/users.test-data.js';
+import ReimbursementRequestService from '../../src/services/reimbursement-requests.services.js';
+import {
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../../src/utils/errors.utils.js';
+import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils.js';
+import prisma from '../../src/prisma/prisma.js';
 import { addDaysToDate, IndexCode, ReimbursementRequest, ReimbursementStatusType, AccountCode } from 'shared';
 import { Organization, Role_Type, Theme, User, Vendor } from '@prisma/client';
-import { UserWithSecureSettings } from '../../src/utils/auth.utils';
+import { UserWithSecureSettings } from '../../src/utils/auth.utils.js';
 
 describe('Reimbursement Requests', () => {
   let org: Organization;
@@ -1039,6 +1045,84 @@ describe('Reimbursement Requests', () => {
       const assignedRRs = await ReimbursementRequestService.getUserAssignedReimbursementRequests(regularMember, org);
 
       expect(assignedRRs).toEqual([]);
+    });
+  });
+
+  describe('Set vendor tax exempt status', () => {
+    test('Finance member can set vendor tax exempt status', async () => {
+      const updatedVendor = await ReimbursementRequestService.setVendorTaxExemptStatus(
+        createdVendor.vendorId,
+        true,
+        financeMember,
+        org
+      );
+
+      expect(updatedVendor).not.toBeNull();
+      expect(updatedVendor.taxExempt).toBe(true);
+    });
+
+    test('Non-finance member cannot set vendor tax exempt status', async () => {
+      await expect(
+        ReimbursementRequestService.setVendorTaxExemptStatus(createdVendor.vendorId, true, regularMember, org)
+      ).rejects.toThrow(new AccessDeniedException('You are not a member of the finance team!'));
+    });
+
+    test('Cannot set tax exempt status for non-existent vendor', async () => {
+      await expect(
+        ReimbursementRequestService.setVendorTaxExemptStatus('non-existent-id', true, financeMember, org)
+      ).rejects.toThrow(new NotFoundException('Vendor', 'non-existent-id'));
+    });
+
+    test('Cannot set tax exempt status for vendor in different organization', async () => {
+      // Create a vendor in a different organization
+      const otherOrg = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          userCreated: { connect: { userId: financeHead.userId } }
+        }
+      });
+
+      const otherMember: User = await prisma.user.create({
+        data: {
+          firstName: 'Other',
+          lastName: 'Member',
+          googleAuthId: '99',
+          email: 'email@email.other',
+          roles: {
+            create: {
+              roleType: Role_Type.MEMBER,
+              organization: {
+                connect: { organizationId: otherOrg.organizationId }
+              }
+            }
+          }
+        }
+      });
+
+      const otherVendor = await ReimbursementRequestService.createVendor(
+        otherMember,
+        'Other Org Vendor',
+        otherOrg,
+        false,
+        [],
+        'Some notes'
+      );
+
+      await expect(
+        ReimbursementRequestService.setVendorTaxExemptStatus(otherVendor.vendorId, true, financeMember, org)
+      ).rejects.toThrow(new InvalidOrganizationException('Vendor'));
+    });
+
+    test('head can set vendor tax exempt status', async () => {
+      const updatedVendor = await ReimbursementRequestService.setVendorTaxExemptStatus(
+        createdVendor.vendorId,
+        true,
+        financeHead,
+        org
+      );
+
+      expect(updatedVendor).not.toBeNull();
+      expect(updatedVendor.taxExempt).toBe(true);
     });
   });
 });

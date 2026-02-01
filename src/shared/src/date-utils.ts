@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { Availability } from './types/user-types.js';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { Availability } from './types/user-types';
 
 dayjs.extend(utc);
 

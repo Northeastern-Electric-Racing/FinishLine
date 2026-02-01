@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import LoadingIndicator from '../../components/LoadingIndicator';
+import { useHistory } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
 import { useCreateReimbursementRequest, useUploadManyReceipts } from '../../hooks/finance.hooks';
 import { routes } from '../../utils/routes';
@@ -14,8 +14,7 @@ const CreateReimbursementRequestPage: React.FC = () => {
   const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
     useCreateReimbursementRequest();
   const { isLoading: receiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
-
-  if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
+  const history = useHistory();
 
   const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
     const { reimbursementRequestId } = await createReimbursementRequest({ ...data, indexCodeId: data.indexCodeId! });
@@ -26,12 +25,23 @@ const CreateReimbursementRequestPage: React.FC = () => {
     return reimbursementRequestId;
   };
 
+  const onCancel = () => {
+    history.goBack();
+  };
+
+  const isSubmitting = createReimbursementRequestIsLoading || receiptsIsLoading;
+
   return (
     <PageLayout
       title="Create Reimbursement Request"
-      previousPages={[{ name: 'Reimbursement Requests', route: routes.FINANCE }]}
+      previousPages={[{ name: 'Reimbursement Requests', route: routes.REIMBURSEMENT_REQUESTS }]}
     >
-      <ReimbursementRequestForm submitText="Submit" submitData={onSubmit} />
+      <ReimbursementRequestForm
+        onFormExit={onCancel}
+        submitText="Submit"
+        submitData={onSubmit}
+        isSubmitting={isSubmitting}
+      />
     </PageLayout>
   );
 };

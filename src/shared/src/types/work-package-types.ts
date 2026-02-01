@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet } from './project-types';
-import { DescriptionBulletPreview } from './change-request-types';
-import { TeamPreview } from './team-types';
-import { User } from './user-types';
+import { DescriptionBullet } from './project-types.js';
+import { DescriptionBulletPreview } from './change-request-types.js';
+import { TeamPreview } from './team-types.js';
+import { User } from './user-types.js';
 
 export enum TimelineStatus {
   Ahead = 'AHEAD',

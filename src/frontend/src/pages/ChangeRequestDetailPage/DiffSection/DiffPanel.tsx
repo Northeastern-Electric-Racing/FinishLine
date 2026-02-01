@@ -25,7 +25,26 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({ comparableObjects, origina
       return (
         <List sx={{ listStyleType: 'disc', pl: 6, pb: 1, pt: 0 }}>
           {detail.map((bullet) => {
-            return <ListItem sx={{ display: 'list-item', py: 0 }}>{renderDetailText(bullet.value)}</ListItem>;
+            return (
+              <ListItem sx={{ display: 'list-item', py: 0 }}>
+                {!bullet.changed ? (
+                  <Typography>{renderDetailText(bullet.value)}</Typography>
+                ) : (
+                  <Box
+                    sx={{
+                      backgroundColor: getPotentialChangeBackground(
+                        original ? PotentialChangeType.REMOVED : PotentialChangeType.ADDED,
+                        theme
+                      ),
+                      borderRadius: '5px',
+                      mb: '3px'
+                    }}
+                  >
+                    {renderDetailText(bullet.value)}
+                  </Box>
+                )}
+              </ListItem>
+            );
           })}
         </List>
       );
@@ -44,13 +63,13 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({ comparableObjects, origina
           <>
             <Typography>{changeSection.label}</Typography>
             <List>
-              {changeSection.objects.map((changeBullet) => {
+              {changeSection.objects.map((bullet) => {
                 return (
                   <ListItem>
-                    {!changeBullet.changed ? (
+                    {!bullet.changed ? (
                       <Typography>
                         <Box pl={2}>
-                          {labelPipe(changeBullet.key)}: {renderDetailText(changeBullet.value)}
+                          {labelPipe(bullet.key)}: {renderDetailText(bullet.value)}
                         </Box>
                       </Typography>
                     ) : (
@@ -74,11 +93,11 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({ comparableObjects, origina
                           display="inline"
                         >
                           <Typography fontWeight="bold" padding="3px" display="inline">
-                            {labelPipe(changeBullet.key)}:
+                            {labelPipe(bullet.key)}:
                           </Typography>
                         </Box>
                         <Box component="span" display="inline">
-                          {renderDetailText(changeBullet.value)}
+                          {renderDetailText(bullet.value)}
                         </Box>
                       </Box>
                     )}

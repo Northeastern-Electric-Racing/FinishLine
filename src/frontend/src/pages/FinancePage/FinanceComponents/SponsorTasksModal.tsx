@@ -4,7 +4,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AddCircle, RemoveCircle } from '@mui/icons-material';
 import { useCreateSponsorTask, useEditSponsorTask, useGetSponsorTasks } from '../../../hooks/finance.hooks';
 import { Sponsor, SponsorTask } from 'shared';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import DeleteSponsorTaskModal from './DeleteSponsorTaskModal';
@@ -20,7 +20,7 @@ interface SponsorTasksModalProps {
 
 const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor }) => {
   const toast = useToast();
-  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const { data: sponsorTasks } = useGetSponsorTasks(sponsor.sponsorId);
   const { mutate: createTask } = useCreateSponsorTask(sponsor.sponsorId);
   const { mutate: editTask } = useEditSponsorTask();
