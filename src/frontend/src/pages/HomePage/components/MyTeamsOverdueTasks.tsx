@@ -17,7 +17,7 @@ const NoOverdueTeamTaskDisplay = () => {
     <EmptyPageBlockDisplay
       icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
       heading={'Your team is all caught up!'}
-      message={"You're team has no overdue tasks!"}
+      message={'Your team has no overdue tasks!'}
     />
   );
 };
