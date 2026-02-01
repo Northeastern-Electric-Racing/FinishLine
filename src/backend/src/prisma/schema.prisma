@@ -1676,6 +1676,7 @@ model Project_Rule {
 
   @@unique([ruleId, projectId])
 }
+
 model Guest_Definition {
   definitionId   String       @id @default(uuid())
   term           String

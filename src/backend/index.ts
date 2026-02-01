@@ -25,7 +25,7 @@ import statisticsRouter from './src/routes/statistics.routes.js';
 import retrospectiveRouter from './src/routes/retrospective.routes.js';
 import partsRouter from './src/routes/parts.routes.js';
 import financeRouter from './src/routes/finance.routes.js';
-import rulesRouter from './src/routes/rules.routes';
+import rulesRouter from './src/routes/rules.routes.js';
 
 const app = express();
 
