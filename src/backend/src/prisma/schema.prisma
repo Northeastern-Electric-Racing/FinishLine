@@ -283,6 +283,8 @@ model User {
   deletedRules                            Rule[]                               @relation(name: "ruleDeletor")
   createdProjectRules                     Project_Rule[]                       @relation(name: "projectRuleCreator")
   deletedProjectRules                     Project_Rule[]                       @relation(name: "projectRuleDeletor")
+  deletedGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionDeleter")
+  createdGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionCreator")
 }
 
 model Role {
@@ -816,6 +818,7 @@ model Sponsor {
   taxExempt      Boolean
   sponsorNotes   String?
   sponsorTasks   Sponsor_Task[]
+  logoImageId    String?
 
   @@unique([name, organizationId], name: "uniqueSponsor")
   @@index([sponsorTierId])
@@ -1240,6 +1243,7 @@ model Organization {
   indexCodes               Index_Code[]
   financeDelegates         User[]                       @relation(name: "financeDelegates")
   rulesetTypes             Ruleset_Type[]
+  guestDefinitions         Guest_Definition[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1671,4 +1675,23 @@ model Project_Rule {
   deletedBy       User?                @relation(name: "projectRuleDeletor", fields: [deletedByUserId], references: [userId])
 
   @@unique([ruleId, projectId])
+}
+model Guest_Definition {
+  definitionId   String       @id @default(uuid())
+  term           String
+  description    String
+  order          Int
+  buttonText     String?
+  buttonLink     String?
+  icon           String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "guestDefinitionDeleter")
+  userDeletedId  String?
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "guestDefinitionCreator")
+  userCreatedId  String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@index([organizationId])
 }
