@@ -80,7 +80,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const uniqueWbsElementsWithProducts = new Map<
     string,
     {
-      name: string;
+      name?: string;
       cost: number;
       index: number;
       id?: string;

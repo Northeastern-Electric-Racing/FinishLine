@@ -733,11 +733,11 @@ model Reimbursement_Product_Reason {
 
 model Reimbursement_Product {
   reimbursementProductId       String                       @id @default(uuid())
-  name                         String
+  name                         String?
   dateDeleted                  DateTime?
   cost                         Int
   material                     Material?                    @relation(fields: [materialId], references: [materialId])
-  materialId                   String?                      
+  materialId                   String?
   reimbursementProductReasonId String                       @unique
   reimbursementProductReason   Reimbursement_Product_Reason @relation(fields: [reimbursementProductReasonId], references: [reimbursementProductReasonId])
   reimbursementRequestId       String
@@ -896,33 +896,33 @@ model Assembly {
 }
 
 model Material {
-  materialId             String                 @id @default(uuid())
-  assembly               Assembly?              @relation(fields: [assemblyId], references: [assemblyId])
+  materialId             String                  @id @default(uuid())
+  assembly               Assembly?               @relation(fields: [assemblyId], references: [assemblyId])
   assemblyId             String?
   name                   String
-  wbsElement             WBS_Element            @relation(fields: [wbsElementId], references: [wbsElementId])
+  wbsElement             WBS_Element             @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId           String
   dateDeleted            DateTime?
-  userDeleted            User?                  @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
+  userDeleted            User?                   @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
   userDeletedId          String?
   dateCreated            DateTime
-  userCreated            User                   @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
+  userCreated            User                    @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
   userCreatedId          String
   status                 Material_Status
-  materialType           Material_Type          @relation(fields: [materialTypeId], references: [id])
+  materialType           Material_Type           @relation(fields: [materialTypeId], references: [id])
   materialTypeId         String
-  manufacturer           Manufacturer?          @relation(fields: [manufacturerId], references: [id])
+  manufacturer           Manufacturer?           @relation(fields: [manufacturerId], references: [id])
   manufacturerId         String?
   manufacturerPartNumber String?
   pdmFileName            String?
   quantity               Decimal?
-  unit                   Unit?                  @relation(fields: [unitId], references: [id])
+  unit                   Unit?                   @relation(fields: [unitId], references: [id])
   unitId                 String?
   price                  Int?
   subtotal               Int?
   linkUrl                String
   notes                  String?
-  reimbursementRequest   Reimbursement_Request? @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+  reimbursementRequest   Reimbursement_Request?  @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
   reimbursementRequestId String?
   reimbursementProducts  Reimbursement_Product[]
 

@@ -9,6 +9,9 @@ ALTER COLUMN "price" DROP NOT NULL,
 ALTER COLUMN "subtotal" DROP NOT NULL;
 
 -- AlterTable
+ALTER TABLE "Reimbursement_Product" ALTER COLUMN "name" DROP NOT NULL;
+
+-- AlterTable
 ALTER TABLE "Reimbursement_Product" ADD COLUMN     "materialId" TEXT;
 
 -- CreateIndex
