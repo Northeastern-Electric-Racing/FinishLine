@@ -95,27 +95,21 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
       sx={{
         height: 'calc(100vh - 200px)',
         width: '100%',
+
         '& .super-app-theme--header': {
           backgroundColor: '#ef4345'
         },
+
         '& .super-app-theme--even': {
-          backgroundColor: theme.palette.grey[600],
-          '&:hover': {
-            backgroundColor: theme.palette.grey[700]
-          },
-          '&:focus': {
-            backgroundColor: '#997570'
-          }
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+        },
+        '& .super-app-theme--odd': {
+          border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
         },
 
-        '& .super-app-theme--odd': {
-          backgroundColor: 'transparent',
-          '&:hover': {
-            backgroundColor: theme.palette.grey[200]
-          },
-          '&:focus': {
-            backgroundColor: '#997570'
-          }
+        '& .MuiDataGrid-row:hover': {
+          backgroundColor: 'rgba(239, 67, 69, 0.6)'
         }
       }}
     >
