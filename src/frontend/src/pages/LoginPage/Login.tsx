@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useToggleTheme } from '../../hooks/theme.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
