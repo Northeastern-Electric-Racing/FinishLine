@@ -110,6 +110,16 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
 
         '& .MuiDataGrid-row:hover': {
           backgroundColor: 'rgba(239, 67, 69, 0.6)'
+        },
+
+        '& .super-app-theme--assembly': {
+          backgroundColor: theme.palette.grey[600],
+          '&:hover': {
+            backgroundColor: 'rgba(239, 67, 69, 0.6)'
+          },
+          '&:focus': {
+            backgroundColor: '#997570'
+          }
         }
       }}
     >
@@ -128,7 +138,8 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
         rows={rows.concat(materialsWithAssemblies.filter(isAssemblyOpen))}
         getRowClassName={(params) => {
           const stripe = params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd';
-          return `super-app-theme--${stripe}`;
+          const isAssemblyRow = String(params.row.id).startsWith('assembly-');
+          return `super-app-theme--${stripe}${isAssemblyRow ? ' super-app-theme--assembly' : ''}`;
         }}
         rowsPerPageOptions={[100]}
         sx={bomTableStyles.datagrid}
