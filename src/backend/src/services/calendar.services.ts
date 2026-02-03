@@ -13,7 +13,8 @@ import {
   Calendar,
   FilterArgs,
   Machinery,
-  ScheduleSlot
+  ScheduleSlot,
+  notGuest
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
@@ -285,6 +286,8 @@ export default class CalendarService {
       if (!hasPermission) {
         throw new AccessDeniedException('Only admins and heads can create events under this event type');
       }
+    } else if (notGuest(submitter.role)) {
+      throw new AccessDeniedGuestException('Guests cannot create events');
     }
 
     // Validate event follows event type configuration
@@ -501,37 +504,31 @@ export default class CalendarService {
         where: { userId: { in: members.map((member) => member.userId) } }
       });
 
-      if (!memberUserSettings) {
-        throw new NotFoundException('User Settings', 'Cannot find settings of members');
-      }
-
       const workPackageNames = newEvent.workPackages.map((wp) => wp.wbsElement.name).join(', ');
 
       const projects = newEvent.workPackages.map((wp) => wp.project);
 
-      // Send a slack message to all members invited to the event
-      for (const memberUserSetting of memberUserSettings) {
-        if (memberUserSetting.slackId) {
-          try {
-            // For each project associated with this event
-            for (const project of projects) {
-              await sendSlackEventConfirmNotification(
-                memberUserSetting.slackId,
-                newEvent.eventId,
-                newEvent.title,
-                project.wbsElement.name
-              );
-            }
-          } catch (err: unknown) {
-            if (err instanceof Error) {
-              throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+      // Send a slack message to all members invited to the event if the event requires confirmation
+      if (newEvent.status === Event_Status.UNCONFIRMED) {
+        for (const memberUserSetting of memberUserSettings) {
+          if (memberUserSetting.slackId) {
+            try {
+              // For each project associated with this event
+              for (const project of projects) {
+                await sendSlackEventConfirmNotification(
+                  memberUserSetting.slackId,
+                  newEvent.eventId,
+                  newEvent.title,
+                  project.wbsElement.name
+                );
+              }
+            } catch (err: unknown) {
+              if (err instanceof Error) {
+                throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+              }
             }
           }
         }
-      }
-
-      if (newEvent.status === Event_Status.CONFIRMED) {
-        await sendEventConfirmationToThread(newEvent.notificationSlackThreads, newEvent.userCreated);
       }
 
       // Send popup notification
