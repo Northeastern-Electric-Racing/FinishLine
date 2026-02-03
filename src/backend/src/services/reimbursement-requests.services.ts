@@ -241,8 +241,8 @@ export default class ReimbursementRequestService {
     acccountCodeId: string,
     totalCost: number,
     organization: Organization,
-    description: string,
-    dateOfExpense?: Date
+    dateOfExpense?: Date,
+    description?: string
   ): Promise<ReimbursementRequest> {
     if (await userHasPermission(recipient.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create a reimbursement request');
@@ -284,7 +284,7 @@ export default class ReimbursementRequestService {
         },
         identifier: numReimbursementRequests + 1,
         organization: { connect: { organizationId: organization.organizationId } },
-        description
+        description: description ?? ""
       }
     });
 
@@ -380,8 +380,8 @@ export default class ReimbursementRequestService {
     receiptPictures: ReimbursementReceiptCreateArgs[],
     submitter: User,
     organization: Organization,
-    description: string,
     dateOfExpense?: Date,
+    description?: string
   ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
@@ -420,7 +420,7 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
         dateOfExpense: dateOfExpense ?? null,
-        description: description,
+        description: description ?? "",
         indexCodeId,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
