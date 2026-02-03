@@ -2,8 +2,9 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
+
 import { FormEvent, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { Redirect, useHistory } from 'react-router-dom';
 import { useToggleTheme } from '../../hooks/theme.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
@@ -23,6 +24,17 @@ const Login = () => {
   const theme = useToggleTheme();
   const auth = useAuth();
   const organizationContext = useOrganization();
+
+  if (!auth.user && !auth.triedCurrent) {
+    auth.signInCurrent();
+    return <LoadingIndicator />;
+  }
+
+  if (auth.isLoading) return <LoadingIndicator />;
+
+  if (auth.user) {
+    return <Redirect to={routes.HOME} />;
+  }
 
   /**
    * Produce the path of the page redirected from the login page.
@@ -44,27 +56,17 @@ const Login = () => {
     return `${pathString}?${queryArgs.toString()}`;
   };
 
-  useEffect(() => {
-    if (!auth.triedCurrent) {
-      auth.signInCurrent();
+  const redirectAfterLogin = () => {
+    if (!query.has('page')) {
+      history.push(routes.HOME);
+    } else {
+      history.push(redirectQueryArgsToPath(query));
     }
-  }, [auth.triedCurrent, auth]);
-
-  useEffect(() => {
-    if (!auth.isLoading && auth.user) {
-      if (!query.has('page')) {
-        history.replace(routes.HOME);
-      } else {
-        history.replace(redirectQueryArgsToPath(query));
-      }
-    }
-  }, [auth.isLoading, auth.user, history, query]);
+  };
 
   const devFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const authedUser = await auth.devSignin(devUserId);
-    if (!authedUser) return;
-
     if (authedUser.defaultTheme && authedUser.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
       theme.toggleTheme();
     }
@@ -72,19 +74,14 @@ const Login = () => {
       const [defaultOrganization] = authedUser.organizations;
       organizationContext.selectOrganization(defaultOrganization);
     }
-
-    if (!query.has('page')) {
-      history.replace(routes.HOME);
-    } else {
-      history.replace(redirectQueryArgsToPath(query));
-    }
+    redirectAfterLogin();
   };
 
   const verifyLogin = async (response: CredentialResponse) => {
-    if (!response.credential) throw new Error('Failed to get credentials');
-
+    if (!response.credential) {
+      throw new Error('Failed to get credentials');
+    }
     const authedUser = await auth.signin(response.credential);
-
     if (authedUser.defaultTheme && authedUser.defaultTheme !== theme.activeTheme.toUpperCase()) {
       theme.toggleTheme();
     }
@@ -92,20 +89,12 @@ const Login = () => {
       const [defaultOrganization] = authedUser.organizations;
       organizationContext.selectOrganization(defaultOrganization);
     }
-
-    if (!query.has('page')) {
-      history.replace(routes.HOME);
-    } else {
-      history.replace(redirectQueryArgsToPath(query));
-    }
+    redirectAfterLogin();
   };
 
   const handleFailure = () => {
     console.log('Failed to login');
   };
-
-  if (auth.isLoading) return <LoadingIndicator />;
-  if (auth.user) return null;
 
   return (
     <LoginPage
