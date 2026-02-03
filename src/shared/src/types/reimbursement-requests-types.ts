@@ -53,7 +53,7 @@ export interface ReimbursementRequest {
   saboId?: number;
   dateCreated: Date;
   dateOfExpense?: Date;
-  description?: string;
+  description: string;
   reimbursementStatuses: ReimbursementStatus[];
   recipient: User;
   vendor: Vendor;

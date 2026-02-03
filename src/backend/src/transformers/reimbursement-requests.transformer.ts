@@ -51,7 +51,7 @@ export const reimbursementRequestTransformer = (
     saboId: reimbursementRequest.saboId ?? undefined,
     dateCreated: reimbursementRequest.dateCreated,
     dateOfExpense: reimbursementRequest.dateOfExpense ?? undefined,
-    description: reimbursementRequest.description ?? undefined,
+    description: reimbursementRequest.description,
     reimbursementStatuses: reimbursementRequest.reimbursementStatuses.map(reimbursementStatusTransformer),
     recipient: userTransformer(reimbursementRequest.recipient),
     vendor: vendorTransformer(reimbursementRequest.vendor),
