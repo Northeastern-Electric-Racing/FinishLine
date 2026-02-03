@@ -171,6 +171,13 @@ const ReimbursementRequestInfo = ({
         flex: 0.7,
         minWidth: 180,
         valueGetter: (params: any) => dateUndefinedPipe(params.row.dateSubmittedToSabo)
+      },
+      {
+        field: 'description',
+        headerName: 'Description',
+        flex: 0.7,
+        minWidth: 180,
+        valueGetter: (params: any) => params.row.description
       }
     );
 
