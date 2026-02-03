@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { WbsNumber, TaskPriority, TaskStatus, Task } from 'shared';
+import { WbsNumber, TaskPriority, TaskStatus, Task, TaskCardPreview } from 'shared';
 import {
   createSingleTask,
   deleteSingleTask,
@@ -148,7 +148,7 @@ export const useDeleteTask = () => {
 };
 
 export const useOverdueTasksByTeamLeader = (userId: string) => {
-  return useQuery<Task[], Error>([userId, 'tasks'], async () => {
+  return useQuery<TaskCardPreview[], Error>([userId, 'tasks'], async () => {
     const { data } = await getOverdueTasksByTeamLeader(userId);
     return data;
   });
