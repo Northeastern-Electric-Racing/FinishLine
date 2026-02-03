@@ -229,6 +229,7 @@ export default class ReimbursementRequestService {
    * @param accountCodeId the id of the account code the user made
    * @param totalCost the total cost of the reimbursement with tax
    * @param organizationId the organization the user is currently in
+   * @param description the description of the reimbursement request
    * @returns the created reimbursement request
    */
   static async createReimbursementRequest(
@@ -240,8 +241,8 @@ export default class ReimbursementRequestService {
     acccountCodeId: string,
     totalCost: number,
     organization: Organization,
-    dateOfExpense?: Date,
-    description?: string
+    description: string,
+    dateOfExpense?: Date
   ): Promise<ReimbursementRequest> {
     if (await userHasPermission(recipient.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create a reimbursement request');
@@ -365,6 +366,7 @@ export default class ReimbursementRequestService {
    * @param receiptPictures the old receipts that haven't been deleted (new receipts must be separately uploaded)
    * @param submitter the person editing the reimbursement request
    * @param organizationId the organization the user is currently in
+   * @param description the updated description of the reimbursement request
    * @returns the edited reimbursement request
    */
   static async editReimbursementRequest(
@@ -378,8 +380,8 @@ export default class ReimbursementRequestService {
     receiptPictures: ReimbursementReceiptCreateArgs[],
     submitter: User,
     organization: Organization,
+    description: string,
     dateOfExpense?: Date,
-    description?: string
   ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
@@ -418,7 +420,7 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
         dateOfExpense: dateOfExpense ?? null,
-        description: description ?? null,
+        description: description,
         indexCodeId,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
