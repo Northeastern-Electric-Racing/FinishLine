@@ -97,7 +97,8 @@ export const seedReimbursementRequests = async (
     accountCodes.equipment.accountCodeId,
     3500,
     organization,
-    new Date('2024-10-01')
+    new Date('2024-10-01'),
+    "Reimbursement request for high performance battery pack"
   );
   reimbursementRequests.push(rr1);
 
