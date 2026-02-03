@@ -37,7 +37,7 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
       title={header}
       onSubmit={onSubmit}
       submitText="Save"
-      paperProps={{ maxWidth: '1200px', maxHeight: '680px' }}
+      paperProps={{ maxWidth: '1200px', height: '85vh' }}
     >
       <EditAvailability
         editedAvailabilities={confirmedAvailabilities}

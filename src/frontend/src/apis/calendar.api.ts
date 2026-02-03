@@ -12,7 +12,7 @@ import {
   FilterArgs,
   ScheduleSlot
 } from 'shared';
-import { eventTransformer } from './transformers/calendar.transformer';
+import { eventTransformer, eventWithMembersTransformer } from './transformers/calendar.transformer';
 import { EditEventArgs, EditScheduleSlotArgs, EventCreateArgs } from '../hooks/calendar.hooks';
 
 export const getAllCalendars = () => {
@@ -129,7 +129,7 @@ export const getSingleEvent = async (id: string) => {
 
 export const getSingleEventWithMembers = async (id: string) => {
   return axios.get(apiUrls.calendarGetSingleEventWithMembers(id), {
-    transformResponse: (data) => eventTransformer(JSON.parse(data))
+    transformResponse: (data) => eventWithMembersTransformer(JSON.parse(data))
   });
 };
 
@@ -250,4 +250,16 @@ export const downloadDocumentPdf = async (fileId: string): Promise<Blob> => {
     responseType: 'blob' // Simply use 'blob' for PDF downloads
   });
   return response.data; // response.data is already a Blob
+};
+
+/**
+ * Schedules an event by adding a schedule slot and changing status to SCHEDULED
+ *
+ * @param eventId The id of the event to schedule
+ * @param payload The start and end times for the new schedule slot
+ */
+export const scheduleEvent = async (eventId: string, payload: { startTime: Date; endTime: Date }) => {
+  return axios.post<Event>(apiUrls.calendarScheduleEvent(eventId), payload, {
+    transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
 };

@@ -117,8 +117,8 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   };
 
   return (
-    <Box>
-      <Box display="flex" justifyContent="space-between" mb={2}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Box display="flex" justifyContent="space-between" mb={1}>
         <Typography variant="subtitle1">Available times in green</Typography>
         <NERButton variant="outlined" onClick={invertAvailabilities}>
           Invert Availability
@@ -128,22 +128,32 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
       <TableContainer
         sx={{
           overflowX: 'auto',
-          overflowY: 'auto',
+          overflowY: 'hidden',
           maxWidth: '100%',
-          maxHeight: 500
+          flex: 1
         }}
       >
         <Table
           stickyHeader
+          size="small"
           sx={{
+            height: '100%',
+            tableLayout: 'fixed',
             '& .MuiTableCell-head': {
-              bgcolor: 'background.paper'
+              bgcolor: 'background.paper',
+              px: 0.5,
+              py: 0.5
+            },
+            '& .MuiTableCell-body': {
+              px: 0,
+              py: 0,
+              height: `calc((100% - 50px) / 12)`
             },
             '& .MuiTableCell-root': {
               borderRight: '1px solid',
               borderColor: 'divider'
             },
-            minWidth: 800
+            minWidth: 700
           }}
         >
           <TableHead>

@@ -485,6 +485,7 @@ const calendarDeleteScheduleSlot = (eventId: string, scheduleSlotId: string) =>
   `${calendar()}/event/${eventId}/schedule-slot/${scheduleSlotId}/delete`;
 const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
 const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
+const calendarScheduleEvent = (eventId: string) => `${calendar()}/event/${eventId}/schedule`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -829,6 +830,7 @@ export const apiUrls = {
   calendarEditScheduleSlot,
   calendarPreviewScheduleSlotRecurringEdits,
   calendarDeleteScheduleSlot,
+  calendarScheduleEvent,
 
   version
 };

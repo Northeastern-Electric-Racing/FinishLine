@@ -15,6 +15,7 @@ import CreateEventModal from './Components/CreateEventModal';
 import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { Add } from '@mui/icons-material';
+import { eventsToEventInstances } from '../../utils/calendar.utils';
 
 const CalendarTab: React.FC = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -129,16 +130,7 @@ const CalendarTab: React.FC = () => {
           <NewCalendarPage
             allEventTypes={allEventTypes}
             reviewEvents={reviewEvents ?? []}
-            yourEvents={
-              yourEvents.flatMap((event) =>
-                event.scheduledTimes.map((scheduledTime) => ({
-                  ...event,
-                  ...scheduledTime,
-                  recurring: event.scheduledTimes.length > 1,
-                  totalScheduledSlots: event.scheduledTimes.length
-                }))
-              ) ?? []
-            }
+            yourEvents={eventsToEventInstances(yourEvents)}
             allCalendars={allCalendars}
             onCreateEventClick={handleNewEventClick}
           />

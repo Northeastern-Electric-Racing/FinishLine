@@ -1,4 +1,4 @@
-import { Box } from '@mui/system';
+import { Box } from '@mui/material';
 
 interface EventTimeSlotProps {
   backgroundColor?: string;
@@ -17,20 +17,41 @@ const EventTimeSlot: React.FC<EventTimeSlotProps> = ({
   onMouseEnter,
   onMouseUp
 }) => {
+  const getBorderColor = () => {
+    if (selected) return '#ffff8c';
+    return 'gray';
+  };
+
+  const getBorderWidth = () => {
+    if (selected) return '3px';
+    return '0.1px';
+  };
+
   return (
-    <Box onClick={onClick} onMouseDown={onMouseDown} onMouseEnter={onMouseEnter} onMouseUp={onMouseUp} p={0.5}>
+    <Box
+      onClick={onClick}
+      onMouseDown={onMouseDown}
+      onMouseEnter={onMouseEnter}
+      onMouseUp={onMouseUp}
+      sx={{
+        p: '1px',
+        width: '100%',
+        height: '100%'
+      }}
+    >
       <Box
         sx={{
-          borderRadius: 1,
+          borderRadius: 0.5,
           bgcolor: backgroundColor,
           width: '100%',
           height: '100%',
-          minHeight: 54,
+          minWidth: 24,
+          minHeight: 16,
           display: 'flex',
           borderStyle: 'solid',
-          borderColor: selected ? '#ffff8c' : 'gray',
-          borderWidth: selected ? '2px' : '0.1px',
-          userSelect: 'none', // Prevent text selection while dragging
+          borderColor: getBorderColor(),
+          borderWidth: getBorderWidth(),
+          userSelect: 'none',
           cursor: 'pointer'
         }}
       />

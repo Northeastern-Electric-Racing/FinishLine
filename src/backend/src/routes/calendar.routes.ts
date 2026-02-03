@@ -197,6 +197,14 @@ calendarRouter.post(
   CalendarController.setStatus
 );
 
+calendarRouter.post(
+  '/event/:eventId/schedule',
+  isDate(body('startTime')),
+  isDate(body('endTime')),
+  validateInputs,
+  CalendarController.scheduleEvent
+);
+
 calendarRouter.post('/event/:eventId/delete', CalendarController.deleteEvent);
 
 calendarRouter.get('/event/:eventId/conflict', CalendarController.getConflictingEvent);

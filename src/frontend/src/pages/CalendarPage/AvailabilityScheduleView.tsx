@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { Availability, Event, getDayOfWeek, getNextSevenDays, User } from 'shared';
+import { Availability, Event, EventWithMembers, getDayOfWeek, getNextSevenDays, User } from 'shared';
 import React, { useState } from 'react';
 import { enumToArray, getBackgroundColor, NUMBER_OF_TIME_SLOTS, REVIEW_TIMES } from '../../utils/design-review.utils';
 import { datePipe } from '../../utils/pipes';
@@ -11,8 +11,10 @@ interface AvailabilityScheduleViewProps {
   usersToAvailabilities: Map<User, Availability[]>;
   setCurrentAvailableUsers: (val: User[]) => void;
   setCurrentUnavailableUsers: (val: User[]) => void;
-  event: Event;
+  setCurrentHoveredSlot?: (slot: { day: Date; startHour: number; endHour: number } | null) => void;
+  event: Event | EventWithMembers;
   displayDate?: Date;
+  onSlotScheduleClick?: (day: Date | null, startHour: number, endHour: number) => void;
 }
 
 const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
@@ -21,8 +23,10 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   usersToAvailabilities,
   setCurrentAvailableUsers,
   setCurrentUnavailableUsers,
+  setCurrentHoveredSlot,
   event,
-  displayDate
+  displayDate,
+  onSlotScheduleClick
 }) => {
   const totalUsers = usersToAvailabilities.size;
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
@@ -30,15 +34,45 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   const initialDate = displayDate || event.initialDateScheduled || new Date();
   const potentialDays = getNextSevenDays(initialDate);
 
-  const handleTimeslotClick = (index: number, _day: Date) => {
+  // Handle hover - updates the sidebar with available/unavailable users and slot info
+  const handleTimeslotHover = (index: number, day: Date, timeIndex: number) => {
+    setCurrentAvailableUsers(availableUsers.get(index) || []);
+    setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
+    if (setCurrentHoveredSlot) {
+      const startHour = 10 + timeIndex;
+      const endHour = 11 + timeIndex;
+      setCurrentHoveredSlot({ day, startHour, endHour });
+    }
+  };
+
+  // Handle mouse leave - clears the hover state and shows selected slot's users if any
+  const handleMouseLeave = () => {
+    if (setCurrentHoveredSlot) {
+      setCurrentHoveredSlot(null);
+    }
+    // If there's a selected slot, show its users
+    if (selectedTimeslot !== null) {
+      setCurrentAvailableUsers(availableUsers.get(selectedTimeslot) || []);
+      setCurrentUnavailableUsers(unavailableUsers.get(selectedTimeslot) || []);
+    }
+  };
+
+  // Handle click - selects/deselects the time slot
+  const handleTimeslotClick = (index: number, day: Date, timeIndex: number) => {
     if (selectedTimeslot === index) {
+      // Deselect
       setSelectedTimeslot(null);
-      setCurrentAvailableUsers([]);
-      setCurrentUnavailableUsers([]);
+      if (onSlotScheduleClick) {
+        onSlotScheduleClick(null, 0, 0); // Clear selection in parent
+      }
     } else {
+      // Select
       setSelectedTimeslot(index);
-      setCurrentAvailableUsers(availableUsers.get(index) || []);
-      setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
+      if (onSlotScheduleClick) {
+        const startHour = 10 + timeIndex;
+        const endHour = 11 + timeIndex;
+        onSlotScheduleClick(day, startHour, endHour);
+      }
     }
   };
 
@@ -77,17 +111,30 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
     <TableContainer
       sx={{
         overflowX: 'auto',
-        overflowY: 'auto',
-        maxWidth: '100%'
+        overflowY: 'hidden',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
       }}
+      onMouseLeave={handleMouseLeave}
     >
       <Table
         stickyHeader
+        size="small"
         sx={{
+          height: '100%',
+          tableLayout: 'fixed',
           '& .MuiTableCell-head': {
-            bgcolor: 'background.paper'
+            bgcolor: 'background.paper',
+            px: 0.5,
+            py: 0.5
           },
-          minWidth: 650
+          '& .MuiTableCell-body': {
+            px: 0,
+            py: 0,
+            height: `calc((100% - 40px) / 12)` // 12 time slots, minus header height
+          },
+          minWidth: 400
         }}
       >
         <TableHead>
@@ -113,12 +160,12 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
               {potentialDays.map((day, dayIndex) => {
                 const index = dayIndex * enumToArray(REVIEW_TIMES).length + timeIndex;
                 return (
-                  <TableCell sx={{ p: 0 }}>
+                  <TableCell key={index} sx={{ p: 0 }}>
                     <EventTimeSlot
-                      key={index}
                       backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
                       selected={selectedTimeslot === index}
-                      onClick={() => handleTimeslotClick(index, day)}
+                      onClick={() => handleTimeslotClick(index, day, timeIndex)}
+                      onMouseEnter={() => handleTimeslotHover(index, day, timeIndex)}
                     />
                   </TableCell>
                 );

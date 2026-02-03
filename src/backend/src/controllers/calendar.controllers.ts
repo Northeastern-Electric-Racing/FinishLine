@@ -484,6 +484,25 @@ export default class CalendarController {
     }
   }
 
+  // Schedule an event by adding a schedule slot and changing status to SCHEDULED
+  static async scheduleEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params as Record<string, string>;
+      const { startTime, endTime } = req.body;
+
+      const updatedEvent = await CalendarService.scheduleEvent(
+        req.currentUser,
+        eventId,
+        new Date(startTime),
+        new Date(endTime),
+        req.organization
+      );
+      res.status(200).json(updatedEvent);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   //overall filtering for events
   static async getFilteredEvents(req: Request, res: Response, next: NextFunction) {
     try {

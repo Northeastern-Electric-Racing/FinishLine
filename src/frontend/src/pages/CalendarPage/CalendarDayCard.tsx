@@ -159,6 +159,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     const baseColor = specificCalendar?.color ?? 'gray';
     const isPending =
       event.status === EventStatus.UNCONFIRMED ||
+      event.status === EventStatus.CONFIRMED ||
       event.approved === ConflictStatus.PENDING ||
       event.approved === ConflictStatus.DENIED;
     const bgColor = isPending ? getMutedColor(baseColor, 0.35) : baseColor;

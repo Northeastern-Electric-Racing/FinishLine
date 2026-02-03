@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
-import { Calendar, DayOfWeek, EventInstance, EventType, isAdmin, isHead } from 'shared';
+import { Calendar, DayOfWeek, EventInstance, EventStatus, EventType, isAdmin, isHead } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../utils/routes';
@@ -98,7 +98,16 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
   );
   const calendarColor = specificCalendar?.color ?? 'gray';
 
-  const showAvailabilityButton = true;
+  // Only show availability button for required/optional members or the creator, and only if not already scheduled
+  const showAvailabilityButton =
+    event.status !== EventStatus.SCHEDULED &&
+    (event.requiredMembers.some((m) => m.userId === currentUser.userId) ||
+      event.optionalMembers.some((m) => m.userId === currentUser.userId) ||
+      event.userCreated.userId === currentUser.userId);
+
+  // Only show edit/delete icons for creators and heads or higher
+  const canEditOrDelete =
+    event.userCreated.userId === currentUser.userId || isAdmin(currentUser.role) || isHead(currentUser.role);
 
   const eventDate = clickedDate || event.startTime;
 
@@ -152,7 +161,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
         </Alert>
       )}
       <Box sx={{ position: 'relative', mb: 2 }}>
-        {!disable && (
+        {!disable && canEditOrDelete && (
           <Box sx={{ position: 'absolute', top: 0, right: 0, display: 'flex', gap: 0.5 }}>
             <IconButton
               size="small"

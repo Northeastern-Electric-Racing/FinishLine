@@ -766,15 +766,6 @@ export default class CalendarService {
 
     let newStatus = status;
 
-    // If all required members are confirmed, set the status to SCHEDULED
-    const allRequiredMembersConfirmed = updatedRequiredMembers.every((member) =>
-      foundEvent.confirmedMembers.map((user: { userId: string }) => user.userId).includes(member.userId)
-    );
-
-    if (status === Event_Status.CONFIRMED && allRequiredMembersConfirmed) {
-      newStatus = Event_Status.SCHEDULED;
-    }
-
     // Update the event with new data (excluding schedule slots)
     const updatedEvent = await prisma.event.update({
       where: { eventId },
@@ -1405,6 +1396,95 @@ export default class CalendarService {
       return eventTransformer(updatedEvent);
     }
     return eventTransformer(event);
+  }
+
+  /**
+   * Schedules an event by adding a schedule slot and changing the status to SCHEDULED.
+   * Only the event creator can schedule the event.
+   *
+   * @param submitter The user submitting the request.
+   * @param eventId The id of the event to schedule.
+   * @param startTime The start time of the scheduled slot.
+   * @param endTime The end time of the scheduled slot.
+   * @param organization The organization context.
+   *
+   * @returns The updated event with the new schedule slot.
+   *
+   * @throws NotFoundException If the event is not found.
+   * @throws DeletedException If the event has been deleted.
+   * @throws AccessDeniedException If the user is not the event creator or an admin.
+   * @throws HttpException If the event is not in CONFIRMED status.
+   */
+  static async scheduleEvent(
+    submitter: User,
+    eventId: string,
+    startTime: Date,
+    endTime: Date,
+    organization: Organization
+  ): Promise<Event> {
+    const event = await prisma.event.findUnique({
+      where: { eventId },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    if (!event) throw new NotFoundException('Event', eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    // Cannot schedule an already scheduled event
+    if (event.status === Event_Status.SCHEDULED) {
+      throw new HttpException(400, 'Event is already scheduled');
+    }
+
+    // Only the event creator can schedule the event
+    if (
+      submitter.userId !== event.userCreatedId &&
+      !(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))
+    ) {
+      throw new AccessDeniedException('Only the event creator and admins can schedule the event');
+    }
+
+    // Check for conflicts with the new time
+    const newSlotData: ScheduleSlotCreateArgs = {
+      startTime,
+      endTime,
+      allDay: false
+    };
+
+    const { hasConflict, conflictingEvent } = await checkEventConflicts(
+      [newSlotData],
+      organization,
+      event.location ?? undefined,
+      event.eventId
+    );
+
+    // Update the event with a new schedule slot and change status to SCHEDULED
+    const updatedEvent = await prisma.event.update({
+      where: { eventId },
+      data: {
+        status: Event_Status.SCHEDULED,
+        scheduledTimes: {
+          create: {
+            startTime,
+            endTime,
+            allDay: false
+          }
+        },
+        approved: hasConflict ? Conflict_Status.PENDING : event.approved,
+        approvalRequiredFromUserId: hasConflict ? conflictingEvent?.userCreated.userId : event.approvalRequiredFromUserId
+      },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    const { eventTypeId } = updatedEvent;
+    const foundEventType = await prisma.event_Type.findUnique({
+      where: { eventTypeId }
+    });
+
+    if (foundEventType?.sendSlackNotifications) {
+      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, eventTransformer(updatedEvent));
+    }
+
+    return eventTransformer(updatedEvent);
   }
 
   /**

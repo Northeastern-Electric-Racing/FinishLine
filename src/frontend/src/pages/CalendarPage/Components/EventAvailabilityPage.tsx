@@ -6,7 +6,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery as useQueryParam } from '../../../hooks/utils.hooks';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
-import { Availability, getMostRecentAvailabilities, User, UserWithScheduleSettings, EventWithMembers } from 'shared';
+import {
+  Availability,
+  getMostRecentAvailabilities,
+  User,
+  UserWithScheduleSettings,
+  EventWithMembers,
+  isAdmin,
+  EventStatus
+} from 'shared';
 import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -23,6 +31,7 @@ import { availabilityTransformer } from '../../../apis/transformers/users.transf
 import SingleAvailabilityModal from '../../SettingsPage/UserScheduleSettings/Availability/SingleAvailabilityModal';
 import AvailabilityEditModal from '../../SettingsPage/UserScheduleSettings/Availability/AvailabilityEditModal';
 import AvailabilityScheduleView from '../AvailabilityScheduleView';
+import ScheduleEventModal from './ScheduleEventModal';
 
 const isUserOnEvent = (user: User, event: EventWithMembers): boolean => {
   const isDirectMember =
@@ -65,10 +74,16 @@ export const EventAvailabilityPage: React.FC = () => {
   const currentUser = useCurrentUser();
 
   const [editAvailabilityOpen, setEditAvailabilityOpen] = useState(false);
+  const [hasAutoOpened, setHasAutoOpened] = useState(false);
   const [viewAvailabilityOpen, setViewAvailabilityOpen] = useState(false);
   const [confirmedAvailabilities, setConfirmedAvailabilities] = useState<Map<number, Availability>>(new Map());
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
+  const [currentHoveredSlot, setCurrentHoveredSlot] = useState<{ day: Date; startHour: number; endHour: number } | null>(
+    null
+  );
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<{ day: Date; startHour: number; endHour: number } | null>(null);
 
   const {
     data: event,
@@ -84,33 +99,18 @@ export const EventAvailabilityPage: React.FC = () => {
     error: settingsError
   } = useUserScheduleSettings(currentUser.userId);
 
+  // Only include required and optional members plus creator (not team members)
   const allRelevantUserIds = useMemo(() => {
     if (!event) return [];
 
     const userIds = new Set<string>();
 
-    // Add required and optional members
+    // Add required and optional members only
     event.requiredMembers.forEach((m) => userIds.add(m.userId));
     event.optionalMembers.forEach((m) => userIds.add(m.userId));
 
     // Add creator
     userIds.add(event.userCreated.userId);
-
-    // Add team members
-    event.teams.forEach((team) => {
-      team.members.forEach((m) => userIds.add(m.userId));
-      team.leads.forEach((l) => userIds.add(l.userId));
-      userIds.add(team.head.userId);
-    });
-
-    // Add team type members
-    if (event.teamType) {
-      event.teamType.teams.forEach((team) => {
-        team.members.forEach((m) => userIds.add(m.userId));
-        team.leads.forEach((l) => userIds.add(l.userId));
-        userIds.add(team.head.userId);
-      });
-    }
 
     return Array.from(userIds);
   }, [event]);
@@ -136,6 +136,18 @@ export const EventAvailabilityPage: React.FC = () => {
     return isUserOnEvent(currentUser, event);
   }, [currentUser, event]);
 
+  // Determine if current user is the creator
+  const isCreator = useMemo(() => {
+    if (!event) return false;
+    return event.userCreated.userId === currentUser.userId;
+  }, [event, currentUser]);
+
+  // Check if current user has already confirmed
+  const hasConfirmed = useMemo(() => {
+    if (!event) return false;
+    return event.confirmedMembers.some((m) => m.userId === currentUser.userId);
+  }, [event, currentUser]);
+
   useEffect(() => {
     if (userScheduleSettings && userScheduleSettings.availabilities.length > 0) {
       const confirmed = getMostRecentAvailabilities(userScheduleSettings.availabilities, displayDate);
@@ -144,6 +156,14 @@ export const EventAvailabilityPage: React.FC = () => {
       setConfirmedAvailabilities(new Map());
     }
   }, [userScheduleSettings, displayDate]);
+
+  // Auto-open modal for users who haven't confirmed (runs once when event loads)
+  useEffect(() => {
+    if (!hasAutoOpened && event && !hasConfirmed) {
+      setEditAvailabilityOpen(true);
+      setHasAutoOpened(true);
+    }
+  }, [event, hasAutoOpened, hasConfirmed]);
 
   if (eventLoading || !event) return <LoadingIndicator />;
   if (eventError) return <ErrorPage error={eventErrorMsg} message={eventErrorMsg?.message} />;
@@ -182,138 +202,159 @@ export const EventAvailabilityPage: React.FC = () => {
     usersToAvailabilities.set(user, availability ?? []);
   });
 
-  const getAvailabilitySummary = () => {
-    if (confirmedAvailabilities.size === 0) {
-      return 'No availability set yet. Click "Edit My Availability" to get started.';
+  // Handler for when creator clicks a slot to select it
+  const handleSlotScheduleClick = (day: Date | null, startHour: number, endHour: number) => {
+    if (day === null) {
+      setSelectedSlot(null);
+    } else {
+      setSelectedSlot({ day, startHour, endHour });
     }
-    const totalSlots = Array.from(confirmedAvailabilities.values()).reduce(
-      (sum, avail) => sum + avail.availability.length,
-      0
-    );
-    return `${totalSlots} time slot${totalSlots !== 1 ? 's' : ''} marked as available`;
+  };
+
+  // Handler for Schedule button click
+  const handleScheduleClick = () => {
+    if (selectedSlot) {
+      setScheduleModalOpen(true);
+    }
+  };
+
+  // Format time for display
+  const formatHour = (hour: number) => {
+    if (hour > 12) return `${hour - 12}:00 PM`;
+    if (hour === 12) return '12:00 PM';
+    return `${hour}:00 AM`;
   };
 
   // RENDER
   return (
-    <PageLayout title={`Availability for ${eventNamePipe(event)}`}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          {/* My Availability Section */}
-          <Box
-            sx={{
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: 2,
-              p: 3,
-              height: '100%',
-              minHeight: 350,
-              maxHeight: 350
-            }}
-          >
-            <Typography variant="h5" fontWeight="bold" mb={2}>
-              My Availability
+    <PageLayout
+      title={workPackageNames}
+      headerRight={
+        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+          <NERSuccessButton variant="contained" onClick={() => setEditAvailabilityOpen(true)} disabled={!isUserMember}>
+            Edit My Availability
+          </NERSuccessButton>
+          <NERFailButton onClick={handleClose}>Back to Calendar</NERFailButton>
+        </Box>
+      }
+    >
+      <Box sx={{ display: 'flex', gap: 2, overflow: 'hidden', width: '100%', height: 'calc(100vh - 200px)' }}>
+        {/* Left side - Availability Grid */}
+        <Box sx={{ flex: '1 1 0', minWidth: 0, height: '100%', overflow: 'hidden' }}>
+          <AvailabilityScheduleView
+            availableUsers={availableUsers}
+            unavailableUsers={unavailableUsers}
+            usersToAvailabilities={usersToAvailabilities}
+            setCurrentAvailableUsers={setCurrentAvailableUsers}
+            setCurrentUnavailableUsers={setCurrentUnavailableUsers}
+            setCurrentHoveredSlot={setCurrentHoveredSlot}
+            event={event}
+            displayDate={displayDate}
+            onSlotScheduleClick={handleSlotScheduleClick}
+          />
+        </Box>
+
+        {/* Right side - User availability info */}
+        <Box
+          sx={{
+            flex: '0 0 auto',
+            width: { xs: 180, sm: 220, md: 280 },
+            backgroundColor: theme.palette.background.paper,
+            borderRadius: 2,
+            p: { xs: 1.5, sm: 2, md: 3 },
+            overflowY: 'auto',
+            height: '100%'
+          }}
+        >
+          {/* Date/Time display */}
+          {(() => {
+            const displaySlot = currentHoveredSlot || selectedSlot;
+            if (displaySlot) {
+              return (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6">
+                    {displaySlot.day.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {formatHour(displaySlot.startHour)} - {formatHour(displaySlot.endHour)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    {currentAvailableUsers.length}/{relevantUsers.length} available
+                  </Typography>
+                </Box>
+              );
+            }
+            return (
+              <Typography variant="body1" color="text.secondary" mb={3}>
+                Hover over a time slot to see availability
+              </Typography>
+            );
+          })()}
+
+          {/* Available/Unavailable columns */}
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>
+                Available
+              </Typography>
+              <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
+                {currentAvailableUsers.length > 0 ? (
+                  currentAvailableUsers.map((user) => {
+                    const isConfirmed = event.confirmedMembers.some((cm) => cm.userId === user.userId);
+                    const displayName = fullNamePipe(user) + (isConfirmed ? '' : ' *');
+                    return (
+                      <Typography key={user.userId} variant="body2" sx={{ py: 0.25 }}>
+                        {displayName}
+                      </Typography>
+                    );
+                  })
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    -
+                  </Typography>
+                )}
+              </Box>
+            </Grid>
+
+            <Grid item xs={6}>
+              <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>
+                Unavailable
+              </Typography>
+              <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
+                {currentUnavailableUsers.length > 0 ? (
+                  currentUnavailableUsers.map((user) => {
+                    const isConfirmed = event.confirmedMembers.some((cm) => cm.userId === user.userId);
+                    const displayName = fullNamePipe(user) + (isConfirmed ? '' : ' *');
+                    return (
+                      <Typography key={user.userId} variant="body2" sx={{ py: 0.25 }}>
+                        {displayName}
+                      </Typography>
+                    );
+                  })
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    -
+                  </Typography>
+                )}
+              </Box>
+            </Grid>
+          </Grid>
+
+          {(currentAvailableUsers.length > 0 || currentUnavailableUsers.length > 0) && (
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+              * has not confirmed availability
             </Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              {getAvailabilitySummary()}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <NERSuccessButton
-                variant="contained"
-                onClick={() => setViewAvailabilityOpen(true)}
-                disabled={userScheduleSettings.availabilities.length === 0}
-              >
-                View My Availability
-              </NERSuccessButton>
-              <NERSuccessButton variant="contained" onClick={() => setEditAvailabilityOpen(true)} disabled={!isUserMember}>
-                Edit My Availability
+          )}
+
+          {/* Schedule button for creators - only show if event is not already scheduled */}
+          {(isCreator || isAdmin(currentUser.role)) && selectedSlot && event.status !== EventStatus.SCHEDULED && (
+            <Box sx={{ mt: 3 }}>
+              <NERSuccessButton variant="contained" onClick={handleScheduleClick} fullWidth>
+                Schedule Event
               </NERSuccessButton>
             </Box>
-            {!isUserMember && (
-              <Typography variant="body2" color="error" sx={{ mt: 2 }}>
-                You must be a member of this event to edit availability.
-              </Typography>
-            )}
-          </Box>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Box
-            sx={{
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: 2,
-              p: 3,
-              height: '100%',
-              minHeight: 350,
-              maxHeight: 350
-            }}
-          >
-            <Typography variant="h5" fontWeight="bold" mb={2}>
-              {eventNamePipe(event)} Availability
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={3}>
-              {currentAvailableUsers.length > 0
-                ? `${currentAvailableUsers.length}/${relevantUsers.length} available`
-                : 'Click a time slot to see availability'}
-            </Typography>
-
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <Typography variant="subtitle2" fontWeight="bold" sx={{ textDecoration: 'underline', mb: 1 }}>
-                  Available
-                </Typography>
-                <Box sx={{ height: 100, overflowY: 'auto' }}>
-                  {currentAvailableUsers.length > 0 ? (
-                    currentAvailableUsers.map((user) => (
-                      <Typography key={user.userId} variant="body2">
-                        {fullNamePipe(user)}
-                      </Typography>
-                    ))
-                  ) : (
-                    <Typography variant="body2" color="text.secondary" fontSize="0.875rem">
-                      Click a time slot to see availability
-                    </Typography>
-                  )}
-                </Box>
-              </Grid>
-
-              <Grid item xs={6}>
-                <Typography variant="subtitle2" fontWeight="bold" sx={{ textDecoration: 'underline', mb: 1 }}>
-                  Unavailable
-                </Typography>
-                <Box sx={{ height: 100, overflowY: 'auto' }}>
-                  {currentUnavailableUsers.length > 0 ? (
-                    currentUnavailableUsers.map((user) => (
-                      <Typography key={user.userId} variant="body2">
-                        {fullNamePipe(user)}
-                      </Typography>
-                    ))
-                  ) : (
-                    <Typography variant="body2" color="text.secondary" fontSize="0.875rem">
-                      Click a time slot to see availability
-                    </Typography>
-                  )}
-                </Box>
-              </Grid>
-            </Grid>
-          </Box>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 2, p: 3 }}>
-            <AvailabilityScheduleView
-              availableUsers={availableUsers}
-              unavailableUsers={unavailableUsers}
-              usersToAvailabilities={usersToAvailabilities}
-              setCurrentAvailableUsers={setCurrentAvailableUsers}
-              setCurrentUnavailableUsers={setCurrentUnavailableUsers}
-              event={event}
-              displayDate={displayDate}
-            />
-          </Box>
-        </Grid>
-      </Grid>
-
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
-        <NERFailButton onClick={handleClose}>Close</NERFailButton>
+          )}
+        </Box>
       </Box>
 
       <SingleAvailabilityModal
@@ -335,6 +376,21 @@ export const EventAvailabilityPage: React.FC = () => {
         onSubmit={handleConfirm}
         canChangeDateRange={false}
       />
+
+      {selectedSlot && (
+        <ScheduleEventModal
+          open={scheduleModalOpen}
+          onClose={() => {
+            setScheduleModalOpen(false);
+            setSelectedSlot(null);
+          }}
+          eventId={eventId}
+          eventName={eventNamePipe(event)}
+          selectedDay={selectedSlot.day}
+          startHour={selectedSlot.startHour}
+          endHour={selectedSlot.endHour}
+        />
+      )}
     </PageLayout>
   );
 };

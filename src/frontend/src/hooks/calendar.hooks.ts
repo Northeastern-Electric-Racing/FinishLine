@@ -47,7 +47,8 @@ import {
   postEditScheduleSlot,
   getSingleEventWithMembers,
   previewScheduleSlotRecurringEdits,
-  postDeleteScheduleSlot
+  postDeleteScheduleSlot,
+  scheduleEvent
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 import { PDFDocument } from 'pdf-lib';
@@ -560,6 +561,29 @@ export const useDenyEvent = (id: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['events', id]);
         queryClient.invalidateQueries(['filter-events']);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to schedule an event by adding a schedule slot and changing status to SCHEDULED.
+ * Only the event creator can schedule the event.
+ */
+export const useScheduleEvent = (eventId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Event, Error, { startTime: Date; endTime: Date }>(
+    ['events', 'schedule', eventId],
+    async (payload) => {
+      const { data } = await scheduleEvent(eventId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['events', eventId]);
+        queryClient.invalidateQueries(['events', eventId, 'with-members']);
+        queryClient.invalidateQueries(['filter-events']);
+        queryClient.invalidateQueries(EVENT_KEY);
       }
     }
   );

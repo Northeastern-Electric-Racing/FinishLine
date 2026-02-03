@@ -253,8 +253,8 @@ export const sendSlackEventConfirmNotification = async (
   if (!isProduction && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const msg = `You have been invited to the ${eventName} Design Review in project ${projectName}!`;
   const fullLink = isProduction
-    ? `https://finishlinebyner.com/settings/preferences?eventId=${eventId}`
-    : `http://localhost:3000/settings/preferences?eventId=${eventId}`;
+    ? `https://finishlinebyner.com/calendar/event/${eventId}`
+    : `http://localhost:3000/calendar/event/${eventId}`;
   const linkButtonText = 'Confirm Availability';
 
   try {
