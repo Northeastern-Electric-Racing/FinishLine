@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
-import { Calendar, DayOfWeek, EventInstance, EventStatus, EventType, isAdmin, isHead } from 'shared';
+import { Calendar, DayOfWeek, EventInstance, EventStatus, EventType, isAdmin, isHead, wbsPipe } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../utils/routes';
@@ -121,8 +121,6 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
   const teamsText = event.teams.length > 0 ? event.teams.map((t) => t.teamName).join(', ') : '';
   const machineryText = event.machinery.length > 0 ? event.machinery.map((m) => m.name || 'Machinery').join(', ') : '';
   const shopsText = event.shops.length > 0 ? event.shops.map((s) => s.name).join(', ') : '';
-  const workPackagesText =
-    event.workPackages.length > 0 ? event.workPackages.map((wp) => wp.wbsElement?.name || 'Work package').join(', ') : '';
 
   const descriptionText = (event.description ?? '').trim();
   const locationText = (event.location ?? '').trim();
@@ -331,11 +329,26 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
         )}
 
         {/* Work packages */}
-        {hasValue(workPackagesText) && (
+        {event.workPackages.length > 0 && (
           <Stack direction="row" spacing={1.25} alignItems="flex-start">
             <BusinessCenterIcon fontSize="small" sx={{ mt: 0.3 }} />
             <Typography variant="body2" sx={{ flex: 1 }}>
-              <b>Work packages:</b> {workPackagesText}
+              <b>Work packages:</b>{' '}
+              {event.workPackages.map((wp, index) => {
+                const wbsNum = {
+                  carNumber: wp.wbsElement.carNumber,
+                  projectNumber: wp.wbsElement.projectNumber,
+                  workPackageNumber: wp.wbsElement.workPackageNumber
+                };
+                return (
+                  <span key={wp.workPackageId}>
+                    {index > 0 && ', '}
+                    <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}`} onClick={stopClick}>
+                      {wp.wbsElement?.name || 'Work package'}
+                    </Link>
+                  </span>
+                );
+              })}
             </Typography>
           </Stack>
         )}

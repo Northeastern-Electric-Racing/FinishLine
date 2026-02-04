@@ -10,6 +10,10 @@ export const shopTransformer = (shop: Shop): Shop => {
 };
 
 export const filterEventTransformer = (event: Event): Event => {
+  // Guard against error responses being passed through transformResponse
+  if (!event || !event.scheduledTimes) {
+    return event;
+  }
   return {
     ...event,
     dateCreated: new Date(event.dateCreated),
@@ -22,6 +26,10 @@ export const filterEventTransformer = (event: Event): Event => {
 };
 
 export const eventTransformer = (event: Event): Event => {
+  // Guard against error responses being passed through transformResponse
+  if (!event || !event.scheduledTimes) {
+    return event;
+  }
   return {
     ...event,
     dateCreated: new Date(event.dateCreated),
@@ -35,6 +43,10 @@ export const eventTransformer = (event: Event): Event => {
 };
 
 export const eventWithMembersTransformer = (event: EventWithMembers): EventWithMembers => {
+  // Guard against error responses being passed through transformResponse
+  if (!event || !event.scheduledTimes) {
+    return event;
+  }
   return {
     ...event,
     dateCreated: new Date(event.dateCreated),

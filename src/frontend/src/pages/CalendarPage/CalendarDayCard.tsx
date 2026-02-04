@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Box, Card, CardContent, Grid, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import { Calendar, ConflictStatus, DayOfWeek, EventInstance, EventStatus, EventType } from 'shared';
 import ConstructionIcon from '@mui/icons-material/Construction';
@@ -48,6 +48,11 @@ interface CalendarDayCardProps {
   onCreateEventClick: (date: Date) => void;
 }
 
+// Constants for dynamic event display calculation
+const TITLE_HEIGHT = 28; // Height of the day number title
+const EVENT_CARD_HEIGHT = 24; // Height of each event card
+const EVENT_MARGIN = 4; // Margin between events
+
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   cardDate,
   displayMonth,
@@ -77,6 +82,28 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventInstance | null>(null);
   const toast = useToast();
+
+  // Ref and state for dynamic event count calculation
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [maxVisibleEvents, setMaxVisibleEvents] = useState(2);
+
+  // Calculate how many events can fit based on container height
+  useEffect(() => {
+    const calculateMaxEvents = () => {
+      if (containerRef.current) {
+        const containerHeight = containerRef.current.clientHeight;
+        const availableHeight = containerHeight - TITLE_HEIGHT;
+        const eventSlotHeight = EVENT_CARD_HEIGHT + EVENT_MARGIN;
+        // Reserve space for the "+N more" card if there are extra events
+        const maxEvents = Math.max(1, Math.floor(availableHeight / eventSlotHeight));
+        setMaxVisibleEvents(maxEvents);
+      }
+    };
+
+    calculateMaxEvents();
+    window.addEventListener('resize', calculateMaxEvents);
+    return () => window.removeEventListener('resize', calculateMaxEvents);
+  }, []);
 
   const { mutateAsync: deleteEvent } = useDeleteEvent(selectedEvent?.eventId ?? '');
   const { mutateAsync: deleteScheduleSlot } = useDeleteScheduleSlot(
@@ -169,7 +196,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     return (
       <Box
         marginLeft={0.5}
-        marginBottom={0.5}
+        marginBottom={0.25}
         marginRight={0.5}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
@@ -194,8 +221,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
             backgroundColor: bgColor,
             borderRadius: 1,
             width: '100%',
-            minHeight: 30,
-            maxHeight: 30,
+            minHeight: EVENT_CARD_HEIGHT,
+            maxHeight: EVENT_CARD_HEIGHT,
             ...(isPending && {
               border: `1px dashed ${baseColor}`,
               opacity: 0.8
@@ -259,7 +286,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           >
             <Typography
               marginX={0.5}
-              marginY={0.6}
+              marginY={0.3}
               lineHeight="120%"
               fontSize={14}
               fontWeight="bold"
@@ -359,7 +386,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
 
   const ExtraEventsCard = ({ extraEvents }: { extraEvents: EventInstance[] }) => {
     return (
-      <Box marginLeft={0.5} marginRight={0.5} marginBottom={0.2} sx={{ position: 'relative', zIndex: 2 }}>
+      <Box marginLeft={0.5} marginRight={0.5} marginBottom={0.25} sx={{ position: 'relative', zIndex: 2 }}>
         <Tooltip
           placement="right"
           arrow
@@ -406,8 +433,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
               backgroundColor: theme.palette.grey[800],
               borderRadius: 1,
               width: '100%',
-              minHeight: 30,
-              maxHeight: 30,
+              minHeight: EVENT_CARD_HEIGHT,
+              maxHeight: EVENT_CARD_HEIGHT,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -441,6 +468,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
       )}
 
       <Card
+        ref={containerRef}
         onMouseEnter={() => isClickable && setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         sx={{
@@ -470,19 +498,22 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
 
         <CardContent sx={{ padding: 0 }}>
           <DayCardTitle />
-          {events.length === 1 ? (
-            <EventCard event={events[0]} />
-          ) : events.length === 2 ? (
+          {events.length > 0 && (
             <>
-              <EventCard event={events[0]} />
-              <EventCard event={events[1]} />
+              {events.length <= maxVisibleEvents ? (
+                // All events fit - show them all
+                events.map((event) => <EventCard key={event.eventId} event={event} />)
+              ) : (
+                // Too many events - show as many as possible with "+N more"
+                <>
+                  {events.slice(0, maxVisibleEvents - 1).map((event) => (
+                    <EventCard key={event.eventId} event={event} />
+                  ))}
+                  <ExtraEventsCard extraEvents={events.slice(maxVisibleEvents - 1)} />
+                </>
+              )}
             </>
-          ) : events.length >= 3 ? (
-            <>
-              <EventCard event={events[0]} />
-              <ExtraEventsCard extraEvents={events.slice(1)} />
-            </>
-          ) : null}
+          )}
         </CardContent>
       </Card>
 

@@ -453,7 +453,7 @@ export default class CalendarService {
           }))
         },
         initialDateScheduled,
-        status: foundEventType.requiresConfirmation ? Event_Status.UNCONFIRMED : Event_Status.CONFIRMED,
+        status: foundEventType.requiresConfirmation ? Event_Status.UNCONFIRMED : Event_Status.SCHEDULED,
         approved: hasConflict ? Conflict_Status.PENDING : Conflict_Status.NO_CONFLICT,
         approvalRequiredFromUserId: hasConflict ? conflictingEvent?.userCreated.userId : null,
         location,
@@ -523,9 +523,7 @@ export default class CalendarService {
                 projects.map((project) => project.wbsElement.name).join(', ')
               );
             } catch (err: unknown) {
-              if (err instanceof Error) {
-                throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
-              }
+              console.error('Failed to send slack notification for event:', err);
             }
           }
         }
@@ -537,13 +535,17 @@ export default class CalendarService {
       for (const project of projects) {
         const projectTeams = project.teams;
         if (projectTeams.length > 0) {
-          await sendSlackEventNotifications(
-            projectTeams,
-            createdEvent,
-            submitter,
-            workPackageNames,
-            project.wbsElement.name
-          );
+          try {
+            await sendSlackEventNotifications(
+              projectTeams,
+              createdEvent,
+              submitter,
+              workPackageNames,
+              project.wbsElement.name
+            );
+          } catch (err: unknown) {
+            console.error('Failed to send slack notification for event:', err);
+          }
         }
       }
     }
