@@ -1,8 +1,14 @@
 import { Organization } from '@prisma/client';
-import { createTestOrganization, createTestTaskWithOrganization, createTestUser, resetUsers } from '../test-utils';
-import { batmanAppAdmin, aquamanLeadership, wonderwomanGuest, member, greenlanternHead } from '../test-data/users.test-data';
-import UsersService from '../../src/services/users.services';
-import { NotFoundException, AccessDeniedException } from '../../src/utils/errors.utils';
+import { createTestOrganization, createTestTaskWithOrganization, createTestUser, resetUsers } from '../test-utils.js';
+import {
+  batmanAppAdmin,
+  aquamanLeadership,
+  wonderwomanGuest,
+  member,
+  greenlanternHead
+} from '../test-data/users.test-data.js';
+import UsersService from '../../src/services/users.services.js';
+import { NotFoundException, AccessDeniedException } from '../../src/utils/errors.utils.js';
 import { RoleEnum } from 'shared';
 
 describe('User Tests', () => {

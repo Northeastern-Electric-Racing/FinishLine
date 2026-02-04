@@ -1,5 +1,5 @@
 import { Task as Prisma_Task, WBS_Element, Design_Review } from '@prisma/client';
-import { UserWithSettings } from './auth.utils';
+import { UserWithSettings } from './auth.utils.js';
 
 export type TaskWithAssignees = Prisma_Task & {
   assignees: UserWithSettings[] | null;

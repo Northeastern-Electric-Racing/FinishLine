@@ -3,17 +3,23 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamType } from './design-review-types';
-import { Team } from './team-types';
-import { User } from './user-types';
+import { TeamType } from './design-review-types.js';
+import { Team } from './team-types.js';
+import { User } from './user-types.js';
+
+export enum ChecklistItemType {
+  TASK = 'TASK',
+  INFO = 'INFO'
+}
 
 export interface Checklist {
   checklistId: string;
-  name: string;
+  content: string;
   teamType?: TeamType;
   team?: Team;
-  descriptions: string[];
   isOptional: boolean;
+  displayIndex?: number;
+  itemType: ChecklistItemType;
   subtasks: ChecklistPreview[];
   parentChecklistId?: string;
   usersChecked: User[];
@@ -23,6 +29,9 @@ export interface Checklist {
   dateDeleted?: Date;
 }
 
-export type ChecklistPreview = Pick<Checklist, 'checklistId' | 'name' | 'team' | 'teamType' | 'dateCreated' | 'isOptional'>;
+export type ChecklistPreview = Pick<
+  Checklist,
+  'checklistId' | 'content' | 'team' | 'teamType' | 'dateCreated' | 'isOptional' | 'displayIndex' | 'itemType'
+>;
 
 export type CreateChecklistPreview = Omit<ChecklistPreview, 'checklistId' | 'dateCreated'>;

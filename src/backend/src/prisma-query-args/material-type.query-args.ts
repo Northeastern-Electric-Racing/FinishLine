@@ -4,8 +4,8 @@
  */
 
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args';
-import { getMaterialPreviewQueryArgs } from './bom.query-args';
+import { getUserQueryArgs } from './user.query-args.js';
+import { getMaterialPreviewQueryArgs } from './bom.query-args.js';
 
 export type MaterialTypeQueryArgs = ReturnType<typeof getMaterialTypeQueryArgs>;
 

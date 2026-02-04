@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import RetrospectiveService from '../services/retrospective.services';
+import RetrospectiveService from '../services/retrospective.services.js';
 
 export default class RetrospectiveController {
   static async getRetrospectiveTimelines(req: Request, res: Response, next: NextFunction) {

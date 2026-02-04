@@ -1,6 +1,6 @@
 import { LinkCreateArgs, User } from 'shared';
-import prisma from '../prisma/prisma';
-import { HttpException } from './errors.utils';
+import prisma from '../prisma/prisma.js';
+import { HttpException } from './errors.utils.js';
 
 export const createUsefulLinks = async (links: LinkCreateArgs[], organizationId: string, submitter: User) => {
   const newLinks = [];

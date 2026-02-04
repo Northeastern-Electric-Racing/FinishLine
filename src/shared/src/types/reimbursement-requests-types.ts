@@ -1,5 +1,5 @@
-import { WbsNumber } from './project-types';
-import { User } from './user-types';
+import { WbsNumber } from './project-types.js';
+import { User } from './user-types.js';
 
 export interface IndexCode {
   indexCodeId: string;
@@ -21,6 +21,7 @@ export interface ReimbursementRequestRow {
   vendor: Vendor;
   refundSource: IndexCode;
   financeMemberAssigned: User | undefined;
+  reimbursementProducts: ReimbursementProduct[];
 }
 
 export enum ReimbursementStatusType {

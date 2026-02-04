@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { addWeeksToDate, daysBetween } from '../date-utils';
-import { ProjectPreview, WbsElementStatus } from '../types/project-types';
-import { TimelineStatus } from '../types/work-package-types';
+import { addWeeksToDate, daysBetween } from '../date-utils.js';
+import { ProjectPreview, WbsElementStatus } from '../types/project-types.js';
+import { TimelineStatus } from '../types/work-package-types.js';
 
 /**
  * This function calculates the end date for a work package.

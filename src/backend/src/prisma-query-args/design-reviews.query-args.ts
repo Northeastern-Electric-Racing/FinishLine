@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs, getUserWithSettingsQueryArgs } from './user.query-args';
+import { getUserQueryArgs, getUserWithSettingsQueryArgs } from './user.query-args.js';
 
 export type DesignReviewQueryArgs = ReturnType<typeof getDesignReviewQueryArgs>;
 

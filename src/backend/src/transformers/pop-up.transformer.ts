@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { PopUpQueryArgs } from '../prisma-query-args/pop-up.query-args';
+import { PopUpQueryArgs } from '../prisma-query-args/pop-up.query-args.js';
 import { PopUp } from 'shared';
 
 const popUpTransformer = (popUp: Prisma.PopUpGetPayload<PopUpQueryArgs>): PopUp => {

@@ -20,23 +20,23 @@ import {
   Vendor
 } from 'shared';
 
-import { wbsNumOf } from '../utils/utils';
-import { userTransformer } from './user.transformer';
-import { ReceiptQueryArgs } from '../prisma-query-args/receipt-query.args';
-import { ReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
-import { ReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
+import { wbsNumOf } from '../utils/utils.js';
+import { userTransformer } from './user.transformer.js';
+import { ReceiptQueryArgs } from '../prisma-query-args/receipt-query.args.js';
+import { ReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args.js';
+import { ReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args.js';
 import {
   ReimbursementProductQueryArgs,
   ReimbursementProductReasonQueryArgs,
   RefundSourceQueryArgs
-} from '../prisma-query-args/reimbursement-products.query-args';
-import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
-import { VendorQueryArgs } from '../prisma-query-args/vendor.query-args';
-import { AccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args';
-import { IndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
-import { ReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
-import { ReimbursementRequestCommentQueryArgs } from '../prisma-query-args/reimbursement-comment.query-args';
-import { decrypt } from '../utils/encryption.utils';
+} from '../prisma-query-args/reimbursement-products.query-args.js';
+import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args.js';
+import { VendorQueryArgs } from '../prisma-query-args/vendor.query-args.js';
+import { AccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args.js';
+import { IndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args.js';
+import { ReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args.js';
+import { ReimbursementRequestCommentQueryArgs } from '../prisma-query-args/reimbursement-comment.query-args.js';
+import { decrypt } from '../utils/encryption.utils.js';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return { receiptId: receipt.receiptId, googleFileId: receipt.googleFileId, name: receipt.name };

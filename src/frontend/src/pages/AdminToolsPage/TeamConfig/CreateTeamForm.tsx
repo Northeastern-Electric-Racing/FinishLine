@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useCreateTeam } from '../../../hooks/teams.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import * as yup from 'yup';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -44,7 +44,7 @@ const CreateTeamForm = () => {
   const theme = useTheme();
   const [showPreview, setShowPreview] = useState(false);
   const { isLoading, mutateAsync } = useCreateTeam();
-  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
+  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllMembers();
   const toast = useToast();
   const {
     handleSubmit,

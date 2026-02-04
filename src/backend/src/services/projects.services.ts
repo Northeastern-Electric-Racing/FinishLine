@@ -14,13 +14,13 @@ import {
   wbsPipe,
   User
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import projectTransformer, {
   projectOverviewTransformer,
   projectGanttTransformer,
   projectPreviewTransformer
-} from '../transformers/projects.transformer';
-import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
+} from '../transformers/projects.transformer.js';
+import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
@@ -29,19 +29,19 @@ import {
   DeletedException,
   AccessDeniedException,
   InvalidOrganizationException
-} from '../utils/errors.utils';
-import { updateProjectAndCreateChanges, getHighestProjectNumber } from '../utils/projects.utils';
-import { wbsNumOf } from '../utils/utils';
-import WorkPackagesService from './work-packages.services';
-import { userHasPermission } from '../utils/users.utils';
+} from '../utils/errors.utils.js';
+import { updateProjectAndCreateChanges, getHighestProjectNumber } from '../utils/projects.utils.js';
+import { wbsNumOf } from '../utils/utils.js';
+import WorkPackagesService from './work-packages.services.js';
+import { userHasPermission } from '../utils/users.utils.js';
 import {
   getProjectGanttQueryArgs,
   getProjectOverviewQueryArgs,
   getProjectPreviewQueryArgs,
   getProjectQueryArgs
-} from '../prisma-query-args/projects.query-args';
-import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
-import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
+} from '../prisma-query-args/projects.query-args.js';
+import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
+import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
 
 export default class ProjectsService {
   /**

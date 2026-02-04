@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import React, { useState } from 'react';
 import { Box, useTheme } from '@mui/system';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
@@ -54,6 +54,7 @@ const sponsorSchema = yup.object().shape({
   sponsorContact: yup.string().required('Sponsor contact is required'),
   taxExempt: yup.boolean().required('Tax exempt is required'),
   discountCode: yup.string().trim().optional(),
+  sponsorNotes: yup.string().trim().optional(),
   sponsorTasks: yup
     .array()
     .of(
@@ -75,7 +76,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
   const [datePickerOpenJoin, setDatePickerOpenJoin] = useState(false);
   const [datePickerOpenDue, setDatePickerOpenDue] = useState(false);
 
-  const { isLoading: membersLoading, isError: membersIsError, error: membersError, data: members } = useAllUsers();
+  const { isLoading: membersLoading, isError: membersIsError, error: membersError, data: members } = useAllMembers();
 
   const {
     isLoading: sponsorTierIsLoading,
@@ -294,6 +295,21 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
           </Typography>
           <ReactHookTextField name="discountCode" control={control} sx={{ width: 1 }} placeholder="Enter Code" />
           <FormHelperText error> {errors.discountCode?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12}>
+        <FormControl fullWidth>
+          <Typography variant="h5" color="#EF4345">
+            Sponsor Notes:
+          </Typography>
+          <ReactHookTextField
+            name="sponsorNotes"
+            control={control}
+            placeholder="Enter Additional Information"
+            multiline
+            rows={4}
+          />
+          <FormHelperText error> {errors.sponsorNotes?.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={12}>

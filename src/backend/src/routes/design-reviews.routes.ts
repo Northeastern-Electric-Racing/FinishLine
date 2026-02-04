@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { intMinZero, nonEmptyString, isDate, isDesignReviewStatus, validateInputs } from '../utils/validation.utils';
-import DesignReviewsController from '../controllers/design-reviews.controllers';
+import { intMinZero, nonEmptyString, isDate, isDesignReviewStatus, validateInputs } from '../utils/validation.utils.js';
+import DesignReviewsController from '../controllers/design-reviews.controllers.js';
 const designReviewsRouter = express.Router();
 
 designReviewsRouter.get('/', DesignReviewsController.getAllDesignReviews);

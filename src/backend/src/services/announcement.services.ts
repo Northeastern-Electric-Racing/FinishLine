@@ -1,9 +1,9 @@
 import { Announcement } from 'shared';
-import prisma from '../prisma/prisma';
-import { getAnnouncementQueryArgs } from '../prisma-query-args/announcements.query.args';
-import announcementTransformer from '../transformers/announcements.transformer';
-import { DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
-import { getUsers } from '../utils/users.utils';
+import prisma from '../prisma/prisma.js';
+import { getAnnouncementQueryArgs } from '../prisma-query-args/announcements.query.args.js';
+import announcementTransformer from '../transformers/announcements.transformer.js';
+import { DeletedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
+import { getUsers } from '../utils/users.utils.js';
 
 export default class AnnouncementService {
   /**

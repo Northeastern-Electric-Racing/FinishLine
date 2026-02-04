@@ -1,5 +1,5 @@
-const { exec, spawn } = require('child_process');
-const { promisify } = require('util');
+import { exec, spawn } from 'child_process';
+import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 const COMPOSE_FILE = 'docker-compose.dev.yml';

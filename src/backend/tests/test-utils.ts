@@ -14,10 +14,10 @@ import {
   User_Settings,
   WBS_Element_Status
 } from '@prisma/client';
-import prisma from '../src/prisma/prisma';
-import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
-import TeamsService from '../src/services/teams.services';
-import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
+import prisma from '../src/prisma/prisma.js';
+import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed.js';
+import TeamsService from '../src/services/teams.services.js';
+import ReimbursementRequestService from '../src/services/reimbursement-requests.services.js';
 import { Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
 import {
   batmanAppAdmin,
@@ -25,15 +25,15 @@ import {
   batmanSecureSettings,
   batmanSettings,
   supermanAdmin
-} from './test-data/users.test-data';
+} from './test-data/users.test-data.js';
 import {
   getProjectTemplateQueryArgs,
   getWorkPackageTemplateQueryArgs
-} from '../src/prisma-query-args/wbs-element-template.query-args';
-import DesignReviewsService from '../src/services/design-reviews.services';
-import TasksService from '../src/services/tasks.services';
-import ProjectsService from '../src/services/projects.services';
-import { SlackMessage } from '../src/services/slack.services';
+} from '../src/prisma-query-args/wbs-element-template.query-args.js';
+import DesignReviewsService from '../src/services/design-reviews.services.js';
+import TasksService from '../src/services/tasks.services.js';
+import ProjectsService from '../src/services/projects.services.js';
+import { SlackMessage } from '../src/services/slack.services.js';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -339,7 +339,7 @@ export const createTestMilestone = async (user: User, organizationId: string) =>
 export const createTestChecklist = async (
   user: User,
   organizationId: string,
-  name: string,
+  content: string,
   teamTypeId?: string,
   teamId?: string,
   parentChecklistId?: string
@@ -349,7 +349,7 @@ export const createTestChecklist = async (
 
   const checklist = await prisma.checklist.create({
     data: {
-      name,
+      content,
       organizationId,
       userCreatedId: user.userId,
       teamTypeId,

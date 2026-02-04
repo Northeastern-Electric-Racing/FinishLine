@@ -4,6 +4,7 @@ name: Production Build
 on:
   push:
     branches:
+      - develop
       - main
       - multitenancy
 

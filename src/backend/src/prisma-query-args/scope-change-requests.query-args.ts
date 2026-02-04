@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args';
-import { getLinkQueryArgs } from './links.query-args';
-import { getDescriptionBulletQueryArgs } from './description-bullets.query-args';
-import { getProposedSolutionQueryArgs } from './proposed-solutions.query-args';
-import { getTeamQueryArgs } from './teams.query-args';
+import { getUserQueryArgs } from './user.query-args.js';
+import { getLinkQueryArgs } from './links.query-args.js';
+import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.js';
+import { getProposedSolutionQueryArgs } from './proposed-solutions.query-args.js';
+import { getTeamQueryArgs } from './teams.query-args.js';
 
 export type ProjectProposedChangesQueryArgs = ReturnType<typeof getProjectProposedChangesQueryArgs>;
 

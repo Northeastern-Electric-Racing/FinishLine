@@ -1,12 +1,12 @@
 import { LinkCreateArgs } from 'shared';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
-import { createTestLinkType, createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
-import prisma from '../../src/prisma/prisma';
-import { testLink1 } from '../test-data/organizations.test-data';
-import { uploadFile } from '../../src/utils/google-integration.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
+import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data.js';
+import { createTestLinkType, createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils.js';
+import prisma from '../../src/prisma/prisma.js';
+import { testLink1 } from '../test-data/organizations.test-data.js';
+import { uploadFile } from '../../src/utils/google-integration.utils.js';
 import { Mock, vi } from 'vitest';
-import OrganizationsService from '../../src/services/organizations.services';
+import OrganizationsService from '../../src/services/organizations.services.js';
 import { Organization } from '@prisma/client';
 
 vi.mock('../../src/utils/google-integration.utils', () => ({

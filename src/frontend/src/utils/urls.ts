@@ -15,6 +15,7 @@ const API_URL: string = import.meta.env.VITE_REACT_APP_BACKEND_URL || 'http://lo
 /**************** Users Endpoints ****************/
 const users = () => `${API_URL}/users`;
 const orgUsers = () => `${users()}/organization`;
+const orgMembers = () => `${users()}/members`;
 const usersById = (id: string) => `${users()}/${id}`;
 const usersLogin = () => `${users()}/auth/login`;
 const usersLoginDev = () => `${users()}/auth/login/dev`;
@@ -371,6 +372,8 @@ const organizationsSetDescription = () => `${organizations()}/description/set`;
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
+const organizationsNewMemberImage = () => `${organizations()}/new-member-image`;
+const organizationsSetNewMemberImage = () => `${organizations()}/new-member-image/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
@@ -406,6 +409,8 @@ const createChecklist = () => `${onboarding()}/checklist/create`;
 const editChecklist = (checklistId: string) => `${onboarding()}/checklist/edit/${checklistId}`;
 const checklistDelete = (id: string) => `${onboarding()}/checklist/delete/${id}`;
 const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
+const reorderTasks = () => `${onboarding()}/tasks/reorder`;
+const reorderChecklistItems = (parentId: string) => `${onboarding()}/tasks/${parentId}/items/reorder`;
 
 /************** Pop Up Endpoints ***************/
 const popUps = () => `${API_URL}/pop-ups`;
@@ -443,6 +448,7 @@ const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing
 export const apiUrls = {
   users,
   orgUsers,
+  orgMembers,
   usersById,
   usersLogin,
   usersLoginDev,
@@ -685,6 +691,8 @@ export const apiUrls = {
   organizationsSetDescription,
   organizationsLogoImage,
   organizationsSetLogoImage,
+  organizationsNewMemberImage,
+  organizationsSetNewMemberImage,
   organizationsSetFeaturedProjects,
   organizationsSetWorkspaceId,
   organizationsGetPartReviewGuideLink,
@@ -707,6 +715,8 @@ export const apiUrls = {
   faqEdit,
   faqDelete,
   imageById,
+  reorderTasks,
+  reorderChecklistItems,
 
   popUps,
   popUpsCurrentUser,

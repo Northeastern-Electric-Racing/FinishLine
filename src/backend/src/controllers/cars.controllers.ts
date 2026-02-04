@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import CarsService from '../services/car.services';
+import CarsService from '../services/car.services.js';
 
 export default class CarsController {
   static async getAllCars(req: Request, res: Response, next: NextFunction) {

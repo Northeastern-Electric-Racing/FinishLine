@@ -91,6 +91,22 @@ import {
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 
+/**
+ * Helper function to handle file upload errors with file name context
+ * @param error - The error object from the API call
+ * @param fileName - The name of the file being uploaded
+ * @throws file upload error
+ */
+const handleFileUploadError = (error: any, fileName: string): never => {
+  if (error.response?.data?.message) {
+    throw new Error(`Failed to upload "${fileName}": ${error.response.data.message}`);
+  } else if (error.message) {
+    throw new Error(`Failed to upload "${fileName}": ${error.message}`);
+  } else {
+    throw new Error(`Failed to upload "${fileName}": Network error. Please check your connection and try again.`);
+  }
+};
+
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
   dateOfExpense?: Date;
@@ -150,6 +166,7 @@ export interface SponsorPayload {
   sponsorContact: string;
   sponsorTasks: CreateSponsorTask[];
   discountCode?: string;
+  sponsorNotes?: string;
 }
 
 interface EditSponsorPayload extends SponsorPayload {
@@ -340,8 +357,12 @@ export const useUploadSingleReceipt = () => {
   return useMutation<{ googleFileId: string; name: string }, Error, { file: File; id: string }>(
     ['reimbursement-requsts', 'edit'],
     async (formData: { file: File; id: string }) => {
-      const { data } = await uploadSingleReceipt(formData.file, formData.id);
-      return data;
+      try {
+        const { data } = await uploadSingleReceipt(formData.file, formData.id);
+        return data;
+      } catch (error: any) {
+        handleFileUploadError(error, formData.file.name);
+      }
     }
   );
 };
@@ -357,7 +378,11 @@ export const useUploadManyReceipts = () => {
     async (formData: { files: File[]; id: string }) => {
       const results = [];
       for (const file of formData.files) {
-        results.push(await uploadSingleReceipt(file, formData.id));
+        try {
+          results.push(await uploadSingleReceipt(file, formData.id));
+        } catch (error: any) {
+          handleFileUploadError(error, file.name);
+        }
       }
       return results.map((result) => result.data);
     }

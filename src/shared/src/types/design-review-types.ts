@@ -1,5 +1,5 @@
-import { WbsNumber } from './project-types';
-import { User, UserWithScheduleSettings } from './user-types';
+import { WbsNumber } from './project-types.js';
+import { User, UserWithScheduleSettings } from './user-types.js';
 
 export interface DesignReview {
   designReviewId: string;

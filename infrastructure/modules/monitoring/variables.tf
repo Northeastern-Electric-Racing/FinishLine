@@ -25,6 +25,11 @@ variable "eb_autoscaling_group_name" {
   type        = string
 }
 
+variable "alb_arn_suffix" {
+  description = "Application Load Balancer ARN suffix for metrics"
+  type        = string
+}
+
 variable "rds_instance_id" {
   description = "RDS instance ID"
   type        = string

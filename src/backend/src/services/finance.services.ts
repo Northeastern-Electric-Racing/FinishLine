@@ -11,12 +11,12 @@ import {
   User
 } from 'shared';
 import { Organization, Sponsor_Task, Reimbursement_Status_Type } from '@prisma/client';
-import { userHasPermission } from '../utils/users.utils';
+import { userHasPermission } from '../utils/users.utils.js';
 import {
   getSponsorQueryArgs,
   getSponsorTaskQueryArgs,
   getSponsorTierQueryArgs
-} from '../prisma-query-args/sponsor.query.args';
+} from '../prisma-query-args/sponsor.query.args.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -24,12 +24,16 @@ import {
   HttpException,
   InvalidOrganizationException,
   NotFoundException
-} from '../utils/errors.utils';
-import prisma from '../prisma/prisma';
-import { sponsorTransformer } from '../transformers/finance.transformer';
-import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
-import { computeRRTotals, getProjectSegmentedWhereInput, getReimbursementRequestWhereInput } from '../utils/finance.utils';
-import { notifySponsorTaskAssignee } from '../utils/slack.utils';
+} from '../utils/errors.utils.js';
+import prisma from '../prisma/prisma.js';
+import { sponsorTransformer } from '../transformers/finance.transformer.js';
+import sponsorTaskTransformer from '../transformers/sponsor-task.transformer.js';
+import {
+  computeRRTotals,
+  getProjectSegmentedWhereInput,
+  getReimbursementRequestWhereInput
+} from '../utils/finance.utils.js';
+import { notifySponsorTaskAssignee } from '../utils/slack.utils.js';
 
 export default class FinanceServices {
   /**
@@ -44,6 +48,7 @@ export default class FinanceServices {
    * @param sponsorTierId The ID of the sponsor's tier.
    * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
    * @param discountCode The discount code associated with the sponsor.
+   * @param sponsorNotes Additional notes about the sponsor.
    * @param sponsorContact The contact information for the sponsor.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being created.
@@ -64,7 +69,8 @@ export default class FinanceServices {
     sponsorContact: string,
     sponsorTasks: CreateSponsorTask[],
     organization: Organization,
-    discountCode?: string
+    discountCode?: string,
+    sponsorNotes?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can create a sponsor');
@@ -90,6 +96,7 @@ export default class FinanceServices {
         sponsorTierId,
         taxExempt,
         discountCode,
+        sponsorNotes,
         vendorContact: sponsorContact,
         sponsorTasks: {
           create: sponsorTasks.map((task) => ({
@@ -434,13 +441,32 @@ export default class FinanceServices {
       },
       select: {
         reimbursementStatuses: true,
-        totalCost: true
+        totalCost: true,
+        reimbursementProducts: {
+          where: {
+            dateDeleted: null,
+            reimbursementProductReason: {
+              wbsElement: {
+                project: {
+                  projectId
+                }
+              }
+            }
+          },
+          select: {
+            cost: true
+          }
+        }
       }
     });
 
     const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
 
-    const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+    const totalBalance =
+      reimbursementRequests.reduce((acc, curr) => {
+        const projectProductsCost = curr.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
+        return acc + projectProductsCost;
+      }, 0) / 100;
 
     const available = project.budget - totalBalance;
 
@@ -507,7 +533,26 @@ export default class FinanceServices {
       },
       select: {
         reimbursementStatuses: true,
-        totalCost: true
+        totalCost: true,
+        reimbursementProducts: {
+          where: {
+            dateDeleted: null,
+            reimbursementProductReason: {
+              wbsElement: {
+                project: {
+                  teams: {
+                    some: {
+                      teamId
+                    }
+                  }
+                }
+              }
+            }
+          },
+          select: {
+            cost: true
+          }
+        }
       }
     });
 
@@ -515,7 +560,11 @@ export default class FinanceServices {
 
     const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
 
-    const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+    const totalBalance =
+      reimbursementRequests.reduce((acc, curr) => {
+        const teamProductsCost = curr.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
+        return acc + teamProductsCost;
+      }, 0) / 100;
 
     const available = totalBudget - totalBalance;
 
@@ -910,7 +959,18 @@ export default class FinanceServices {
       },
       select: {
         reimbursementStatuses: true,
-        totalCost: true
+        totalCost: true,
+        reimbursementProducts: {
+          where: {
+            dateDeleted: null,
+            reimbursementProductReason: {
+              otherReasonId
+            }
+          },
+          select: {
+            cost: true
+          }
+        }
       }
     });
 
@@ -935,7 +995,8 @@ export default class FinanceServices {
       const lastStatus = req.reimbursementStatuses.at(-1)?.type;
 
       if (lastStatus && totals[lastStatus] !== undefined) {
-        totals[lastStatus] += req.totalCost;
+        const categoryProductsCost = req.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
+        totals[lastStatus] += categoryProductsCost;
       }
     });
 
@@ -944,7 +1005,10 @@ export default class FinanceServices {
     const submittedToSabo = totals[Reimbursement_Status_Type.SABO_SUBMITTED] ?? 0;
     const reimbursed = totals[Reimbursement_Status_Type.REIMBURSED] ?? 0;
 
-    const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+    const totalBalance = reimbursementRequests.reduce((acc, curr) => {
+      const categoryProductsCost = curr.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
+      return acc + categoryProductsCost;
+    }, 0);
 
     const available = totalBudget - totalBalance;
 
@@ -1041,6 +1105,7 @@ export default class FinanceServices {
    * @param sponsorTierId The ID of the sponsor's tier.
    * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
    * @param discountCode The discount code associated with the sponsor.
+   * @param sponsorNotes Additional notes about the sponsor.
    * @param sponsorContact The contact information for the sponsor.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being edited.
@@ -1060,7 +1125,8 @@ export default class FinanceServices {
     sponsorContact: string,
     taxExempt: boolean,
     sponsorTasks: CreateSponsorTask[],
-    discountCode?: string
+    discountCode?: string,
+    sponsorNotes?: string
   ): Promise<Sponsor> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can edit sponsors.');
@@ -1141,7 +1207,8 @@ export default class FinanceServices {
         },
         vendorContact: sponsorContact,
         taxExempt,
-        discountCode
+        discountCode,
+        sponsorNotes
       },
       ...getSponsorQueryArgs(organization.organizationId)
     });
