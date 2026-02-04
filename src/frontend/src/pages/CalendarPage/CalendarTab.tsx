@@ -26,7 +26,7 @@ const CalendarTab: React.FC = () => {
   const canViewReviews = isHead(user.role) || isLead(user.role);
 
   const tabs = [
-    { tabUrlValue: 'mainCalendar', tabName: 'Calendar' },
+    { tabUrlValue: '', tabName: 'Calendar' },
     { tabUrlValue: 'yourEvents', tabName: 'Your Events' }
   ];
 
@@ -93,7 +93,7 @@ const CalendarTab: React.FC = () => {
 
   const handleNewEventClick = (date?: Date) => {
     if (tabIndex !== 0) {
-      history.push(`${routes.CALENDAR}/mainCalendar`);
+      history.push(routes.CALENDAR);
     }
     setCreateModalDate(date || new Date());
     setIsCreateModalOpen(true);
@@ -110,7 +110,7 @@ const CalendarTab: React.FC = () => {
               setTab={setTabIndex}
               tabsLabels={tabs}
               baseUrl={routes.CALENDAR}
-              defaultTab="mainCalendar"
+              defaultTab=""
               id="calendar-tabs"
             />
           </Box>
