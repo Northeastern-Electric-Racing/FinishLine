@@ -107,7 +107,7 @@ describe('Material Tests', () => {
         }
       });
 
-      const project2 = await prisma.project.create({
+      await prisma.project.create({
         data: {
           summary: 'Test destination project',
           car: {
