@@ -204,7 +204,7 @@ export default class NotificationsService {
 
           return (
             `${usersToSlackPings(event.attendees ?? [])} ${event.title} (${workPackageNames}) ` +
-            `will be having an event today at ${meetingStartTimePipeNumbers(meetingTimes)}! ` +
+            `will be having an event today at ${meetingStartTimePipeNumbers(meetingTimes)} EST! ` +
             zoomLink +
             questionDocLink
           );

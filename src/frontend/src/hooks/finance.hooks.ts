@@ -166,6 +166,7 @@ export interface SponsorPayload {
   sponsorContact: string;
   sponsorTasks: CreateSponsorTask[];
   discountCode?: string;
+  sponsorNotes?: string;
 }
 
 interface EditSponsorPayload extends SponsorPayload {

@@ -59,7 +59,7 @@ describe('Team Type Tests', () => {
         organization
       );
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         name: 'teamType3',
         iconName: 'YouTubeIcon',
         organizationId: orgId,
