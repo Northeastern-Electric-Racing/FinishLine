@@ -759,8 +759,6 @@ export default class CalendarService {
     const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMemberIds));
     const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
 
-    let newStatus = status;
-
     // Update the event with new data (excluding schedule slots)
     const updatedEvent = await prisma.event.update({
       where: { eventId },
@@ -777,7 +775,7 @@ export default class CalendarService {
           set: teamIds.map((teamId) => ({ teamId }))
         },
         ...(teamTypeId !== undefined && { teamTypeId }),
-        status: newStatus,
+        status,
         shops: {
           set: shopIds.map((shopId) => ({ shopId }))
         },
@@ -2471,7 +2469,7 @@ export default class CalendarService {
       }
     }
 
-    // filters for members/teams
+    // filters for members/teams - event must match at least one of these if provided
     const memberOrTeamFilter: any[] = [];
 
     if (memberIds?.length) {
@@ -2515,6 +2513,19 @@ export default class CalendarService {
           }
         : undefined;
 
+    // Build the AND conditions - member/team filters AND time filters
+    const andConditions: any[] = [];
+
+    // If member/team filters are provided, require at least one to match
+    if (memberOrTeamFilter.length > 0) {
+      andConditions.push({ OR: memberOrTeamFilter });
+    }
+
+    // If time filters are provided, require at least one to match
+    if (startPeriod || endPeriod) {
+      andConditions.push({ OR: scheduleSlotsOrDateScheduled });
+    }
+
     // get event using filter args
     const events = await prisma.event.findMany({
       where: {
@@ -2523,7 +2534,7 @@ export default class CalendarService {
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
         approvalRequiredFromUserId: approvalIds?.length ? { in: approvalIds } : undefined,
         approved: statuses?.length ? { in: statuses } : undefined,
-        OR: memberOrTeamFilter.concat(scheduleSlotsOrDateScheduled),
+        AND: andConditions.length > 0 ? andConditions : undefined,
         ...fromCalendar
       },
       ...getEventQueryArgs(organization.organizationId),

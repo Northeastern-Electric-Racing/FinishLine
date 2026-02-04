@@ -111,21 +111,21 @@ CREATE TABLE "public"."Event_Type" (
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
-    "optionalMembers" BOOLEAN NOT NULL DEFAULT FALSE,
-    "requiredMembers" BOOLEAN NOT NULL DEFAULT FALSE,
-    "teams" BOOLEAN NOT NULL DEFAULT FALSE,
-    "teamType" BOOLEAN NOT NULL DEFAULT FALSE,
-    "location" BOOLEAN NOT NULL DEFAULT FALSE,
-    "zoomLink" BOOLEAN NOT NULL DEFAULT FALSE,
-    "shop" BOOLEAN NOT NULL DEFAULT FALSE,
-    "machinery" BOOLEAN NOT NULL DEFAULT FALSE,
-    "workPackage" BOOLEAN NOT NULL DEFAULT FALSE,
-    "questionDocument" BOOLEAN NOT NULL DEFAULT FALSE,
-    "documents" BOOLEAN NOT NULL DEFAULT FALSE, 
-    "description" BOOLEAN NOT NULL DEFAULT FALSE,
-    "onlyHeadsOrAboveForEventCreation" BOOLEAN NOT NULL DEFAULT FALSE,
-    "requiresConfirmation" BOOLEAN NOT NULL DEFAULT FALSE,
-    "sendSlackNotifications" BOOLEAN NOT NULL DEFAULT FALSE,
+    "optionalMembers" BOOLEAN NOT NULL,
+    "requiredMembers" BOOLEAN NOT NULL,
+    "teams" BOOLEAN NOT NULL,
+    "teamType" BOOLEAN NOT NULL,
+    "location" BOOLEAN NOT NULL,
+    "zoomLink" BOOLEAN NOT NULL,
+    "shop" BOOLEAN NOT NULL,
+    "machinery" BOOLEAN NOT NULL,
+    "workPackage" BOOLEAN NOT NULL,
+    "questionDocument" BOOLEAN NOT NULL,
+    "documents" BOOLEAN NOT NULL, 
+    "description" BOOLEAN NOT NULL,
+    "onlyHeadsOrAboveForEventCreation" BOOLEAN NOT NULL,
+    "requiresConfirmation" BOOLEAN NOT NULL,
+    "sendSlackNotifications" BOOLEAN NOT NULL,
     "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Event_Type_pkey" PRIMARY KEY ("eventTypeId")
@@ -345,7 +345,7 @@ ALTER TABLE "public"."Event_Type" ADD CONSTRAINT "Event_Type_userDeletedId_fkey"
 ALTER TABLE "public"."Event_Type" ADD CONSTRAINT "Event_Type_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Schedule_Slot" ADD CONSTRAINT "Schedule_Slot_EventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("eventId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Schedule_Slot" ADD CONSTRAINT "Schedule_Slot_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("eventId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_affiliatedTeam" ADD CONSTRAINT "_affiliatedTeam_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;

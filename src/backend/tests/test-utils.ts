@@ -18,7 +18,7 @@ import prisma from '../src/prisma/prisma.js';
 import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed.js';
 import TeamsService from '../src/services/teams.services.js';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services.js';
-import { DayOfWeek, Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
+import { Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
 import {
   batmanAppAdmin,
   batmanScheduleSettings,
@@ -167,6 +167,8 @@ export const resetUsers = async () => {
   await prisma.account_Code.deleteMany();
   await prisma.refund_Source.deleteMany();
   await prisma.index_Code.deleteMany();
+  await prisma.document.deleteMany();
+  await prisma.schedule_Slot.deleteMany();
   await prisma.event.deleteMany();
   await prisma.event_Type.deleteMany();
   await prisma.calendar.deleteMany();
@@ -613,19 +615,8 @@ export const createTestDesignReviewEvent = async () => {
     [], // shopIds
     [], // machineryIds
     [testWorkPackage.workPackageId], // workPackageIds
-    [
-      {
-        startTime: new Date('2027-03-25T10:00:00'),
-        endTime: new Date('2027-03-25T11:00:00'),
-        allDay: false
-      },
-      {
-        startTime: new Date('2027-03-25T11:00:00'),
-        endTime: new Date('2027-03-25T12:00:00'),
-        allDay: false
-      }
-    ], // scheduleSlot - two 1-hour time slots
-    undefined,
+    [], // scheduleSlots - empty for confirmation events
+    new Date('2027-03-25T10:00:00'), // initialDateScheduled - required for requiresConfirmation events
     teamType.teamTypeId, // team type id
     'https://docs.google.com/document/d/test-design-review-questions', // questionDocument
     'Campus Center Room 101', // location

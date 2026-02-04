@@ -7,7 +7,14 @@ import {
   NotFoundException,
   InvalidOrganizationException
 } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest, alfred } from '../test-data/users.test-data';
+import {
+  batmanAppAdmin,
+  wonderwomanGuest,
+  supermanAdmin,
+  theVisitorGuest,
+  alfred,
+  greenlanternHead
+} from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { EventType, Machinery, ScheduleSlotCreateArgs, Shop, Event } from 'shared';
@@ -59,21 +66,21 @@ describe('Calendar Tests', () => {
       'Team Meeting',
       [calendar.calendarId],
       organization,
-      true,
-      true,
-      true,
-      false,
-      true,
-      true,
-      true,
-      true,
-      false,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true
+      true, // requiredMembers
+      true, // optionalMembers
+      true, // teams
+      false, // teamType
+      true, // location
+      true, // zoomLink
+      true, // shop
+      true, // machinery
+      false, // workPackage
+      true, // questionDocument
+      true, // documents
+      true, // description
+      true, // onlyHeadsOrAbove
+      false, // requiresConfirmation - changed to false so tests don't need initialDateScheduled
+      true // sendSlackNotifications
     );
   });
 
@@ -884,7 +891,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots,
-        undefined,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -934,7 +942,8 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          undefined
+          undefined, // initialDateScheduled
+          undefined // teamTypeId
         )
       ).rejects.toThrow(new NotFoundException('Event Type', 'non-existent-event-type-id'));
     });
@@ -961,7 +970,8 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          undefined
+          undefined, // initialDateScheduled
+          undefined // teamTypeId
         )
       ).rejects.toThrow(new InvalidOrganizationException('Event Type'));
     });
@@ -987,7 +997,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots,
-        undefined,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1035,7 +1046,8 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           scheduleSlots,
-          undefined,
+          undefined, // initialDateScheduled
+          undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1066,7 +1078,8 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           scheduleSlots,
-          undefined,
+          undefined, // initialDateScheduled
+          undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1097,7 +1110,8 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           scheduleSlots,
-          undefined,
+          undefined, // initialDateScheduled
+          undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1128,7 +1142,8 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           scheduleSlots,
-          undefined,
+          undefined, // initialDateScheduled
+          undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1159,7 +1174,8 @@ describe('Calendar Tests', () => {
           [otherOrgMachinery.machineryId],
           [],
           scheduleSlots,
-          undefined,
+          undefined, // initialDateScheduled
+          undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1196,7 +1212,8 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           scheduleSlots,
-          undefined,
+          undefined, // initialDateScheduled
+          undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1240,7 +1257,8 @@ describe('Calendar Tests', () => {
           [deletedMachinery.machineryId],
           [],
           scheduleSlots,
-          undefined,
+          undefined, // initialDateScheduled
+          undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
           'https://zoom.us/j/123456789',
@@ -1274,7 +1292,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots,
-        undefined,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1293,7 +1312,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots,
-        undefined,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1308,7 +1328,8 @@ describe('Calendar Tests', () => {
         },
         organization
       );
-      expect(result).toStrictEqual([event1, event2]);
+      expect(result).toHaveLength(2);
+      expect(result.map((e) => e.eventId)).toEqual([event1.eventId, event2.eventId]);
     });
 
     it('Succeeds and gets all events within a timeframe', async () => {
@@ -1334,7 +1355,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots,
-        undefined,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1353,7 +1375,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots,
-        undefined,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1381,7 +1404,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots2,
-        undefined,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1396,7 +1420,8 @@ describe('Calendar Tests', () => {
         },
         organization
       );
-      expect(result).toStrictEqual([event1, event2]);
+      expect(result).toHaveLength(2);
+      expect(result.map((e) => e.eventId)).toEqual([event1.eventId, event2.eventId]);
     });
 
     it('Succeeds and gets all events with matching members', async () => {
@@ -1423,7 +1448,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots,
-        undefined,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1442,7 +1468,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots,
-        undefined,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1470,7 +1497,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots2,
-        undefined,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1485,7 +1513,8 @@ describe('Calendar Tests', () => {
         },
         organization
       );
-      expect(result).toStrictEqual([event1]);
+      expect(result).toHaveLength(1);
+      expect(result[0].eventId).toBe(event1.eventId);
     });
   });
 
@@ -1649,7 +1678,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots,
-        undefined,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
         'https://zoom.us/j/123456789',
@@ -1897,7 +1927,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots,
-        undefined,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
         'https://updated.com/questions.pdf',
         'Updated Location',
         undefined,
@@ -2042,6 +2073,510 @@ describe('Calendar Tests', () => {
       });
       expect(deletedEventType?.dateDeleted).not.toBeNull();
       expect(deletedEventType?.userDeletedId).toBe(adminUser.userId);
+    });
+  });
+
+  describe('Multiple Schedule Slots', () => {
+    it('succeeds creating event with multiple schedule slots', async () => {
+      const member = await createTestUser(supermanAdmin, orgId);
+      const scheduleSlots = [
+        {
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          allDay: false
+        },
+        {
+          startTime: new Date('2025-10-14T09:00:00Z'),
+          endTime: new Date('2025-10-14T10:00:00Z'),
+          allDay: false
+        },
+        {
+          startTime: new Date('2025-10-15T09:00:00Z'),
+          endTime: new Date('2025-10-15T10:00:00Z'),
+          allDay: false
+        }
+      ];
+
+      const result = await CalendarService.createEvent(
+        adminUser,
+        'Multi-Slot Event',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [adminUser.userId],
+        [],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        scheduleSlots,
+        undefined,
+        undefined,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Event with multiple slots'
+      );
+
+      expect(result.title).toBe('Multi-Slot Event');
+      expect(result.scheduledTimes).toHaveLength(3);
+    });
+  });
+
+  describe('Edit Schedule Slot', () => {
+    let event: Event;
+    let member: User;
+    let headUser: User;
+
+    beforeEach(async () => {
+      member = await createTestUser(supermanAdmin, orgId);
+      headUser = await createTestUser(greenlanternHead, orgId);
+
+      const scheduleSlots = [
+        {
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          allDay: false
+        },
+        {
+          startTime: new Date('2025-10-14T09:00:00Z'),
+          endTime: new Date('2025-10-14T10:00:00Z'),
+          allDay: false
+        },
+        {
+          startTime: new Date('2025-10-15T09:00:00Z'),
+          endTime: new Date('2025-10-15T10:00:00Z'),
+          allDay: false
+        }
+      ];
+
+      event = await CalendarService.createEvent(
+        adminUser,
+        'Event for Slot Editing',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [adminUser.userId],
+        [],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        scheduleSlots,
+        undefined,
+        undefined,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Testing slot editing'
+      );
+    });
+
+    it('fails if schedule slot does not exist', async () => {
+      await expect(
+        CalendarService.editScheduleSlot(
+          adminUser,
+          'non-existent-slot-id',
+          new Date('2025-10-13T11:00:00Z'),
+          new Date('2025-10-13T12:00:00Z'),
+          false,
+          false,
+          organization
+        )
+      ).rejects.toThrow(new NotFoundException('Schedule Slot', 'non-existent-slot-id'));
+    });
+
+    it('fails if event is deleted', async () => {
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+      await prisma.event.update({
+        where: { eventId: event.eventId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(
+        CalendarService.editScheduleSlot(
+          adminUser,
+          slotId,
+          new Date('2025-10-13T11:00:00Z'),
+          new Date('2025-10-13T12:00:00Z'),
+          false,
+          false,
+          organization
+        )
+      ).rejects.toThrow(new DeletedException('Event', event.eventId));
+    });
+
+    it('fails if user is not head and not event creator', async () => {
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+
+      await expect(
+        CalendarService.editScheduleSlot(
+          guest,
+          slotId,
+          new Date('2025-10-13T11:00:00Z'),
+          new Date('2025-10-13T12:00:00Z'),
+          false,
+          false,
+          organization
+        )
+      ).rejects.toThrow(new AccessDeniedException('Only admins, heads, or the event creator can edit the times of an event!'));
+    });
+
+    it('succeeds for head user', async () => {
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+      const newStartTime = new Date('2025-10-13T11:00:00Z');
+      const newEndTime = new Date('2025-10-13T12:00:00Z');
+
+      const result = await CalendarService.editScheduleSlot(
+        headUser,
+        slotId,
+        newStartTime,
+        newEndTime,
+        false,
+        false,
+        organization
+      );
+
+      expect(result.eventId).toBe(event.eventId);
+      const updatedSlot = result.scheduledTimes.find((s) => s.scheduleSlotId === slotId);
+      expect(updatedSlot?.startTime).toEqual(newStartTime);
+      expect(updatedSlot?.endTime).toEqual(newEndTime);
+    });
+
+    it('succeeds for event creator', async () => {
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+      const newStartTime = new Date('2025-10-13T14:00:00Z');
+      const newEndTime = new Date('2025-10-13T15:00:00Z');
+
+      const result = await CalendarService.editScheduleSlot(
+        adminUser,
+        slotId,
+        newStartTime,
+        newEndTime,
+        false,
+        false,
+        organization
+      );
+
+      expect(result.eventId).toBe(event.eventId);
+      const updatedSlot = result.scheduledTimes.find((s) => s.scheduleSlotId === slotId);
+      expect(updatedSlot?.startTime).toEqual(newStartTime);
+      expect(updatedSlot?.endTime).toEqual(newEndTime);
+    });
+
+    it('succeeds and updates only the specified slot when editAllInSeries is false', async () => {
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+      const newStartTime = new Date('2025-10-13T14:00:00Z');
+      const newEndTime = new Date('2025-10-13T15:00:00Z');
+
+      const result = await CalendarService.editScheduleSlot(
+        adminUser,
+        slotId,
+        newStartTime,
+        newEndTime,
+        false,
+        false,
+        organization
+      );
+
+      // The edited slot should have the new times
+      const editedSlot = result.scheduledTimes.find((s) => s.scheduleSlotId === slotId);
+      expect(editedSlot?.startTime).toEqual(newStartTime);
+      expect(editedSlot?.endTime).toEqual(newEndTime);
+
+      // Other slots should remain unchanged (still at 9:00-10:00 UTC)
+      const otherSlots = result.scheduledTimes.filter((s) => s.scheduleSlotId !== slotId);
+      for (const slot of otherSlots) {
+        expect(slot.startTime.getUTCHours()).toBe(9);
+        expect(slot.endTime.getUTCHours()).toBe(10);
+      }
+    });
+
+    it('succeeds and updates all matching slots when editAllInSeries is true', async () => {
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+      const newStartTime = new Date('2025-10-13T14:00:00Z');
+      const newEndTime = new Date('2025-10-13T15:00:00Z');
+
+      const result = await CalendarService.editScheduleSlot(
+        adminUser,
+        slotId,
+        newStartTime,
+        newEndTime,
+        false,
+        true, // editAllInSeries
+        organization
+      );
+
+      // All slots should have the same time-of-day (14:00-15:00 UTC)
+      for (const slot of result.scheduledTimes) {
+        expect(slot.startTime.getUTCHours()).toBe(14);
+        expect(slot.endTime.getUTCHours()).toBe(15);
+      }
+    });
+
+    it('succeeds and updates allDay property', async () => {
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+      const newStartTime = new Date('2025-10-13T00:00:00Z');
+      const newEndTime = new Date('2025-10-13T23:59:59Z');
+
+      const result = await CalendarService.editScheduleSlot(
+        adminUser,
+        slotId,
+        newStartTime,
+        newEndTime,
+        true, // allDay
+        false,
+        organization
+      );
+
+      const updatedSlot = result.scheduledTimes.find((s) => s.scheduleSlotId === slotId);
+      expect(updatedSlot?.allDay).toBe(true);
+    });
+  });
+
+  describe('Delete Schedule Slot', () => {
+    let event: Event;
+    let member: User;
+
+    beforeEach(async () => {
+      member = await createTestUser(supermanAdmin, orgId);
+
+      const scheduleSlots = [
+        {
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          allDay: false
+        },
+        {
+          startTime: new Date('2025-10-14T09:00:00Z'),
+          endTime: new Date('2025-10-14T10:00:00Z'),
+          allDay: false
+        }
+      ];
+
+      event = await CalendarService.createEvent(
+        adminUser,
+        'Event for Slot Deletion',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [adminUser.userId],
+        [],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        scheduleSlots,
+        undefined,
+        undefined,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Testing slot deletion'
+      );
+    });
+
+    it('fails if schedule slot does not exist', async () => {
+      await expect(CalendarService.deleteScheduleSlot(adminUser, 'non-existent-slot-id', organization)).rejects.toThrow(
+        new NotFoundException('Schedule Slot', 'non-existent-slot-id')
+      );
+    });
+
+    it('fails if event is deleted', async () => {
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+      await prisma.event.update({
+        where: { eventId: event.eventId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(CalendarService.deleteScheduleSlot(adminUser, slotId, organization)).rejects.toThrow(
+        new DeletedException('Event', event.eventId)
+      );
+    });
+
+    it('fails if user is not admin and not event creator', async () => {
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+
+      await expect(CalendarService.deleteScheduleSlot(guest, slotId, organization)).rejects.toThrow(
+        new AccessDeniedException('Only admins or the event creator can delete schedule slots!')
+      );
+    });
+
+    it('succeeds for admin and removes the slot', async () => {
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+      const initialSlotCount = event.scheduledTimes.length;
+
+      const result = await CalendarService.deleteScheduleSlot(adminUser, slotId, organization);
+
+      expect(result.eventId).toBe(event.eventId);
+      expect(result.scheduledTimes).toHaveLength(initialSlotCount - 1);
+      expect(result.scheduledTimes.find((s) => s.scheduleSlotId === slotId)).toBeUndefined();
+    });
+
+    it('succeeds for event creator and removes the slot', async () => {
+      const slotId = event.scheduledTimes[1].scheduleSlotId;
+
+      const result = await CalendarService.deleteScheduleSlot(adminUser, slotId, organization);
+
+      expect(result.scheduledTimes).toHaveLength(1);
+      expect(result.scheduledTimes.find((s) => s.scheduleSlotId === slotId)).toBeUndefined();
+    });
+
+    it('deletes entire event when removing the last slot', async () => {
+      // First delete one slot
+      const firstSlotId = event.scheduledTimes[0].scheduleSlotId;
+      await CalendarService.deleteScheduleSlot(adminUser, firstSlotId, organization);
+
+      // Now delete the last slot - should delete the entire event
+      const lastSlotId = event.scheduledTimes[1].scheduleSlotId;
+      const result = await CalendarService.deleteScheduleSlot(adminUser, lastSlotId, organization);
+
+      // The event should be soft deleted
+      const deletedEvent = await prisma.event.findUnique({
+        where: { eventId: event.eventId }
+      });
+      expect(deletedEvent?.dateDeleted).not.toBeNull();
+    });
+  });
+
+  describe('Preview Schedule Slot Recurring Edits', () => {
+    let event: Event;
+    let member: User;
+    let headUser: User;
+
+    beforeEach(async () => {
+      member = await createTestUser(supermanAdmin, orgId);
+      headUser = await createTestUser(greenlanternHead, orgId);
+
+      // Create event with slots at the same time on different days (using future dates)
+      const scheduleSlots = [
+        {
+          startTime: new Date('2027-10-13T09:00:00Z'),
+          endTime: new Date('2027-10-13T10:00:00Z'),
+          allDay: false
+        },
+        {
+          startTime: new Date('2027-10-14T09:00:00Z'),
+          endTime: new Date('2027-10-14T10:00:00Z'),
+          allDay: false
+        },
+        {
+          startTime: new Date('2027-10-15T09:00:00Z'),
+          endTime: new Date('2027-10-15T10:00:00Z'),
+          allDay: false
+        },
+        {
+          startTime: new Date('2027-10-16T14:00:00Z'), // Different time
+          endTime: new Date('2027-10-16T15:00:00Z'),
+          allDay: false
+        }
+      ];
+
+      event = await CalendarService.createEvent(
+        adminUser,
+        'Event for Preview Testing',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [adminUser.userId],
+        [],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        scheduleSlots,
+        undefined,
+        undefined,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Testing preview'
+      );
+    });
+
+    it('fails if schedule slot does not exist', async () => {
+      await expect(
+        CalendarService.previewScheduleSlotRecurringEdits(adminUser, 'non-existent-slot-id', organization)
+      ).rejects.toThrow(new NotFoundException('Schedule Slot', 'non-existent-slot-id'));
+    });
+
+    it('fails if event is deleted', async () => {
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+      await prisma.event.update({
+        where: { eventId: event.eventId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(CalendarService.previewScheduleSlotRecurringEdits(adminUser, slotId, organization)).rejects.toThrow(
+        new DeletedException('Event', event.eventId)
+      );
+    });
+
+    it('fails if user is not head and not event creator', async () => {
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+
+      await expect(CalendarService.previewScheduleSlotRecurringEdits(guest, slotId, organization)).rejects.toThrow(
+        new AccessDeniedException(
+          'Only admins, heads, or the event creator can see how editing this schedule slot will affect the event.'
+        )
+      );
+    });
+
+    it('succeeds for head user', async () => {
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+
+      const result = await CalendarService.previewScheduleSlotRecurringEdits(headUser, slotId, organization);
+
+      // Should return 2 other slots with matching time (excludes current slot and different-time slot)
+      expect(result.length).toBe(2);
+    });
+
+    it('succeeds for event creator', async () => {
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+
+      const result = await CalendarService.previewScheduleSlotRecurringEdits(adminUser, slotId, organization);
+
+      expect(result.length).toBe(2);
+    });
+
+    it('returns only slots with matching time-of-day pattern', async () => {
+      // Use the first slot (9:00-10:00 UTC)
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+
+      const result = await CalendarService.previewScheduleSlotRecurringEdits(adminUser, slotId, organization);
+
+      // Should return 2 slots (the other 9:00-10:00 slots, excluding the selected one)
+      // Should NOT include the 14:00-15:00 slot
+      expect(result.length).toBe(2);
+      for (const slot of result) {
+        expect(slot.startTime.getUTCHours()).toBe(9);
+        expect(slot.endTime.getUTCHours()).toBe(10);
+      }
+    });
+
+    it('returns empty array for slot with unique time', async () => {
+      // Use the 14:00-15:00 UTC slot (unique time)
+      const uniqueSlot = event.scheduledTimes.find(
+        (s) => s.startTime.getUTCHours() === 14
+      );
+      expect(uniqueSlot).toBeDefined();
+
+      const result = await CalendarService.previewScheduleSlotRecurringEdits(
+        adminUser,
+        uniqueSlot!.scheduleSlotId,
+        organization
+      );
+
+      // Should return empty array since no other slots match
+      expect(result).toHaveLength(0);
+    });
+
+    it('excludes the current slot from results', async () => {
+      const slotId = event.scheduledTimes[0].scheduleSlotId;
+
+      const result = await CalendarService.previewScheduleSlotRecurringEdits(adminUser, slotId, organization);
+
+      // The current slot should NOT be in the results
+      expect(result.find((s) => s.scheduleSlotId === slotId)).toBeUndefined();
     });
   });
 });

@@ -975,7 +975,7 @@ model Manufacturer {
 
 model Shop {
   shopId         String           @id @default(uuid())
-  name           String           @unique
+  name           String
   dateCreated    DateTime         @default(now())
   dateDeleted    DateTime?
   userCreatedId  String

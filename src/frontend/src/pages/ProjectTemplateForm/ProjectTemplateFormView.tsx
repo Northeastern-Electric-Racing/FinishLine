@@ -15,7 +15,7 @@ import React from 'react';
 import ProjectTemplateWorkPackageSection from './ProjectTemplateWorkPackageSection';
 import { generateUUID } from '../../utils/form';
 import { AttachMoney } from '@mui/icons-material';
-import { useAllTeamPreviews, useAllTeams } from '../../hooks/teams.hooks';
+import { useAllTeamPreviews } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { WorkPackageTemplateApiInputs } from 'shared';
