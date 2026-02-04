@@ -2218,7 +2218,9 @@ describe('Calendar Tests', () => {
           false,
           organization
         )
-      ).rejects.toThrow(new AccessDeniedException('Only admins, heads, or the event creator can edit the times of an event!'));
+      ).rejects.toThrow(
+        new AccessDeniedException('Only admins, heads, or the event creator can edit the times of an event!')
+      );
     });
 
     it('succeeds for head user', async () => {
@@ -2428,7 +2430,7 @@ describe('Calendar Tests', () => {
 
       // Now delete the last slot - should delete the entire event
       const lastSlotId = event.scheduledTimes[1].scheduleSlotId;
-      const result = await CalendarService.deleteScheduleSlot(adminUser, lastSlotId, organization);
+      await CalendarService.deleteScheduleSlot(adminUser, lastSlotId, organization);
 
       // The event should be soft deleted
       const deletedEvent = await prisma.event.findUnique({
@@ -2555,9 +2557,7 @@ describe('Calendar Tests', () => {
 
     it('returns empty array for slot with unique time', async () => {
       // Use the 14:00-15:00 UTC slot (unique time)
-      const uniqueSlot = event.scheduledTimes.find(
-        (s) => s.startTime.getUTCHours() === 14
-      );
+      const uniqueSlot = event.scheduledTimes.find((s) => s.startTime.getUTCHours() === 14);
       expect(uniqueSlot).toBeDefined();
 
       const result = await CalendarService.previewScheduleSlotRecurringEdits(
