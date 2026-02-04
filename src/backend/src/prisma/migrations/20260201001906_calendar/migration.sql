@@ -397,6 +397,7 @@ INSERT INTO "public"."Event_Type" (
     "description",
     "onlyHeadsOrAboveForEventCreation",
     "requiresConfirmation",
+    "sendSlackNotifications",
     "organizationId"
 )
 SELECT DISTINCT ON (org."organizationId")
@@ -418,6 +419,7 @@ SELECT DISTINCT ON (org."organizationId")
     false, -- description
     true, -- onlyHeadsOrAboveForEventCreation
     true, -- requiresConfirmation
+    true, -- sendSlackNotifications
     org."organizationId"
 FROM "public"."Organization" org
 WHERE EXISTS (
@@ -447,6 +449,7 @@ INSERT INTO "public"."Event_Type" (
     "description",
     "onlyHeadsOrAboveForEventCreation",
     "requiresConfirmation",
+    "sendSlackNotifications",
     "organizationId"
 )
 SELECT DISTINCT ON (org."organizationId")
@@ -468,6 +471,7 @@ SELECT DISTINCT ON (org."organizationId")
     false, -- description
     false, -- onlyHeadsOrAboveForEventCreation
     false, -- requiresConfirmation
+    false, -- sendSlackNotifications
     org."organizationId"
 FROM "public"."Organization" org
 WHERE EXISTS (
