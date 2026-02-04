@@ -156,19 +156,35 @@ export interface BaseEventModalProps {
 }
 
 /**
- * Checks if the time has changed between initial values and current form data
+ * Checks if the time has changed between initial values and current form data.
+ * Compares the combined date (from scheduleDate) and time (from startTime/endTime).
  */
 const hasTimeChanged = (initialValues: Partial<EventFormValues> | undefined, currentData: EventFormValues): boolean => {
-  if (!initialValues?.startTime || !initialValues?.endTime) return false;
+  if (!initialValues?.startTime || !initialValues?.endTime || !initialValues?.scheduleDate) return false;
+
+  // Combine scheduleDate with time portions for comparison (matches how we send to backend)
+  const currentCombinedStart = new Date(currentData.scheduleDate);
+  currentCombinedStart.setHours(
+    currentData.startTime.getHours(),
+    currentData.startTime.getMinutes(),
+    currentData.startTime.getSeconds(),
+    currentData.startTime.getMilliseconds()
+  );
+
+  const currentCombinedEnd = new Date(currentData.scheduleDate);
+  currentCombinedEnd.setHours(
+    currentData.endTime.getHours(),
+    currentData.endTime.getMinutes(),
+    currentData.endTime.getSeconds(),
+    currentData.endTime.getMilliseconds()
+  );
 
   const originalStartTime = new Date(initialValues.startTime).getTime();
   const originalEndTime = new Date(initialValues.endTime).getTime();
-  const currentStartTime = new Date(currentData.startTime).getTime();
-  const currentEndTime = new Date(currentData.endTime).getTime();
 
   return (
-    originalStartTime !== currentStartTime ||
-    originalEndTime !== currentEndTime ||
+    originalStartTime !== currentCombinedStart.getTime() ||
+    originalEndTime !== currentCombinedEnd.getTime() ||
     initialValues.allDay !== currentData.allDay
   );
 };
@@ -484,10 +500,27 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       payload.initialDateScheduled = data.scheduleDate;
     } else if (isEditMode && data.selectedScheduleSlotId) {
       // For edit mode, populate editScheduleSlotArgs
+      // Combine scheduleDate (date portion) with startTime/endTime (time portion)
+      const combinedStartTime = new Date(data.scheduleDate);
+      combinedStartTime.setHours(
+        data.startTime.getHours(),
+        data.startTime.getMinutes(),
+        data.startTime.getSeconds(),
+        data.startTime.getMilliseconds()
+      );
+
+      const combinedEndTime = new Date(data.scheduleDate);
+      combinedEndTime.setHours(
+        data.endTime.getHours(),
+        data.endTime.getMinutes(),
+        data.endTime.getSeconds(),
+        data.endTime.getMilliseconds()
+      );
+
       payload.editScheduleSlotArgs = {
         scheduleSlotId: data.selectedScheduleSlotId,
-        newStartTime: data.startTime,
-        newEndTime: data.endTime,
+        newStartTime: combinedStartTime,
+        newEndTime: combinedEndTime,
         newAllDay: data.allDay,
         editAllInSeries
       };
