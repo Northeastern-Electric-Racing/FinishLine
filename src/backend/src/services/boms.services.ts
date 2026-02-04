@@ -181,24 +181,21 @@ export default class BillOfMaterialsService {
       ...getMaterialQueryArgs(organization.organizationId)
     });
 
-    // Validate all materials were found
     if (materials.length !== materialIds.length) throw new NotFoundException('Material', 'Not all materials found');
 
-    // Validate all materials are from the current organization
-    const invalidMaterials = materials.filter((material) => material.unit?.organizationId !== organization.organizationId);
+    const invalidMaterials = materials.filter(
+      (material) => material.materialType.organizationId !== organization.organizationId
+    );
     if (invalidMaterials.length > 0) throw new HttpException(400, 'All materials must be from the current organization');
 
-    // Fetch destination project (validates project is in the user's organization)
     const destinationProject = await ProjectsService.getSingleProjectWithQueryArgs(destinationProjectId, organization);
 
-    // Check user has correct permissions
     const perms =
       (await userHasPermission(user.userId, organization.organizationId, isLeadership)) ||
       isUserPartOfTeams(destinationProject.teams, user);
 
     if (!perms) throw new AccessDeniedException('Permission to copy materials denied');
 
-    // Create copied materials (all or none)
     return await prisma.$transaction(async (tx) => {
       const newMaterialIds: string[] = [];
 
@@ -224,7 +221,6 @@ export default class BillOfMaterialsService {
           if (!unit) throw new NotFoundException('Unit', material.unitId);
         }
 
-        // Create the new material
         const newMaterial = await tx.material.create({
           data: {
             name: material.name,

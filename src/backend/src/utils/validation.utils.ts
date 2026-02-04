@@ -212,10 +212,14 @@ export const materialValidators = [
 export const copyMaterialsValidators = [
   body('materialIds').isArray({ min: 1 }),
   body('materialIds.*').isString().notEmpty(),
-  body('destinationWbsNum').custom((value) => {
-    validateWBS(value);
-    return true;
-  })
+  body('destinationWbsNum')
+    .custom((value) => {
+      validateWBS(value);
+      return true;
+    })
+    .customSanitizer((value) => {
+      return validateWBS(value);
+    })
 ];
 export const validateInputs = (req: Request, res: Response, next: Function): void => {
   const errors = validationResult(req);
