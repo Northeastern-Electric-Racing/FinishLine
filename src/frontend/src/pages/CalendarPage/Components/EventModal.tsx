@@ -728,6 +728,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       render={({ field: { onChange, value } }) => (
                         <DatePicker
                           value={value}
+                          disabled={!!initialValues?.selectedScheduleSlotId}
                           open={datePickerOpen}
                           onClose={() => setDatePickerOpen(false)}
                           onOpen={() => setDatePickerOpen(true)}

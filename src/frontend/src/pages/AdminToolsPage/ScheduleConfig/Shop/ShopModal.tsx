@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, FormControl, FormHelperText, Typography } from '@mui/material';
 import NERFormModal from '../../../../components/NERFormModal';
 import ReactHookTextField from '../../../../components/ReactHookTextField';
@@ -21,10 +20,14 @@ const schema = yup.object({
 export interface BaseShopModalProps {
   open: boolean;
   onClose: () => void;
-  // Accept both branches: some returns were Promise<Shop>, others unknown
   onSubmit: (data: ShopFormValues) => Promise<Shop | unknown> | Shop | unknown;
-  initialValues?: Partial<ShopFormValues>;
+  initialValues?: ShopFormValues;
 }
+
+const defaultValues: ShopFormValues = {
+  name: '',
+  description: ''
+};
 
 const ShopModal: React.FC<BaseShopModalProps> = ({ open, onClose, onSubmit, initialValues }) => {
   const toast = useToast();
@@ -36,49 +39,39 @@ const ShopModal: React.FC<BaseShopModalProps> = ({ open, onClose, onSubmit, init
     formState: { errors }
   } = useForm<ShopFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: { name: '', description: '' }
+    defaultValues: initialValues || defaultValues
   });
-
-  const frozenValuesRef = React.useRef<ShopFormValues>({ name: '', description: '' });
-
-  React.useEffect(() => {
-    if (open) {
-      frozenValuesRef.current = {
-        name: initialValues?.name ?? '',
-        description: initialValues?.description ?? ''
-      };
-      reset(frozenValuesRef.current);
-    } else {
-      frozenValuesRef.current = { name: '', description: '' };
-      reset(frozenValuesRef.current);
-    }
-  }, [open, initialValues, reset]);
-
-  const computedTitle =
-    frozenValuesRef.current.name !== '' || frozenValuesRef.current.description !== '' ? 'Edit Shop' : 'Create Shop';
 
   const onFormSubmit = async (data: ShopFormValues) => {
     try {
       await onSubmit(data);
       onClose();
-      reset({ name: '', description: '' });
+      if (!initialValues) {
+        reset(defaultValues);
+      }
     } catch (e: unknown) {
-      if (e instanceof Error) toast.error(e.message);
+      if (e instanceof Error) {
+        toast.error(e.message);
+      } else {
+        toast.error('An error occurred while saving the shop');
+      }
     }
+  };
+
+  const handleCancel = () => {
+    reset(defaultValues);
+    onClose();
   };
 
   return (
     <NERFormModal
       open={open}
-      onHide={() => {
-        onClose();
-        reset({ name: '', description: '' });
-      }}
-      title={computedTitle}
-      reset={() => reset({ name: '', description: '' })}
+      onHide={handleCancel}
+      title={initialValues ? 'Edit Shop' : 'Create Shop'}
+      reset={() => reset(initialValues || defaultValues)}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId="shop-form"
+      formId={initialValues ? 'edit-shop-form' : 'create-shop-form'}
       showCloseButton
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: 350 }}>

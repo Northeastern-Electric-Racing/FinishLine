@@ -39,9 +39,9 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
     projectName: wpInput.project.wbsElement.name,
     stage: (wpInput.stage as WorkPackageStage) || undefined,
     blocking: wpInput.wbsElement.blocking.map((wp) => wbsNumOf(wp.wbsElement)),
-    events: wpInput.events
-      .filter((event) => event.workPackages.length > 0) // Only events that are design reviews (have work packages)
-      .map((event) => eventPreviewTransformer(event, `${wpInput.project.wbsElement.name} - ${wpInput.wbsElement.name}`)),
+    events: wpInput.events.map((event) =>
+      eventPreviewTransformer(event, `${wpInput.project.wbsElement.name} - ${wpInput.wbsElement.name}`)
+    ),
     deleted: wpInput.wbsElement.dateDeleted !== null
   };
 };

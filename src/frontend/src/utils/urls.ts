@@ -338,17 +338,6 @@ const bomCreateUnit = () => `${bomGetAllUnits()}/create`;
 const bomUnitById = (id: string) => `${bomGetAllUnits()}/${id}`;
 const bomDeleteUnit = (id: string) => `${bomUnitById(id)}/delete`;
 
-/************** Design Review Endpoints *******************************/
-/*
-const designReviews = () => `${API_URL}/design-reviews`;
-const designReviewsCreate = () => `${designReviews()}/create`;
-const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
-const designReviewById = (id: string) => `${designReviews()}/${id}`;
-const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
-const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
-const designReviewSetStatus = (id: string) => `${designReviewById(id)}/set-status`;
-*/
-
 /******************* WBS Element Template Endpoints ********************/
 
 const workPackageTemplates = () => `${API_URL}/templates`;

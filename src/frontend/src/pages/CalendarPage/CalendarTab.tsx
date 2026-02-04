@@ -1,5 +1,5 @@
 import { routes } from '../../utils/routes';
-import NewCalendarPage from './NewCalendarPage';
+import NewCalendarPage from './CalendarPage';
 import PageLayout from '../../components/PageLayout';
 import { Box } from '@mui/material';
 import FullPageTabs from '../../components/FullPageTabs';
@@ -93,7 +93,7 @@ const CalendarTab: React.FC = () => {
 
   const handleNewEventClick = (date?: Date) => {
     if (tabIndex !== 0) {
-      history.push(`${routes.NEW_CALENDAR}/mainCalendar`);
+      history.push(`${routes.CALENDAR}/mainCalendar`);
     }
     setCreateModalDate(date || new Date());
     setIsCreateModalOpen(true);
@@ -109,7 +109,7 @@ const CalendarTab: React.FC = () => {
               noUnderline
               setTab={setTabIndex}
               tabsLabels={tabs}
-              baseUrl={routes.NEW_CALENDAR}
+              baseUrl={routes.CALENDAR}
               defaultTab="mainCalendar"
               id="calendar-tabs"
             />

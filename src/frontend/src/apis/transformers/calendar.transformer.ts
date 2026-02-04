@@ -23,7 +23,14 @@ export const filterEventTransformer = (event: Event): Event => {
 
 export const eventTransformer = (event: Event): Event => {
   return {
-    ...event
+    ...event,
+    dateCreated: new Date(event.dateCreated),
+    initialDateScheduled: event.initialDateScheduled ? new Date(event.initialDateScheduled) : undefined,
+    scheduledTimes: event.scheduledTimes.map((slot: any) => ({
+      ...slot,
+      startTime: new Date(slot.startTime),
+      endTime: new Date(slot.endTime)
+    }))
   };
 };
 

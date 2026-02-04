@@ -162,8 +162,8 @@ export const getAllEvents = () => {
 };
 
 export const getAllEventTypes = () => {
-  return axios.get(apiUrls.calendarEventTypes(), {
-    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
+  return axios.get<EventType[]>(apiUrls.calendarEventTypes(), {
+    transformResponse: (data) => JSON.parse(data) as EventType[]
   });
 };
 

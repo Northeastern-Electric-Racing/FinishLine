@@ -128,13 +128,13 @@ export default class NotificationsService {
       where: {
         status: 'SCHEDULED',
         dateDeleted: null,
-        workPackages: {
-          some: {} // Event must have at least one work package to be a design review
-        },
         scheduledTimes: {
           some: {
             AND: [{ endTime: { gte: startOfToday } }, { startTime: { lte: endOfToday } }]
           }
+        },
+        eventType: {
+          sendSlackNotifications: true
         }
       },
       include: {

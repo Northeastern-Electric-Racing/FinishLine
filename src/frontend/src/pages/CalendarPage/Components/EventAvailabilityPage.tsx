@@ -190,7 +190,7 @@ export const EventAvailabilityPage: React.FC = () => {
   };
 
   const handleClose = () => {
-    history.push(routes.NEW_CALENDAR);
+    history.push(routes.CALENDAR);
   };
 
   const availableUsers = new Map<number, User[]>();

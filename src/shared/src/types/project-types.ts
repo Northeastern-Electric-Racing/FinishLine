@@ -3,9 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { EventPreview } from './calendar-types.js';
+import { EventPreview, TeamType } from './calendar-types.js';
 import { ImplementedChange } from './change-request-types.js';
-import { TeamType } from './design-review-types.js';
 import { Task } from './task-types.js';
 import { TeamPreview } from './team-types.js';
 import { User, UserPreview } from './user-types.js';

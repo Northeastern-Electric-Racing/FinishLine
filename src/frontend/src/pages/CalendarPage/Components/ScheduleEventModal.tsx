@@ -49,7 +49,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
       await scheduleEvent({ startTime, endTime });
       toast.success('Event scheduled successfully!');
       onClose();
-      history.push(routes.NEW_CALENDAR);
+      history.push(routes.CALENDAR);
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);

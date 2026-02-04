@@ -6,19 +6,16 @@ import ErrorPage from '../../ErrorPage';
 import { IconButton, Tooltip } from '@mui/material';
 import {
   useAllShops,
-  useCreateShop,
-  useEditShop,
   useAllMachines,
   useDeleteMachinery,
   useDeleteShop,
   useDeleteCalendar,
   useAllCalendars,
-  useCreateCalendar,
-  useEditCalendar,
   useAllEventTypes,
   useDeleteEventType
 } from '../../../hooks/calendar.hooks';
-import ShopModal from './Shop/ShopModal';
+import CreateShopModal from './Shop/AddShopModal';
+import EditShopModal from './Shop/EditShopModal';
 import CreateCalendarModal from './Calendar/CreateCalendarModal';
 import EditCalendarModal from './Calendar/EditCalendarModal';
 import EditIcon from '@mui/icons-material/Edit';
@@ -46,13 +43,6 @@ const AdminToolsScheduleConfig: React.FC = () => {
     isError: calendarsError,
     error: calendarsErrorMsg
   } = useAllCalendars();
-  const { mutateAsync: createShopMutate } = useCreateShop();
-  const { mutateAsync: createCalendarMutate } = useCreateCalendar();
-
-  const [editingShopId, setEditingShopId] = useState<string | undefined>();
-  const editShopMutation = useEditShop(editingShopId ?? '');
-  const [editingCalendarId, setEditingCalendarId] = useState<string | undefined>();
-  const editCalendarMutation = useEditCalendar(editingCalendarId ?? '');
   const [machineryToDelete, setMachineryToDelete] = useState<{
     machineryId: string;
     machineName: string;
@@ -127,7 +117,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [openCreateMachinery, setOpenCreateMachinery] = useState(false);
   const [editMachinery, setEditMachinery] = useState<{ machineryId: string; shopId: string } | null>(null);
   const [openEdit, setOpenEdit] = useState(false);
-  const [editingShop, setEditingShop] = useState<any>(null);
+  const [editingShop, setEditingShop] = useState<Shop | null>(null);
   const [shopToDelete, setShopToDelete] = useState<Shop | undefined>(undefined);
   const [openCreateEventType, setOpenCreateEventType] = useState(false);
   const [editingEventType, setEditingEventType] = useState<EventType | null>(null);
@@ -207,7 +197,6 @@ const AdminToolsScheduleConfig: React.FC = () => {
                                 aria-label="edit calendar"
                                 onClick={() => {
                                   setEditingCalendar(calendar);
-                                  setEditingCalendarId(calendar.calendarId);
                                   setOpenEditCalendar(true);
                                 }}
                               >
@@ -347,7 +336,6 @@ const AdminToolsScheduleConfig: React.FC = () => {
                                 aria-label="edit shop"
                                 onClick={() => {
                                   setEditingShop(shop);
-                                  setEditingShopId(shop.shopId);
                                   setOpenEdit(true);
                                 }}
                               >
@@ -482,58 +470,22 @@ const AdminToolsScheduleConfig: React.FC = () => {
       />
 
       {/* Create Calendar Modal */}
-      <CreateCalendarModal
-        open={openCreateCalendar}
-        onClose={() => setOpenCreateCalendar(false)}
-        onSubmit={async ({ name, description, colorHexCode }) => {
-          await createCalendarMutate({
-            name,
-            description,
-            colorHexCode
-          });
-          setOpenCreateCalendar(false);
-        }}
-      />
+      <CreateCalendarModal open={openCreateCalendar} onClose={() => setOpenCreateCalendar(false)} />
 
       {/* Edit Calendar Modal */}
-      {editingCalendarId && (
+      {editingCalendar && (
         <EditCalendarModal
           open={openEditCalendar}
           onClose={() => {
             setOpenEditCalendar(false);
             setEditingCalendar(undefined);
-            setEditingCalendarId(undefined);
           }}
-          initialValues={{
-            name: editingCalendar?.name ?? '',
-            description: editingCalendar?.description ?? '',
-            colorHexCode: editingCalendar?.color ?? ''
-          }}
-          onSubmit={async ({ name, description, colorHexCode }) => {
-            if (!editingCalendarId) return;
-
-            await editCalendarMutation.mutateAsync({
-              name,
-              description,
-              colorHexCode
-            });
-            setOpenEditCalendar(false);
-            setEditingCalendar(undefined);
-            setEditingCalendarId(undefined);
-          }}
+          calendar={editingCalendar}
         />
       )}
 
       {/* Add Shop Modal */}
-      <ShopModal
-        open={openCreate}
-        onClose={() => setOpenCreate(false)}
-        onSubmit={async ({ name, description }) => {
-          const result = await createShopMutate({ name, description });
-          setOpenCreate(false);
-          return result;
-        }}
-      />
+      <CreateShopModal open={openCreate} onClose={() => setOpenCreate(false)} />
 
       {/* Delete Shop Modal */}
       <NERDeleteModal
@@ -569,25 +521,16 @@ const AdminToolsScheduleConfig: React.FC = () => {
         })()}
 
       {/* Edit Shop Modal */}
-      <ShopModal
-        open={openEdit}
-        onClose={() => {
-          setOpenEdit(false);
-          setEditingShop(null);
-          setEditingShopId(undefined);
-        }}
-        initialValues={{
-          name: editingShop?.name ?? '',
-          description: editingShop?.description ?? ''
-        }}
-        onSubmit={async ({ name, description }) => {
-          if (!editingShopId) return;
-          await editShopMutation.mutateAsync({ name, description });
-          setOpenEdit(false);
-          setEditingShop(null);
-          setEditingShopId(undefined);
-        }}
-      />
+      {editingShop && (
+        <EditShopModal
+          open={openEdit}
+          onClose={() => {
+            setOpenEdit(false);
+            setEditingShop(null);
+          }}
+          shop={editingShop}
+        />
+      )}
 
       {/* Delete Machinery */}
       <NERDeleteModal

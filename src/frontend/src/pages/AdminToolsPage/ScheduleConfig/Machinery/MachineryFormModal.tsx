@@ -7,7 +7,6 @@ import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { useEffect } from 'react';
 import { Machinery } from 'shared';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../../utils/form';
@@ -61,12 +60,6 @@ export const MachineryFormModal: React.FC<MachineryFormModalProps> = ({ open, on
     watch,
     setValue
   });
-
-  useEffect(() => {
-    if (initialValues) {
-      reset(initialValues);
-    }
-  }, [initialValues, reset]);
 
   const onFormSubmit = async (data: MachineryFormValues) => {
     try {

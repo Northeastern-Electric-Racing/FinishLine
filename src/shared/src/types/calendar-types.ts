@@ -256,3 +256,19 @@ export interface EventWithMembers {
   status: EventStatus;
   initialDateScheduled?: Date;
 }
+
+export interface TeamType {
+  teamTypeId: string;
+  name: string;
+  iconName: string;
+  description: string;
+  imageFileId: string | null;
+  calendarId: string | null;
+  dateDeleted: Date | undefined;
+  deletedById: string | undefined;
+}
+
+export interface AvailabilityCreateArgs {
+  availability: number[];
+  dateSet: Date;
+}

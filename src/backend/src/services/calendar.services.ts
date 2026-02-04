@@ -464,6 +464,8 @@ export default class CalendarService {
       ...getEventQueryArgs(organization.organizationId)
     });
 
+    const createdEvent = eventTransformer(newEvent);
+
     let calendarEventIds: string[] = [];
     if (process.env.NODE_ENV === 'production') {
       try {
@@ -514,14 +516,12 @@ export default class CalendarService {
           if (memberUserSetting.slackId) {
             try {
               // For each project associated with this event
-              for (const project of projects) {
-                await sendSlackEventConfirmNotification(
-                  memberUserSetting.slackId,
-                  newEvent.eventId,
-                  newEvent.title,
-                  project.wbsElement.name
-                );
-              }
+              await sendSlackEventConfirmNotification(
+                memberUserSetting.slackId,
+                newEvent.eventId,
+                newEvent.title,
+                projects.map((project) => project.wbsElement.name).join(', ')
+              );
             } catch (err: unknown) {
               if (err instanceof Error) {
                 throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
@@ -533,8 +533,6 @@ export default class CalendarService {
 
       // Send popup notification
       await sendEventPopUp(newEvent, members, submitter, workPackageNames, organization.organizationId);
-
-      const createdEvent = eventTransformer(newEvent);
 
       for (const project of projects) {
         const projectTeams = project.teams;
@@ -548,10 +546,9 @@ export default class CalendarService {
           );
         }
       }
-      return createdEvent;
     }
 
-    return eventTransformer(newEvent);
+    return createdEvent;
   }
 
   /**
@@ -616,12 +613,11 @@ export default class CalendarService {
     if (!foundEventType) throw new NotFoundException('Event Type', eventTypeId);
     if (foundEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
 
-    // Note: Schedule validation is removed since editEvent doesn't modify schedules
-    // Use editScheduleSlot to modify individual schedule slots
+    // NOTE: Use editScheduleSlot to modify individual schedule slots
 
     // question document is required if the status is scheduled or done
     if (foundEventType.requiresConfirmation) {
-      if (foundEvent.status === Event_Status.SCHEDULED || foundEvent.status === Event_Status.DONE) {
+      if (status === Event_Status.SCHEDULED || status === Event_Status.DONE) {
         if (questionDocumentLink == null) {
           throw new HttpException(400, 'doc template link is required for scheduled and done design reviews');
         }

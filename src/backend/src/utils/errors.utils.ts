@@ -175,7 +175,6 @@ export type ExceptionObjectNames =
   | 'Unit'
   | 'Material'
   | 'Link Type'
-  | 'Design Review'
   | 'Team Type'
   | 'Work Package Template'
   | 'Description Bullet Type'
