@@ -80,13 +80,47 @@ export const isOptionalDate = (validationObject: ValidationChain): ValidationCha
 
 export const validateReimbursementProducts = () => {
   return [
+    // Other products (non-project) - keep as strings
     body('otherReimbursementProducts').isArray(),
     nonEmptyString(body('otherReimbursementProducts.*.name')),
     nonEmptyString(body('otherReimbursementProducts.*.reason.otherProductReasonId')),
     nonEmptyString(body('otherReimbursementProducts.*.reason.name')),
     intMinZero(body('otherReimbursementProducts.*.cost')),
+
+    // WBS products - now materials
     body('wbsReimbursementProducts').isArray(),
-    nonEmptyString(body('wbsReimbursementProducts.*.name')),
+    nonEmptyString(body('wbsReimbursementProducts.*.materialId')),
+    intMinZero(body('wbsReimbursementProducts.*.cost')),
+    intMinZero(body('wbsReimbursementProducts.*.reason.carNumber')),
+    intMinZero(body('wbsReimbursementProducts.*.reason.projectNumber')),
+    intMinZero(body('wbsReimbursementProducts.*.reason.workPackageNumber'))
+  ];
+};
+
+export const validateReimbursementProductsForEdit = (): ValidationChain[] => {
+  return [
+    // Other products (non-project) - keep as strings
+    body('otherReimbursementProducts').isArray(),
+    nonEmptyString(body('otherReimbursementProducts.*.name')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason.otherProductReasonId')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason.name')),
+    intMinZero(body('otherReimbursementProducts.*.cost')),
+
+    // WBS products
+    body('wbsReimbursementProducts').isArray(),
+
+    // Either materialId OR name must be present
+    body('wbsReimbursementProducts.*.materialId').optional().isString(),
+    body('wbsReimbursementProducts.*.name').optional().isString(),
+
+    // Ensure at least one is provided
+    body('wbsReimbursementProducts.*').custom((product) => {
+      if (!product.materialId && !product.name) {
+        throw new Error('Either materialId or name must be provided');
+      }
+      return true;
+    }),
+
     intMinZero(body('wbsReimbursementProducts.*.cost')),
     intMinZero(body('wbsReimbursementProducts.*.reason.carNumber')),
     intMinZero(body('wbsReimbursementProducts.*.reason.projectNumber')),
