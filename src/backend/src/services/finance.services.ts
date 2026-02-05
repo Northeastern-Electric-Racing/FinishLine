@@ -817,10 +817,16 @@ export default class FinanceServices {
       }
     });
 
-    const allTotalBudget = teams.reduce((teamAcc, team) => {
-      const teamBudget = team.projects.reduce((projAcc, project) => projAcc + project.budget, 0);
-      return teamAcc + teamBudget;
-    }, 0);
+    // project budgets no longer double counted if in multiple teams
+    const projectsById = new Map<string, { budget: number }>();
+    for (const team of teams) {
+      for (const project of team.projects) {
+        if (!projectsById.has(project.projectId)) {
+          projectsById.set(project.projectId, { budget: project.budget });
+        }
+      }
+    }
+    const allTotalBudget = [...projectsById.values()].reduce((acc, p) => acc + p.budget, 0);
 
     const cashTotalBudget =
       cashReimbursementRequests.reduce((reqAcc, rr) => {
