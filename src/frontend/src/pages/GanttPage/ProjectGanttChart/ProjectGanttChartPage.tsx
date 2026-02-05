@@ -300,7 +300,7 @@ const ProjectGanttChartPage: FC = () => {
       dateCreated: new Date(),
       teamTypes: [],
       changes: [],
-      designReviews: [],
+      events: [],
       deleted: false
     };
 

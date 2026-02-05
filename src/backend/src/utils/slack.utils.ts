@@ -4,9 +4,10 @@ import {
   Task,
   wbsPipe,
   calculateEndDate,
-  meetingStartTimePipe,
   CreateSponsorTask,
-  User
+  User,
+  Event,
+  meetingStartTimePipeNumbers
 } from 'shared';
 import { Account_Code, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
 import {
@@ -21,10 +22,9 @@ import {
 import { getUserSlackId, getUserSlackMentionOrName } from './users.utils.js';
 import prisma from '../prisma/prisma.js';
 import { HttpException } from './errors.utils.js';
-import { Change_Request, Design_Review, Team, WBS_Element } from '@prisma/client';
+import { Change_Request, Team, WBS_Element } from '@prisma/client';
 import { UserWithSettings } from './auth.utils.js';
 import { usersToSlackPings, userToSlackPing } from './notifications.utils.js';
-import { addHours } from './design-reviews.utils.js';
 import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 import { Prisma } from '@prisma/client';
 import { userTransformer } from '../transformers/user.transformer.js';
@@ -243,18 +243,18 @@ export const sendPendingSaboSubmissionNotification = async (
   );
 };
 
-export const sendSlackDesignReviewConfirmNotification = async (
+export const sendSlackEventConfirmNotification = async (
   slackId: string,
-  designReviewId: string,
-  designReviewName: string,
+  eventId: string,
+  eventName: string,
   projectName: string
 ) => {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
-  const msg = `You have been invited to the ${designReviewName} Design Review in project ${projectName}!`;
+  const msg = `You have been invited to ${eventName} in project ${projectName}!`;
   const fullLink = isProduction
-    ? `https://finishlinebyner.com/settings/preferences?drId=${designReviewId}`
-    : `http://localhost:3000/settings/preferences?drId=${designReviewId}`;
+    ? `https://finishlinebyner.com/calendar/event/${eventId}`
+    : `http://localhost:3000/calendar/event/${eventId}`;
   const linkButtonText = 'Confirm Availability';
 
   try {
@@ -331,14 +331,14 @@ export const sendAndGetSlackCRNotifications = async (
   return notifications;
 };
 
-export const sendSlackDesignReviewNotification = async (
+export const sendSlackEventNotification = async (
   team: Team,
   message: string
 ): Promise<{ channelId: string; ts: string }[]> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return []; // don't send msgs unless in prod
   const msgs: { channelId: string; ts: string }[] = [];
   const fullMsg = `${message}`;
-  const fullLink = `https://finishlinebyner.com/design-review-calendar`;
+  const fullLink = `https://finishlinebyner.com/calendar`;
   const btnText = `View Calendar`;
   const notification = await sendMessage(team.slackId, fullMsg, fullLink, btnText);
   if (notification) msgs.push(notification);
@@ -346,19 +346,24 @@ export const sendSlackDesignReviewNotification = async (
   return msgs;
 };
 
-export const sendSlackDRNotifications = async (
+export const sendSlackEventNotifications = async (
   teams: Team[],
-  designReview: Design_Review,
+  event: Event,
   submitter: User,
   workPackageName: string,
   projectName: string
 ) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return []; // don't send msgs unless in prod
   const notifications: { channelId: string; ts: string }[] = [];
-  const message = `:spiral_calendar_pad: Design Review for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
+  let message;
+  if (workPackageName) {
+    message = `:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
+  } else {
+    message = `:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
+  }
 
   const completion: Promise<void>[] = teams.map(async (team) => {
-    const sentNotifications: { channelId: string; ts: string }[] = await sendSlackDesignReviewNotification(team, message);
+    const sentNotifications: { channelId: string; ts: string }[] = await sendSlackEventNotification(team, message);
     if (sentNotifications) notifications.push(...sentNotifications);
   });
   await Promise.all(completion);
@@ -367,12 +372,12 @@ export const sendSlackDRNotifications = async (
     async (notification) =>
       await prisma.message_Info.create({
         data: {
-          designReviewId: designReview.designReviewId,
+          eventId: event.eventId,
           channelId: notification.channelId,
           timestamp: notification.ts
         },
         include: {
-          designReview: true
+          event: true
         }
       })
   );
@@ -381,7 +386,7 @@ export const sendSlackDRNotifications = async (
   return notifications;
 };
 
-export const sendDRUserConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
+export const sendEventUserConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} confirmed their availability!`;
@@ -397,7 +402,7 @@ export const sendDRUserConfirmationToThread = async (threads: SlackMessageThread
   }
 };
 
-export const sendDRConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
+export const sendEventConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} All of the required attendees have confirmed their availability!`;
@@ -413,27 +418,44 @@ export const sendDRConfirmationToThread = async (threads: SlackMessageThread[], 
   }
 };
 
-export const sendDRScheduledSlackNotif = async (
-  threads: SlackMessageThread[],
-  designReview: Design_Review & { wbsElement: WBS_Element; userCreated: User }
-) => {
+export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[], event: Event) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
 
-  const drName = designReview.wbsElement.name;
-  const { dateScheduled } = designReview;
-  const drTime = `${addHours(dateScheduled, 12).toLocaleDateString()} at ${meetingStartTimePipe(designReview.meetingTimes)}`;
-  const drSubmitter = `${designReview.userCreated.firstName} ${designReview.userCreated.lastName}`;
-  const zoomLink = designReview.isOnline && designReview.zoomLink && `on <${designReview.zoomLink}|Zoom>`;
-  const location =
-    zoomLink && designReview.isInPerson
-      ? `in ${designReview.location} and ${zoomLink}`
-      : designReview.isInPerson
-        ? `in ${designReview.location}`
-        : zoomLink;
+  // Get work package names
+  const wpNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
+  const drName = event.title + (wpNames ? ` (${wpNames})` : '');
 
-  const msg = `:spiral_calendar_pad: Design Review for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
-  const docLink = designReview.docTemplateLink ? `<${designReview.docTemplateLink}|Doc Link>` : '';
-  const threadMsg = `The Design Review has been Scheduled! \n` + docLink;
+  // Get the first scheduled time
+  const [firstScheduledTime] = event.scheduledTimes;
+  if (!firstScheduledTime) {
+    throw new HttpException(400, 'Event has no scheduled times');
+  }
+
+  const dateScheduled = firstScheduledTime.startTime;
+
+  if (!dateScheduled) {
+    throw new HttpException(400, 'Event scheduled time has no start time');
+  }
+
+  // Extract meeting times from scheduled slots
+  const meetingTimes = event.scheduledTimes
+    .map((slot) => (slot.startTime ? new Date(slot.startTime).getHours() : null))
+    .filter((hour): hour is number => hour !== null)
+    .sort((a, b) => a - b);
+
+  const drTime = `${dateScheduled.toLocaleDateString()} at ${meetingStartTimePipeNumbers(meetingTimes)}`;
+  const drSubmitter = `${event.userCreated.firstName} ${event.userCreated.lastName}`;
+
+  // Check for online/in-person location
+  const zoomLink = event.zoomLink && `on <${event.zoomLink}|Zoom>`;
+  const inPersonLocation = event.location && `in ${event.location}`;
+
+  const location = zoomLink && inPersonLocation ? `${inPersonLocation} and ${zoomLink}` : inPersonLocation || zoomLink || '';
+
+  const msg = `:spiral_calendar_pad: ${event.title} for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
+  const docLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Doc Link>` : '';
+  const threadMsg = `This event has been Scheduled! \n` + docLink;
+
   try {
     if (threads && threads.length !== 0) {
       const msgs = threads.map((thread) => editMessage(thread.channelId, thread.timestamp, msg));
