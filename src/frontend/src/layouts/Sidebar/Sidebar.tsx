@@ -63,7 +63,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     );
   });
 
-  // Now allTeams will update when data arrives
   const memberLinkItems: LinkItem[] = [
     {
       name: 'Home',
@@ -104,7 +103,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
             {
               name: 'Design Review',
               icon: <RateReviewIcon />,
-              route: routes.DESIGN_REVIEW_BY_ID
+              route: routes.CALENDAR
             }
           ]
         },
@@ -146,28 +145,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           icon: <GroupIcon />,
           route: routes.TEAMS,
           subItems: allTeams
-          // subItems: [
-          //   {
-          //     name: 'Mechanical',
-          //     icon: <ConstructionIcon />,
-          //     route: routes.FINANCE_DASHBOARD
-          //   },
-          //   {
-          //     name: 'Electrical',
-          //     icon: <BoltIcon />,
-          //     route: routes.REIMBURSEMENT_REQUESTS
-          //   },
-          //   {
-          //     name: 'Software',
-          //     icon: <CodeIcon />,
-          //     route: routes.CALENDAR
-          //   },
-          //   {
-          //     name: 'Business',
-          //     icon: <BusinessCenterIcon />,
-          //     route: routes.FINANCE_DASHBOARD
-          //   }
-          // ]
         },
     !onGuestHomePage && {
       name: 'Calendar',
