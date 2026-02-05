@@ -12,7 +12,6 @@ import descriptionBulletsRouter from './src/routes/description-bullets.routes.js
 import tasksRouter from './src/routes/tasks.routes.js';
 import reimbursementRequestsRouter from './src/routes/reimbursement-requests.routes.js';
 import notificationsRouter from './src/routes/notifications.routes.js';
-import designReviewsRouter from './src/routes/design-reviews.routes.js';
 import wbsElementTemplatesRouter from './src/routes/wbs-element-templates.routes.js';
 import carsRouter from './src/routes/cars.routes.js';
 import organizationRouter from './src/routes/organizations.routes.js';
@@ -25,6 +24,7 @@ import statisticsRouter from './src/routes/statistics.routes.js';
 import retrospectiveRouter from './src/routes/retrospective.routes.js';
 import partsRouter from './src/routes/parts.routes.js';
 import financeRouter from './src/routes/finance.routes.js';
+import calendarRouter from './src/routes/calendar.routes.js';
 
 const app = express();
 
@@ -90,7 +90,6 @@ app.use('/change-requests', changeRequestsRouter);
 app.use('/description-bullets', descriptionBulletsRouter);
 app.use('/tasks', tasksRouter);
 app.use('/reimbursement-requests', reimbursementRequestsRouter);
-app.use('/design-reviews', designReviewsRouter);
 app.use('/notifications', notificationsRouter);
 app.use('/templates', wbsElementTemplatesRouter);
 app.use('/cars', carsRouter);
@@ -103,6 +102,7 @@ app.use('/statistics', statisticsRouter);
 app.use('/retrospective', retrospectiveRouter);
 app.use('/parts', partsRouter);
 app.use('/finance', financeRouter);
+app.use('/calendar', calendarRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

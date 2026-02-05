@@ -4,15 +4,15 @@
  */
 
 import { Box, Card, Tooltip, Typography } from '@mui/material';
-import { DesignReviewStatus, TaskStatus, WbsElementStatus, WorkPackageStage } from 'shared';
+import { EventStatus, TaskStatus, WbsElementStatus, WorkPackageStage } from 'shared';
 import {
-  ganttDesignReviewStatusColorPipe,
+  ganttDesignReviewEventStatusColorPipe,
   ganttTaskColorPipe,
   ganttWorkPackageStageColorPipe,
   GanttWorkPackageTextColor
 } from '../../../utils/gantt.utils';
 import {
-  DesignReviewStatusTextPipe,
+  DesignReviewEventStatusTextPipe,
   TaskStatusTextPipe,
   WbsElementStatusTextPipe,
   WorkPackageStageTextPipe
@@ -67,11 +67,11 @@ const DesignReviewToolTipPopUp = () => {
         py: 1
       }}
     >
-      {[DesignReviewStatus.UNCONFIRMED, DesignReviewStatus.SCHEDULED].map((status) => {
+      {[EventStatus.UNCONFIRMED, EventStatus.SCHEDULED].map((status) => {
         return (
           <Box
             sx={{
-              backgroundColor: ganttDesignReviewStatusColorPipe(status),
+              backgroundColor: ganttDesignReviewEventStatusColorPipe(status),
               height: '2rem',
               width: '8rem',
               borderRadius: 1,
@@ -81,7 +81,7 @@ const DesignReviewToolTipPopUp = () => {
             }}
           >
             <Typography variant="body1" sx={{ color: 'white' }}>
-              {DesignReviewStatusTextPipe(status)}
+              {DesignReviewEventStatusTextPipe(status)}
             </Typography>
           </Box>
         );
@@ -193,7 +193,7 @@ const GanttChartColorLegend = () => {
       </Box>
       <Box
         sx={{
-          background: ganttDesignReviewStatusColorPipe(DesignReviewStatus.CONFIRMED),
+          background: ganttDesignReviewEventStatusColorPipe(EventStatus.CONFIRMED),
           display: 'flex',
           flexDirection: 'column',
           height: '2rem',
