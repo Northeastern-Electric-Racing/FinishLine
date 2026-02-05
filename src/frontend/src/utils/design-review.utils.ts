@@ -1,4 +1,4 @@
-import { DesignReview, DesignReviewStatus } from 'shared';
+import { Event, EventStatus } from 'shared';
 
 export const enumToArray = (en: { [key: number]: string | number }) => {
   return Object.keys(en).filter((value: string) => isNaN(Number(value)) === true);
@@ -89,36 +89,34 @@ export const getWeekDateRange = (selectedDate: Date) => {
   return [startDate, endDate];
 };
 
-export const isConfirmed = (designReview: DesignReview): boolean => {
+export const isConfirmed = (event: Event): boolean => {
   return (
-    designReview.status === DesignReviewStatus.CONFIRMED ||
-    designReview.status === DesignReviewStatus.SCHEDULED ||
-    designReview.status === DesignReviewStatus.DONE
+    event.status === EventStatus.CONFIRMED || event.status === EventStatus.SCHEDULED || event.status === EventStatus.DONE
   );
 };
 
-export const designReviewStatusPipe = (status: DesignReviewStatus) => {
+export const eventStatusPipe = (status: EventStatus) => {
   switch (status) {
-    case DesignReviewStatus.CONFIRMED:
+    case EventStatus.CONFIRMED:
       return 'Ready to Schedule';
-    case DesignReviewStatus.UNCONFIRMED:
+    case EventStatus.UNCONFIRMED:
       return 'Unconfirmed';
-    case DesignReviewStatus.SCHEDULED:
+    case EventStatus.SCHEDULED:
       return 'Scheduled';
-    case DesignReviewStatus.DONE:
+    case EventStatus.DONE:
       return 'Completed';
   }
 };
 
-export const designReviewStatusColor = (status: DesignReviewStatus) => {
+export const eventStatusColor = (status: EventStatus) => {
   switch (status) {
-    case DesignReviewStatus.CONFIRMED:
+    case EventStatus.CONFIRMED:
       return 'orange';
-    case DesignReviewStatus.UNCONFIRMED:
+    case EventStatus.UNCONFIRMED:
       return 'grey';
-    case DesignReviewStatus.SCHEDULED:
+    case EventStatus.SCHEDULED:
       return '#ef4345';
-    case DesignReviewStatus.DONE:
+    case EventStatus.DONE:
       return 'green';
   }
 };

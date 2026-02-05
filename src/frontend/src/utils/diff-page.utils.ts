@@ -126,26 +126,25 @@ export const genListChange = <T extends DisplayableObejct>(
   defaultValue: string,
   originalValues: T[],
   newValues: T[],
-  comparator: (a: T, b: T) => boolean
+  comparator: (a: T | undefined, b: T | undefined) => boolean
 ): ComparableLine => {
-  const isOriginalLarger = originalValues.length > newValues.length;
   return {
     original: {
       key,
       changed: false,
-      value: (isOriginalLarger ? newValues : originalValues).map((_, i) => ({
+      value: originalValues.map((db, i) => ({
         key,
-        changed: comparator(originalValues[i], newValues[i]),
-        value: originalValues[i].value ?? defaultValue
+        changed: comparator(db, newValues[i]),
+        value: db.value ?? defaultValue
       }))
     },
     new: {
       key,
       changed: false,
-      value: (isOriginalLarger ? newValues : originalValues).map((_, i) => ({
+      value: newValues.map((db, i) => ({
         key,
-        changed: comparator(originalValues[i], newValues[i]),
-        value: newValues[i].value ?? defaultValue
+        changed: comparator(originalValues[i], db),
+        value: db.value ?? defaultValue
       }))
     }
   };
@@ -160,9 +159,6 @@ export const getWbsChanges = (
   const namesChanged = originalElement?.name !== proposedChanges?.name;
   lines.push(genChange('Title', namesChanged, originalElement?.name ?? '', proposedChanges?.name ?? ''));
 
-  const statusChanged = originalElement?.status !== proposedChanges?.status;
-  lines.push(genChange('Status', statusChanged, originalElement?.status ?? '', proposedChanges?.status ?? ''));
-
   const leadChanged = originalElement?.lead?.userId !== proposedChanges?.lead?.userId;
   lines.push(genChange('Lead', leadChanged, fullNamePipe(originalElement?.lead), fullNamePipe(proposedChanges?.lead)));
 
@@ -175,9 +171,13 @@ export const getWbsChanges = (
     genListChange(
       'Links',
       '',
-      originalElement?.links.map((link) => ({ ...link, value: link.url })) ?? [],
-      proposedChanges?.links.map((link) => ({ ...link, value: link.url })) ?? [],
-      (a, b) => a.linkId === b.linkId
+      (originalElement?.links.map((link) => ({ ...link, value: link.linkType.name + ' - ' + link.url })) ?? []).sort(
+        (a, b) => a.value.localeCompare(b.value)
+      ),
+      (proposedChanges?.links.map((link) => ({ ...link, value: link.linkType.name + ' - ' + link.url })) ?? []).sort(
+        (a, b) => a.value.localeCompare(b.value)
+      ),
+      (a, b) => a?.url !== b?.url || a?.linkType.name !== b?.linkType.name
     )
   );
 
@@ -185,9 +185,13 @@ export const getWbsChanges = (
     genListChange(
       'Description Bullets',
       '',
-      originalElement?.descriptionBullets.map((db) => ({ ...db, value: db.detail })) ?? [],
-      proposedChanges?.descriptionBullets.map((db) => ({ ...db, value: db.detail })) ?? [],
-      (a, b) => a.id === b.id
+      (originalElement?.descriptionBullets.map((db) => ({ ...db, value: db.type + ' - ' + db.detail })) ?? []).sort((a, b) =>
+        a.value.localeCompare(b.value)
+      ),
+      (proposedChanges?.descriptionBullets.map((db) => ({ ...db, value: db.type + ' - ' + db.detail })) ?? []).sort((a, b) =>
+        a.value.localeCompare(b.value)
+      ),
+      (a, b) => a?.value !== b?.value
     )
   );
 
@@ -222,9 +226,13 @@ export const getChangesForProject = (
     genListChange(
       'Teams',
       '',
-      originalProject.teams.map((team) => ({ ...team, value: team.teamName })),
-      proposedChanges.teams.map((team) => ({ ...team, value: team.teamName })),
-      (a, b) => a.teamId === b.teamId
+      originalProject.teams
+        .map((team) => ({ ...team, value: team.teamName }))
+        .sort((a, b) => a.teamName.localeCompare(b.teamName)),
+      proposedChanges.teams
+        .map((team) => ({ ...team, value: team.teamName }))
+        .sort((a, b) => a.teamName.localeCompare(b.teamName)),
+      (a, b) => a?.teamId !== b?.teamId
     )
   );
 
@@ -273,6 +281,9 @@ export const getChangesForWorkPackage = (
     )
   );
 
+  const statusChanged = originalWorkPackage?.status !== proposedChanges?.status;
+  lines.push(genChange('Status', statusChanged, originalWorkPackage?.status ?? '', proposedChanges?.status ?? ''));
+
   let proposedChangesEndDate;
 
   if (proposedChanges) {
@@ -297,7 +308,7 @@ export const getChangesForWorkPackage = (
       '',
       originalWorkPackage?.blockedBy.map((wbsNum) => ({ ...wbsNum, value: wbsPipe(wbsNum) })) ?? [],
       proposedChanges?.blockedBy.map((wbsNum) => ({ ...wbsNum, value: wbsPipe(wbsNum) })) ?? [],
-      (a, b) => equalsWbsNumber(a, b)
+      (a, b) => a !== undefined && b !== undefined && equalsWbsNumber(a, b)
     )
   );
 
