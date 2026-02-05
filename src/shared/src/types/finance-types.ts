@@ -1,10 +1,32 @@
 import { User } from './user-types.js';
 
+export enum ProspectiveSponsorStatus {
+  IN_PROGRESS = 'IN_PROGRESS',
+  DECLINED = 'DECLINED',
+  NOT_IN_CONTACT = 'NOT_IN_CONTACT',
+  NO_RESPONSE = 'NO_RESPONSE',
+  ACCEPTED = 'ACCEPTED'
+}
+
+export enum FirstContactMethod {
+  INBOUND_FORM = 'INBOUND_FORM',
+  INBOUND_EMAIL = 'INBOUND_EMAIL',
+  OUTBOUND_EMAIL = 'OUTBOUND_EMAIL',
+  OTHER = 'OTHER'
+}
+
+export interface ContactInfo {
+  name: string;
+  email?: string;
+  phone?: string;
+  position?: string;
+}
+
 export interface Sponsor {
   sponsorId: string;
   name: string;
   activeStatus: boolean;
-  sponsorContact: string;
+  contact: ContactInfo;
   sponsorValue: number;
   joinDate: Date;
   activeYears: number[];
@@ -21,6 +43,7 @@ export interface SponsorTask {
   notifyDate?: Date;
   assignee?: User;
   notes: string;
+  done: boolean;
 }
 
 export interface SponsorTier {
@@ -28,6 +51,19 @@ export interface SponsorTier {
   name: string;
   colorHexCode: string;
   minSupportValue: number;
+}
+
+export interface ProspectiveSponsor {
+  prospectiveSponsorId: string;
+  organizationName: string;
+  dateCreated: Date;
+  lastContactDate: Date;
+  highlightThresholdDays: number;
+  status: ProspectiveSponsorStatus;
+  firstContactMethod: FirstContactMethod;
+  contactor: User;
+  contact: ContactInfo;
+  tasks: SponsorTask[];
 }
 
 export interface SpendingBarData {

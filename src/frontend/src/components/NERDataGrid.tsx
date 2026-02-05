@@ -25,6 +25,10 @@ interface NERDataGridProps<T> {
   rowHeight?: number;
   paperSx?: SxProps<Theme>;
   canEditRow?: (row: MapRowResult<T>) => boolean;
+  // optional function to add custom CSS class names to rows
+  getRowClassName?: (row: MapRowResult<T>) => string;
+  // optional custom sx styles for the DataGrid
+  dataGridSx?: SxProps<Theme>;
 }
 
 function NERDataGrid<T>({
@@ -42,7 +46,9 @@ function NERDataGrid<T>({
   headerHeight = 56,
   rowHeight = 52,
   paperSx,
-  canEditRow
+  canEditRow,
+  getRowClassName: customGetRowClassName,
+  dataGridSx
 }: NERDataGridProps<T>) {
   const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState<number>(pageSizeDefault);
@@ -125,7 +131,9 @@ function NERDataGrid<T>({
             getRowClassName={(params) => {
               const row = params.row as MapRowResult<T>;
               const editable = canEditRow ? canEditRow(row) : true;
-              return editable ? 'editable-row' : 'non-editable-row';
+              const editableClass = editable ? 'editable-row' : 'non-editable-row';
+              const customClass = customGetRowClassName ? customGetRowClassName(row) : '';
+              return `${editableClass} ${customClass}`.trim();
             }}
             sx={{
               height: '100%',
@@ -150,7 +158,8 @@ function NERDataGrid<T>({
               },
               '& .MuiDataGrid-columnSeparator': {
                 display: 'none'
-              }
+              },
+              ...dataGridSx
             }}
           />
         </Box>

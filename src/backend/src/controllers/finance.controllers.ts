@@ -12,7 +12,10 @@ export default class FinanceController {
         activeYears,
         sponsorTierId,
         taxExempt,
-        sponsorContact,
+        contactName,
+        contactEmail,
+        contactPhone,
+        contactPosition,
         sponsorTasks,
         discountCode,
         sponsorNotes
@@ -27,11 +30,14 @@ export default class FinanceController {
         activeYears,
         sponsorTierId,
         taxExempt,
-        sponsorContact,
+        contactName,
         sponsorTasks,
         req.organization,
         discountCode,
-        sponsorNotes
+        sponsorNotes,
+        contactEmail,
+        contactPhone,
+        contactPosition
       );
       res.status(200).json(sponsor);
     } catch (error: unknown) {
@@ -327,7 +333,10 @@ export default class FinanceController {
         joinDate,
         activeYears,
         sponsorTierId,
-        sponsorContact,
+        contactName,
+        contactEmail,
+        contactPhone,
+        contactPosition,
         taxExempt,
         sponsorTasks,
         discountCode,
@@ -344,11 +353,14 @@ export default class FinanceController {
         joinDate,
         activeYears,
         sponsorTierId,
-        sponsorContact,
+        contactName,
         taxExempt,
         sponsorTasks,
         discountCode,
-        sponsorNotes
+        sponsorNotes,
+        contactEmail,
+        contactPhone,
+        contactPosition
       );
 
       res.status(200).json(updatedSponsor);
@@ -381,6 +393,20 @@ export default class FinanceController {
         minSupportValue
       );
       res.status(200).json(updatedSponsorTier);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async toggleSponsorTaskDone(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { sponsorTaskId } = req.params as Record<string, string>;
+      const updatedTask = await FinanceServices.toggleSponsorTaskDone(
+        req.currentUser,
+        req.organization,
+        sponsorTaskId
+      );
+      res.status(200).json(updatedTask);
     } catch (error: unknown) {
       next(error);
     }

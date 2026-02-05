@@ -72,7 +72,24 @@ const SponsorsTable = () => {
         />
       )
     },
-    { field: 'sponsorContact', headerName: 'Contact', flex: 1, minWidth: 50 },
+    {
+      field: 'contact',
+      headerName: 'Contact',
+      flex: 1,
+      minWidth: 50,
+      renderCell: (p: GridRenderCellParams<any, MapRowResult<Sponsor>>) => {
+        const contact = (p.row as MapRowResult<Sponsor>).raw?.contact;
+        if (!contact) return null;
+        const details = [contact.email, contact.phone, contact.position].filter(Boolean).join(' | ');
+        return details ? (
+          <Tooltip title={details} arrow placement="top">
+            <span>{contact.name}</span>
+          </Tooltip>
+        ) : (
+          <span>{contact.name}</span>
+        );
+      }
+    },
     {
       field: 'tier',
       headerName: 'Sponsor Tier',

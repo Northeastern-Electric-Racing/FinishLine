@@ -72,7 +72,7 @@ describe('Finance Tests', () => {
       expect(result.tier.sponsorTierId).toEqual(sponsorTierId);
       expect(result.taxExempt).toBe(true);
       expect(result.discountCode).toEqual('googlecode');
-      expect(result.sponsorContact).toEqual('Bill Gates');
+      expect(result.contact.name).toEqual('Bill Gates');
       expect(result.sponsorTasks).toEqual([]);
     });
   });
@@ -258,7 +258,7 @@ describe('Finance Tests', () => {
             'newNotes',
             new Date(12, 20, 24)
           )
-      ).rejects.toThrow(new AccessDeniedException('Only heads can edit sponsor tasks.'));
+      ).rejects.toThrow(new AccessDeniedException('Only finance team members or heads can edit sponsor tasks'));
     });
     it('Edit fails if sponsor task does not exist', async () => {
       await expect(
@@ -389,7 +389,7 @@ describe('Finance Tests', () => {
       const user = await createTestUser(wonderwomanGuest, orgId);
       await expect(
         FinanceServices.createSponsorTask(user, organization, new Date(1, 1, 25), 'notes', 'sponsorId')
-      ).rejects.toThrow(new AccessDeniedException('Only heads can create a sponsor task'));
+      ).rejects.toThrow(new AccessDeniedException('Only finance team members or heads can create a sponsor task'));
     });
 
     it('Fails when assigned user is not found', async () => {
@@ -532,7 +532,7 @@ describe('Finance Tests', () => {
       expect(updatedSponsor.joinDate).toEqual(new Date(5, 11, 25));
       expect(updatedSponsor.activeYears).toEqual([2024, 2025]);
       expect(updatedSponsor.tier.sponsorTierId).toBe(sponsorTierId);
-      expect(updatedSponsor.sponsorContact).toBe('New Vendor Contact');
+      expect(updatedSponsor.contact.name).toBe('New Vendor Contact');
       expect(updatedSponsor.taxExempt).toBe(false);
       expect(updatedSponsor.discountCode).toBe('New Discount code');
     });
@@ -697,12 +697,156 @@ describe('Finance Tests', () => {
           await createTestUser(theVisitorGuest, orgId),
           organization
         )
-      ).rejects.toThrow(new AccessDeniedException('Only heads can delete sponsor tasks.'));
+      ).rejects.toThrow(new AccessDeniedException('Only heads or the task assignee can delete sponsor tasks'));
     });
     it('Delete fails if given sponsor task cannot be found', async () => {
       await expect(async () =>
         FinanceServices.deleteSponsorTask('123', await createTestUser(supermanAdmin, orgId), organization)
       ).rejects.toThrow(new NotFoundException('SponsorTask', '123'));
+    });
+  });
+
+  describe('Toggle Sponsor Task Done', () => {
+    it('Succeeds and toggles done from false to true', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+      const sponsor = await FinanceServices.createSponsor(
+        user,
+        'Tesla',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024],
+        sponsorTierId,
+        true,
+        'Elon Musk',
+        [],
+        organization
+      );
+
+      const sponsorTask = await FinanceServices.createSponsorTask(
+        user,
+        organization,
+        new Date(1, 2, 3),
+        'Test task',
+        sponsor.sponsorId
+      );
+
+      expect(sponsorTask.done).toBe(false);
+
+      const toggledTask = await FinanceServices.toggleSponsorTaskDone(
+        user,
+        organization,
+        sponsorTask.sponsorTaskId
+      );
+
+      expect(toggledTask.done).toBe(true);
+    });
+
+    it('Succeeds and toggles done from true to false', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+      const sponsor = await FinanceServices.createSponsor(
+        user,
+        'Tesla',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024],
+        sponsorTierId,
+        true,
+        'Elon Musk',
+        [],
+        organization
+      );
+
+      const sponsorTask = await FinanceServices.createSponsorTask(
+        user,
+        organization,
+        new Date(1, 2, 3),
+        'Test task',
+        sponsor.sponsorId
+      );
+
+      // Toggle to true first
+      await FinanceServices.toggleSponsorTaskDone(user, organization, sponsorTask.sponsorTaskId);
+
+      // Toggle back to false
+      const toggledTask = await FinanceServices.toggleSponsorTaskDone(
+        user,
+        organization,
+        sponsorTask.sponsorTaskId
+      );
+
+      expect(toggledTask.done).toBe(false);
+    });
+
+    it('Fails if user is not a head', async () => {
+      const head = await createTestUser(supermanAdmin, orgId);
+      const guest = await createTestUser(theVisitorGuest, orgId);
+
+      const sponsor = await FinanceServices.createSponsor(
+        head,
+        'Tesla',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024],
+        sponsorTierId,
+        true,
+        'Elon Musk',
+        [],
+        organization
+      );
+
+      const sponsorTask = await FinanceServices.createSponsorTask(
+        head,
+        organization,
+        new Date(1, 2, 3),
+        'Test task',
+        sponsor.sponsorId
+      );
+
+      await expect(
+        FinanceServices.toggleSponsorTaskDone(guest, organization, sponsorTask.sponsorTaskId)
+      ).rejects.toThrow(new AccessDeniedException('Only finance team members, heads, or the task assignee can toggle task status'));
+    });
+
+    it('Fails if sponsor task does not exist', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+
+      await expect(
+        FinanceServices.toggleSponsorTaskDone(user, organization, 'nonexistent-id')
+      ).rejects.toThrow(new NotFoundException('SponsorTask', 'nonexistent-id'));
+    });
+
+    it('Fails if sponsor task is deleted', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+      const sponsor = await FinanceServices.createSponsor(
+        user,
+        'Tesla',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024],
+        sponsorTierId,
+        true,
+        'Elon Musk',
+        [],
+        organization
+      );
+
+      const sponsorTask = await FinanceServices.createSponsorTask(
+        user,
+        organization,
+        new Date(1, 2, 3),
+        'Test task',
+        sponsor.sponsorId
+      );
+
+      await FinanceServices.deleteSponsorTask(sponsorTask.sponsorTaskId, user, organization);
+
+      await expect(
+        FinanceServices.toggleSponsorTaskDone(user, organization, sponsorTask.sponsorTaskId)
+      ).rejects.toThrow(new NotFoundException('SponsorTask', sponsorTask.sponsorTaskId));
     });
   });
 });

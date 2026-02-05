@@ -22,7 +22,10 @@ financeRouter.post(
   intMinZero(body('activeYears.*')),
   nonEmptyString(body('sponsorTierId')),
   body('taxExempt').isBoolean(),
-  nonEmptyString(body('sponsorContact')),
+  nonEmptyString(body('contactName')),
+  nonEmptyString(body('contactEmail')).optional(),
+  nonEmptyString(body('contactPhone')).optional(),
+  nonEmptyString(body('contactPosition')).optional(),
   body('sponsorTasks').isArray(),
   isDate(body('sponsorTasks.*.dueDate')),
   isDate(body('sponsorTasks.*.notifyDate')),
@@ -58,6 +61,8 @@ financeRouter.post(
 );
 
 financeRouter.post('/sponsorTask/:sponsorTaskId/delete', FinanceController.deleteSponsorTask);
+
+financeRouter.post('/sponsorTask/:sponsorTaskId/toggle-done', FinanceController.toggleSponsorTaskDone);
 
 financeRouter.post(
   '/sponsor/:sponsorId/sponsorTasks',
@@ -139,7 +144,10 @@ financeRouter.post(
   intMinZero(body('activeYears.*')),
   nonEmptyString(body('sponsorTierId')),
   body('taxExempt').isBoolean(),
-  nonEmptyString(body('sponsorContact')),
+  nonEmptyString(body('contactName')),
+  nonEmptyString(body('contactEmail')).optional(),
+  nonEmptyString(body('contactPhone')).optional(),
+  nonEmptyString(body('contactPosition')).optional(),
   body('sponsorTasks').isArray(),
   isDate(body('sponsorTasks.*.dueDate')),
   isDate(body('sponsorTasks.*.notifyDate')),

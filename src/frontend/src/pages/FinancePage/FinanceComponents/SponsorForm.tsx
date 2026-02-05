@@ -51,7 +51,10 @@ const sponsorSchema = yup.object().shape({
     .of(yup.number().typeError('Active year must be a number').required('Active year is required'))
     .required('Active years are required'),
   sponsorTierId: yup.string().required('Sponsor tier is required'),
-  sponsorContact: yup.string().required('Sponsor contact is required'),
+  contactName: yup.string().required('Contact name is required'),
+  contactEmail: yup.string().email('Invalid email').optional(),
+  contactPhone: yup.string().optional(),
+  contactPosition: yup.string().optional(),
   taxExempt: yup.boolean().required('Tax exempt is required'),
   discountCode: yup.string().trim().optional(),
   sponsorNotes: yup.string().trim().optional(),
@@ -252,15 +255,57 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
       <Grid item xs={12} sm={6}>
         <FormControl fullWidth>
           <Typography variant="h5" color="#EF4345">
-            Sponsor Contact:*
+            Contact Name:*
           </Typography>
           <ReactHookTextField
-            name="sponsorContact"
+            name="contactName"
             control={control}
             sx={{ width: 1 }}
-            placeholder="Enter Sponsor Contact"
+            placeholder="Enter Contact Name"
           />
-          <FormHelperText error> {errors.sponsorContact?.message}</FormHelperText>
+          <FormHelperText error> {errors.contactName?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <FormControl fullWidth>
+          <Typography variant="h5" color="#EF4345">
+            Contact Email:
+          </Typography>
+          <ReactHookTextField
+            name="contactEmail"
+            control={control}
+            sx={{ width: 1 }}
+            placeholder="Enter Contact Email"
+          />
+          <FormHelperText error> {errors.contactEmail?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <FormControl fullWidth>
+          <Typography variant="h5" color="#EF4345">
+            Contact Phone:
+          </Typography>
+          <ReactHookTextField
+            name="contactPhone"
+            control={control}
+            sx={{ width: 1 }}
+            placeholder="Enter Contact Phone"
+          />
+          <FormHelperText error> {errors.contactPhone?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <FormControl fullWidth>
+          <Typography variant="h5" color="#EF4345">
+            Contact Position:
+          </Typography>
+          <ReactHookTextField
+            name="contactPosition"
+            control={control}
+            sx={{ width: 1 }}
+            placeholder="Enter Contact Position"
+          />
+          <FormHelperText error> {errors.contactPosition?.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={6}>

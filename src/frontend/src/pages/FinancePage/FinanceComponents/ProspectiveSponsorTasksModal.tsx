@@ -1,14 +1,19 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, TextField, IconButton, Button, Autocomplete, Checkbox } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AddCircle, RemoveCircle } from '@mui/icons-material';
 import {
-  useCreateSponsorTask,
+  useCreateProspectiveSponsorTask,
   useEditSponsorTask,
-  useGetSponsorTasks,
+  useProspectiveSponsorTasks,
   useToggleSponsorTaskDone
 } from '../../../hooks/finance.hooks';
-import { Sponsor, SponsorTask } from 'shared';
+import { ProspectiveSponsor, SponsorTask } from 'shared';
 import { useAllMembers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -18,20 +23,23 @@ import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
-interface SponsorTasksModalProps {
+interface ProspectiveSponsorTasksModalProps {
   onClose: () => void;
-  sponsor: Sponsor;
+  prospectiveSponsor: ProspectiveSponsor;
 }
 
-const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor }) => {
+const ProspectiveSponsorTasksModal: React.FC<ProspectiveSponsorTasksModalProps> = ({
+  onClose,
+  prospectiveSponsor
+}) => {
   const toast = useToast();
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
-  const { data: sponsorTasks } = useGetSponsorTasks(sponsor.sponsorId);
-  const { mutate: createTask } = useCreateSponsorTask(sponsor.sponsorId);
+  const { data: tasks } = useProspectiveSponsorTasks(prospectiveSponsor.prospectiveSponsorId);
+  const { mutate: createTask } = useCreateProspectiveSponsorTask(prospectiveSponsor.prospectiveSponsorId);
   const { mutate: editTask } = useEditSponsorTask();
   const { mutate: toggleDone } = useToggleSponsorTaskDone();
 
-  const [sponsorTaskToDelete, setSponsorTaskToDelete] = useState<SponsorTask | undefined>(undefined);
+  const [taskToDelete, setTaskToDelete] = useState<SponsorTask | undefined>(undefined);
 
   const taskSchema = yup.object().shape({
     sponsorTaskId: yup.string().optional(),
@@ -59,9 +67,9 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
   const { fields, append } = useFieldArray({ control, name: 'tasks' });
 
   useEffect(() => {
-    if (sponsorTasks) {
+    if (tasks) {
       reset({
-        tasks: sponsorTasks.map((task) => ({
+        tasks: tasks.map((task) => ({
           sponsorTaskId: task.sponsorTaskId,
           dueDate: task.dueDate ? new Date(task.dueDate) : new Date(),
           notifyDate: task.notifyDate ? new Date(task.notifyDate) : undefined,
@@ -71,7 +79,7 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
         }))
       });
     }
-  }, [sponsorTasks, reset]);
+  }, [tasks, reset]);
 
   const handleSave = handleSubmit(({ tasks }) => {
     tasks?.forEach((task) => {
@@ -162,9 +170,7 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
                   slotProps={{
                     textField: {
                       placeholder: 'MM/DD/YY',
-                      sx: {
-                        width: '100%'
-                      }
+                      sx: { width: '100%' }
                     }
                   }}
                 />
@@ -183,9 +189,7 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
                   slotProps={{
                     textField: {
                       placeholder: 'MM/DD/YY',
-                      sx: {
-                        width: '100%'
-                      }
+                      sx: { width: '100%' }
                     }
                   }}
                 />
@@ -249,7 +253,7 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
                     notifyDate: fieldTask.notifyDate ?? undefined,
                     done: fieldTask.done ?? false
                   };
-                  setSponsorTaskToDelete(taskToDelete);
+                  setTaskToDelete(taskToDelete);
                 }}
               >
                 <RemoveCircle sx={{ width: '90%' }} />
@@ -261,7 +265,14 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
       <Button
         startIcon={<AddCircle />}
         onClick={() =>
-          append({ dueDate: new Date(), notifyDate: undefined, assignee: '', notes: '', sponsorTaskId: undefined, done: false })
+          append({
+            dueDate: new Date(),
+            notifyDate: undefined,
+            assignee: '',
+            notes: '',
+            sponsorTaskId: undefined,
+            done: false
+          })
         }
       >
         Add Task
@@ -274,11 +285,11 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
           Save
         </Button>
       </Box>
-      {sponsorTaskToDelete && (
-        <DeleteSponsorTaskModal handleClose={() => setSponsorTaskToDelete(undefined)} sponsorTask={sponsorTaskToDelete} />
+      {taskToDelete && (
+        <DeleteSponsorTaskModal handleClose={() => setTaskToDelete(undefined)} sponsorTask={taskToDelete} />
       )}
     </Box>
   );
 };
 
-export default SponsorTasksModal;
+export default ProspectiveSponsorTasksModal;
