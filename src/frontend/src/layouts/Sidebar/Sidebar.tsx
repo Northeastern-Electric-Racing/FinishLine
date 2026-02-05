@@ -4,11 +4,20 @@
  */
 
 import { routes } from '../../utils/routes';
+import { Route } from 'react-router-dom';
+import TeamSpecificPage from '../../pages/TeamsPage/TeamSpecificPage';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { Typography, Box, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
+import RateReviewIcon from '@mui/icons-material/RateReview';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import BoltIcon from '@mui/icons-material/Bolt';
+import CodeIcon from '@mui/icons-material/Code';
+import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
+import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import FolderIcon from '@mui/icons-material/Folder';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import GroupIcon from '@mui/icons-material/Group';
@@ -19,15 +28,16 @@ import NavPageLink from './NavPageLink';
 import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
-import { Cached, ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { Cached, ChevronLeft, ChevronRight, NotListedLocation } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
 import { isGuest } from 'shared';
+import { getAllTeams } from '../../apis/teams.api';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -40,29 +50,70 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const user = useCurrentUser();
+  const { onGuestHomePage } = useHomePageContext();
+  const [allTeams, setAllTeams] = useState<LinkItem[]>([]);
 
+  getAllTeams().then((response) => {
+    setAllTeams(
+      response.data.map((team) => ({
+        name: team.teamName,
+        icon: undefined,
+        route: routes.TEAMS + '/' + team.teamId
+      }))
+    );
+  });
+
+  // Now allTeams will update when data arrives
   const memberLinkItems: LinkItem[] = [
     {
       name: 'Home',
       icon: <HomeIcon />,
-      route: routes.HOME
+      route: onGuestHomePage ? routes.HOME_GUEST : routes.HOME
     },
-    {
+    !onGuestHomePage && {
       name: 'Gantt',
       icon: <AlignHorizontalLeftIcon />,
       route: routes.GANTT
     },
-    {
-      name: 'Projects',
-      icon: <FolderIcon />,
-      route: routes.PROJECTS
-    },
-    {
+    !onGuestHomePage
+      ? {
+          name: 'Projects',
+          icon: <FolderIcon />,
+          route: routes.PROJECTS
+        }
+      : {
+          name: 'Project Management',
+          icon: <DashboardIcon />,
+          route: routes.PROJECTS,
+          subItems: [
+            {
+              name: 'Gantt',
+              icon: <AlignHorizontalLeftIcon />,
+              route: routes.GANTT
+            },
+            {
+              name: 'Projects',
+              icon: <FolderIcon />,
+              route: routes.PROJECTS
+            },
+            {
+              name: 'Change Requests',
+              icon: <SyncAltIcon />,
+              route: routes.CHANGE_REQUESTS
+            },
+            {
+              name: 'Design Review',
+              icon: <RateReviewIcon />,
+              route: routes.DESIGN_REVIEW_BY_ID
+            }
+          ]
+        },
+    !onGuestHomePage && {
       name: 'Change Requests',
       icon: <SyncAltIcon />,
       route: routes.CHANGE_REQUESTS
     },
-    {
+    !onGuestHomePage && {
       name: 'Finance',
       icon: <AttachMoneyIcon />,
       route: routes.FINANCE,
@@ -84,19 +135,53 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
         }
       ]
     },
-    {
-      name: 'Teams',
-      icon: <GroupIcon />,
-      route: routes.TEAMS
-    },
-    {
+    !onGuestHomePage
+      ? {
+          name: 'Teams',
+          icon: <GroupIcon />,
+          route: routes.TEAMS
+        }
+      : {
+          name: 'Divisions',
+          icon: <GroupIcon />,
+          route: routes.TEAMS,
+          subItems: allTeams
+          // subItems: [
+          //   {
+          //     name: 'Mechanical',
+          //     icon: <ConstructionIcon />,
+          //     route: routes.FINANCE_DASHBOARD
+          //   },
+          //   {
+          //     name: 'Electrical',
+          //     icon: <BoltIcon />,
+          //     route: routes.REIMBURSEMENT_REQUESTS
+          //   },
+          //   {
+          //     name: 'Software',
+          //     icon: <CodeIcon />,
+          //     route: routes.CALENDAR
+          //   },
+          //   {
+          //     name: 'Business',
+          //     icon: <BusinessCenterIcon />,
+          //     route: routes.FINANCE_DASHBOARD
+          //   }
+          // ]
+        },
+    !onGuestHomePage && {
       name: 'Calendar',
       icon: <CalendarTodayIcon />,
       route: routes.CALENDAR
     },
-    {
+    !onGuestHomePage && {
       name: 'Retrospective',
       icon: <Cached />,
+      route: routes.RETROSPECTIVE
+    },
+    onGuestHomePage && {
+      name: 'Sponsors',
+      icon: <VolunteerActivismIcon />,
       route: routes.RETROSPECTIVE
     },
     {
@@ -104,9 +189,9 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       icon: <QuestionMarkIcon />,
       route: routes.INFO
     }
-  ];
+  ].filter(Boolean) as LinkItem[];
 
-  if (!isGuest(user.role)) {
+  if (!isGuest(user.role) && !onGuestHomePage) {
     memberLinkItems.splice(6, 0, {
       name: 'Statistics',
       icon: <BarChartIcon />,

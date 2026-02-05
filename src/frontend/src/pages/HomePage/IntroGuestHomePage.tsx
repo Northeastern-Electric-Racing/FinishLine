@@ -22,18 +22,18 @@ const IntroGuestHomePage = () => {
   } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
 
-  const {
-    data: applyInterestImageUrl,
-    isLoading: applyImageLoading,
-    isError: applyImageIsError,
-    error: applyImageError
-  } = useGetImageUrl(organization?.applyInterestImageId ?? null);
-  const {
-    data: exploreGuestImageUrl,
-    isLoading: exploreImageLoading,
-    isError: exploreImageIsError,
-    error: exploreImageError
-  } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
+  // const {
+  //   data: applyInterestImageUrl,
+  //   isLoading: applyImageLoading,
+  //   isError: applyImageIsError,
+  //   error: applyImageError
+  // } = useGetImageUrl(organization?.applyInterestImageId ?? null);
+  // const {
+  //   data: exploreGuestImageUrl,
+  //   isLoading: exploreImageLoading,
+  //   isError: exploreImageIsError,
+  //   error: exploreImageError
+  // } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
 
   useEffect(() => {
     setCurrentHomePage('guest');
@@ -42,11 +42,11 @@ const IntroGuestHomePage = () => {
   if (organizationIsError) {
     return <ErrorPage message={organizationError.message} />;
   }
-  if (applyImageIsError) return <ErrorPage message={applyImageError.message} />;
-  if (exploreImageIsError) return <ErrorPage message={exploreImageError.message} />;
+  // if (applyImageIsError) return <ErrorPage message={applyImageError.message} />;
+  // if (exploreImageIsError) return <ErrorPage message={exploreImageError.message} />;
 
-  if (!organization || organizationIsLoading || applyImageLoading || exploreImageLoading) return <LoadingIndicator />;
-  if (!applyInterestImageUrl || !exploreGuestImageUrl) return <LoadingIndicator />;
+  // if (!organization || organizationIsLoading || applyImageLoading || exploreImageLoading) return <LoadingIndicator />;
+  // if (!applyInterestImageUrl || !exploreGuestImageUrl) return <LoadingIndicator />;
 
   return (
     <PageLayout title="Home" hidePageTitle>
@@ -66,13 +66,13 @@ const IntroGuestHomePage = () => {
         <Box sx={{ display: 'flex', gap: 5 }}>
           <ImageWithButton
             title="Interested in applying"
-            imageSrc={applyInterestImageUrl}
+            imageSrc={''}
             buttonText="Learn More"
             onClick={() => history.push(routes.HOME_PNM)}
           />
           <ImageWithButton
             title="Explore Our Work as a Guest"
-            imageSrc={exploreGuestImageUrl}
+            imageSrc={''}
             buttonText="FinishLine"
             onClick={() => history.push(routes.HOME_MEMBER)}
           />
