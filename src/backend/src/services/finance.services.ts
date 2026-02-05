@@ -611,33 +611,77 @@ export default class FinanceServices {
 
     if (!division) throw new NotFoundException('Team Type', teamTypeId);
 
-    const results: ReimbursementRequestData = {
-      totalBudget: 0,
-      pendingFinance: 0,
-      pendingLeadership: 0,
-      submittedToSabo: 0,
-      reimbursed: 0,
-      available: 0
-    };
-
+    const projectsById = new Map<string, { budget: number }>();
     for (const team of division.teams) {
-      const data: ReimbursementRequestData = await this.getReimbursementRequestTeamData(
-        organization,
-        team.teamId,
-        startDate,
-        endDate,
-        carNumber
-      );
-
-      results.totalBudget += data.totalBudget;
-      results.pendingFinance += data.pendingFinance;
-      results.pendingLeadership += data.pendingLeadership;
-      results.submittedToSabo += data.submittedToSabo;
-      results.reimbursed += data.reimbursed;
-      results.available += data.available;
+      for (const project of team.projects) {
+        if (!projectsById.has(project.projectId)) {
+          projectsById.set(project.projectId, { budget: project.budget });
+        }
+      }
     }
+    const totalBudget = [...projectsById.values()].reduce((acc, p) => acc + p.budget, 0);
+    const divisionProjectIds = [...projectsById.keys()];
 
-    return results;
+    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: {
+        reimbursementProducts: {
+          some: {
+            reimbursementProductReason: {
+              wbsElement: {
+                project: {
+                  projectId: { in: divisionProjectIds }
+                }
+              }
+            }
+          }
+        },
+        reimbursementStatuses: {
+          none: {
+            type: Reimbursement_Status_Type.DENIED
+          }
+        },
+        ...getReimbursementRequestWhereInput(startDate, endDate, carNumber)
+      },
+      select: {
+        reimbursementStatuses: true,
+        totalCost: true,
+        reimbursementProducts: {
+          where: {
+            dateDeleted: null,
+            reimbursementProductReason: {
+              wbsElement: {
+                project: {
+                  projectId: { in: divisionProjectIds }
+                }
+              }
+            }
+          },
+          select: {
+            cost: true
+          }
+        }
+      }
+    });
+
+    const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
+
+    const totalBalance =
+      reimbursementRequests.reduce((acc, curr) => {
+        const teamProductsCost = curr.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
+        return acc + teamProductsCost;
+      }, 0) / 100;
+
+    const available = totalBudget - totalBalance;
+
+    const data: ReimbursementRequestData = {
+      totalBudget,
+      pendingFinance,
+      pendingLeadership,
+      submittedToSabo,
+      reimbursed,
+      available
+    };
+    return data;
   }
 
   static async getSpendingBarTeamData(
