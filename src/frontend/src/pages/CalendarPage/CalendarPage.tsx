@@ -14,7 +14,8 @@ import {
   Alert,
   Checkbox,
   FormControlLabel,
-  FormGroup
+  FormGroup,
+  Switch
 } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { Calendar, ConflictStatus, DayOfWeek, EventType, Event } from 'shared';
@@ -709,28 +710,42 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                   Calendars:
                 </Typography>
 
-                <Button
-                  size="small"
-                  variant="outlined"
-                  id="filter-events-button"
-                  onClick={() => setOpenFilterModal(true)}
-                  sx={{
-                    px: 1,
-                    py: 0,
-                    color: 'white',
-                    borderColor: 'white',
-                    backgroundColor: 'transparent',
-                    textTransform: 'none',
-                    fontSize: 14,
-                    fontFamily: (t) => t.typography.h4.fontFamily,
-                    '&:hover': {
-                      borderColor: 'white',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <FormControlLabel
+                    control={
+                      <Switch size="small" checked={allEventsMode} onChange={(e) => setAllEventsMode(e.target.checked)} />
                     }
-                  }}
-                >
-                  Filters
-                </Button>
+                    label={<Typography sx={{ fontSize: 12, color: 'white', whiteSpace: 'nowrap' }}>All Events</Typography>}
+                    sx={{ mr: 0 }}
+                  />
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    id="filter-events-button"
+                    disabled={allEventsMode}
+                    onClick={() => setOpenFilterModal(true)}
+                    sx={{
+                      px: 1,
+                      py: 0,
+                      color: 'white',
+                      borderColor: 'white',
+                      backgroundColor: 'transparent',
+                      textTransform: 'none',
+                      fontSize: 14,
+                      fontFamily: (t) => t.typography.h4.fontFamily,
+                      '&:hover': {
+                        borderColor: 'white',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                      },
+                      '&.Mui-disabled': {
+                        color: 'rgba(255, 255, 255, 0.3)',
+                        borderColor: 'rgba(255, 255, 255, 0.3)'
+                      }
+                    }}
+                  >
+                    Filters
+                  </Button>
+                </Stack>
               </Stack>
 
               {calendars.length > 0 && (
@@ -810,7 +825,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
           setTeamIds={(ids: string[]) => setTeamIds(ids)}
           setShowInvited={(changed: boolean) => updateAdditionalMemberIds(changed)}
           setShowTeam={(changed: boolean) => updateAdditionalTeamIds(changed)}
-          setAllEventsMode={(enabled: boolean) => setAllEventsMode(enabled)}
         />
       </PageLayout>
     </>
