@@ -221,7 +221,8 @@ const ReimbursementRequestInfo = ({
         ('$' + centsToDollar((rowData as any).amount)).toLowerCase().includes(lowercase_query) ||
         ('' + (rowData as any).reimbursementProducts.map((product: any) => product.name))
           .toLowerCase()
-          .includes(lowercase_query)
+          .includes(lowercase_query) ||
+        ('' + (rowData as any).description).toLowerCase().includes(lowercase_query)
       );
     });
   };
