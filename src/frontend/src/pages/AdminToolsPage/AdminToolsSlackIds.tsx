@@ -14,9 +14,9 @@ import {
 } from '../../hooks/organizations.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { Organization, TeamPreview } from 'shared';
+import { Organization, TeamBase } from 'shared';
 import HelpIcon from '@mui/icons-material/Help';
-import { useAllTeams } from '../../hooks/teams.hooks';
+import { useAllTeamPreviews } from '../../hooks/teams.hooks';
 import NERTable from '../../components/NERTable';
 import EditTeamSlackIdFormModal from './TeamConfig/EditTeamSlackIdFormModal';
 
@@ -40,8 +40,13 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
   const [sponsorshipChannelId, setSponsorshipChannelId] = useState(
     organization.sponsorshipNotificationsSlackChannelId ?? ''
   );
-  const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
-  const [clickedTeam, setClickedTeam] = useState<TeamPreview>();
+  const {
+    data: allTeams,
+    isLoading: allTeamsIsLoading,
+    isError: allTeamsIsError,
+    error: allTeamsError
+  } = useAllTeamPreviews();
+  const [clickedTeam, setClickedTeam] = useState<TeamBase>();
 
   if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
 

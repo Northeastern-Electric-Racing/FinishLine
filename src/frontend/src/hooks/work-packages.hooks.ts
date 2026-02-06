@@ -4,16 +4,17 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { WorkPackage, WbsNumber, WorkPackageSelection } from 'shared';
+import { WorkPackage, WorkPackagePreview, WbsNumber, WorkPackageSelection } from 'shared';
 import {
   createSingleWorkPackage,
   deleteWorkPackage,
   editWorkPackage,
   getAllBlockingWorkPackages,
   getAllWorkPackages,
+  getAllWorkPackagesPreview,
+  getManyWorkPackages,
   getSingleWorkPackage,
   slackUpcomingDeadlines,
-  getManyWorkPackages,
   WorkPackageCreateArgs,
   WorkPackageEditArgs,
   getHomePageWorkPackages
@@ -25,6 +26,16 @@ import {
 export const useAllWorkPackages = (queryParams?: { [field: string]: string }) => {
   return useQuery<WorkPackage[], Error>(['work packages', queryParams], async () => {
     const { data } = await getAllWorkPackages(queryParams);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply all work packages in preview format (minimal data).
+ */
+export const useAllWorkPackagesPreview = (status?: string) => {
+  return useQuery<WorkPackagePreview[], Error>(['work packages', 'preview', status], async () => {
+    const { data } = await getAllWorkPackagesPreview(status);
     return data;
   });
 };

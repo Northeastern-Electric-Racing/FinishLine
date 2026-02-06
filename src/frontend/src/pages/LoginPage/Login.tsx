@@ -4,7 +4,7 @@
  */
 
 import { FormEvent, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { Redirect, useHistory } from 'react-router-dom';
 import { useToggleTheme } from '../../hooks/theme.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
@@ -25,7 +25,16 @@ const Login = () => {
   const auth = useAuth();
   const organizationContext = useOrganization();
 
+  if (!auth.user && !auth.triedCurrent) {
+    auth.signInCurrent();
+    return <LoadingIndicator />;
+  }
+
   if (auth.isLoading) return <LoadingIndicator />;
+
+  if (auth.user) {
+    return <Redirect to={routes.HOME} />;
+  }
 
   /**
    * Produce the path of the page redirected from the login page.
