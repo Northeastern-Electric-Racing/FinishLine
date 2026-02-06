@@ -200,27 +200,6 @@ export default class BillOfMaterialsService {
       const newMaterialIds: string[] = [];
 
       for (const material of materials) {
-        const materialType = await tx.material_Type.findUnique({
-          where: { id: material.materialTypeId }
-        });
-        if (!materialType) throw new NotFoundException('Material Type', material.materialTypeId);
-        if (materialType.dateDeleted) throw new DeletedException('Material Type', materialType.name);
-
-        if (material.manufacturerId) {
-          const manufacturer = await tx.manufacturer.findUnique({
-            where: { id: material.manufacturerId }
-          });
-          if (!manufacturer) throw new NotFoundException('Manufacturer', material.manufacturerId);
-          if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturer.name);
-        }
-
-        if (material.unitId) {
-          const unit = await tx.unit.findUnique({
-            where: { id: material.unitId }
-          });
-          if (!unit) throw new NotFoundException('Unit', material.unitId);
-        }
-
         const newMaterial = await tx.material.create({
           data: {
             name: material.name,

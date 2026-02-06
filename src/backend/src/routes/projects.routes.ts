@@ -5,9 +5,9 @@ import {
   nonEmptyString,
   projectValidators,
   validateInputs,
-  materialValidators,
-  copyMaterialsValidators
+  materialValidators
 } from '../utils/validation.utils.js';
+import { validateWBS } from 'shared';
 import ProjectsController from '../controllers/projects.controllers.js';
 
 const projectRouter = express.Router();
@@ -96,7 +96,11 @@ projectRouter.post('/bom/material/:wbsNum/create', ...materialValidators, valida
 projectRouter.post('/bom/material/:materialId/edit', ...materialValidators, validateInputs, ProjectsController.editMaterial);
 projectRouter.post(
   '/bom/material/copy',
-  ...copyMaterialsValidators,
+  body('materialIds').isArray({ min: 1 }),
+  nonEmptyString(body('materialIds.*')),
+  body('destinationWbsNum').customSanitizer((value) => {
+    return validateWBS(value);
+  }),
   validateInputs,
   ProjectsController.copyMaterialsToProject
 );
