@@ -115,7 +115,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
   const [openCreate, setOpenCreate] = useState(false);
   const [openCreateMachinery, setOpenCreateMachinery] = useState(false);
-  const [editMachinery, setEditMachinery] = useState<{ machineryId: string; shopId: string } | null>(null);
+  const [editMachineryId, setEditMachineryId] = useState<string | null>(null);
   const [openEdit, setOpenEdit] = useState(false);
   const [editingShop, setEditingShop] = useState<Shop | null>(null);
   const [shopToDelete, setShopToDelete] = useState<Shop | undefined>(undefined);
@@ -416,15 +416,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
                               <Box display="flex" gap={1} justifyContent="center">
                                 <Tooltip title="Edit" arrow>
                                   <span>
-                                    <IconButton
-                                      size="small"
-                                      onClick={() =>
-                                        setEditMachinery({
-                                          machineryId: machine.machineryId,
-                                          shopId: shopMachinery.shop.shopId
-                                        })
-                                      }
-                                    >
+                                    <IconButton size="small" onClick={() => setEditMachineryId(machine.machineryId)}>
                                       <EditIcon fontSize="small" />
                                     </IconButton>
                                   </span>
@@ -500,24 +492,13 @@ const AdminToolsScheduleConfig: React.FC = () => {
       <CreateMachineryModal open={openCreateMachinery} onClose={() => setOpenCreateMachinery(false)} />
 
       {/* Edit Machine Modal */}
-      {editMachinery &&
+      {editMachineryId &&
         machines &&
         (() => {
-          const selectedMachine = machines.find((m) => m.machineryId === editMachinery.machineryId);
+          const selectedMachine = machines.find((m) => m.machineryId === editMachineryId);
           if (!selectedMachine) return null;
 
-          const selectedShopMachinery = selectedMachine.shops?.find(
-            (sm: { shop: { shopId: string } }) => sm.shop.shopId === editMachinery.shopId
-          );
-
-          if (!selectedShopMachinery) return null;
-
-          const machineryForEdit: typeof selectedMachine = {
-            ...selectedMachine,
-            shops: [selectedShopMachinery]
-          };
-
-          return <EditMachineryModal open={true} onClose={() => setEditMachinery(null)} machinery={machineryForEdit} />;
+          return <EditMachineryModal open={true} onClose={() => setEditMachineryId(null)} machinery={selectedMachine} />;
         })()}
 
       {/* Edit Shop Modal */}
