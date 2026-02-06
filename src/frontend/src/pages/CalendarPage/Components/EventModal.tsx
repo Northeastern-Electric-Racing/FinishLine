@@ -27,7 +27,8 @@ import {
   EventType,
   isHead,
   MAX_FILE_SIZE,
-  getNextSevenDays
+  getNextSevenDays,
+  getDay
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
@@ -52,7 +53,6 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Tooltip from '@mui/material/Tooltip';
 import { convertDayToInt, convertIntToDay } from '../../../utils/calendar.utils';
-import { getDay } from 'date-fns';
 import EditSeriesConfirmationModal from './EditSeriesConfirmationModal';
 
 export interface EventFormValues {
@@ -222,6 +222,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const [requiredMembers, setRequiredMembers] = useState<Array<{ id: string; label: string }>>([]);
   const [optionalMembers, setOptionalMembers] = useState<Array<{ id: string; label: string }>>([]);
   const [selectedTeams, setSelectedTeams] = useState<Array<{ id: string; label: string }>>([]);
+  const [requiredMemberInput, setRequiredMemberInput] = useState('');
+  const [optionalMemberInput, setOptionalMemberInput] = useState('');
+  const [teamInput, setTeamInput] = useState('');
 
   // State for the series confirmation modal (only used in edit mode when time changes)
   const [showSeriesConfirmModal, setShowSeriesConfirmModal] = useState(false);
@@ -1158,8 +1161,16 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     ))}
                     <Autocomplete
                       options={memberOptions.filter((m) => !requiredMembers.find((rm) => rm.id === m.id))}
+                      value={null}
+                      inputValue={requiredMemberInput}
+                      onInputChange={(_, newInputValue, reason) => {
+                        setRequiredMemberInput(reason === 'input' ? newInputValue : '');
+                      }}
                       onChange={(_, newValue) => {
-                        if (newValue) setRequiredMembers((prev) => [...prev, newValue]);
+                        if (newValue) {
+                          setRequiredMembers((prev) => [...prev, newValue]);
+                          setRequiredMemberInput('');
+                        }
                       }}
                       getOptionLabel={(option) => option.label}
                       renderInput={(params) => (
@@ -1189,8 +1200,16 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     ))}
                     <Autocomplete
                       options={memberOptions.filter((m) => !optionalMembers.find((om) => om.id === m.id))}
+                      value={null}
+                      inputValue={optionalMemberInput}
+                      onInputChange={(_, newInputValue, reason) => {
+                        setOptionalMemberInput(reason === 'input' ? newInputValue : '');
+                      }}
                       onChange={(_, newValue) => {
-                        if (newValue) setOptionalMembers((prev) => [...prev, newValue]);
+                        if (newValue) {
+                          setOptionalMembers((prev) => [...prev, newValue]);
+                          setOptionalMemberInput('');
+                        }
                       }}
                       getOptionLabel={(option) => option.label}
                       renderInput={(params) => (
@@ -1220,8 +1239,16 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     ))}
                     <Autocomplete
                       options={teamOptions.filter((t) => !selectedTeams.find((st) => st.id === t.id))}
+                      value={null}
+                      inputValue={teamInput}
+                      onInputChange={(_, newInputValue, reason) => {
+                        setTeamInput(reason === 'input' ? newInputValue : '');
+                      }}
                       onChange={(_, newValue) => {
-                        if (newValue) setSelectedTeams((prev) => [...prev, newValue]);
+                        if (newValue) {
+                          setSelectedTeams((prev) => [...prev, newValue]);
+                          setTeamInput('');
+                        }
                       }}
                       getOptionLabel={(option) => option.label}
                       renderInput={(params) => (
