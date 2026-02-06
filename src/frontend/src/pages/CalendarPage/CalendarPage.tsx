@@ -686,7 +686,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
               sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                flexShrink: 0
+                flex: 1,
+                minHeight: 0,
+                overflow: 'hidden'
               }}
             >
               <Stack
@@ -734,6 +736,8 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
               {calendars.length > 0 && (
                 <Box
                   sx={{
+                    flex: 1,
+                    minHeight: 0,
                     overflowY: 'auto',
                     overflowX: 'hidden',
                     p: 2,
