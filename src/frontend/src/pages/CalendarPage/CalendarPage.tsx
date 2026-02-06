@@ -111,7 +111,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
   const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>([]);
-  const [allEventsMode, setAllEventsMode] = useState<boolean>(savedFilters.allEventsMode ?? false);
+  const [allEventsMode, setAllEventsMode] = useState<boolean>(savedFilters.allEventsMode ?? true);
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
 
