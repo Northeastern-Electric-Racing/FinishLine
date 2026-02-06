@@ -34,7 +34,6 @@ const EditMachineryModal = ({ open, onClose, machinery }: EditMachineryModalProp
       currentMachineryId = updatedMachinery.machineryId;
     }
 
-    const originalShopIds = new Set(originalShops.map((sm) => sm.shop.shopId));
     const newShopIds = new Set(shopEntries.map((e) => e.shopId));
 
     // Remove shops that were removed from the form

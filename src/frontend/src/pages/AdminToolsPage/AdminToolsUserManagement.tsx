@@ -12,7 +12,7 @@ import { useAllUsers, useCurrentUser, useUpdateUserRole } from '../../hooks/user
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
-import { RoleEnum, User, isAdmin, isLeadership, rankUserRole } from 'shared';
+import { RoleEnum, User, rankUserRole } from 'shared';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useToast } from '../../hooks/toasts.hooks';
 
