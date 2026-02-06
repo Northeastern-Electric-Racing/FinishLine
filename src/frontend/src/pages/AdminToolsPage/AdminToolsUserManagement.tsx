@@ -66,25 +66,10 @@ const AdminToolsUserManagement: React.FC = () => {
   };
 
   const getAvailableRoles = () => {
-    if (isAdmin(currentUser.role)) {
-      return Object.values(RoleEnum).filter((v) => rankUserRole(v) <= currentUserRank);
-    }
-    if (isLeadership(currentUser.role) && user && user.role === RoleEnum.GUEST) {
-      return [RoleEnum.MEMBER];
-    }
-    if (isLeadership(currentUser.role)) {
-      return [];
-    }
     return Object.values(RoleEnum).filter((v) => rankUserRole(v) < currentUserRank);
   };
 
   const getModifiableUsers = () => {
-    if (isAdmin(currentUser.role)) {
-      return users.filter((user) => rankUserRole(user.role) < currentUserRank);
-    }
-    if (isLeadership(currentUser.role)) {
-      return users.filter((user) => user.role === RoleEnum.GUEST);
-    }
     return users.filter((user) => rankUserRole(user.role) < currentUserRank);
   };
 
