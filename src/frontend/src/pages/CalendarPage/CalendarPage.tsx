@@ -30,7 +30,12 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
-import { convertIntToDay, eventsToEventInstances, getOverlapTime } from '../../utils/calendar.utils';
+import {
+  convertIntToDay,
+  eventsToEventInstances,
+  eventsToNextEventInstance,
+  getOverlapTime
+} from '../../utils/calendar.utils';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useHistory } from 'react-router-dom';
@@ -233,9 +238,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     teamIds: teamList
   });
 
-  const upcomingOccurences = eventsToEventInstances(upcomingEvents ?? [])
-    .filter((event) => new Date(event.startTime) >= new Date())
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  const upcomingOccurences = eventsToNextEventInstance(upcomingEvents ?? []).sort(
+    (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+  );
 
   const toggleCalendar = (calendarId: string) => {
     setSelectedCalendarIds((prev) =>

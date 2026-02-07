@@ -169,6 +169,30 @@ export const eventsToEventInstances = (events: Event[]): EventInstance[] => {
   });
 };
 
+// converts events to event instances, but only the next event instance for each event
+// If an event has no times in the future it will not be included in the result
+// if an event has multiple times in the future it will only include the next schedule slot
+export const eventsToNextEventInstance = (events: Event[]): EventInstance[] => {
+  const now = new Date();
+
+  const eventsWithSlotInFuture = events.filter((event) => {
+    return event.scheduledTimes.some((scheduleSlot) => scheduleSlot.endTime > now);
+  });
+
+  // For each event, find the next schedule slot in the future
+  const eventsWithOnlyNextSlot = eventsWithSlotInFuture.map((event) => ({
+    ...event,
+    scheduledTimes: [
+      event.scheduledTimes.reduce((acc, current) => {
+        if (current.startTime < acc.startTime) return acc;
+        return current;
+      })
+    ]
+  }));
+
+  return eventsToEventInstances(eventsWithOnlyNextSlot);
+};
+
 // converts an Event into Event Form Values
 // Note: Because users can only edit a single instaces time, editModal is always populated with an event instance
 // representing a single occurrence of the event. However, event edits will effect the entire series for all values
