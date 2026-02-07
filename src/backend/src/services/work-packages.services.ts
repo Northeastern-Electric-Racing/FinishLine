@@ -14,7 +14,7 @@ import {
   WorkPackageStage,
   User,
   WorkPackageSelection,
-  toUtcMidnight
+  dateToUtcMidnight
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -209,7 +209,9 @@ export default class WorkPackagesService {
         .map((element) => element.wbsElement.workPackageNumber)
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
-    const date = toUtcMidnight(startDate);
+    const date = new Date(startDate);
+
+    const adjustedDate = dateToUtcMidnight(date);
 
     const changesToCreate = crId
       ? [
@@ -240,7 +242,7 @@ export default class WorkPackagesService {
         },
         stage,
         project: { connect: { projectId } },
-        startDate: date,
+        startDate: adjustedDate,
         duration,
         orderInProject: project.workPackages.filter((wp) => !wp.wbsElement.dateDeleted).length + 1,
         blockedBy: { connect: blockedByElements.map((ele) => ({ wbsElementId: ele.wbsElementId })) }
@@ -254,7 +256,7 @@ export default class WorkPackagesService {
       null,
       stage,
       null,
-      date,
+      adjustedDate,
       null,
       duration,
       [],
@@ -341,7 +343,8 @@ export default class WorkPackagesService {
 
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
 
-    const normalizedEdit = toUtcMidnight(startDate);
+    const adjustedDate = new Date(startDate);
+    const normalizedEdit = dateToUtcMidnight(adjustedDate);
     const changes = await getWorkPackageChanges(
       originalWorkPackage.wbsElement.name,
       name,

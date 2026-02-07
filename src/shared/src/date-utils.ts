@@ -5,7 +5,7 @@
 
 import { Availability } from './types/user-types.js';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
+import utc from 'dayjs/plugin/utc.js';
 
 dayjs.extend(utc);
 
@@ -21,7 +21,7 @@ export const toUtcMidnight = (input: string): Date => {
  * @param date - The Date object from DatePicker (in user's local timezone)
  * @returns Date object representing the selected day at UTC midnight
  */
-export const dateToUtcMidnight = (date: Date): Date => {
+const dateToUtcMidnight = (date: Date): Date => {
   const year = date.getFullYear();
   const month = date.getMonth();
   const day = date.getDate();
@@ -197,6 +197,7 @@ const getNextSevenDays = (startDate: Date) => {
 };
 
 export {
+  dateToUtcMidnight,
   addWeeksToDate,
   addDaysToDate,
   getDay,
