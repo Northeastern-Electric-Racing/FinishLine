@@ -91,6 +91,16 @@ export class AccessDeniedGuestException extends AccessDeniedException {
   }
 }
 
+export class InvalidEventTypeConfigurationException extends HttpException {
+  /**
+   * Constructs an invalid event type configuration error
+   * @param field the name of the required field that is missing
+   */
+  constructor(field: string) {
+    super(400, `Event Type requires ${field}`);
+  }
+}
+
 /*
  * Error handling middleware. Takes the error and sends back the status of it and the message
  */
@@ -165,7 +175,6 @@ export type ExceptionObjectNames =
   | 'Unit'
   | 'Material'
   | 'Link Type'
-  | 'Design Review'
   | 'Team Type'
   | 'Work Package Template'
   | 'Description Bullet Type'
@@ -191,6 +200,8 @@ export type ExceptionObjectNames =
   | 'Graph Collection'
   | 'Sponsor'
   | 'SponsorTask'
+  | 'Shop'
+  | 'Machinery'
   | 'Sponsor Tier'
   | 'Index Code'
   | 'Reimbursement Product Other Reason'
@@ -203,3 +214,7 @@ export type ExceptionObjectNames =
   | 'Project Rule'
   | 'Ruleset Type'
   | 'Active Ruleset for given Ruleset Type';
+  | 'Calendar'
+  | 'Event Type'
+  | 'Event'
+  | 'Schedule Slot';

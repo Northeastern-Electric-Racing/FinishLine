@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AvailabilityCreateArgs } from './design-review-types.js';
+import type { AvailabilityCreateArgs } from './calendar-types.js';
 
 export interface User {
   userId: string;

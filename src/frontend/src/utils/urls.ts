@@ -113,6 +113,8 @@ const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
 const workPackagesMany = () => `${workPackages()}/get-many`;
+const workPackagesAllPreview = (status?: string) =>
+  `${API_URL}/work-packages/all-preview${status ? `?status=${status}` : ''}`;
 const homePageWorkPackages = (selection: WorkPackageSelection) => `${workPackages()}/home-page/${selection}`;
 
 /**************** Change Requests Endpoints ****************/
@@ -135,6 +137,7 @@ const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/
 
 /**************** Teams Endpoints ****************/
 const teams = () => `${API_URL}/teams`;
+const teamPreviews = () => `${API_URL}/teams/previews/`;
 const teamsById = (id: string) => `${teams()}/${id}`;
 const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
@@ -335,15 +338,6 @@ const bomCreateUnit = () => `${bomGetAllUnits()}/create`;
 const bomUnitById = (id: string) => `${bomGetAllUnits()}/${id}`;
 const bomDeleteUnit = (id: string) => `${bomUnitById(id)}/delete`;
 
-/************** Design Review Endpoints *******************************/
-const designReviews = () => `${API_URL}/design-reviews`;
-const designReviewsCreate = () => `${designReviews()}/create`;
-const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
-const designReviewById = (id: string) => `${designReviews()}/${id}`;
-const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
-const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
-const designReviewSetStatus = (id: string) => `${designReviewById(id)}/set-status`;
-
 /******************* WBS Element Template Endpoints ********************/
 
 const workPackageTemplates = () => `${API_URL}/templates`;
@@ -471,6 +465,46 @@ const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
 const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
 const rulesetType = (rulesetTypeId: string) => `${rules()}/${rulesetTypeId}`;
 const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
+/**************** Calendar Endpoints ****************/
+const calendar = () => `${API_URL}/calendar`;
+const calendarShops = () => `${calendar()}/shops`;
+const calendarEvents = () => `${calendar()}/events`;
+const calendarEventTypes = () => `${calendar()}/event-types`;
+const calendarCreateShop = () => `${calendar()}/shop/create`;
+const calendarFilterEvents = () => `${calendar()}/events/filter`;
+const calendarMachinery = () => `${calendar()}/machinery`;
+const calendarCreateMachinery = () => `${calendar()}/machinery/create`;
+const calendarEditMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/edit`;
+const calendarDeleteMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/delete`;
+const calendarAddMachineryToShop = (machineryId: string) => `${calendar()}/machinery/${machineryId}/add-to-shop`;
+const calendarEditShop = (shopId: string) => `${calendar()}/shop/${shopId}/edit`;
+const calendarDeleteShop = (shopId: string) => `${calendar()}/shop/${shopId}/delete`;
+const calendarDeleteCalendar = (calendarId: string) => `${calendar()}/${calendarId}/delete`;
+const calendarCreateCalendar = () => `${calendar()}/create`;
+const calendarEditCalendar = (calendarId: string) => `${calendar()}/${calendarId}/edit`;
+const calendarCalendars = () => `${calendar()}/calendars`;
+const calendarCreateEventType = () => `${calendar()}/event-type/create`;
+const calendarEditEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/edit`;
+const calendarDeleteEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/delete`;
+const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
+const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
+const calendarGetSingleEventWithMembers = (id: string) => `${calendar()}/event-members/${id}`;
+const calendarGetConflictingEvent = (id: string) => `${calendar()}/event/${id}/conflict`;
+const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
+const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
+const calendarApproveEvent = (id: string) => `${calendar()}/event/${id}/approve`;
+const calendarDenyEvent = (id: string) => `${calendar()}/event/${id}/deny`;
+const calendarCreateEvent = () => `${calendar()}/event/create`;
+const calendarEditEvent = (eventId: string) => `${calendar()}/event/${eventId}/edit`;
+const calendarEditScheduleSlot = (eventId: string, scheduleSlotId: string) =>
+  `${calendar()}/event/${eventId}/schedule-slot/${scheduleSlotId}/edit`;
+const calendarPreviewScheduleSlotRecurringEdits = (eventId: string, scheduleSlotId: string) =>
+  `${calendar()}/event/${eventId}/schedule-slot/${scheduleSlotId}/preview-recurring-edits`;
+const calendarDeleteScheduleSlot = (eventId: string, scheduleSlotId: string) =>
+  `${calendar()}/event/${eventId}/schedule-slot/${scheduleSlotId}/delete`;
+const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
+const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
+const calendarScheduleEvent = (eventId: string) => `${calendar()}/event/${eventId}/schedule`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -565,6 +599,7 @@ export const apiUrls = {
   workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
   workPackagesMany,
+  workPackagesAllPreview,
   homePageWorkPackages,
 
   changeRequests,
@@ -583,6 +618,7 @@ export const apiUrls = {
   approvedChangeRequests,
 
   teams,
+  teamPreviews,
   teamsById,
   teamsDelete,
   teamsSetMembers,
@@ -690,7 +726,7 @@ export const apiUrls = {
   bomCreateUnit,
   bomUnitById,
   bomDeleteUnit,
-
+  /*
   designReviews,
   designReviewsCreate,
   designReviewById,
@@ -698,7 +734,7 @@ export const apiUrls = {
   designReviewMarkUserConfirmed,
   designReviewDelete,
   designReviewSetStatus,
-
+*/
   workPackageTemplates,
   workPackageTemplatesById,
   workPackageTemplatesEdit,
@@ -806,6 +842,41 @@ export const apiUrls = {
   parseRuleset,
   uploadRulesetFile,
   singleRuleset,
+  calendarShops,
+  calendarCreateShop,
+  calendarFilterEvents,
+  calendarMachinery,
+  calendarCreateMachinery,
+  calendarEditMachinery,
+  calendarDeleteMachinery,
+  calendarAddMachineryToShop,
+  calendarEditShop,
+  calendarEventMarkUserConfirmed,
+  calendarGetSingleEvent,
+  calendarGetSingleEventWithMembers,
+  calendarGetConflictingEvent,
+  calendarEvents,
+  calendarEventTypes,
+  calendarDeleteEvent,
+  calendarEventSetStatus,
+  calendarDeleteShop,
+  calendarDeleteCalendar,
+  calendarCreateCalendar,
+  calendarEditCalendar,
+  calendarCalendars,
+  calendarCreateEventType,
+  calendarEditEventType,
+  calendarCreateEvent,
+  calendarUploadDocument,
+  calendarPDFById,
+  calendarDeleteEventType,
+  calendarApproveEvent,
+  calendarDenyEvent,
+  calendarEditEvent,
+  calendarEditScheduleSlot,
+  calendarPreviewScheduleSlotRecurringEdits,
+  calendarDeleteScheduleSlot,
+  calendarScheduleEvent,
 
   version
 };

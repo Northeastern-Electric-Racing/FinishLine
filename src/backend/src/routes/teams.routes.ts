@@ -9,6 +9,7 @@ const teamsRouter = express.Router();
 const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 teamsRouter.get('/', TeamsController.getAllTeams);
+teamsRouter.get('/previews/', TeamsController.getAllTeamPreviews);
 teamsRouter.get('/archive', TeamsController.getAllArchivedTeams);
 teamsRouter.get('/users-teams', TeamsController.getUsersTeams);
 teamsRouter.get('/my-team-as-head', TeamsController.getMyTeamAsHead);
