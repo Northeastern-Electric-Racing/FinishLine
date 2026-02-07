@@ -54,6 +54,7 @@ const sponsorSchema = yup.object().shape({
   sponsorContact: yup.string().required('Sponsor contact is required'),
   taxExempt: yup.boolean().required('Tax exempt is required'),
   discountCode: yup.string().trim().optional(),
+  sponsorNotes: yup.string().trim().optional(),
   sponsorTasks: yup
     .array()
     .of(
@@ -294,6 +295,21 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
           </Typography>
           <ReactHookTextField name="discountCode" control={control} sx={{ width: 1 }} placeholder="Enter Code" />
           <FormHelperText error> {errors.discountCode?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12}>
+        <FormControl fullWidth>
+          <Typography variant="h5" color="#EF4345">
+            Sponsor Notes:
+          </Typography>
+          <ReactHookTextField
+            name="sponsorNotes"
+            control={control}
+            placeholder="Enter Additional Information"
+            multiline
+            rows={4}
+          />
+          <FormHelperText error> {errors.sponsorNotes?.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={12}>

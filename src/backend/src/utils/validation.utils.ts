@@ -1,7 +1,16 @@
-import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
+import { Event_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
 import { Request, Response } from 'express';
 import { body, query, ValidationChain, validationResult } from 'express-validator';
-import { MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
+import {
+  MaterialStatus,
+  TaskPriority,
+  TaskStatus,
+  WorkPackageStage,
+  RoleEnum,
+  WbsElementStatus,
+  DayOfWeek,
+  ConflictStatus
+} from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isInt({ min: 0 }).not().isString();
@@ -187,15 +196,30 @@ export const isMaterialStatus = (validationObject: ValidationChain): ValidationC
     ]);
 };
 
-export const isDesignReviewStatus = (validationObject: ValidationChain): ValidationChain => {
+export const isEventStatus = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([Event_Status.CONFIRMED, Event_Status.DONE, Event_Status.SCHEDULED, Event_Status.UNCONFIRMED]);
+};
+
+export const isDayOfWeek = (validationObject: ValidationChain): ValidationChain => {
   return validationObject
     .isString()
     .isIn([
-      Design_Review_Status.CONFIRMED,
-      Design_Review_Status.DONE,
-      Design_Review_Status.SCHEDULED,
-      Design_Review_Status.UNCONFIRMED
+      DayOfWeek.MONDAY,
+      DayOfWeek.TUESDAY,
+      DayOfWeek.WEDNESDAY,
+      DayOfWeek.THURSDAY,
+      DayOfWeek.FRIDAY,
+      DayOfWeek.SATURDAY,
+      DayOfWeek.SUNDAY
     ]);
+};
+
+export const isConflictStatus = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([ConflictStatus.APPROVED, ConflictStatus.PENDING, ConflictStatus.DENIED, ConflictStatus.NO_CONFLICT]);
 };
 
 export const descriptionBulletsValidators = [
@@ -275,3 +299,12 @@ export const financeDashboardFilterValidators = [
   nonEmptyString(query('endDate')).optional(),
   nonEmptyString(query('carNumber')).optional()
 ];
+
+export const requireFile = (chain: ValidationChain): ValidationChain => {
+  return chain.custom((_value, { req }) => {
+    if (!req.file) {
+      throw new Error('Invalid or undefined document data');
+    }
+    return true;
+  });
+};
