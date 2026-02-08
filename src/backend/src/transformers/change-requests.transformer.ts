@@ -9,7 +9,8 @@ import {
   WorkPackageProposedChanges,
   WorkPackageStage,
   isProjectWbs,
-  BudgetChangeRequest
+  BudgetChangeRequest,
+  isWorkPackageWbs
 } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
 import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils.js';
@@ -132,7 +133,7 @@ const changeRequestTransformer = (
   const status = calculateChangeRequestStatus(changeRequest);
 
   const wbsName = changeRequest.wbsElement
-    ? isProjectWbs(changeRequest.wbsElement)
+    ? !isWorkPackageWbs(changeRequest.wbsElement)
       ? changeRequest.wbsElement?.name
       : `${changeRequest.wbsElement?.workPackage?.project.wbsElement.name} - ${changeRequest.wbsElement?.name}`
     : undefined;

@@ -199,16 +199,16 @@ export const getWbsChanges = (
 };
 
 export const getChangesForProject = (
-  originalProject: Project,
-  proposedChanges: ProjectProposedChanges
+  proposedChanges: ProjectProposedChanges,
+  originalProject?: Project
 ): ComparableCollection[] => {
   const projectLines: ComparableLine[] = [...getWbsChanges(originalProject, proposedChanges)];
 
   projectLines.push(
     genChange(
       'Summary',
-      originalProject.summary !== proposedChanges.summary,
-      originalProject.summary,
+      originalProject?.summary !== proposedChanges.summary,
+      originalProject ? originalProject.summary : '',
       proposedChanges.summary
     )
   );
@@ -216,8 +216,8 @@ export const getChangesForProject = (
   projectLines.push(
     genChange(
       'Budget',
-      originalProject.budget !== proposedChanges.budget,
-      `$${originalProject.budget}`,
+      originalProject?.budget !== proposedChanges.budget,
+      originalProject ? `$${originalProject.budget}` : '',
       `$${proposedChanges.budget}`
     )
   );
@@ -226,9 +226,11 @@ export const getChangesForProject = (
     genListChange(
       'Teams',
       '',
-      originalProject.teams
-        .map((team) => ({ ...team, value: team.teamName }))
-        .sort((a, b) => a.teamName.localeCompare(b.teamName)),
+      originalProject
+        ? originalProject.teams
+            .map((team) => ({ ...team, value: team.teamName }))
+            .sort((a, b) => a.teamName.localeCompare(b.teamName))
+        : [],
       proposedChanges.teams
         .map((team) => ({ ...team, value: team.teamName }))
         .sort((a, b) => a.teamName.localeCompare(b.teamName)),
@@ -238,7 +240,7 @@ export const getChangesForProject = (
 
   const workPackageCollections: ComparableCollection[] = [];
 
-  originalProject.workPackages.forEach((workPackage) => {
+  originalProject?.workPackages.forEach((workPackage) => {
     const newWorkPackage = proposedChanges.workPackageProposedChanges.find((wp) => wp.name === workPackage.name); // TODO ideally do this based on something unique, maybe add a reference to original wbsElementid or something this also just doesnt work if the name has changed so... I dont see another way to identify them though
     if (newWorkPackage) {
       const workPackageLines = getChangesForWorkPackage(workPackage, newWorkPackage);
@@ -253,7 +255,7 @@ export const getChangesForProject = (
     workPackageCollections.push(getChangesForWorkPackage(undefined, wp));
   });
 
-  return [{ label: originalProject.name, lines: projectLines }, ...workPackageCollections];
+  return [{ label: originalProject ? originalProject.name : '', lines: projectLines }, ...workPackageCollections];
 };
 
 export const getChangesForWorkPackage = (
