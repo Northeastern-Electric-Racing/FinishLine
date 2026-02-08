@@ -7,19 +7,12 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { useEffect } from 'react';
 import { useHomePageContext } from '../../app/HomePageContext';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { useGetImageUrl } from '../../hooks/onboarding.hook';
 
 const IntroGuestHomePage = () => {
   const user = useCurrentUser();
   const history = useHistory();
-  const {
-    data: organization,
-    isLoading: organizationIsLoading,
-    isError: organizationIsError,
-    error: organizationError
-  } = useCurrentOrganization();
+  const { isError: organizationIsError, error: organizationError } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
 
   // const {

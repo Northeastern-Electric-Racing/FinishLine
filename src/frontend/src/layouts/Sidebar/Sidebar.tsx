@@ -4,8 +4,6 @@
  */
 
 import { routes } from '../../utils/routes';
-import { Route } from 'react-router-dom';
-import TeamSpecificPage from '../../pages/TeamsPage/TeamSpecificPage';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { Typography, Box, IconButton, Divider } from '@mui/material';
@@ -13,11 +11,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import ConstructionIcon from '@mui/icons-material/Construction';
-import BoltIcon from '@mui/icons-material/Bolt';
-import CodeIcon from '@mui/icons-material/Code';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
-import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import FolderIcon from '@mui/icons-material/Folder';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import GroupIcon from '@mui/icons-material/Group';
@@ -28,10 +22,14 @@ import NavPageLink from './NavPageLink';
 import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
-import { Cached, ChevronLeft, ChevronRight, NotListedLocation } from '@mui/icons-material';
+import { Cached, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
-import { isGuest } from 'shared';
-import { getAllTeams } from '../../apis/teams.api';
+import { isGuest, TeamType } from 'shared';
+import { getAllTeamTypes } from '../../apis/team-types.api';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import CodeIcon from '@mui/icons-material/Code';
+import WorkIcon from '@mui/icons-material/Work';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
@@ -53,15 +51,33 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
   const { onGuestHomePage } = useHomePageContext();
   const [allTeams, setAllTeams] = useState<LinkItem[]>([]);
 
-  getAllTeams().then((response) => {
-    setAllTeams(
-      response.data.map((team) => ({
-        name: team.teamName,
-        icon: undefined,
-        route: routes.TEAMS + '/' + team.teamId
-      }))
-    );
-  });
+  const getIcon = (iconName: string) => {
+    const icons: { [key: string]: React.ComponentType } = {
+      ConstructionIcon,
+      CodeIcon,
+      ElectricBoltIcon,
+      WorkIcon
+    };
+    const Icon = icons[iconName];
+    return Icon ? <Icon /> : undefined;
+  };
+
+  useEffect(() => {
+    getAllTeamTypes()
+      .then((response) => {
+        console.log('All teams from API:', response.data);
+        setAllTeams(
+          response.data.map((team: TeamType) => ({
+            name: team.name,
+            icon: getIcon(team.iconName),
+            route: routes.TEAMS + '/' + team.teamTypeId
+          }))
+        );
+      })
+      .catch((error) => {
+        console.log("Teams couldn't load " + error);
+      });
+  }, []);
 
   const memberLinkItems: LinkItem[] = [
     {
