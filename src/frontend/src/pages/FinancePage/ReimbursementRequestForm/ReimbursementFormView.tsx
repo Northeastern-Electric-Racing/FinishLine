@@ -649,7 +649,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       <TextField
                         value={value || ''}
                         onChange={onChange}
-                        placeholder="Enter description (default)"
+                        placeholder="Enter Description"
                         multiline
                         rows={3}
                       />
