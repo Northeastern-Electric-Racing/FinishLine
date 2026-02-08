@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Tooltip, IconButton } from '@mui/material';
 import { useLocation, useHistory } from 'react-router-dom';
 import { useState } from 'react';
 import { isGuest, ReimbursementRequest } from 'shared';
@@ -21,6 +21,7 @@ import SidePage from './SidePagePopup';
 import ReimbursementRequestDetails from '../ReimbursementRequestDetailPage/ReimbursementRequestDetails';
 import NERDataGrid, { MapRowResult } from '../../../components/NERDataGrid';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 interface ReimbursementRequestInfoProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -177,7 +178,22 @@ const ReimbursementRequestInfo = ({
         headerName: 'Description',
         flex: 0.7,
         minWidth: 180,
-        valueGetter: (params: any) => params.row.description
+        valueGetter: (params: any) => params.row.description,
+        renderCell: (params: any) => {
+          const description = params.row.description;
+  
+          if (!description || description.trim() === '') {
+            return null;
+          }
+  
+          return (
+            <Tooltip title={description} arrow placement="left">
+              <IconButton size="small" sx={{ p: 0.5, color: 'white' }}>
+                <InfoOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          );
+        }
       }
     );
 
