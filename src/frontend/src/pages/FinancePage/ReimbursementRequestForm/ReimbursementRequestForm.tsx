@@ -30,6 +30,7 @@ export interface ReimbursementRequestInformation {
   receiptFiles: ReimbursementReceiptUploadArgs[];
   indexCodeId: string;
   secondaryAccount?: string;
+  description?: string;
 }
 export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -96,6 +97,7 @@ const schema = yup.object().shape({
   }),
   dateOfExpense: yup.date().optional(),
   accountCodeId: yup.string().required('Account code is required'),
+  description: yup.string().optional(),
   reimbursementProducts: yup
     .array()
     .of(
@@ -158,6 +160,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       secondaryAccount: defaultValues?.secondaryAccount,
       dateOfExpense: defaultValues?.dateOfExpense,
       accountCodeId: defaultValues?.accountCodeId ?? '',
+      description: defaultValues?.description ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
       receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])
     }
