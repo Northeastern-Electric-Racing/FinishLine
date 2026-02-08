@@ -3,16 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  DesignReviewPreview,
-  ImplementedChange,
-  Task,
-  TeamPreview,
-  TeamType,
-  User,
-  UserPreview,
-  WorkPackageStage
-} from 'shared';
+import { EventPreview, TeamType } from './calendar-types.js';
+import { ImplementedChange } from './change-request-types.js';
+import { Task } from './task-types.js';
+import { TeamPreview } from './team-types.js';
+import { User, UserPreview } from './user-types.js';
+import { WorkPackageStage } from './work-package-types.js';
+
 export interface WbsNumber {
   carNumber: number;
   projectNumber: number;
@@ -108,7 +105,7 @@ export interface WorkPackage extends WbsElement {
   stage?: WorkPackageStage;
   teamTypes: TeamType[];
   projectId: string;
-  designReviews: DesignReviewPreview[];
+  events: EventPreview[];
 }
 
 export interface WorkPackagePreview extends WbsElementPreview {

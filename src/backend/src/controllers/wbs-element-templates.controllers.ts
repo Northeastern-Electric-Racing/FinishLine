@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { ProjectTemplate, WorkPackageTemplate } from 'shared';
-import WbsElementTemplatesService from '../services/wbs-element-templates.services';
+import WbsElementTemplatesService from '../services/wbs-element-templates.services.js';
 
 /** Controller for operations involving work packages templates. */
 export default class WbsElementTemplatesController {

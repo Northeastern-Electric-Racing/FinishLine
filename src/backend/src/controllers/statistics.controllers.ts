@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import StatisticsService from '../services/statistics.services';
+import StatisticsService from '../services/statistics.services.js';
 import { Graph, GraphCollection } from 'shared';
 
 export default class StatisticsController {

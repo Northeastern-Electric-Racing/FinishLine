@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args';
-import { getReimbursementRequestQueryArgs } from './reimbursement-requests.query-args';
+import { getUserQueryArgs } from './user.query-args.js';
+import { getReimbursementRequestQueryArgs } from './reimbursement-requests.query-args.js';
 
 export type AssemblyQueryArgs = ReturnType<typeof getAssemblyQueryArgs>;
 

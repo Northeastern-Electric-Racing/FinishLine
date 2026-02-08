@@ -6,9 +6,9 @@ import {
   isOptionalDate,
   financeDashboardFilterValidators,
   intMinZero
-} from '../utils/validation.utils';
+} from '../utils/validation.utils.js';
 import { body } from 'express-validator';
-import FinanceController from '../controllers/finance.controllers';
+import FinanceController from '../controllers/finance.controllers.js';
 
 const financeRouter = express.Router();
 

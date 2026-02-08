@@ -1,5 +1,6 @@
 import { Decimal } from 'decimal.js';
-import { User, ReimbursementRequest } from 'shared';
+import { User } from './user-types.js';
+import { ReimbursementRequest } from './reimbursement-requests-types.js';
 
 export enum MaterialStatus {
   Ordered = 'ORDERED',

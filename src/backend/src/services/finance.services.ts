@@ -11,12 +11,12 @@ import {
   User
 } from 'shared';
 import { Organization, Sponsor_Task, Reimbursement_Status_Type } from '@prisma/client';
-import { userHasPermission } from '../utils/users.utils';
+import { userHasPermission } from '../utils/users.utils.js';
 import {
   getSponsorQueryArgs,
   getSponsorTaskQueryArgs,
   getSponsorTierQueryArgs
-} from '../prisma-query-args/sponsor.query.args';
+} from '../prisma-query-args/sponsor.query.args.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -24,12 +24,16 @@ import {
   HttpException,
   InvalidOrganizationException,
   NotFoundException
-} from '../utils/errors.utils';
-import prisma from '../prisma/prisma';
-import { sponsorTransformer } from '../transformers/finance.transformer';
-import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
-import { computeRRTotals, getProjectSegmentedWhereInput, getReimbursementRequestWhereInput } from '../utils/finance.utils';
-import { notifySponsorTaskAssignee } from '../utils/slack.utils';
+} from '../utils/errors.utils.js';
+import prisma from '../prisma/prisma.js';
+import { sponsorTransformer } from '../transformers/finance.transformer.js';
+import sponsorTaskTransformer from '../transformers/sponsor-task.transformer.js';
+import {
+  computeRRTotals,
+  getProjectSegmentedWhereInput,
+  getReimbursementRequestWhereInput
+} from '../utils/finance.utils.js';
+import { notifySponsorTaskAssignee } from '../utils/slack.utils.js';
 
 export default class FinanceServices {
   /**
@@ -44,6 +48,7 @@ export default class FinanceServices {
    * @param sponsorTierId The ID of the sponsor's tier.
    * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
    * @param discountCode The discount code associated with the sponsor.
+   * @param sponsorNotes Additional notes about the sponsor.
    * @param sponsorContact The contact information for the sponsor.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being created.
@@ -64,7 +69,8 @@ export default class FinanceServices {
     sponsorContact: string,
     sponsorTasks: CreateSponsorTask[],
     organization: Organization,
-    discountCode?: string
+    discountCode?: string,
+    sponsorNotes?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can create a sponsor');
@@ -90,6 +96,7 @@ export default class FinanceServices {
         sponsorTierId,
         taxExempt,
         discountCode,
+        sponsorNotes,
         vendorContact: sponsorContact,
         sponsorTasks: {
           create: sponsorTasks.map((task) => ({
@@ -1098,6 +1105,7 @@ export default class FinanceServices {
    * @param sponsorTierId The ID of the sponsor's tier.
    * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
    * @param discountCode The discount code associated with the sponsor.
+   * @param sponsorNotes Additional notes about the sponsor.
    * @param sponsorContact The contact information for the sponsor.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being edited.
@@ -1117,7 +1125,8 @@ export default class FinanceServices {
     sponsorContact: string,
     taxExempt: boolean,
     sponsorTasks: CreateSponsorTask[],
-    discountCode?: string
+    discountCode?: string,
+    sponsorNotes?: string
   ): Promise<Sponsor> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can edit sponsors.');
@@ -1198,7 +1207,8 @@ export default class FinanceServices {
         },
         vendorContact: sponsorContact,
         taxExempt,
-        discountCode
+        discountCode,
+        sponsorNotes
       },
       ...getSponsorQueryArgs(organization.organizationId)
     });

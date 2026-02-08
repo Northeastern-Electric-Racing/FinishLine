@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import FinanceServices from '../services/finance.services';
+import FinanceServices from '../services/finance.services.js';
 
 export default class FinanceController {
   static async createSponsor(req: Request, res: Response, next: NextFunction) {
@@ -14,7 +14,8 @@ export default class FinanceController {
         taxExempt,
         sponsorContact,
         sponsorTasks,
-        discountCode
+        discountCode,
+        sponsorNotes
       } = req.body;
 
       const sponsor = await FinanceServices.createSponsor(
@@ -29,7 +30,8 @@ export default class FinanceController {
         sponsorContact,
         sponsorTasks,
         req.organization,
-        discountCode
+        discountCode,
+        sponsorNotes
       );
       res.status(200).json(sponsor);
     } catch (error: unknown) {
@@ -328,7 +330,8 @@ export default class FinanceController {
         sponsorContact,
         taxExempt,
         sponsorTasks,
-        discountCode
+        discountCode,
+        sponsorNotes
       } = req.body;
 
       const updatedSponsor = await FinanceServices.editSponsor(
@@ -344,7 +347,8 @@ export default class FinanceController {
         sponsorContact,
         taxExempt,
         sponsorTasks,
-        discountCode
+        discountCode,
+        sponsorNotes
       );
 
       res.status(200).json(updatedSponsor);

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import RecruitmentServices from '../services/recruitment.services';
+import RecruitmentServices from '../services/recruitment.services.js';
 
 export default class RecruitmentController {
   static async getAllMilestones(req: Request, res: Response, next: NextFunction) {

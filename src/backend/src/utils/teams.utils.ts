@@ -1,8 +1,8 @@
 import { Prisma, Team, Project } from '@prisma/client';
-import prisma from '../prisma/prisma';
-import { UserWithSettings } from './auth.utils';
-import { NotFoundException } from './errors.utils';
-import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
+import prisma from '../prisma/prisma.js';
+import { UserWithSettings } from './auth.utils.js';
+import { NotFoundException } from './errors.utils.js';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { User } from 'shared';
 
 type TeamQueryArgsMembersOnly = ReturnType<typeof teamQueryArgsMembersOnly>;

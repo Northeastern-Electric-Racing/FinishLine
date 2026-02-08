@@ -1,4 +1,4 @@
-import { User } from 'shared';
+import { User } from './user-types.js';
 
 export interface Sponsor {
   sponsorId: string;
@@ -10,6 +10,7 @@ export interface Sponsor {
   activeYears: number[];
   taxExempt: boolean;
   discountCode?: string;
+  sponsorNotes?: string;
   sponsorTasks: SponsorTask[];
   tier: SponsorTier;
 }

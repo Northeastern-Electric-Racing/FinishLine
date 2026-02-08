@@ -1,14 +1,20 @@
 import { Organization } from '@prisma/client';
-import { createTestChecklist, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
-import OnboardingServices from '../../src/services/onboarding.services';
-import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import {
+  createTestChecklist,
+  createTestOrganization,
+  createTestTeamType,
+  createTestUser,
+  resetUsers
+} from '../test-utils.js';
+import OnboardingServices from '../../src/services/onboarding.services.js';
+import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data.js';
 import {
   AccessDeniedAdminOnlyException,
   DeletedException,
   HttpException,
   NotFoundException
-} from '../../src/utils/errors.utils';
-import prisma from '../../src/prisma/prisma';
+} from '../../src/utils/errors.utils.js';
+import prisma from '../../src/prisma/prisma.js';
 
 describe('Onboarding tests', () => {
   let orgId: string;

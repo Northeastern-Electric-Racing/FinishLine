@@ -5,8 +5,8 @@
 
 import { Organization, Vendor } from '@prisma/client';
 import { IndexCode, ReimbursementRequest } from 'shared';
-import ReimbursementRequestService from '../../services/reimbursement-requests.services';
-import prisma from '../prisma';
+import ReimbursementRequestService from '../../services/reimbursement-requests.services.js';
+import prisma from '../prisma.js';
 
 /**
  * Seeds comprehensive reimbursement request data with various statuses and assignees

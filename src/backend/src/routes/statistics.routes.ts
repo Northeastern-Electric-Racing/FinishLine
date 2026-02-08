@@ -4,7 +4,7 @@
  */
 
 import express from 'express';
-import StatisticsController from '../controllers/statistics.controllers';
+import StatisticsController from '../controllers/statistics.controllers.js';
 import {
   isGraphDisplayType,
   isGraphType,
@@ -13,7 +13,7 @@ import {
   isSpecialPermission,
   nonEmptyString,
   validateInputs
-} from '../utils/validation.utils';
+} from '../utils/validation.utils.js';
 import { body } from 'express-validator';
 
 const statisticsRouter = express.Router();

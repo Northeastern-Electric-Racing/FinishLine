@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import TasksService from '../services/tasks.services';
+import TasksService from '../services/tasks.services.js';
 import { validateWBS, WbsNumber } from 'shared';
 
 export default class TasksController {

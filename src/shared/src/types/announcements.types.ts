@@ -1,4 +1,4 @@
-import { User } from 'shared';
+import { User } from './user-types.js';
 
 export interface Announcement {
   announcementId: string;

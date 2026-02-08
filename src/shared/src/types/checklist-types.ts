@@ -3,7 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamType, Team, User } from 'shared';
+import { TeamType } from './calendar-types.js';
+import { Team } from './team-types.js';
+import { User } from './user-types.js';
 
 export enum ChecklistItemType {
   TASK = 'TASK',

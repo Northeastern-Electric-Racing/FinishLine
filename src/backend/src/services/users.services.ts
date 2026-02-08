@@ -1,34 +1,34 @@
 import { User_Settings, Organization, Role_Type } from '@prisma/client';
-import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
+import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client.js';
 import {
   Role,
   ThemeName,
   rankUserRole,
   User,
   RoleEnum,
-  isHead,
   UserSecureSettings,
   UserScheduleSettings,
   AuthenticatedUser,
   AvailabilityCreateArgs,
   UserWithScheduleSettings,
-  ProjectOverview
+  ProjectOverview,
+  isAtLeastRank
 } from 'shared';
-import prisma from '../prisma/prisma';
-import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
-import { generateAccessToken } from '../utils/auth.utils';
-import { projectOverviewTransformer } from '../transformers/projects.transformer';
-import { getProjectOverviewQueryArgs } from '../prisma-query-args/projects.query-args';
-import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
-import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer';
-import { userTransformer, userWithScheduleSettingsTransformer } from '../transformers/user.transformer';
-import { getUserRole, updateUserAvailability } from '../utils/users.utils';
-import { getUserQueryArgs, getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
-import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
-import authenticatedUserTransformer from '../transformers/auth-user.transformer';
-import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
-import taskTransformer from '../transformers/tasks.transformer';
-import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils';
+import prisma from '../prisma/prisma.js';
+import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
+import { generateAccessToken } from '../utils/auth.utils.js';
+import { projectOverviewTransformer } from '../transformers/projects.transformer.js';
+import { getProjectOverviewQueryArgs } from '../prisma-query-args/projects.query-args.js';
+import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer.js';
+import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer.js';
+import { userTransformer, userWithScheduleSettingsTransformer } from '../transformers/user.transformer.js';
+import { getUserRole, updateUserAvailability } from '../utils/users.utils.js';
+import { getUserQueryArgs, getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args.js';
+import authenticatedUserTransformer from '../transformers/auth-user.transformer.js';
+import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
+import taskTransformer from '../transformers/tasks.transformer.js';
+import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
 
 export default class UsersService {
   /**
@@ -393,25 +393,16 @@ export default class UsersService {
     const userRankedRole = rankUserRole(userRole);
     const targetUserRankedRole = rankUserRole(targetUserRole);
 
-    const isLeadershipPromotingGuestToMember =
-      userRole === RoleEnum.LEADERSHIP && targetUserRole === RoleEnum.GUEST && role === RoleEnum.MEMBER;
+    if (!isAtLeastRank(RoleEnum.LEADERSHIP, userRole)) {
+      throw new AccessDeniedException('Guests and members cannot update user roles!');
+    }
 
-    if (!isLeadershipPromotingGuestToMember) {
-      if (!isHead(userRole)) {
-        throw new AccessDeniedException('Guests, members, and leadership cannot update user roles!');
-      }
+    if (targetUserRankedRole >= userRankedRole) {
+      throw new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you');
+    }
 
-      if (targetUserRankedRole >= userRankedRole) {
-        throw new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you');
-      }
-
-      if (userRole === RoleEnum.HEAD && rankUserRole(role) >= userRankedRole) {
-        throw new AccessDeniedException('Heads can only promote to leadership or below');
-      }
-
-      if (rankUserRole(role) > userRankedRole) {
-        throw new AccessDeniedException('Cannot promote user to a higher role than yourself');
-      }
+    if (rankUserRole(role) >= userRankedRole && role !== RoleEnum.APP_ADMIN) {
+      throw new AccessDeniedException('Cannot promote someone to your own role or higher');
     }
 
     await prisma.role.upsert({

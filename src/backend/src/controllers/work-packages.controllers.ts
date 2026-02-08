@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { validateWBS, WbsNumber, WorkPackage, WorkPackagePreview, WorkPackageSelection } from 'shared';
-import WorkPackagesService from '../services/work-packages.services';
+import WorkPackagesService from '../services/work-packages.services.js';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {
@@ -10,6 +10,22 @@ export default class WorkPackagesController {
       const { query } = req;
 
       const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, req.organization);
+
+      res.status(200).json(outputWorkPackages);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  // Fetch all work packages in preview format (minimal data for dropdowns/lists)
+  static async getAllWorkPackagesPreview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { status } = req.query as { status?: string };
+
+      const outputWorkPackages: WorkPackagePreview[] = await WorkPackagesService.getAllWorkPackagesPreview(
+        status,
+        req.organization
+      );
 
       res.status(200).json(outputWorkPackages);
     } catch (error: unknown) {

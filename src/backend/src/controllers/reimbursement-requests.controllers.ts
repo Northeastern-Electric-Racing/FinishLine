@@ -4,11 +4,11 @@
  */
 
 import { NextFunction, Request, Response } from 'express';
-import { getCurrentUserWithUserSettings } from '../utils/auth.utils';
-import ReimbursementRequestService from '../services/reimbursement-requests.services';
-import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
+import { getCurrentUserWithUserSettings } from '../utils/auth.utils.js';
+import ReimbursementRequestService from '../services/reimbursement-requests.services.js';
+import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types.js';
 import { Vendor } from 'shared';
-import { HttpException } from '../utils/errors.utils';
+import { HttpException } from '../utils/errors.utils.js';
 
 export default class ReimbursementRequestsController {
   static async getCurrentUserReimbursementRequests(req: Request, res: Response, next: NextFunction) {

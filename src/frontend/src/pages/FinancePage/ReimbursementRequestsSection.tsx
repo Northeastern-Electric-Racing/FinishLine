@@ -4,7 +4,7 @@ import { ReimbursementRequest, RoleEnum, isAtLeastRank } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
-import { ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
+import { ReimbursementStatusType } from 'shared';
 import ReimbursementRequestInfo from './FinanceComponents/ReimbursementRequestInfo';
 
 interface ReimbursementRequestTableProps {

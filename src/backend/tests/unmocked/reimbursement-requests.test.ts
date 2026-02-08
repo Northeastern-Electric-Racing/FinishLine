@@ -1,17 +1,17 @@
-import { alfred, robinMember, cyborgMember, theVisitorGuest } from '../test-data/users.test-data';
-import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
+import { alfred, robinMember, cyborgMember, theVisitorGuest } from '../test-data/users.test-data.js';
+import ReimbursementRequestService from '../../src/services/reimbursement-requests.services.js';
 import {
   AccessDeniedException,
   DeletedException,
   HttpException,
   InvalidOrganizationException,
   NotFoundException
-} from '../../src/utils/errors.utils';
-import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
-import prisma from '../../src/prisma/prisma';
+} from '../../src/utils/errors.utils.js';
+import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils.js';
+import prisma from '../../src/prisma/prisma.js';
 import { addDaysToDate, IndexCode, ReimbursementRequest, ReimbursementStatusType, AccountCode } from 'shared';
 import { Organization, Role_Type, Theme, User, Vendor } from '@prisma/client';
-import { UserWithSecureSettings } from '../../src/utils/auth.utils';
+import { UserWithSecureSettings } from '../../src/utils/auth.utils.js';
 
 describe('Reimbursement Requests', () => {
   let org: Organization;

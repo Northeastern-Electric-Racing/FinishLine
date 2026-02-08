@@ -10,8 +10,8 @@ import {
   wbsPipe
 } from 'shared';
 import { NextFunction, Request, Response } from 'express';
-import ProjectsService from '../services/projects.services';
-import BillOfMaterialsService from '../services/boms.services';
+import ProjectsService from '../services/projects.services.js';
+import BillOfMaterialsService from '../services/boms.services.js';
 
 export default class ProjectsController {
   static async getAllProjectsGantt(req: Request, res: Response, next: NextFunction) {

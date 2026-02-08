@@ -1,20 +1,20 @@
 import { Task_Priority, Task_Status, Organization } from '@prisma/client';
 import { isAdmin, isUnderWordCount, notGuest, Task, TaskCardPreview, WbsNumber, wbsPipe, User } from 'shared';
-import prisma from '../prisma/prisma';
-import taskTransformer, { taskCardPreviewTransformer } from '../transformers/tasks.transformer';
+import prisma from '../prisma/prisma.js';
+import taskTransformer, { taskCardPreviewTransformer } from '../transformers/tasks.transformer.js';
 import {
   NotFoundException,
   AccessDeniedException,
   HttpException,
   DeletedException,
   InvalidOrganizationException
-} from '../utils/errors.utils';
-import { sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils';
-import { getUsers, userHasPermission } from '../utils/users.utils';
-import { wbsNumOf } from '../utils/utils';
-import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
-import { getTaskPreviewQueryArgs, getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
-import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
+} from '../utils/errors.utils.js';
+import { sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils.js';
+import { getUsers, userHasPermission } from '../utils/users.utils.js';
+import { wbsNumOf } from '../utils/utils.js';
+import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
+import { getTaskPreviewQueryArgs, getTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
+import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args.js';
 
 export default class TasksService {
   /**

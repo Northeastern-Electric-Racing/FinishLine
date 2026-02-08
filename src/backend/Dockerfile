@@ -14,7 +14,7 @@ RUN yarn install --prod;
 RUN echo DATABASE_URL=\"postgresql://postgres:docker@database:5432/nerpm?schema=public\" > ./src/backend/.env
 RUN echo NODE_ENV=development >> ./src/backend/.env
 
-RUN yarn prisma:generate && yarn build:backend && yarn build:shared
+RUN yarn prisma:generate && yarn build:shared && yarn build:backend
 
 EXPOSE 3001
 CMD [ "yarn", "backend" ]
