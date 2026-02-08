@@ -8,7 +8,6 @@ import {
   WbsElementStatus,
   WorkPackageProposedChanges,
   WorkPackageStage,
-  isProjectWbs,
   BudgetChangeRequest,
   isWorkPackageWbs
 } from 'shared';
