@@ -180,12 +180,12 @@ const ReimbursementRequestInfo = ({
         minWidth: 180,
         valueGetter: (params: any) => params.row.description,
         renderCell: (params: any) => {
-          const description = params.row.description;
-  
+          const { description } = params.row;
+
           if (!description || description.trim() === '') {
             return null;
           }
-  
+
           return (
             <Tooltip title={description} arrow placement="left">
               <IconButton size="small" sx={{ p: 0.5, color: 'white' }}>

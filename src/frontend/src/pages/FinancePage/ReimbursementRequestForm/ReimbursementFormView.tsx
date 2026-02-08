@@ -626,7 +626,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             {/* Right Column */}
             <Grid item xs={12} md={6}>
               <Stack spacing={3}>
-                  {/* Description */}
+                {/* Description */}
                 <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
                   <FormLabel
                     sx={{
