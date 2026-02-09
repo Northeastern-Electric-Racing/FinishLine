@@ -461,7 +461,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                         </>
                       )}
                     </Box>
-                    {uniqueWbsElementsWithProducts.get(key)?.map((product) => (
+                    {uniqueWbsElementsWithProducts.get(key)?.map((product) => {
+                      const currentName = watch(`reimbursementProducts.${product.index}.name`);
+                      return (
                       <ListItem key={product.id}>
                         <Box sx={{ display: 'flex' }}>
                           <Box
@@ -479,14 +481,28 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 minWidth: '80px',
                                 width: { xs: '100%', md: 'auto' }
                               }}
-                            > 
+                            >
                               {'carNumber' in product.reason ? ( // if selected is a project
-                                <MaterialAutocomplete
-                                  wbsNum={product.reason as WbsNumber}
-                                  onSelect={(material) => {
-                                    console.log(material);
-                                  }}
-                                />
+                                currentName ? (
+                                  <Box
+                                    sx={{
+                                      border: '1px solid',
+                                      borderColor: 'divider',
+                                      borderRadius: 1,
+                                      p: 1
+                                    }}
+                                  >
+                                    <Typography variant="body2">{currentName}</Typography>
+                                  </Box>
+                                ) : (
+                                  <MaterialAutocomplete
+                                    wbsNum={product.reason as WbsNumber}
+                                    onSelect={(material) => {
+                                      const label = `${material.name}: ${material.materialTypeName}, ${material.manufacturerName}`;
+                                      setValue(`reimbursementProducts.${product.index}.name`, label);
+                                    }}
+                                  />
+                                )
                               ) : (
                                 <FormControl fullWidth margin="dense" variant="outlined" size="small">
                                   <Controller
@@ -660,7 +676,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                           </IconButton>
                         </Box>
                       </ListItem>
-                    ))}
+                    )})}
                   </Box>
                   <Button
                     sx={{
