@@ -160,14 +160,27 @@ export const updateReimbursementProducts = async (
  * @param products the products to update
  */
 const updateExistingProducts = async (products: ReimbursementProductCreateArgs[]) => {
-  //updates the cost and name of the remaining products, which should be products that existed before that were not deleted
+  //updates the cost, name, and refund sources of the remaining products, which should be products that existed before that were not deleted
   // Does not update wbs element id because we are requiring the user on the frontend to delete it from the wbs number and then adding it to another one
   for (const product of products) {
+    // Delete old refund sources for this product
+    await prisma.refund_Source.deleteMany({
+      where: { reimbursementProductId: product.id }
+    });
+
+    const refundSources = product.refundSources.map((rs) => ({
+      indexCode: { connect: { indexCodeId: rs.indexCode.indexCodeId } },
+      amount: rs.amount
+    }));
+
     await prisma.reimbursement_Product.update({
       where: { reimbursementProductId: product.id },
       data: {
         name: product.name,
-        cost: product.cost
+        cost: product.cost,
+        refundSources: {
+          create: refundSources
+        }
       }
     });
   }

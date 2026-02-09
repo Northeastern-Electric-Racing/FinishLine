@@ -121,10 +121,17 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const { mutateAsync: createVendor } = useCreateVendor();
   const user = useCurrentUser();
 
-  // to grab all the proper refund sources
-  const refundSources: CreateRefundSourceArgs[] = Array.from(
-    new Set(reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0))
-  );
+  // to grab all the proper refund sources, deduplicated by indexCodeId
+  const refundSources: CreateRefundSourceArgs[] = (() => {
+    const allSources = reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0);
+    const seen = new Set<string>();
+    return allSources.filter((source) => {
+      const id = source.indexCode.indexCodeId;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  })();
 
   const [hasConfirmedFinance, setHasConfirmedFinance] = useState(refundSources.length > 1);
   const toast = useToast();
