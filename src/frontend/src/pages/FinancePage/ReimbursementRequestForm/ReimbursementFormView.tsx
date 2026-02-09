@@ -123,7 +123,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
   // to grab all the proper refund sources, deduplicated by indexCodeId
   const refundSources: CreateRefundSourceArgs[] = (() => {
-    const allSources = reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0);
+    const allSources = reimbursementProducts
+      .flatMap((product) => product.refundSources)
+      .filter((source) => source.amount > 0);
     const seen = new Set<string>();
     return allSources.filter((source) => {
       const id = source.indexCode.indexCodeId;
