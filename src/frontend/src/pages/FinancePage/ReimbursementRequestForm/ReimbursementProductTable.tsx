@@ -34,9 +34,11 @@ import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
 import { useEffect, useState, useRef } from 'react';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
+import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { formatReasonName } from '../../../utils/reimbursement-request.utils';
+import { Material } from 'shared';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -61,6 +63,48 @@ interface ReimbursementProductTableProps {
 const ListItem = styled('li')(({ theme }) => ({
   margin: theme.spacing(0.5)
 }));
+
+const MaterialAutocomplete: React.FC<{
+  wbsNum: WbsNumber;
+  onSelect: (material: Material) => void;
+}> = ({ wbsNum, onSelect }) => {
+  const { data: materials, isLoading, isError, error } = useGetMaterialsForWbsElement(wbsNum);
+
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
+
+  if (isError) {
+    return <ErrorPage message={error?.message || 'Failed to load materials'} />;
+  }
+
+  const materialOptions = (materials || []).map((material) => ({
+    id: material.materialId,
+    label: `${material.name}: ${material.materialTypeName}, ${material.manufacturerName}`
+  }));
+
+  return (
+    <Autocomplete
+      sx={{ flex: 1 }}
+      options={materialOptions}
+      getOptionLabel={(option) => option.label}
+      onChange={(_, value) => {
+        if (value) {
+          const selectedMaterial = materials?.find((m) => m.materialId === value.id);
+          if (selectedMaterial) {
+            onSelect(selectedMaterial);
+          }
+        }
+      }}
+      value={null}
+      blurOnSelect={true}
+      size={'small'}
+      renderInput={(params) => (
+        <TextField {...params} variant="outlined" placeholder="Select Material" fullWidth />
+      )}
+    />
+  );
+};
 
 const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   reimbursementProducts,
@@ -435,26 +479,35 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 minWidth: '80px',
                                 width: { xs: '100%', md: 'auto' }
                               }}
-                            >
-                              <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                <Controller
-                                  name={`reimbursementProducts.${product.index}.name`}
-                                  control={control}
-                                  render={({ field }) => (
-                                    <TextField
-                                      {...field}
-                                      variant="outlined"
-                                      placeholder={'Product Name/Description'}
-                                      autoComplete="off"
-                                      fullWidth
-                                      error={!!errors.reimbursementProducts?.[product.index]?.name}
-                                    />
-                                  )}
+                            > 
+                              {'carNumber' in product.reason ? ( // if selected is a project
+                                <MaterialAutocomplete
+                                  wbsNum={product.reason as WbsNumber}
+                                  onSelect={(material) => {
+                                    console.log(material);
+                                  }}
                                 />
-                                <FormHelperText error>
-                                  {errors.reimbursementProducts?.[product.index]?.name?.message}
-                                </FormHelperText>
-                              </FormControl>
+                              ) : (
+                                <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                  <Controller
+                                    name={`reimbursementProducts.${product.index}.name`}
+                                    control={control}
+                                    render={({ field }) => (
+                                      <TextField
+                                        {...field}
+                                        variant="outlined"
+                                        placeholder={'Product Name/Description'}
+                                        autoComplete="off"
+                                        fullWidth
+                                        error={!!errors.reimbursementProducts?.[product.index]?.name}
+                                      />
+                                    )}
+                                  />
+                                  <FormHelperText error>
+                                    {errors.reimbursementProducts?.[product.index]?.name?.message}
+                                  </FormHelperText>
+                                </FormControl>
+                              )}
                             </Box>
                             {!hasMultipleRefundSources && (
                               <Box
