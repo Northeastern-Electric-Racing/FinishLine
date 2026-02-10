@@ -24,7 +24,7 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
-import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+import { getWorkPackageQueryArgs, getWorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer.js';
 import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils.js';
@@ -73,6 +73,31 @@ export default class WorkPackagesService {
     outputWorkPackages.sort((wpA, wpB) => wpA.endDate.getTime() - wpB.endDate.getTime());
 
     return outputWorkPackages;
+  }
+
+  /**
+   * Retrieve all work packages in preview format (minimal data for dropdowns/lists).
+   *
+   * @param status Optional status filter
+   * @param organization the organization
+   * @returns a list of work package previews
+   */
+  static async getAllWorkPackagesPreview(
+    status: WbsElementStatus | string | undefined,
+    organization: Organization
+  ): Promise<WorkPackagePreview[]> {
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        wbsElement: {
+          dateDeleted: null,
+          organizationId: organization.organizationId,
+          ...(status ? { status: status as WbsElementStatus } : {})
+        }
+      },
+      ...getWorkPackagePreviewQueryArgs()
+    });
+
+    return workPackages.map(workPackagePreviewTransformer);
   }
 
   /**

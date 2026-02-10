@@ -6,13 +6,13 @@ import {
   rankUserRole,
   User,
   RoleEnum,
-  isHead,
   UserSecureSettings,
   UserScheduleSettings,
   AuthenticatedUser,
   AvailabilityCreateArgs,
   UserWithScheduleSettings,
-  ProjectOverview
+  ProjectOverview,
+  isAtLeastRank
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
@@ -393,25 +393,16 @@ export default class UsersService {
     const userRankedRole = rankUserRole(userRole);
     const targetUserRankedRole = rankUserRole(targetUserRole);
 
-    const isLeadershipPromotingGuestToMember =
-      userRole === RoleEnum.LEADERSHIP && targetUserRole === RoleEnum.GUEST && role === RoleEnum.MEMBER;
+    if (!isAtLeastRank(RoleEnum.LEADERSHIP, userRole)) {
+      throw new AccessDeniedException('Guests and members cannot update user roles!');
+    }
 
-    if (!isLeadershipPromotingGuestToMember) {
-      if (!isHead(userRole)) {
-        throw new AccessDeniedException('Guests, members, and leadership cannot update user roles!');
-      }
+    if (targetUserRankedRole >= userRankedRole) {
+      throw new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you');
+    }
 
-      if (targetUserRankedRole >= userRankedRole) {
-        throw new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you');
-      }
-
-      if (userRole === RoleEnum.HEAD && rankUserRole(role) >= userRankedRole) {
-        throw new AccessDeniedException('Heads can only promote to leadership or below');
-      }
-
-      if (rankUserRole(role) > userRankedRole) {
-        throw new AccessDeniedException('Cannot promote user to a higher role than yourself');
-      }
+    if (rankUserRole(role) >= userRankedRole && role !== RoleEnum.APP_ADMIN) {
+      throw new AccessDeniedException('Cannot promote someone to your own role or higher');
     }
 
     await prisma.role.upsert({

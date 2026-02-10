@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import WorkPackagesController from '../controllers/work-packages.controllers.js';
 import {
   blockedByValidators,
@@ -10,10 +10,16 @@ import {
   nonEmptyString,
   validateInputs
 } from '../utils/validation.utils.js';
-import { WorkPackageSelection } from 'shared';
+import { WorkPackageSelection, WbsElementStatus } from 'shared';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
+workPackagesRouter.get(
+  '/all-preview',
+  query('status').optional().isIn(Object.values(WbsElementStatus)),
+  validateInputs,
+  WorkPackagesController.getAllWorkPackagesPreview
+);
 workPackagesRouter.post(
   '/get-many',
   body('wbsNums').isArray(),

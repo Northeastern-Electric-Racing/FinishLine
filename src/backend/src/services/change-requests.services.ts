@@ -781,9 +781,7 @@ export default class ChangeRequestsService {
         descriptionBullets: true,
         changeRequests: {
           where: {
-            dateDeleted: {
-              not: null
-            }
+            dateDeleted: null
           },
           include: { changes: true }
         }
@@ -883,7 +881,7 @@ export default class ChangeRequestsService {
         where: {
           otherReimbursementProductReasonId: otherReasonId
         },
-        include: { changeRequests: { where: { dateDeleted: { not: null } }, include: { changes: true } } }
+        include: { changeRequests: { where: { dateDeleted: null }, include: { changes: true } } }
       });
 
       if (!category) throw new NotFoundException('Reimbursement Product Other Reason', otherReasonId);
@@ -946,7 +944,7 @@ export default class ChangeRequestsService {
         where: {
           accountCodeId
         },
-        include: { changeRequests: { where: { dateDeleted: { not: null } }, include: { changes: true } } }
+        include: { changeRequests: { where: { dateDeleted: null }, include: { changes: true } } }
       });
 
       if (!accountCode) throw new NotFoundException('Account Code', accountCodeId);
