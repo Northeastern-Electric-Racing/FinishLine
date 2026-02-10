@@ -69,14 +69,11 @@ export const GanttTaskBarEditView = <T,>({
     right: '-10'
   };
 
-  const getCorrectWidth = useCallback(
-    (rawWidth: number) => {
-      const newEventLengthInDays = roundToMultipleOf7(rawWidth / widthPerDay);
-      const displayWeeks = newEventLengthInDays / 7 + 1;
-      return displayWeeks * 40 + (displayWeeks - 1) * 10;
-    },
-    []
-  );
+  const getCorrectWidth = useCallback((rawWidth: number) => {
+    const newEventLengthInDays = roundToMultipleOf7(rawWidth / widthPerDay);
+    const displayWeeks = newEventLengthInDays / 7 + 1;
+    return displayWeeks * 40 + (displayWeeks - 1) * 10;
+  }, []);
 
   useEffect(() => {
     if (!hasMeasuredRef.current && bounds.width > 0) {
@@ -152,12 +149,7 @@ export const GanttTaskBarEditView = <T,>({
         {/* Drop areas */}
         {showDropPoints &&
           days.map((day, index) => (
-            <Box
-              key={index}
-              onDragOver={onDragOver}
-              onDrop={() => onDrop(day)}
-              sx={dropPointCellStyles}
-            />
+            <Box key={index} onDragOver={onDragOver} onDrop={() => onDrop(day)} sx={dropPointCellStyles} />
           ))}
         <Box
           sx={{
