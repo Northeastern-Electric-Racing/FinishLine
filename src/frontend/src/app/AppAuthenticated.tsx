@@ -12,6 +12,7 @@ import Home from '../pages/HomePage/Home';
 import Settings from '../pages/SettingsPage/SettingsPage';
 import InfoPage from '../pages/InfoPage';
 import GanttChartPage from '../pages/GanttPage/ProjectGanttChart/ProjectGanttChartPage';
+import NewGanttChartPage from '../pages/GanttPageNew/NewProjectGanttChartPage';
 import Teams from '../pages/TeamsPage/Teams';
 import AdminTools from '../pages/AdminToolsPage/AdminTools';
 import Credits from '../pages/CreditsPage/Credits';
@@ -120,6 +121,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
             <Route path={routes.GANTT} component={GanttChartPage} />
+            <Route path={routes.NEW_GANTT} component={NewGanttChartPage} />
             <Route path={routes.TEAMS} component={Teams} />
             <Route path={routes.SETTINGS} component={Settings} />
             <Route path={routes.ADMIN_TOOLS} component={AdminTools} />

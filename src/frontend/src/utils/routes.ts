@@ -8,6 +8,7 @@ const BASE = `/`;
 const LOGIN = `/login`;
 const INFO = `/info`;
 const GANTT = `/gantt`;
+const NEW_GANTT = `/new-gantt`;
 const CREDITS = `/credits`;
 
 /**************** Home Section ****************/
@@ -98,6 +99,7 @@ export const routes = {
   TEAMS_BY_ID,
 
   GANTT,
+  NEW_GANTT,
 
   PROJECTS,
   PROJECTS_OVERVIEW,

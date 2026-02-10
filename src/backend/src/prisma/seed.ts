@@ -956,12 +956,12 @@ const performSeed: () => Promise<void> = async () => {
     10,
     [
       {
-        linkId: '-0',
+        linkId: '5',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
         linkTypeName: 'Confluence'
       },
       {
-        linkId: '-1267890',
+        linkId: '10',
         url: 'https://www.youtube.com/',
         linkTypeName: 'Bill of Materials'
       }
@@ -976,6 +976,74 @@ const performSeed: () => Promise<void> = async () => {
     ],
     spongebob.userId,
     squidward.userId,
+    ner
+  );
+
+  const { projectWbsNumber: projectKrusty3WbsNumber } = await seedProject(
+    mrKrabs,
+    changeRequest1.crId,
+    fergus.wbsElement.carNumber,
+    'Do More Stuff',
+    'a LOT more stuff',
+    [krustykrabTeam.teamId],
+    squidward,
+    1,
+    [
+      {
+        linkId: '1234567890',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Confluence'
+      },
+      {
+        linkId: '-1234567890',
+        url: 'https://www.youtube.com/',
+        linkTypeName: 'Bill of Materials'
+      }
+    ],
+    [
+      /*{
+        description: 'Need enough resources to do project.'
+      },
+      {
+        description: 'Need to do so with the least amount of money spent.'
+      }*/
+    ],
+    squidward.userId,
+    spongebob.userId,
+    ner
+  );
+
+  const { projectWbsNumber: projectKrusty4WbsNumber } = await seedProject(
+    mrKrabs,
+    changeRequest1.crId,
+    fergus.wbsElement.carNumber,
+    'Do More Stuff Again!',
+    'a LOT more stuff',
+    [krustykrabTeam.teamId],
+    squidward,
+    1,
+    [
+      {
+        linkId: '1234567890',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Confluence'
+      },
+      {
+        linkId: '-1234567890',
+        url: 'https://www.youtube.com/',
+        linkTypeName: 'Bill of Materials'
+      }
+    ],
+    [
+      /*{
+        description: 'Need enough resources to do project.'
+      },
+      {
+        description: 'Need to do so with the least amount of money spent.'
+      }*/
+    ],
+    squidward.userId,
+    spongebob.userId,
     ner
   );
 
@@ -1521,7 +1589,35 @@ const performSeed: () => Promise<void> = async () => {
     null
   );
 
+  const changeRequestProjectKrusty3 = await ChangeRequestsService.createStandardChangeRequest(
+    squidward,
+    projectKrusty3WbsNumber.carNumber,
+    projectKrusty3WbsNumber.projectNumber,
+    projectKrusty3WbsNumber.workPackageNumber,
+    CR_Type.OTHER,
+    'Initial Change Request',
+    [
+      {
+        type: Scope_CR_Why_Type.INITIALIZATION,
+        explain: 'need this to initialize work packages'
+      }
+    ],
+    [
+      {
+        budgetImpact: 0,
+        description: 'Initializing seed data',
+        timelineImpact: 0,
+        scopeImpact: 'no scope impact'
+      }
+    ],
+    ner,
+    null,
+    null
+  );
+
   const changeRequestProjectKrusty2Id = changeRequestProjectKrusty2.crId;
+
+  const changeRequestProjectKrusty3Id = changeRequestProjectKrusty3.crId;
 
   // make a proposed solution for it
   const proposedSolutionKrusty2 = await ChangeRequestsService.addProposedSolution(
@@ -1544,6 +1640,29 @@ const performSeed: () => Promise<void> = async () => {
     true,
     ner,
     proposedSolutionKrusty2Id
+  );
+
+  // make a proposed solution for it
+  const proposedSolutionKrusty3 = await ChangeRequestsService.addProposedSolution(
+    mrKrabs,
+    changeRequestProjectKrusty3Id,
+    0,
+    'Initializing seed data',
+    0,
+    'no scope impact',
+    ner
+  );
+
+  const proposedSolutionKrusty3Id = proposedSolutionKrusty3.id;
+
+  // approve the change request
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProjectKrusty3Id,
+    'LGTM',
+    true,
+    ner,
+    proposedSolutionKrusty3Id
   );
 
   // Penguins
@@ -2540,6 +2659,1366 @@ const performSeed: () => Promise<void> = async () => {
     mrsPuff.userId,
     larry.userId,
     projectKrusty2WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-8).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-9).toISOString().split('T')[0],
+    5,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
+    ner
+  );
+
+  await seedWorkPackage(
+    mrKrabs,
+    'Keep Going',
+    changeRequestProjectKrusty3Id,
+    WorkPackageStage.Install,
+    weeksAgo(-10).toISOString().split('T')[0],
+    20,
+    [],
+    [],
+    spongebob,
+    WbsElementStatus.Active,
+    mrsPuff.userId,
+    larry.userId,
+    projectKrusty3WbsNumber,
     ner
   );
 

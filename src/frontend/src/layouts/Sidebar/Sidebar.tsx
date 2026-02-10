@@ -53,6 +53,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       route: routes.GANTT
     },
     {
+      name: 'New Gantt',
+      icon: <AlignHorizontalLeftIcon />,
+      route: routes.NEW_GANTT
+    },
+    {
       name: 'Projects',
       icon: <FolderIcon />,
       route: routes.PROJECTS

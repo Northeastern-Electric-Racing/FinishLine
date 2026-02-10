@@ -1,16 +1,19 @@
 import { Box, useTheme } from '@mui/material';
+import { eachDayOfInterval, isMonday, differenceInDays } from 'date-fns';
+
+import { useMemo } from 'react';
+import { dateToString, getMonday } from '../../utils/datetime.utils';
 import {
-  GanttChange,
+  HighlightTaskComparator,
   GanttCollection,
   GanttTask,
-  HighlightTaskComparator,
-  RequestEventChange
-} from '../../../utils/gantt.utils';
-import GanttChartCollectionSection from './GanttChartCollectionSection';
-import { GanttChartTimeline } from './GanttChartComponents/GanttChartTimeline';
-import { eachDayOfInterval, isMonday, differenceInDays } from 'date-fns';
-import { dateToString, getMonday } from '../../../utils/datetime.utils';
-import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../utils/gantt.utils';
+  GanttChange,
+  RequestEventChange,
+  GANTT_CHART_CELL_SIZE,
+  GANTT_CHART_GAP_SIZE
+} from '../../utils/gantt.utils';
+import GanttChartCollectionSection from '../GanttPage/GanttChart/GanttChartCollectionSection';
+import { GanttChartTimeline } from '../GanttPage/GanttChart/GanttChartComponents/GanttChartTimeline';
 export interface GanttEditability<E, T> {
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
@@ -43,13 +46,21 @@ const GanttChart = <E, T>({
   editability
 }: GanttChartProps<E, T>) => {
   const theme = useTheme();
-  const days = eachDayOfInterval({ start: startDate, end: endDate }).filter((day) => isMonday(day));
+  const days = useMemo(
+    () => eachDayOfInterval({ start: startDate, end: endDate }).filter((day) => isMonday(day)),
+    [startDate, endDate]
+  );
 
-  const today = new Date(new Date().setHours(0, 0, 0, 0));
-  const currentWeekCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(today))) + 1;
+  const today = useMemo(() => new Date(new Date().setHours(0, 0, 0, 0)), []);
 
-  const daysIntoWeek = differenceInDays(today, getMonday(today));
-  const dailyOffset = daysIntoWeek * (parseFloat(GANTT_CHART_CELL_SIZE) / 7);
+  const currentWeekCol = useMemo(
+    () => days.findIndex((day) => dateToString(day) === dateToString(getMonday(today))) + 1,
+    [days, today]
+  );
+
+  const daysIntoWeek = useMemo(() => differenceInDays(today, getMonday(today)), [today]);
+
+  const dailyOffset = useMemo(() => daysIntoWeek * (parseFloat(GANTT_CHART_CELL_SIZE) / 7), [daysIntoWeek]);
 
   return (
     <Box
@@ -70,7 +81,6 @@ const GanttChart = <E, T>({
         {collections.map((collection) => {
           return collection.tasks ? (
             <GanttChartCollectionSection
-              key={collection.id}
               startDate={startDate}
               endDate={endDate}
               collection={collection}
@@ -78,7 +88,9 @@ const GanttChart = <E, T>({
               onShowChildrenToggle={onShowChildrenToggle}
               editability={editability}
             />
-          ) : null; // Use null instead of empty fragment
+          ) : (
+            <></>
+          );
         })}
 
         {currentWeekCol > 0 && (
