@@ -69,23 +69,26 @@ export const GanttTaskBarEditView = <T,>({
     right: '-10'
   };
 
-  const getCorrectWidth = useCallback(() => {
-    const newEventLengthInDays = roundToMultipleOf7(width / widthPerDay);
-    const displayWeeks = newEventLengthInDays / 7 + 1;
-    return (displayWeeks * 38 + (displayWeeks - 1) * 10);
-  }, [width, widthPerDay]);
+  const getCorrectWidth = useCallback(
+    (rawWidth: number) => {
+      const newEventLengthInDays = roundToMultipleOf7(rawWidth / widthPerDay);
+      const displayWeeks = newEventLengthInDays / 7 + 1;
+      return displayWeeks * 40 + (displayWeeks - 1) * 10;
+    },
+    []
+  );
 
   useEffect(() => {
     if (!hasMeasuredRef.current && bounds.width > 0) {
       setWidth(bounds.width);
-      setCorrectWidth(getCorrectWidth());
+      setCorrectWidth(getCorrectWidth(bounds.width));
       hasMeasuredRef.current = true;
     }
   }, [bounds.width, getCorrectWidth]);
 
   // used to make sure that any changes to the start and end dates are made in multiples of 7
   const roundToMultipleOf7 = (num: number) => {
-    return Math.round(num / 7) * 7;
+    return Math.ceil(num / 7) * 7;
   };
 
   const getDistanceFromLeft = (clientX: number) => {
@@ -104,7 +107,7 @@ export const GanttTaskBarEditView = <T,>({
     const newWidth = Math.max(100, getDistanceFromLeft(e.clientX));
 
     setWidth(newWidth); // sync render
-    setCorrectWidth(getCorrectWidth())
+    setCorrectWidth(getCorrectWidth(newWidth));
   };
 
   const handleMouseUp = () => {
@@ -149,8 +152,21 @@ export const GanttTaskBarEditView = <T,>({
         {/* Drop areas */}
         {showDropPoints &&
           days.map((day, index) => (
-            <Box key={index} onDragOver={onDragOver} onDrop={() => onDrop(day)} sx={dropPointCellStyles} />
+            <Box
+              key={index}
+              onDragOver={onDragOver}
+              onDrop={() => onDrop(day)}
+              sx={dropPointCellStyles}
+            />
           ))}
+        <Box
+          sx={{
+            ...dropPointCellStyles,
+            visibility: 'hidden',
+            position: 'absolute',
+            pointerEvents: 'none'
+          }}
+        />
       </Box>
       <Box sx={ganttTaskBarBackgroundStyles(days.length)}>
         <ArcherElement
