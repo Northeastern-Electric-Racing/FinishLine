@@ -151,14 +151,6 @@ export const GanttTaskBarEditView = <T,>({
           days.map((day, index) => (
             <Box key={index} onDragOver={onDragOver} onDrop={() => onDrop(day)} sx={dropPointCellStyles} />
           ))}
-        <Box
-          sx={{
-            ...dropPointCellStyles,
-            visibility: 'hidden',
-            position: 'absolute',
-            pointerEvents: 'none'
-          }}
-        />
       </Box>
       <Box sx={ganttTaskBarBackgroundStyles(days.length)}>
         <ArcherElement
