@@ -640,7 +640,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       fontWeight: 'bold'
                     }}
                   >
-                    Input Description
+                    Description
                   </FormLabel>
                   <Controller
                     name="description"
