@@ -72,6 +72,8 @@ export interface Organization {
   slackWorkspaceId?: string;
   partReviewGuideLink?: string;
   sponsorshipNotificationsSlackChannelId?: string;
+  finishlineDescription: string;
+  finishlineLogo: string;
 }
 
 /**

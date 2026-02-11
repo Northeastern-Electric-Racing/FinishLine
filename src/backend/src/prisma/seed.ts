@@ -128,7 +128,10 @@ const performSeed: () => Promise<void> = async () => {
       applyInterestImageId: '1_iak6ord4JP9TcR1sOYopyEs6EjTKQpw',
       exploreAsGuestImageId: '1wRes7V_bMm9W7_3JCIDXYkMUiy6B3wRI',
       applicationLink:
-        'https://docs.google.com/forms/d/e/1FAIpQLSeCvG7GqmZm_gmSZiahbVTW9ZFpEWG0YfGQbkSB_whhHzxXpA/closedform'
+        'https://docs.google.com/forms/d/e/1FAIpQLSeCvG7GqmZm_gmSZiahbVTW9ZFpEWG0YfGQbkSB_whhHzxXpA/closedform',
+      finishlineDescription:
+        'Finishline is a Project Management Dashboard developed by the Software Team at Northeastern Electric Racing.',
+      finishlineLogo: '1auQO3GYydZOo1-vCn0D2iyCfaxaVFssx'
     }
   });
 

@@ -10,7 +10,7 @@ import { wbsPipe } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
-import { Box } from '@mui/material';
+import { Box, useMediaQuery, useTheme } from '@mui/material';
 import { Error } from '@mui/icons-material';
 
 const NoFeaturedProjectsDisplay: React.FC = () => {
@@ -35,13 +35,15 @@ const NoFeaturedProjectsDisplay: React.FC = () => {
 };
 
 const FeaturedProjects: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { data: featuredProjects, isLoading, isError, error } = useFeaturedProjects();
 
   if (isLoading || !featuredProjects) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   const fullDisplay = (
-    <ScrollablePageBlock title={`Featured Projects`} horizontal>
+    <ScrollablePageBlock title={`What We're Working On`} horizontal={!isMobile}>
       {featuredProjects.length === 0 ? (
         <NoFeaturedProjectsDisplay />
       ) : (

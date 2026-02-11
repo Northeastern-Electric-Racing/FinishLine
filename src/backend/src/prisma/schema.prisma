@@ -1027,12 +1027,12 @@ enum DayOfWeek {
 }
 
 model Schedule_Slot {
-  scheduleSlotId       String      @id @default(uuid())
-  startTime            DateTime
-  endTime              DateTime
-  allDay               Boolean     @default(false)
-  eventId              String
-  event                Event       @relation(fields: [eventId], references: [eventId])
+  scheduleSlotId String   @id @default(uuid())
+  startTime      DateTime
+  endTime        DateTime
+  allDay         Boolean  @default(false)
+  eventId        String
+  event          Event    @relation(fields: [eventId], references: [eventId])
 
   @@index([endTime])
   @@index([startTime])
@@ -1088,7 +1088,7 @@ model Event {
   shops                      Shop[]
   machinery                  Machinery[]
   workPackages               Work_Package[]
-  documents                  Document[]      
+  documents                  Document[]
   status                     Event_Status
   initialDateScheduled       DateTime?
   questionDocumentLink       String?
@@ -1322,6 +1322,8 @@ model Organization {
   partReviewSampleImageId                String?
   partReviewGuideLink                    String?
   sponsorshipNotificationsSlackChannelId String?
+  finishlineDescription                  String    @default("")
+  finishlineLogo                         String    @default("")
 
   // Relation references
   wbsElements              WBS_Element[]
