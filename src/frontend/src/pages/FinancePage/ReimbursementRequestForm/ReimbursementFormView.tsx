@@ -626,37 +626,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             {/* Right Column */}
             <Grid item xs={12} md={6}>
               <Stack spacing={3}>
-                {/* Description */}
-                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
-                  <FormLabel
-                    sx={{
-                      color: '#dd524c',
-                      textShadow: '1.5px 0 #dd524c',
-                      letterSpacing: '0.5px',
-                      textDecoration: 'underline',
-                      textUnderlineOffset: '3.5px',
-                      textDecorationThickness: '0.6px',
-                      fontSize: 'x-large',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Description
-                  </FormLabel>
-                  <Controller
-                    name="description"
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <TextField
-                        value={value || ''}
-                        onChange={onChange}
-                        placeholder="Enter Description"
-                        multiline
-                        rows={3}
-                      />
-                    )}
-                  />
-                </FormControl>
-
                 {/* Account Code */}
                 <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
                   <FormLabel
@@ -866,6 +835,37 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       })}
                     </Grid>
                   </Box>
+                </FormControl>
+
+                {/* Description */}
+                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                  <FormLabel
+                    sx={{
+                      color: '#dd524c',
+                      textShadow: '1.5px 0 #dd524c',
+                      letterSpacing: '0.5px',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3.5px',
+                      textDecorationThickness: '0.6px',
+                      fontSize: 'x-large',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Description
+                  </FormLabel>
+                  <Controller
+                    name="description"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <TextField
+                        value={value || ''}
+                        onChange={onChange}
+                        placeholder="Enter Description"
+                        multiline
+                        rows={3}
+                      />
+                    )}
+                  />
                 </FormControl>
               </Stack>
             </Grid>
