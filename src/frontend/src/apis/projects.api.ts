@@ -38,9 +38,9 @@ export const getAllProjectsGantt = () => {
 /**
  * Fetches all projects with preview querry args
  */
-export const getAllProjects = () => {
+export const getAllProjects = (carId?: string) => {
   return axios.get<ProjectPreview[]>(apiUrls.allProjectPreviews(), {
-    params: { carId }
+    params: { carId },
     transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
   });
 };
