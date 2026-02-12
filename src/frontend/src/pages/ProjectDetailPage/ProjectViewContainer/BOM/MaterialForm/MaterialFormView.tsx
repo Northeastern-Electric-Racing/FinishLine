@@ -23,6 +23,7 @@ import { displayEnum } from '../../../../../utils/pipes';
 import { MaterialStatus } from 'shared';
 import React from 'react';
 import { AddCircle } from '@mui/icons-material';
+import SelectMaterialToCopyModal from './SelectMaterialToCopyModal';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -71,6 +72,26 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   const quantity = watch('quantity');
   const price = watch('price');
   const subtotal = quantity && price ? quantity * price : 0;
+
+  const [copyModalOpen, setCopyModalOpen] = React.useState(false);
+
+  const handleCopySelect = (m: any) => {
+    setValue('name', m.name ?? '');
+    setValue('status', m.status ?? MaterialStatus.Ordered);
+    setValue('materialTypeName', m.materialTypeName ?? '');
+    setValue('manufacturerName', m.manufacturerName ?? '');
+    setValue('manufacturerPartNumber', m.manufacturerPartNumber ?? '');
+    setValue('pdmFileName', m.pdmFileName ?? '');
+    setValue('linkUrl', m.linkUrl ?? '');
+    setValue('quantity', m.quantity ?? undefined);
+    setValue('unitName', m.unitName ?? undefined);
+    setValue('price', m.price ?? undefined);
+    setValue('notes', m.notes ?? '');
+    setValue('reimbursementRequestId', m.reimbursementRequest?.reimbursementRequestId ?? undefined);
+    setValue('assemblyId', undefined);
+
+    setCopyModalOpen(false);
+  };
 
   return (
     <NERFormModal
@@ -488,7 +509,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             <Button
               variant="contained"
               disableElevation
-              onClick={() => {}}
+              onClick={() => setCopyModalOpen(true)}
               sx={{
                 mx: 0,
                 textTransform: 'none',
@@ -502,6 +523,11 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           </Box>
         </Grid>
       )}
+      <SelectMaterialToCopyModal
+        open={copyModalOpen}
+        onHide={() => setCopyModalOpen(false)}
+        onSelect={handleCopySelect}
+      />
     </NERFormModal>
   );
 };
