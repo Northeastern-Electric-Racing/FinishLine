@@ -624,8 +624,10 @@ export default class FinanceServices {
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: {
+        dateDeleted: null,
         reimbursementProducts: {
           some: {
+            dateDeleted: null,
             reimbursementProductReason: {
               wbsElement: {
                 project: {
