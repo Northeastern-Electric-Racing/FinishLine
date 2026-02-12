@@ -1,5 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { FormControl, FormHelperText, FormLabel, MenuItem, Select } from '@mui/material';
+import { FormControl, FormHelperText, FormLabel, MenuItem, TextField } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import { Car } from 'shared';
 import * as yup from 'yup';
@@ -47,8 +47,9 @@ const AddGanttProjectModal: React.FC<AddGanttProjectModalProps> = ({ showModal, 
       onFormSubmit={onSubmit}
       formId="new-project-form"
       showCloseButton
+      paperProps={{ width: '350px' }}
     >
-      <FormControl sx={{ marginRight: '10px' }}>
+      <FormControl>
         <FormLabel>Project Name</FormLabel>
         <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
         <FormHelperText error>{errors.name?.message}</FormHelperText>
@@ -59,14 +60,13 @@ const AddGanttProjectModal: React.FC<AddGanttProjectModalProps> = ({ showModal, 
           name="carNumber"
           control={control}
           render={({ field: { onChange, value } }) => (
-            <Select error={!!errors.carNumber} value={value} onChange={onChange}>
-              {cars &&
-                cars.toReversed().map((car) => (
-                  <MenuItem key={car.wbsElementId} value={car.wbsNum.carNumber}>
-                    {car.name}
-                  </MenuItem>
-                ))}
-            </Select>
+            <TextField select onChange={onChange} value={value} fullWidth>
+              {cars?.toReversed().map((car) => (
+                <MenuItem key={car.wbsElementId} value={car.wbsNum.carNumber}>
+                  {car.name}
+                </MenuItem>
+              ))}
+            </TextField>
           )}
         />
         <FormHelperText error>{errors.carNumber?.message}</FormHelperText>
