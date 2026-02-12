@@ -40,6 +40,7 @@ export const getAllProjectsGantt = () => {
  */
 export const getAllProjects = () => {
   return axios.get<ProjectPreview[]>(apiUrls.allProjectPreviews(), {
+    params: { carId }
     transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
   });
 };
