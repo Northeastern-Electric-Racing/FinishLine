@@ -4,8 +4,7 @@ import { batmanAppAdmin, flashAdmin, supermanAdmin, wonderwomanGuest } from '../
 import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import { testLink1 } from '../test-data/organizations.test-data.js';
-import { uploadFile } from '../../src/utils/google-integration.utils.js';
-import { Mock, vi } from 'vitest';
+import { vi } from 'vitest';
 import OrganizationsService from '../../src/services/organizations.services.js';
 import { Organization } from '@prisma/client';
 
