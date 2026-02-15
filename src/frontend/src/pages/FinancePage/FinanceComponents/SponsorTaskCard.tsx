@@ -147,14 +147,14 @@ const SponsorTaskCard: React.FC<SponsorTaskCardProps> = ({
           </Typography>
           <Controller
             control={control}
-            name={`${fieldPrefix}.${showDoneCheckbox ? 'assignee' : 'assigneeUserId'}`}
+            name={`${fieldPrefix}.assigneeUserId`}
             render={({ field }) => (
               <Autocomplete
                 options={members}
                 getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
                 isOptionEqualToValue={(option, value) => option.userId === value.userId}
                 value={members.find((u) => u.userId === field.value) || null}
-                onChange={(_, newValue) => field.onChange(newValue?.userId || (showDoneCheckbox ? '' : undefined))}
+                onChange={(_, newValue) => field.onChange(newValue?.userId || undefined)}
                 size="small"
                 fullWidth
                 renderInput={(params) => (

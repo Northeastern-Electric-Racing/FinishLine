@@ -14,7 +14,8 @@ export default class ProspectiveSponsorController {
         contactEmail,
         contactPhone,
         contactPosition,
-        notes
+        notes,
+        tasks
       } = req.body;
 
       const prospectiveSponsor = await ProspectiveSponsorServices.createProspectiveSponsor(
@@ -29,7 +30,8 @@ export default class ProspectiveSponsorController {
         contactEmail,
         contactPhone,
         contactPosition,
-        notes
+        notes,
+        tasks
       );
       res.status(200).json(prospectiveSponsor);
     } catch (error: unknown) {
@@ -60,7 +62,8 @@ export default class ProspectiveSponsorController {
         contactEmail,
         contactPhone,
         contactPosition,
-        notes
+        notes,
+        tasks
       } = req.body;
 
       const updatedProspectiveSponsor = await ProspectiveSponsorServices.editProspectiveSponsor(
@@ -77,7 +80,8 @@ export default class ProspectiveSponsorController {
         contactEmail,
         contactPhone,
         contactPosition,
-        notes
+        notes,
+        tasks
       );
       res.status(200).json(updatedProspectiveSponsor);
     } catch (error: unknown) {

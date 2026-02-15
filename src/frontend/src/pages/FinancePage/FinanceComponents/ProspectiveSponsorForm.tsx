@@ -47,6 +47,7 @@ export interface ProspectiveSponsorFormInputs {
     notifyDate?: Date;
     assigneeUserId?: string;
     notes: string;
+    done?: boolean;
   }[];
 }
 
@@ -107,7 +108,8 @@ export const prospectiveSponsorSchema = yup.object().shape({
         dueDate: yup.date().required('Due date is required'),
         notifyDate: yup.date().optional(),
         assigneeUserId: yup.string().optional(),
-        notes: yup.string().required('Notes are required')
+        notes: yup.string().required('Notes are required'),
+        done: yup.boolean().optional()
       })
     )
     .required()
@@ -379,7 +381,8 @@ export const ProspectiveSponsorForm: React.FC<ProspectiveSponsorFormProps> = ({
                 dueDate: new Date(),
                 notifyDate: undefined,
                 assigneeUserId: undefined,
-                notes: ''
+                notes: '',
+                done: false
               })
             }
             sx={{ mt: 2 }}

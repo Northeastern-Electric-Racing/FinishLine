@@ -24,6 +24,12 @@ prospectiveSponsorRouter.post(
   nonEmptyString(body('contactPhone')).optional({ checkFalsy: true }),
   nonEmptyString(body('contactPosition')).optional({ checkFalsy: true }),
   nonEmptyString(body('notes')).optional({ checkFalsy: true }),
+  body('tasks').optional().isArray(),
+  isDate(body('tasks.*.dueDate')).optional(),
+  isDate(body('tasks.*.notifyDate')).optional({ checkFalsy: true }),
+  nonEmptyString(body('tasks.*.assigneeUserId')).optional({ checkFalsy: true }),
+  nonEmptyString(body('tasks.*.notes')).optional(),
+  body('tasks.*.done').optional().isBoolean(),
   validateInputs,
   ProspectiveSponsorController.createProspectiveSponsor
 );
@@ -45,6 +51,13 @@ prospectiveSponsorRouter.post(
   nonEmptyString(body('contactPhone')).optional({ checkFalsy: true }),
   nonEmptyString(body('contactPosition')).optional({ checkFalsy: true }),
   nonEmptyString(body('notes')).optional({ checkFalsy: true }),
+  body('tasks').optional().isArray(),
+  nonEmptyString(body('tasks.*.sponsorTaskId')).optional({ checkFalsy: true }),
+  isDate(body('tasks.*.dueDate')).optional(),
+  isDate(body('tasks.*.notifyDate')).optional({ checkFalsy: true }),
+  nonEmptyString(body('tasks.*.assigneeUserId')).optional({ checkFalsy: true }),
+  nonEmptyString(body('tasks.*.notes')).optional(),
+  body('tasks.*.done').optional().isBoolean(),
   validateInputs,
   ProspectiveSponsorController.editProspectiveSponsor
 );

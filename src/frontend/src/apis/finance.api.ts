@@ -784,7 +784,7 @@ export const toggleSponsorTaskDone = (sponsorTaskId: string) => {
 
 /**************** Prospective Sponsors API ****************/
 
-import { ProspectiveSponsor, FirstContactMethod, ProspectiveSponsorStatus } from 'shared';
+import { ProspectiveSponsor, FirstContactMethod, ProspectiveSponsorStatus, CreateSponsorTask } from 'shared';
 import { prospectiveSponsorTransformer } from './transformers/prospective-sponsor.transformer';
 
 export interface CreateProspectiveSponsorPayload {
@@ -798,6 +798,7 @@ export interface CreateProspectiveSponsorPayload {
   contactPhone?: string;
   contactPosition?: string;
   notes?: string;
+  tasks?: CreateSponsorTask[];
 }
 
 export interface EditProspectiveSponsorPayload {
@@ -812,6 +813,7 @@ export interface EditProspectiveSponsorPayload {
   contactPhone?: string;
   contactPosition?: string;
   notes?: string;
+  tasks?: CreateSponsorTask[];
 }
 
 export interface AcceptProspectiveSponsorPayload {

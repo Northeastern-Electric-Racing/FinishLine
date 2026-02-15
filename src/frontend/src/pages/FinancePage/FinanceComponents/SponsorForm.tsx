@@ -95,10 +95,12 @@ const sponsorSchema = yup.object().shape(
       .array()
       .of(
         yup.object().shape({
+          sponsorTaskId: yup.string().optional(),
           dueDate: yup.date().required('Due date is required'),
-          notifyDate: yup.date(),
-          assigneeUserId: yup.string(),
-          notes: yup.string().required('Notes are required')
+          notifyDate: yup.date().optional(),
+          assigneeUserId: yup.string().optional(),
+          notes: yup.string().required('Notes are required'),
+          done: yup.boolean().optional()
         })
       )
       .required('Sponsor Tasks are Required')
@@ -488,7 +490,8 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, setVa
                 dueDate: new Date(),
                 notifyDate: undefined,
                 assigneeUserId: undefined,
-                notes: ''
+                notes: '',
+                done: false
               })
             }
             sx={{ mt: 2 }}

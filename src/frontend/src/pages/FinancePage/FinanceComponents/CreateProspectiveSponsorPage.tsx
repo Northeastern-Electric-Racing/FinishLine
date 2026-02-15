@@ -67,7 +67,8 @@ const CreateProspectiveSponsorPage = ({ showPage, handleClose }: CreateProspecti
         contactEmail: formData.contactEmail || undefined,
         contactPhone: formData.contactPhone || undefined,
         contactPosition: formData.contactPosition || undefined,
-        notes: formData.notes || undefined
+        notes: formData.notes || undefined,
+        tasks: formData.tasks
       });
       toast.success('Prospective sponsor created successfully!');
       handleClose();

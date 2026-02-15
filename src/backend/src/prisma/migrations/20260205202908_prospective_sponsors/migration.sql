@@ -10,6 +10,9 @@ CREATE TYPE "Prospective_Sponsor_Status" AS ENUM ('IN_PROGRESS', 'DECLINED', 'NO
 -- CreateEnum
 CREATE TYPE "First_Contact_Method" AS ENUM ('INBOUND_FORM', 'INBOUND_EMAIL', 'OUTBOUND_EMAIL', 'OTHER');
 
+-- CreateEnum
+CREATE TYPE "Sponsor_Value_Type" AS ENUM ('MONETARY', 'STOCK', 'DISCOUNT');
+
 -- DropForeignKey
 ALTER TABLE "Sponsor_Task" DROP CONSTRAINT "Sponsor_Task_sponsorId_fkey";
 
@@ -54,12 +57,21 @@ ALTER TABLE "Sponsor" DROP COLUMN "vendorContact";
 -- AddForeignKey: Sponsor -> Sponsor_Contact
 ALTER TABLE "Sponsor" ADD CONSTRAINT "Sponsor_contactId_fkey" FOREIGN KEY ("contactId") REFERENCES "Sponsor_Contact"("sponsorContactId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
+-- AlterTable: Sponsor - add value types, stock/discount descriptions, make sponsorValue and sponsorTierId nullable
+ALTER TABLE "Sponsor"
+ADD COLUMN     "valueTypes" "Sponsor_Value_Type"[] DEFAULT ARRAY['MONETARY']::"Sponsor_Value_Type"[],
+ADD COLUMN     "stockDescription" TEXT,
+ADD COLUMN     "discountDescription" TEXT;
+
+ALTER TABLE "Sponsor" ALTER COLUMN "sponsorValue" DROP NOT NULL;
+ALTER TABLE "Sponsor" ALTER COLUMN "sponsorTierId" DROP NOT NULL;
+
 -- AlterTable: Sponsor_Task
 ALTER TABLE "Sponsor_Task" ADD COLUMN     "done" BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN     "prospectiveSponsorId" TEXT,
 ALTER COLUMN "sponsorId" DROP NOT NULL;
 
--- CreateTable: Prospective_Sponsor (with contactId FK instead of inline fields)
+-- CreateTable: Prospective_Sponsor
 CREATE TABLE "Prospective_Sponsor" (
     "prospectiveSponsorId" TEXT NOT NULL,
     "organizationId" TEXT NOT NULL,
@@ -71,6 +83,7 @@ CREATE TABLE "Prospective_Sponsor" (
     "firstContactMethod" "First_Contact_Method" NOT NULL,
     "contactorUserId" TEXT NOT NULL,
     "contactId" TEXT NOT NULL,
+    "notes" TEXT,
     "dateDeleted" TIMESTAMP(3),
 
     CONSTRAINT "Prospective_Sponsor_pkey" PRIMARY KEY ("prospectiveSponsorId")

@@ -1,4 +1,5 @@
 import {
+  CreateSponsorTask,
   FirstContactMethod,
   isHead,
   ProspectiveSponsor,
@@ -39,7 +40,8 @@ export default class ProspectiveSponsorServices {
     contactEmail?: string,
     contactPhone?: string,
     contactPosition?: string,
-    notes?: string
+    notes?: string,
+    tasks?: CreateSponsorTask[]
   ): Promise<ProspectiveSponsor> {
     if (!(await isUserFinanceTeamOrHead(submitter, organization.organizationId))) {
       throw new AccessDeniedException('Only finance team members or heads can create prospective sponsors');
@@ -82,10 +84,33 @@ export default class ProspectiveSponsorServices {
         contactorUserId,
         contactId: contact.sponsorContactId,
         notes,
-        organizationId: organization.organizationId
+        organizationId: organization.organizationId,
+        tasks: tasks?.length
+          ? {
+              create: tasks.map((task) => ({
+                dueDate: task.dueDate,
+                notifyDate: task.notifyDate,
+                assigneeUserId: task.assigneeUserId,
+                notes: task.notes
+              }))
+            }
+          : undefined
       },
       ...getProspectiveSponsorQueryArgs(organization.organizationId)
     });
+
+    if (tasks?.length) {
+      tasks.forEach(async (task) => {
+        if (!task.assigneeUserId) return;
+        const assignee = await prisma.user.findUnique({
+          where: { userId: task.assigneeUserId },
+          include: { userSettings: true }
+        });
+        if (assignee) {
+          await notifySponsorTaskAssignee(assignee, task, organizationName);
+        }
+      });
+    }
 
     return prospectiveSponsorTransformer(prospectiveSponsor);
   }
@@ -122,7 +147,8 @@ export default class ProspectiveSponsorServices {
     contactEmail?: string,
     contactPhone?: string,
     contactPosition?: string,
-    notes?: string
+    notes?: string,
+    tasks?: CreateSponsorTask[]
   ): Promise<ProspectiveSponsor> {
     if (!(await isUserFinanceTeamOrHead(submitter, organization.organizationId))) {
       throw new AccessDeniedException('Only finance team members or heads can edit prospective sponsors');
@@ -133,7 +159,8 @@ export default class ProspectiveSponsorServices {
     }
 
     const oldProspectiveSponsor = await prisma.prospective_Sponsor.findUnique({
-      where: { prospectiveSponsorId, organizationId: organization.organizationId }
+      where: { prospectiveSponsorId, organizationId: organization.organizationId },
+      include: { tasks: true }
     });
 
     if (!oldProspectiveSponsor) throw new NotFoundException('ProspectiveSponsor', prospectiveSponsorId);
@@ -159,6 +186,49 @@ export default class ProspectiveSponsorServices {
 
     if (!contactor) {
       throw new NotFoundException('User', contactorUserId);
+    }
+
+    // Upsert tasks if provided
+    if (tasks) {
+      const incomingTaskIds = new Set(tasks.filter((t) => t.sponsorTaskId).map((t) => t.sponsorTaskId!));
+      const tasksToDelete = oldProspectiveSponsor.tasks.filter((t) => !incomingTaskIds.has(t.sponsorTaskId));
+      const tasksToUpdate = tasks.filter((t) => t.sponsorTaskId);
+      const tasksToCreate = tasks.filter((t) => !t.sponsorTaskId);
+
+      if (tasksToDelete.length > 0) {
+        await prisma.sponsor_Task.deleteMany({
+          where: { sponsorTaskId: { in: tasksToDelete.map((t) => t.sponsorTaskId) } }
+        });
+      }
+
+      await Promise.all(
+        tasksToUpdate.map((t) =>
+          prisma.sponsor_Task.update({
+            where: { sponsorTaskId: t.sponsorTaskId! },
+            data: {
+              dueDate: t.dueDate,
+              notifyDate: t.notifyDate,
+              assigneeUserId: t.assigneeUserId || null,
+              notes: t.notes,
+              done: t.done ?? false
+            }
+          })
+        )
+      );
+
+      await Promise.all(
+        tasksToCreate.map((t) =>
+          this.createProspectiveSponsorTask(
+            submitter,
+            organization,
+            prospectiveSponsorId,
+            t.dueDate,
+            t.notes,
+            t.notifyDate,
+            t.assigneeUserId
+          )
+        )
+      );
     }
 
     await prisma.sponsor_Contact.update({

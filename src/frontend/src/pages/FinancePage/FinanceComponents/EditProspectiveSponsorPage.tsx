@@ -86,7 +86,8 @@ const EditProspectiveSponsorPage = ({
         contactEmail: formData.contactEmail || undefined,
         contactPhone: formData.contactPhone || undefined,
         contactPosition: formData.contactPosition || undefined,
-        notes: formData.notes || undefined
+        notes: formData.notes || undefined,
+        tasks: formData.tasks
       });
       toast.success('Prospective sponsor updated successfully!');
       handleClose();
