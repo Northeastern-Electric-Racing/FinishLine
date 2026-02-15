@@ -1,11 +1,13 @@
 import { Box } from '@mui/system';
 import InfoBlock from '../../../components/InfoBlock';
-import { StandardChangeRequest } from 'shared';
+import { isProjectWbs, StandardChangeRequest } from 'shared';
 import ProjectDiffSection from './ProjectDiffSection';
 import WorkPackageDiffSection from './WorkPackageDiffSection';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import DiffSectionEdit from './DiffSectionEdit';
 import { getChangesForWorkPackage } from '../../../utils/diff-page.utils';
+import NewProjectDiffSection from './NewProjectDiffSection';
+
 interface DiffSectionProps {
   changeRequest: StandardChangeRequest;
 }
@@ -18,7 +20,11 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
       <InfoBlock title={`Proposed Changes`} />
       {wbsNum ? (
         projectProposedChanges ? (
-          <ProjectDiffSection projectProposedChanges={projectProposedChanges} wbsNum={wbsNum} />
+          isProjectWbs(wbsNum) ? (
+            <ProjectDiffSection projectProposedChanges={projectProposedChanges} wbsNum={wbsNum} />
+          ) : (
+            <NewProjectDiffSection projectProposedChanges={projectProposedChanges} />
+          )
         ) : workPackageProposedChanges ? (
           wbsNum.workPackageNumber === 0 ? (
             <DiffSectionEdit collections={[getChangesForWorkPackage(undefined, workPackageProposedChanges)]} />
