@@ -50,7 +50,7 @@ interface AcceptFormInputs {
 
 const VALUE_TYPE_OPTIONS = [
   { value: SponsorValueType.MONETARY, label: 'Monetary' },
-  { value: SponsorValueType.STOCK, label: 'Stock/Parts' },
+  { value: SponsorValueType.STOCK, label: 'Stock/Parts/Services' },
   { value: SponsorValueType.DISCOUNT, label: 'Discount' }
 ];
 
@@ -261,13 +261,13 @@ const AcceptProspectiveSponsorModal = ({
         {isStock && (
           <FormControl fullWidth>
             <Typography variant="subtitle2" color="#EF4345">
-              Stock/Parts Description:
+              Stock/Parts/Services Description:
             </Typography>
             <ReactHookTextField
               name="stockDescription"
               control={control}
               size="small"
-              placeholder="Describe stock or parts provided"
+              placeholder="Describe stock/parts/services provided"
               multiline
               rows={2}
             />

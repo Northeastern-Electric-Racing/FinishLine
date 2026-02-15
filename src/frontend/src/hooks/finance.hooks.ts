@@ -202,6 +202,7 @@ export interface SponsorTaskPayload {
   notes: string;
   notifyDate?: Date;
   assigneeUserId?: string;
+  done?: boolean;
 }
 
 export interface EditSponsorTaskPayload {

@@ -44,7 +44,7 @@ const getYears = (startYear = 1950) => {
 
 const VALUE_TYPE_OPTIONS = [
   { value: SponsorValueType.MONETARY, label: 'Monetary' },
-  { value: SponsorValueType.STOCK, label: 'Stock/Parts' },
+  { value: SponsorValueType.STOCK, label: 'Stock/Parts/Services' },
   { value: SponsorValueType.DISCOUNT, label: 'Discount' }
 ];
 
@@ -82,13 +82,11 @@ const sponsorSchema = yup.object().shape(
         then: (schema) => schema.required('Email or phone is required'),
         otherwise: (schema) => schema.optional()
       }),
-    contactPhone: yup
-      .string()
-      .when('contactEmail', {
-        is: (email: string | undefined) => !email,
-        then: (schema) => schema.required('Email or phone is required'),
-        otherwise: (schema) => schema.optional()
-      }),
+    contactPhone: yup.string().when('contactEmail', {
+      is: (email: string | undefined) => !email,
+      then: (schema) => schema.required('Email or phone is required'),
+      otherwise: (schema) => schema.optional()
+    }),
     contactPosition: yup.string().optional(),
     taxExempt: yup.boolean().required('Tax exempt is required'),
     discountCode: yup.string().trim().optional(),
@@ -210,9 +208,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, setVa
                   <TextField {...params} placeholder="Select Value Types" error={!!errors.valueTypes} />
                 )}
                 renderTags={(tagValue, getTagProps) =>
-                  tagValue.map((option, index) => (
-                    <Chip label={option.label} {...getTagProps({ index })} size="small" />
-                  ))
+                  tagValue.map((option, index) => <Chip label={option.label} {...getTagProps({ index })} size="small" />)
                 }
                 isOptionEqualToValue={(option, val) => option.value === val.value}
                 disableCloseOnSelect
@@ -242,12 +238,12 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, setVa
         <Grid item xs={12}>
           <FormControl fullWidth>
             <Typography variant="h5" color="#EF4345">
-              Stock/Parts Description:
+              Stock/Parts/Services Description:
             </Typography>
             <ReactHookTextField
               name="stockDescription"
               control={control}
-              placeholder="Describe stock or parts provided"
+              placeholder="Describe stock/parts/services provided"
               multiline
               rows={2}
             />
@@ -376,12 +372,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, setVa
           <Typography variant="h5" color="#EF4345">
             Contact Name:*
           </Typography>
-          <ReactHookTextField
-            name="contactName"
-            control={control}
-            sx={{ width: 1 }}
-            placeholder="Enter Contact Name"
-          />
+          <ReactHookTextField name="contactName" control={control} sx={{ width: 1 }} placeholder="Enter Contact Name" />
           <FormHelperText error> {errors.contactName?.message}</FormHelperText>
         </FormControl>
       </Grid>
@@ -390,12 +381,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, setVa
           <Typography variant="h5" color="#EF4345">
             Contact Email:
           </Typography>
-          <ReactHookTextField
-            name="contactEmail"
-            control={control}
-            sx={{ width: 1 }}
-            placeholder="Enter Contact Email"
-          />
+          <ReactHookTextField name="contactEmail" control={control} sx={{ width: 1 }} placeholder="Enter Contact Email" />
           <FormHelperText error> {errors.contactEmail?.message}</FormHelperText>
         </FormControl>
       </Grid>
@@ -404,12 +390,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, setVa
           <Typography variant="h5" color="#EF4345">
             Contact Phone:
           </Typography>
-          <ReactHookTextField
-            name="contactPhone"
-            control={control}
-            sx={{ width: 1 }}
-            placeholder="Enter Contact Phone"
-          />
+          <ReactHookTextField name="contactPhone" control={control} sx={{ width: 1 }} placeholder="Enter Contact Phone" />
           <FormHelperText error> {errors.contactPhone?.message}</FormHelperText>
         </FormControl>
       </Grid>
@@ -490,6 +471,8 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, setVa
                 fieldPrefix={`sponsorTasks.${index}`}
                 members={members}
                 onRemove={() => remove(index)}
+                showDoneCheckbox
+                isExistingTask={!!defaultValues?.sponsorTasks?.[index]?.sponsorTaskId}
                 defaultAssigneeName={
                   defaultValues?.sponsorTasks?.[index]?.assignee
                     ? `${defaultValues.sponsorTasks[index].assignee.firstName} ${defaultValues.sponsorTasks[index].assignee.lastName}`

@@ -245,7 +245,8 @@ export default class FinanceServices {
     dueDate: Date,
     notes: string,
     notifyDate?: Date,
-    assigneeUserId?: string
+    assigneeUserId?: string,
+    done?: boolean
   ): Promise<Sponsor_Task> {
     if (!(await isUserFinanceTeamOrHead(submitter, org.organizationId))) {
       throw new AccessDeniedException('Only finance team members or heads can edit sponsor tasks');
@@ -289,7 +290,8 @@ export default class FinanceServices {
         notifyDate,
         assigneeUserId,
         dueDate,
-        notes
+        notes,
+        done: done ?? undefined
       }
     });
 
@@ -395,7 +397,8 @@ export default class FinanceServices {
     notes: string,
     sponsorId: string,
     notifyDate?: Date,
-    assigneeUserId?: string
+    assigneeUserId?: string,
+    done?: boolean
   ): Promise<SponsorTask> {
     if (!(await isUserFinanceTeamOrHead(submitter, organization.organizationId))) {
       throw new AccessDeniedException('Only finance team members or heads can create a sponsor task');
@@ -416,6 +419,7 @@ export default class FinanceServices {
         notifyDate,
         assignee: assigneeUserId ? { connect: { userId: assigneeUserId } } : undefined,
         notes,
+        done: done ?? false,
         sponsor: { connect: { sponsorId } }
       },
       ...getSponsorTaskQueryArgs(organization.organizationId)
@@ -1190,13 +1194,39 @@ export default class FinanceServices {
 
     if (!oldSponsor) throw new NotFoundException('Sponsor', sponsorId);
 
+    // Determine which tasks to update, create, or delete
+    const incomingTaskIds = new Set(sponsorTasks.filter((t) => t.sponsorTaskId).map((t) => t.sponsorTaskId!));
+    const tasksToDelete = oldSponsor.sponsorTasks.filter((t) => !incomingTaskIds.has(t.sponsorTaskId));
+    const tasksToUpdate = sponsorTasks.filter((t) => t.sponsorTaskId);
+    const tasksToCreate = sponsorTasks.filter((t) => !t.sponsorTaskId);
+
+    // Delete removed tasks
+    if (tasksToDelete.length > 0) {
+      await prisma.sponsor_Task.deleteMany({
+        where: { sponsorTaskId: { in: tasksToDelete.map((t) => t.sponsorTaskId) } }
+      });
+    }
+
+    // Update existing tasks
     await Promise.all(
-      oldSponsor.sponsorTasks.map((t) =>
-        prisma.sponsor_Task.deleteMany({
-          where: {
-            sponsorTaskId: t.sponsorTaskId
+      tasksToUpdate.map((t) =>
+        prisma.sponsor_Task.update({
+          where: { sponsorTaskId: t.sponsorTaskId! },
+          data: {
+            dueDate: t.dueDate,
+            notifyDate: t.notifyDate,
+            assigneeUserId: t.assigneeUserId || null,
+            notes: t.notes,
+            done: t.done ?? false
           }
         })
+      )
+    );
+
+    // Create new tasks
+    await Promise.all(
+      tasksToCreate.map((t) =>
+        this.createSponsorTask(submitter, organization, t.dueDate, t.notes, sponsorId, t.notifyDate, t.assigneeUserId, t.done)
       )
     );
 
@@ -1244,22 +1274,6 @@ export default class FinanceServices {
         joinDate,
         activeYears,
         tier: sponsorTierId ? { connect: { sponsorTierId } } : { disconnect: true },
-        sponsorTasks: {
-          connect: await Promise.all(
-            sponsorTasks.map(async (t) => {
-              const createdTask = await this.createSponsorTask(
-                submitter,
-                organization,
-                t.dueDate,
-                t.notes,
-                sponsorId,
-                t.notifyDate,
-                t.assigneeUserId
-              );
-              return { sponsorTaskId: createdTask.sponsorTaskId };
-            })
-          )
-        },
         taxExempt,
         discountCode,
         sponsorNotes

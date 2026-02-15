@@ -3027,9 +3027,10 @@ const performSeed: () => Promise<void> = async () => {
   });
 
   const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156', 3000);
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32', 10);
+  const silverSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);
+  const bronzeSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32', 10);
 
+  // Sponsors
   const sponsor = await FinanceServices.createSponsor(
     thomasEmrax,
     'Google',
@@ -3057,6 +3058,390 @@ const performSeed: () => Promise<void> = async () => {
     daysAgo(60),
     thomasEmrax.userId
   );
+
+  const altiumSponsor = await FinanceServices.createSponsor(
+    thomasEmrax,
+    'Altium',
+    true,
+    ['DISCOUNT'],
+    daysAgo(200),
+    [2024, 2025, 2026],
+    silverSponsorTier.sponsorTierId,
+    false,
+    'Rachel Park',
+    [],
+    ner,
+    undefined,
+    undefined,
+    undefined,
+    'rpark@altium.com',
+    undefined,
+    'Director of Academic Programs',
+    undefined,
+    'Free Altium Designer licenses for all team members'
+  );
+
+  const mcmasterSponsor = await FinanceServices.createSponsor(
+    thomasEmrax,
+    'McMaster-Carr',
+    true,
+    ['STOCK'],
+    daysAgo(60),
+    [2025, 2026],
+    bronzeSponsorTier.sponsorTierId,
+    true,
+    'James Corrado',
+    [],
+    ner,
+    undefined,
+    undefined,
+    'Provides fasteners and raw materials at no cost',
+    'jcorrado@mcmaster.com',
+    '555-444-3333',
+    'Account Representative',
+    '$500 worth of stock hardware per semester'
+  );
+
+  const boseSponsor = await FinanceServices.createSponsor(
+    thomasEmrax,
+    'Bose Corporation',
+    true,
+    ['MONETARY', 'STOCK'],
+    daysAgo(150),
+    [2025, 2026],
+    goldSponsorTier.sponsorTierId,
+    true,
+    'Linda Morales',
+    [],
+    ner,
+    8000,
+    undefined,
+    undefined,
+    'lmorales@bose.com',
+    '555-222-1111',
+    'Engineering Partnerships',
+    'Donates sensors and audio components'
+  );
+
+  await FinanceServices.createSponsor(
+    thomasEmrax,
+    'ANSYS',
+    false,
+    ['DISCOUNT'],
+    daysAgo(400),
+    [2023, 2024],
+    silverSponsorTier.sponsorTierId,
+    false,
+    'Tom Bradley',
+    [],
+    ner,
+    undefined,
+    'ANSYS-NER-2024',
+    'Sponsorship ended after 2024 season',
+    'tbradley@ansys.com',
+    undefined,
+    'University Partnerships',
+    undefined,
+    '50% discount on simulation software suite'
+  );
+
+  const neuSponsor = await FinanceServices.createSponsor(
+    thomasEmrax,
+    'Northeastern University COE',
+    true,
+    ['MONETARY'],
+    daysAgo(365),
+    [2024, 2025, 2026],
+    goldSponsorTier.sponsorTierId,
+    true,
+    'Dr. Amy Sullivan',
+    [],
+    ner,
+    15000,
+    undefined,
+    'Annual funding from the College of Engineering',
+    'a.sullivan@northeastern.edu',
+    undefined,
+    'Associate Dean of Student Organizations'
+  );
+
+  // Prospective sponsors
+  const prospectiveContact1 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Sarah Johnson',
+      email: 'sarah.johnson@teslamotors.com',
+      phone: '555-123-4567',
+      position: 'Partnerships Manager'
+    }
+  });
+
+  const prospectiveContact2 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Mike Callahan',
+      email: 'mcallahan@boeingaero.com',
+      position: 'University Relations Lead'
+    }
+  });
+
+  const prospectiveContact3 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Emily Davis',
+      email: 'emily.d@solidworks.com',
+      phone: '555-987-6543',
+      position: 'Academic Sponsorships'
+    }
+  });
+
+  const prospectiveContact4 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Kevin Martinez',
+      email: 'kmartinez@ti.com',
+      phone: '555-321-7890',
+      position: 'University Programs Coordinator'
+    }
+  });
+
+  const prospectiveContact5 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Priya Patel',
+      email: 'priya.patel@3m.com',
+      position: 'Technical Sponsorships'
+    }
+  });
+
+  const prospectiveContact6 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'David Romano',
+      phone: '555-654-0987',
+      position: 'Owner'
+    }
+  });
+
+  const prospectiveContact7 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Amanda Foster',
+      email: 'afoster@shell.com',
+      phone: '555-111-2222',
+      position: 'STEM Outreach Manager'
+    }
+  });
+
+  const prospectiveContact8 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Robert Whitfield',
+      email: 'rwhitfield@mathworks.com',
+      position: 'Academic Sales'
+    }
+  });
+
+  const teslaProsSpons = await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'Tesla Motors',
+      lastContactDate: daysAgo(5),
+      highlightThresholdDays: 14,
+      status: 'IN_PROGRESS',
+      firstContactMethod: 'OUTBOUND_EMAIL',
+      contactorUserId: thomasEmrax.userId,
+      contactId: prospectiveContact1.sponsorContactId,
+      notes: 'Reached out about potential parts sponsorship for battery systems'
+    }
+  });
+
+  await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'Boeing Aerospace',
+      lastContactDate: daysAgo(20),
+      highlightThresholdDays: 10,
+      status: 'NO_RESPONSE',
+      firstContactMethod: 'OUTBOUND_EMAIL',
+      contactorUserId: thomasEmrax.userId,
+      contactId: prospectiveContact2.sponsorContactId,
+      notes: 'Sent initial sponsorship proposal, no reply yet'
+    }
+  });
+
+  const solidworksProsSpons = await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'SolidWorks',
+      lastContactDate: daysAgo(2),
+      highlightThresholdDays: 7,
+      status: 'IN_PROGRESS',
+      firstContactMethod: 'INBOUND_EMAIL',
+      contactorUserId: thomasEmrax.userId,
+      contactId: prospectiveContact3.sponsorContactId,
+      notes: 'They reached out offering software licenses for the team'
+    }
+  });
+
+  const tiProsSpons = await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'Texas Instruments',
+      lastContactDate: daysAgo(3),
+      highlightThresholdDays: 10,
+      status: 'IN_PROGRESS',
+      firstContactMethod: 'INBOUND_FORM',
+      contactorUserId: thomasEmrax.userId,
+      contactId: prospectiveContact4.sponsorContactId,
+      notes: 'Filled out our sponsorship interest form, interested in providing microcontrollers and dev boards'
+    }
+  });
+
+  await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: '3M',
+      lastContactDate: daysAgo(45),
+      highlightThresholdDays: 14,
+      status: 'NOT_IN_CONTACT',
+      firstContactMethod: 'OUTBOUND_EMAIL',
+      contactorUserId: thomasEmrax.userId,
+      contactId: prospectiveContact5.sponsorContactId,
+      notes: 'Initial contact went well but contact person changed roles, need to find new point of contact'
+    }
+  });
+
+  await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'Precision Machine Shop Boston',
+      lastContactDate: daysAgo(8),
+      highlightThresholdDays: 10,
+      status: 'IN_PROGRESS',
+      firstContactMethod: 'OTHER',
+      contactorUserId: thomasEmrax.userId,
+      contactId: prospectiveContact6.sponsorContactId,
+      notes: 'Met at local manufacturing expo, interested in providing machining services at reduced cost'
+    }
+  });
+
+  await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'Shell Energy',
+      lastContactDate: daysAgo(30),
+      highlightThresholdDays: 14,
+      status: 'DECLINED',
+      firstContactMethod: 'OUTBOUND_EMAIL',
+      contactorUserId: thomasEmrax.userId,
+      contactId: prospectiveContact7.sponsorContactId,
+      notes: 'Declined for this year, suggested we reapply next fiscal year in September'
+    }
+  });
+
+  const mathworksProsSpons = await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'MathWorks',
+      lastContactDate: daysAgo(1),
+      highlightThresholdDays: 7,
+      status: 'IN_PROGRESS',
+      firstContactMethod: 'INBOUND_EMAIL',
+      contactorUserId: thomasEmrax.userId,
+      contactId: prospectiveContact8.sponsorContactId,
+      notes: 'Interested in providing MATLAB/Simulink licenses, scheduling a call next week'
+    }
+  });
+
+  // Sponsor tasks
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    daysFromNow(14),
+    'Renew Altium license agreement for next academic year',
+    altiumSponsor.sponsorId,
+    daysFromNow(7),
+    thomasEmrax.userId
+  );
+
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    daysFromNow(60),
+    'Send McMaster-Carr updated parts list for spring semester',
+    mcmasterSponsor.sponsorId,
+    daysFromNow(45)
+  );
+
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    daysAgo(5),
+    'Submit Bose quarterly progress report',
+    boseSponsor.sponsorId,
+    daysAgo(10),
+    thomasEmrax.userId
+  );
+
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    daysFromNow(90),
+    'Prepare annual sponsorship renewal presentation for NEU COE',
+    neuSponsor.sponsorId,
+    daysFromNow(60),
+    thomasEmrax.userId
+  );
+
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    daysFromNow(7),
+    'Send thank-you letter and team photo to Bose',
+    boseSponsor.sponsorId
+  );
+
+  // Prospective sponsor tasks
+  await prisma.sponsor_Task.create({
+    data: {
+      dueDate: daysFromNow(3),
+      notes: 'Follow up email with Tesla partnership proposal PDF',
+      prospectiveSponsorId: teslaProsSpons.prospectiveSponsorId,
+      notifyDate: daysFromNow(1),
+      assigneeUserId: thomasEmrax.userId
+    }
+  });
+
+  await prisma.sponsor_Task.create({
+    data: {
+      dueDate: daysFromNow(10),
+      notes: 'Schedule demo call with SolidWorks academic team',
+      prospectiveSponsorId: solidworksProsSpons.prospectiveSponsorId,
+      assigneeUserId: thomasEmrax.userId
+    }
+  });
+
+  await prisma.sponsor_Task.create({
+    data: {
+      dueDate: daysAgo(2),
+      notes: 'Send TI the team roster for university program enrollment',
+      prospectiveSponsorId: tiProsSpons.prospectiveSponsorId,
+      notifyDate: daysAgo(5),
+      assigneeUserId: thomasEmrax.userId,
+      done: true
+    }
+  });
+
+  await prisma.sponsor_Task.create({
+    data: {
+      dueDate: daysFromNow(5),
+      notes: 'Prepare MathWorks sponsorship tier options document',
+      prospectiveSponsorId: mathworksProsSpons.prospectiveSponsorId,
+      notifyDate: daysFromNow(2)
+    }
+  });
+
+  await prisma.sponsor_Task.create({
+    data: {
+      dueDate: daysFromNow(14),
+      notes: 'Draft MATLAB workshop proposal to show value of partnership',
+      prospectiveSponsorId: mathworksProsSpons.prospectiveSponsorId,
+      assigneeUserId: thomasEmrax.userId
+    }
+  });
 
   // Create shops for machinery
   const advancedShop = await prisma.shop.create({

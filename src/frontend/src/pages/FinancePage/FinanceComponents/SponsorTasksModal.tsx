@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box, Button } from '@mui/material';
 import { AddCircle } from '@mui/icons-material';
-import { useEditSponsorTask, useToggleSponsorTaskDone } from '../../../hooks/finance.hooks';
+import { useDeleteSponsorTask, useEditSponsorTask } from '../../../hooks/finance.hooks';
 import { SponsorTask } from 'shared';
 import { useAllMembers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import DeleteSponsorTaskModal from './DeleteSponsorTaskModal';
 import SponsorTaskCard from './SponsorTaskCard';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
@@ -36,9 +35,9 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: s
   const toast = useToast();
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const { mutate: editTask } = useEditSponsorTask();
-  const { mutate: toggleDone } = useToggleSponsorTaskDone();
+  const { mutate: deleteTask } = useDeleteSponsorTask();
 
-  const [sponsorTaskToDelete, setSponsorTaskToDelete] = useState<SponsorTask | undefined>(undefined);
+  const deletedTaskIds = useRef<string[]>([]);
 
   const {
     control,
@@ -50,7 +49,7 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: s
     defaultValues: { tasks: [] }
   });
 
-  const { fields, append } = useFieldArray({ control, name: 'tasks' });
+  const { fields, append, remove } = useFieldArray({ control, name: 'tasks' });
 
   useEffect(() => {
     if (sponsorTasks) {
@@ -65,16 +64,24 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: s
       // Sort: incomplete tasks first, done tasks at the bottom
       mapped.sort((a, b) => Number(a.done) - Number(b.done));
       reset({ tasks: mapped });
+      deletedTaskIds.current = [];
     }
   }, [sponsorTasks, reset]);
 
   const handleSave = handleSubmit(({ tasks }) => {
+    // Delete removed tasks
+    deletedTaskIds.current.forEach((sponsorTaskId) => {
+      deleteTask({ sponsorTaskId });
+    });
+
+    // Edit existing / create new tasks
     tasks?.forEach((task) => {
       const payload = {
         dueDate: task.dueDate,
         notifyDate: task.notifyDate || undefined,
         assigneeUserId: task.assignee || undefined,
-        notes: task.notes
+        notes: task.notes,
+        done: task.done ?? false
       };
       if (task.sponsorTaskId) {
         try {
@@ -111,22 +118,12 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: s
             fieldPrefix={`tasks.${idx}`}
             members={users}
             showDoneCheckbox
-            isDone={!!item.done}
             isExistingTask={!!item.sponsorTaskId}
-            onToggleDone={() => {
-              if (item.sponsorTaskId) toggleDone(item.sponsorTaskId);
-            }}
             onRemove={() => {
               if (item.sponsorTaskId) {
-                const taskToDelete: SponsorTask = {
-                  ...item,
-                  sponsorTaskId: item.sponsorTaskId || '',
-                  assignee: item.assignee ? users.find((u) => u.userId === item.assignee) : undefined,
-                  notifyDate: item.notifyDate ?? undefined,
-                  done: item.done ?? false
-                };
-                setSponsorTaskToDelete(taskToDelete);
+                deletedTaskIds.current.push(item.sponsorTaskId);
               }
+              remove(idx);
             }}
           />
         </Box>
@@ -148,9 +145,6 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: s
           Save
         </Button>
       </Box>
-      {sponsorTaskToDelete && (
-        <DeleteSponsorTaskModal handleClose={() => setSponsorTaskToDelete(undefined)} sponsorTask={sponsorTaskToDelete} />
-      )}
     </Box>
   );
 };

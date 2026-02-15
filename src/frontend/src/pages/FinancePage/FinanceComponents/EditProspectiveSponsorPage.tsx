@@ -34,13 +34,16 @@ const EditProspectiveSponsorPage = ({
   const toast = useToast();
   const { isLoading, mutateAsync } = useEditProspectiveSponsor();
 
-  const defaultTasks = prospectiveSponsor.tasks?.map((task) => ({
-    sponsorTaskId: task.sponsorTaskId,
-    dueDate: new Date(task.dueDate),
-    notifyDate: task.notifyDate ? new Date(task.notifyDate) : undefined,
-    assigneeUserId: task.assignee?.userId,
-    notes: task.notes
-  })) ?? [];
+  const defaultTasks = (
+    prospectiveSponsor.tasks?.map((task) => ({
+      sponsorTaskId: task.sponsorTaskId,
+      dueDate: new Date(task.dueDate),
+      notifyDate: task.notifyDate ? new Date(task.notifyDate) : undefined,
+      assigneeUserId: task.assignee?.userId,
+      notes: task.notes,
+      done: task.done
+    })) ?? []
+  ).sort((a, b) => Number(a.done) - Number(b.done));
 
   const {
     handleSubmit,

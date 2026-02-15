@@ -94,8 +94,10 @@ export interface ReimbursementRequestData {
 }
 
 export interface CreateSponsorTask {
+  sponsorTaskId?: string;
   dueDate: Date;
   notifyDate?: Date;
   assigneeUserId?: string;
   notes: string;
+  done?: boolean;
 }

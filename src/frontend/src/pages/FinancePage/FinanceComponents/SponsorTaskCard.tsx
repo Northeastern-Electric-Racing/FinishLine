@@ -3,7 +3,7 @@ import { Box, Typography, TextField, IconButton, Autocomplete, Checkbox, FormCon
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { RemoveCircle } from '@mui/icons-material';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import { Control, Controller, FieldError, FieldErrors, FieldValues } from 'react-hook-form';
+import { Control, Controller, FieldError, FieldErrors, FieldValues, useWatch } from 'react-hook-form';
 
 interface MemberOption {
   userId: string;
@@ -18,9 +18,7 @@ interface SponsorTaskCardProps {
   members: MemberOption[];
   onRemove: () => void;
   showDoneCheckbox?: boolean;
-  isDone?: boolean;
   isExistingTask?: boolean;
-  onToggleDone?: () => void;
   defaultAssigneeName?: string;
 }
 
@@ -31,11 +29,11 @@ const SponsorTaskCard: React.FC<SponsorTaskCardProps> = ({
   members,
   onRemove,
   showDoneCheckbox = false,
-  isDone = false,
   isExistingTask = false,
-  onToggleDone,
   defaultAssigneeName
 }) => {
+  const doneValue = useWatch({ control, name: `${fieldPrefix}.done` });
+  const isDone = !!doneValue;
   const getError = (field: string): FieldError | undefined => {
     const parts = [...fieldPrefix.split('.'), field];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- traversing dynamic nested error paths requires indexing
@@ -50,6 +48,7 @@ const SponsorTaskCard: React.FC<SponsorTaskCardProps> = ({
   return (
     <Box
       sx={{
+        position: 'relative',
         border: 1,
         borderColor: isDone ? 'success.main' : 'divider',
         borderRadius: 2,
@@ -74,7 +73,6 @@ const SponsorTaskCard: React.FC<SponsorTaskCardProps> = ({
                     size="small"
                     color="success"
                     onChange={() => {
-                      if (onToggleDone) onToggleDone();
                       field.onChange(!field.value);
                     }}
                   />

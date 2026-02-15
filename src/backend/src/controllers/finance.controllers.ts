@@ -85,7 +85,7 @@ export default class FinanceController {
   static async editSponsorTask(req: Request, res: Response, next: NextFunction) {
     try {
       const { sponsorTaskId } = req.params as Record<string, string>;
-      const { dueDate, notes, notifyDate, assigneeUserId } = req.body;
+      const { dueDate, notes, notifyDate, assigneeUserId, done } = req.body;
 
       const updatedSponsorTask = await FinanceServices.editSponsorTask(
         req.currentUser,
@@ -94,7 +94,8 @@ export default class FinanceController {
         dueDate,
         notes,
         notifyDate,
-        assigneeUserId
+        assigneeUserId,
+        done
       );
       res.status(200).json(updatedSponsorTask);
     } catch (error: unknown) {

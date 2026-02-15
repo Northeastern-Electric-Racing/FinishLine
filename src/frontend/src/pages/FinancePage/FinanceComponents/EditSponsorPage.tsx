@@ -22,14 +22,16 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
   const toast = useToast();
   const { isLoading, mutateAsync } = useEditSponsor();
 
-  const defaultSponsorTasks: CreateSponsorTask[] =
+  const defaultSponsorTasks: CreateSponsorTask[] = (
     sponsor.sponsorTasks?.map((task) => ({
       sponsorTaskId: task.sponsorTaskId,
       dueDate: new Date(task.dueDate),
       notifyDate: task.notifyDate ? new Date(task.notifyDate) : undefined,
       assigneeUserId: task.assignee?.userId ?? undefined,
-      notes: task.notes
-    })) ?? [];
+      notes: task.notes,
+      done: task.done
+    })) ?? []
+  ).sort((a, b) => Number(a.done) - Number(b.done));
 
   const {
     handleSubmit,

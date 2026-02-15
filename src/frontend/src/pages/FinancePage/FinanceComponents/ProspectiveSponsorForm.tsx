@@ -362,6 +362,8 @@ export const ProspectiveSponsorForm: React.FC<ProspectiveSponsorFormProps> = ({
                 fieldPrefix={`tasks.${index}`}
                 members={members}
                 onRemove={() => remove(index)}
+                showDoneCheckbox
+                isExistingTask={!!defaultValues?.tasks?.[index]?.sponsorTaskId}
                 defaultAssigneeName={
                   defaultValues?.tasks?.[index]?.assignee
                     ? `${defaultValues.tasks[index].assignee!.firstName} ${defaultValues.tasks[index].assignee!.lastName}`
