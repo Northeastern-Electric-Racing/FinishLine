@@ -1312,8 +1312,6 @@ model Organization {
   advisor                                User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
   advisorId                              String?
   description                            String    @default("")
-  applyInterestImageId                   String?
-  exploreAsGuestImageId                  String?
   newMemberImageId                       String?
   logoImageId                            String?
   slackWorkspaceId                       String?

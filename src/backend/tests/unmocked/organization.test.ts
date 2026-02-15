@@ -42,46 +42,6 @@ describe('Organization Tests', () => {
     });
   });
 
-  describe('Set Images', () => {
-    const file1 = { originalname: 'image1.png' } as Express.Multer.File;
-    const file2 = { originalname: 'image2.png' } as Express.Multer.File;
-    const file3 = { originalname: 'image3.png' } as Express.Multer.File;
-    it('Fails if user is not an admin', async () => {
-      await expect(
-        OrganizationsService.setImages(file1, file2, await createTestUser(wonderwomanGuest, orgId), organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update images'));
-    });
-
-    it('Succeeds and updates all the images', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      (uploadFile as Mock).mockImplementation((file) => {
-        return Promise.resolve({ id: `uploaded-${file.originalname}` });
-      });
-
-      await OrganizationsService.setImages(file1, file2, testBatman, organization);
-
-      const oldOrganization = await prisma.organization.findUnique({
-        where: {
-          organizationId: orgId
-        }
-      });
-
-      expect(oldOrganization).not.toBeNull();
-      expect(oldOrganization?.applyInterestImageId).toBe('uploaded-image1.png');
-      expect(oldOrganization?.exploreAsGuestImageId).toBe('uploaded-image2.png');
-
-      await OrganizationsService.setImages(file1, file3, testBatman, organization);
-
-      const updatedOrganization = await prisma.organization.findUnique({
-        where: {
-          organizationId: orgId
-        }
-      });
-
-      expect(updatedOrganization?.exploreAsGuestImageId).toBe('uploaded-image3.png');
-    });
-  });
-
   describe('Set Useful Links', () => {
     it('Fails if user is not an admin', async () => {
       await expect(

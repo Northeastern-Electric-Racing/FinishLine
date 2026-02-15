@@ -105,37 +105,6 @@ export default class OrganizationsService {
   }
 
   /**
-   * sets an organizations images
-   * @param submitter the user who is setting the images
-   * @param organizationId the organization which the images will be set up
-   * @param images the images which are being set
-   */
-  static async setImages(
-    applyInterestImage: Express.Multer.File | null,
-    exploreAsGuestImage: Express.Multer.File | null,
-    submitter: User,
-    organization: Organization
-  ) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('update images');
-    }
-
-    const applyInterestImageData = applyInterestImage ? await uploadFile(applyInterestImage) : null;
-    const exploreAsGuestImageData = exploreAsGuestImage ? await uploadFile(exploreAsGuestImage) : null;
-    const updateData = {
-      ...(applyInterestImageData && { applyInterestImageId: applyInterestImageData.id }),
-      ...(exploreAsGuestImageData && { exploreAsGuestImageId: exploreAsGuestImageData.id })
-    };
-
-    const newImages = await prisma.organization.update({
-      where: { organizationId: organization.organizationId },
-      data: updateData
-    });
-
-    return newImages;
-  }
-
-  /**
     Gets all the useful links for an organization
     @param organizationId the organization to get the links for
     @returns the useful links for the organization
@@ -253,26 +222,6 @@ export default class OrganizationsService {
     });
 
     return updatedOrganization;
-  }
-
-  /**
-   * Gets all organization Images for the given organization Id
-   * @param organizationId organization Id of the milestone
-   * @returns all the milestones from the given organization
-   */
-  static async getOrganizationImages(organizationId: string) {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    return {
-      applyInterestImage: organization.applyInterestImageId,
-      exploreAsGuestImage: organization.exploreAsGuestImageId
-    };
   }
 
   /**

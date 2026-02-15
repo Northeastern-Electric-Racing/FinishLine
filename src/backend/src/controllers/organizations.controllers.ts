@@ -22,28 +22,6 @@ export default class OrganizationsController {
     }
   }
 
-  static async setImages(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { applyInterestImage = [], exploreAsGuestImage = [] } = req.files as {
-        applyInterestImage?: Express.Multer.File[];
-        exploreAsGuestImage?: Express.Multer.File[];
-      };
-
-      const applyInterestFile = applyInterestImage[0] || null;
-      const exploreAsGuestFile = exploreAsGuestImage[0] || null;
-
-      const newImages = await OrganizationsService.setImages(
-        applyInterestFile,
-        exploreAsGuestFile,
-        req.currentUser,
-        req.organization
-      );
-
-      res.status(200).json(newImages);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
   static async getAllUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
       const links = await OrganizationsService.getAllUsefulLinks(req.organization.organizationId);
@@ -92,15 +70,6 @@ export default class OrganizationsController {
       );
 
       res.status(200).json(updatedOrganization);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getOrganizationImages(req: Request, res: Response, next: NextFunction) {
-    try {
-      const images = await OrganizationsService.getOrganizationImages(req.organization.organizationId);
-      res.status(200).json(images);
     } catch (error: unknown) {
       next(error);
     }

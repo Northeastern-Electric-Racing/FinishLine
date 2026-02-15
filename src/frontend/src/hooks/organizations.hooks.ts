@@ -13,7 +13,6 @@ import {
   updateApplicationLink,
   setOnboardingText,
   updateOrganizationContacts,
-  setOrganizationImages,
   getPartReviewGuideLink,
   setPartReviewGuideLink,
   setSlackSponsorshipNotificationSlackChannelId,
@@ -64,22 +63,6 @@ export const useProvideOrganization = (): OrganizationProvider => {
     organizationId,
     selectOrganization
   };
-};
-
-export const useSetOrganizationImages = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation<any, unknown, File[]>(
-    async (images: File[]) => {
-      const { data } = await setOrganizationImages(images);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['organizations']);
-      }
-    }
-  );
 };
 
 export const useFeaturedProjects = () => {

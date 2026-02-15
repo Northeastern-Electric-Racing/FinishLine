@@ -93,15 +93,6 @@ export const downloadGoogleImage = async (fileId: string): Promise<Blob> => {
   return imageBlob;
 };
 
-export const setOrganizationImages = (images: File[]) => {
-  const formData = new FormData();
-
-  formData.append('applyInterestImage', images[0]);
-  formData.append('exploreAsGuestImage', images[1]);
-
-  return axios.post<{ message: string }>(apiUrls.organizationsSetImages(), formData, {});
-};
-
 /**
  * Sets the contacts for an organization
  * @param contacts all the contact information that is being set
