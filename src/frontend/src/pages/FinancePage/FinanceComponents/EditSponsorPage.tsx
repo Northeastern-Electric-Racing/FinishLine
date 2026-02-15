@@ -10,6 +10,7 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface EditSponsorPageProps {
   showPage: boolean;
@@ -18,6 +19,7 @@ interface EditSponsorPageProps {
 }
 
 const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProps) => {
+  const toast = useToast();
   const { isLoading, mutateAsync } = useEditSponsor();
 
   const defaultSponsorTasks: CreateSponsorTask[] =
@@ -32,16 +34,18 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
   const {
     handleSubmit,
     control,
+    setValue,
     formState: { errors }
   } = useForm<SponsorPayload>({
     resolver: yupResolver(sponsorSchema),
     defaultValues: {
       name: sponsor.name,
       activeStatus: sponsor.activeStatus,
+      valueTypes: sponsor.valueTypes ?? ['MONETARY'],
       sponsorValue: sponsor.sponsorValue,
       joinDate: sponsor.joinDate,
       activeYears: sponsor.activeYears,
-      sponsorTierId: sponsor.tier.sponsorTierId,
+      sponsorTierId: sponsor.tier?.sponsorTierId ?? '',
       contactName: sponsor.contact.name,
       contactEmail: sponsor.contact.email ?? undefined,
       contactPhone: sponsor.contact.phone ?? undefined,
@@ -49,6 +53,8 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       taxExempt: sponsor.taxExempt,
       discountCode: sponsor.discountCode ?? undefined,
       sponsorNotes: sponsor.sponsorNotes ?? undefined,
+      stockDescription: sponsor.stockDescription ?? undefined,
+      discountDescription: sponsor.discountDescription ?? undefined,
       sponsorTasks: defaultSponsorTasks
     }
   });
@@ -59,9 +65,11 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
     try {
       setSubmitError(null);
       await mutateAsync({ sponsorId: sponsor.sponsorId, ...formData });
+      toast.success('Sponsor updated successfully!');
       handleClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
+        toast.error(err.message);
         setSubmitError(err.message);
       }
     }
@@ -74,7 +82,7 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       title="Edit Sponsor"
       component={
         <Box display="flex" flexDirection="column" alignItems="flex-end">
-          <SponsorForm control={control} errors={errors} defaultValues={sponsor}></SponsorForm>
+          <SponsorForm control={control} errors={errors} setValue={setValue} defaultValues={sponsor}></SponsorForm>
           {submitError && (
             <Box color="error.main" mb={2} fontWeight="bold">
               {submitError}

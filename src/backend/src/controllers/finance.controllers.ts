@@ -7,6 +7,7 @@ export default class FinanceController {
       const {
         name,
         activeStatus,
+        valueTypes,
         sponsorValue,
         joinDate,
         activeYears,
@@ -18,26 +19,31 @@ export default class FinanceController {
         contactPosition,
         sponsorTasks,
         discountCode,
-        sponsorNotes
+        sponsorNotes,
+        stockDescription,
+        discountDescription
       } = req.body;
 
       const sponsor = await FinanceServices.createSponsor(
         req.currentUser,
         name,
         activeStatus,
-        sponsorValue,
+        valueTypes,
         joinDate,
         activeYears,
-        sponsorTierId,
+        sponsorTierId || undefined,
         taxExempt,
         contactName,
         sponsorTasks,
         req.organization,
+        sponsorValue,
         discountCode,
         sponsorNotes,
         contactEmail,
         contactPhone,
-        contactPosition
+        contactPosition,
+        stockDescription,
+        discountDescription
       );
       res.status(200).json(sponsor);
     } catch (error: unknown) {
@@ -329,6 +335,7 @@ export default class FinanceController {
       const {
         name,
         activeStatus,
+        valueTypes,
         sponsorValue,
         joinDate,
         activeYears,
@@ -340,7 +347,9 @@ export default class FinanceController {
         taxExempt,
         sponsorTasks,
         discountCode,
-        sponsorNotes
+        sponsorNotes,
+        stockDescription,
+        discountDescription
       } = req.body;
 
       const updatedSponsor = await FinanceServices.editSponsor(
@@ -349,18 +358,21 @@ export default class FinanceController {
         sponsorId,
         name,
         activeStatus,
-        sponsorValue,
+        valueTypes,
         joinDate,
         activeYears,
-        sponsorTierId,
+        sponsorTierId || undefined,
         contactName,
         taxExempt,
         sponsorTasks,
+        sponsorValue,
         discountCode,
         sponsorNotes,
         contactEmail,
         contactPhone,
-        contactPosition
+        contactPosition,
+        stockDescription,
+        discountDescription
       );
 
       res.status(200).json(updatedSponsor);

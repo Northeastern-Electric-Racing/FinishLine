@@ -9,6 +9,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { ProspectiveSponsor } from 'shared';
 import NERModal from '../../../components/NERModal';
 import { Typography } from '@mui/material';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface DeleteProspectiveSponsorModalProps {
   handleClose: () => void;
@@ -21,6 +22,7 @@ const DeleteProspectiveSponsorModal = ({
   prospectiveSponsor,
   showModal
 }: DeleteProspectiveSponsorModalProps) => {
+  const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useDeleteProspectiveSponsor();
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -32,9 +34,16 @@ const DeleteProspectiveSponsorModal = ({
       title="Warning!"
       onHide={handleClose}
       submitText="Delete"
-      onSubmit={() => {
-        mutateAsync(prospectiveSponsor.prospectiveSponsorId);
-        handleClose();
+      onSubmit={async () => {
+        try {
+          await mutateAsync(prospectiveSponsor.prospectiveSponsorId);
+          toast.success(`Prospective sponsor "${prospectiveSponsor.organizationName}" deleted successfully!`);
+          handleClose();
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            toast.error(err.message);
+          }
+        }
       }}
     >
       <Typography gutterBottom>

@@ -3034,7 +3034,7 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax,
     'Google',
     true,
-    5000,
+    ['MONETARY'],
     daysAgo(90),
     [2024, 2025],
     goldSponsorTier.sponsorTierId,
@@ -3042,7 +3042,10 @@ const performSeed: () => Promise<void> = async () => {
     'Bill Gates',
     [],
     ner,
-    'googlecode'
+    5000,
+    'googlecode',
+    undefined,
+    'bill@google.com'
   );
 
   await FinanceServices.createSponsorTask(

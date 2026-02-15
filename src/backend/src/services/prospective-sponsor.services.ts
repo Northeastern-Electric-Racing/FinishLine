@@ -6,7 +6,7 @@ import {
   SponsorTask,
   User
 } from 'shared';
-import { Organization, Prospective_Sponsor_Status } from '@prisma/client';
+import { Organization, Prospective_Sponsor_Status, Sponsor_Value_Type } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils.js';
 import { getProspectiveSponsorQueryArgs } from '../prisma-query-args/prospective-sponsor.query-args.js';
 import { getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args.js';
@@ -38,10 +38,15 @@ export default class ProspectiveSponsorServices {
     highlightThresholdDays?: number,
     contactEmail?: string,
     contactPhone?: string,
-    contactPosition?: string
+    contactPosition?: string,
+    notes?: string
   ): Promise<ProspectiveSponsor> {
     if (!(await isUserFinanceTeamOrHead(submitter, organization.organizationId))) {
       throw new AccessDeniedException('Only finance team members or heads can create prospective sponsors');
+    }
+
+    if (!contactEmail && !contactPhone) {
+      throw new HttpException(400, 'At least one of contact email or contact phone is required');
     }
 
     const existingProspectiveSponsor = await prisma.prospective_Sponsor.findFirst({
@@ -64,6 +69,10 @@ export default class ProspectiveSponsorServices {
       throw new NotFoundException('User', contactorUserId);
     }
 
+    const contact = await prisma.sponsor_Contact.create({
+      data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
+    });
+
     const prospectiveSponsor = await prisma.prospective_Sponsor.create({
       data: {
         organizationName,
@@ -71,10 +80,8 @@ export default class ProspectiveSponsorServices {
         highlightThresholdDays: highlightThresholdDays ?? 10,
         firstContactMethod,
         contactorUserId,
-        contactName,
-        contactEmail,
-        contactPhone,
-        contactPosition,
+        contactId: contact.sponsorContactId,
+        notes,
         organizationId: organization.organizationId
       },
       ...getProspectiveSponsorQueryArgs(organization.organizationId)
@@ -114,10 +121,15 @@ export default class ProspectiveSponsorServices {
     highlightThresholdDays?: number,
     contactEmail?: string,
     contactPhone?: string,
-    contactPosition?: string
+    contactPosition?: string,
+    notes?: string
   ): Promise<ProspectiveSponsor> {
     if (!(await isUserFinanceTeamOrHead(submitter, organization.organizationId))) {
       throw new AccessDeniedException('Only finance team members or heads can edit prospective sponsors');
+    }
+
+    if (!contactEmail && !contactPhone) {
+      throw new HttpException(400, 'At least one of contact email or contact phone is required');
     }
 
     const oldProspectiveSponsor = await prisma.prospective_Sponsor.findUnique({
@@ -149,6 +161,11 @@ export default class ProspectiveSponsorServices {
       throw new NotFoundException('User', contactorUserId);
     }
 
+    await prisma.sponsor_Contact.update({
+      where: { sponsorContactId: oldProspectiveSponsor.contactId },
+      data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
+    });
+
     const updatedProspectiveSponsor = await prisma.prospective_Sponsor.update({
       where: { prospectiveSponsorId },
       data: {
@@ -158,10 +175,7 @@ export default class ProspectiveSponsorServices {
         status,
         firstContactMethod,
         contactorUserId,
-        contactName,
-        contactEmail,
-        contactPhone,
-        contactPosition
+        notes
       },
       ...getProspectiveSponsorQueryArgs(organization.organizationId)
     });
@@ -283,20 +297,24 @@ export default class ProspectiveSponsorServices {
     submitter: User,
     organization: Organization,
     prospectiveSponsorId: string,
-    sponsorTierId: string,
-    sponsorValue: number,
+    sponsorTierId: string | undefined,
+    valueTypes: Sponsor_Value_Type[],
     joinDate: Date,
     activeYears: number[],
     taxExempt: boolean,
+    sponsorValue?: number,
     discountCode?: string,
-    sponsorNotes?: string
+    sponsorNotes?: string,
+    stockDescription?: string,
+    discountDescription?: string
   ): Promise<ProspectiveSponsor> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedException('Only heads can accept prospective sponsors');
     }
 
     const prospectiveSponsor = await prisma.prospective_Sponsor.findUnique({
-      where: { prospectiveSponsorId, organizationId: organization.organizationId }
+      where: { prospectiveSponsorId, organizationId: organization.organizationId },
+      include: { contact: true }
     });
 
     if (!prospectiveSponsor) throw new NotFoundException('ProspectiveSponsor', prospectiveSponsorId);
@@ -305,11 +323,13 @@ export default class ProspectiveSponsorServices {
       throw new HttpException(400, 'This prospective sponsor has already been accepted');
     }
 
-    const tier = await prisma.sponsor_Tier.findUnique({
-      where: { sponsorTierId, organizationId: organization.organizationId }
-    });
+    if (sponsorTierId) {
+      const tier = await prisma.sponsor_Tier.findUnique({
+        where: { sponsorTierId, organizationId: organization.organizationId }
+      });
 
-    if (!tier) throw new NotFoundException('SponsorTier', sponsorTierId);
+      if (!tier) throw new NotFoundException('SponsorTier', sponsorTierId);
+    }
 
     // Check if a sponsor with this name already exists
     const existingSponsor = await prisma.sponsor.findFirst({
@@ -324,22 +344,32 @@ export default class ProspectiveSponsorServices {
       throw new HttpException(400, `A sponsor with the name "${prospectiveSponsor.organizationName}" already exists.`);
     }
 
+    // Create a new contact for the sponsor, copied from the prospective sponsor's contact
+    const sponsorContact = await prisma.sponsor_Contact.create({
+      data: {
+        name: prospectiveSponsor.contact.name,
+        email: prospectiveSponsor.contact.email,
+        phone: prospectiveSponsor.contact.phone,
+        position: prospectiveSponsor.contact.position
+      }
+    });
+
     // Create the sponsor
     await prisma.sponsor.create({
       data: {
         name: prospectiveSponsor.organizationName,
         activeStatus: true,
+        valueTypes,
         sponsorValue,
+        stockDescription,
+        discountDescription,
         joinDate,
         activeYears,
         sponsorTierId,
         taxExempt,
         discountCode,
         sponsorNotes,
-        contactName: prospectiveSponsor.contactName,
-        contactEmail: prospectiveSponsor.contactEmail,
-        contactPhone: prospectiveSponsor.contactPhone,
-        contactPosition: prospectiveSponsor.contactPosition,
+        contactId: sponsorContact.sponsorContactId,
         organizationId: organization.organizationId
       }
     });

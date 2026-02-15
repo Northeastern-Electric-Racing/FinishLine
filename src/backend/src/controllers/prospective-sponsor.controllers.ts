@@ -13,7 +13,8 @@ export default class ProspectiveSponsorController {
         highlightThresholdDays,
         contactEmail,
         contactPhone,
-        contactPosition
+        contactPosition,
+        notes
       } = req.body;
 
       const prospectiveSponsor = await ProspectiveSponsorServices.createProspectiveSponsor(
@@ -27,7 +28,8 @@ export default class ProspectiveSponsorController {
         highlightThresholdDays,
         contactEmail,
         contactPhone,
-        contactPosition
+        contactPosition,
+        notes
       );
       res.status(200).json(prospectiveSponsor);
     } catch (error: unknown) {
@@ -57,7 +59,8 @@ export default class ProspectiveSponsorController {
         highlightThresholdDays,
         contactEmail,
         contactPhone,
-        contactPosition
+        contactPosition,
+        notes
       } = req.body;
 
       const updatedProspectiveSponsor = await ProspectiveSponsorServices.editProspectiveSponsor(
@@ -73,7 +76,8 @@ export default class ProspectiveSponsorController {
         highlightThresholdDays,
         contactEmail,
         contactPhone,
-        contactPosition
+        contactPosition,
+        notes
       );
       res.status(200).json(updatedProspectiveSponsor);
     } catch (error: unknown) {
@@ -131,19 +135,33 @@ export default class ProspectiveSponsorController {
   static async acceptProspectiveSponsor(req: Request, res: Response, next: NextFunction) {
     try {
       const { prospectiveSponsorId } = req.params as Record<string, string>;
-      const { sponsorTierId, sponsorValue, joinDate, activeYears, taxExempt, discountCode, sponsorNotes } = req.body;
-
-      const acceptedProspectiveSponsor = await ProspectiveSponsorServices.acceptProspectiveSponsor(
-        req.currentUser,
-        req.organization,
-        prospectiveSponsorId,
+      const {
         sponsorTierId,
+        valueTypes,
         sponsorValue,
         joinDate,
         activeYears,
         taxExempt,
         discountCode,
-        sponsorNotes
+        sponsorNotes,
+        stockDescription,
+        discountDescription
+      } = req.body;
+
+      const acceptedProspectiveSponsor = await ProspectiveSponsorServices.acceptProspectiveSponsor(
+        req.currentUser,
+        req.organization,
+        prospectiveSponsorId,
+        sponsorTierId || undefined,
+        valueTypes,
+        joinDate,
+        activeYears,
+        taxExempt,
+        sponsorValue,
+        discountCode,
+        sponsorNotes,
+        stockDescription,
+        discountDescription
       );
       res.status(200).json(acceptedProspectiveSponsor);
     } catch (error: unknown) {

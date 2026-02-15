@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useEffect, useRef, useState } from 'react';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
@@ -16,11 +16,12 @@ import {
   MenuItem,
   Checkbox,
   Autocomplete,
-  TextField
+  TextField,
+  Chip
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { ProspectiveSponsor } from 'shared';
+import { ProspectiveSponsor, SponsorValueType } from 'shared';
 import NERModal from '../../../components/NERModal';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -35,14 +36,23 @@ interface AcceptProspectiveSponsorModalProps {
 }
 
 interface AcceptFormInputs {
-  sponsorTierId: string;
-  sponsorValue: number;
+  sponsorTierId?: string;
+  valueTypes: string[];
+  sponsorValue?: number;
   joinDate: Date;
   activeYears: number[];
   taxExempt: boolean;
   discountCode?: string;
   sponsorNotes?: string;
+  stockDescription?: string;
+  discountDescription?: string;
 }
+
+const VALUE_TYPE_OPTIONS = [
+  { value: SponsorValueType.MONETARY, label: 'Monetary' },
+  { value: SponsorValueType.STOCK, label: 'Stock/Parts' },
+  { value: SponsorValueType.DISCOUNT, label: 'Discount' }
+];
 
 const getYears = (startYear = 1950) => {
   const currentYear = new Date().getFullYear();
@@ -54,13 +64,27 @@ const getYears = (startYear = 1950) => {
 };
 
 const acceptSchema = yup.object().shape({
-  sponsorTierId: yup.string().required('Sponsor tier is required'),
-  sponsorValue: yup.number().typeError('Must be a number').required('Sponsor value is required'),
+  sponsorTierId: yup.string().optional(),
+  valueTypes: yup
+    .array()
+    .of(yup.string().required())
+    .min(1, 'At least one value type is required')
+    .required('Value types are required'),
+  sponsorValue: yup
+    .number()
+    .typeError('Must be a number')
+    .when('valueTypes', {
+      is: (types: string[]) => types?.includes(SponsorValueType.MONETARY),
+      then: (schema) => schema.required('Sponsor value is required for monetary sponsors'),
+      otherwise: (schema) => schema.optional().nullable()
+    }),
   joinDate: yup.date().required('Join date is required'),
   activeYears: yup.array().of(yup.number().required()).min(1, 'At least one active year is required').required(),
   taxExempt: yup.boolean().required(),
   discountCode: yup.string().optional(),
-  sponsorNotes: yup.string().optional()
+  sponsorNotes: yup.string().optional(),
+  stockDescription: yup.string().optional(),
+  discountDescription: yup.string().optional()
 });
 
 const AcceptProspectiveSponsorModal = ({
@@ -83,19 +107,41 @@ const AcceptProspectiveSponsorModal = ({
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors }
   } = useForm<AcceptFormInputs>({
     resolver: yupResolver(acceptSchema),
     defaultValues: {
       sponsorTierId: '',
+      valueTypes: ['MONETARY'],
       sponsorValue: 0,
       joinDate: new Date(),
       activeYears: [new Date().getFullYear()],
       taxExempt: false,
       discountCode: '',
-      sponsorNotes: ''
+      sponsorNotes: '',
+      stockDescription: '',
+      discountDescription: ''
     }
   });
+
+  const watchedValueTypes: string[] = useWatch({ control, name: 'valueTypes' }) ?? [];
+  const isMonetary = watchedValueTypes.includes(SponsorValueType.MONETARY);
+  const isStock = watchedValueTypes.includes(SponsorValueType.STOCK);
+  const isDiscount = watchedValueTypes.includes(SponsorValueType.DISCOUNT);
+
+  const watchedSponsorValue: number | undefined = useWatch({ control, name: 'sponsorValue' });
+  const tierManuallySet = useRef(false);
+
+  useEffect(() => {
+    if (tierManuallySet.current || !sponsorTiers || sponsorTiers.length === 0) return;
+    const value = watchedSponsorValue ?? 0;
+    const sorted = [...sponsorTiers].sort((a, b) => b.minSupportValue - a.minSupportValue);
+    const bestTier = sorted.find((t) => value >= t.minSupportValue);
+    if (bestTier) {
+      setValue('sponsorTierId', bestTier.sponsorTierId);
+    }
+  }, [watchedSponsorValue, sponsorTiers, setValue]);
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (tiersIsError) return <ErrorPage message={tiersError?.message} />;
@@ -106,12 +152,15 @@ const AcceptProspectiveSponsorModal = ({
       await mutateAsync({
         prospectiveSponsorId: prospectiveSponsor.prospectiveSponsorId,
         sponsorTierId: formData.sponsorTierId,
+        valueTypes: formData.valueTypes,
         sponsorValue: formData.sponsorValue,
         joinDate: formData.joinDate,
         activeYears: formData.activeYears,
         taxExempt: formData.taxExempt,
         discountCode: formData.discountCode || undefined,
-        sponsorNotes: formData.sponsorNotes || undefined
+        sponsorNotes: formData.sponsorNotes || undefined,
+        stockDescription: formData.stockDescription || undefined,
+        discountDescription: formData.discountDescription || undefined
       });
       toast.success(`${prospectiveSponsor.organizationName} has been added as a sponsor! View them in the Sponsors tab.`);
       handleClose();
@@ -133,7 +182,7 @@ const AcceptProspectiveSponsorModal = ({
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 400 }}>
         <FormControl fullWidth>
           <Typography variant="subtitle2" color="#EF4345">
-            Sponsor Tier:*
+            Sponsor Tier:
           </Typography>
           <Controller
             control={control}
@@ -142,7 +191,10 @@ const AcceptProspectiveSponsorModal = ({
               <Select
                 displayEmpty
                 value={value}
-                onChange={onChange}
+                onChange={(e) => {
+                  tierManuallySet.current = true;
+                  onChange(e);
+                }}
                 size="small"
                 renderValue={(selected) => {
                   const tier = sponsorTiers.find((t) => t.sponsorTierId === selected);
@@ -162,7 +214,38 @@ const AcceptProspectiveSponsorModal = ({
 
         <FormControl fullWidth>
           <Typography variant="subtitle2" color="#EF4345">
-            Sponsor Value:*
+            Value Types:*
+          </Typography>
+          <Controller
+            control={control}
+            name="valueTypes"
+            render={({ field: { onChange, value } }) => (
+              <Autocomplete
+                multiple
+                size="small"
+                options={VALUE_TYPE_OPTIONS}
+                getOptionLabel={(option) => option.label}
+                value={VALUE_TYPE_OPTIONS.filter((opt) => value?.includes(opt.value))}
+                onChange={(_, data) => onChange(data.map((d) => d.value))}
+                renderInput={(params) => (
+                  <TextField {...params} placeholder="Select Value Types" error={!!errors.valueTypes} />
+                )}
+                renderTags={(tagValue, getTagProps) =>
+                  tagValue.map((option, index) => (
+                    <Chip label={option.label} {...getTagProps({ index })} size="small" />
+                  ))
+                }
+                isOptionEqualToValue={(option, val) => option.value === val.value}
+                disableCloseOnSelect
+              />
+            )}
+          />
+          <FormHelperText error>{errors.valueTypes?.message}</FormHelperText>
+        </FormControl>
+
+        <FormControl fullWidth>
+          <Typography variant="subtitle2" color="#EF4345">
+            Sponsor Value:{isMonetary ? '*' : ''}
           </Typography>
           <ReactHookTextField
             name="sponsorValue"
@@ -174,6 +257,38 @@ const AcceptProspectiveSponsorModal = ({
             errorMessage={errors.sponsorValue}
           />
         </FormControl>
+
+        {isStock && (
+          <FormControl fullWidth>
+            <Typography variant="subtitle2" color="#EF4345">
+              Stock/Parts Description:
+            </Typography>
+            <ReactHookTextField
+              name="stockDescription"
+              control={control}
+              size="small"
+              placeholder="Describe stock or parts provided"
+              multiline
+              rows={2}
+            />
+          </FormControl>
+        )}
+
+        {isDiscount && (
+          <FormControl fullWidth>
+            <Typography variant="subtitle2" color="#EF4345">
+              Discount Description:
+            </Typography>
+            <ReactHookTextField
+              name="discountDescription"
+              control={control}
+              size="small"
+              placeholder="Describe discount terms"
+              multiline
+              rows={2}
+            />
+          </FormControl>
+        )}
 
         <FormControl fullWidth>
           <Typography variant="subtitle2" color="#EF4345">

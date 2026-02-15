@@ -16,7 +16,7 @@ export const prospectiveSponsorTransformer = (prospectiveSponsor: ProspectiveSpo
     ...prospectiveSponsor,
     dateCreated: new Date(prospectiveSponsor.dateCreated),
     lastContactDate: new Date(prospectiveSponsor.lastContactDate),
-    tasks: prospectiveSponsor.tasks.map((task) => ({
+    tasks: (prospectiveSponsor.tasks ?? []).map((task) => ({
       ...task,
       dueDate: new Date(task.dueDate),
       notifyDate: task.notifyDate ? new Date(task.notifyDate) : undefined

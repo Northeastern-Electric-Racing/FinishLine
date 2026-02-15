@@ -15,6 +15,12 @@ export enum FirstContactMethod {
   OTHER = 'OTHER'
 }
 
+export enum SponsorValueType {
+  MONETARY = 'MONETARY',
+  STOCK = 'STOCK',
+  DISCOUNT = 'DISCOUNT'
+}
+
 export interface ContactInfo {
   name: string;
   email?: string;
@@ -27,14 +33,17 @@ export interface Sponsor {
   name: string;
   activeStatus: boolean;
   contact: ContactInfo;
-  sponsorValue: number;
+  valueTypes: SponsorValueType[];
+  sponsorValue?: number;
+  stockDescription?: string;
+  discountDescription?: string;
   joinDate: Date;
   activeYears: number[];
   taxExempt: boolean;
   discountCode?: string;
   sponsorNotes?: string;
   sponsorTasks: SponsorTask[];
-  tier: SponsorTier;
+  tier?: SponsorTier;
 }
 
 export interface SponsorTask {
@@ -63,6 +72,7 @@ export interface ProspectiveSponsor {
   firstContactMethod: FirstContactMethod;
   contactor: User;
   contact: ContactInfo;
+  notes?: string;
   tasks: SponsorTask[];
 }
 

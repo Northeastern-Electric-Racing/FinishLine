@@ -10,7 +10,7 @@ import {
   wbsPipe,
   User
 } from 'shared';
-import { Organization, Sponsor_Task, Reimbursement_Status_Type } from '@prisma/client';
+import { Organization, Sponsor_Task, Reimbursement_Status_Type, Sponsor_Value_Type } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils.js';
 import {
   getSponsorQueryArgs,
@@ -65,22 +65,29 @@ export default class FinanceServices {
     submitter: User,
     name: string,
     activeStatus: boolean,
-    sponsorValue: number,
+    valueTypes: Sponsor_Value_Type[],
     joinDate: Date,
     activeYears: number[],
-    sponsorTierId: string,
+    sponsorTierId: string | undefined,
     taxExempt: boolean,
     contactName: string,
     sponsorTasks: CreateSponsorTask[],
     organization: Organization,
+    sponsorValue?: number,
     discountCode?: string,
     sponsorNotes?: string,
     contactEmail?: string,
     contactPhone?: string,
-    contactPosition?: string
+    contactPosition?: string,
+    stockDescription?: string,
+    discountDescription?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can create a sponsor');
+
+    if (!contactEmail && !contactPhone) {
+      throw new HttpException(400, 'At least one of contact email or contact phone is required');
+    }
 
     const existingSponsor = await prisma.sponsor.findFirst({
       where: {
@@ -93,21 +100,25 @@ export default class FinanceServices {
       throw new HttpException(400, `A sponsor with the name "${name}" already exists.`);
     }
 
+    const contact = await prisma.sponsor_Contact.create({
+      data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
+    });
+
     const sponsor = await prisma.sponsor.create({
       data: {
         name,
         activeStatus,
+        valueTypes,
         sponsorValue,
+        stockDescription,
+        discountDescription,
         joinDate,
         activeYears,
         sponsorTierId,
         taxExempt,
         discountCode,
         sponsorNotes,
-        contactName,
-        contactEmail,
-        contactPhone,
-        contactPosition,
+        contactId: contact.sponsorContactId,
         sponsorTasks: {
           create: sponsorTasks.map((task) => ({
             dueDate: task.dueDate,
@@ -1144,21 +1155,28 @@ export default class FinanceServices {
     sponsorId: string,
     name: string,
     activeStatus: boolean,
-    sponsorValue: number,
+    valueTypes: Sponsor_Value_Type[],
     joinDate: Date,
     activeYears: number[],
-    sponsorTierId: string,
+    sponsorTierId: string | undefined,
     contactName: string,
     taxExempt: boolean,
     sponsorTasks: CreateSponsorTask[],
+    sponsorValue?: number,
     discountCode?: string,
     sponsorNotes?: string,
     contactEmail?: string,
     contactPhone?: string,
-    contactPosition?: string
+    contactPosition?: string,
+    stockDescription?: string,
+    discountDescription?: string
   ): Promise<Sponsor> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can edit sponsors.');
+
+    if (!contactEmail && !contactPhone) {
+      throw new HttpException(400, 'At least one of contact email or contact phone is required');
+    }
 
     const oldSponsor = await prisma.sponsor.findUnique({
       where: {
@@ -1182,14 +1200,16 @@ export default class FinanceServices {
       )
     );
 
-    const tier = await prisma.sponsor_Tier.findUnique({
-      where: {
-        sponsorTierId,
-        organizationId: organization.organizationId
-      }
-    });
+    if (sponsorTierId) {
+      const tier = await prisma.sponsor_Tier.findUnique({
+        where: {
+          sponsorTierId,
+          organizationId: organization.organizationId
+        }
+      });
 
-    if (!tier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
+      if (!tier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
+    }
 
     if (name !== oldSponsor.name) {
       const existingSponsor = await prisma.sponsor.findFirst({
@@ -1207,17 +1227,23 @@ export default class FinanceServices {
       }
     }
 
+    await prisma.sponsor_Contact.update({
+      where: { sponsorContactId: oldSponsor.contactId },
+      data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
+    });
+
     const updatedSponsor = await prisma.sponsor.update({
       where: { sponsorId: oldSponsor.sponsorId },
       data: {
         name,
         activeStatus,
+        valueTypes,
         sponsorValue,
+        stockDescription,
+        discountDescription,
         joinDate,
         activeYears,
-        tier: {
-          connect: { sponsorTierId }
-        },
+        tier: sponsorTierId ? { connect: { sponsorTierId } } : { disconnect: true },
         sponsorTasks: {
           connect: await Promise.all(
             sponsorTasks.map(async (t) => {
@@ -1234,10 +1260,6 @@ export default class FinanceServices {
             })
           )
         },
-        contactName,
-        contactEmail,
-        contactPhone,
-        contactPosition,
         taxExempt,
         discountCode,
         sponsorNotes

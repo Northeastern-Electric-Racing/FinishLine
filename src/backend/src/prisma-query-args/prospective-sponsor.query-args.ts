@@ -8,6 +8,7 @@ export const getProspectiveSponsorQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Prospective_SponsorDefaultArgs>()({
     include: {
       contactor: getUserQueryArgs(organizationId),
-      tasks: getSponsorTaskQueryArgs(organizationId)
+      tasks: getSponsorTaskQueryArgs(organizationId),
+      contact: true
     }
   });

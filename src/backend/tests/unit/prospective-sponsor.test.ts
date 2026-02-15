@@ -47,9 +47,66 @@ describe('Prospective Sponsor Tests', () => {
           new Date(),
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
-          contactor.userId
+          contactor.userId,
+          undefined,
+          'contact@test.com'
         )
       ).rejects.toThrow(new AccessDeniedException('Only finance team members or heads can create prospective sponsors'));
+    });
+
+    it('Fails if neither email nor phone is provided', async () => {
+      const head = await createTestUser(batmanAppAdmin, orgId);
+
+      await expect(
+        ProspectiveSponsorServices.createProspectiveSponsor(
+          head,
+          organization,
+          'Acme Corp',
+          new Date(),
+          FirstContactMethod.INBOUND_EMAIL,
+          'John Doe',
+          head.userId
+        )
+      ).rejects.toThrow(new HttpException(400, 'At least one of contact email or contact phone is required'));
+    });
+
+    it('Succeeds with only email', async () => {
+      const head = await createTestUser(batmanAppAdmin, orgId);
+
+      const result = await ProspectiveSponsorServices.createProspectiveSponsor(
+        head,
+        organization,
+        'Email Only Corp',
+        new Date(),
+        FirstContactMethod.INBOUND_EMAIL,
+        'John Doe',
+        head.userId,
+        undefined,
+        'john@email.com'
+      );
+
+      expect(result.contact.email).toBe('john@email.com');
+      expect(result.contact.phone).toBeUndefined();
+    });
+
+    it('Succeeds with only phone', async () => {
+      const head = await createTestUser(batmanAppAdmin, orgId);
+
+      const result = await ProspectiveSponsorServices.createProspectiveSponsor(
+        head,
+        organization,
+        'Phone Only Corp',
+        new Date(),
+        FirstContactMethod.INBOUND_EMAIL,
+        'John Doe',
+        head.userId,
+        undefined,
+        undefined,
+        '555-1234'
+      );
+
+      expect(result.contact.email).toBeUndefined();
+      expect(result.contact.phone).toBe('555-1234');
     });
 
     it('Fails if prospective sponsor with same name already exists', async () => {
@@ -62,7 +119,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await expect(
@@ -73,7 +132,9 @@ describe('Prospective Sponsor Tests', () => {
           new Date(),
           FirstContactMethod.OUTBOUND_EMAIL,
           'Jane Doe',
-          head.userId
+          head.userId,
+          undefined,
+          'jane@test.com'
         )
       ).rejects.toThrow(new HttpException(400, 'A prospective sponsor with the name "Acme Corp" already exists.'));
     });
@@ -89,7 +150,9 @@ describe('Prospective Sponsor Tests', () => {
           new Date(),
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
-          'nonexistent-user-id'
+          'nonexistent-user-id',
+          undefined,
+          'contact@test.com'
         )
       ).rejects.toThrow(new NotFoundException('User', 'nonexistent-user-id'));
     });
@@ -135,7 +198,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       expect(result.highlightThresholdDays).toBe(10);
@@ -153,7 +218,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       const ps2 = await ProspectiveSponsorServices.createProspectiveSponsor(
@@ -163,7 +230,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.OUTBOUND_EMAIL,
         'Jane Smith',
-        head.userId
+        head.userId,
+        undefined,
+        'jane@test.com'
       );
 
       const results = await ProspectiveSponsorServices.getAllProspectiveSponsors(organization);
@@ -183,7 +252,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await ProspectiveSponsorServices.createProspectiveSponsor(
@@ -193,7 +264,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.OUTBOUND_EMAIL,
         'Jane Smith',
-        head.userId
+        head.userId,
+        undefined,
+        'jane@test.com'
       );
 
       await ProspectiveSponsorServices.deleteProspectiveSponsor(ps1.prospectiveSponsorId, head, organization);
@@ -217,7 +290,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await expect(
@@ -230,9 +305,41 @@ describe('Prospective Sponsor Tests', () => {
           ProspectiveSponsorStatus.IN_PROGRESS,
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
-          head.userId
+          head.userId,
+          undefined,
+          'contact@test.com'
         )
       ).rejects.toThrow(new AccessDeniedException('Only finance team members or heads can edit prospective sponsors'));
+    });
+
+    it('Fails if neither email nor phone is provided', async () => {
+      const head = await createTestUser(batmanAppAdmin, orgId);
+
+      const ps = await ProspectiveSponsorServices.createProspectiveSponsor(
+        head,
+        organization,
+        'Acme Corp',
+        new Date(),
+        FirstContactMethod.INBOUND_EMAIL,
+        'John Doe',
+        head.userId,
+        undefined,
+        'contact@test.com'
+      );
+
+      await expect(
+        ProspectiveSponsorServices.editProspectiveSponsor(
+          head,
+          organization,
+          ps.prospectiveSponsorId,
+          'Acme Corp',
+          new Date(),
+          ProspectiveSponsorStatus.IN_PROGRESS,
+          FirstContactMethod.INBOUND_EMAIL,
+          'John Doe',
+          head.userId
+        )
+      ).rejects.toThrow(new HttpException(400, 'At least one of contact email or contact phone is required'));
     });
 
     it('Fails if prospective sponsor does not exist', async () => {
@@ -248,7 +355,9 @@ describe('Prospective Sponsor Tests', () => {
           ProspectiveSponsorStatus.IN_PROGRESS,
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
-          head.userId
+          head.userId,
+          undefined,
+          'contact@test.com'
         )
       ).rejects.toThrow(new NotFoundException('ProspectiveSponsor', 'nonexistent-id'));
     });
@@ -263,7 +372,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await ProspectiveSponsorServices.deleteProspectiveSponsor(ps.prospectiveSponsorId, head, organization);
@@ -278,7 +389,9 @@ describe('Prospective Sponsor Tests', () => {
           ProspectiveSponsorStatus.IN_PROGRESS,
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
-          head.userId
+          head.userId,
+          undefined,
+          'contact@test.com'
         )
       ).rejects.toThrow(new DeletedException('ProspectiveSponsor', ps.prospectiveSponsorId));
     });
@@ -293,7 +406,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await ProspectiveSponsorServices.createProspectiveSponsor(
@@ -303,7 +418,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.OUTBOUND_EMAIL,
         'Jane Smith',
-        head.userId
+        head.userId,
+        undefined,
+        'jane@test.com'
       );
 
       await expect(
@@ -316,7 +433,9 @@ describe('Prospective Sponsor Tests', () => {
           ProspectiveSponsorStatus.IN_PROGRESS,
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
-          head.userId
+          head.userId,
+          undefined,
+          'contact@test.com'
         )
       ).rejects.toThrow(new HttpException(400, 'A prospective sponsor with the name "Beta Inc" already exists.'));
     });
@@ -331,7 +450,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await expect(
@@ -344,7 +465,9 @@ describe('Prospective Sponsor Tests', () => {
           ProspectiveSponsorStatus.IN_PROGRESS,
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
-          'nonexistent-user-id'
+          'nonexistent-user-id',
+          undefined,
+          'contact@test.com'
         )
       ).rejects.toThrow(new NotFoundException('User', 'nonexistent-user-id'));
     });
@@ -361,7 +484,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       const result = await ProspectiveSponsorServices.editProspectiveSponsor(
@@ -405,7 +530,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await expect(
@@ -431,7 +558,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await ProspectiveSponsorServices.deleteProspectiveSponsor(ps.prospectiveSponsorId, head, organization);
@@ -451,7 +580,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       const result = await ProspectiveSponsorServices.deleteProspectiveSponsor(ps.prospectiveSponsorId, head, organization);
@@ -483,7 +614,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       const task1 = await ProspectiveSponsorServices.createProspectiveSponsorTask(
@@ -522,7 +655,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await expect(
@@ -560,7 +695,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await ProspectiveSponsorServices.deleteProspectiveSponsor(ps.prospectiveSponsorId, head, organization);
@@ -586,7 +723,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await expect(
@@ -614,7 +753,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       const result = await ProspectiveSponsorServices.createProspectiveSponsorTask(
@@ -645,7 +786,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       const result = await ProspectiveSponsorServices.createProspectiveSponsorTask(
@@ -676,7 +819,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await expect(
@@ -685,10 +830,11 @@ describe('Prospective Sponsor Tests', () => {
           organization,
           ps.prospectiveSponsorId,
           sponsorTierId,
-          5000,
+          ['MONETARY'],
           new Date(),
           [2024],
-          false
+          false,
+          5000
         )
       ).rejects.toThrow(new AccessDeniedException('Only heads can accept prospective sponsors'));
     });
@@ -702,10 +848,11 @@ describe('Prospective Sponsor Tests', () => {
           organization,
           'nonexistent-id',
           sponsorTierId,
-          5000,
+          ['MONETARY'],
           new Date(),
           [2024],
-          false
+          false,
+          5000
         )
       ).rejects.toThrow(new NotFoundException('ProspectiveSponsor', 'nonexistent-id'));
     });
@@ -720,7 +867,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await ProspectiveSponsorServices.deleteProspectiveSponsor(ps.prospectiveSponsorId, head, organization);
@@ -731,10 +880,11 @@ describe('Prospective Sponsor Tests', () => {
           organization,
           ps.prospectiveSponsorId,
           sponsorTierId,
-          5000,
+          ['MONETARY'],
           new Date(),
           [2024],
-          false
+          false,
+          5000
         )
       ).rejects.toThrow(new DeletedException('ProspectiveSponsor', ps.prospectiveSponsorId));
     });
@@ -749,7 +899,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await ProspectiveSponsorServices.acceptProspectiveSponsor(
@@ -757,10 +909,11 @@ describe('Prospective Sponsor Tests', () => {
         organization,
         ps.prospectiveSponsorId,
         sponsorTierId,
-        5000,
+        ['MONETARY'],
         new Date(),
         [2024],
-        false
+        false,
+        5000
       );
 
       // After accepting, the prospective sponsor is soft-deleted, so trying to accept again throws DeletedException
@@ -770,10 +923,11 @@ describe('Prospective Sponsor Tests', () => {
           organization,
           ps.prospectiveSponsorId,
           sponsorTierId,
-          10000,
+          ['MONETARY'],
           new Date(),
           [2024, 2025],
-          true
+          true,
+          10000
         )
       ).rejects.toThrow(new DeletedException('ProspectiveSponsor', ps.prospectiveSponsorId));
     });
@@ -788,7 +942,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await expect(
@@ -797,10 +953,11 @@ describe('Prospective Sponsor Tests', () => {
           organization,
           ps.prospectiveSponsorId,
           'nonexistent-tier-id',
-          5000,
+          ['MONETARY'],
           new Date(),
           [2024],
-          false
+          false,
+          5000
         )
       ).rejects.toThrow(new NotFoundException('SponsorTier', 'nonexistent-tier-id'));
     });
@@ -813,14 +970,18 @@ describe('Prospective Sponsor Tests', () => {
         head,
         'Acme Corp',
         true,
-        5000,
+        ['MONETARY'],
         new Date(),
         [2024],
         sponsorTierId,
         false,
         'Existing Contact',
         [],
-        organization
+        organization,
+        5000,
+        undefined,
+        undefined,
+        'test@test.com'
       );
 
       const ps = await ProspectiveSponsorServices.createProspectiveSponsor(
@@ -830,7 +991,9 @@ describe('Prospective Sponsor Tests', () => {
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
-        head.userId
+        head.userId,
+        undefined,
+        'contact@test.com'
       );
 
       await expect(
@@ -839,10 +1002,11 @@ describe('Prospective Sponsor Tests', () => {
           organization,
           ps.prospectiveSponsorId,
           sponsorTierId,
-          5000,
+          ['MONETARY'],
           new Date(),
           [2024],
-          false
+          false,
+          5000
         )
       ).rejects.toThrow(new HttpException(400, 'A sponsor with the name "Acme Corp" already exists.'));
     });
@@ -870,10 +1034,11 @@ describe('Prospective Sponsor Tests', () => {
         organization,
         ps.prospectiveSponsorId,
         sponsorTierId,
-        10000,
+        ['MONETARY'],
         joinDate,
         [2024, 2025],
         true,
+        10000,
         'ACME10',
         'Great partner!'
       );
@@ -891,7 +1056,7 @@ describe('Prospective Sponsor Tests', () => {
       expect(createdSponsor!.sponsorValue).toBe(10000);
       expect(createdSponsor!.joinDate).toEqual(joinDate);
       expect(createdSponsor!.activeYears).toEqual([2024, 2025]);
-      expect(createdSponsor!.tier.sponsorTierId).toBe(sponsorTierId);
+      expect(createdSponsor!.tier!.sponsorTierId).toBe(sponsorTierId);
       expect(createdSponsor!.taxExempt).toBe(true);
       expect(createdSponsor!.discountCode).toBe('ACME10');
       expect(createdSponsor!.sponsorNotes).toBe('Great partner!');

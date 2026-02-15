@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
 import { useState } from 'react';
+import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useEditProspectiveSponsor } from '../../../hooks/finance.hooks';
 import SidePage from './SidePagePopup';
@@ -30,6 +31,7 @@ const EditProspectiveSponsorPage = ({
   handleClose,
   prospectiveSponsor
 }: EditProspectiveSponsorPageProps) => {
+  const toast = useToast();
   const { isLoading, mutateAsync } = useEditProspectiveSponsor();
 
   const defaultTasks = prospectiveSponsor.tasks?.map((task) => ({
@@ -56,6 +58,7 @@ const EditProspectiveSponsorPage = ({
       contactEmail: prospectiveSponsor.contact.email ?? '',
       contactPhone: prospectiveSponsor.contact.phone ?? '',
       contactPosition: prospectiveSponsor.contact.position ?? '',
+      notes: prospectiveSponsor.notes ?? '',
       status: prospectiveSponsor.status,
       tasks: defaultTasks
     }
@@ -79,11 +82,14 @@ const EditProspectiveSponsorPage = ({
         highlightThresholdDays: formData.highlightThresholdDays,
         contactEmail: formData.contactEmail || undefined,
         contactPhone: formData.contactPhone || undefined,
-        contactPosition: formData.contactPosition || undefined
+        contactPosition: formData.contactPosition || undefined,
+        notes: formData.notes || undefined
       });
+      toast.success('Prospective sponsor updated successfully!');
       handleClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
+        toast.error(err.message);
         setSubmitError(err.message);
       }
     }

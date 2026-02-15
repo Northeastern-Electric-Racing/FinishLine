@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
 import { useState } from 'react';
+import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useCreateProspectiveSponsor } from '../../../hooks/finance.hooks';
 import SidePage from './SidePagePopup';
@@ -25,6 +26,7 @@ interface CreateProspectiveSponsorPageProps {
 }
 
 const CreateProspectiveSponsorPage = ({ showPage, handleClose }: CreateProspectiveSponsorPageProps) => {
+  const toast = useToast();
   const { isLoading, mutateAsync } = useCreateProspectiveSponsor();
 
   const {
@@ -43,6 +45,7 @@ const CreateProspectiveSponsorPage = ({ showPage, handleClose }: CreateProspecti
       contactEmail: '',
       contactPhone: '',
       contactPosition: '',
+      notes: '',
       tasks: []
     }
   });
@@ -63,11 +66,14 @@ const CreateProspectiveSponsorPage = ({ showPage, handleClose }: CreateProspecti
         highlightThresholdDays: formData.highlightThresholdDays,
         contactEmail: formData.contactEmail || undefined,
         contactPhone: formData.contactPhone || undefined,
-        contactPosition: formData.contactPosition || undefined
+        contactPosition: formData.contactPosition || undefined,
+        notes: formData.notes || undefined
       });
+      toast.success('Prospective sponsor created successfully!');
       handleClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
+        toast.error(err.message);
         setSubmitError(err.message);
       }
     }

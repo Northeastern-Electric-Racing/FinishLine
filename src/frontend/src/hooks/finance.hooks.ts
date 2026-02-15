@@ -170,10 +170,11 @@ export interface MarkDeliveredRequestPayload {
 export interface SponsorPayload {
   name: string;
   activeStatus: boolean;
-  sponsorValue: number;
+  valueTypes: string[];
+  sponsorValue?: number;
   joinDate: Date;
   activeYears: number[];
-  sponsorTierId: string;
+  sponsorTierId?: string;
   taxExempt: boolean;
   contactName: string;
   contactEmail?: string;
@@ -182,6 +183,8 @@ export interface SponsorPayload {
   sponsorTasks: CreateSponsorTask[];
   discountCode?: string;
   sponsorNotes?: string;
+  stockDescription?: string;
+  discountDescription?: string;
 }
 
 interface EditSponsorPayload extends SponsorPayload {

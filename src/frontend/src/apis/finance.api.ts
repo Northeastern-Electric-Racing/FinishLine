@@ -797,6 +797,7 @@ export interface CreateProspectiveSponsorPayload {
   contactEmail?: string;
   contactPhone?: string;
   contactPosition?: string;
+  notes?: string;
 }
 
 export interface EditProspectiveSponsorPayload {
@@ -810,16 +811,20 @@ export interface EditProspectiveSponsorPayload {
   contactEmail?: string;
   contactPhone?: string;
   contactPosition?: string;
+  notes?: string;
 }
 
 export interface AcceptProspectiveSponsorPayload {
-  sponsorTierId: string;
-  sponsorValue: number;
+  sponsorTierId?: string;
+  valueTypes: string[];
+  sponsorValue?: number;
   joinDate: Date;
   activeYears: number[];
   taxExempt: boolean;
   discountCode?: string;
   sponsorNotes?: string;
+  stockDescription?: string;
+  discountDescription?: string;
 }
 
 /**

@@ -17,11 +17,12 @@ export const prospectiveSponsorTransformer = (
     firstContactMethod: prospectiveSponsor.firstContactMethod as FirstContactMethod,
     contactor: userTransformer(prospectiveSponsor.contactor),
     contact: {
-      name: prospectiveSponsor.contactName,
-      email: prospectiveSponsor.contactEmail ?? undefined,
-      phone: prospectiveSponsor.contactPhone ?? undefined,
-      position: prospectiveSponsor.contactPosition ?? undefined
+      name: prospectiveSponsor.contact.name,
+      email: prospectiveSponsor.contact.email ?? undefined,
+      phone: prospectiveSponsor.contact.phone ?? undefined,
+      position: prospectiveSponsor.contact.position ?? undefined
     },
+    notes: prospectiveSponsor.notes ?? undefined,
     tasks: prospectiveSponsor.tasks.map(sponsorTaskTransformer)
   };
 };

@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { GridRenderCellParams } from '@mui/x-data-grid';
 import type { MapRowResult } from '../../components/NERDataGrid';
 import type { MouseEvent } from 'react';
-import { Box, IconButton, Tooltip, Chip } from '@mui/material';
+import { Box, IconButton, Tooltip, Chip, Popover, Typography, Link } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -16,7 +16,7 @@ import { useAllProspectiveSponsors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import { datePipe } from '../../utils/pipes';
-import { isAtLeastRank, RoleEnum, ProspectiveSponsor, ProspectiveSponsorStatus } from 'shared';
+import { isAtLeastRank, RoleEnum, ProspectiveSponsor, ProspectiveSponsorStatus, ContactInfo } from 'shared';
 import SidePagePopup from './FinanceComponents/SidePagePopup';
 import NERDataGrid from '../../components/NERDataGrid';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -26,8 +26,8 @@ import DeleteProspectiveSponsorModal from './FinanceComponents/DeleteProspective
 import AcceptProspectiveSponsorModal from './FinanceComponents/AcceptProspectiveSponsorModal';
 import ProspectiveSponsorTasksModal from './FinanceComponents/ProspectiveSponsorTasksModal';
 
-const statusColors: Record<string, 'default' | 'primary' | 'success' | 'error' | 'warning'> = {
-  IN_PROGRESS: 'primary',
+const statusColors: Record<string, 'default' | 'info' | 'success' | 'error' | 'warning'> = {
+  IN_PROGRESS: 'info',
   DECLINED: 'error',
   NOT_IN_CONTACT: 'warning',
   NO_RESPONSE: 'default',
@@ -55,6 +55,8 @@ const ProspectiveSponsorsTable = () => {
   const [prospectiveSponsorToAccept, setProspectiveSponsorToAccept] = useState<ProspectiveSponsor | undefined>(undefined);
   const [selectedProspectiveSponsor, setSelectedProspectiveSponsor] = useState<ProspectiveSponsor | null>(null);
   const [isTasksModalOpen, setIsTasksModalOpen] = useState(false);
+  const [contactAnchorEl, setContactAnchorEl] = useState<HTMLElement | null>(null);
+  const [selectedContact, setSelectedContact] = useState<ContactInfo | null>(null);
   const currentUser = useCurrentUser();
 
   const canEditProspectiveSponsors = isAtLeastRank(RoleEnum.HEAD, currentUser.role) || !!currentUser.isFinance;
@@ -62,8 +64,14 @@ const ProspectiveSponsorsTable = () => {
   if (!prospectiveSponsors || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  // Filter out accepted sponsors (they're now full sponsors)
-  // Sort highlighted rows to the top, then by name
+  const isHighlighted = (ps: ProspectiveSponsor) => {
+    const daysSinceContact = Math.floor(
+      (new Date().getTime() - new Date(ps.lastContactDate).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    return daysSinceContact > ps.highlightThresholdDays;
+  };
+
+  // Filter out accepted sponsors, then sort highlighted rows to top, then alphabetical
   const sortedProspectiveSponsors = [...prospectiveSponsors]
     .filter((ps) => ps.status !== ProspectiveSponsorStatus.ACCEPTED)
     .sort((a, b) => {
@@ -82,13 +90,6 @@ const ProspectiveSponsorsTable = () => {
   const closeTasksModal = () => {
     setSelectedProspectiveSponsor(null);
     setIsTasksModalOpen(false);
-  };
-
-  const isHighlighted = (ps: ProspectiveSponsor) => {
-    const daysSinceContact = Math.floor(
-      (new Date().getTime() - new Date(ps.lastContactDate).getTime()) / (1000 * 60 * 60 * 24)
-    );
-    return daysSinceContact > ps.highlightThresholdDays;
   };
 
   const columns = [
@@ -117,13 +118,22 @@ const ProspectiveSponsorsTable = () => {
       renderCell: (p: GridRenderCellParams<any, MapRowResult<ProspectiveSponsor>>) => {
         const contact = (p.row as MapRowResult<ProspectiveSponsor>).raw?.contact;
         if (!contact) return null;
-        const details = [contact.email, contact.phone, contact.position].filter(Boolean).join(' | ');
-        return details ? (
-          <Tooltip title={details} arrow placement="top">
-            <span>{contact.name}</span>
-          </Tooltip>
-        ) : (
-          <span>{contact.name}</span>
+        const hasDetails = !!(contact.email || contact.phone || contact.position);
+        return (
+          <span
+            onClick={
+              hasDetails
+                ? (e: React.MouseEvent<HTMLElement>) => {
+                    e.stopPropagation();
+                    setContactAnchorEl(e.currentTarget);
+                    setSelectedContact(contact);
+                  }
+                : undefined
+            }
+            style={{ cursor: hasDetails ? 'pointer' : 'default', textDecoration: hasDetails ? 'underline' : 'none' }}
+          >
+            {contact.name}
+          </span>
         );
       }
     },
@@ -152,6 +162,26 @@ const ProspectiveSponsorsTable = () => {
       minWidth: 90,
       renderCell: (p: GridRenderCellParams<Date, MapRowResult<ProspectiveSponsor>>) =>
         datePipe(new Date(String(p.value ?? '')))
+    },
+    {
+      field: 'notes',
+      headerName: 'Notes',
+      flex: 0.5,
+      minWidth: 40,
+      maxWidth: 80,
+      sortable: false,
+      filterable: false,
+      renderCell: (p: GridRenderCellParams<string | undefined, MapRowResult<ProspectiveSponsor>>) => {
+        const notes = (p.row as MapRowResult<ProspectiveSponsor>).raw?.notes;
+        if (!notes || notes.trim() === '') return null;
+        return (
+          <Tooltip title={notes} arrow placement="left">
+            <IconButton size="small" sx={{ p: 0.5, color: 'white' }}>
+              <InfoOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        );
+      }
     },
     {
       field: 'tasks',
@@ -281,7 +311,7 @@ const ProspectiveSponsorsTable = () => {
         mapRow={mapRow}
         columns={columns}
         pageSizeDefault={10}
-        initialSortModel={[{ field: 'organizationName', sort: 'asc' }]}
+        initialSortModel={[]}
         headerHeight={56}
         rowHeight={52}
         onRowClick={(ps) => setProspectiveSponsorToEdit(ps)}
@@ -314,19 +344,53 @@ const ProspectiveSponsorsTable = () => {
         handleClose={() => setShowAddProspectiveSponsor(false)}
       />
 
-      {selectedProspectiveSponsor && (
-        <SidePagePopup
-          showPage={isTasksModalOpen}
-          handleClose={closeTasksModal}
-          title={`Tasks for ${selectedProspectiveSponsor?.organizationName}`}
-          component={
+      <SidePagePopup
+        showPage={isTasksModalOpen && !!selectedProspectiveSponsor}
+        handleClose={closeTasksModal}
+        title={selectedProspectiveSponsor ? `Tasks for ${selectedProspectiveSponsor.organizationName}` : ''}
+        component={
+          selectedProspectiveSponsor ? (
             <ProspectiveSponsorTasksModal
               onClose={closeTasksModal}
               prospectiveSponsor={selectedProspectiveSponsor}
             />
-          }
-        />
-      )}
+          ) : (
+            <></>
+          )
+        }
+      />
+
+      <Popover
+        open={!!contactAnchorEl}
+        anchorEl={contactAnchorEl}
+        onClose={() => {
+          setContactAnchorEl(null);
+          setSelectedContact(null);
+        }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        {selectedContact && (
+          <Box sx={{ p: 2, minWidth: 200 }}>
+            <Typography fontWeight="bold">{selectedContact.name}</Typography>
+            {selectedContact.position && (
+              <Typography variant="body2" color="text.secondary">
+                {selectedContact.position}
+              </Typography>
+            )}
+            {selectedContact.email && (
+              <Typography variant="body2" sx={{ mt: 0.5 }}>
+                <Link href={`mailto:${selectedContact.email}`}>{selectedContact.email}</Link>
+              </Typography>
+            )}
+            {selectedContact.phone && (
+              <Typography variant="body2" sx={{ mt: 0.5 }}>
+                <Link href={`tel:${selectedContact.phone}`}>{selectedContact.phone}</Link>
+              </Typography>
+            )}
+          </Box>
+        )}
+      </Popover>
     </Box>
   );
 };

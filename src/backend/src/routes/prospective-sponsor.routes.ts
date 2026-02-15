@@ -20,9 +20,10 @@ prospectiveSponsorRouter.post(
   nonEmptyString(body('contactName')),
   nonEmptyString(body('contactorUserId')),
   intMinZero(body('highlightThresholdDays')).optional(),
-  nonEmptyString(body('contactEmail')).optional(),
-  nonEmptyString(body('contactPhone')).optional(),
-  nonEmptyString(body('contactPosition')).optional(),
+  nonEmptyString(body('contactEmail')).optional({ checkFalsy: true }),
+  nonEmptyString(body('contactPhone')).optional({ checkFalsy: true }),
+  nonEmptyString(body('contactPosition')).optional({ checkFalsy: true }),
+  nonEmptyString(body('notes')).optional({ checkFalsy: true }),
   validateInputs,
   ProspectiveSponsorController.createProspectiveSponsor
 );
@@ -40,9 +41,10 @@ prospectiveSponsorRouter.post(
   nonEmptyString(body('contactName')),
   nonEmptyString(body('contactorUserId')),
   intMinZero(body('highlightThresholdDays')).optional(),
-  nonEmptyString(body('contactEmail')).optional(),
-  nonEmptyString(body('contactPhone')).optional(),
-  nonEmptyString(body('contactPosition')).optional(),
+  nonEmptyString(body('contactEmail')).optional({ checkFalsy: true }),
+  nonEmptyString(body('contactPhone')).optional({ checkFalsy: true }),
+  nonEmptyString(body('contactPosition')).optional({ checkFalsy: true }),
+  nonEmptyString(body('notes')).optional({ checkFalsy: true }),
   validateInputs,
   ProspectiveSponsorController.editProspectiveSponsor
 );
@@ -73,14 +75,18 @@ prospectiveSponsorRouter.post(
 // Accept prospective sponsor (convert to full sponsor)
 prospectiveSponsorRouter.post(
   '/:prospectiveSponsorId/accept',
-  nonEmptyString(body('sponsorTierId')),
-  body('sponsorValue').isInt(),
+  nonEmptyString(body('sponsorTierId')).optional({ checkFalsy: true }),
+  body('valueTypes').isArray(),
+  nonEmptyString(body('valueTypes.*')),
+  body('sponsorValue').isInt().optional(),
   isDate(body('joinDate')),
   body('activeYears').isArray(),
   intMinZero(body('activeYears.*')),
   body('taxExempt').isBoolean(),
-  nonEmptyString(body('discountCode')).optional(),
-  nonEmptyString(body('sponsorNotes')).optional(),
+  nonEmptyString(body('discountCode')).optional({ checkFalsy: true }),
+  nonEmptyString(body('sponsorNotes')).optional({ checkFalsy: true }),
+  nonEmptyString(body('stockDescription')).optional({ checkFalsy: true }),
+  nonEmptyString(body('discountDescription')).optional({ checkFalsy: true }),
   validateInputs,
   ProspectiveSponsorController.acceptProspectiveSponsor
 );

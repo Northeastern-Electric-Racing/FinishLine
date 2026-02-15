@@ -173,6 +173,12 @@ enum First_Contact_Method {
   OTHER
 }
 
+enum Sponsor_Value_Type {
+  MONETARY
+  STOCK
+  DISCOUNT
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -807,28 +813,39 @@ model Vendor {
   @@index([organizationId])
 }
 
+model Sponsor_Contact {
+  sponsorContactId   String               @id @default(uuid())
+  name               String
+  email              String?
+  phone              String?
+  position           String?
+  sponsor            Sponsor?
+  prospectiveSponsor Prospective_Sponsor?
+}
+
 model Sponsor {
-  sponsorId       String         @id @default(uuid())
-  name            String
-  organizationId  String
-  organization    Organization   @relation(fields: [organizationId], references: [organizationId])
-  dateCreated     DateTime       @default(now())
-  dateDeleted     DateTime?
-  activeStatus    Boolean
-  contactName     String
-  contactEmail    String?
-  contactPhone    String?
-  contactPosition String?
-  tier            Sponsor_Tier   @relation(fields: [sponsorTierId], references: [sponsorTierId])
-  sponsorTierId   String
-  sponsorValue    Int
-  joinDate        DateTime
-  discountCode    String?
-  activeYears     Int[]
-  taxExempt       Boolean
-  sponsorNotes    String?
-  sponsorTasks    Sponsor_Task[]
-  logoImageId     String?
+  sponsorId           String               @id @default(uuid())
+  name                String
+  organizationId      String
+  organization        Organization         @relation(fields: [organizationId], references: [organizationId])
+  dateCreated         DateTime             @default(now())
+  dateDeleted         DateTime?
+  activeStatus        Boolean
+  contact             Sponsor_Contact      @relation(fields: [contactId], references: [sponsorContactId])
+  contactId           String               @unique
+  tier                Sponsor_Tier?        @relation(fields: [sponsorTierId], references: [sponsorTierId])
+  sponsorTierId       String?
+  valueTypes          Sponsor_Value_Type[]
+  sponsorValue        Int?
+  stockDescription    String?
+  discountDescription String?
+  joinDate            DateTime
+  discountCode        String?
+  activeYears         Int[]
+  taxExempt           Boolean
+  sponsorNotes        String?
+  sponsorTasks        Sponsor_Task[]
+  logoImageId         String?
 
   @@unique([name, organizationId], name: "uniqueSponsor")
   @@index([sponsorTierId])
@@ -865,10 +882,9 @@ model Prospective_Sponsor {
   firstContactMethod     First_Contact_Method
   contactor              User                       @relation(fields: [contactorUserId], references: [userId], name: "prospectiveSponsorContactor")
   contactorUserId        String
-  contactName            String
-  contactEmail           String?
-  contactPhone           String?
-  contactPosition        String?
+  contact                Sponsor_Contact            @relation(fields: [contactId], references: [sponsorContactId])
+  contactId              String                     @unique
+  notes                  String?
   dateDeleted            DateTime?
   tasks                  Sponsor_Task[]
 

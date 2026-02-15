@@ -4,16 +4,15 @@
  */
 
 import * as yup from 'yup';
-import { Control, Controller, FieldErrors, useFieldArray } from 'react-hook-form';
+import { Control, Controller, FieldErrors, FieldValues, useFieldArray } from 'react-hook-form';
 import {
   FormControl,
   Grid,
   FormHelperText,
-  IconButton,
+  Button,
   MenuItem,
   Select,
   Typography,
-  TextField,
   Box,
   Tooltip
 } from '@mui/material';
@@ -23,11 +22,11 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useAllMembers } from '../../../hooks/users.hooks';
 import React, { useState } from 'react';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { AddCircle } from '@mui/icons-material';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import SponsorTaskCard from './SponsorTaskCard';
 import { FirstContactMethod, ProspectiveSponsor, ProspectiveSponsorStatus } from 'shared';
 
 export interface ProspectiveSponsorFormInputs {
@@ -40,6 +39,7 @@ export interface ProspectiveSponsorFormInputs {
   contactEmail?: string;
   contactPhone?: string;
   contactPosition?: string;
+  notes?: string;
   status?: ProspectiveSponsorStatus;
   tasks: {
     sponsorTaskId?: string;
@@ -82,9 +82,22 @@ export const prospectiveSponsorSchema = yup.object().shape({
   contactName: yup.string().required('Contact name is required'),
   contactorUserId: yup.string().required('Contactor is required'),
   highlightThresholdDays: yup.number().positive('Must be positive').optional(),
-  contactEmail: yup.string().email('Invalid email').optional(),
-  contactPhone: yup.string().optional(),
+  contactEmail: yup
+    .string()
+    .matches(/^$|^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, 'Please enter a valid email address')
+    .optional()
+    .test('email-or-phone', 'At least one of email or phone is required', function (value) {
+      return !!value || !!this.parent.contactPhone;
+    }),
+  contactPhone: yup
+    .string()
+    .matches(/^$|^[+]?[\d\s().-]{7,20}$/, 'Please enter a valid phone number')
+    .optional()
+    .test('phone-or-email', 'At least one of email or phone is required', function (value) {
+      return !!value || !!this.parent.contactEmail;
+    }),
   contactPosition: yup.string().optional(),
+  notes: yup.string().trim().optional(),
   status: yup.string().oneOf(Object.values(ProspectiveSponsorStatus)).optional(),
   tasks: yup
     .array()
@@ -109,8 +122,6 @@ export const ProspectiveSponsorForm: React.FC<ProspectiveSponsorFormProps> = ({
   const theme = useTheme();
 
   const [datePickerOpenLastContact, setDatePickerOpenLastContact] = useState(false);
-  const [datePickerOpenDue, setDatePickerOpenDue] = useState(false);
-  const [datePickerOpenNotify, setDatePickerOpenNotify] = useState(false);
 
   const { isLoading: membersLoading, isError: membersIsError, error: membersError, data: members } = useAllMembers();
 
@@ -324,130 +335,55 @@ export const ProspectiveSponsorForm: React.FC<ProspectiveSponsorFormProps> = ({
 
       <Grid item xs={12}>
         <FormControl fullWidth>
+          <Typography variant="h5" color="#EF4345">
+            Notes:
+          </Typography>
+          <ReactHookTextField
+            name="notes"
+            control={control}
+            placeholder="Enter notes about what we expect to be offered, etc."
+            multiline
+            rows={3}
+          />
+          <FormHelperText error>{errors.notes?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+
+      <Grid item xs={12}>
+        <FormControl fullWidth>
           <Typography variant="h5" color="#EF4345" sx={{ mb: 1 }}>
             Tasks:
           </Typography>
           {fields.map((item, index) => (
-            <Box key={item.id} sx={{ display: 'flex', mt: 1, flexWrap: 'wrap', gap: 0.5 }}>
-              <Grid xs={12} sm={2.6}>
-                <FormControl fullWidth>
-                  <Typography variant="h6" color="#EF4345">
-                    Due Date:*
-                  </Typography>
-                  <Controller
-                    name={`tasks.${index}.dueDate`}
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <DatePicker
-                        value={value ? new Date(value) : null}
-                        open={datePickerOpenDue}
-                        onClose={() => setDatePickerOpenDue(false)}
-                        onOpen={() => setDatePickerOpenDue(true)}
-                        onChange={(newValue) => onChange(newValue ?? new Date())}
-                        slotProps={{
-                          textField: {
-                            error: !!errors.tasks?.[index]?.dueDate,
-                            helperText: errors.tasks?.[index]?.dueDate?.message,
-                            onClick: () => setDatePickerOpenDue(true)
-                          }
-                        }}
-                      />
-                    )}
-                  />
-                </FormControl>
-              </Grid>
-              <Grid xs={12} sm={2.6}>
-                <FormControl fullWidth>
-                  <Typography variant="h6" color="#EF4345">
-                    Notify Date:
-                  </Typography>
-                  <Controller
-                    name={`tasks.${index}.notifyDate`}
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <DatePicker
-                        value={value ? new Date(value) : null}
-                        open={datePickerOpenNotify}
-                        onClose={() => setDatePickerOpenNotify(false)}
-                        onOpen={() => setDatePickerOpenNotify(true)}
-                        onChange={(newValue) => onChange(newValue ?? undefined)}
-                        slotProps={{
-                          textField: {
-                            error: !!errors.tasks?.[index]?.notifyDate,
-                            helperText: errors.tasks?.[index]?.notifyDate?.message,
-                            onClick: () => setDatePickerOpenNotify(true)
-                          }
-                        }}
-                      />
-                    )}
-                  />
-                </FormControl>
-              </Grid>
-              <Grid xs={12} sm={2.75}>
-                <FormControl fullWidth>
-                  <Typography variant="h6" color="#EF4345">
-                    Assign To:
-                  </Typography>
-                  <Controller
-                    control={control}
-                    name={`tasks.${index}.assigneeUserId`}
-                    render={({ field: { onChange } }) => (
-                      <NERAutocomplete
-                        sx={{ width: '100%', backgroundColor: theme.palette.grey[750] }}
-                        id={`task-${index}-assignee-autocomplete`}
-                        onChange={(_event, newValue) => onChange(newValue ? newValue.id : undefined)}
-                        options={members.map((m) => ({ label: m.firstName + ' ' + m.lastName, id: m.userId }))}
-                        size="small"
-                        placeholder={
-                          defaultValues?.tasks?.[index]?.assignee
-                            ? defaultValues.tasks[index].assignee!.firstName +
-                              ' ' +
-                              defaultValues.tasks[index].assignee!.lastName
-                            : 'Select Member'
-                        }
-                      />
-                    )}
-                  />
-                </FormControl>
-              </Grid>
-              <Grid xs={12} sm={3.84}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <FormControl fullWidth>
-                    <Typography variant="h6" color="#EF4345">
-                      Notes:*
-                    </Typography>
-                    <ReactHookTextField
-                      name={`tasks.${index}.notes`}
-                      control={control}
-                      sx={{ width: 1 }}
-                      placeholder="Enter notes"
-                    />
-                    <FormHelperText error>{errors.tasks?.[index]?.notes?.message}</FormHelperText>
-                  </FormControl>
-                  <Box sx={{ height: 17 }}>
-                    <IconButton onClick={() => remove(index)}>
-                      <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
-                    </IconButton>
-                  </Box>
-                </Box>
-              </Grid>
+            <Box key={item.id} sx={{ mt: 1 }}>
+              <SponsorTaskCard
+                control={control as unknown as Control<FieldValues>}
+                errors={errors as unknown as FieldErrors<FieldValues>}
+                fieldPrefix={`tasks.${index}`}
+                members={members}
+                onRemove={() => remove(index)}
+                defaultAssigneeName={
+                  defaultValues?.tasks?.[index]?.assignee
+                    ? `${defaultValues.tasks[index].assignee!.firstName} ${defaultValues.tasks[index].assignee!.lastName}`
+                    : undefined
+                }
+              />
             </Box>
           ))}
-          <Box sx={{ mt: 2 }}>
-            <IconButton
-              onClick={() =>
-                append({
-                  dueDate: new Date(),
-                  notifyDate: undefined,
-                  assigneeUserId: undefined,
-                  notes: ''
-                })
-              }
-            >
-              <AddCircleOutlineIcon />
-              <Typography>Add Task</Typography>
-            </IconButton>
-          </Box>
+          <Button
+            startIcon={<AddCircle />}
+            onClick={() =>
+              append({
+                dueDate: new Date(),
+                notifyDate: undefined,
+                assigneeUserId: undefined,
+                notes: ''
+              })
+            }
+            sx={{ mt: 2 }}
+          >
+            Add Task
+          </Button>
         </FormControl>
       </Grid>
     </Grid>
