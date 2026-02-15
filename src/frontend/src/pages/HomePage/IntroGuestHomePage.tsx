@@ -64,7 +64,7 @@ const IntroGuestHomePage = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', px: 2 }}>
-      <Typography mt={2} variant="h5" sx={{ fontWeight: 'bold' }}>
+      <Typography mt={2} variant="h4" sx={{ fontWeight: 'bold' }}>
         FinishLine By NER
       </Typography>
       <Box
@@ -130,9 +130,11 @@ const IntroGuestHomePage = () => {
           <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
             Are you a student interested in joining NER?
           </Typography>
-          <NERButton component={RouterLink} to={routes.HOME_PNM} variant="contained" size="medium">
-            Learn more
-          </NERButton>
+          <RouterLink to={routes.HOME_PNM} style={{ textDecoration: 'none' }}>
+            <NERButton variant="contained" size="medium">
+              Learn more
+            </NERButton>
+          </RouterLink>
         </CardContent>
       </Card>
 

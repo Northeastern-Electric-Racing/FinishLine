@@ -1323,7 +1323,7 @@ model Organization {
   partReviewGuideLink                    String?
   sponsorshipNotificationsSlackChannelId String?
   finishlineDescription                  String    @default("")
-  finishlineLogo                         String    @default("")
+  finishlineLogo                         String?
 
   // Relation references
   wbsElements              WBS_Element[]
