@@ -617,15 +617,6 @@ export default class CalendarService {
 
     // NOTE: Use editScheduleSlot to modify individual schedule slots
 
-    // question document is required if the status is scheduled or done
-    if (foundEventType.requiresConfirmation) {
-      if (status === Event_Status.SCHEDULED || status === Event_Status.DONE) {
-        if (questionDocumentLink == null) {
-          throw new HttpException(400, 'doc template link is required for scheduled and done design reviews');
-        }
-      }
-    }
-
     if (requiredMemberIds.length > 0 && requiredMemberIds.some((rMemberId) => optionalMemberIds.includes(rMemberId))) {
       throw new HttpException(400, 'required members cannot be in optional members');
     }
