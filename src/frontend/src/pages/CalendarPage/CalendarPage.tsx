@@ -522,7 +522,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
           </Alert>
         )}
       </Stack>
-      <PageLayout hidePageTitle>
+      <PageLayout title="Calendar" hidePageTitle>
         <Box
           sx={{
             display: 'flex',
