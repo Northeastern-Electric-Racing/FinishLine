@@ -16,7 +16,11 @@ import BillOfMaterialsService from '../services/boms.services.js';
 export default class ProjectsController {
   static async getAllProjectsGantt(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectGantt[] = await ProjectsService.getAllProjectsGantt(req.organization);
+      const { carId } = req.query;
+      const projects: ProjectGantt[] = await ProjectsService.getAllProjectsGantt(
+        req.organization,
+        carId as string | undefined
+      );
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
@@ -35,7 +39,12 @@ export default class ProjectsController {
 
   static async getUsersTeamsProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectOverview[] = await ProjectsService.getUsersTeamsProjects(req.currentUser, req.organization);
+      const { carId } = req.query;
+      const projects: ProjectOverview[] = await ProjectsService.getUsersTeamsProjects(
+        req.currentUser,
+        req.organization,
+        carId as string | undefined
+      );
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
@@ -44,7 +53,12 @@ export default class ProjectsController {
 
   static async getUsersLeadingProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectOverview[] = await ProjectsService.getUsersLeadingProjects(req.currentUser, req.organization);
+      const { carId } = req.query;
+      const projects: ProjectOverview[] = await ProjectsService.getUsersLeadingProjects(
+        req.currentUser,
+        req.organization,
+        carId as string | undefined
+      );
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
@@ -54,7 +68,12 @@ export default class ProjectsController {
   static async getTeamsProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamId } = req.params as Record<string, string>;
-      const projects: Project[] = await ProjectsService.getTeamsProjects(req.organization, teamId);
+      const { carId } = req.query;
+      const projects: Project[] = await ProjectsService.getTeamsProjects(
+        req.organization,
+        teamId,
+        carId as string | undefined
+      );
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
