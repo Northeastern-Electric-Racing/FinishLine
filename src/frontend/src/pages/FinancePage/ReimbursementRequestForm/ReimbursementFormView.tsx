@@ -34,10 +34,10 @@ import {
   IndexCode,
   isHead,
   MAX_FILE_SIZE,
+  Project,
   ReimbursementProductFormArgs,
   ReimbursementReceiptUploadArgs,
   Vendor,
-  WbsNumber,
   wbsPipe
 } from 'shared';
 import { ClearIcon, DatePicker } from '@mui/x-date-pickers';
@@ -64,9 +64,10 @@ interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
   allAccountCodes: AccountCode[];
   receiptFiles: ReimbursementReceiptUploadArgs[];
-  allWbsElements: {
-    wbsNum: WbsNumber;
-    wbsName: string;
+  allWbsElements: Project[];
+  wbsElementAutocompleteOptions: {
+    label: string;
+    id: string;
   }[];
   control: Control<ReimbursementRequestFormInput, any>;
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -93,6 +94,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   allVendors,
   allAccountCodes,
   allWbsElements,
+  wbsElementAutocompleteOptions,
   receiptFiles,
   reimbursementProducts,
   control,
@@ -226,13 +228,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const calculatedTotalCost = products
     .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost), 0)
     .toFixed(2);
-
-  const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
-    label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
-    id: wbsPipe(wbsElement.wbsNum)
-  }));
-
-  wbsElementAutocompleteOptions.sort((wbsNum1, wbsNum2) => wbsNumComparator(wbsNum1.id, wbsNum2.id));
 
   const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();
 
@@ -860,6 +855,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               secondRefundSourceIndexCode={secondRefundSourcePassed}
               firstRefundSourceName={firstRefundSource.name}
               secondRefundSourceName={secondRefundSource.name}
+              allWbsElements={allWbsElements}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>

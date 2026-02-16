@@ -10,9 +10,10 @@ export interface CreateMaterialModalProps {
   onHide: () => void;
   wbsElement: WbsElement;
   assemblies: Assembly[];
+  onSuccess?: (materialName: string) => void;
 }
 
-const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide, assemblies, wbsElement }) => {
+const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide, assemblies, wbsElement, onSuccess }) => {
   const { mutateAsync: createMaterial, isLoading, isError, error } = useCreateMaterial(wbsElement.wbsNum);
   const toast = useToast();
 
@@ -23,6 +24,11 @@ const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide,
     try {
       await createMaterial(data);
       toast.success('Material Created Successfully');
+
+      if (onSuccess) {
+        onSuccess(data.name);
+      }
+
       onHide();
     } catch (error) {
       if (error instanceof Error) {
