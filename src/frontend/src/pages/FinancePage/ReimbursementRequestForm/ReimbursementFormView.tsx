@@ -37,8 +37,7 @@ import {
   Project,
   ReimbursementProductFormArgs,
   ReimbursementReceiptUploadArgs,
-  Vendor,
-  wbsPipe
+  Vendor
 } from 'shared';
 import { ClearIcon, DatePicker } from '@mui/x-date-pickers';
 import ReimbursementProductTable from './ReimbursementProductTable';
@@ -50,7 +49,6 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-import { wbsNumComparator } from 'shared';
 import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
 import { imagePreviewUrl } from '../../../utils/reimbursement-request.utils';
 import { useCreateVendor } from '../../../hooks/finance.hooks';
