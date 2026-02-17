@@ -66,3 +66,7 @@ export const dateMonthDayYear = (date: Date): string => {
 export const isPastEvent = (startDate: Date, endDate: Date) => {
   return startDate < endDate;
 };
+
+export const formatTime = (date: Date) => {
+  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+};

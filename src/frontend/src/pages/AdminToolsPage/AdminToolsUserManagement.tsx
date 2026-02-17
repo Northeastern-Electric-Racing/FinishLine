@@ -12,7 +12,7 @@ import { useAllUsers, useCurrentUser, useUpdateUserRole } from '../../hooks/user
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
-import { RoleEnum, User, isAdmin, isLeadership, rankUserRole } from 'shared';
+import { RoleEnum, User, rankUserRole } from 'shared';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useToast } from '../../hooks/toasts.hooks';
 
@@ -66,25 +66,10 @@ const AdminToolsUserManagement: React.FC = () => {
   };
 
   const getAvailableRoles = () => {
-    if (isAdmin(currentUser.role)) {
-      return Object.values(RoleEnum).filter((v) => rankUserRole(v) <= currentUserRank);
-    }
-    if (isLeadership(currentUser.role) && user && user.role === RoleEnum.GUEST) {
-      return [RoleEnum.MEMBER];
-    }
-    if (isLeadership(currentUser.role)) {
-      return [];
-    }
     return Object.values(RoleEnum).filter((v) => rankUserRole(v) < currentUserRank);
   };
 
   const getModifiableUsers = () => {
-    if (isAdmin(currentUser.role)) {
-      return users.filter((user) => rankUserRole(user.role) < currentUserRank);
-    }
-    if (isLeadership(currentUser.role)) {
-      return users.filter((user) => user.role === RoleEnum.GUEST);
-    }
     return users.filter((user) => rankUserRole(user.role) < currentUserRank);
   };
 
