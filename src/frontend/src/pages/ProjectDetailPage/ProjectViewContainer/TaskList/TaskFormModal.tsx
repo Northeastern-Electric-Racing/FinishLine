@@ -2,7 +2,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, TeamPreview } from 'shared';
+import { countWords, dateToUtcMidnight, isGuest, isUnderWordCount, Task, TaskPriority, TeamPreview } from 'shared';
 import { useAllMembers, useCurrentUser } from '../../../../hooks/users.hooks';
 import * as yup from 'yup';
 import { taskUserToAutocompleteOption } from '../../../../utils/task.utils';
@@ -88,7 +88,14 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
           if (isGuest(user.role)) return;
           e.preventDefault();
           e.stopPropagation();
-          handleSubmit(onSubmit)(e);
+          handleSubmit((data) => {
+            const transformedData: EditTaskFormInput = {
+              ...data,
+              startDate: data.startDate ? dateToUtcMidnight(data.startDate) : undefined,
+              deadline: data.deadline ? dateToUtcMidnight(data.deadline) : undefined
+            };
+            onSubmit(transformedData);
+          })(e);
           reset();
         }}
         onKeyPress={(e) => {

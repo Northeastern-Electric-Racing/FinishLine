@@ -2,7 +2,7 @@ import { Draggable } from '@hello-pangea/dnd';
 import { Construction, Delete, Schedule } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Grid, Typography, IconButton } from '@mui/material';
 import { useState } from 'react';
-import { notGuest, Project, Task } from 'shared';
+import { dateToUtcMidnight, notGuest, Project, Task } from 'shared';
 import { useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
@@ -58,8 +58,8 @@ export const TaskCard = ({
         taskId,
         notes,
         title,
-        deadline,
-        startDate,
+        deadline: deadline ? dateToUtcMidnight(deadline) : undefined,
+        startDate: startDate ? dateToUtcMidnight(startDate) : undefined,
         priority
       });
       const newTask = await editTaskAssignees({
