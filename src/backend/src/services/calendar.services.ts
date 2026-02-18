@@ -13,7 +13,8 @@ import {
   Calendar,
   FilterArgs,
   Machinery,
-  ScheduleSlot
+  ScheduleSlot,
+  notGuest
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
@@ -285,8 +286,8 @@ export default class CalendarService {
       if (!hasPermission) {
         throw new AccessDeniedException('Only admins and heads can create events under this event type');
       }
-    } else if (isGuest(submitter.role)) {
-      throw new AccessDeniedGuestException('Guests cannot create events');
+    } else if (!(await userHasPermission(submitter.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('create events');
     }
 
     // Validate event follows event type configuration
