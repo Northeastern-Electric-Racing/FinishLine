@@ -56,7 +56,7 @@ yarn docs:dev
 This command:
 
 1. Runs the `prepare-docs` script to transform SKILL.md files
-2. Starts the Docusaurus development server at `http://localhost:3000`
+2. Starts the Docusaurus development server at `http://localhost:3002`
 
 The site will automatically reload when you edit SKILL.md files or re-run the prepare script.
 
@@ -195,7 +195,7 @@ Common issues:
 
 - **Node version**: Ensure you're running Node.js 18 or higher
 - **Dependencies**: From the root directory, try `rm -rf docs-site/node_modules && yarn install`
-- **Port conflict**: If port 3000 is in use, Docusaurus will try another port or you can stop the conflicting process
+- **Port conflict**: Docs run on port 3002. If it's in use, Docusaurus will try another port or you can stop the conflicting process
 
 ## Future Enhancements
 
