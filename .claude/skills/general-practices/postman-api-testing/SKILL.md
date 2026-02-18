@@ -43,7 +43,7 @@ Before making requests, confirm the backend is accessible:
 
 3. Make a test request to the base URL in Postman: `GET http://localhost:3001`
 
-If the API is not configured properly or you hit a non-existent endpoint, you'll receive a "Welcome to NER" message. This indicates the route handler doesn't exist.
+If you receive a "Welcome to NER" message, your backend is running and listening on port 3001. This is also the default message you will see if the router cannot resolve the url you requested, so if you get this while trying to test an endpoint it is likely that you have a typo in the url or are using the wrong HTTP method (e.g. POST instead of GET).
 
 ## Base URL
 
