@@ -283,7 +283,7 @@ export default class ReimbursementRequestService {
         },
         identifier: numReimbursementRequests + 1,
         organization: { connect: { organizationId: organization.organizationId } },
-        description: description ?? ''
+        description: description
       }
     });
 
@@ -419,7 +419,7 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
         dateOfExpense: dateOfExpense ?? null,
-        description: description ?? '',
+        description: description,
         indexCodeId,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
