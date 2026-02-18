@@ -1,4 +1,4 @@
-import { Assembly, WbsElement } from 'shared';
+import { Assembly, WbsElementPreview } from 'shared';
 import MaterialForm, { MaterialDataSubmission } from './MaterialForm';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import { useToast } from '../../../../../hooks/toasts.hooks';
@@ -8,7 +8,7 @@ import ErrorPage from '../../../../ErrorPage';
 export interface CreateMaterialModalProps {
   open: boolean;
   onHide: () => void;
-  wbsElement: WbsElement;
+  wbsElement: WbsElementPreview;
   assemblies: Assembly[];
   onSuccess?: (materialName: string) => void;
 }

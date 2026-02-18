@@ -34,7 +34,7 @@ import {
   IndexCode,
   isHead,
   MAX_FILE_SIZE,
-  Project,
+  ProjectPreview,
   ReimbursementProductFormArgs,
   ReimbursementReceiptUploadArgs,
   Vendor
@@ -62,7 +62,7 @@ interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
   allAccountCodes: AccountCode[];
   receiptFiles: ReimbursementReceiptUploadArgs[];
-  allWbsElements: Project[];
+  allWbsElements: ProjectPreview[];
   wbsElementAutocompleteOptions: {
     label: string;
     id: string;

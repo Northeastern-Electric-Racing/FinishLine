@@ -27,7 +27,7 @@ import {
   ReimbursementProductFormArgs,
   IndexCode,
   CreateRefundSourceArgs,
-  Project
+  ProjectPreview
 } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
@@ -59,7 +59,7 @@ interface ReimbursementProductTableProps {
   secondRefundSourceIndexCode?: IndexCode;
   firstRefundSourceName?: string;
   secondRefundSourceName?: string;
-  allWbsElements: Project[];
+  allWbsElements: ProjectPreview[];
 }
 
 const ListItem = styled('li')(({ theme }) => ({
@@ -95,7 +95,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const [showCreateMaterialModal, setShowCreateMaterialModal] = useState(false);
   const [currentProductIndex, setCurrentProductIndex] = useState<number | null>(null);
-  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [currentProject, setCurrentProject] = useState<ProjectPreview | null>(null);
 
   const {
     data: assemblies,
@@ -760,7 +760,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
         <CreateMaterialModal
           open={showCreateMaterialModal}
           onHide={handleCloseCreateMaterial}
-          wbsElement={currentProject as any}
+          wbsElement={currentProject}
           assemblies={assemblies}
           onSuccess={handleMaterialCreated}
         />
