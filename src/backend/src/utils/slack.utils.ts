@@ -147,22 +147,16 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
-  try {
-    const messageInfo = await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
-    if (!messageInfo) return; // Not on prod
+  const messageInfo = await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
+  if (!messageInfo) return;
 
-    await prisma.message_Info.create({
-      data: {
-        reimbursementRequestId: requestId,
-        channelId: messageInfo.channelId,
-        timestamp: messageInfo.ts
-      }
-    });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new HttpException(500, `Failed to send slack notification: ${error.message}`);
+  await prisma.message_Info.create({
+    data: {
+      reimbursementRequestId: requestId,
+      channelId: messageInfo.channelId,
+      timestamp: messageInfo.ts
     }
-  }
+  });
 };
 
 /**
@@ -177,26 +171,14 @@ export const sendReimbursementRequestDeniedNotification = async (slackId: string
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
-  try {
-    await sendMessage(slackId, msg, link, linkButtonText);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new HttpException(500, `Failed to send slack notification: ${error.message}`);
-    }
-  }
+  await sendMessage(slackId, msg, link, linkButtonText);
 };
 
 export const sendThreadResponse = async (threads: SlackMessageThread[], message: string) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
-  try {
-    if (threads && threads.length !== 0) {
-      const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, message));
-      await Promise.all(msgs);
-    }
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      throw new HttpException(500, `Failed to send slack notifications: ${err.message}`);
-    }
+  if (threads && threads.length !== 0) {
+    const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, message));
+    await Promise.all(msgs);
   }
 };
 
@@ -257,13 +239,7 @@ export const sendSlackEventConfirmNotification = async (
     : `http://localhost:3000/calendar/event/${eventId}`;
   const linkButtonText = 'Confirm Availability';
 
-  try {
-    await sendMessage(slackId, msg, fullLink, linkButtonText);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new HttpException(500, `Failed to send slack notification: ${error.message}`);
-    }
-  }
+  await sendMessage(slackId, msg, fullLink, linkButtonText);
 };
 
 /**
@@ -390,15 +366,9 @@ export const sendEventUserConfirmationToThread = async (threads: SlackMessageThr
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} confirmed their availability!`;
-  try {
-    if (threads && threads.length !== 0) {
-      const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg));
-      await Promise.all(msgs);
-    }
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
-    }
+  if (threads && threads.length !== 0) {
+    const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg));
+    await Promise.all(msgs);
   }
 };
 
@@ -406,15 +376,9 @@ export const sendEventConfirmationToThread = async (threads: SlackMessageThread[
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} All of the required attendees have confirmed their availability!`;
-  try {
-    if (threads && threads.length !== 0) {
-      const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg));
-      await Promise.all(msgs);
-    }
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
-    }
+  if (threads && threads.length !== 0) {
+    const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg));
+    await Promise.all(msgs);
   }
 };
 
@@ -456,19 +420,13 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
   const docLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Doc Link>` : '';
   const threadMsg = `This event has been Scheduled! \n` + docLink;
 
-  try {
-    if (threads && threads.length !== 0) {
-      const msgs = threads.map((thread) => editMessage(thread.channelId, thread.timestamp, msg));
-      await Promise.all(msgs);
-      const threadMsgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, threadMsg));
-      await Promise.all(threadMsgs);
-      const reactions = threads.map((thread) => reactToMessage(thread.channelId, thread.timestamp, 'calendar'));
-      await Promise.all(reactions);
-    }
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
-    }
+  if (threads && threads.length !== 0) {
+    const msgs = threads.map((thread) => editMessage(thread.channelId, thread.timestamp, msg));
+    await Promise.all(msgs);
+    const threadMsgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, threadMsg));
+    await Promise.all(threadMsgs);
+    const reactions = threads.map((thread) => reactToMessage(thread.channelId, thread.timestamp, 'calendar'));
+    await Promise.all(reactions);
   }
 };
 
@@ -509,20 +467,14 @@ export const sendSlackCRStatusToThread = async (
   const fullMsg = `This Change Request was ${approved ? 'approved! :tada:' : 'denied.'} Click the link to view.`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
   const btnText = `View CR#${identifier}`;
-  try {
-    if (threads && threads.length !== 0) {
-      const msgs = threads.map((thread) =>
-        replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg, fullLink, btnText)
-      );
-      const reactions = threads.map((thread) =>
-        reactToMessage(thread.channelId, thread.timestamp, approved ? 'white_check_mark' : 'x')
-      );
-      await Promise.all([...msgs, ...reactions]);
-    }
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
-    }
+  if (threads && threads.length !== 0) {
+    const msgs = threads.map((thread) =>
+      replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg, fullLink, btnText)
+    );
+    const reactions = threads.map((thread) =>
+      reactToMessage(thread.channelId, thread.timestamp, approved ? 'white_check_mark' : 'x')
+    );
+    await Promise.all([...msgs, ...reactions]);
   }
 };
 

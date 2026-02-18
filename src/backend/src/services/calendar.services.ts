@@ -514,17 +514,12 @@ export default class CalendarService {
       if (newEvent.status === Event_Status.UNCONFIRMED) {
         for (const memberUserSetting of memberUserSettings) {
           if (memberUserSetting.slackId) {
-            try {
-              // For each project associated with this event
-              await sendSlackEventConfirmNotification(
-                memberUserSetting.slackId,
-                newEvent.eventId,
-                newEvent.title,
-                projects.map((project) => project.wbsElement.name).join(', ')
-              );
-            } catch (err: unknown) {
-              console.error('Failed to send slack notification for event:', err);
-            }
+            await sendSlackEventConfirmNotification(
+              memberUserSetting.slackId,
+              newEvent.eventId,
+              newEvent.title,
+              projects.map((project) => project.wbsElement.name).join(', ')
+            );
           }
         }
       }
@@ -535,17 +530,13 @@ export default class CalendarService {
       for (const project of projects) {
         const projectTeams = project.teams;
         if (projectTeams.length > 0) {
-          try {
-            await sendSlackEventNotifications(
-              projectTeams,
-              createdEvent,
-              submitter,
-              workPackageNames,
-              project.wbsElement.name
-            );
-          } catch (err: unknown) {
-            console.error('Failed to send slack notification for event:', err);
-          }
+          await sendSlackEventNotifications(
+            projectTeams,
+            createdEvent,
+            submitter,
+            workPackageNames,
+            project.wbsElement.name
+          );
         }
       }
     }

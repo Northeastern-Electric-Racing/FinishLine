@@ -28,7 +28,8 @@ export const sendMessage = async (slackId: string, message: string, link?: strin
 
     return response && response.channel && response.ts && { channelId: response.channel, ts: response.ts };
   } catch (error) {
-    throw new HttpException(500, 'Error sending slack message, reason: ' + (error as any).data.error);
+    console.error('Failed to send Slack message:', (error as any)?.data?.error ?? error);
+    return undefined;
   }
 };
 
@@ -61,7 +62,8 @@ export const replyToMessageInThread = async (
       blocks: [block]
     });
   } catch (error) {
-    throw new HttpException(500, 'Error sending slack reply to thread, reason: ' + (error as any).data.error);
+    console.error('Failed to send Slack thread reply:', (error as any)?.data?.error ?? error);
+    return undefined;
   }
 };
 
@@ -94,7 +96,8 @@ export const editMessage = async (
       blocks: [block]
     });
   } catch (error) {
-    throw new HttpException(500, 'Error sending slack reply to thread, reason: ' + (error as any).data.error);
+    console.error('Failed to edit Slack message:', (error as any)?.data?.error ?? error);
+    return undefined;
   }
 };
 
@@ -116,7 +119,8 @@ export const reactToMessage = async (slackId: string, parentTimestamp: string, e
       name: emoji
     });
   } catch (error) {
-    throw new HttpException(500, 'Error reacting to slack message, reason: ' + (error as any).data.error);
+    console.error('Failed to react to Slack message:', (error as any)?.data?.error ?? error);
+    return undefined;
   }
 };
 

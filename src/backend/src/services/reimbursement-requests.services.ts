@@ -1288,15 +1288,11 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    try {
-      await sendPendingSaboSubmissionNotification(
-        reimbursementRequest.notificationSlackThreads,
-        submitter.userId,
-        reimbursementRequest.recipientId
-      );
-    } catch (e: unknown) {
-      console.error('Error sending pending SABO submission notification:', e);
-    }
+    await sendPendingSaboSubmissionNotification(
+      reimbursementRequest.notificationSlackThreads,
+      submitter.userId,
+      reimbursementRequest.recipientId
+    );
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1370,11 +1366,7 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    try {
-      await sendSubmittedToSaboNotification(reimbursementRequest.notificationSlackThreads);
-    } catch (e: unknown) {
-      console.error('Error sending submitted to SABO notification:', e);
-    }
+    await sendSubmittedToSaboNotification(reimbursementRequest.notificationSlackThreads);
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1443,11 +1435,7 @@ export default class ReimbursementRequestService {
         'Reimbursement Request successfully updated, however no slack message was sent as recipient is missing their settings!'
       );
 
-    try {
-      await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
-    } catch (e: unknown) {
-      console.error('Error sending reimbursement request denied notification:', e);
-    }
+    await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1734,14 +1722,10 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    try {
-      await sendReimbursementRequestPendingFinanceNotification(
-        reimbursementRequest.notificationSlackThreads,
-        reimbursementRequest.assigneeId
-      );
-    } catch (e: unknown) {
-      console.error('Error sending reimbursement request pending finance notification:', e);
-    }
+    await sendReimbursementRequestPendingFinanceNotification(
+      reimbursementRequest.notificationSlackThreads,
+      reimbursementRequest.assigneeId
+    );
 
     return reimbursementStatusTransformer(updatedReimbursementStatus);
   }
@@ -1795,11 +1779,7 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    try {
-      await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads, user.userId);
-    } catch (e: unknown) {
-      console.error('Error sending reimbursement request changes requested notification:', e);
-    }
+    await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads, user.userId);
 
     return reimbursementStatusTransformer(deletedStatus);
   }
