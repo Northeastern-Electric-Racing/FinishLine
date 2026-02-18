@@ -13,8 +13,7 @@ import {
   Calendar,
   FilterArgs,
   Machinery,
-  ScheduleSlot,
-  notGuest
+  ScheduleSlot
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
@@ -65,7 +64,7 @@ import {
   updateUserAvailability,
   areUsersinList
 } from '../utils/users.utils.js';
-import { Conflict_Status, Event_Status, Organization } from '@prisma/client';
+import { Conflict_Status, Event_Status, Organization, Team } from '@prisma/client';
 
 export default class CalendarService {
   /**
@@ -286,7 +285,7 @@ export default class CalendarService {
       if (!hasPermission) {
         throw new AccessDeniedException('Only admins and heads can create events under this event type');
       }
-    } else if (notGuest(submitter.role)) {
+    } else if (isGuest(submitter.role)) {
       throw new AccessDeniedGuestException('Guests cannot create events');
     }
 
@@ -497,10 +496,6 @@ export default class CalendarService {
         where: { userId: { in: optionalMemberIds.concat(requiredMemberIds) } }
       });
 
-      if (!members) {
-        throw new NotFoundException('User', 'Cannot find members who are invited to the design review');
-      }
-
       // get the user settings for all the members invited, who are leaderingship
       const memberUserSettings = await prisma.user_Settings.findMany({
         where: { userId: { in: members.map((member) => member.userId) } }
@@ -527,18 +522,24 @@ export default class CalendarService {
       // Send popup notification
       await sendEventPopUp(newEvent, members, submitter, workPackageNames, organization.organizationId);
 
+      const teamsToNotify = new Set<Team>();
       for (const project of projects) {
-        const projectTeams = project.teams;
-        if (projectTeams.length > 0) {
-          await sendSlackEventNotifications(
-            projectTeams,
-            createdEvent,
-            submitter,
-            workPackageNames,
-            project.wbsElement.name
-          );
+        for (const team of project.teams) {
+          teamsToNotify.add(team);
         }
       }
+
+      for (const team of newEvent.teams) {
+        teamsToNotify.add(team);
+      }
+
+      await sendSlackEventNotifications(
+        Array.from(teamsToNotify),
+        createdEvent,
+        submitter,
+        workPackageNames,
+        organization.name
+      );
     }
 
     return createdEvent;
