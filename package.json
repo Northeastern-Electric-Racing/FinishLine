@@ -6,7 +6,8 @@
   "workspaces": [
     "src/backend",
     "src/frontend",
-    "src/shared"
+    "src/shared",
+    "docs-site"
   ],
   "scripts": {
     "prettier-check": "yarn prettier --check .",
@@ -59,7 +60,11 @@
     "docker:i": "cd devContainerization && docker compose -f docker-compose.dev.yml exec -T backend sh -c \"yarn install && cd src/backend && npx prisma generate\" && docker compose -f docker-compose.dev.yml exec -T frontend sh -c \"yarn install\"",
     "docker:test": "yarn test:setup && cd devContainerization && docker compose -f docker-compose.dev.yml exec backend bash -c \"yarn test:backend\" && docker compose -f docker-compose.dev.yml exec frontend sh -c \"yarn test:frontend\" && yarn test:teardown",
     "docker:rebuild": "docker compose -f devContainerization/docker-compose.dev.yml rm -f -s && yarn docker:start",
-    "db:pull": "node scripts/db-pull.mjs"
+    "db:pull": "node scripts/db-pull.mjs",
+    "docs:dev": "yarn workspace finishline-docs docs:dev",
+    "docs:build": "yarn workspace finishline-docs docs:build",
+    "docs:serve": "yarn workspace finishline-docs serve",
+    "docs:prepare": "yarn workspace finishline-docs prepare-docs"
   },
   "resolutions": {
     "@types/react": "17.0.1",
@@ -153,6 +158,8 @@
       "build",
       "coverage",
       "docs",
+      "docs-site/.docusaurus",
+      "docs-site/build",
       "lambda",
       "node_modules",
       "public",
