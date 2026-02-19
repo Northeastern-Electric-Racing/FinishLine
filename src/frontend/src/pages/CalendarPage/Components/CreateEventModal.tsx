@@ -10,9 +10,11 @@ interface CreateEventModalProps {
   onClose: () => void;
   eventTypes: EventType[];
   defaultDate?: Date;
+  defaultStartTime?: Date;
+  defaultEndTime?: Date;
 }
 
-const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, eventTypes, defaultDate }) => {
+const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, eventTypes, defaultDate, defaultStartTime, defaultEndTime }) => {
   const toast = useToast();
   const { mutateAsync: createEvent } = useCreateEvent();
   const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
@@ -103,6 +105,8 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, even
       onSubmit={handleSubmit}
       eventTypes={eventTypes}
       defaultDate={defaultDate}
+      defaultStartTime={defaultStartTime}
+      defaultEndTime={defaultEndTime}
     />
   );
 };

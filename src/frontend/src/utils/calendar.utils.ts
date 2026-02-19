@@ -4,6 +4,13 @@ import { EventFormValues } from '../pages/CalendarPage/Components/EventModal';
 /**
  * Gets the reason why an event is pending for display purposes.
  */
+export const getSundayOfWeek = (date: Date): Date => {
+  const d = new Date(date);
+  d.setDate(d.getDate() - d.getDay());
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
 export const getPendingReason = (event: EventInstance): string | null => {
   if (event.approved === ConflictStatus.PENDING) {
     return 'This event has a scheduling conflict and requires approval.';
