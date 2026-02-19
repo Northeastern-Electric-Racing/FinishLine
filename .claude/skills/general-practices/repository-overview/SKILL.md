@@ -1,11 +1,6 @@
 ---
 name: repository-overview
-description: >-
-  High-level overview of the FinishLine monorepo structure, tech stack, tools,
-  and how they work together. Use when onboarding to the codebase, asking
-  about the project structure, wondering what technology FinishLine uses,
-  asking where files live, or needing to understand how the frontend, backend,
-  and shared packages relate to each other.
+description: High-level overview of the FinishLine monorepo structure, tech stack, tools, and how they work together. Use when onboarding to the codebase, asking about the project structure, wondering what technology FinishLine uses, asking where files live, or needing to understand how the frontend, backend, and shared packages relate to each other.
 ---
 
 # Repository Overview
@@ -55,6 +50,7 @@ src/backend/
 ```
 
 Key technology choices:
+
 - **Express 5** for HTTP routing and middleware
 - **Prisma 6** as the ORM with PostgreSQL
 - **express-validator** for request input validation on routes
@@ -85,6 +81,7 @@ src/frontend/
 ```
 
 Key technology choices:
+
 - **React 19** with functional components and hooks
 - **Vite 6** for dev server and production builds
 - **Material-UI (MUI) v6** for the component library and styling
@@ -126,6 +123,7 @@ src/shared/
 ```
 
 Types are imported throughout the codebase as:
+
 ```typescript
 import { Project, User, WbsNumber } from 'shared';
 ```
@@ -215,23 +213,23 @@ FinishLine uses an unconventional HTTP method pattern: **GET for reads, POST for
 
 When looking for code related to a specific feature, files follow a consistent naming pattern across the stack:
 
-| Layer | Path Pattern | Example (Calendar) |
-|-------|-------------|-------------------|
-| Routes | `src/backend/src/routes/{feature}.routes.ts` | `calendar.routes.ts` |
-| Controllers | `src/backend/src/controllers/{feature}.controllers.ts` | `calendar.controllers.ts` |
-| Services | `src/backend/src/services/{feature}.services.ts` | `calendar.services.ts` |
-| Prisma Query Args | `src/backend/src/prisma-query-args/{feature}.query-args.ts` | `calendar.query-args.ts` |
-| Transformers | `src/backend/src/transformers/{feature}.transformer.ts` | `calendar.transformer.ts` |
-| Backend Utils | `src/backend/src/utils/{feature}.utils.ts` | `calendar.utils.ts` |
-| Backend Tests | `src/backend/tests/unit/{feature}.test.ts` | `calendar.test.ts` |
-| Shared Types | `src/shared/src/types/{feature}-types.ts` | `calendar-types.ts` |
-| Frontend APIs | `src/frontend/src/apis/{feature}.api.ts` | `calendar.api.ts` |
-| Frontend Hooks | `src/frontend/src/hooks/{feature}.hooks.ts` | `calendar.hooks.ts` |
-| Frontend Pages | `src/frontend/src/pages/{FeaturePage}/` | `CalendarPage/` |
-| Frontend Utils | `src/frontend/src/utils/{feature}.utils.ts` | `calendar.utils.ts` |
-| Frontend Tests | `src/frontend/src/tests/pages/{FeaturePage}/` | — |
-| URL Builders | `src/frontend/src/utils/urls.ts` | (all in one file) |
-| Frontend Routes | `src/frontend/src/utils/routes.ts` | (all in one file) |
+| Layer             | Path Pattern                                                | Example (Calendar)        |
+| ----------------- | ----------------------------------------------------------- | ------------------------- |
+| Routes            | `src/backend/src/routes/{feature}.routes.ts`                | `calendar.routes.ts`      |
+| Controllers       | `src/backend/src/controllers/{feature}.controllers.ts`      | `calendar.controllers.ts` |
+| Services          | `src/backend/src/services/{feature}.services.ts`            | `calendar.services.ts`    |
+| Prisma Query Args | `src/backend/src/prisma-query-args/{feature}.query-args.ts` | `calendar.query-args.ts`  |
+| Transformers      | `src/backend/src/transformers/{feature}.transformer.ts`     | `calendar.transformer.ts` |
+| Backend Utils     | `src/backend/src/utils/{feature}.utils.ts`                  | `calendar.utils.ts`       |
+| Backend Tests     | `src/backend/tests/unit/{feature}.test.ts`                  | `calendar.test.ts`        |
+| Shared Types      | `src/shared/src/types/{feature}-types.ts`                   | `calendar-types.ts`       |
+| Frontend APIs     | `src/frontend/src/apis/{feature}.api.ts`                    | `calendar.api.ts`         |
+| Frontend Hooks    | `src/frontend/src/hooks/{feature}.hooks.ts`                 | `calendar.hooks.ts`       |
+| Frontend Pages    | `src/frontend/src/pages/{FeaturePage}/`                     | `CalendarPage/`           |
+| Frontend Utils    | `src/frontend/src/utils/{feature}.utils.ts`                 | `calendar.utils.ts`       |
+| Frontend Tests    | `src/frontend/src/tests/pages/{FeaturePage}/`               | —                         |
+| URL Builders      | `src/frontend/src/utils/urls.ts`                            | (all in one file)         |
+| Frontend Routes   | `src/frontend/src/utils/routes.ts`                          | (all in one file)         |
 
 ## Feature Areas
 
@@ -261,6 +259,7 @@ FinishLine requires **Docker** for the PostgreSQL database regardless of how you
 ### Initial Setup
 
 First time setup (or after pulling new dependencies):
+
 ```bash
 yarn install                  # Install all workspace dependencies
 yarn prisma:generate          # Generate the Prisma client from the schema
@@ -269,6 +268,7 @@ yarn prisma:generate          # Generate the Prisma client from the schema
 ### Database Setup
 
 The PostgreSQL database always runs in a Docker container. The `yarn database:setup` command handles everything: it writes the `DATABASE_URL` to `src/backend/.env`, starts a PostgreSQL container named `finishline` on port 5432, creates the `nerpm` database, and runs Prisma migrations with seed data:
+
 ```bash
 yarn database:setup           # One-time: create Postgres container + seed DB
 ```
@@ -280,12 +280,14 @@ After initial setup, the container persists. If you restart your machine, start 
 You have two options for running the frontend and backend: on your host machine or in Docker containers. Either way, they connect to the same PostgreSQL container.
 
 **Option A: Host machine (recommended for faster iteration)**
+
 ```bash
 yarn start                    # Builds shared, starts backend (nodemon, port 3001)
                               #   + frontend (vite, port 3000) concurrently
 ```
 
 Or run them individually:
+
 ```bash
 yarn frontend                 # Frontend dev server on port 3000
 yarn backend:dev              # Backend with nodemon on port 3001
@@ -293,6 +295,7 @@ yarn workspace shared build   # Rebuild shared (required after changing shared t
 ```
 
 **Option B: Docker containers**
+
 ```bash
 yarn docker:start             # Start frontend + backend + DB containers
 yarn docker:dev               # Full docker dev environment with watch mode
@@ -302,6 +305,7 @@ yarn docker:i                 # Install deps inside containers
 ### Database Commands
 
 These commands manage the Prisma schema and database state:
+
 ```bash
 yarn prisma:generate          # Regenerate Prisma client — run after ANY schema.prisma change
 yarn prisma:migrate           # Create and apply a new migration — run after adding/changing

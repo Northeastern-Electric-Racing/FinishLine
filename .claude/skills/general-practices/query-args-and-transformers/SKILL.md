@@ -1,12 +1,6 @@
 ---
 name: query-args-and-transformers
-description: >-
-  Guide for Prisma query args and transformer functions in FinishLine.
-  Query args define reusable select/include objects for Prisma queries.
-  Transformers convert Prisma results into shared types for the API.
-  Use when creating query args, writing transformers, fetching data
-  from Prisma for API responses, or when asked how data flows from
-  the database to the frontend.
+description: Guide for Prisma query args and transformer functions in FinishLine. Query args define reusable select/include objects for Prisma queries. Transformers convert Prisma results into shared types for the API. Use when creating query args, writing transformers, fetching data from Prisma for API responses, or when asked how data flows from the database to the frontend.
 ---
 
 # Query Args and Transformers
@@ -49,11 +43,11 @@ This separation exists because Prisma's auto-generated types (column names, nest
 
 ## File Locations
 
-| Layer | Path | Naming |
-|-------|------|--------|
-| Query args | `src/backend/src/prisma-query-args/{feature}.query-args.ts` | `get{Entity}QueryArgs` |
-| Transformers | `src/backend/src/transformers/{feature}.transformer.ts` | `{entity}Transformer` |
-| Shared types | `src/shared/src/types/{feature}-types.ts` | TypeScript interfaces |
+| Layer        | Path                                                        | Naming                 |
+| ------------ | ----------------------------------------------------------- | ---------------------- |
+| Query args   | `src/backend/src/prisma-query-args/{feature}.query-args.ts` | `get{Entity}QueryArgs` |
+| Transformers | `src/backend/src/transformers/{feature}.transformer.ts`     | `{entity}Transformer`  |
+| Shared types | `src/shared/src/types/{feature}-types.ts`                   | TypeScript interfaces  |
 
 ## Query Args
 
@@ -66,12 +60,9 @@ Every query args file follows the same pattern: export a type alias using `Retur
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args.js';
 
-export type ShopQueryArgs =
-  ReturnType<typeof getShopQueryArgs>;
+export type ShopQueryArgs = ReturnType<typeof getShopQueryArgs>;
 
-export const getShopQueryArgs = (
-  organizationId: string
-) =>
+export const getShopQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.ShopDefaultArgs>()({
     include: {
       userCreated: getUserQueryArgs(organizationId)
@@ -112,9 +103,7 @@ A good example of selective fetching is `getWorkPackagePreviewQueryArgs`, which 
 
 ```typescript
 export const getWorkPackagePreviewQueryArgs = () =>
-  Prisma.validator<
-    Prisma.Work_PackageDefaultArgs
-  >()({
+  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
     select: {
       blockedBy: true,
       wbsElement: {
@@ -155,10 +144,12 @@ export const getWorkPackagePreviewQueryArgs = () =>
 Be very careful about nested query args. Every level of nesting adds database joins and increases query cost. Only include nested relations when the transformer actually needs that data to satisfy the shared type.
 
 **Good reasons to nest:**
+
 - The shared type has a `userCreated: User` field → nest `getUserQueryArgs`
 - The shared type has a `teams: Team[]` field that needs team names → nest with `select: { teamName: true, teamId: true }`
 
 **Bad reasons to nest:**
+
 - "The frontend might need it eventually" — add it when it's actually needed
 - Nesting three or more levels deep without confirming the transformer uses all that data
 
@@ -169,14 +160,10 @@ When nesting gets deep, consider whether a separate endpoint with its own query 
 Many query args accept `organizationId` to scope nested relations. The most common case is filtering user roles to the current organization:
 
 ```typescript
-export const getUserQueryArgs = (
-  organizationId?: string
-) =>
+export const getUserQueryArgs = (organizationId?: string) =>
   Prisma.validator<Prisma.UserDefaultArgs>()({
     select: {
-      roles: organizationId
-        ? { where: { organizationId } }
-        : true,
+      roles: organizationId ? { where: { organizationId } } : true,
       userId: true,
       firstName: true,
       lastName: true,
@@ -192,12 +179,8 @@ Pass `organizationId` through from the service method. If your query args don't 
 Query args MUST filter out soft-deleted records in nested relations using `where: { dateDeleted: null }`. This applies at every nesting level:
 
 ```typescript
-export const getWorkPackageQueryArgs = (
-  organizationId: string
-) =>
-  Prisma.validator<
-    Prisma.Work_PackageDefaultArgs
-  >()({
+export const getWorkPackageQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
     include: {
       blockedBy: {
         where: { dateDeleted: null }
@@ -210,9 +193,7 @@ export const getWorkPackageQueryArgs = (
         include: {
           descriptionBullets: {
             where: { dateDeleted: null },
-            ...getDescriptionBulletQueryArgs(
-              organizationId
-            )
+            ...getDescriptionBulletQueryArgs(organizationId)
           },
           changes: {
             where: {
@@ -246,14 +227,10 @@ A transformer is a pure function that takes a Prisma result (typed using the que
 // src/backend/src/transformers/calendar.transformer.ts
 import { Prisma } from '@prisma/client';
 import { Shop } from 'shared';
-import { ShopQueryArgs }
-  from '../prisma-query-args/shop.query-args.js';
-import { userTransformer }
-  from './user.transformer.js';
+import { ShopQueryArgs } from '../prisma-query-args/shop.query-args.js';
+import { userTransformer } from './user.transformer.js';
 
-export const shopTransformer = (
-  shop: Prisma.ShopGetPayload<ShopQueryArgs>
-): Shop => {
+export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Shop => {
   return {
     shopId: shop.shopId,
     name: shop.name,
@@ -271,18 +248,16 @@ export const shopTransformer = (
 ### Common Transformer Operations
 
 **Renaming fields** — when Prisma column names differ from the shared type:
+
 ```typescript
 color: calendar.colorHexCode,
 ```
 
 **Mapping enums** — Prisma enums and shared enums are separate types. Create a mapping:
+
 ```typescript
-export const eventStatusTransformer = (
-  status: PrismaEventStatus
-): EventStatus => {
-  const mapping: Record<
-    PrismaEventStatus, EventStatus
-  > = {
+export const eventStatusTransformer = (status: PrismaEventStatus): EventStatus => {
+  const mapping: Record<PrismaEventStatus, EventStatus> = {
     UNCONFIRMED: EventStatus.UNCONFIRMED,
     CONFIRMED: EventStatus.CONFIRMED,
     SCHEDULED: EventStatus.SCHEDULED,
@@ -293,12 +268,14 @@ export const eventStatusTransformer = (
 ```
 
 **Converting nulls to undefined** — Prisma uses `null` for optional fields, but shared types often use `undefined`:
+
 ```typescript
 location: event.location ?? undefined,
 zoomLink: event.zoomLink ?? undefined,
 ```
 
 **Transforming nested relations** — call other transformers for nested objects:
+
 ```typescript
 requiredMembers:
   event.requiredMembers.map(userTransformer),
@@ -310,8 +287,8 @@ teams: event.teams.map((team) => ({
 })),
 ```
 
-
 **Computing derived fields** — some shared types have fields that don't exist in the database:
+
 ```typescript
 endDate: calculateEndDate(
   wpInput.startDate, wpInput.duration
@@ -324,11 +301,7 @@ deleted: wpInput.wbsElement.dateDeleted !== null,
 Transformers compose naturally. A `shopMachineryTransformer` calls `shopTransformer`, which calls `userTransformer`:
 
 ```typescript
-export const shopMachineryTransformer = (
-  sm: Prisma.Shop_MachineryGetPayload<
-    ShopMachineryQueryArgs
-  >
-): ShopMachinery => {
+export const shopMachineryTransformer = (sm: Prisma.Shop_MachineryGetPayload<ShopMachineryQueryArgs>): ShopMachinery => {
   return {
     shopMachineryId: sm.shopMachineryId,
     shop: shopTransformer(sm.shop),
@@ -346,19 +319,19 @@ When the frontend needs a lightweight version of an entity (for dropdowns, lists
 ```typescript
 // Query args: minimal select
 export const getWorkPackagePreviewQueryArgs = () =>
-  Prisma.validator<
-    Prisma.Work_PackageDefaultArgs
-  >()({
-    select: { /* only essential fields */ }
+  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
+    select: {
+      /* only essential fields */
+    }
   });
 
 // Transformer: maps to preview type
 export const workPackagePreviewTransformer = (
-  wp: Prisma.Work_PackageGetPayload<
-    WorkPackagePreviewQueryArgs
-  >
+  wp: Prisma.Work_PackageGetPayload<WorkPackagePreviewQueryArgs>
 ): WorkPackagePreview => {
-  return { /* minimal fields */ };
+  return {
+    /* minimal fields */
+  };
 };
 ```
 
