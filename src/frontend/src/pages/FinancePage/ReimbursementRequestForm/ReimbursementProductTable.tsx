@@ -80,7 +80,7 @@ const MaterialAutocomplete: React.FC<{
 
   const materialOptions = (materials || []).map((material) => ({
     id: material.materialId,
-    label: `${material.name}: ${material.materialTypeName}, ${material.manufacturerName}`
+    label: `${material.name}: ${material.manufacturerName}, ${material.manufacturerPartNumber}`
   }));
 
   return (
@@ -497,7 +497,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                       <MaterialAutocomplete
                                         wbsNum={product.reason as WbsNumber}
                                         onSelect={(material) => {
-                                          const label = `${material.name}: ${material.materialTypeName}, ${material.manufacturerName}`;
+                                          const label = `${material.name}: ${material.manufacturerName}, ${material.manufacturerPartNumber}`;
                                           setValue(`reimbursementProducts.${product.index}.name`, label);
                                         }}
                                       />
