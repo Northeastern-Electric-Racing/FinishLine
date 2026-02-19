@@ -48,13 +48,28 @@ const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, cal
       }}
     >
       <Stack direction="row" spacing={5}>
-        <Stack direction="row" sx={{ minWidth: 200 }}>
+        <Stack direction="row" sx={{ minWidth: 0, flex: 1 }}>
           {getTeamTypeIcon(event.teamType?.name ?? '', false)}
-          <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
+          <Typography
+            marginX={0.5}
+            marginY={0.5}
+            lineHeight={'120%'}
+            fontSize={12}
+            fontWeight="bold"
+            align="left"
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
             {name}
           </Typography>
         </Stack>
-        <Stack direction="row" sx={{ minWidth: 150 }}>
+
+        <Stack direction="row" sx={{ minWidth: 150, flexShrink: 0 }}>
           <AccessTimeIcon />
           {event.allDay ? (
             <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
@@ -67,14 +82,28 @@ const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, cal
           )}
         </Stack>
       </Stack>
+
       <Stack direction="row" spacing={5}>
-        <Stack direction="row" sx={{ minWidth: 200 }}>
+        <Stack direction="row" sx={{ minWidth: 0, flex: 1 }}>
           <LocationOnIcon />
-          <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
+          <Typography
+            marginX={0.5}
+            marginY={0.5}
+            lineHeight={'120%'}
+            fontSize={12}
+            fontWeight="bold"
+            align="left"
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
             {event.location ?? 'N/A'}
           </Typography>
         </Stack>
-        <Stack direction="row" sx={{ minWidth: 150 }}>
+
+        <Stack direction="row" sx={{ minWidth: 150, flexShrink: 0 }}>
           <GroupIcon />
           <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
             {event.requiredMembers[0]
