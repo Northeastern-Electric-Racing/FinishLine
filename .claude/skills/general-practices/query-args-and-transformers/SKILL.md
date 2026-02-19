@@ -1,12 +1,6 @@
 ---
 name: query-args-and-transformers
-description: >-
-  Guide for Prisma query args and transformer functions in FinishLine.
-  Query args define reusable select/include objects for Prisma queries.
-  Transformers convert Prisma results into shared types for the API.
-  Use when creating query args, writing transformers, fetching data
-  from Prisma for API responses, or when asked how data flows from
-  the database to the frontend.
+description: Guide for Prisma query args and transformer functions in FinishLine. Query args define reusable select/include objects for Prisma queries. Transformers convert Prisma results into shared types for the API. Use when creating query args, writing transformers, fetching data from Prisma for API responses, or when asked how data flows from the database to the frontend.
 ---
 
 # Query Args and Transformers

@@ -1,11 +1,6 @@
 ---
 name: backend-endpoints
-description: >-
-  Guide for creating backend API endpoints in FinishLine following the
-  Route → Controller → Service pattern with multi-tenant security.
-  Use when creating new endpoints, adding API routes, implementing
-  controllers or services, building backend request handlers, or
-  when asked how the backend works.
+description: Guide for creating backend API endpoints in FinishLine following the Route → Controller → Service pattern with multi-tenant security. Use when creating new endpoints, adding API routes, implementing controllers or services, building backend request handlers, or when asked how the backend works.
 ---
 
 # Backend Endpoints
@@ -65,7 +60,7 @@ If a service throws an exception, it bubbles up through the controller's `next(e
 
 | Layer         | Path                                                   | Naming                                        |
 | ------------- | ------------------------------------------------------ | --------------------------------------------- |
-| Entry point   | `src/backend/index.ts`                                 |                                               |
+| Entry point   | `src/backend/index.ts`                                 | —                                             |
 | Routes        | `src/backend/src/routes/{feature}.routes.ts`           | `{feature}Router`                             |
 | Controllers   | `src/backend/src/controllers/{feature}.controllers.ts` | `{Feature}Controller` class                   |
 | Services      | `src/backend/src/services/{feature}.services.ts`       | `{Feature}Service` class                      |

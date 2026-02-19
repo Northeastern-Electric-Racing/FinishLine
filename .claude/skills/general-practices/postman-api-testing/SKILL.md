@@ -1,9 +1,6 @@
 ---
 name: postman-api-testing
-description: >-
-  Guide for using Postman to test and interact with the FinishLine API during development.
-  Use when testing API endpoints, debugging backend issues, verifying request/response
-  formats, or when asked how to use Postman with the local development environment.
+description: Guide for using Postman to test and interact with the FinishLine API during development. Use when testing API endpoints, debugging backend issues, verifying request/response formats, or when asked how to use Postman with the local development environment.
 ---
 
 # Postman API Testing
