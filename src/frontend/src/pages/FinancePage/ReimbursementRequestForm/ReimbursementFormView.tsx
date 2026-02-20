@@ -680,7 +680,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   <FormHelperText error>{errors.accountCodeId?.message}</FormHelperText>
                 </FormControl>
 
-                                  {/* Description */}
+                {/* Description */}
                 <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
                   <FormLabel
                     sx={{
