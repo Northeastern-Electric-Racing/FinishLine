@@ -239,10 +239,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
         // case 2 (if reimbursement request does not exist): link to the create reimbursement request page with pre-filled info
         const { quantity, price } = material;
 
-        const qty = quantity != null ? Number(quantity) : undefined;
-        const unitPrice = price != null ? Number(price) : undefined;
-
-        const prefillCost = qty != null && unitPrice != null ? qty * unitPrice : undefined;
+        const prefillCost = quantity != null && price != null ? (Number(quantity) * Number(price)) / 100 : undefined;
 
         return (
           <Button
