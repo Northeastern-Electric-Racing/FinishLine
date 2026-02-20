@@ -25,17 +25,15 @@ import DrawerHeader from '../../components/DrawerHeader';
 import { Cached, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
 import { isGuest, TeamType } from 'shared';
-import { getAllTeamTypes } from '../../apis/team-types.api';
-import ConstructionIcon from '@mui/icons-material/Construction';
-import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
-import CodeIcon from '@mui/icons-material/Code';
-import WorkIcon from '@mui/icons-material/Work';
+import * as MuiIcons from '@mui/icons-material';
+import { useAllTeamTypes } from '../../hooks/team-types.hooks';
+import ErrorPage from '../../pages/ErrorPage';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -49,36 +47,18 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const user = useCurrentUser();
   const { onGuestHomePage } = useHomePageContext();
-  const [allTeams, setAllTeams] = useState<LinkItem[]>([]);
+  const { isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamTypes();
 
-  const getIcon = (iconName: string) => {
-    const icons: { [key: string]: React.ComponentType } = {
-      ConstructionIcon,
-      CodeIcon,
-      ElectricBoltIcon,
-      WorkIcon
+  const allTeams: LinkItem[] = (teams ?? []).map((team: TeamType) => {
+    const IconComponent = MuiIcons[(team.iconName in MuiIcons ? team.iconName : 'Circle') as keyof typeof MuiIcons];
+    return {
+      name: team.name,
+      icon: <IconComponent />,
+      route: routes.TEAMS + '/' + team.teamTypeId
     };
-    const Icon = icons[iconName];
-    return Icon ? <Icon /> : undefined;
-  };
+  });
 
-  useEffect(() => {
-    getAllTeamTypes()
-      .then((response) => {
-        console.log('All teams from API:', response.data);
-        setAllTeams(
-          response.data.map((team: TeamType) => ({
-            name: team.name,
-            icon: getIcon(team.iconName),
-            route: routes.TEAMS + '/' + team.teamTypeId
-          }))
-        );
-      })
-      .catch((error) => {
-        console.log("Teams couldn't load " + error);
-      });
-  }, []);
-
+  if (teamsError) return <ErrorPage error={teamsErrorMsg} />;
   const memberLinkItems: LinkItem[] = [
     {
       name: 'Home',

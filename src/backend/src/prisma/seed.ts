@@ -350,21 +350,15 @@ const performSeed: () => Promise<void> = async () => {
   const mechanical = await TeamsService.createTeamType(
     batman,
     'Mechanical',
-    'YouTubeIcon',
+    'Construction',
     'This is the mechanical team',
     ner
   );
-  const software = await TeamsService.createTeamType(
-    thomasEmrax,
-    'Software',
-    'InstagramIcon',
-    'This is the software team',
-    ner
-  );
+  const software = await TeamsService.createTeamType(thomasEmrax, 'Software', 'Code', 'This is the software team', ner);
   const electrical = await TeamsService.createTeamType(
     cyborg,
     'Electrical',
-    'SettingsIcon',
+    'ElectricBolt',
     'This is the electrical team',
     ner
   );
