@@ -158,8 +158,12 @@ const CalendarTab: React.FC = () => {
                 }
               }}
             >
-              <ToggleButton value="month" data-testid="month-view-toggle">Month</ToggleButton>
-              <ToggleButton value="week" data-testid="week-view-toggle">Week</ToggleButton>
+              <ToggleButton value="month" data-testid="month-view-toggle">
+                Month
+              </ToggleButton>
+              <ToggleButton value="week" data-testid="week-view-toggle">
+                Week
+              </ToggleButton>
             </ToggleButtonGroup>
             <NERButton
               variant="contained"
