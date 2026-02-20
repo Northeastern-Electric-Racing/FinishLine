@@ -220,25 +220,27 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
         if (!material) return null;
 
         const reimbursementRequest = material.reimbursementRequest;
-        
+
         // case 1 (if reimbursement request exists): link to the reimbursement request page
         if (reimbursementRequest) {
           return (
-          <Link
-            component={RouterLink}
-            to={`${routes.REIMBURSEMENT_REQUESTS}/view/${reimbursementRequest.reimbursementRequestId}`}
-            underline="hover"
-            sx={{ color: '#dd514c', fontWeight: 'bold', cursor: 'pointer' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {reimbursementRequest.identifier}
-          </Link>
+            <Link
+              component={RouterLink}
+              to={`${routes.REIMBURSEMENT_REQUESTS}/view/${reimbursementRequest.reimbursementRequestId}`}
+              underline="hover"
+              sx={{ color: '#dd514c', fontWeight: 'bold', cursor: 'pointer' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {reimbursementRequest.identifier}
+            </Link>
           );
         }
-        
+
         // case 2 (if reimbursement request does not exist): link to the create reimbursement request page with pre-filled info
-        const qty = material.quantity != null ? Number(material.quantity) : undefined;
-        const unitPrice = material.price != null ? Number(material.price) : undefined;
+        const { quantity, price } = material;
+
+        const qty = quantity != null ? Number(quantity) : undefined;
+        const unitPrice = price != null ? Number(price) : undefined;
 
         const prefillCost = qty != null && unitPrice != null ? qty * unitPrice : undefined;
 
