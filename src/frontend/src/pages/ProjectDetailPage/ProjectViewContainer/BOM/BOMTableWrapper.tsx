@@ -219,7 +219,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
         const material = materials.find((m) => m.materialId === params.row.materialId);
         if (!material) return null;
 
-        const reimbursementRequest = material.reimbursementRequest;
+        const { reimbursementRequest } = material;
 
         // case 1 (if reimbursement request exists): link to the reimbursement request page
         if (reimbursementRequest) {
