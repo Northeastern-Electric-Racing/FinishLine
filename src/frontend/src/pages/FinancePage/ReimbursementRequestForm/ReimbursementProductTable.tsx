@@ -39,6 +39,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { formatReasonName } from '../../../utils/reimbursement-request.utils';
 import { Material } from 'shared';
+import { set } from 'date-fns';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -67,8 +68,10 @@ const ListItem = styled('li')(({ theme }) => ({
 const MaterialAutocomplete: React.FC<{
   wbsNum: WbsNumber;
   onSelect: (material: Material) => void;
-}> = ({ wbsNum, onSelect }) => {
+  initialValue?: string;
+}> = ({ wbsNum, onSelect, initialValue }) => {
   const { data: materials, isLoading, isError, error } = useGetMaterialsForWbsElement(wbsNum);
+  const [userSelected, setUserSelected] = useState<{ id: string; label: string } | null>(null);
 
   if (isLoading) {
     return <LoadingIndicator />;
@@ -83,12 +86,15 @@ const MaterialAutocomplete: React.FC<{
     label: `${material.name}: ${material.manufacturerName}, ${material.manufacturerPartNumber}`
   }));
 
+  const selectedOption = userSelected ?? materialOptions.find((o) => o.label === initialValue) ?? null;
+
   return (
     <Autocomplete
       sx={{ flex: 1 }}
       options={materialOptions}
       getOptionLabel={(option) => option.label}
       onChange={(_, value) => {
+        setUserSelected(value);
         if (value) {
           const selectedMaterial = materials?.find((m) => m.materialId === value.id);
           if (selectedMaterial) {
@@ -96,7 +102,7 @@ const MaterialAutocomplete: React.FC<{
           }
         }
       }}
-      value={null}
+      value={selectedOption}
       blurOnSelect={true}
       size={'small'}
       renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select Material" fullWidth />}
@@ -481,31 +487,19 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 }}
                               >
                                 {'carNumber' in product.reason ? ( // if selected is a project
-                                  currentName ? (
-                                    <Box
-                                      sx={{
-                                        border: '1px solid',
-                                        borderColor: 'divider',
-                                        borderRadius: 1,
-                                        p: 1
+                                  <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                    <MaterialAutocomplete
+                                      wbsNum={product.reason as WbsNumber}
+                                      initialValue={currentName}
+                                      onSelect={(material) => {
+                                        const label = `${material.name}: ${material.manufacturerName}, ${material.manufacturerPartNumber}`;
+                                        setValue(`reimbursementProducts.${product.index}.name`, label);
                                       }}
-                                    >
-                                      <Typography variant="body2">{currentName}</Typography>
-                                    </Box>
-                                  ) : (
-                                    <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                      <MaterialAutocomplete
-                                        wbsNum={product.reason as WbsNumber}
-                                        onSelect={(material) => {
-                                          const label = `${material.name}: ${material.manufacturerName}, ${material.manufacturerPartNumber}`;
-                                          setValue(`reimbursementProducts.${product.index}.name`, label);
-                                        }}
-                                      />
-                                      <FormHelperText error>
-                                        {errors.reimbursementProducts?.[product.index]?.name?.message}
-                                      </FormHelperText>
-                                    </FormControl>
-                                  )
+                                    />
+                                    <FormHelperText error>
+                                      {errors.reimbursementProducts?.[product.index]?.name?.message}
+                                    </FormHelperText>
+                                  </FormControl>
                                 ) : (
                                   <FormControl fullWidth margin="dense" variant="outlined" size="small">
                                     <Controller
