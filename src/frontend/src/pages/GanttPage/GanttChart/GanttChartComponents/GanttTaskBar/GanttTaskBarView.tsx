@@ -53,7 +53,7 @@ const GanttTaskBarView = <T,>({
         highlightTaskComparator={highlightTaskComparator}
       />
 
-      <Collapse in={showChildren}>
+      <Collapse in={showChildren} unmountOnExit>
         {task.children.map((child) => {
           return (
             <GanttTaskBar
