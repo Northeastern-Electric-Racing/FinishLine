@@ -25,8 +25,6 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
 }) => {
   const [isLegendOpen, setIsLegendOpen] = useState(true);
 
-  const pendingReimbursement = pendingLeadership + pendingFinance + submittedToSABO;
-
   const [sectionStates, setSectionStates] = useState([
     { title: 'Pending Approval', color: '#562016', expanded: false },
     { title: 'Approved', color: '#8e3c2d', expanded: false },
