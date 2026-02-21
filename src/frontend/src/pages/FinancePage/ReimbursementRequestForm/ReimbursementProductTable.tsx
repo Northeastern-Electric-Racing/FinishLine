@@ -161,8 +161,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const handleOpenCreateMaterial = (productIndex: number, projectWbsNum: WbsNumber) => {
     const project = allProjects.find(
       (proj) =>
-        proj.wbsNum.carNumber === projectWbsNum.carNumber &&
-        proj.wbsNum.projectNumber === projectWbsNum.projectNumber
+        proj.wbsNum.carNumber === projectWbsNum.carNumber && proj.wbsNum.projectNumber === projectWbsNum.projectNumber
     );
 
     if (project) {
