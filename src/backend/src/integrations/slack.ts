@@ -1,5 +1,8 @@
-import { App, ExpressReceiver } from '@slack/bolt';
+import bolt from '@slack/bolt';
+import type { App, ExpressReceiver } from '@slack/bolt';
 import { HttpException } from '../utils/errors.utils.js';
+
+const { App: AppClass, ExpressReceiver: ExpressReceiverClass } = bolt;
 
 let receiver: ExpressReceiver | null = null;
 let slackApp: App | null = null;
@@ -23,12 +26,12 @@ const initializeSlack = () => {
   }
 
   // Initialize the receiver, app, and client
-  receiver = new ExpressReceiver({
+  receiver = new ExpressReceiverClass({
     signingSecret: SLACK_SIGNING_SECRET || '',
     endpoints: '/slack/events'
   });
 
-  slackApp = new App({
+  slackApp = new AppClass({
     token: SLACK_BOT_TOKEN,
     receiver
   });

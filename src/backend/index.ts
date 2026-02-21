@@ -17,6 +17,7 @@ import carsRouter from './src/routes/cars.routes.js';
 import organizationRouter from './src/routes/organizations.routes.js';
 import recruitmentRouter from './src/routes/recruitment.routes.js';
 import { getReceiver } from './src/integrations/slack.js';
+import './src/routes/slack.routes.js';
 import announcementsRouter from './src/routes/announcements.routes.js';
 import onboardingRouter from './src/routes/onboarding.routes.js';
 import popUpsRouter from './src/routes/pop-up.routes.js';
