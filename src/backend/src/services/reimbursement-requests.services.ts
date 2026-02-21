@@ -24,7 +24,7 @@ import {
   notGuest,
   User
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   createReimbursementProducts,
   isUserLeadOrHeadOfFinanceTeam,
@@ -35,7 +35,7 @@ import {
   validateRefund,
   validateUserIsPartOfFinanceTeamOrHead,
   isUserOnFinanceTeam
-} from '../utils/reimbursement-requests.utils';
+} from '../utils/reimbursement-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -44,8 +44,8 @@ import {
   HttpException,
   InvalidOrganizationException,
   NotFoundException
-} from '../utils/errors.utils';
-import { downloadFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
+} from '../utils/errors.utils.js';
+import { downloadFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils.js';
 import {
   accountCodeTransformer,
   indexCodeTransformer,
@@ -55,8 +55,8 @@ import {
   reimbursementStatusTransformer,
   reimbursementTransformer,
   vendorTransformer
-} from '../transformers/reimbursement-requests.transformer';
-import { UserWithSecureSettings } from '../utils/auth.utils';
+} from '../transformers/reimbursement-requests.transformer.js';
+import { UserWithSecureSettings } from '../utils/auth.utils.js';
 import {
   sendPendingSaboSubmissionNotification,
   sendReimbursementRequestChangesRequestedNotification,
@@ -66,17 +66,17 @@ import {
   sendReimbursementRequestPendingFinanceNotification,
   sendSubmittedToSaboNotification,
   sendThreadResponse
-} from '../utils/slack.utils';
-import { getUsers, userHasPermission } from '../utils/users.utils';
-import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
-import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
-import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
-import { getVendorQueryArgs } from '../prisma-query-args/vendor.query-args';
-import { getAccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args';
-import { getIndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
-import { getReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
-import { getReimbursementRequestCommentQueryArgs } from '../prisma-query-args/reimbursement-comment.query-args';
-import { encrypt } from '../utils/encryption.utils';
+} from '../utils/slack.utils.js';
+import { getUsers, userHasPermission } from '../utils/users.utils.js';
+import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args.js';
+import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args.js';
+import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args.js';
+import { getVendorQueryArgs } from '../prisma-query-args/vendor.query-args.js';
+import { getAccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args.js';
+import { getIndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args.js';
+import { getReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args.js';
+import { getReimbursementRequestCommentQueryArgs } from '../prisma-query-args/reimbursement-comment.query-args.js';
+import { encrypt } from '../utils/encryption.utils.js';
 
 export default class ReimbursementRequestService {
   /**
@@ -1302,16 +1302,12 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    try {
-      await sendPendingSaboSubmissionNotification(
-        reimbursementRequest.notificationSlackThreads,
-        submitter.userId,
-        reimbursementRequest.recipientId,
-        reimbursementRequest.reimbursementRequestId
-      );
-    } catch (e: unknown) {
-      console.error('Error sending pending SABO submission notification:', e);
-    }
+    await sendPendingSaboSubmissionNotification(
+      reimbursementRequest.notificationSlackThreads,
+      submitter.userId,
+      reimbursementRequest.recipientId,
+      reimbursementRequest.reimbursementRequestId
+    );
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1385,11 +1381,7 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    try {
-      await sendSubmittedToSaboNotification(reimbursementRequest.notificationSlackThreads);
-    } catch (e: unknown) {
-      console.error('Error sending submitted to SABO notification:', e);
-    }
+    await sendSubmittedToSaboNotification(reimbursementRequest.notificationSlackThreads);
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1458,11 +1450,7 @@ export default class ReimbursementRequestService {
         'Reimbursement Request successfully updated, however no slack message was sent as recipient is missing their settings!'
       );
 
-    try {
-      await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
-    } catch (e: unknown) {
-      console.error('Error sending reimbursement request denied notification:', e);
-    }
+    await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1749,14 +1737,10 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    try {
-      await sendReimbursementRequestPendingFinanceNotification(
-        reimbursementRequest.notificationSlackThreads,
-        reimbursementRequest.assigneeId
-      );
-    } catch (e: unknown) {
-      console.error('Error sending reimbursement request pending finance notification:', e);
-    }
+    await sendReimbursementRequestPendingFinanceNotification(
+      reimbursementRequest.notificationSlackThreads,
+      reimbursementRequest.assigneeId
+    );
 
     return reimbursementStatusTransformer(updatedReimbursementStatus);
   }
@@ -1810,11 +1794,7 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    try {
-      await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads, user.userId);
-    } catch (e: unknown) {
-      console.error('Error sending reimbursement request changes requested notification:', e);
-    }
+    await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads, user.userId);
 
     return reimbursementStatusTransformer(deletedStatus);
   }

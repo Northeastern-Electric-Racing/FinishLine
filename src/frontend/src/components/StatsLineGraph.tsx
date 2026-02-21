@@ -9,15 +9,9 @@ import {
   Title,
   Tooltip,
   Legend,
-  CoreChartOptions,
-  ElementChartOptions,
-  DatasetChartOptions,
-  PluginChartOptions,
-  BarControllerChartOptions,
-  ScaleChartOptions
+  ChartOptions
 } from 'chart.js';
 import { Box } from '@mui/material';
-import { _DeepPartialObject } from 'chart.js/dist/types/utils';
 
 Chart.register(CategoryScale, LinearScale, LineController, LineElement, PointElement, Title, Tooltip, Legend);
 
@@ -53,14 +47,7 @@ const StatsLineGraph: React.FC<StatsLineGraphProps> = ({
     ]
   };
 
-  const options: _DeepPartialObject<
-    CoreChartOptions<'line'> &
-      ElementChartOptions<'line'> &
-      PluginChartOptions<'line'> &
-      DatasetChartOptions<'line'> &
-      ScaleChartOptions<'line'> &
-      BarControllerChartOptions
-  > = {
+  const options: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {

@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
-import { Assembly, AssemblyPreview, Material, MaterialPreview, MaterialStatus } from 'shared';
-import { AssemblyQueryArgs, MaterialPreviewQueryArgs, MaterialQueryArgs } from '../prisma-query-args/bom.query-args';
-import { userTransformer } from './user.transformer';
-import { reimbursementRequestTransformer } from './reimbursement-requests.transformer';
+import { Assembly, Material, MaterialPreview, MaterialStatus } from 'shared';
+import { AssemblyQueryArgs, MaterialPreviewQueryArgs, MaterialQueryArgs } from '../prisma-query-args/bom.query-args.js';
+import { userTransformer } from './user.transformer.js';
+import { reimbursementRequestTransformer } from './reimbursement-requests.transformer.js';
 
 export const assemblyTransformer = (assembly: Prisma.AssemblyGetPayload<AssemblyQueryArgs>): Assembly => {
   return {
@@ -15,19 +15,10 @@ export const assemblyTransformer = (assembly: Prisma.AssemblyGetPayload<Assembly
   };
 };
 
-const assemblyPreviewTransformer = (assembly: Prisma.AssemblyGetPayload<null>): AssemblyPreview => {
-  return {
-    ...assembly,
-    dateDeleted: assembly.dateDeleted ?? undefined,
-    pdmFileName: assembly.pdmFileName ?? undefined
-  };
-};
-
 export const materialTransformer = (material: Prisma.MaterialGetPayload<MaterialQueryArgs>): Material => {
   return {
     materialId: material.materialId,
     assemblyId: material.assemblyId ?? undefined,
-    assembly: material.assembly ? assemblyPreviewTransformer(material.assembly) : undefined,
     name: material.name,
     wbsElementId: material.wbsElementId,
     dateDeleted: material.dateDeleted ?? undefined,

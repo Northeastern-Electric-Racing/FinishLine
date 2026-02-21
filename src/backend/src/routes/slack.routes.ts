@@ -1,5 +1,5 @@
-import { getSlackApp } from '../integrations/slack';
-import SlackController from '../controllers/slack.controllers';
+import { getSlackApp } from '../integrations/slack.js';
+import SlackController from '../controllers/slack.controllers.js';
 
 // Register Slack event listeners only if the Slack app is configured
 const slackApp = getSlackApp();

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Milestone } from 'shared/src/types/milestone-types';
+import { Milestone, FrequentlyAskedQuestion } from 'shared';
 import {
   createFaq,
   createMilestone,
@@ -10,7 +10,6 @@ import {
   getAllFaqs,
   getAllMilestones
 } from '../apis/recruitment.api';
-import { FrequentlyAskedQuestion } from 'shared/src/types/frequently-asked-questions-types';
 
 export interface MilestonePayload {
   name: string;

@@ -8,26 +8,26 @@ import {
   WbsElementStatus,
   WorkPackageProposedChanges,
   WorkPackageStage,
-  isProjectWbs,
-  BudgetChangeRequest
+  BudgetChangeRequest,
+  isWorkPackageWbs
 } from 'shared';
-import { wbsNumOf } from '../utils/utils';
-import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils';
-import proposedSolutionTransformer from './proposed-solutions.transformer';
-import { getDateImplemented } from '../utils/change-requests.utils';
-import { userTransformer } from './user.transformer';
-import { descBulletConverter } from '../utils/description-bullets.utils';
-import teamTransformer from './teams.transformer';
+import { wbsNumOf } from '../utils/utils.js';
+import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils.js';
+import proposedSolutionTransformer from './proposed-solutions.transformer.js';
+import { getDateImplemented } from '../utils/change-requests.utils.js';
+import { userTransformer } from './user.transformer.js';
+import { descBulletConverter } from '../utils/description-bullets.utils.js';
+import teamTransformer from './teams.transformer.js';
 import {
   WbsProposedChangeQueryArgs,
   WorkPackageProposedChangesQueryArgs
-} from '../prisma-query-args/scope-change-requests.query-args';
-import { HttpException } from '../utils/errors.utils';
+} from '../prisma-query-args/scope-change-requests.query-args.js';
+import { HttpException } from '../utils/errors.utils.js';
 import {
   ChangeRequestManyQueryArgs,
   ChangeRequestWithProjectAndWorkPackageQueryArgs
-} from '../prisma-query-args/change-requests.query-args';
-import { accountCodeTransformer, otherProductReasonTransformer } from './reimbursement-requests.transformer';
+} from '../prisma-query-args/change-requests.query-args.js';
+import { accountCodeTransformer, otherProductReasonTransformer } from './reimbursement-requests.transformer.js';
 
 const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>
@@ -132,7 +132,7 @@ const changeRequestTransformer = (
   const status = calculateChangeRequestStatus(changeRequest);
 
   const wbsName = changeRequest.wbsElement
-    ? isProjectWbs(changeRequest.wbsElement)
+    ? !isWorkPackageWbs(changeRequest.wbsElement)
       ? changeRequest.wbsElement?.name
       : `${changeRequest.wbsElement?.workPackage?.project.wbsElement.name} - ${changeRequest.wbsElement?.name}`
     : undefined;

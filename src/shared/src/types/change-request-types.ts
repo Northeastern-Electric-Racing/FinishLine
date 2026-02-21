@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from './user-types';
-import { LinkCreateArgs, ProjectProposedChanges, WbsNumber, WorkPackageProposedChanges } from './project-types';
-import { WorkPackageStage } from './work-package-types';
-import { AccountCode, OtherProductReason } from './reimbursement-requests-types';
+import { User } from './user-types.js';
+import { AccountCode, OtherProductReason } from './reimbursement-requests-types.js';
+import { LinkCreateArgs, ProjectProposedChanges, WbsNumber, WorkPackageProposedChanges } from './project-types.js';
+import { WorkPackageStage } from './work-package-types.js';
 
 export interface ChangeRequest {
   crId: string;

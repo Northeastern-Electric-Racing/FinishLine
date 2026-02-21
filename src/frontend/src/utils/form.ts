@@ -65,11 +65,11 @@ export const generateUUID = () => {
     let r = Math.random() * 16; //random number between 0 and 16
     if (d > 0) {
       //Use timestamp until depleted
-      r = (d + r) % 16 | 0;
+      r = ((d + r) % 16) | 0;
       d = Math.floor(d / 16);
     } else {
       //Use microseconds since page-load if supported
-      r = (d2 + r) % 16 | 0;
+      r = ((d2 + r) % 16) | 0;
       d2 = Math.floor(d2 / 16);
     }
     return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
@@ -82,5 +82,9 @@ export enum FormStorageKey {
   CREATE_MILESTONE = 'CREATE_MILESTONE',
   EDIT_MILESTONE = 'EDIT_MILESTONE',
   CREATE_FAQ = 'CREATE_FAQ',
-  EDIT_FAQ = 'EDIT_FAQ'
+  EDIT_FAQ = 'EDIT_FAQ',
+  CREATE_MACHINERY = 'CREATE_MACHINERY',
+  EDIT_MACHINERY = 'EDIT_MACHINERY',
+  CREATE_EVENT_TYPE = 'CREATE_EVENT_TYPE',
+  EDIT_EVENT_TYPE = 'EDIT_EVENT_TYPE'
 }

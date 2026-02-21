@@ -50,7 +50,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-import { wbsNumComparator } from 'shared/src/validate-wbs';
+import { wbsNumComparator } from 'shared';
 import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
 import { imagePreviewUrl } from '../../../utils/reimbursement-request.utils';
 import { useCreateVendor } from '../../../hooks/finance.hooks';
@@ -121,10 +121,19 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const { mutateAsync: createVendor } = useCreateVendor();
   const user = useCurrentUser();
 
-  // to grab all the proper refund sources
-  const refundSources: CreateRefundSourceArgs[] = Array.from(
-    new Set(reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0))
-  );
+  // to grab all the proper refund sources, deduplicated by indexCodeId
+  const refundSources: CreateRefundSourceArgs[] = (() => {
+    const allSources = reimbursementProducts
+      .flatMap((product) => product.refundSources)
+      .filter((source) => source.amount > 0);
+    const seen = new Set<string>();
+    return allSources.filter((source) => {
+      const id = source.indexCode.indexCodeId;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  })();
 
   const [hasConfirmedFinance, setHasConfirmedFinance] = useState(refundSources.length > 1);
   const toast = useToast();

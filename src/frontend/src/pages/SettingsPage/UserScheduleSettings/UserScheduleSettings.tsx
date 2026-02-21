@@ -21,9 +21,9 @@ import { useUpdateUserScheduleSettings, useUserScheduleSettings } from '../../..
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useSingleDesignReview } from '../../../hooks/design-reviews.hooks';
+import { useSingleEvent } from '../../../hooks/calendar.hooks';
 import { useQuery } from '../../../hooks/utils.hooks';
-import { deeplyCopy } from 'shared/src/utils';
+import { deeplyCopy } from 'shared';
 import { availabilityTransformer } from '../../../apis/transformers/users.transformers';
 
 export interface ScheduleSettingsFormInput {
@@ -39,7 +39,7 @@ const UserScheduleSettings = ({ user }: { user: AuthenticatedUser }) => {
   const [edit, setEdit] = useState(false);
   const toast = useToast();
   const query = useQuery();
-  const designReviewId = query.get('drId');
+  const eventId = query.get('eventId');
 
   const { data, isLoading, isError, error } = useUserScheduleSettings(user.userId);
   const {
@@ -49,16 +49,16 @@ const UserScheduleSettings = ({ user }: { user: AuthenticatedUser }) => {
     error: updateUserScheduleSettingsError
   } = useUpdateUserScheduleSettings();
   const {
-    data: designReview,
-    isError: designReviewIsError,
-    error: designReviewError,
-    isLoading: designReviewIsLoading
-  } = useSingleDesignReview(designReviewId ?? undefined);
+    data: event,
+    isError: eventIsError,
+    error: eventError,
+    isLoading: eventIsLoading
+  } = useSingleEvent(eventId ?? undefined);
 
-  if (designReviewId && (!designReview || designReviewIsLoading)) return <LoadingIndicator />;
+  if (eventId && (!event || eventIsLoading)) return <LoadingIndicator />;
   if (!data || isLoading || updateUserScheduleSettingsIsLoading) return <LoadingIndicator />;
 
-  if (designReviewId && designReviewIsError) return <ErrorPage message={designReviewError.message} />;
+  if (eventId && eventIsError) return <ErrorPage message={eventError.message} />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
   if (updateUserScheduleSettingsIsError)
     return <ErrorPage error={updateUserScheduleSettingsError!} message={updateUserScheduleSettingsError?.message} />;
@@ -121,7 +121,7 @@ const UserScheduleSettings = ({ user }: { user: AuthenticatedUser }) => {
         </Grid>
       </Grid>
       {!edit ? (
-        <UserScheduleSettingsView scheduleSettings={data} designReview={designReview} />
+        <UserScheduleSettingsView scheduleSettings={data} event={event} />
       ) : (
         <UserScheduleSettingsEdit
           onSubmit={handleConfirm}

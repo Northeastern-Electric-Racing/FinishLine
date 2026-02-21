@@ -1,6 +1,6 @@
-import { getWorkspaceId, replyToMessageInThread } from '../integrations/slack';
-import OrganizationsService from '../services/organizations.services';
-import SlackServices, { SlackBlockActionBody, SaboSubmissionActionValue } from '../services/slack.services';
+import { getWorkspaceId, replyToMessageInThread } from '../integrations/slack.js';
+import OrganizationsService from '../services/organizations.services.js';
+import SlackServices, { SlackBlockActionBody, SaboSubmissionActionValue } from '../services/slack.services.js';
 
 export default class SlackController {
   static async processMessageEvent(event: any) {

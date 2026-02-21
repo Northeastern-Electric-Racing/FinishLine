@@ -29,12 +29,6 @@ resource "aws_amplify_app" "frontend" {
         baseDirectory: src/frontend/dist
         files:
           - '**/*'
-      cache:
-        paths:
-          - node_modules/**/*
-          - src/frontend/node_modules/**/*
-          - src/backend/node_modules/**/*
-          - src/shared/node_modules/**/*
     EOT
 
   # Environment variables for the build

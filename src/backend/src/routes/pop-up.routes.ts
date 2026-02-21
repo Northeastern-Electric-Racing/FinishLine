@@ -1,5 +1,5 @@
 import express from 'express';
-import PopUpsController from '../controllers/popUps.controllers';
+import PopUpsController from '../controllers/popUps.controllers.js';
 
 const popUpsRouter = express.Router();
 

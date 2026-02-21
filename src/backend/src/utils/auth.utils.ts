@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { JwtPayload, VerifyErrors } from 'jsonwebtoken';
-import prisma from '../prisma/prisma';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
+import prisma from '../prisma/prisma.js';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils.js';
 import { Organization, User_Secure_Settings, User_Settings } from '@prisma/client';
 import { IncomingHttpHeaders } from 'http';
 import { User } from 'shared';

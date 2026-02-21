@@ -7,9 +7,9 @@ import {
   partPopupValidators,
   partTagValidators,
   validateInputs
-} from '../utils/validation.utils';
+} from '../utils/validation.utils.js';
 import { body } from 'express-validator';
-import PartReviewController from '../controllers/part-review.controllers';
+import PartReviewController from '../controllers/part-review.controllers.js';
 import { Review_Status, MAX_FILE_SIZE } from 'shared';
 import multer, { memoryStorage } from 'multer';
 

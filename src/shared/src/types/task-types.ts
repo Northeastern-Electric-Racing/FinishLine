@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber } from './project-types';
-import { User } from './user-types';
+import { User } from './user-types.js';
+import { WbsNumber } from './project-types.js';
 
 export enum TaskPriority {
   Low = 'LOW',
@@ -34,8 +34,9 @@ export interface Task {
   status: TaskStatus;
 }
 
-export type TaskCardPreview = Pick<Task, 'taskId' | 'title' | 'deadline' | 'priority'> & {
-  assignees: { firstName: string; lastName: string }[];
+export type TaskCardPreview = Pick<Task, 'taskId' | 'title' | 'deadline' | 'priority' | 'wbsNum'> & {
+  assignees: { userId: string; firstName: string; lastName: string }[];
+  projectName: string;
 };
 
 export interface TaskWithIndex extends Task {

@@ -4,26 +4,26 @@ import {
   DeletedException,
   HttpException,
   NotFoundException
-} from '../../src/utils/errors.utils';
+} from '../../src/utils/errors.utils.js';
 import {
   createTestOrganization,
   createTestProjectTemplate,
   createTestUser,
   createTestWorkPackageTemplate,
   resetUsers
-} from '../test-utils';
-import { batmanAppAdmin, supermanAdmin, theVisitorGuest, greenlanternHead } from '../test-data/users.test-data';
+} from '../test-utils.js';
+import { batmanAppAdmin, supermanAdmin, theVisitorGuest, greenlanternHead } from '../test-data/users.test-data.js';
 import {
   projectTemplateTransformer,
   workPackageTemplateTransformer
-} from '../../src/transformers/work-package-template.transformer';
-import prisma from '../../src/prisma/prisma';
-import WbsElementTemplatesService from '../../src/services/wbs-element-templates.services';
+} from '../../src/transformers/work-package-template.transformer.js';
+import prisma from '../../src/prisma/prisma.js';
+import WbsElementTemplatesService from '../../src/services/wbs-element-templates.services.js';
 import { Organization } from '@prisma/client';
 import {
   getProjectTemplateQueryArgs,
   getWorkPackageTemplateQueryArgs
-} from '../../src/prisma-query-args/wbs-element-template.query-args';
+} from '../../src/prisma-query-args/wbs-element-template.query-args.js';
 
 describe('Work Package Template Tests', () => {
   let orgId: string;

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import AnnouncementService from '../services/announcement.services';
+import AnnouncementService from '../services/announcement.services.js';
 
 export default class AnnouncementController {
   static async getUserUnreadAnnouncements(req: Request, res: Response, next: NextFunction) {
@@ -18,7 +18,7 @@ export default class AnnouncementController {
 
   static async removeUserAnnouncement(req: Request, res: Response, next: NextFunction) {
     try {
-      const { announcementId } = req.params;
+      const { announcementId } = req.params as Record<string, string>;
       const { organization, currentUser } = req;
 
       const unreadAnnouncements = await AnnouncementService.removeUserAnnouncement(

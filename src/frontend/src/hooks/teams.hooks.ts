@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
-import { Team, TeamPreview } from 'shared';
+import { Team, TeamBase, TeamPreview } from 'shared';
 import {
   getAllTeams,
   getSingleTeam,
@@ -18,7 +18,8 @@ import {
   getAllArchivedTeams,
   getUsersTeams,
   setTeamSlackId,
-  getMyTeamAsHead
+  getMyTeamAsHead,
+  getAllTeamPreviews
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {
@@ -28,6 +29,13 @@ export interface CreateTeamPayload {
   description: string;
   isFinanceTeam: boolean;
 }
+
+export const useAllTeamPreviews = () => {
+  return useQuery<TeamBase[], Error>(['teams'], async () => {
+    const { data } = await getAllTeamPreviews();
+    return data;
+  });
+};
 
 export const useAllTeams = () => {
   return useQuery<TeamPreview[], Error>(['teams', false], async () => {

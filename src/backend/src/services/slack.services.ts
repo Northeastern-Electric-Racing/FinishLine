@@ -1,10 +1,10 @@
-import { getChannelName, getUserName } from '../integrations/slack';
-import AnnouncementService from './announcement.services';
+import { getChannelName, getUserName } from '../integrations/slack.js';
+import AnnouncementService from './announcement.services.js';
 import { Announcement, ReimbursementStatusType } from 'shared';
-import prisma from '../prisma/prisma';
-import { blockToMentionedUsers, blockToString } from '../utils/slack.utils';
-import { InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
-import ReimbursementRequestService from './reimbursement-requests.services';
+import prisma from '../prisma/prisma.js';
+import { blockToMentionedUsers, blockToString } from '../utils/slack.utils.js';
+import { InvalidOrganizationException, NotFoundException } from '../utils/errors.utils.js';
+import ReimbursementRequestService from './reimbursement-requests.services.js';
 
 /**
  * Represents a slack event for a message in a channel.

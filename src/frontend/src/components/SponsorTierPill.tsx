@@ -1,5 +1,5 @@
 import Chip from '@mui/material/Chip';
-import { SponsorTier } from 'shared/src/types/finance-types';
+import { SponsorTier } from 'shared';
 
 const SponsorTierPill = ({ tier }: { tier: SponsorTier }) => {
   return (

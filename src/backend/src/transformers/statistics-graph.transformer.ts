@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { Graph, GraphData, GraphDisplayType, GraphType, Measure, SpecialPermission } from 'shared';
-import { userTransformer } from './user.transformer';
-import { GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
-import { getAxisLabels } from '../utils/statistics.utils';
+import { userTransformer } from './user.transformer.js';
+import { GraphQueryArgs } from '../prisma-query-args/statistics.query-args.js';
+import { getAxisLabels } from '../utils/statistics.utils.js';
 
 const graphTransformer = (graph: Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[] }): Graph => {
   return {

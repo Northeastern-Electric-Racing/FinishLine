@@ -1,7 +1,7 @@
-import { getPopUpQueryArgs } from '../prisma-query-args/pop-up.query-args';
-import prisma from '../prisma/prisma';
-import popUpTransformer from '../transformers/pop-up.transformer';
-import { HttpException, NotFoundException } from '../utils/errors.utils';
+import { getPopUpQueryArgs } from '../prisma-query-args/pop-up.query-args.js';
+import prisma from '../prisma/prisma.js';
+import popUpTransformer from '../transformers/pop-up.transformer.js';
+import { HttpException, NotFoundException } from '../utils/errors.utils.js';
 
 export class PopUpService {
   /**

@@ -73,7 +73,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
           <Grid item xs={12} md={6}>
             <Typography fontWeight={'bold'}>Notes:</Typography>
             <Box sx={{ height: 'auto', overflow: 'auto' }}>
-              <Typography>{task.notes}</Typography>
+              <Typography sx={{ whiteSpace: 'pre-wrap' }}>{task.notes}</Typography>
             </Box>
           </Grid>
         </Grid>
