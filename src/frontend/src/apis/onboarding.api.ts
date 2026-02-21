@@ -83,3 +83,17 @@ export const downloadGoogleImage = async (fileId: string): Promise<Blob> => {
   const imageBlob = new Blob([imageBuffer], { type: response.headers['content-type'] });
   return imageBlob;
 };
+
+/**
+ * API call to reorder tasks
+ */
+export const reorderTasks = (payload: { taskIds: string[] }) => {
+  return axios.post(apiUrls.reorderTasks(), payload);
+};
+
+/**
+ * API call to reorder checklist items (subtasks/info blocks)
+ */
+export const reorderChecklistItems = (parentId: string, payload: { itemIds: string[] }) => {
+  return axios.post(apiUrls.reorderChecklistItems(parentId), payload);
+};

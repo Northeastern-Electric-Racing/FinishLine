@@ -1,8 +1,14 @@
 import { Organization } from '@prisma/client';
-import { createTestOrganization, createTestTaskWithOrganization, createTestUser, resetUsers } from '../test-utils';
-import { batmanAppAdmin, aquamanLeadership, wonderwomanGuest, member, greenlanternHead } from '../test-data/users.test-data';
-import UsersService from '../../src/services/users.services';
-import { NotFoundException, AccessDeniedException } from '../../src/utils/errors.utils';
+import { createTestOrganization, createTestTaskWithOrganization, createTestUser, resetUsers } from '../test-utils.js';
+import {
+  batmanAppAdmin,
+  aquamanLeadership,
+  wonderwomanGuest,
+  member,
+  greenlanternHead
+} from '../test-data/users.test-data.js';
+import UsersService from '../../src/services/users.services.js';
+import { NotFoundException, AccessDeniedException } from '../../src/utils/errors.utils.js';
 import { RoleEnum } from 'shared';
 
 describe('User Tests', () => {
@@ -66,7 +72,7 @@ describe('User Tests', () => {
 
       await expect(
         async () => await UsersService.updateUserRole(guest.userId, leadership, RoleEnum.HEAD, organization)
-      ).rejects.toThrow(new AccessDeniedException('Guests, members, and leadership cannot update user roles!'));
+      ).rejects.toThrow(new AccessDeniedException('Cannot promote someone to your own role or higher'));
     });
 
     it('prevents leadership from promoting member to higher role', async () => {
@@ -75,7 +81,7 @@ describe('User Tests', () => {
 
       await expect(
         async () => await UsersService.updateUserRole(memberUser.userId, leadership, RoleEnum.HEAD, organization)
-      ).rejects.toThrow(new AccessDeniedException('Guests, members, and leadership cannot update user roles!'));
+      ).rejects.toThrow(new AccessDeniedException('Cannot promote someone to your own role or higher'));
     });
 
     it('allows head to promote guest to member (existing functionality)', async () => {
@@ -101,7 +107,7 @@ describe('User Tests', () => {
 
       await expect(
         async () => await UsersService.updateUserRole(guest2.userId, guest1, RoleEnum.MEMBER, organization)
-      ).rejects.toThrow(new AccessDeniedException('Guests, members, and leadership cannot update user roles!'));
+      ).rejects.toThrow(new AccessDeniedException('Guests and members cannot update user roles!'));
     });
 
     it('prevents member from updating any user role', async () => {
@@ -110,7 +116,7 @@ describe('User Tests', () => {
 
       await expect(
         async () => await UsersService.updateUserRole(guest.userId, memberUser, RoleEnum.MEMBER, organization)
-      ).rejects.toThrow(new AccessDeniedException('Guests, members, and leadership cannot update user roles!'));
+      ).rejects.toThrow(new AccessDeniedException('Guests and members cannot update user roles!'));
     });
   });
 });

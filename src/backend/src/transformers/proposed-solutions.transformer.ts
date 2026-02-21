@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { ProposedSolution } from 'shared';
-import { userTransformer } from './user.transformer';
-import { ProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args';
+import { userTransformer } from './user.transformer.js';
+import { ProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args.js';
 
 const proposedSolutionTransformer = (
   proposedSolution: Prisma.Proposed_SolutionGetPayload<ProposedSolutionQueryArgs>

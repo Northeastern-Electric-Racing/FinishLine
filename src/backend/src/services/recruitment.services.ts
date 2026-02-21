@@ -1,10 +1,10 @@
 import { Organization } from '@prisma/client';
 import { isAdmin, User } from 'shared';
-import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
-import { userHasPermission } from '../utils/users.utils';
-import { faqTransformer } from '../transformers/faq.transformer';
-import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
+import prisma from '../prisma/prisma.js';
+import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils.js';
+import { userHasPermission } from '../utils/users.utils.js';
+import { faqTransformer } from '../transformers/faq.transformer.js';
+import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args.js';
 
 export default class RecruitmentServices {
   /**

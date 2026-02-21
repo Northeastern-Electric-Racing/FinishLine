@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import NotificationsService from '../services/notifications.services';
+import NotificationsService from '../services/notifications.services.js';
 
 export default class NotificationsController {
   static async sendDailySlackNotifications(_req: Request, res: Response, next: NextFunction) {

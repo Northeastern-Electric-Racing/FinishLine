@@ -4,10 +4,10 @@ import {
   ProjectTemplateQueryArgs,
   WorkPackageTemplatePreviewQueryArgs,
   WorkPackageTemplateQueryArgs
-} from '../prisma-query-args/wbs-element-template.query-args';
-import descriptionBulletTransformer from './description-bullets.transformer';
-import { userTransformer } from './user.transformer';
-import teamTransformer from './teams.transformer';
+} from '../prisma-query-args/wbs-element-template.query-args.js';
+import descriptionBulletTransformer from './description-bullets.transformer.js';
+import { userTransformer } from './user.transformer.js';
+import teamTransformer from './teams.transformer.js';
 
 export const workPackageTemplateTransformer = (
   wptInput: Prisma.Work_Package_TemplateGetPayload<WorkPackageTemplateQueryArgs>

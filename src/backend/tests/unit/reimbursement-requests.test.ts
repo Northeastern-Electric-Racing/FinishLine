@@ -1,12 +1,12 @@
-import { alfred } from '../test-data/users.test-data';
-import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
-import prisma from '../../src/prisma/prisma';
+import { alfred } from '../test-data/users.test-data.js';
+import ReimbursementRequestService from '../../src/services/reimbursement-requests.services.js';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
+import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils.js';
+import prisma from '../../src/prisma/prisma.js';
 import { assert } from 'console';
 import { addDaysToDate, IndexCode, ReimbursementRequest, AccountCode, OtherProductReason } from 'shared';
 import { Organization, Vendor } from '@prisma/client';
-import { UserWithSecureSettings } from '../../src/utils/auth.utils';
+import { UserWithSecureSettings } from '../../src/utils/auth.utils.js';
 
 describe('Reimbursement Requests', () => {
   let org: Organization;

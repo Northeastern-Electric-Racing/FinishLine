@@ -1,23 +1,24 @@
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
-  DesignReviewWithAttendees,
   TaskWithAssignees,
   endOfDayTomorrow,
   startOfDayTomorrow,
-  usersToSlackPings
-} from '../utils/notifications.utils';
-import { sendMessage } from '../integrations/slack';
-import { daysBetween, meetingStartTimePipe, startOfDay, wbsPipe } from 'shared';
-import { buildDueString, sendThreadResponse } from '../utils/slack.utils';
-import WorkPackagesService from './work-packages.services';
+  usersToSlackPings,
+  EventWithAttendees
+} from '../utils/notifications.utils.js';
+import { sendMessage } from '../integrations/slack.js';
+import { daysBetween, meetingStartTimePipeNumbers, startOfDay, wbsPipe } from 'shared';
+import { buildDueString, sendThreadResponse } from '../utils/slack.utils.js';
+import WorkPackagesService from './work-packages.services.js';
 import { addWeeksToDate } from 'shared';
-import { HttpException } from '../utils/errors.utils';
+import { HttpException } from '../utils/errors.utils.js';
 import { Reimbursement_Status_Type } from '@prisma/client';
+import { scheduleTimesTransformer } from '../transformers/calendar.transformer.js';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
     await NotificationsService.sendTaskDeadlineSlackNotifications();
-    await NotificationsService.sendDesignReviewSlackNotifications();
+    await NotificationsService.sendEventSlackNotifications();
     await NotificationsService.sendWorkPackageDeadlineSlackNotifications();
     await NotificationsService.sendSponsorTaskNotifications();
     await NotificationsService.sendPendingSaboSubmissionNotifications();
@@ -119,70 +120,91 @@ export default class NotificationsService {
   /**
    * Sends the design review slack notifications for all design reviews scheduled for today
    */
-  static async sendDesignReviewSlackNotifications() {
+  static async sendEventSlackNotifications() {
     const endOfToday = startOfDayTomorrow();
     const startOfToday = startOfDay(new Date());
 
-    const designReviews = await prisma.design_Review.findMany({
+    const events = await prisma.event.findMany({
       where: {
-        dateScheduled: {
-          lt: endOfToday,
-          gte: startOfToday
-        },
         status: 'SCHEDULED',
-        dateDeleted: null
+        dateDeleted: null,
+        scheduledTimes: {
+          some: {
+            AND: [{ endTime: { gte: startOfToday } }, { startTime: { lte: endOfToday } }]
+          }
+        },
+        eventType: {
+          sendSlackNotifications: true
+        }
       },
       include: {
         requiredMembers: { include: { userSettings: true } },
         optionalMembers: { include: { userSettings: true } },
         userCreated: { include: { userSettings: true } },
-        wbsElement: {
+        scheduledTimes: true,
+        workPackages: {
           include: {
-            project: { include: { teams: true } },
-            workPackage: { include: { project: { include: { teams: true } } } }
+            wbsElement: true,
+            project: {
+              include: {
+                teams: true,
+                wbsElement: true
+              }
+            }
           }
         }
       }
     });
 
-    const designReviewTeamMap = new Map<string, DesignReviewWithAttendees[]>();
+    const desginReviewEventTeamMap = new Map<string, EventWithAttendees[]>();
 
-    designReviews.forEach((designReview) => {
-      const teamSlackIds = designReview.wbsElement.project
-        ? designReview.wbsElement.project.teams.map((team) => team.slackId)
-        : (designReview.wbsElement.workPackage?.project.teams.map((team) => team.slackId) ?? []);
+    events.forEach((event) => {
+      // Get all unique teams from all work packages associated with this event
+      const teamSlackIds = new Set<string>();
+
+      event.workPackages.forEach((workPackage) => {
+        workPackage.project.teams.forEach((team) => {
+          if (team.slackId) {
+            teamSlackIds.add(team.slackId);
+          }
+        });
+      });
 
       teamSlackIds.forEach((teamSlackId) => {
-        const currentTasks = designReviewTeamMap.get(teamSlackId);
-        if (currentTasks) {
-          currentTasks.push({
-            ...designReview,
-            attendees: designReview.requiredMembers.concat(designReview.optionalMembers).concat(designReview.userCreated)
-          });
-          designReviewTeamMap.set(teamSlackId, currentTasks);
+        const currentEvents = desginReviewEventTeamMap.get(teamSlackId);
+        const eventWithAttendees = {
+          ...event,
+          attendees: event.requiredMembers.concat(event.optionalMembers).concat(event.userCreated),
+          scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer)
+        };
+
+        if (currentEvents) {
+          currentEvents.push(eventWithAttendees);
         } else {
-          designReviewTeamMap.set(teamSlackId, [
-            {
-              ...designReview,
-              attendees: designReview.requiredMembers.concat(designReview.optionalMembers).concat(designReview.userCreated)
-            }
-          ]);
+          desginReviewEventTeamMap.set(teamSlackId, [eventWithAttendees]);
         }
       });
     });
 
-    // send the notifications to each team for their respective design reviews
-    const promises = Array.from(designReviewTeamMap).map(async ([slackId, designReviews]) => {
-      const messageBlock = designReviews
-        .map((designReview) => {
-          const zoomLink = designReview.zoomLink ? `<${designReview.zoomLink}|Zoom Link>\n` : '';
-          const questionDocLink = designReview.docTemplateLink
-            ? `<${designReview.docTemplateLink}|Question Doc Link>\n`
-            : '';
+    // Send the notifications to each team for their respective design reviews
+    const promises = Array.from(desginReviewEventTeamMap).map(async ([slackId, events]) => {
+      const messageBlock = events
+        .map((event) => {
+          const zoomLink = event.zoomLink ? `<${event.zoomLink}|Zoom Link>\n` : '';
+          const questionDocLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Question Doc Link>\n` : '';
+
+          // Get work package names for this event
+          const workPackageNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
+
+          // Extract meeting times from scheduled slots
+          const meetingTimes = event.scheduledTimes
+            .map((slot) => (slot.startTime ? new Date(slot.startTime).getHours() : null))
+            .filter((hour): hour is number => hour !== null)
+            .sort((a, b) => a - b);
+
           return (
-            `${usersToSlackPings(designReview.attendees ?? [])} ${
-              designReview.wbsElement.name
-            } will be having a design review today at ${meetingStartTimePipe(designReview.meetingTimes)}! ` +
+            `${usersToSlackPings(event.attendees ?? [])} ${event.title} (${workPackageNames}) ` +
+            `will be having an event today at ${meetingStartTimePipeNumbers(meetingTimes)} EST! ` +
             zoomLink +
             questionDocLink
           );
@@ -263,6 +285,13 @@ export default class NotificationsService {
             reimbursementStatuses: {
               none: {
                 type: Reimbursement_Status_Type.SABO_SUBMITTED
+              }
+            }
+          },
+          {
+            reimbursementStatuses: {
+              none: {
+                type: Reimbursement_Status_Type.DENIED
               }
             }
           }

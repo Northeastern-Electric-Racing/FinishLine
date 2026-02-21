@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { FrequentlyAskedQuestion } from 'shared';
-import { FaqQueryArgs } from '../prisma-query-args/faq.query-args';
-import { userTransformer } from './user.transformer';
+import { FaqQueryArgs } from '../prisma-query-args/faq.query-args.js';
+import { userTransformer } from './user.transformer.js';
 
 export const faqTransformer = (faq: Prisma.FrequentlyAskedQuestionGetPayload<FaqQueryArgs>): FrequentlyAskedQuestion => ({
   faqId: faq.faqId,

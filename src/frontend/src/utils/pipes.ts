@@ -9,10 +9,11 @@ import {
   isProject,
   IndexCode,
   AccountCode,
-  DesignReview,
   WorkPackagePreview,
   WbsElementPreview,
-  UserPreview
+  UserPreview,
+  ScheduleSlot,
+  Event
 } from 'shared';
 
 /**
@@ -126,8 +127,18 @@ export const daysOrWeeksLeftOrLate = (daysLeft: number) => {
   return `${daysToDaysOrWeeksPipe(Math.abs(daysLeft))} ${daysLeft > 0 ? 'left' : 'late'}`;
 };
 
-export const designReviewNamePipe = (designReview: DesignReview) => {
-  return `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
+export const eventNamePipe = (event: Event) => {
+  const [firstWorkPackage] = event.workPackages;
+
+  if (firstWorkPackage) {
+    return `${wbsPipe({
+      carNumber: firstWorkPackage.wbsElement.carNumber,
+      projectNumber: firstWorkPackage.wbsElement.projectNumber,
+      workPackageNumber: firstWorkPackage.wbsElement.workPackageNumber
+    })} - ${firstWorkPackage.wbsElement.name}`;
+  }
+
+  return event.title;
 };
 
 export const dateRangePipe = (startDate: Date, endDate: Date) => {
@@ -175,11 +186,16 @@ export const displayEnum = (enumString: string) => {
   return enumString;
 };
 
-export const meetingStartTimePipe = (times: number[], isEndTime = false) => {
-  if (isEndTime && times[0] % 12 === 0) return '10pm';
-  const time = (times[0] % 12) + 10;
+export const meetingStartTimePipeScheduleSlot = (scheduledTimes: ScheduleSlot[]): string => {
+  if (scheduledTimes.length === 0) return '';
 
-  return time === 12 ? time + 'pm' : time < 12 ? time + 'am' : time - 12 + 'pm';
+  const firstTime = scheduledTimes[0].startTime;
+  if (!firstTime) return '';
+
+  const date = new Date(firstTime);
+  const hour = date.getHours();
+  const displayHour = hour % 12 || 12;
+  return displayHour + (hour < 12 ? 'am' : 'pm');
 };
 
 // takes in a Date and returns it as a string in the form mm/dd/yy
@@ -208,4 +224,15 @@ export const labelPipe = (label: string) => {
   }
 
   return result;
+};
+
+// Pad SABO ID with leading zeroes
+export const formatSaboIdPipe = (saboId: number | undefined): string => {
+  if (saboId === undefined || saboId === null) return undefinedPipe(saboId as any);
+  const str = String(saboId);
+  // Only pad if it's shorter than 5
+  if (str.length < 5) {
+    return str.padStart(5, '0');
+  }
+  return str;
 };

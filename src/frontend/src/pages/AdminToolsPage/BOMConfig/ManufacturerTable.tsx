@@ -6,7 +6,7 @@ import { useDeleteManufacturer, useGetAllManufacturers } from '../../../hooks/bo
 import { useToast } from '../../../hooks/toasts.hooks';
 import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
-import AdminToolTable from '../AdminToolTable';
+import NERTable from '../../../components/NERTable';
 import CreateManufacturerModal from './CreateManufacturerFormModal';
 import ManufacturerDeleteModal from './ManufacturerDeleteModal';
 import { useState } from 'react';
@@ -88,7 +88,7 @@ const ManufacturerTable: React.FC = () => {
   return (
     <Box>
       <CreateManufacturerModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
-      <AdminToolTable
+      <NERTable
         columns={[{ name: 'Date Registered' }, { name: 'Manufacturer Name' }, { name: '', width: '10%' }]}
         rows={manufacturersTableRows}
       />

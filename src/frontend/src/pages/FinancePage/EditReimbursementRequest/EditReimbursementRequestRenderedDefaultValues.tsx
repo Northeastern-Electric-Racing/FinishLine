@@ -12,7 +12,8 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
   onSubmitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
   onExitEditPage: () => void;
   onSubmitToFinance?: (data: ReimbursementRequestDataSubmission) => Promise<void>;
-}> = ({ reimbursementRequest, onSubmitData, onExitEditPage, onSubmitToFinance }) => {
+  isSubmitting?: boolean;
+}> = ({ reimbursementRequest, onSubmitData, onExitEditPage, onSubmitToFinance, isSubmitting }) => {
   const previousPage = `${routes.REIMBURSEMENT_REQUESTS}/my-requests/${reimbursementRequest.reimbursementRequestId}`;
   const isLeadershipApproved = isReimbursementRequestLeadershipApproved(reimbursementRequest);
 
@@ -35,12 +36,14 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
         submitData={onSubmitData}
         isLeadershipApproved={isLeadershipApproved}
         onSubmitToFinance={onSubmitToFinance}
+        isSubmitting={isSubmitting}
         defaultValues={{
           vendorId: reimbursementRequest.vendor.vendorId,
           indexCodeId: reimbursementRequest.indexCode.indexCodeId,
           dateOfExpense: reimbursementRequest.dateOfExpense ? new Date(reimbursementRequest.dateOfExpense) : undefined,
           accountCodeId: reimbursementRequest.accountCode.accountCodeId,
           reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({
+            id: product.reimbursementProductId,
             reason: (product.reimbursementProductReason as WBSElementData).wbsNum
               ? (product.reimbursementProductReason as WBSElementData).wbsNum
               : (product.reimbursementProductReason as OtherProductReason),

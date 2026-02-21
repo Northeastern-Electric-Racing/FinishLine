@@ -12,14 +12,19 @@ import {
   nonEmptyString,
   validateInputs,
   validateReimbursementProducts
-} from '../utils/validation.utils';
-import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
+} from '../utils/validation.utils.js';
+import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers.js';
 import multer, { memoryStorage } from 'multer';
 import { MAX_FILE_SIZE } from 'shared';
 
 const reimbursementRequestsRouter = express.Router();
 
-const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
+const upload = multer({
+  storage: memoryStorage(),
+  limits: {
+    fileSize: MAX_FILE_SIZE
+  }
+});
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
@@ -101,6 +106,11 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.editVendor
 );
 
+reimbursementRequestsRouter.post(
+  '/vendors/:vendorId/setTaxExemptStatus',
+  ReimbursementRequestController.setVendorTaxExemptStatus
+);
+
 reimbursementRequestsRouter.post('/:vendorId/vendors/delete', ReimbursementRequestController.deleteVendor);
 
 reimbursementRequestsRouter.post(
@@ -167,7 +177,7 @@ reimbursementRequestsRouter.post(
   body('taxExempt').optional().isBoolean(),
   body('twoFactorContacts').optional().isArray(),
   nonEmptyString(body('twoFactorContacts.*')),
-  nonEmptyString(body('notes')).optional(),
+  body('notes').optional().isString(),
   validateInputs,
   ReimbursementRequestController.createVendor
 );

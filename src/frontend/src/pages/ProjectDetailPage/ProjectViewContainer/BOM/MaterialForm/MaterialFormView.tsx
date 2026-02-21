@@ -475,7 +475,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                     displayEmpty: true,
                     renderValue: (selected) =>
                       selected ? (
-                        assemblies.find((a) => a.assemblyId === selected)?.assemblyId
+                        assemblies.find((a) => a.assemblyId === selected)?.name
                       ) : (
                         <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>
                           Enter Assembly Details

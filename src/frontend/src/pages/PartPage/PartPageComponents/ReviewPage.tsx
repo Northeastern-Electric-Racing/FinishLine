@@ -16,7 +16,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { useDeletePartReview, useEditPartReview } from '../../../hooks/part-review.hooks';
-import { PartReview, PartSubmission, Review_Status } from 'shared/src/types/part-review.types';
+import { PartReview, PartSubmission, Review_Status } from 'shared';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import DownloadButton from '../../../components/DownloadButton';
 import NERDeleteModal from '../../../components/NERDeleteModal';

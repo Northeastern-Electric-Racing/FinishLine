@@ -12,7 +12,7 @@ const Checklist: React.FC<{
   checklistName?: string;
 }> = ({ parentChecklists, checkedChecklists, checklistName }) => {
   const theme = useTheme();
-  const [showTasks, setShowTasks] = useState(false);
+  const [showTasks, setShowTasks] = useState(true);
   const progress = useChecklistProgress(parentChecklists, checkedChecklists);
 
   const toggleShowTasks = () => {

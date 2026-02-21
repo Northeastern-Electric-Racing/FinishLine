@@ -1,10 +1,10 @@
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import { DescriptionBullet, DescriptionBulletPreview, isLeadership, User } from 'shared';
 import { Description_Bullet, Prisma } from '@prisma/client';
-import { HttpException, NotFoundException } from './errors.utils';
-import { ChangeListValue } from './changes.utils';
-import { userHasPermission } from './users.utils';
-import { DescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
+import { HttpException, NotFoundException } from './errors.utils.js';
+import { ChangeListValue } from './changes.utils.js';
+import { userHasPermission } from './users.utils.js';
+import { DescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
 
 export type DescriptionBulletWithType = Prisma.Description_BulletGetPayload<DescriptionBulletQueryArgs>;
 

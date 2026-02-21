@@ -12,7 +12,7 @@ import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { useRequestCRReview } from '../../hooks/change-requests.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
-import { useCurrentUser, useAllUsers } from '../../hooks/users.hooks';
+import { useCurrentUser, useAllMembers } from '../../hooks/users.hooks';
 import { projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { useState } from 'react';
@@ -22,6 +22,7 @@ import { taskUserToAutocompleteOption } from '../../utils/task.utils';
 
 interface ChangeRequestActionMenuProps {
   isUserAllowedToReview: boolean;
+  reviewDisabledTooltip?: string;
   isUserAllowedToImplement: boolean;
   isUserAllowedToDelete: boolean;
   changeRequest: ChangeRequest;
@@ -31,6 +32,7 @@ interface ChangeRequestActionMenuProps {
 
 const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   isUserAllowedToReview,
+  reviewDisabledTooltip,
   isUserAllowedToImplement,
   isUserAllowedToDelete,
   changeRequest,
@@ -42,7 +44,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   const currentUser = useCurrentUser();
   const history = useHistory();
   const [reviewers, setReviewers] = useState(changeRequest.requestedReviewers.map(taskUserToAutocompleteOption));
-  const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
+  const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllMembers();
 
   if (isErrorAllUsers) return <ErrorPage message={errorAllUsers?.message} />;
   if (isLoadingAllUsers || !users) return <LoadingIndicator />;
@@ -77,7 +79,8 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
             title: 'Review',
             onClick: handleReviewOpen,
             disabled: !isUserAllowedToReview,
-            icon: <ContentPasteIcon fontSize="small" />
+            icon: <ContentPasteIcon fontSize="small" />,
+            tooltip: reviewDisabledTooltip
           },
           {
             title: 'Delete',

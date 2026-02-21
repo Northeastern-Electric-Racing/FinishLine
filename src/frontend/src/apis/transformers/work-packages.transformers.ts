@@ -5,8 +5,8 @@
 
 import { RetrospectiveWorkPackage, WorkPackage, WorkPackagePreview } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
-import { designReviewPreviewTransformer } from './design-reviews.tranformers';
 import { descriptionBulletTransformer } from './projects.transformers';
+import { eventPreviewTransformer } from './calendar.transformer';
 
 /**
  * Transforms a work package to ensure deep field transformation of date objects.
@@ -22,7 +22,7 @@ export const workPackageTransformer = (workPackage: WorkPackage): WorkPackage =>
     endDate: new Date(workPackage.endDate),
     descriptionBullets: workPackage.descriptionBullets.map(descriptionBulletTransformer),
     changes: workPackage.changes.map(implementedChangeTransformer),
-    designReviews: workPackage.designReviews.map(designReviewPreviewTransformer)
+    events: workPackage.events.map(eventPreviewTransformer)
   };
 };
 

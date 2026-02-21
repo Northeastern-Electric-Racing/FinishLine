@@ -14,10 +14,10 @@ import {
 } from '../../hooks/organizations.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { Organization, TeamPreview } from 'shared';
+import { Organization, TeamBase } from 'shared';
 import HelpIcon from '@mui/icons-material/Help';
-import { useAllTeams } from '../../hooks/teams.hooks';
-import AdminToolTable from './AdminToolTable';
+import { useAllTeamPreviews } from '../../hooks/teams.hooks';
+import NERTable from '../../components/NERTable';
 import EditTeamSlackIdFormModal from './TeamConfig/EditTeamSlackIdFormModal';
 
 interface AdminToolsWorkspaceIdViewProps {
@@ -40,8 +40,13 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
   const [sponsorshipChannelId, setSponsorshipChannelId] = useState(
     organization.sponsorshipNotificationsSlackChannelId ?? ''
   );
-  const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
-  const [clickedTeam, setClickedTeam] = useState<TeamPreview>();
+  const {
+    data: allTeams,
+    isLoading: allTeamsIsLoading,
+    isError: allTeamsIsError,
+    error: allTeamsError
+  } = useAllTeamPreviews();
+  const [clickedTeam, setClickedTeam] = useState<TeamBase>();
 
   if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
 
@@ -142,7 +147,7 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
         </Typography>
         <Grid container columnSpacing={2}>
           <Grid item xs={12} md={6} sx={{ marginTop: '24px' }}>
-            <AdminToolTable columns={[{ name: 'Team Name' }, { name: 'Slack Channel ID' }]} rows={teamTableRows} />
+            <NERTable columns={[{ name: 'Team Name' }, { name: 'Slack Channel ID' }]} rows={teamTableRows} />
           </Grid>
         </Grid>
         {clickedTeam && (

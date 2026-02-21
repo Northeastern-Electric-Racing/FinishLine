@@ -1,14 +1,14 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { ChangeRequestReason, ChangeRequestType } from 'shared';
-import ChangeRequestsController from '../controllers/change-requests.controllers';
+import ChangeRequestsController from '../controllers/change-requests.controllers.js';
 import {
   intMinZero,
   nonEmptyString,
   projectProposedChangesValidators,
   validateInputs,
   workPackageProposedChangesValidators
-} from '../utils/validation.utils';
+} from '../utils/validation.utils.js';
 
 const changeRequestsRouter = express.Router();
 

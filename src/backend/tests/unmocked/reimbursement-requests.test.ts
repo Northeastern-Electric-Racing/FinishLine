@@ -1,11 +1,17 @@
-import { alfred, robinMember, cyborgMember, theVisitorGuest } from '../test-data/users.test-data';
-import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
-import prisma from '../../src/prisma/prisma';
+import { alfred, robinMember, cyborgMember, theVisitorGuest } from '../test-data/users.test-data.js';
+import ReimbursementRequestService from '../../src/services/reimbursement-requests.services.js';
+import {
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../../src/utils/errors.utils.js';
+import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils.js';
+import prisma from '../../src/prisma/prisma.js';
 import { addDaysToDate, IndexCode, ReimbursementRequest, ReimbursementStatusType, AccountCode } from 'shared';
 import { Organization, Role_Type, Theme, User, Vendor } from '@prisma/client';
-import { UserWithSecureSettings } from '../../src/utils/auth.utils';
+import { UserWithSecureSettings } from '../../src/utils/auth.utils.js';
 
 describe('Reimbursement Requests', () => {
   let org: Organization;
@@ -1039,6 +1045,233 @@ describe('Reimbursement Requests', () => {
       const assignedRRs = await ReimbursementRequestService.getUserAssignedReimbursementRequests(regularMember, org);
 
       expect(assignedRRs).toEqual([]);
+    });
+  });
+
+  describe('Set vendor tax exempt status', () => {
+    test('Finance member can set vendor tax exempt status', async () => {
+      const updatedVendor = await ReimbursementRequestService.setVendorTaxExemptStatus(
+        createdVendor.vendorId,
+        true,
+        financeMember,
+        org
+      );
+
+      expect(updatedVendor).not.toBeNull();
+      expect(updatedVendor.taxExempt).toBe(true);
+    });
+
+    test('Non-finance member cannot set vendor tax exempt status', async () => {
+      await expect(
+        ReimbursementRequestService.setVendorTaxExemptStatus(createdVendor.vendorId, true, regularMember, org)
+      ).rejects.toThrow(new AccessDeniedException('You are not a member of the finance team!'));
+    });
+
+    test('Cannot set tax exempt status for non-existent vendor', async () => {
+      await expect(
+        ReimbursementRequestService.setVendorTaxExemptStatus('non-existent-id', true, financeMember, org)
+      ).rejects.toThrow(new NotFoundException('Vendor', 'non-existent-id'));
+    });
+
+    test('Cannot set tax exempt status for vendor in different organization', async () => {
+      // Create a vendor in a different organization
+      const otherOrg = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          userCreated: { connect: { userId: financeHead.userId } }
+        }
+      });
+
+      const otherMember: User = await prisma.user.create({
+        data: {
+          firstName: 'Other',
+          lastName: 'Member',
+          googleAuthId: '99',
+          email: 'email@email.other',
+          roles: {
+            create: {
+              roleType: Role_Type.MEMBER,
+              organization: {
+                connect: { organizationId: otherOrg.organizationId }
+              }
+            }
+          }
+        }
+      });
+
+      const otherVendor = await ReimbursementRequestService.createVendor(
+        otherMember,
+        'Other Org Vendor',
+        otherOrg,
+        false,
+        [],
+        'Some notes'
+      );
+
+      await expect(
+        ReimbursementRequestService.setVendorTaxExemptStatus(otherVendor.vendorId, true, financeMember, org)
+      ).rejects.toThrow(new InvalidOrganizationException('Vendor'));
+    });
+
+    test('head can set vendor tax exempt status', async () => {
+      const updatedVendor = await ReimbursementRequestService.setVendorTaxExemptStatus(
+        createdVendor.vendorId,
+        true,
+        financeHead,
+        org
+      );
+
+      expect(updatedVendor).not.toBeNull();
+      expect(updatedVendor.taxExempt).toBe(true);
+    });
+  });
+
+  describe('Editing a reimbursement request', () => {
+    test('editing preserves refund sources on existing products', async () => {
+      // Get the original product info
+      const [originalProduct] = reimbursementRequest.reimbursementProducts;
+
+      // Edit the request, updating the product name but keeping the same refund source
+      await ReimbursementRequestService.editReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        createdAccountCode.accountCodeId,
+        reimbursementRequest.totalCost,
+        [],
+        [
+          {
+            id: originalProduct.reimbursementProductId,
+            name: 'UPDATED GLUE',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 200000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 200
+              }
+            ]
+          }
+        ],
+        [],
+        createdUser,
+        org,
+        new Date()
+      );
+
+      // Fetch the updated request and verify refund sources are preserved
+      const updatedRR = await ReimbursementRequestService.getSingleReimbursementRequest(
+        createdUser,
+        reimbursementRequest.reimbursementRequestId,
+        org
+      );
+
+      expect(updatedRR.reimbursementProducts).toHaveLength(1);
+      expect(updatedRR.reimbursementProducts[0].name).toEqual('UPDATED GLUE');
+      expect(updatedRR.reimbursementProducts[0].cost).toEqual(200000);
+      expect(updatedRR.reimbursementProducts[0].refundSources).toHaveLength(1);
+      expect(updatedRR.reimbursementProducts[0].refundSources[0].amount).toEqual(200);
+      expect(updatedRR.reimbursementProducts[0].refundSources[0].indexCode.indexCodeId).toEqual(
+        createdIndexCode.indexCodeId
+      );
+    });
+
+    test('editing updates refund source amounts on existing products', async () => {
+      const [originalProduct] = reimbursementRequest.reimbursementProducts;
+
+      // Edit with a different refund source amount
+      await ReimbursementRequestService.editReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        createdAccountCode.accountCodeId,
+        reimbursementRequest.totalCost,
+        [],
+        [
+          {
+            id: originalProduct.reimbursementProductId,
+            name: 'GLUE',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 300000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 300
+              }
+            ]
+          }
+        ],
+        [],
+        createdUser,
+        org,
+        new Date()
+      );
+
+      const updatedRR = await ReimbursementRequestService.getSingleReimbursementRequest(
+        createdUser,
+        reimbursementRequest.reimbursementRequestId,
+        org
+      );
+
+      expect(updatedRR.reimbursementProducts).toHaveLength(1);
+      expect(updatedRR.reimbursementProducts[0].cost).toEqual(300000);
+      expect(updatedRR.reimbursementProducts[0].refundSources).toHaveLength(1);
+      expect(updatedRR.reimbursementProducts[0].refundSources[0].amount).toEqual(300);
+    });
+
+    test('editing with new products (no id) creates them with refund sources', async () => {
+      // Edit the request, replacing the old product with a new one (no id)
+      await ReimbursementRequestService.editReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        createdAccountCode.accountCodeId,
+        reimbursementRequest.totalCost,
+        [],
+        [
+          {
+            name: 'NEW TAPE',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 500,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 500
+              }
+            ]
+          }
+        ],
+        [],
+        createdUser,
+        org,
+        new Date()
+      );
+
+      const updatedRR = await ReimbursementRequestService.getSingleReimbursementRequest(
+        createdUser,
+        reimbursementRequest.reimbursementRequestId,
+        org
+      );
+
+      // Old product should be soft-deleted, new one created
+      const activeProducts = updatedRR.reimbursementProducts;
+      expect(activeProducts).toHaveLength(1);
+      expect(activeProducts[0].name).toEqual('NEW TAPE');
+      expect(activeProducts[0].cost).toEqual(500);
+      expect(activeProducts[0].refundSources).toHaveLength(1);
+      expect(activeProducts[0].refundSources[0].amount).toEqual(500);
     });
   });
 });

@@ -1,13 +1,12 @@
 import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import { HttpException } from './errors.utils';
+import SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
+import { HttpException } from './errors.utils.js';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
-import { User, WBS_Element } from '@prisma/client';
-import { transformDate } from './datetime.utils';
-import { transformStartTime } from './design-reviews.utils';
-import { getUsers } from './users.utils';
+import { User } from 'shared';
+import { Schedule_Slot } from '@prisma/client';
+import { getUsers } from './users.utils.js';
 
 const { OAuth2 } = google.auth;
 const {
@@ -192,121 +191,162 @@ export const createCalendar = async (name: string) => {
 };
 
 /**
- * Creates A Google Calendar Event on the NER Google Calendar
- * @param members required and optional members
+ * Creates Google Calendar Events on the NER Google Calendar for all schedule slot occurrences
  * @param calendarId the id of the calendar to add the event
- * @param dateScheduled
- * @param isInPerson
- * @param zoomLink
- * @param location
- * @param meetingTimes
- * @param wbsElement
- * @returns the id of the calendar event
+ * @param memberIds required and optional members
+ * @param scheduledSlots the scheduled time slots for the event
+ * @param isInPerson whether the event is in person
+ * @param zoomLink zoom link if online
+ * @param location physical location if in person
+ * @param eventTitle the title of the event
+ * @returns an array of calendar event ids
  */
 export const createCalendarEvent = async (
   calendarId: string,
   memberIds: string[],
-  dateScheduled: Date,
+  scheduledSlots: Schedule_Slot[],
   isInPerson: boolean,
   zoomLink: string | null,
   location: string | null,
-  meetingTimes: number[],
-  wbsElement: WBS_Element
+  eventTitle: string
 ) => {
-  if (process.env.NODE_ENV !== 'production') return;
+  if (process.env.NODE_ENV !== 'production') return [];
+
+  if (scheduledSlots.length === 0) {
+    throw new Error('Event must have at least one schedule slot');
+  }
+
   try {
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
     });
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    const startTime = transformStartTime(meetingTimes);
-    const eventInput = {
-      location: isInPerson ? location : zoomLink,
-      summary: `Design Review - ${wbsElement.projectNumber} ${wbsElement.name}`,
-      start: {
-        dateTime: `${transformDate(new Date(dateScheduled))}T${startTime}:00:00-04:00`,
-        timeZone: 'America/New_York'
-      },
-      end: {
-        dateTime: `${transformDate(new Date(dateScheduled))}T${startTime + 1}:00:00-04:00`,
-        timeZone: 'America/New_York'
-      },
-      attendees: (await getUsers(memberIds)).map((user) => {
-        return { email: user.email };
-      }),
-      reminders: {
-        useDefault: false,
-        overrides: [
-          { method: 'email', minutes: 24 * 60 },
-          { method: 'popup', minutes: 10 }
-        ]
+
+    const attendees = (await getUsers(memberIds)).map((user) => ({
+      email: user.email
+    }));
+
+    const calendarEventIds: string[] = [];
+
+    for (const slot of scheduledSlots) {
+      const eventInput = {
+        location: isInPerson ? location : zoomLink,
+        summary: eventTitle,
+        start: slot.allDay
+          ? { date: slot.startTime ? slot.startTime.toISOString().split('T')[0] : undefined }
+          : {
+              dateTime: slot.startTime ? slot.startTime.toISOString() : undefined,
+              timeZone: 'America/New_York'
+            },
+        end: slot.allDay
+          ? { date: slot.endTime ? slot.endTime.toISOString().split('T')[0] : undefined }
+          : {
+              dateTime: slot.endTime ? slot.endTime.toISOString() : undefined,
+              timeZone: 'America/New_York'
+            },
+        attendees,
+        reminders: {
+          useDefault: false,
+          overrides: [
+            { method: 'email', minutes: 24 * 60 },
+            { method: 'popup', minutes: 10 }
+          ]
+        }
+      };
+
+      const calendarEvent = await calendar.events.insert({
+        calendarId,
+        requestBody: eventInput
+      });
+
+      if (calendarEvent.data.id) {
+        calendarEventIds.push(calendarEvent.data.id);
       }
-    };
+    }
 
-    const calendarEvent = await calendar.events.insert({
-      calendarId,
-      requestBody: eventInput
-    });
-
-    return calendarEvent.data.id;
+    return calendarEventIds;
   } catch (error: unknown) {
     throw error;
   }
 };
 
 /**
- * Updates a Google Calendar Event
+ * Updates Google Calendar Events by deleting old ones and creating new ones
  * @param calendarId Id of the calendar the event is on
- * @param eventId Id of the calendar event
- * @param members required and optional members
- * @param designReview
- * @returns the id of the updated calendar event
+ * @param oldEventIds Array of old calendar event ids to delete
+ * @param memberIds required and optional members
+ * @param scheduledSlots the scheduled time slots for the event
+ * @param isInPerson whether the event is in person
+ * @param zoomLink zoom link if online
+ * @param location physical location if in person
+ * @param eventTitle the title of the event
+ * @returns an array of new calendar event ids
  */
 export const updateCalendarEvent = async (
   calendarId: string,
-  eventId: string,
+  oldEventIds: string[],
   memberIds: string[],
-  dateScheduled: Date,
+  scheduledSlots: Schedule_Slot[],
   isInPerson: boolean,
   zoomLink: string | null,
   location: string | null,
-  meetingTimes: number[],
-  wbsElement: WBS_Element
+  eventTitle: string
 ) => {
+  if (scheduledSlots.length === 0) {
+    throw new Error('Event must have at least one schedule slot');
+  }
+
   try {
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
     });
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    const startTime = transformStartTime(meetingTimes);
-    const eventInput = {
-      location: isInPerson ? location : zoomLink,
-      summary: `Design Review - ${wbsElement.projectNumber} ${wbsElement.name}`,
-      start: {
-        dateTime: `${transformDate(dateScheduled)}T${startTime}:00:00-04:00`,
-        timeZone: 'America/New_York'
-      },
-      end: {
-        dateTime: `${transformDate(dateScheduled)}T${startTime + 1}:00:00-04:00`,
-        timeZone: 'America/New_York'
-      },
-      attendees: (await getUsers(memberIds)).map((user) => {
-        return { email: user.email };
-      }),
-      reminders: {
-        useDefault: false,
-        overrides: [
-          { method: 'email', minutes: 24 * 60 },
-          { method: 'popup', minutes: 10 }
-        ]
+
+    // Delete old calendar events
+    for (const eventId of oldEventIds) {
+      try {
+        await calendar.events.delete({
+          calendarId,
+          eventId
+        });
+      } catch (error) {
+        console.error(`Failed to delete calendar event ${eventId}:`, error);
       }
-    };
-    const calendarEvent = await calendar.events.update({
-      calendarId,
-      eventId,
-      requestBody: eventInput
+    }
+
+    // Create new calendar events
+    return await createCalendarEvent(calendarId, memberIds, scheduledSlots, isInPerson, zoomLink, location, eventTitle);
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+/**
+ * Deletes multiple Google Calendar Events
+ * @param calendarId Id of the calendar the events are on
+ * @param eventIds Array of calendar event IDs to delete
+ */
+export const deleteCalendarEvents = async (calendarId: string, eventIds: string[]) => {
+  if (process.env.NODE_ENV !== 'production') return;
+
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
     });
-    return calendarEvent.data.id;
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+    await Promise.all(
+      eventIds.map(async (eventId) => {
+        try {
+          await calendar.events.delete({
+            calendarId,
+            eventId
+          });
+        } catch (error) {
+          console.error(`Failed to delete calendar event ${eventId}:`, error);
+        }
+      })
+    );
   } catch (error: unknown) {
     throw error;
   }

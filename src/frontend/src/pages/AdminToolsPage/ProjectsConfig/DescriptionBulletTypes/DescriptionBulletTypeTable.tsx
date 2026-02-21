@@ -8,7 +8,7 @@ import { TableCell, TableRow, Typography } from '@mui/material';
 import CreateDescriptionBulletTypeModal from './CreateDescriptionBulletTypeModal';
 import EditDescriptionBulletTypeModal from './EditDescriptionBulletTypeModel';
 import { Box } from '@mui/system';
-import AdminToolTable from '../../AdminToolTable';
+import NERTable from '../../../../components/NERTable';
 import { NERButton } from '../../../../components/NERButton';
 
 const DescriptionBulletTypeTable = () => {
@@ -69,7 +69,7 @@ const DescriptionBulletTypeTable = () => {
         />
       )}
       <Typography variant="subtitle1">Registered Description Bullet Types</Typography>
-      <AdminToolTable
+      <NERTable
         columns={[{ name: 'Name' }, { name: 'Work Package Required' }, { name: 'Project Required' }]}
         rows={descriptionBulletTypeTableRows}
       />

@@ -1,5 +1,5 @@
 import { Organization, User } from '@prisma/client';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
 import {
   batmanAppAdmin,
   batmanSettings,
@@ -7,9 +7,9 @@ import {
   supermanSettings,
   wonderwomanGuest,
   wonderwomanSettings
-} from '../test-data/users.test-data';
-import AnnouncementService from '../../src/services/announcement.services';
-import { NotFoundException } from '../../src/utils/errors.utils';
+} from '../test-data/users.test-data.js';
+import AnnouncementService from '../../src/services/announcement.services.js';
+import { NotFoundException } from '../../src/utils/errors.utils.js';
 
 describe('announcement tests', () => {
   let orgId: string;

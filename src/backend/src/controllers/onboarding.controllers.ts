@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import OnboardingServices from '../services/onboarding.services';
+import OnboardingServices from '../services/onboarding.services.js';
 
 export default class OnboardingController {
   /* Checklists section */
@@ -32,16 +32,16 @@ export default class OnboardingController {
 
   static async createChecklist(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, descriptions, isOptional, teamId, teamTypeId, parentChecklistId } = req.body;
+      const { content, isOptional, teamId, teamTypeId, parentChecklistId, itemType } = req.body;
       const checklist = await OnboardingServices.createChecklist(
         req.currentUser,
-        name,
-        descriptions,
+        content,
         teamId,
         teamTypeId,
         parentChecklistId,
         req.organization,
-        isOptional
+        isOptional,
+        itemType
       );
       res.status(200).json(checklist);
     } catch (error: unknown) {
@@ -51,18 +51,18 @@ export default class OnboardingController {
 
   static async editChecklist(req: Request, res: Response, next: NextFunction) {
     try {
-      const { checklistId } = req.params;
-      const { name, descriptions, isOptional, teamId, teamTypeId, parentChecklistId } = req.body;
+      const { checklistId } = req.params as Record<string, string>;
+      const { content, isOptional, teamId, teamTypeId, parentChecklistId, itemType } = req.body;
       const checklist = await OnboardingServices.editChecklist(
         req.currentUser,
         checklistId,
-        name,
-        descriptions,
+        content,
         teamId,
         teamTypeId,
         parentChecklistId,
         req.organization,
-        isOptional
+        isOptional,
+        itemType
       );
       res.status(200).json(checklist);
     } catch (error: unknown) {
@@ -72,7 +72,7 @@ export default class OnboardingController {
 
   static async deleteChecklist(req: Request, res: Response, next: NextFunction) {
     try {
-      const { checklistId } = req.params;
+      const { checklistId } = req.params as Record<string, string>;
       await OnboardingServices.deleteChecklist(req.currentUser, checklistId, req.organization);
       res.status(200).json({ message: 'Checklist deleted successfully' });
     } catch (error: unknown) {
@@ -82,7 +82,7 @@ export default class OnboardingController {
 
   static async toggleChecklist(req: Request, res: Response, next: NextFunction) {
     try {
-      const { checklistId } = req.params;
+      const { checklistId } = req.params as Record<string, string>;
 
       const updatedItem = await OnboardingServices.toggleChecklist(checklistId, req.currentUser, req.organization);
       res.status(200).json(updatedItem);
@@ -93,7 +93,7 @@ export default class OnboardingController {
 
   static async downloadImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { fileId } = req.params;
+      const { fileId } = req.params as Record<string, string>;
 
       const imageData = await OnboardingServices.downloadImage(fileId);
 
@@ -103,6 +103,27 @@ export default class OnboardingController {
 
       // Send the Buffer as the response body
       res.send(imageData.buffer);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async reorderTasks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { taskIds } = req.body;
+      await OnboardingServices.reorderTasks(req.currentUser, taskIds, req.organization);
+      res.status(200).json({ message: 'Tasks reordered successfully' });
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async reorderChecklistItems(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { parentId } = req.params as Record<string, string>;
+      const { itemIds } = req.body;
+      await OnboardingServices.reorderChecklistItems(req.currentUser, parentId, itemIds, req.organization);
+      res.status(200).json({ message: 'Checklist items reordered successfully' });
     } catch (error: unknown) {
       return next(error);
     }
