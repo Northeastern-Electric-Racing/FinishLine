@@ -283,7 +283,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     }
   };
 
-  const wbsElementAutocompleteOptions = allProjects.map((proj) => ({
+  const projectAutocompleteOptions = allProjects.map((proj) => ({
     label: wbsPipe(proj.wbsNum) + ' - ' + proj.name,
     id: wbsPipe(proj.wbsNum)
   }));
@@ -355,8 +355,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       reimbursementProductRemove={reimbursementProductRemove}
       onSubmit={onSubmitWrapper}
       handleSubmit={handleSubmit}
-      allWbsElements={allProjects}
-      wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
+      allProjects={allProjects}
+      projectAutocompleteOptions={projectAutocompleteOptions}
       submitText={submitText}
       setValue={setValue}
       hasSecureSettingsSet={hasSecureSettingsSet}

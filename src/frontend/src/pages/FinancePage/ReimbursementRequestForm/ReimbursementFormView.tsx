@@ -62,8 +62,8 @@ interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
   allAccountCodes: AccountCode[];
   receiptFiles: ReimbursementReceiptUploadArgs[];
-  allWbsElements: ProjectPreview[];
-  wbsElementAutocompleteOptions: {
+  allProjects: ProjectPreview[];
+  projectAutocompleteOptions: {
     label: string;
     id: string;
   }[];
@@ -91,8 +91,8 @@ interface ReimbursementRequestFormViewProps {
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
   allVendors,
   allAccountCodes,
-  allWbsElements,
-  wbsElementAutocompleteOptions,
+  allProjects,
+  projectAutocompleteOptions,
   receiptFiles,
   reimbursementProducts,
   control,
@@ -843,7 +843,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               reimbursementProducts={reimbursementProducts}
               appendProduct={reimbursementProductAppend}
               removeProduct={reimbursementProductRemove}
-              wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
+              projectAutocompleteOptions={projectAutocompleteOptions}
               watch={watch}
               register={register}
               setValue={setValue}
@@ -853,7 +853,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               secondRefundSourceIndexCode={secondRefundSourcePassed}
               firstRefundSourceName={firstRefundSource.name}
               secondRefundSourceName={secondRefundSource.name}
-              allWbsElements={allWbsElements}
+              allProjects={allProjects}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>

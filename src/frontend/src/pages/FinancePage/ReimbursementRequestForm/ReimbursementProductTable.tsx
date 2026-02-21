@@ -45,7 +45,7 @@ interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
   removeProduct: (index: number) => void;
   appendProduct: (args: ReimbursementProductFormArgs) => void;
-  wbsElementAutocompleteOptions: {
+  projectAutocompleteOptions: {
     label: string;
     id: string;
   }[];
@@ -59,7 +59,7 @@ interface ReimbursementProductTableProps {
   secondRefundSourceIndexCode?: IndexCode;
   firstRefundSourceName?: string;
   secondRefundSourceName?: string;
-  allWbsElements: ProjectPreview[];
+  allProjects: ProjectPreview[];
 }
 
 const ListItem = styled('li')(({ theme }) => ({
@@ -70,7 +70,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   reimbursementProducts,
   removeProduct,
   appendProduct,
-  wbsElementAutocompleteOptions,
+  projectAutocompleteOptions,
   control,
   errors,
   setValue,
@@ -80,7 +80,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   firstRefundSourceName,
   secondRefundSourceName,
   watch,
-  allWbsElements
+  allProjects
 }) => {
   const uniqueWbsElementsWithProducts = new Map<
     string,
@@ -158,12 +158,11 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     }
   };
 
-  const handleOpenCreateMaterial = (productIndex: number, wbsNumber: WbsNumber) => {
-    const project = allWbsElements.find(
+  const handleOpenCreateMaterial = (productIndex: number, projectWbsNum: WbsNumber) => {
+    const project = allProjects.find(
       (proj) =>
-        proj.wbsNum.carNumber === wbsNumber.carNumber &&
-        proj.wbsNum.projectNumber === wbsNumber.projectNumber &&
-        proj.wbsNum.workPackageNumber === wbsNumber.workPackageNumber
+        proj.wbsNum.carNumber === projectWbsNum.carNumber &&
+        proj.wbsNum.projectNumber === projectWbsNum.projectNumber
     );
 
     if (project) {
@@ -333,7 +332,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 >
                   <Autocomplete
                     sx={{ flex: 1 }}
-                    options={wbsElementAutocompleteOptions}
+                    options={projectAutocompleteOptions}
                     onChange={(_e, value) => {
                       if (value) {
                         appendProduct({
@@ -403,7 +402,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       }}
                     >
                       {
-                        wbsElementAutocompleteOptions
+                        projectAutocompleteOptions
                           .concat(
                             (otherReasons || []).map((reason) => ({
                               id: reason.name,
