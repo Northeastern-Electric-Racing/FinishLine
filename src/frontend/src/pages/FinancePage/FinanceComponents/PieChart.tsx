@@ -24,6 +24,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   available
 }) => {
   const [isLegendOpen, setIsLegendOpen] = useState(true);
+
   const [sectionStates, setSectionStates] = useState([
     { title: 'Pending Approval', color: '#562016', expanded: false },
     { title: 'Approved', color: '#8e3c2d', expanded: false },
