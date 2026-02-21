@@ -14,7 +14,8 @@ import {
   FilterArgs,
   Machinery,
   ScheduleSlot,
-  notGuest
+  notGuest,
+  isSameDay
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
@@ -1451,6 +1452,24 @@ export default class CalendarService {
       },
       ...getEventQueryArgs(organization.organizationId)
     });
+
+    // Remove the scheduled time from confirmed members' availabilities so they can't be
+    // double-booked for other events that require confirmation during the same time slot
+    const startHour = startTime.getHours();
+    const endHour = endTime.getHours();
+    for (const member of event.confirmedMembers) {
+      if (!member.drScheduleSettings) continue;
+      const existingAvailability = member.drScheduleSettings.availabilities.find((a) => isSameDay(a.dateSet, startTime));
+      if (!existingAvailability) continue;
+      // Availability index i represents local hour (10 + i); remove indices that fall within [startHour, endHour)
+      const updatedAvailability = existingAvailability.availability.filter(
+        (i) => !(10 + i >= startHour && 10 + i < endHour)
+      );
+      await prisma.availability.update({
+        where: { availabilityId: existingAvailability.availabilityId },
+        data: { availability: updatedAvailability }
+      });
+    }
 
     const { eventTypeId } = updatedEvent;
     const foundEventType = await prisma.event_Type.findUnique({

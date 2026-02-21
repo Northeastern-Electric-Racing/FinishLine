@@ -9,7 +9,7 @@ export const getPendingReason = (event: EventInstance): string | null => {
     return 'This event has a scheduling conflict and requires approval.';
   } else if (event.approved === ConflictStatus.DENIED) {
     return 'This event was denied due to a scheduling conflict.';
-  } else if (event.status === EventStatus.UNCONFIRMED) {
+  } else if (event.status !== EventStatus.SCHEDULED) {
     return 'This event is unconfirmed and waiting to be scheduled.';
   }
   return null;
