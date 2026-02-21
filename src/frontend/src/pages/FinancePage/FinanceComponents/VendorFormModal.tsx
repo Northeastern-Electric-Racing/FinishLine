@@ -17,7 +17,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Vendor } from 'shared';
 import { EditVendorPayload } from '../../../hooks/finance.hooks';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
@@ -38,7 +38,7 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
     discountCode: yup.string().optional(),
     taxExempt: yup.boolean().required('Tax Exemption Status is Required'),
     twoFactorContacts: yup.array(),
-    note: yup.string().optional()
+    notes: yup.string().optional()
   });
 
   const {
@@ -55,7 +55,7 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
       discountCode: defaultValues?.discountCode ?? undefined,
       taxExempt: defaultValues?.taxExempt,
       twoFactorContacts: defaultValues?.twoFactorContacts.map((user) => user.userId) ?? [],
-      note: defaultValues?.notes ?? ''
+      notes: defaultValues?.notes ?? ''
     }
   });
 
@@ -70,7 +70,7 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
     handleClose();
   };
 
-  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
 
   if (!users || usersIsLoading) {
     return <LoadingIndicator />;
@@ -84,7 +84,7 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
       open={showModal}
       onHide={handleClose}
       title={!!defaultValues ? 'Edit Vendor' : 'Add Vendor'}
-      reset={() => reset({ name: '', username: '', password: '', discountCode: '', twoFactorContacts: [], note: '' })}
+      reset={() => reset({ name: '', username: '', password: '', discountCode: '', twoFactorContacts: [], notes: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-vendor-form' : 'create-vendor-form'}
@@ -219,8 +219,8 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
           <Typography sx={{ fontWeight: 'bold', fontSize: 22, color: '#EF4345' }} variant="h5">
             Notes on Vendor:
           </Typography>
-          <ReactHookTextField name="notes" placeholder="e.g. Vendor is tax-exempt" control={control} sx={{ width: 1 }} />
-          <FormHelperText error>{errors.note?.message}</FormHelperText>
+          <ReactHookTextField name="notes" placeholder="Any notes on the vendor..." control={control} sx={{ width: 1 }} />
+          <FormHelperText error>{errors.notes?.message}</FormHelperText>
         </FormControl>
       </Box>
     </NERFormModal>

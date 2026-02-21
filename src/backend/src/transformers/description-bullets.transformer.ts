@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { DescriptionBullet } from 'shared';
-import { DescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
+import { DescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
 
 const descriptionBulletTransformer = (
   descBullet: Prisma.Description_BulletGetPayload<DescriptionBulletQueryArgs>

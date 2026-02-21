@@ -3,11 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import prisma from './prisma';
+import prisma from './prisma.js';
 import { Reimbursement_Status_Type, WBS_Element_Status } from '@prisma/client';
 import { calculateEndDate } from 'shared';
 import { writeFileSync } from 'fs';
-import { getUserFullName } from '../utils/users.utils';
+import { getUserFullName } from '../utils/users.utils.js';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 

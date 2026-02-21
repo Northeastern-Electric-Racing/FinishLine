@@ -17,7 +17,7 @@ import {
   WorkPackageProposedChangesCreateArgs,
   User
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -27,8 +27,8 @@ import {
   NotFoundException,
   DeletedException,
   InvalidOrganizationException
-} from '../utils/errors.utils';
-import changeRequestTransformer, { changeRequestManyTransformer } from '../transformers/change-requests.transformer';
+} from '../utils/errors.utils.js';
+import changeRequestTransformer, { changeRequestManyTransformer } from '../transformers/change-requests.transformer.js';
 import {
   allChangeRequestsReviewed,
   validateProposedChangesFields,
@@ -40,26 +40,26 @@ import {
   validateWbsElement,
   validateNoUnreviewedOpenOtherReasonCRs,
   validateNoUnreviewedOpenAccountCodeCRs
-} from '../utils/change-requests.utils';
+} from '../utils/change-requests.utils.js';
 import { CR_Type, WBS_Element_Status, Scope_CR_Why_Type, Prisma, Organization } from '@prisma/client';
-import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils';
-import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
-import { buildChangeDetail } from '../utils/changes.utils';
+import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils.js';
+import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils.js';
+import { buildChangeDetail } from '../utils/changes.utils.js';
 import {
   addSlackThreadsToChangeRequest,
   sendAndGetSlackCRNotifications,
   sendSlackCRStatusToThread,
   sendSlackRequestedReviewNotification
-} from '../utils/slack.utils';
+} from '../utils/slack.utils.js';
 import {
   ChangeRequestWithProjectAndWorkPackageQueryArgs,
   getChangeRequestQueryArgs,
   getChangeRequestWithProjectAndWorkPackageQueryArgs,
   getManyChangeRequestQueryArgs
-} from '../prisma-query-args/change-requests.query-args';
-import proposedSolutionTransformer from '../transformers/proposed-solutions.transformer';
-import { getProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args';
-import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils';
+} from '../prisma-query-args/change-requests.query-args.js';
+import proposedSolutionTransformer from '../transformers/proposed-solutions.transformer.js';
+import { getProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args.js';
+import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils.js';
 
 export default class ChangeRequestsService {
   /**
@@ -178,7 +178,7 @@ export default class ChangeRequestsService {
         dateReviewed: null
       },
       {
-        NOT: { scopeChangeRequest: null }
+        changes: { none: {} }
       }
     ];
 
@@ -279,6 +279,14 @@ export default class ChangeRequestsService {
     // verify that the user is not reviewing their own change request
     if (reviewer.userId === foundCR.submitterId)
       throw new AccessDeniedException("You can't review your own change request!");
+
+    // verify that if there are requested reviewers, the reviewer is one of them
+    if (foundCR.requestedReviewers.length > 0) {
+      const isRequestedReviewer = foundCR.requestedReviewers.some((user) => user.userId === reviewer.userId);
+      if (!isRequestedReviewer) {
+        throw new AccessDeniedException('Only requested reviewers can review this change request!');
+      }
+    }
 
     // ScopeChange Request That Has Been Accepted Being Reviewed
     if (foundCR.scopeChangeRequest && accepted) {
@@ -666,9 +674,7 @@ export default class ChangeRequestsService {
       include: {
         changeRequests: {
           where: {
-            dateDeleted: {
-              not: null
-            }
+            dateDeleted: null
           },
           include: {
             changes: true
@@ -775,9 +781,7 @@ export default class ChangeRequestsService {
         descriptionBullets: true,
         changeRequests: {
           where: {
-            dateDeleted: {
-              not: null
-            }
+            dateDeleted: null
           },
           include: { changes: true }
         }
@@ -877,7 +881,7 @@ export default class ChangeRequestsService {
         where: {
           otherReimbursementProductReasonId: otherReasonId
         },
-        include: { changeRequests: { where: { dateDeleted: { not: null } }, include: { changes: true } } }
+        include: { changeRequests: { where: { dateDeleted: null }, include: { changes: true } } }
       });
 
       if (!category) throw new NotFoundException('Reimbursement Product Other Reason', otherReasonId);
@@ -940,7 +944,7 @@ export default class ChangeRequestsService {
         where: {
           accountCodeId
         },
-        include: { changeRequests: { where: { dateDeleted: { not: null } }, include: { changes: true } } }
+        include: { changeRequests: { where: { dateDeleted: null }, include: { changes: true } } }
       });
 
       if (!accountCode) throw new NotFoundException('Account Code', accountCodeId);
@@ -1143,6 +1147,8 @@ export default class ChangeRequestsService {
         }
       }
 
+      const isCreatingNewProject = projectProposedChanges && projectNumber === 0;
+
       const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
           scopeChangeRequest: {
@@ -1151,7 +1157,7 @@ export default class ChangeRequestsService {
             }
           },
           name,
-          status: WBS_Element_Status.ACTIVE,
+          status: isCreatingNewProject ? WBS_Element_Status.INACTIVE : wbsElement.status,
           links: {
             create: validationResult.links.map((linkInfo) => ({
               url: linkInfo.url,
@@ -1234,11 +1240,13 @@ export default class ChangeRequestsService {
         managerId
       );
 
+      const isCreatingNewWorkPackage = workPackageProposedChanges && workPackageNumber === 0;
+
       const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
           scopeChangeRequest: { connect: { scopeCrId: createdCR.scopeChangeRequest!.scopeCrId } },
           name,
-          status: WBS_Element_Status.INACTIVE,
+          status: isCreatingNewWorkPackage ? WBS_Element_Status.INACTIVE : wbsElement.status,
           proposedDescriptionBulletChanges: {
             create: validationResult.descriptionBullets.map((bullet) => ({
               detail: bullet.detail,

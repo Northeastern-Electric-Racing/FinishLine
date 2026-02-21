@@ -6,8 +6,8 @@ import {
   projectValidators,
   validateInputs,
   materialValidators
-} from '../utils/validation.utils';
-import ProjectsController from '../controllers/projects.controllers';
+} from '../utils/validation.utils.js';
+import ProjectsController from '../controllers/projects.controllers.js';
 
 const projectRouter = express.Router();
 
@@ -29,6 +29,7 @@ projectRouter.post(
 );
 projectRouter.post(
   '/link-types/:linkTypeName/edit',
+  nonEmptyString(body('name').optional()),
   nonEmptyString(body('iconName')),
   body('required').isBoolean(),
   validateInputs,
@@ -80,7 +81,7 @@ projectRouter.post(
 projectRouter.post(
   '/bom/assembly/:wbsNum/create',
   nonEmptyString(body('name')),
-  nonEmptyString(body('pdmFileName').optional()),
+  body('pdmFileName').optional().isString(),
   validateInputs,
   ProjectsController.createAssembly
 );
@@ -96,7 +97,7 @@ projectRouter.post('/bom/material/:materialId/edit', ...materialValidators, vali
 projectRouter.post(
   '/bom/assembly/:assemblyId/edit',
   nonEmptyString(body('name').optional()),
-  nonEmptyString(body('pdmFileName').optional()),
+  body('pdmFileName').optional().isString(),
   validateInputs,
   ProjectsController.editAssembly
 );

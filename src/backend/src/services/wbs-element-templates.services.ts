@@ -9,7 +9,7 @@ import {
   WorkPackageTemplateApiInputs,
   User
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   NotFoundException,
   HttpException,
@@ -17,8 +17,8 @@ import {
   AccessDeniedAdminOnlyException,
   DeletedException,
   InvalidOrganizationException
-} from '../utils/errors.utils';
-import { createListChanges } from '../utils/changes.utils';
+} from '../utils/errors.utils.js';
+import { createListChanges } from '../utils/changes.utils.js';
 import {
   DescriptionBulletDestination,
   addRawDescriptionBullets,
@@ -27,18 +27,18 @@ import {
   editDescriptionBullets,
   markDescriptionBulletsAsDeleted,
   validateDescriptionBullets
-} from '../utils/description-bullets.utils';
-import { deleteBlockingTemplates, validateBlockedByTemplates } from '../utils/work-packages.utils';
+} from '../utils/description-bullets.utils.js';
+import { deleteBlockingTemplates, validateBlockedByTemplates } from '../utils/work-packages.utils.js';
 import {
   projectTemplateTransformer,
   workPackageTemplateTransformer
-} from '../transformers/work-package-template.transformer';
+} from '../transformers/work-package-template.transformer.js';
 import {
   getProjectTemplateQueryArgs,
   getWorkPackageTemplateQueryArgs
-} from '../prisma-query-args/wbs-element-template.query-args';
-import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
-import { userHasPermission } from '../utils/users.utils';
+} from '../prisma-query-args/wbs-element-template.query-args.js';
+import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
+import { userHasPermission } from '../utils/users.utils.js';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WbsElementTemplatesService {

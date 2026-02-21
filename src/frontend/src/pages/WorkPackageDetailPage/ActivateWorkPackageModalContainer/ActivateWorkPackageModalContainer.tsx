@@ -4,10 +4,10 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { ChangeRequestType, isGuest, WbsNumber } from 'shared';
+import { ChangeRequestType, WbsNumber } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { useCreateActivationChangeRequest } from '../../../hooks/change-requests.hooks';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import { routes } from '../../../utils/routes';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -33,7 +33,7 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
   handleClose
 }) => {
   const auth = useAuth();
-  const users = useAllUsers();
+  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const history = useHistory();
   const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useCreateActivationChangeRequest();
@@ -65,9 +65,11 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
     }
   };
 
-  if (isLoading || users.isLoading) return <LoadingIndicator />;
+  if (isLoading || usersIsLoading || !users) return <LoadingIndicator />;
 
-  if (isError || users.isError) return <ErrorPage message={error?.message} />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
+  if (usersIsError) return <ErrorPage message={usersError?.message} />;
 
   return (
     <ActivateWorkPackageModal
@@ -75,7 +77,7 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
       modalShow={modalShow}
       onHide={handleClose}
       onSubmit={handleConfirm}
-      allUsers={users.data!.filter((u) => !isGuest(u.role))}
+      allUsers={users}
     />
   );
 };

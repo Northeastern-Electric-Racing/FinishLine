@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { accountCodePipe, displayEnum } from '../../../utils/pipes';
+import { accountCodePipe, displayEnum, formatSaboIdPipe } from '../../../utils/pipes';
 import { Assignment, ChangeCircle, Edit, Pending } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -40,7 +40,7 @@ import {
 } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { centsToDollar, fullNamePipe, undefinedPipe } from '../../../utils/pipes';
+import { centsToDollar, fullNamePipe } from '../../../utils/pipes';
 import {
   imageDownloadUrl,
   imageFileUrl,
@@ -64,9 +64,6 @@ import CheckList from '../../../components/CheckList';
 import MarkDeliveredModal from './MarkDeliveredModal';
 import ReimbursementRequestTimeline from '../FinanceComponents/ReimbursementRequestTimeline';
 import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
-import SidePage from '../FinanceComponents/SidePagePopup';
-import EditReimbursementRequestPage from '../EditReimbursementRequest/EditReimbursementRequest';
-import { ReimbursementRequestDataSubmission } from '../ReimbursementRequestForm/ReimbursementRequestForm';
 import { useGetFinanceDelegates } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -75,13 +72,11 @@ import AssignFinanceMemberModal from './AssignFinanceMemberModal';
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
   onCloseSidePage: () => void;
-  onCloseEditPage: () => void;
 }
 
 const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({
   reimbursementRequest,
-  onCloseSidePage,
-  onCloseEditPage
+  onCloseSidePage
 }) => {
   const theme = useTheme();
   const user = useCurrentUser();
@@ -118,16 +113,9 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const isPendingSaboSubmission = isReimbursementRequestPendingSaboSubmission(reimbursementRequest);
   const isLeadershipApproved = isReimbursementRequestLeadershipApproved(reimbursementRequest);
   const isPendingFinance = isReimbursementRequestPendingFinance(reimbursementRequest);
-  const [showEditSidePage, setShowEditSidePage] = useState(false);
-
-  const openSidePage = () => {
-    setShowEditSidePage(true);
-  };
 
   const closeSidePage = () => {
-    setShowEditSidePage(false);
     onCloseSidePage();
-    onCloseEditPage();
   };
 
   const handleDelete = async () => {
@@ -315,7 +303,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Edit',
       onClick: () => {
         history.push(`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${reimbursementRequest.reimbursementRequestId}/edit`);
-        openSidePage();
       },
       icon: <Edit />,
       // Only show Edit if: not leadership approved yet OR already has purchase details
@@ -326,7 +313,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Add Purchase Details',
       onClick: () => {
         history.push(`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${reimbursementRequest.reimbursementRequestId}/edit`);
-        openSidePage();
       },
       icon: <Edit />,
       // Only show if leadership approved and NO purchase details yet
@@ -479,7 +465,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     },
     { content: `$${centsToDollar(reimbursementRequest.totalCost)}` },
     { content: reimbursementRequest.vendor.name },
-    { content: `${undefinedPipe(reimbursementRequest.saboId)}` },
+    { content: `${formatSaboIdPipe(reimbursementRequest.saboId)}` },
     {
       content: refundSourceNames.join(', ')
     },
@@ -489,42 +475,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
 
   const { id } = useParams<{ id: string }>();
 
-  const { isLoading: editReimbursementRequestIsLoading, mutateAsync: editReimbursementRequest } =
-    useEditReimbursementRequest(id);
-  const { isLoading: uploadReceiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
+  const { isLoading: editReimbursementRequestIsLoading } = useEditReimbursementRequest(id);
+  const { isLoading: uploadReceiptsIsLoading } = useUploadManyReceipts();
   const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();
 
   if (editReimbursementRequestIsLoading || uploadReceiptsIsLoading || !reimbursementRequest) return <LoadingIndicator />;
-
-  const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
-    const filesToKeep = data.receiptFiles.filter((file) => file.googleFileId !== '');
-
-    await editReimbursementRequest({ ...data, receiptPictures: filesToKeep, indexCodeId: data.indexCodeId! });
-    await uploadReceipts({
-      id: reimbursementRequest.reimbursementRequestId,
-      files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file!)
-    });
-
-    closeSidePage();
-    return reimbursementRequest.reimbursementRequestId;
-  };
-
-  const onSubmitToFinance = async (data: ReimbursementRequestDataSubmission): Promise<void> => {
-    const filesToKeep = data.receiptFiles.filter((file) => file.googleFileId !== '');
-
-    await editReimbursementRequest({ ...data, receiptPictures: filesToKeep, indexCodeId: data.indexCodeId! });
-    await uploadReceipts({
-      id: reimbursementRequest.reimbursementRequestId,
-      files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file!)
-    });
-
-    if (isHead(user.role) && !isReimbursementRequestLeadershipApproved(reimbursementRequest)) {
-      await leadershipApproveReimbursementRequest();
-    }
-
-    await markPendingFinance();
-    closeSidePage();
-  };
 
   if (isLoading || !financeDelegates) {
     return <LoadingIndicator />;
@@ -636,18 +591,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           modalShow={addSaboNumberModalShow}
           onHide={() => setAddSaboNumberModalShow(false)}
           reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
-        />
-        <SidePage
-          showPage={showEditSidePage}
-          handleClose={closeSidePage}
-          title={''}
-          component={
-            <EditReimbursementRequestPage
-              onExitEditPage={closeSidePage}
-              onSubmitEditData={onSubmit}
-              onSubmitToFinance={onSubmitToFinance}
-            />
-          }
         />
         <Box sx={{ display: 'flex', mt: 2 }}>
           <Box>

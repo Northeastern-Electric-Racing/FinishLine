@@ -32,6 +32,8 @@ const CreateSponsorPage = ({ showPage, handleClose }: CreateSponsorPageProps) =>
       sponsorTierId: '',
       sponsorContact: '',
       taxExempt: false,
+      discountCode: '',
+      sponsorNotes: '',
       sponsorTasks: []
     }
   });

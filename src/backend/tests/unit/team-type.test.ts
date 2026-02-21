@@ -1,8 +1,8 @@
 import { Organization } from '@prisma/client';
-import TeamsService from '../../src/services/teams.services';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
-import { createTestOrganization, createTestTeam, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
+import TeamsService from '../../src/services/teams.services.js';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
+import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data.js';
+import { createTestOrganization, createTestTeam, createTestTeamType, createTestUser, resetUsers } from '../test-utils.js';
 
 describe('Team Type Tests', () => {
   let orgId: string;
@@ -59,7 +59,7 @@ describe('Team Type Tests', () => {
         organization
       );
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         name: 'teamType3',
         iconName: 'YouTubeIcon',
         organizationId: orgId,

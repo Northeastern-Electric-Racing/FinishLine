@@ -4,7 +4,7 @@ import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import { useState } from 'react';
-import AdminToolTable from '../AdminToolTable';
+import NERTable from '../../../components/NERTable';
 import { useGetAllMaterialTypes } from '../../../hooks/bom.hooks';
 import CreateMaterialTypeModal from './CreateMaterialTypeFormModal';
 
@@ -38,7 +38,7 @@ const MaterialTypeTable: React.FC = () => {
   return (
     <Box>
       <CreateMaterialTypeModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
-      <AdminToolTable columns={[{ name: 'Date Registered' }, { name: 'Material Type' }]} rows={materialTypesTableRows} />
+      <NERTable columns={[{ name: 'Date Registered' }, { name: 'Material Type' }]} rows={materialTypesTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"

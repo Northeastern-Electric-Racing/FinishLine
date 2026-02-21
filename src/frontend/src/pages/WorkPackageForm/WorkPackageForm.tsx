@@ -4,7 +4,7 @@ import { bulletsToObject } from '../../utils/form';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { useAllUsers } from '../../hooks/users.hooks';
+import { useAllMembers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { ObjectSchema } from 'yup';
@@ -29,7 +29,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   schema,
   breadcrumbs
 }) => {
-  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const {
     data: project,
     isLoading: projectIsLoading,

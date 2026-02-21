@@ -5,7 +5,7 @@
 
 import { Autocomplete, Box, Grid, IconButton, TextField, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
+import { useAllMembers, useCurrentUser } from '../../hooks/users.hooks';
 import { useSetTeamHead, useSetTeamLeads, useSetTeamMembers } from '../../hooks/teams.hooks';
 import { isAdmin, isHead, isLeadership, Team } from 'shared';
 import { fullNamePipe } from '../../utils/pipes';
@@ -31,7 +31,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const [head, setHead] = useState(userToAutocompleteOption(team.head));
   const [leads, setLeads] = useState(team.leads.map(userToAutocompleteOption));
 
-  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
+  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllMembers();
   const { isLoading: setTeamMembersIsLoading, mutateAsync: setTeamMembersMutateAsync } = useSetTeamMembers(team.teamId);
   const { isLoading: setTeamHeadIsLoading, mutateAsync: setTeamHeadMutateAsync } = useSetTeamHead(team.teamId);
   const { isLoading: setTeamLeadsIsLoading, mutateAsync: setTeamLeadsMutateAsync } = useSetTeamLeads(team.teamId);

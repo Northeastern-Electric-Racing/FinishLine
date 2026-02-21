@@ -5,8 +5,8 @@
 
 import {
   addWeeksToDate,
-  DesignReviewPreview,
-  DesignReviewStatus,
+  EventPreview,
+  EventStatus,
   isWorkPackage,
   ProjectGantt,
   RetrospectiveProjectPreview,
@@ -158,12 +158,12 @@ export const getProjectEndDate = (project: ProjectGantt): Date => {
   }, wpEnd);
 };
 
-export const transformDesignReviewToGanttEvent = (designReview: DesignReviewPreview): GanttEvent => {
+export const transformDesignReviewEventToGanttEvent = (event: EventPreview): GanttEvent => {
   return {
-    date: designReview.dateScheduled,
-    color: ganttDesignReviewStatusColorPipe(designReview.status),
-    onClick: () => window.open(`${routes.CALENDAR}/${designReview.designReviewId}`, '_blank'),
-    name: designReview.wbsName
+    date: event.dateScheduled,
+    color: ganttDesignReviewEventStatusColorPipe(event.status),
+    onClick: () => window.open(`${routes.CALENDAR}/${event.eventId}`, '_blank'),
+    name: event.wbsName
   };
 };
 
@@ -448,7 +448,7 @@ export const transformWorkPackageToGanttTask = <T extends WorkPackage>(
     start: workPackage.startDate,
     end: workPackage.endDate,
 
-    events: workPackage.designReviews.map(transformDesignReviewToGanttEvent),
+    events: workPackage.events.map(transformDesignReviewEventToGanttEvent),
     blocking: getBlockingGanttTasks(workPackage, allWorkPackages, transformWorkPackageToGanttTask),
     children: [],
     overlays: [],
@@ -580,8 +580,8 @@ export const sortWbs = (a: { wbsNum: WbsNumber }, b: { wbsNum: WbsNumber }) => {
   return aWbsNum.workPackageNumber - bWbsNum.workPackageNumber;
 };
 
-export const ganttDesignReviewStatusColorPipe = (status: DesignReviewStatus) => {
-  return status !== DesignReviewStatus.UNCONFIRMED ? '#712f99' : '#876e96';
+export const ganttDesignReviewEventStatusColorPipe = (status: EventStatus) => {
+  return status !== EventStatus.UNCONFIRMED ? '#712f99' : '#876e96';
 };
 
 // Maps task status to the desired color for Gantt Chart

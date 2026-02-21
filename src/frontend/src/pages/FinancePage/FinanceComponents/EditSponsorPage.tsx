@@ -18,7 +18,7 @@ interface EditSponsorPageProps {
 }
 
 const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProps) => {
-  const { isLoading, mutateAsync } = useEditSponsor(sponsor.sponsorId);
+  const { isLoading, mutateAsync } = useEditSponsor();
 
   const defaultSponsorTasks: CreateSponsorTask[] =
     sponsor.sponsorTasks?.map((task) => ({
@@ -45,6 +45,7 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       sponsorContact: sponsor.sponsorContact,
       taxExempt: sponsor.taxExempt,
       discountCode: sponsor.discountCode ?? undefined,
+      sponsorNotes: sponsor.sponsorNotes ?? undefined,
       sponsorTasks: defaultSponsorTasks
     }
   });
@@ -54,7 +55,7 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
   const onSubmit = async (formData: SponsorPayload) => {
     try {
       setSubmitError(null);
-      await mutateAsync({ ...formData });
+      await mutateAsync({ sponsorId: sponsor.sponsorId, ...formData });
       handleClose();
     } catch (err: unknown) {
       if (err instanceof Error) {

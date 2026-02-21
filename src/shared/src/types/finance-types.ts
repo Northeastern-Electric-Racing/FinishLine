@@ -1,4 +1,4 @@
-import { User } from './user-types';
+import { User } from './user-types.js';
 
 export interface Sponsor {
   sponsorId: string;
@@ -10,6 +10,7 @@ export interface Sponsor {
   activeYears: number[];
   taxExempt: boolean;
   discountCode?: string;
+  sponsorNotes?: string;
   sponsorTasks: SponsorTask[];
   tier: SponsorTier;
 }
@@ -39,9 +40,9 @@ export interface SpendingBarData {
 
 export interface ReimbursementRequestData {
   totalBudget: number;
-  pendingFinance: number;
-  pendingLeadership: number;
-  submittedToSabo: number;
+  approved: number;
+  pendingApproval: number;
+  addedToSabo: number;
   reimbursed: number;
   available: number;
 }

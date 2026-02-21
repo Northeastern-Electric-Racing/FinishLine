@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { Components } from 'react-markdown';
 import { Box } from '@mui/material';
 
 interface NERMarkdownProps {
@@ -7,6 +7,15 @@ interface NERMarkdownProps {
 }
 
 const NERMarkdown = ({ markdown }: NERMarkdownProps) => {
+  // make all links open in new tabs
+  const components: Components = {
+    a: ({ children, ...props }) => (
+      <a {...props} target="_blank" rel="noopener noreferrer">
+        {children}
+      </a>
+    )
+  };
+
   return (
     <Box
       sx={{
@@ -106,7 +115,7 @@ const NERMarkdown = ({ markdown }: NERMarkdownProps) => {
         }
       }}
     >
-      <ReactMarkdown>{markdown}</ReactMarkdown>
+      <ReactMarkdown components={components}>{markdown}</ReactMarkdown>
     </Box>
   );
 };

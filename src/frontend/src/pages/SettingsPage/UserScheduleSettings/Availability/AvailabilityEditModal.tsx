@@ -25,18 +25,23 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
   initialDate,
   canChangeDateRange = true
 }) => {
-  const existingMeetingData = new Map<number, { iconMap: Map<number, string> }>();
   const onCancel = () => {
     setConfirmedAvailabilities(new Map());
     onHide();
   };
 
   return (
-    <NERModal open={open} onHide={onCancel} title={header} onSubmit={onSubmit} submitText="Save">
+    <NERModal
+      open={open}
+      onHide={onCancel}
+      title={header}
+      onSubmit={onSubmit}
+      submitText="Save"
+      paperProps={{ maxWidth: '1200px', height: '85vh' }}
+    >
       <EditAvailability
         editedAvailabilities={confirmedAvailabilities}
         setEditedAvailabilities={setConfirmedAvailabilities}
-        existingMeetingData={existingMeetingData}
         totalAvailabilities={totalAvailabilities}
         canChangeDateRange={canChangeDateRange}
         initialDate={initialDate}

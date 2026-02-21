@@ -4,6 +4,9 @@ import { OrganizationPreview } from 'shared';
 export const organizationTransformer = (organization: Organization): OrganizationPreview => {
   return {
     ...organization,
-    applicationLink: organization.applicationLink ?? undefined
+    applicationLink: organization.applicationLink ?? undefined,
+    applyInterestImageId: organization.applyInterestImageId ?? undefined,
+    exploreAsGuestImageId: organization.exploreAsGuestImageId ?? undefined,
+    newMemberImageId: organization.newMemberImageId ?? undefined
   };
 };

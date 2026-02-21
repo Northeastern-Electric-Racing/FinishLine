@@ -17,39 +17,30 @@ import {
   Team,
   Part_Tag
 } from '@prisma/client';
-import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
-import { dbSeedAllTeams } from './seed-data/teams.seed';
-import { seedReimbursementRequests } from './seed-data/reimbursement-requests.seed';
-import ChangeRequestsService from '../services/change-requests.services';
-import TeamsService from '../services/teams.services';
-import {
-  DesignReviewStatus,
-  MaterialStatus,
-  RoleEnum,
-  SpecialPermission,
-  StandardChangeRequest,
-  User,
-  WbsElementStatus,
-  WorkPackageStage
-} from 'shared';
-import TasksService from '../services/tasks.services';
-import { seedProject } from './seed-data/projects.seed';
-import { seedWorkPackage } from './seed-data/work-packages.seed';
-import ReimbursementRequestService from '../services/reimbursement-requests.services';
-import ProjectsService from '../services/projects.services';
+import { createUser, dbSeedAllUsers } from './seed-data/users.seed.js';
+import { dbSeedAllTeams } from './seed-data/teams.seed.js';
+import { seedReimbursementRequests } from './seed-data/reimbursement-requests.seed.js';
+import ChangeRequestsService from '../services/change-requests.services.js';
+import TeamsService from '../services/teams.services.js';
+import { DayOfWeek, MaterialStatus, RoleEnum, StandardChangeRequest, WbsElementStatus, WorkPackageStage } from 'shared';
+import TasksService from '../services/tasks.services.js';
+import { seedProject } from './seed-data/projects.seed.js';
+import { seedWorkPackage } from './seed-data/work-packages.seed.js';
+import ReimbursementRequestService from '../services/reimbursement-requests.services.js';
+import ProjectsService from '../services/projects.services.js';
 import { Decimal } from 'decimal.js';
-import DesignReviewsService from '../services/design-reviews.services';
-import BillOfMaterialsService from '../services/boms.services';
-import UsersService from '../services/users.services';
-import { transformDate } from '../utils/datetime.utils';
-import { writeFileSync } from 'fs';
-import WbsElementTemplatesService from '../services/wbs-element-templates.services';
-import RecruitmentServices from '../services/recruitment.services';
-import OrganizationsService from '../services/organizations.services';
-import AnnouncementService from '../services/announcement.services';
-import OnboardingServices from '../services/onboarding.services';
-import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
-import FinanceServices from '../services/finance.services';
+import BillOfMaterialsService from '../services/boms.services.js';
+import UsersService from '../services/users.services.js';
+import { transformDate } from '../utils/datetime.utils.js';
+import { writeFileSync, readFileSync } from 'fs';
+import WbsElementTemplatesService from '../services/wbs-element-templates.services.js';
+import RecruitmentServices from '../services/recruitment.services.js';
+import OrganizationsService from '../services/organizations.services.js';
+import AnnouncementService from '../services/announcement.services.js';
+import OnboardingServices from '../services/onboarding.services.js';
+import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed.js';
+import FinanceServices from '../services/finance.services.js';
+import CalendarService from '../services/calendar.services.js';
 
 const prisma = new PrismaClient();
 
@@ -293,6 +284,23 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
+  const miles = await prisma.car.create({
+    data: {
+      wbsElement: {
+        create: {
+          name: 'Miles',
+          carNumber: 1,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          organizationId
+        }
+      }
+    },
+    include: {
+      wbsElement: true
+    }
+  });
+
   /**
    * Make an initial change request for car 1 using the wbs of the genesis project
    */
@@ -332,17 +340,25 @@ const performSeed: () => Promise<void> = async () => {
     changeRequest1.proposedSolutions[0].id
   );
 
-  /** Gets the current content of the .env file */
-  const currentEnv = require('dotenv').config().parsed;
+  /** Set the organization ID in the current process environment and update .env */
+  process.env.DEV_ORGANIZATION_ID = organizationId;
 
-  currentEnv.DEV_ORGANIZATION_ID = organizationId;
+  // Read existing .env file
+  const envContent = readFileSync('.env', 'utf-8');
 
-  /** Write the new .env file with the organization ID */
-  let stringifiedEnv = '';
-  Object.keys(currentEnv).forEach((key) => {
-    stringifiedEnv += `${key}=${currentEnv[key]}\n`;
+  const lines = envContent.split('\n');
+  const updatedLines = lines.map((line) => {
+    if (line.startsWith('DEV_ORGANIZATION_ID=')) {
+      return `DEV_ORGANIZATION_ID=${organizationId}`;
+    }
+    return line;
   });
-  writeFileSync('.env', stringifiedEnv);
+
+  if (!updatedLines.some((line) => line.startsWith('DEV_ORGANIZATION_ID='))) {
+    updatedLines.push(`DEV_ORGANIZATION_ID=${organizationId}`);
+  }
+
+  writeFileSync('.env', updatedLines.join('\n'));
 
   /**
    * TEAMS
@@ -2344,6 +2360,7 @@ const performSeed: () => Promise<void> = async () => {
   const nextDay = new Date();
   nextDay.setDate(nextDay.getDate() + 1);
 
+  /*
   const designReview1 = await DesignReviewsService.createDesignReview(
     batman,
     nextDay.toDateString(),
@@ -2376,6 +2393,7 @@ const performSeed: () => Promise<void> = async () => {
     [1, 2, 3, 4, 5, 6, 7],
     ner
   );
+  */
 
   const newWorkPackageChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
     batman,
@@ -2589,23 +2607,11 @@ const performSeed: () => Promise<void> = async () => {
     ner.organizationId
   );
 
-  const joinSlackChecklist = await OnboardingServices.createChecklist(
-    batman,
-    'Join Slack',
-    [
-      'Slack is our primary method of communication outside of meetings and the shop. To join, you must use your @northeastern.edu email (No personal emails!). We do not send email reminders for meetings, so you will need to stay in the loop via Slack and Google Calandar.'
-    ],
-    null,
-    null,
-    null,
-    ner,
-    false
-  );
+  const joinSlackChecklist = await OnboardingServices.createChecklist(batman, 'Join Slack', null, null, null, ner, false);
 
   await OnboardingServices.createChecklist(
     batman,
     'Put your name and pronouns',
-    [],
     null,
     null,
     joinSlackChecklist.checklistId,
@@ -2616,7 +2622,6 @@ const performSeed: () => Promise<void> = async () => {
   await OnboardingServices.createChecklist(
     batman,
     'Include your team and/or subteam',
-    [],
     null,
     null,
     joinSlackChecklist.checklistId,
@@ -2627,7 +2632,6 @@ const performSeed: () => Promise<void> = async () => {
   await OnboardingServices.createChecklist(
     batman,
     'Include your major and/or year',
-    [],
     null,
     null,
     joinSlackChecklist.checklistId,
@@ -2638,7 +2642,6 @@ const performSeed: () => Promise<void> = async () => {
   await OnboardingServices.createChecklist(
     batman,
     'Turn on notifications',
-    [],
     null,
     null,
     joinSlackChecklist.checklistId,
@@ -2646,21 +2649,9 @@ const performSeed: () => Promise<void> = async () => {
     false
   );
 
-  const engageChecklist = await OnboardingServices.createChecklist(
-    batman,
-    'Engage',
-    ['Join NER on engage. This is what Northeastern uses to keep track of our roster'],
-    null,
-    null,
-    null,
-    ner,
-    false
-  );
-
   const learnGitChecklist = await OnboardingServices.createChecklist(
     batman,
     'Learn how to use git',
-    ['Go online and learn how to use git'],
     null,
     software.teamTypeId,
     null,
@@ -2671,7 +2662,6 @@ const performSeed: () => Promise<void> = async () => {
   await OnboardingServices.createChecklist(
     batman,
     'Create your first project',
-    [],
     null,
     software.teamTypeId,
     learnGitChecklist.checklistId,
@@ -3080,6 +3070,426 @@ const performSeed: () => Promise<void> = async () => {
     sponsor.sponsorId,
     daysAgo(60),
     thomasEmrax.userId
+  );
+
+  // Create shops for machinery
+  const advancedShop = await prisma.shop.create({
+    data: {
+      name: 'Advanced CNC Manufacturing Center',
+      description: 'CNC machining and precision manufacturing facility',
+      userCreatedId: thomasEmrax.userId,
+      organizationId
+    }
+  });
+
+  const electronicsLab = await prisma.shop.create({
+    data: {
+      name: 'Electronics Development Lab',
+      description: 'Electronics testing and development workspace',
+      userCreatedId: thomasEmrax.userId,
+      organizationId
+    }
+  });
+
+  const testingFacility = await prisma.shop.create({
+    data: {
+      name: 'Testing & Validation Facility',
+      description: 'Component and system testing laboratory',
+      userCreatedId: thomasEmrax.userId,
+      organizationId
+    }
+  });
+
+  // Create machineries and assign to shops
+  const ironMachineCreated = await CalendarService.createMachinery(thomasEmrax, 'Iron Man CNC Mill', ner);
+  const ironMachine = await CalendarService.addMachineryToShop(
+    thomasEmrax,
+    ironMachineCreated.machineryId,
+    advancedShop.shopId,
+    1,
+    ner
+  );
+  const hammerCreated = await CalendarService.createMachinery(thomasEmrax, 'Thor Hammer Lathe', ner);
+  const hammer = await CalendarService.addMachineryToShop(
+    thomasEmrax,
+    hammerCreated.machineryId,
+    advancedShop.shopId,
+    2,
+    ner
+  );
+  const printerCreated = await CalendarService.createMachinery(thomasEmrax, 'Spider-Man 3D Printer', ner);
+  const printer = await CalendarService.addMachineryToShop(
+    thomasEmrax,
+    printerCreated.machineryId,
+    electronicsLab.shopId,
+    1,
+    ner
+  );
+  const captainAmericaCreated = await CalendarService.createMachinery(thomasEmrax, 'Captain America Oscilloscope', ner);
+  await CalendarService.addMachineryToShop(thomasEmrax, captainAmericaCreated.machineryId, electronicsLab.shopId, 3, ner);
+  const hulkCreated = await CalendarService.createMachinery(thomasEmrax, 'Hulk Dynamometer', ner);
+  await CalendarService.addMachineryToShop(thomasEmrax, hulkCreated.machineryId, testingFacility.shopId, 1, ner);
+  const blackWidowCreated = await CalendarService.createMachinery(thomasEmrax, 'Black Widow Thermal Camera', ner);
+  await CalendarService.addMachineryToShop(thomasEmrax, blackWidowCreated.machineryId, testingFacility.shopId, 2, ner);
+
+  // various calendars for testing
+  const calendar = await CalendarService.createCalendar(
+    thomasEmrax,
+    'Engineering Team Calendar',
+    'Tracks all engineering team events, meetings, and deadlines.',
+    '#3498db',
+    ner
+  );
+
+  const calendarFinishline = await CalendarService.createCalendar(
+    thomasEmrax,
+    'Finishline Projects Calendar',
+    'Tracks all ongoing projects currently being developed for Finishline',
+    '#911111ff',
+    ner
+  );
+
+  const calendarMeta = await CalendarService.createCalendar(
+    thomasEmrax,
+    'Calendar Improvements Calendar',
+    'Tracks all current improvements and schedulings for the improvement of the Finishline Calendar',
+    '#bf40e6ff',
+    ner
+  );
+
+  // meeting event type
+  const meetingEventType = await CalendarService.createEventType(
+    thomasEmrax,
+    'Meeting',
+    [calendar.calendarId],
+    ner,
+    false,
+    false,
+    true,
+    false,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false
+  );
+
+  // design review event type
+  const designReviewEventType = await CalendarService.createEventType(
+    thomasEmrax,
+    'Design Review',
+    [calendar.calendarId],
+    ner,
+    true,
+    true,
+    true,
+    false,
+    true,
+    true,
+    true,
+    false,
+    true,
+    true,
+    true,
+    true,
+    false,
+    true,
+    true
+  );
+
+  // manufacturing event type
+  const manufacturingEventType = await CalendarService.createEventType(
+    thomasEmrax,
+    'Manufacturing',
+    [],
+    ner,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false
+  );
+
+  // bay time event type
+  const bayTimeEventType = await CalendarService.createEventType(
+    thomasEmrax,
+    'Bay Time',
+    [],
+    ner,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date(),
+        endTime: new Date(new Date().getTime() + 60 * 60 * 1000),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'Test meeting'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync Late',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date(new Date().getTime() + 105 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 106 * 60 * 60 * 1000),
+        allDay: false
+      },
+      {
+        startTime: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 25 * 60 * 60 * 1000),
+        allDay: false
+      },
+      {
+        startTime: new Date(new Date().getTime() + 50 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 51 * 60 * 60 * 1000),
+        allDay: false
+      },
+      {
+        startTime: new Date(new Date().getTime() + 85 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 87 * 60 * 60 * 1000),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'December Cheer'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 2',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'This is the second Weekly Sync in our database. Please come and join to get vital information! Thank you for reading.'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 3',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'This is the third test meeting! Glad to say hi.'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 4',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'This is the fourth meeting! Please come anyway, we have a lot to say.'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 5',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    "This one is optional, up to you if you want to show up, we won't judge"
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Impact Attenuator Design Review',
+    designReviewEventType.eventTypeId,
+    ner,
+    [joeShmoe.userId, joeBlow.userId],
+    [batman.userId],
+    [],
+    [],
+    [],
+    [workPackage1.id],
+    [],
+    weeksFromNow(1),
+    software.teamTypeId,
+    'https://docs.google.com/document/d/2_example',
+    'Conference Room B',
+    'https://zoom.us/j/987654321',
+    undefined
+  );
+
+  await CalendarService.createEvent(
+    batman,
+    'Wiring Harness Manufacturing',
+    manufacturingEventType.eventTypeId,
+    ner,
+    [regina.userId, janis.userId],
+    [cady.userId],
+    [],
+    [electronicsLab.shopId],
+    [printer.machineryId],
+    [workPackage3.id],
+    [
+      {
+        startTime: new Date('2025-10-23T09:00:00.000Z'),
+        endTime: new Date('2025-10-23T12:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    electrical.teamTypeId,
+    'https://docs.google.com/document/d/3_example',
+    undefined,
+    undefined,
+    undefined
+  );
+
+  await CalendarService.createEvent(
+    aang,
+    'Composite Layup Bay Time',
+    bayTimeEventType.eventTypeId,
+    ner,
+    [katara.userId, sokka.userId],
+    [],
+    [],
+    [],
+    [ironMachine.machineryId],
+    [],
+    [
+      {
+        startTime: new Date('2025-10-24T13:00:00.000Z'),
+        endTime: new Date('2025-10-24T17:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    undefined,
+    undefined,
+    undefined
   );
 };
 
