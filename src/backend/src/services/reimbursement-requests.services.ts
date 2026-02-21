@@ -418,11 +418,25 @@ export default class ReimbursementRequestService {
         totalCost,
         accountCodeId: accountCode.accountCodeId,
         vendorId: vendor.vendorId
+      },
+      include: {
+        notificationSlackThreads: true
       }
     });
 
     //set any deleted receipts with a dateDeleted
     await removeDeletedReceiptPictures(receiptPictures, oldReimbursementRequest.receiptPictures || [], submitter);
+
+    try {
+      await sendPendingSaboSubmissionNotification(
+        updatedReimbursementRequest.notificationSlackThreads,
+        submitter.userId,
+        updatedReimbursementRequest.recipientId,
+        updatedReimbursementRequest.reimbursementRequestId
+      );
+    } catch (e: unknown) {
+      console.error('Error sending pending SABO submission notification:', e);
+    }
 
     return updatedReimbursementRequest;
   }
@@ -1291,7 +1305,8 @@ export default class ReimbursementRequestService {
     await sendPendingSaboSubmissionNotification(
       reimbursementRequest.notificationSlackThreads,
       submitter.userId,
-      reimbursementRequest.recipientId
+      reimbursementRequest.recipientId,
+      reimbursementRequest.reimbursementRequestId
     );
 
     return reimbursementStatusTransformer(reimbursementStatus);
@@ -2055,7 +2070,7 @@ export default class ReimbursementRequestService {
     // find all names that have been tagged in the @FirstLast format
     const taggedNames = [...comment.matchAll(tagRegex)].map((match) => match[1]);
 
-    // spliot the tagged names into first and last names
+    // split the tagged names into first and last names
     const splitTaggedNames = taggedNames.map((name) => {
       const match = name.match(/([A-Z][a-z'-]+)([A-Z][a-z'-]+)/);
 

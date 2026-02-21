@@ -17,6 +17,7 @@ import {
   getUsersInChannel,
   reactToMessage,
   replyToMessageInThread,
+  sendEphemeralMessage,
   sendMessage
 } from '../integrations/slack.js';
 import { getUserSlackId, getUserSlackMentionOrName } from './users.utils.js';
@@ -217,12 +218,58 @@ export const sendSubmittedToSaboNotification = async (threads: SlackMessageThrea
 export const sendPendingSaboSubmissionNotification = async (
   threads: SlackMessageThread[],
   financeUserId: string,
-  pendingSubmissionFromId: string
+  pendingSubmissionFromId: string,
+  reimbursementRequestId: string
 ) => {
   await sendThreadResponse(
     threads,
     `${await getUserSlackMentionOrName(financeUserId)} has added this reimbursement request to Concur. ${await getUserSlackMentionOrName(pendingSubmissionFromId)}, please check your email to approve the request in Concur and mark it as submitted on Finishline.`
   );
+  const userId = await getUserSlackId(financeUserId);
+  if (threads && threads.length !== 0 && userId) {
+    const msgs = threads.map((thread) =>
+      sendEphemeralMessage(
+        thread.channelId,
+        thread.timestamp,
+        userId,
+        'Approve the request on concur and then click the button below to mark it as submitted on Finishline.',
+        [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: 'Approve the request on concur and then click the button below to mark it as submitted on Finishline.'
+            }
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: '<https://us2.concursolutions.com/home|*Click here to go to concur*>'
+            }
+          },
+          {
+            type: 'actions',
+            elements: [
+              {
+                type: 'button',
+                text: {
+                  type: 'plain_text',
+                  text: "✓ I've approved the request on Concur"
+                },
+                style: 'primary',
+                action_id: 'sabo_submitted_confirmation',
+                value: JSON.stringify({
+                  reimbursementRequestId
+                })
+              }
+            ]
+          }
+        ]
+      )
+    );
+    await Promise.all(msgs);
+  }
 };
 
 export const sendSlackEventConfirmNotification = async (

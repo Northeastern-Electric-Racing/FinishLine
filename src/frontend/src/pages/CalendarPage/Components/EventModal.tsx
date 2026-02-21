@@ -886,7 +886,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                                   error: !!errors.startTime,
                                   helperText: errors.startTime?.message,
                                   onClick: () => setStartTimePickerOpen(true),
-                                  sx: { width: 100 }
+                                  sx: { width: 120 }
                                 },
                                 layout: {
                                   sx: {
@@ -934,7 +934,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                                   error: !!errors.endTime,
                                   helperText: errors.endTime?.message,
                                   onClick: () => setEndTimePickerOpen(true),
-                                  sx: { width: 100 }
+                                  sx: { width: 120 }
                                 },
                                 layout: {
                                   sx: {

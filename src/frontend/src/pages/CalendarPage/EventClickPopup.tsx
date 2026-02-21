@@ -158,55 +158,57 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
           {pendingReason}
         </Alert>
       )}
-      <Box sx={{ position: 'relative', mb: 2 }}>
-        {!disable && canEditOrDelete && (
-          <Box sx={{ position: 'absolute', top: 0, right: 0, display: 'flex', gap: 0.5 }}>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                stopClick(e);
-                onEdit(event);
-              }}
-              sx={{
-                color: theme.palette.grey[500],
-                '&:hover': {
-                  color: theme.palette.common.white,
-                  bgcolor: 'transparent'
-                }
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                stopClick(e);
-                onDelete(event);
-              }}
-              sx={{
-                color: theme.palette.grey[500],
-                '&:hover': {
-                  color: '#ef5350',
-                  bgcolor: 'transparent'
-                }
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        )}
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ pr: 4 }}>
+
+      <Box sx={{ mb: 2 }}>
+        <Stack direction="row" spacing={1} alignItems="flex-start">
           {getTeamTypeIcon(event.teamType?.name ?? '', true)}
-          <Typography
-            variant="h6"
-            noWrap
-            sx={{
-              fontWeight: 'bold',
-              color: calendarColor
-            }}
-          >
-            {name}
-          </Typography>
+
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 'bold',
+                color: calendarColor,
+                whiteSpace: 'normal',
+                overflowWrap: 'anywhere',
+                lineHeight: 1.2
+              }}
+            >
+              {name}
+            </Typography>
+          </Box>
+
+          {!disable && canEditOrDelete && (
+            <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  stopClick(e);
+                  onEdit(event);
+                }}
+                sx={{
+                  color: theme.palette.grey[500],
+                  '&:hover': { color: theme.palette.common.white, bgcolor: 'transparent' }
+                }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  stopClick(e);
+                  onDelete(event);
+                }}
+                sx={{
+                  color: theme.palette.grey[500],
+                  '&:hover': { color: '#ef5350', bgcolor: 'transparent' }
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Stack>
+          )}
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5, flexWrap: 'wrap' }}>
@@ -426,6 +428,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
             </Typography>
           </Stack>
         )}
+
         {addApprovalButtons && canApprove && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <NERSuccessButton
@@ -443,6 +446,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
             >
               Approve
             </NERSuccessButton>
+
             <NERFailButton
               sx={{ mx: 1 }}
               onClick={async () => {
