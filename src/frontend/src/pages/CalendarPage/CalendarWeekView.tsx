@@ -178,8 +178,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
 
   // Format the week date range for the navigation header
   const formatWeekRange = (): string => {
-    const start = weekDays[0];
-    const end = weekDays[6];
+    const [start, , , , , , end] = weekDays;
     const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     if (start.getFullYear() !== end.getFullYear()) {
       return `${startStr}, ${start.getFullYear()} – ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
