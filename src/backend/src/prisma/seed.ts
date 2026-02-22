@@ -4601,7 +4601,7 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [],
     [],
-    [workPackage1.id],
+    [workPackage3.id],
     [],
     weeksFromNow(1),
     software.teamTypeId,
