@@ -4105,6 +4105,7 @@ const performSeed: () => Promise<void> = async () => {
   const part10Example = await prisma.part.create({
     data: {
       partId: '010',
+
       index: 106,
       commonName: 'small battery',
       status: 'APPROVED',
