@@ -87,6 +87,29 @@ export const validateReimbursementProducts = async (
       if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
       if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
 
+      // Validate material if materialId is provided
+      if (product.materialId) {
+        const material = await prisma.material.findUnique({
+          where: { materialId: product.materialId }
+        });
+
+        if (!material) {
+          throw new NotFoundException('Material', product.materialId);
+        }
+
+        if (material.dateDeleted) {
+          throw new DeletedException('Material', product.materialId);
+        }
+
+        if (material.wbsElementId !== wbsElement.wbsElementId) {
+          throw new HttpException(400, `Material does not belong to project ${wbsPipe(wbsNum)}`);
+        }
+
+        if (!product.id && material.reimbursementRequestId) {
+          throw new HttpException(400, `Material is already linked to another reimbursement request`);
+        }
+      }
+
       return {
         ...product,
         wbsElementId: wbsElement.wbsElementId,
@@ -147,29 +170,102 @@ export const updateReimbursementProducts = async (
     (product) => !updatedExistingProductIds.includes(product.reimbursementProductId)
   );
 
+  // Unlink any materials from deleted products
+  await unlinkMaterialsFromDeletedProducts(deletedProducts);
+
   await updateDeletedProducts(deletedProducts);
 
   await createNewProducts(newOtherProducts, newWbsProducts, reimbursementRequestId, organizationId);
 
-  await updateExistingProducts(updatedExistingProducts);
+  await updateExistingProducts(updatedExistingProducts, currentReimbursementProducts);
 };
 
 /**
- * updates the existing products in the database
- *
- * @param products the products to update
+ * Unlinks materials from products that are being deleted
+ * @param products the products being deleted
  */
-const updateExistingProducts = async (products: ReimbursementProductCreateArgs[]) => {
-  //updates the cost and name of the remaining products, which should be products that existed before that were not deleted
-  // Does not update wbs element id because we are requiring the user on the frontend to delete it from the wbs number and then adding it to another one
-  for (const product of products) {
-    await prisma.reimbursement_Product.update({
-      where: { reimbursementProductId: product.id },
+const unlinkMaterialsFromDeletedProducts = async (products: Reimbursement_Product[]) => {
+  const materialIds = products.filter((p) => p.materialId).map((p) => p.materialId!);
+
+  if (materialIds.length > 0) {
+    await prisma.material.updateMany({
+      where: {
+        materialId: { in: materialIds }
+      },
       data: {
-        name: product.name,
-        cost: product.cost
+        reimbursementRequestId: null,
+        status: 'NOT_READY_TO_ORDER'
       }
     });
+  }
+};
+
+/**
+ * Updates the existing products in the database
+ * Now handles both material-based and string-based products
+ * @param products the products to update
+ * @param currentProducts the current products in the database
+ */
+const updateExistingProducts = async (
+  products: ReimbursementProductCreateArgs[],
+  currentProducts: Reimbursement_Product[]
+) => {
+  for (const product of products) {
+    const currentProduct = currentProducts.find((p) => p.reimbursementProductId === product.id);
+
+    // For material-based products
+    if (product.materialId) {
+      await prisma.reimbursement_Product.update({
+        where: { reimbursementProductId: product.id },
+        data: {
+          name: null,
+          cost: product.cost,
+          materialId: product.materialId
+        }
+      });
+
+      // If the material changed, unlink old material and link new one
+      if (currentProduct?.materialId && currentProduct.materialId !== product.materialId) {
+        await prisma.material.update({
+          where: { materialId: currentProduct.materialId },
+          data: {
+            reimbursementRequestId: null,
+            status: 'NOT_READY_TO_ORDER'
+          }
+        });
+      }
+
+      // Link new material
+      await prisma.material.update({
+        where: { materialId: product.materialId },
+        data: {
+          status: 'READY_TO_ORDER',
+          reimbursementRequestId: currentProduct?.reimbursementRequestId
+        }
+      });
+    }
+    // For string-based products
+    else if (product.name) {
+      await prisma.reimbursement_Product.update({
+        where: { reimbursementProductId: product.id },
+        data: {
+          name: product.name,
+          cost: product.cost,
+          materialId: null
+        }
+      });
+
+      // If this product previously had a material linked, unlink it
+      if (currentProduct?.materialId) {
+        await prisma.material.update({
+          where: { materialId: currentProduct.materialId },
+          data: {
+            reimbursementRequestId: null,
+            status: 'NOT_READY_TO_ORDER'
+          }
+        });
+      }
+    }
   }
 };
 
@@ -286,17 +382,29 @@ export const createReimbursementProducts = async (
       amount: rs.amount
     }));
 
-    return await prisma.reimbursement_Product.create({
+    const reimbursementProduct = await prisma.reimbursement_Product.create({
       data: {
-        name: product.name,
+        name: product.name ?? null,
         cost: product.cost,
         reimbursementRequestId,
+        materialId: product.materialId ?? null,
         refundSources: {
           create: refundSources
         },
         reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
       }
     });
+
+    if (product.materialId) {
+      await prisma.material.update({
+        where: { materialId: product.materialId },
+        data: {
+          status: 'READY_TO_ORDER',
+          reimbursementRequestId
+        }
+      });
+    }
+    return reimbursementProduct;
   });
 
   await Promise.all([...otherReimbursementProductPromises, ...wbsReimbursementProductPromises]);
@@ -442,4 +550,22 @@ export const validateRefund = async (user: User, refundAmount: number, organizat
   if (refundAmount > totalOwed - totalReimbursed) {
     throw new HttpException(400, 'Reimbursement is greater than the total amount owed');
   }
+};
+
+/**
+ * Updates material statuses to ORDERED when payment details are added to an RR
+ * Should be called when reimbursement status changes to PENDING_FINANCE
+ * Only updates materials currently in READY_TO_ORDER status
+ * @param reimbursementRequestId the id of the reimbursement request
+ */
+export const updateMaterialStatusesOnPayment = async (reimbursementRequestId: string): Promise<void> => {
+  await prisma.material.updateMany({
+    where: {
+      reimbursementRequestId,
+      dateDeleted: null
+    },
+    data: {
+      status: 'ORDERED'
+    }
+  });
 };

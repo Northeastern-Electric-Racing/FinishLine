@@ -11,7 +11,8 @@ import {
   isOptionalDate,
   nonEmptyString,
   validateInputs,
-  validateReimbursementProducts
+  validateReimbursementProducts,
+  validateReimbursementProductsForEdit
 } from '../utils/validation.utils.js';
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers.js';
 import multer, { memoryStorage } from 'multer';
@@ -139,7 +140,7 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('receiptPictures.*.googleFileId')),
   nonEmptyString(body('accountCodeId')),
   intMinZero(body('totalCost')),
-  validateReimbursementProducts(),
+  validateReimbursementProductsForEdit(),
   validateInputs,
   ReimbursementRequestController.editReimbursementRequest
 );

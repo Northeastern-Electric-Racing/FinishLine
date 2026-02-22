@@ -2280,11 +2280,6 @@ const performSeed: () => Promise<void> = async () => {
     '10k Resistor',
     MaterialStatus.Ordered,
     'Resistor',
-    'Digikey',
-    'abcdef',
-    new Decimal(20),
-    30,
-    600,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
       carNumber: 0,
@@ -2292,7 +2287,16 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
-    'Here are some notes'
+    'Digikey',
+    'abcdef',
+    new Decimal(20),
+    30,
+    600,
+    'Here are some notes',
+    assembly1.assemblyId,
+    undefined,
+    undefined,
+    undefined
   );
 
   await BillOfMaterialsService.createMaterial(
@@ -2300,11 +2304,6 @@ const performSeed: () => Promise<void> = async () => {
     '20k Resistor',
     MaterialStatus.Ordered,
     'Resistor',
-    'Digikey',
-    'bacfed',
-    new Decimal(10),
-    7,
-    70,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
       carNumber: 0,
@@ -2312,7 +2311,16 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
-    'Here are some more notes'
+    'Digikey',
+    'bacfed',
+    new Decimal(10),
+    7,
+    70,
+    'Here are some more notes',
+    undefined,
+    undefined,
+    undefined,
+    undefined
   );
 
   await BillOfMaterialsService.createMaterial(
@@ -2320,11 +2328,6 @@ const performSeed: () => Promise<void> = async () => {
     '100k Resistor',
     MaterialStatus.ReadyToOrder,
     'Resistor',
-    'Digikey',
-    'lalsd',
-    new Decimal(5),
-    10,
-    50,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
       carNumber: 0,
@@ -2332,6 +2335,11 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
+    'Digikey',
+    'lalsd',
+    new Decimal(5),
+    10,
+    50,
     undefined,
     undefined,
     undefined,

@@ -25,6 +25,7 @@ export const getMaterialQueryArgs = (organizationId: string) =>
       materialType: true,
       unit: true,
       manufacturer: true,
+      reimbursementProducts: false,
       reimbursementRequest: getReimbursementRequestQueryArgs(organizationId)
     }
   });
@@ -37,6 +38,7 @@ export const getMaterialPreviewQueryArgs = (organizationId: string) =>
       unit: true,
       manufacturer: true,
       materialType: true,
+      reimbursementProducts: false,
       reimbursementRequest: getReimbursementRequestQueryArgs(organizationId)
     }
   });
