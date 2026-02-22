@@ -26,19 +26,19 @@ import {
   wbsPipe,
   ReimbursementProductFormArgs,
   IndexCode,
-  CreateRefundSourceArgs
+  CreateRefundSourceArgs,
+  Material
 } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { formatReasonName } from '../../../utils/reimbursement-request.utils';
-import { Material } from 'shared';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -66,42 +66,59 @@ const ListItem = styled('li')(({ theme }) => ({
 
 const MaterialAutocomplete: React.FC<{
   wbsNum: WbsNumber;
-  onSelect: (material: Material) => void;
+  onSelect: (material: Material | null) => void;
   initialValue?: string;
 }> = ({ wbsNum, onSelect, initialValue }) => {
   const { data: materials, isLoading, isError, error } = useGetMaterialsForWbsElement(wbsNum);
-  const [userSelected, setUserSelected] = useState<{ id: string; label: string } | null>(null);
+  const [materialSelected, setMaterialSelected] = useState<{ id: string; label: string } | null>(null);
 
-  if (isLoading) {
+  const materialOptions = useMemo(
+    () =>
+      (materials ?? []).map((material) => ({
+        id: material.materialId,
+        label: `${material.name} (${material.materialTypeName}): ${material.manufacturerName ?? 'N/A'}, ${material.manufacturerPartNumber ?? 'N/A'}`
+      })),
+    [materials]
+  );
+
+  useEffect(() => {
+    if (materials && materialSelected === null && initialValue) {
+      const match = materialOptions.find((o) => o.label === initialValue);
+      if (match) setMaterialSelected(match);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [materials]);
+
+  if (isLoading || !materials) {
     return <LoadingIndicator />;
   }
 
   if (isError) {
-    return <ErrorPage message={error?.message || 'Failed to load materials'} />;
+    return (
+      <TextField
+        variant="outlined"
+        placeholder="Select Material"
+        fullWidth
+        size="small"
+        error
+        disabled
+        helperText={error?.message || 'Failed to load materials'}
+      />
+    );
   }
-
-  const materialOptions = (materials || []).map((material) => ({
-    id: material.materialId,
-    label: `${material.name}: ${material.manufacturerName}, ${material.manufacturerPartNumber}`
-  }));
-
-  const selectedOption = userSelected ?? materialOptions.find((o) => o.label === initialValue) ?? null;
 
   return (
     <Autocomplete
       sx={{ flex: 1 }}
       options={materialOptions}
       getOptionLabel={(option) => option.label}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
       onChange={(_, value) => {
-        setUserSelected(value);
-        if (value) {
-          const selectedMaterial = materials?.find((m) => m.materialId === value.id);
-          if (selectedMaterial) {
-            onSelect(selectedMaterial);
-          }
-        }
+        setMaterialSelected(value);
+        const selectedMaterial = value ? materials.find((m) => m.materialId === value.id) ?? null : null;
+        onSelect(selectedMaterial);
       }}
-      value={selectedOption}
+      value={materialSelected}
       blurOnSelect={true}
       size={'small'}
       renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select Material" fullWidth />}
@@ -491,8 +508,18 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                       wbsNum={product.reason as WbsNumber}
                                       initialValue={currentName}
                                       onSelect={(material) => {
-                                        const label = `${material.name}: ${material.manufacturerName}, ${material.manufacturerPartNumber}`;
-                                        setValue(`reimbursementProducts.${product.index}.name`, label);
+                                        if (material) {
+                                          const label = `${material.name} (${material.materialTypeName}): ${material.manufacturerName ?? 'N/A'}, ${material.manufacturerPartNumber ?? 'N/A'}`;
+                                          setValue(`reimbursementProducts.${product.index}.name`, label, {
+                                            shouldValidate: true,
+                                            shouldDirty: true
+                                          });
+                                        } else {
+                                          setValue(`reimbursementProducts.${product.index}.name`, '', {
+                                            shouldValidate: true,
+                                            shouldDirty: true
+                                          });
+                                        }
                                       }}
                                     />
                                     <FormHelperText error>
