@@ -140,6 +140,25 @@ export default class ChangeRequestsController {
     }
   }
 
+  static async createLeadershipChangeRequest(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { wbsNum, leadId, managerId } = req.body;
+
+    const cr = await ChangeRequestsService.createLeadershipChangeRequest(
+      req.currentUser,
+      wbsNum.carNumber,
+      wbsNum.projectNumber,
+      wbsNum.workPackageNumber,
+      leadId,
+      managerId,
+      req.organization
+    );
+    res.status(200).json(cr);
+  } catch (error: unknown) {
+    next(error);
+  }
+}
+
   static async createStandardChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum, type, what, why, proposedSolutions, projectProposedChanges, workPackageProposedChanges } = req.body;
