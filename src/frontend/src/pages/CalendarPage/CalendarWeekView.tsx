@@ -74,9 +74,7 @@ interface LayoutEvent {
 const computeEventLayouts = (events: EventInstance[]): LayoutEvent[] => {
   if (events.length === 0) return [];
 
-  const sorted = [...events].sort(
-    (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-  );
+  const sorted = [...events].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
   // Greedy column assignment: track the end-time of the last event placed in each column.
   const colEndTimes: number[] = [];
@@ -217,9 +215,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   // Calendar color lookup
   const getEventColor = (event: EventInstance): string => {
     const eventType = allEventTypes.find((et) => et.eventTypeId === event.eventTypeId);
-    const calendar = allCalendars.find((cal) =>
-      cal.eventTypes.some((et) => et.eventTypeId === eventType?.eventTypeId)
-    );
+    const calendar = allCalendars.find((cal) => cal.eventTypes.some((et) => et.eventTypeId === eventType?.eventTypeId));
     return calendar?.color ?? '#888888';
   };
 
@@ -576,22 +572,28 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
       )}
 
       {/* Navigation header — outside the white box, matching the month view's header area */}
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="center"
-        spacing={1}
-        sx={{ flexShrink: 0, pb: 0.5 }}
-      >
+      <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ flexShrink: 0, pb: 0.5 }}>
         <Box
           data-testid="week-prev-button"
           onClick={() => onNavigateWeek(-1)}
-          sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', color: 'rgba(255,255,255,0.7)', '&:hover': { color: 'white' } }}
+          sx={{
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            color: 'rgba(255,255,255,0.7)',
+            '&:hover': { color: 'white' }
+          }}
         >
           <ChevronLeftIcon sx={{ fontSize: 32, strokeWidth: 2 }} />
         </Box>
         <Typography
-          sx={{ fontFamily: (t) => t.typography.h4.fontFamily, fontWeight: 600, fontSize: 18, minWidth: 220, textAlign: 'center' }}
+          sx={{
+            fontFamily: (t) => t.typography.h4.fontFamily,
+            fontWeight: 600,
+            fontSize: 18,
+            minWidth: 220,
+            textAlign: 'center'
+          }}
           data-testid="week-date-range"
         >
           {formatWeekRange()}
@@ -599,7 +601,13 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
         <Box
           data-testid="week-next-button"
           onClick={() => onNavigateWeek(1)}
-          sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', color: 'rgba(255,255,255,0.7)', '&:hover': { color: 'white' } }}
+          sx={{
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            color: 'rgba(255,255,255,0.7)',
+            '&:hover': { color: 'white' }
+          }}
         >
           <ChevronRightIcon sx={{ fontSize: 32, strokeWidth: 2 }} />
         </Box>
@@ -618,267 +626,270 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
           overflow: 'hidden'
         }}
       >
+        {/* Column headers: day names + dates */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexShrink: 0,
+            borderBottom: '1px solid rgba(255,255,255,0.12)'
+          }}
+          data-testid="week-column-headers"
+        >
+          {/* Spacer for the time gutter */}
+          <Box sx={{ width: TIME_GUTTER_WIDTH, flexShrink: 0 }} />
+          {weekDays.map((day, i) => {
+            const isToday = isSameDay(day, today);
+            return (
+              <Box
+                key={i}
+                sx={{
+                  flex: 1,
+                  textAlign: 'center',
+                  py: 0.75,
+                  borderLeft: '1px solid rgba(255,255,255,0.08)'
+                }}
+              >
+                <Typography sx={{ fontWeight: 'bold', fontSize: 16, color: isToday ? 'red' : 'inherit' }}>
+                  {DAY_LABELS[i]}
+                </Typography>
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    mx: 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: isToday ? 'red' : 'transparent'
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 'bold', fontSize: 16, color: isToday ? 'white' : 'inherit' }}>
+                    {day.getDate()}
+                  </Typography>
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
 
-      {/* Column headers: day names + dates */}
-      <Box
-        sx={{
-          display: 'flex',
-          flexShrink: 0,
-          borderBottom: '1px solid rgba(255,255,255,0.12)'
-        }}
-        data-testid="week-column-headers"
-      >
-        {/* Spacer for the time gutter */}
-        <Box sx={{ width: TIME_GUTTER_WIDTH, flexShrink: 0 }} />
-        {weekDays.map((day, i) => {
-          const isToday = isSameDay(day, today);
-          return (
+        {/* All-day row */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexShrink: 0,
+            minHeight: 36,
+            borderBottom: '1px solid rgba(255,255,255,0.12)',
+            bgcolor: '#222'
+          }}
+          data-testid="all-day-row"
+        >
+          <Box
+            sx={{
+              width: TIME_GUTTER_WIDTH,
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              pr: 1
+            }}
+          >
+            <Typography sx={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>All day</Typography>
+          </Box>
+          {weekDays.map((_day, i) => (
             <Box
               key={i}
               sx={{
                 flex: 1,
-                textAlign: 'center',
-                py: 0.75,
-                borderLeft: '1px solid rgba(255,255,255,0.08)'
+                borderLeft: '1px solid rgba(255,255,255,0.08)',
+                p: 0.25,
+                overflow: 'hidden'
               }}
             >
-              <Typography sx={{ fontWeight: 'bold', fontSize: 16, color: isToday ? 'red' : 'inherit' }}>
-                {DAY_LABELS[i]}
-              </Typography>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '50%',
-                  mx: 'auto',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: isToday ? 'red' : 'transparent'
-                }}
-              >
-                <Typography sx={{ fontWeight: 'bold', fontSize: 16, color: isToday ? 'white' : 'inherit' }}>
-                  {day.getDate()}
-                </Typography>
-              </Box>
+              {allDayEventsByDay[i].map((event) => (
+                <AllDayEventBlock key={event.eventId + event.scheduleSlotId} event={event} />
+              ))}
             </Box>
-          );
-        })}
-      </Box>
+          ))}
+        </Box>
 
-      {/* All-day row */}
-      <Box
-        sx={{
-          display: 'flex',
-          flexShrink: 0,
-          minHeight: 36,
-          borderBottom: '1px solid rgba(255,255,255,0.12)',
-          bgcolor: '#222'
-        }}
-        data-testid="all-day-row"
-      >
+        {/* Scrollable time grid */}
         <Box
+          ref={(node: HTMLDivElement | null) => {
+            (scrollContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+            timeGridRef(node);
+          }}
+          onMouseMove={handleTimeGridMouseMove}
+          onMouseUp={handleTimeGridMouseUp}
+          onMouseLeave={handleTimeGridMouseLeave}
+          data-testid="week-time-grid"
           sx={{
-            width: TIME_GUTTER_WIDTH,
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            pr: 1
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            scrollbarColor: `${theme.palette.primary.main} transparent`,
+            '&::-webkit-scrollbar': { width: '6px' },
+            '&::-webkit-scrollbar-track': { background: 'transparent' },
+            '&::-webkit-scrollbar-thumb': { background: theme.palette.primary.main, borderRadius: '3px' },
+            userSelect: 'none'
           }}
         >
-          <Typography sx={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
-            All day
-          </Typography>
-        </Box>
-        {weekDays.map((_day, i) => (
-          <Box
-            key={i}
-            sx={{
-              flex: 1,
-              borderLeft: '1px solid rgba(255,255,255,0.08)',
-              p: 0.25,
-              overflow: 'hidden'
-            }}
-          >
-            {allDayEventsByDay[i].map((event) => (
-              <AllDayEventBlock key={event.eventId + event.scheduleSlotId} event={event} />
-            ))}
-          </Box>
-        ))}
-      </Box>
-
-      {/* Scrollable time grid */}
-      <Box
-        ref={(node: HTMLDivElement | null) => {
-          (scrollContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
-          timeGridRef(node);
-        }}
-        onMouseMove={handleTimeGridMouseMove}
-        onMouseUp={handleTimeGridMouseUp}
-        onMouseLeave={handleTimeGridMouseLeave}
-        data-testid="week-time-grid"
-        sx={{
-          flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          scrollbarColor: `${theme.palette.primary.main} transparent`,
-          '&::-webkit-scrollbar': { width: '6px' },
-          '&::-webkit-scrollbar-track': { background: 'transparent' },
-          '&::-webkit-scrollbar-thumb': { background: theme.palette.primary.main, borderRadius: '3px' },
-          userSelect: 'none'
-        }}
-      >
-        {/* Inner container — full 24-hour height */}
-        <Box sx={{ position: 'relative', height: TOTAL_HEIGHT, display: 'flex' }}>
-          {/* Time gutter */}
-          <Box sx={{ width: TIME_GUTTER_WIDTH, flexShrink: 0, position: 'relative' }}>
-            {Array.from({ length: 24 }, (_, hour) => (
-              <Box
-                key={hour}
-                sx={{
-                  position: 'absolute',
-                  top: hour * HOUR_HEIGHT - 8, // offset so label sits just above the hour line
-                  right: 6,
-                  pointerEvents: 'none'
-                }}
-              >
-                {hour > 0 && (
-                  <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap' }}>
-                    {formatHour(hour)}
-                  </Typography>
-                )}
-              </Box>
-            ))}
-          </Box>
-
-          {/* Day columns */}
-          <Box sx={{ flex: 1, display: 'flex', position: 'relative' }}>
-            {/* Horizontal hour and half-hour lines — rendered once across all columns */}
-            {Array.from({ length: 24 }, (_, hour) => (
-              <Box key={`line-${hour}`}>
+          {/* Inner container — full 24-hour height */}
+          <Box sx={{ position: 'relative', height: TOTAL_HEIGHT, display: 'flex' }}>
+            {/* Time gutter */}
+            <Box sx={{ width: TIME_GUTTER_WIDTH, flexShrink: 0, position: 'relative' }}>
+              {Array.from({ length: 24 }, (_, hour) => (
                 <Box
+                  key={hour}
                   sx={{
                     position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: hour * HOUR_HEIGHT,
-                    borderTop: '1px solid rgba(255,255,255,0.1)',
-                    pointerEvents: 'none',
-                    zIndex: 0
+                    top: hour * HOUR_HEIGHT - 8, // offset so label sits just above the hour line
+                    right: 6,
+                    pointerEvents: 'none'
                   }}
-                />
-                {hour < 23 && (
+                >
+                  {hour > 0 && (
+                    <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap' }}>
+                      {formatHour(hour)}
+                    </Typography>
+                  )}
+                </Box>
+              ))}
+            </Box>
+
+            {/* Day columns */}
+            <Box sx={{ flex: 1, display: 'flex', position: 'relative' }}>
+              {/* Horizontal hour and half-hour lines — rendered once across all columns */}
+              {Array.from({ length: 24 }, (_, hour) => (
+                <Box key={`line-${hour}`}>
                   <Box
                     sx={{
                       position: 'absolute',
                       left: 0,
                       right: 0,
-                      top: hour * HOUR_HEIGHT + HOUR_HEIGHT / 2,
-                      borderTop: '1px dashed rgba(255,255,255,0.05)',
+                      top: hour * HOUR_HEIGHT,
+                      borderTop: '1px solid rgba(255,255,255,0.1)',
                       pointerEvents: 'none',
                       zIndex: 0
                     }}
                   />
-                )}
-              </Box>
-            ))}
-
-            {/* Current time indicator */}
-            {weekDays.some((d) => isSameDay(d, today)) && (() => {
-              const todayIndex = weekDays.findIndex((d) => isSameDay(d, today));
-              const nowMinutes = getMinutesFromMidnight(new Date());
-              const topPx = (nowMinutes / 60) * HOUR_HEIGHT;
-              const colWidth = 100 / 7;
-              return (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: topPx,
-                    left: `${todayIndex * colWidth}%`,
-                    width: `${colWidth}%`,
-                    height: 2,
-                    bgcolor: 'red',
-                    zIndex: 3,
-                    pointerEvents: 'none',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      left: 0,
-                      top: -4,
-                      width: 10,
-                      height: 10,
-                      borderRadius: '50%',
-                      bgcolor: 'red'
-                    }
-                  }}
-                />
-              );
-            })()}
-
-            {/* Per-day columns */}
-            {weekDays.map((day, dayIndex) => {
-              const isToday = isSameDay(day, today);
-              const isPastDay = day < today;
-              const canCreate = !isPastDay && !isGuest(user.role);
-              const layouts = computeEventLayouts(eventsByDay[dayIndex]);
-
-              return (
-                <Box
-                  key={dayIndex}
-                  data-testid={`week-day-column-${dayIndex}`}
-                  onMouseDown={canCreate ? (e) => handleTimeGridMouseDown(e, dayIndex, day) : undefined}
-                  sx={{
-                    flex: 1,
-                    position: 'relative',
-                    borderLeft: '1px solid rgba(255,255,255,0.08)',
-                    bgcolor: isToday ? 'rgba(255,255,255,0.025)' : 'transparent',
-                    cursor: canCreate ? 'crosshair' : 'default'
-                  }}
-                >
-                  {/* Drag selection overlay */}
-                  {dragState?.dayIndex === dayIndex && (() => {
-                    const minStart = Math.min(dragState.startMinutes, dragState.currentMinutes);
-                    const minEnd = Math.max(dragState.startMinutes, dragState.currentMinutes);
-                    const topPx = (minStart / 60) * HOUR_HEIGHT;
-                    const heightPx = ((minEnd - minStart) / 60) * HOUR_HEIGHT;
-                    return (
-                      <Box
-                        data-testid="drag-selection-overlay"
-                        sx={{
-                          position: 'absolute',
-                          top: topPx,
-                          height: heightPx,
-                          left: 1,
-                          right: 1,
-                          bgcolor: 'rgba(100,160,255,0.35)',
-                          border: '1px solid rgba(100,160,255,0.8)',
-                          borderRadius: 0.5,
-                          zIndex: 4,
-                          pointerEvents: 'none',
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          px: 0.5,
-                          pt: 0.25
-                        }}
-                      >
-                        <Typography sx={{ fontSize: 10, color: 'white', fontWeight: 'bold' }}>
-                          {formatMinutes(minStart)} – {formatMinutes(minEnd)}
-                        </Typography>
-                      </Box>
-                    );
-                  })()}
-
-                  {/* Timed event blocks */}
-                  {layouts.map((layout) => (
-                    <WeekEventBlock key={layout.event.eventId + layout.event.scheduleSlotId} event={layout.event} layout={layout} />
-                  ))}
+                  {hour < 23 && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        top: hour * HOUR_HEIGHT + HOUR_HEIGHT / 2,
+                        borderTop: '1px dashed rgba(255,255,255,0.05)',
+                        pointerEvents: 'none',
+                        zIndex: 0
+                      }}
+                    />
+                  )}
                 </Box>
-              );
-            })}
+              ))}
+
+              {/* Current time indicator */}
+              {weekDays.some((d) => isSameDay(d, today)) &&
+                (() => {
+                  const todayIndex = weekDays.findIndex((d) => isSameDay(d, today));
+                  const nowMinutes = getMinutesFromMidnight(new Date());
+                  const topPx = (nowMinutes / 60) * HOUR_HEIGHT;
+                  const colWidth = 100 / 7;
+                  return (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: topPx,
+                        left: `${todayIndex * colWidth}%`,
+                        width: `${colWidth}%`,
+                        height: 2,
+                        bgcolor: 'red',
+                        zIndex: 3,
+                        pointerEvents: 'none',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          left: 0,
+                          top: -4,
+                          width: 10,
+                          height: 10,
+                          borderRadius: '50%',
+                          bgcolor: 'red'
+                        }
+                      }}
+                    />
+                  );
+                })()}
+
+              {/* Per-day columns */}
+              {weekDays.map((day, dayIndex) => {
+                const isToday = isSameDay(day, today);
+                const isPastDay = day < today;
+                const canCreate = !isPastDay && !isGuest(user.role);
+                const layouts = computeEventLayouts(eventsByDay[dayIndex]);
+
+                return (
+                  <Box
+                    key={dayIndex}
+                    data-testid={`week-day-column-${dayIndex}`}
+                    onMouseDown={canCreate ? (e) => handleTimeGridMouseDown(e, dayIndex, day) : undefined}
+                    sx={{
+                      flex: 1,
+                      position: 'relative',
+                      borderLeft: '1px solid rgba(255,255,255,0.08)',
+                      bgcolor: isToday ? 'rgba(255,255,255,0.025)' : 'transparent',
+                      cursor: canCreate ? 'crosshair' : 'default'
+                    }}
+                  >
+                    {/* Drag selection overlay */}
+                    {dragState?.dayIndex === dayIndex &&
+                      (() => {
+                        const minStart = Math.min(dragState.startMinutes, dragState.currentMinutes);
+                        const minEnd = Math.max(dragState.startMinutes, dragState.currentMinutes);
+                        const topPx = (minStart / 60) * HOUR_HEIGHT;
+                        const heightPx = ((minEnd - minStart) / 60) * HOUR_HEIGHT;
+                        return (
+                          <Box
+                            data-testid="drag-selection-overlay"
+                            sx={{
+                              position: 'absolute',
+                              top: topPx,
+                              height: heightPx,
+                              left: 1,
+                              right: 1,
+                              bgcolor: 'rgba(100,160,255,0.35)',
+                              border: '1px solid rgba(100,160,255,0.8)',
+                              borderRadius: 0.5,
+                              zIndex: 4,
+                              pointerEvents: 'none',
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              px: 0.5,
+                              pt: 0.25
+                            }}
+                          >
+                            <Typography sx={{ fontSize: 10, color: 'white', fontWeight: 'bold' }}>
+                              {formatMinutes(minStart)} – {formatMinutes(minEnd)}
+                            </Typography>
+                          </Box>
+                        );
+                      })()}
+
+                    {/* Timed event blocks */}
+                    {layouts.map((layout) => (
+                      <WeekEventBlock
+                        key={layout.event.eventId + layout.event.scheduleSlotId}
+                        event={layout.event}
+                        layout={layout}
+                      />
+                    ))}
+                  </Box>
+                );
+              })}
+            </Box>
           </Box>
         </Box>
-      </Box>
       </Box>
 
       {/* Edit modal */}
