@@ -13,6 +13,7 @@ import { exampleResearchWorkPackage, exampleDesignWorkPackage, exampleManufactur
 const exampleConfluenceLinkType: LinkType = {
   name: 'Confluence',
   iconName: 'confluence',
+
   required: true
 };
 
