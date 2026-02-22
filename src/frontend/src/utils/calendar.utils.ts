@@ -191,8 +191,8 @@ export const eventsToNextEventInstance = (events: Event[]): EventInstance[] => {
     ...event,
     scheduledTimes: [
       event.scheduledTimes.reduce((acc, current) => {
-        if (current.startTime < acc.startTime) return acc;
-        return current;
+        if ((current.startTime < acc.startTime && current.startTime > now) || acc.startTime < now) return current;
+        return acc;
       })
     ]
   }));
