@@ -1,7 +1,7 @@
 import { routes } from '../../utils/routes';
 import NewCalendarPage from './CalendarPage';
 import PageLayout from '../../components/PageLayout';
-import { Box } from '@mui/material';
+import { Box, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import FullPageTabs from '../../components/FullPageTabs';
 import { useState } from 'react';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -15,15 +15,33 @@ import CreateEventModal from './Components/CreateEventModal';
 import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { Add } from '@mui/icons-material';
-import { eventsToEventInstances } from '../../utils/calendar.utils';
+import { eventsToEventInstances, getSundayOfWeek } from '../../utils/calendar.utils';
 
 const CalendarTab: React.FC = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createModalDate, setCreateModalDate] = useState<Date>(new Date());
+  const [createModalStartTime, setCreateModalStartTime] = useState<Date | undefined>(undefined);
+  const [createModalEndTime, setCreateModalEndTime] = useState<Date | undefined>(undefined);
+  const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
+  const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
+  const [displayWeek, setDisplayWeek] = useState<Date>(() => getSundayOfWeek(new Date()));
   const user = useCurrentUser();
   const history = useHistory();
   const canViewReviews = isHead(user.role) || isLead(user.role);
+
+  const handleViewModeToggle = (_: React.MouseEvent, newMode: 'month' | 'week' | null) => {
+    if (!newMode || newMode === viewMode) return;
+    if (newMode === 'week') {
+      setDisplayWeek(getSundayOfWeek(displayMonthYear));
+    } else {
+      // Show the month containing Thursday of the displayed week (majority month rule)
+      const thursday = new Date(displayWeek);
+      thursday.setDate(thursday.getDate() + 4);
+      setDisplayMonthYear(new Date(thursday.getFullYear(), thursday.getMonth(), 1));
+    }
+    setViewMode(newMode);
+  };
 
   const tabs = [
     { tabUrlValue: '', tabName: 'Calendar' },
@@ -91,11 +109,13 @@ const CalendarTab: React.FC = () => {
 
   if (canViewReviews) tabs.push({ tabUrlValue: 'reviews', tabName: 'Review Bookings' });
 
-  const handleNewEventClick = (date?: Date) => {
+  const handleNewEventClick = (date?: Date, startTime?: Date, endTime?: Date) => {
     if (tabIndex !== 0) {
       history.push(routes.CALENDAR);
     }
     setCreateModalDate(date || new Date());
+    setCreateModalStartTime(startTime);
+    setCreateModalEndTime(endTime);
     setIsCreateModalOpen(true);
   };
 
@@ -116,14 +136,44 @@ const CalendarTab: React.FC = () => {
           </Box>
         }
         headerRight={
-          <NERButton
-            variant="contained"
-            disabled={isGuest(user.role)}
-            startIcon={<Add />}
-            onClick={() => handleNewEventClick()}
-          >
-            New Event
-          </NERButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ToggleButtonGroup
+              value={viewMode}
+              exclusive
+              onChange={handleViewModeToggle}
+              size="small"
+              sx={{
+                '& .MuiToggleButton-root': {
+                  color: 'white',
+                  borderColor: 'rgba(255,255,255,0.3)',
+                  textTransform: 'none',
+                  px: 2,
+                  '&.Mui-selected': {
+                    bgcolor: 'rgba(255,255,255,0.15)',
+                    color: 'white'
+                  },
+                  '&:hover': {
+                    bgcolor: 'rgba(255,255,255,0.08)'
+                  }
+                }
+              }}
+            >
+              <ToggleButton value="month" data-testid="month-view-toggle">
+                Month
+              </ToggleButton>
+              <ToggleButton value="week" data-testid="week-view-toggle">
+                Week
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <NERButton
+              variant="contained"
+              disabled={isGuest(user.role)}
+              startIcon={<Add />}
+              onClick={() => handleNewEventClick()}
+            >
+              New Event
+            </NERButton>
+          </Box>
         }
       >
         {tabIndex === 0 ? (
@@ -133,6 +183,11 @@ const CalendarTab: React.FC = () => {
             yourEvents={eventsToEventInstances(yourEvents)}
             allCalendars={allCalendars}
             onCreateEventClick={handleNewEventClick}
+            viewMode={viewMode}
+            displayMonthYear={displayMonthYear}
+            setDisplayMonthYear={setDisplayMonthYear}
+            displayWeek={displayWeek}
+            setDisplayWeek={setDisplayWeek}
           />
         ) : (
           <EventsTable
@@ -148,9 +203,15 @@ const CalendarTab: React.FC = () => {
       {isCreateModalOpen && (
         <CreateEventModal
           open={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
+          onClose={() => {
+            setIsCreateModalOpen(false);
+            setCreateModalStartTime(undefined);
+            setCreateModalEndTime(undefined);
+          }}
           eventTypes={allEventTypes}
           defaultDate={createModalDate}
+          defaultStartTime={createModalStartTime}
+          defaultEndTime={createModalEndTime}
         />
       )}
     </>

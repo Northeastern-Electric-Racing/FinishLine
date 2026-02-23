@@ -152,6 +152,8 @@ export interface BaseEventModalProps {
   initialValues?: Partial<EventFormValues>;
   eventTypes: EventType[];
   defaultDate?: Date;
+  defaultStartTime?: Date; // Pre-fill start time without triggering edit mode (e.g. drag-to-create)
+  defaultEndTime?: Date; // Pre-fill end time without triggering edit mode
   eventId?: string; // Required for edit mode to fetch preview of affected schedule slots
 }
 
@@ -211,6 +213,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   initialValues,
   eventTypes,
   defaultDate = new Date(),
+  defaultStartTime,
+  defaultEndTime,
   eventId
 }) => {
   const toast = useToast();
@@ -272,14 +276,14 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       questionDocumentLink: initialValues?.questionDocumentLink,
       description: initialValues?.description,
       scheduleDate: initialValues?.scheduleDate ?? defaultDate,
-      startTime: initialValues?.startTime ?? defaultTimes.startTime,
-      endTime: initialValues?.endTime ?? defaultTimes.endTime,
+      startTime: initialValues?.startTime ?? defaultStartTime ?? defaultTimes.startTime,
+      endTime: initialValues?.endTime ?? defaultEndTime ?? defaultTimes.endTime,
       allDay: initialValues?.allDay ?? false,
       recurrenceNumber: 0,
       days: [],
       selectedScheduleSlotId: initialValues?.selectedScheduleSlotId
     };
-  }, [initialValues, defaultDate]);
+  }, [initialValues, defaultDate, defaultStartTime, defaultEndTime]);
 
   const allowedEventTypes = useMemo(() => {
     return eventTypes.filter((et) => {
@@ -882,7 +886,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                                   error: !!errors.startTime,
                                   helperText: errors.startTime?.message,
                                   onClick: () => setStartTimePickerOpen(true),
-                                  sx: { width: 100 }
+                                  sx: { width: 120 }
                                 },
                                 layout: {
                                   sx: {
@@ -930,7 +934,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                                   error: !!errors.endTime,
                                   helperText: errors.endTime?.message,
                                   onClick: () => setEndTimePickerOpen(true),
-                                  sx: { width: 100 }
+                                  sx: { width: 120 }
                                 },
                                 layout: {
                                   sx: {

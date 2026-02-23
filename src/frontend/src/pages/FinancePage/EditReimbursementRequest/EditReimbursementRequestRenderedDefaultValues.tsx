@@ -44,6 +44,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
           description: reimbursementRequest.description,
           accountCodeId: reimbursementRequest.accountCode.accountCodeId,
           reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({
+            id: product.reimbursementProductId,
             reason: (product.reimbursementProductReason as WBSElementData).wbsNum
               ? (product.reimbursementProductReason as WBSElementData).wbsNum
               : (product.reimbursementProductReason as OtherProductReason),

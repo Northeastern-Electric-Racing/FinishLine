@@ -1,6 +1,6 @@
 import { Box, Tooltip, IconButton } from '@mui/material';
-import { useLocation, useHistory } from 'react-router-dom';
-import { useState } from 'react';
+import { useLocation, useHistory, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { isGuest, ReimbursementRequest } from 'shared';
 import { ReimbursementProduct, ReimbursementStatusType } from 'shared';
 import {
@@ -49,7 +49,12 @@ const ReimbursementRequestInfo = ({
   const user = useCurrentUser();
   const history = useHistory();
   const { pathname } = useLocation();
-  const [showSidePage, setShowSidePage] = useState(false);
+  const { id } = useParams<{ id?: string }>();
+  const [showSidePage, setShowSidePage] = useState(!!id);
+
+  useEffect(() => {
+    if (id) setShowSidePage(true);
+  }, [id]);
 
   const displayedReimbursementRequests =
     canViewAllReimbursementRequests && currentTab === 1 && allReimbursementRequests
