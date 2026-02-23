@@ -77,12 +77,12 @@ CREATE TABLE "Prospective_Sponsor" (
     "organizationId" TEXT NOT NULL,
     "organizationName" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "lastContactDate" TIMESTAMP(3) NOT NULL,
+    "lastContactDate" TIMESTAMP(3),
     "highlightThresholdDays" INTEGER NOT NULL DEFAULT 10,
-    "status" "Prospective_Sponsor_Status" NOT NULL DEFAULT 'IN_PROGRESS',
-    "firstContactMethod" "First_Contact_Method" NOT NULL,
-    "contactorUserId" TEXT NOT NULL,
-    "contactId" TEXT NOT NULL,
+    "status" "Prospective_Sponsor_Status" NOT NULL DEFAULT 'NOT_IN_CONTACT',
+    "firstContactMethod" "First_Contact_Method",
+    "contactorUserId" TEXT,
+    "contactId" TEXT,
     "notes" TEXT,
     "dateDeleted" TIMESTAMP(3),
 
@@ -114,7 +114,7 @@ ALTER TABLE "Sponsor_Task" ADD CONSTRAINT "Sponsor_Task_prospectiveSponsorId_fke
 ALTER TABLE "Prospective_Sponsor" ADD CONSTRAINT "Prospective_Sponsor_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Prospective_Sponsor" ADD CONSTRAINT "Prospective_Sponsor_contactorUserId_fkey" FOREIGN KEY ("contactorUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Prospective_Sponsor" ADD CONSTRAINT "Prospective_Sponsor_contactorUserId_fkey" FOREIGN KEY ("contactorUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Prospective_Sponsor" ADD CONSTRAINT "Prospective_Sponsor_contactId_fkey" FOREIGN KEY ("contactId") REFERENCES "Sponsor_Contact"("sponsorContactId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Prospective_Sponsor" ADD CONSTRAINT "Prospective_Sponsor_contactId_fkey" FOREIGN KEY ("contactId") REFERENCES "Sponsor_Contact"("sponsorContactId") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -64,10 +64,7 @@ const statusDisplayNames: Record<ProspectiveSponsorStatus, string> = {
 
 export const prospectiveSponsorSchema = yup.object().shape({
   organizationName: yup.string().required('Organization name is required'),
-  status: yup
-    .string()
-    .oneOf(Object.values(ProspectiveSponsorStatus))
-    .required('Status is required'),
+  status: yup.string().oneOf(Object.values(ProspectiveSponsorStatus)).required('Status is required'),
   lastContactDate: yup.date().when('status', {
     is: (s: string) => s !== ProspectiveSponsorStatus.NOT_IN_CONTACT,
     then: (schema) => schema.required('Last contact date is required'),
@@ -353,7 +350,12 @@ export const ProspectiveSponsorForm: React.FC<ProspectiveSponsorFormProps> = ({
               <Typography variant="h6" color="#EF4345">
                 Contact Email:
               </Typography>
-              <ReactHookTextField name="contactEmail" control={control} sx={{ width: 1 }} placeholder="Enter Contact Email" />
+              <ReactHookTextField
+                name="contactEmail"
+                control={control}
+                sx={{ width: 1 }}
+                placeholder="Enter Contact Email"
+              />
               <FormHelperText error>{errors.contactEmail?.message}</FormHelperText>
             </FormControl>
           </Grid>
@@ -363,7 +365,12 @@ export const ProspectiveSponsorForm: React.FC<ProspectiveSponsorFormProps> = ({
               <Typography variant="h6" color="#EF4345">
                 Contact Phone:
               </Typography>
-              <ReactHookTextField name="contactPhone" control={control} sx={{ width: 1 }} placeholder="Enter Contact Phone" />
+              <ReactHookTextField
+                name="contactPhone"
+                control={control}
+                sx={{ width: 1 }}
+                placeholder="Enter Contact Phone"
+              />
               <FormHelperText error>{errors.contactPhone?.message}</FormHelperText>
             </FormControl>
           </Grid>
