@@ -42,6 +42,12 @@ export const setOrganizationDescription = async (description: string) => {
   });
 };
 
+export const setPlatformDescription = async (platformDescription: string) => {
+  return axios.post<Organization>(apiUrls.organizationsSetPlatformDescription(), {
+    platformDescription
+  });
+};
+
 export const getOrganizationLogo = async () => {
   return axios.get<string>(apiUrls.organizationsLogoImage(), {
     transformResponse: (data) => JSON.parse(data)

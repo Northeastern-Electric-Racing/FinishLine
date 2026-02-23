@@ -379,6 +379,23 @@ export default class OrganizationsService {
   }
 
   /**
+   * Sets the platform description of a given organization.
+   * @param platformDescription the new platform description
+   * @param submitter the user making the change
+   * @param organization the organization whose platform description is changing
+   * @throws if the user is not an admin
+   */
+  static async setPlatformDescription(platformDescription: string, submitter: User, organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set platform description');
+    }
+    return prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: { platformDescription }
+    });
+  }
+
+  /**
    * Gets the featured projects for the given organization Id
    * @param organizationId the organization to get the projects for
    * @returns all the featured projects for the organization

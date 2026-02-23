@@ -63,6 +63,12 @@ organizationRouter.post(
   validateInputs,
   OrganizationsController.setOrganizationDescription
 );
+organizationRouter.post(
+  '/platform-description/set',
+  body('platformDescription').isString(),
+  validateInputs,
+  OrganizationsController.setPlatformDescription
+);
 organizationRouter.get('/featured-projects', OrganizationsController.getOrganizationFeaturedProjects);
 organizationRouter.post(
   '/workspaceId/set',

@@ -362,6 +362,7 @@ const organizationsUpdateContacts = () => `${organizations()}/contacts/set`;
 const organizationsSetOnboardingText = () => `${organizations()}/onboardingText/set`;
 const organizationsUpdateApplicationLink = () => `${organizations()}/application-link/update`;
 const organizationsSetDescription = () => `${organizations()}/description/set`;
+const organizationsSetPlatformDescription = () => `${organizations()}/platform-description/set`;
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
@@ -725,6 +726,7 @@ export const apiUrls = {
   organizationsUpdateApplicationLink,
   organizationsFeaturedProjects,
   organizationsSetDescription,
+  organizationsSetPlatformDescription,
   organizationsLogoImage,
   organizationsSetLogoImage,
   organizationsNewMemberImage,

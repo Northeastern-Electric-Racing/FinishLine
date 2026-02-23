@@ -49,6 +49,7 @@ export type OrganizationPreview = Pick<
   | 'description'
   | 'applicationLink'
   | 'newMemberImageId'
+  | 'platformDescription'
   | 'platformLogoImageId'
 >;
 

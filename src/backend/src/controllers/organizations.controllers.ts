@@ -173,6 +173,20 @@ export default class OrganizationsController {
     }
   }
 
+  static async setPlatformDescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const updatedOrg = await OrganizationsService.setPlatformDescription(
+        req.body.platformDescription,
+        req.currentUser,
+        req.organization
+      );
+
+      res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getOrganizationFeaturedProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const featuredProjects = await OrganizationsService.getOrganizationFeaturedProjects(req.organization.organizationId);

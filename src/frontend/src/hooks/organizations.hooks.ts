@@ -6,6 +6,7 @@ import {
   getFeaturedProjects,
   getCurrentOrganization,
   setOrganizationDescription,
+  setPlatformDescription,
   setOrganizationFeaturedProjects,
   setOrganizationWorkspaceId,
   setOrganizationLogo,
@@ -139,6 +140,22 @@ export const useSetOrganizationDescription = () => {
     ['organizations', 'description'],
     async (description: string) => {
       const { data } = await setOrganizationDescription(description);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
+
+export const useSetPlatformDescription = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, string>(
+    ['organizations', 'platform-description'],
+    async (platformDescription: string) => {
+      const { data } = await setPlatformDescription(platformDescription);
       return data;
     },
     {
