@@ -39,6 +39,7 @@ describe('Prospective Sponsor Tests', () => {
           guest,
           organization,
           'Acme Corp',
+          ProspectiveSponsorStatus.IN_PROGRESS,
           new Date(),
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
@@ -49,7 +50,26 @@ describe('Prospective Sponsor Tests', () => {
       ).rejects.toThrow(new AccessDeniedException('Only finance team members or heads can create prospective sponsors'));
     });
 
-    it('Fails if neither email nor phone is provided', async () => {
+    it('Succeeds with NOT_IN_CONTACT status without any contact info', async () => {
+      const head = await createTestUser(batmanAppAdmin, orgId);
+
+      const result = await ProspectiveSponsorServices.createProspectiveSponsor(
+        head,
+        organization,
+        'Not In Contact Corp',
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
+      );
+
+      expect(result.organizationName).toBe('Not In Contact Corp');
+      expect(result.status).toBe(ProspectiveSponsorStatus.NOT_IN_CONTACT);
+      expect(result.contact).toBeUndefined();
+      expect(result.contactor).toBeUndefined();
+      expect(result.firstContactMethod).toBeUndefined();
+      expect(result.lastContactDate).toBeUndefined();
+      expect(result.tasks).toEqual([]);
+    });
+
+    it('Fails if non-NOT_IN_CONTACT status has no contact name', async () => {
       const head = await createTestUser(batmanAppAdmin, orgId);
 
       await expect(
@@ -57,6 +77,23 @@ describe('Prospective Sponsor Tests', () => {
           head,
           organization,
           'Acme Corp',
+          ProspectiveSponsorStatus.IN_PROGRESS,
+          new Date(),
+          FirstContactMethod.INBOUND_EMAIL
+          // contactName omitted
+        )
+      ).rejects.toThrow(new HttpException(400, 'Contact name is required'));
+    });
+
+    it('Fails if neither email nor phone is provided for non-NOT_IN_CONTACT', async () => {
+      const head = await createTestUser(batmanAppAdmin, orgId);
+
+      await expect(
+        ProspectiveSponsorServices.createProspectiveSponsor(
+          head,
+          organization,
+          'Acme Corp',
+          ProspectiveSponsorStatus.IN_PROGRESS,
           new Date(),
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
@@ -72,6 +109,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Email Only Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -80,8 +118,8 @@ describe('Prospective Sponsor Tests', () => {
         'john@email.com'
       );
 
-      expect(result.contact.email).toBe('john@email.com');
-      expect(result.contact.phone).toBeUndefined();
+      expect(result.contact!.email).toBe('john@email.com');
+      expect(result.contact!.phone).toBeUndefined();
     });
 
     it('Succeeds with only phone', async () => {
@@ -91,6 +129,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Phone Only Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -100,8 +139,8 @@ describe('Prospective Sponsor Tests', () => {
         '555-1234'
       );
 
-      expect(result.contact.email).toBeUndefined();
-      expect(result.contact.phone).toBe('555-1234');
+      expect(result.contact!.email).toBeUndefined();
+      expect(result.contact!.phone).toBe('555-1234');
     });
 
     it('Fails if prospective sponsor with same name already exists', async () => {
@@ -111,6 +150,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -124,6 +164,7 @@ describe('Prospective Sponsor Tests', () => {
           head,
           organization,
           'Acme Corp',
+          ProspectiveSponsorStatus.IN_PROGRESS,
           new Date(),
           FirstContactMethod.OUTBOUND_EMAIL,
           'Jane Doe',
@@ -142,6 +183,7 @@ describe('Prospective Sponsor Tests', () => {
           head,
           organization,
           'Acme Corp',
+          ProspectiveSponsorStatus.IN_PROGRESS,
           new Date(),
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
@@ -160,6 +202,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         lastContactDate,
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -173,11 +216,11 @@ describe('Prospective Sponsor Tests', () => {
       expect(result.organizationName).toBe('Acme Corp');
       expect(result.lastContactDate).toEqual(lastContactDate);
       expect(result.firstContactMethod).toBe(FirstContactMethod.INBOUND_EMAIL);
-      expect(result.contact.name).toBe('John Doe');
-      expect(result.contact.email).toBe('john@acme.com');
-      expect(result.contact.phone).toBe('555-1234');
-      expect(result.contact.position).toBe('CEO');
-      expect(result.contactor.userId).toBe(head.userId);
+      expect(result.contact!.name).toBe('John Doe');
+      expect(result.contact!.email).toBe('john@acme.com');
+      expect(result.contact!.phone).toBe('555-1234');
+      expect(result.contact!.position).toBe('CEO');
+      expect(result.contactor!.userId).toBe(head.userId);
       expect(result.highlightThresholdDays).toBe(14);
       expect(result.status).toBe(ProspectiveSponsorStatus.IN_PROGRESS);
       expect(result.tasks).toEqual([]);
@@ -190,6 +233,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -210,6 +254,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -222,6 +267,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Beta Inc',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.OUTBOUND_EMAIL,
         'Jane Smith',
@@ -244,6 +290,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -256,6 +303,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Beta Inc',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.OUTBOUND_EMAIL,
         'Jane Smith',
@@ -282,6 +330,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -296,8 +345,8 @@ describe('Prospective Sponsor Tests', () => {
           organization,
           ps.prospectiveSponsorId,
           'Acme Corp Updated',
-          new Date(),
           ProspectiveSponsorStatus.IN_PROGRESS,
+          new Date(),
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
           head.userId,
@@ -307,13 +356,14 @@ describe('Prospective Sponsor Tests', () => {
       ).rejects.toThrow(new AccessDeniedException('Only finance team members or heads can edit prospective sponsors'));
     });
 
-    it('Fails if neither email nor phone is provided', async () => {
+    it('Fails if neither email nor phone is provided for non-NOT_IN_CONTACT', async () => {
       const head = await createTestUser(batmanAppAdmin, orgId);
 
       const ps = await ProspectiveSponsorServices.createProspectiveSponsor(
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -328,11 +378,12 @@ describe('Prospective Sponsor Tests', () => {
           organization,
           ps.prospectiveSponsorId,
           'Acme Corp',
-          new Date(),
           ProspectiveSponsorStatus.IN_PROGRESS,
+          new Date(),
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
           head.userId
+          // no email or phone
         )
       ).rejects.toThrow(new HttpException(400, 'At least one of contact email or contact phone is required'));
     });
@@ -346,8 +397,8 @@ describe('Prospective Sponsor Tests', () => {
           organization,
           'nonexistent-id',
           'Acme Corp',
-          new Date(),
           ProspectiveSponsorStatus.IN_PROGRESS,
+          new Date(),
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
           head.userId,
@@ -364,6 +415,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -380,8 +432,8 @@ describe('Prospective Sponsor Tests', () => {
           organization,
           ps.prospectiveSponsorId,
           'Acme Corp Updated',
-          new Date(),
           ProspectiveSponsorStatus.IN_PROGRESS,
+          new Date(),
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
           head.userId,
@@ -398,6 +450,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -410,6 +463,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Beta Inc',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.OUTBOUND_EMAIL,
         'Jane Smith',
@@ -424,8 +478,8 @@ describe('Prospective Sponsor Tests', () => {
           organization,
           ps1.prospectiveSponsorId,
           'Beta Inc',
-          new Date(),
           ProspectiveSponsorStatus.IN_PROGRESS,
+          new Date(),
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
           head.userId,
@@ -442,6 +496,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -456,8 +511,8 @@ describe('Prospective Sponsor Tests', () => {
           organization,
           ps.prospectiveSponsorId,
           'Acme Corp',
-          new Date(),
           ProspectiveSponsorStatus.IN_PROGRESS,
+          new Date(),
           FirstContactMethod.INBOUND_EMAIL,
           'John Doe',
           'nonexistent-user-id',
@@ -476,6 +531,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -489,8 +545,8 @@ describe('Prospective Sponsor Tests', () => {
         organization,
         ps.prospectiveSponsorId,
         'Acme Corporation',
-        newLastContactDate,
         ProspectiveSponsorStatus.NO_RESPONSE,
+        newLastContactDate,
         FirstContactMethod.OUTBOUND_EMAIL,
         'Jane Smith',
         newContactor.userId,
@@ -504,12 +560,69 @@ describe('Prospective Sponsor Tests', () => {
       expect(result.lastContactDate).toEqual(newLastContactDate);
       expect(result.status).toBe(ProspectiveSponsorStatus.NO_RESPONSE);
       expect(result.firstContactMethod).toBe(FirstContactMethod.OUTBOUND_EMAIL);
-      expect(result.contact.name).toBe('Jane Smith');
-      expect(result.contact.email).toBe('jane@acme.com');
-      expect(result.contact.phone).toBe('555-5678');
-      expect(result.contact.position).toBe('CFO');
-      expect(result.contactor.userId).toBe(newContactor.userId);
+      expect(result.contact!.name).toBe('Jane Smith');
+      expect(result.contact!.email).toBe('jane@acme.com');
+      expect(result.contact!.phone).toBe('555-5678');
+      expect(result.contact!.position).toBe('CFO');
+      expect(result.contactor!.userId).toBe(newContactor.userId);
       expect(result.highlightThresholdDays).toBe(20);
+    });
+
+    it('Succeeds editing a NOT_IN_CONTACT sponsor without contact info', async () => {
+      const head = await createTestUser(batmanAppAdmin, orgId);
+
+      const ps = await ProspectiveSponsorServices.createProspectiveSponsor(
+        head,
+        organization,
+        'Not In Contact Corp',
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
+      );
+
+      const result = await ProspectiveSponsorServices.editProspectiveSponsor(
+        head,
+        organization,
+        ps.prospectiveSponsorId,
+        'Not In Contact Corp Updated',
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
+      );
+
+      expect(result.organizationName).toBe('Not In Contact Corp Updated');
+      expect(result.status).toBe(ProspectiveSponsorStatus.NOT_IN_CONTACT);
+      expect(result.contact).toBeUndefined();
+      expect(result.contactor).toBeUndefined();
+    });
+
+    it('Succeeds transitioning from NOT_IN_CONTACT to IN_PROGRESS with contact info', async () => {
+      const head = await createTestUser(batmanAppAdmin, orgId);
+
+      const ps = await ProspectiveSponsorServices.createProspectiveSponsor(
+        head,
+        organization,
+        'New Corp',
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
+      );
+
+      const lastContactDate = new Date(2024, 5, 15);
+      const result = await ProspectiveSponsorServices.editProspectiveSponsor(
+        head,
+        organization,
+        ps.prospectiveSponsorId,
+        'New Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
+        lastContactDate,
+        FirstContactMethod.OUTBOUND_EMAIL,
+        'Jane Smith',
+        head.userId,
+        undefined,
+        'jane@newcorp.com'
+      );
+
+      expect(result.status).toBe(ProspectiveSponsorStatus.IN_PROGRESS);
+      expect(result.lastContactDate).toEqual(lastContactDate);
+      expect(result.firstContactMethod).toBe(FirstContactMethod.OUTBOUND_EMAIL);
+      expect(result.contact!.name).toBe('Jane Smith');
+      expect(result.contact!.email).toBe('jane@newcorp.com');
+      expect(result.contactor!.userId).toBe(head.userId);
     });
   });
 
@@ -522,6 +635,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -550,6 +664,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -572,6 +687,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -606,12 +722,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
-        new Date(),
-        FirstContactMethod.INBOUND_EMAIL,
-        'John Doe',
-        head.userId,
-        undefined,
-        'contact@test.com'
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
       );
 
       const task1 = await ProspectiveSponsorServices.createProspectiveSponsorTask(
@@ -647,12 +758,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
-        new Date(),
-        FirstContactMethod.INBOUND_EMAIL,
-        'John Doe',
-        head.userId,
-        undefined,
-        'contact@test.com'
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
       );
 
       await expect(
@@ -689,12 +795,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
-        new Date(),
-        FirstContactMethod.INBOUND_EMAIL,
-        'John Doe',
-        head.userId,
-        undefined,
-        'contact@test.com'
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
       );
 
       await ProspectiveSponsorServices.deleteProspectiveSponsor(ps.prospectiveSponsorId, head, organization);
@@ -717,12 +818,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
-        new Date(),
-        FirstContactMethod.INBOUND_EMAIL,
-        'John Doe',
-        head.userId,
-        undefined,
-        'contact@test.com'
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
       );
 
       await expect(
@@ -747,12 +843,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
-        new Date(),
-        FirstContactMethod.INBOUND_EMAIL,
-        'John Doe',
-        head.userId,
-        undefined,
-        'contact@test.com'
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
       );
 
       const result = await ProspectiveSponsorServices.createProspectiveSponsorTask(
@@ -780,12 +871,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
-        new Date(),
-        FirstContactMethod.INBOUND_EMAIL,
-        'John Doe',
-        head.userId,
-        undefined,
-        'contact@test.com'
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
       );
 
       const result = await ProspectiveSponsorServices.createProspectiveSponsorTask(
@@ -813,6 +899,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -861,6 +948,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -893,6 +981,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -936,6 +1025,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -985,6 +1075,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',
@@ -1016,6 +1107,7 @@ describe('Prospective Sponsor Tests', () => {
         head,
         organization,
         'Acme Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
         new Date(),
         FirstContactMethod.INBOUND_EMAIL,
         'John Doe',

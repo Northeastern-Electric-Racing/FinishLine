@@ -42,19 +42,20 @@ const EditProspectiveSponsorPage = ({ showPage, handleClose, prospectiveSponsor 
     control,
     formState: { errors }
   } = useForm<ProspectiveSponsorFormInputs>({
-    resolver: yupResolver(prospectiveSponsorSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: yupResolver(prospectiveSponsorSchema) as any,
     defaultValues: {
       organizationName: prospectiveSponsor.organizationName,
-      lastContactDate: prospectiveSponsor.lastContactDate,
-      firstContactMethod: prospectiveSponsor.firstContactMethod,
-      contactName: prospectiveSponsor.contact.name,
-      contactorUserId: prospectiveSponsor.contactor.userId,
-      highlightThresholdDays: prospectiveSponsor.highlightThresholdDays,
-      contactEmail: prospectiveSponsor.contact.email ?? '',
-      contactPhone: prospectiveSponsor.contact.phone ?? '',
-      contactPosition: prospectiveSponsor.contact.position ?? '',
-      notes: prospectiveSponsor.notes ?? '',
       status: prospectiveSponsor.status,
+      lastContactDate: prospectiveSponsor.lastContactDate ? new Date(prospectiveSponsor.lastContactDate) : undefined,
+      firstContactMethod: prospectiveSponsor.firstContactMethod,
+      contactName: prospectiveSponsor.contact?.name ?? '',
+      contactorUserId: prospectiveSponsor.contactor?.userId ?? '',
+      highlightThresholdDays: prospectiveSponsor.highlightThresholdDays,
+      contactEmail: prospectiveSponsor.contact?.email ?? '',
+      contactPhone: prospectiveSponsor.contact?.phone ?? '',
+      contactPosition: prospectiveSponsor.contact?.position ?? '',
+      notes: prospectiveSponsor.notes ?? '',
       tasks: defaultTasks
     }
   });
@@ -69,11 +70,11 @@ const EditProspectiveSponsorPage = ({ showPage, handleClose, prospectiveSponsor 
       await mutateAsync({
         prospectiveSponsorId: prospectiveSponsor.prospectiveSponsorId,
         organizationName: formData.organizationName,
+        status: formData.status,
         lastContactDate: formData.lastContactDate,
-        status: formData.status!,
         firstContactMethod: formData.firstContactMethod,
-        contactName: formData.contactName,
-        contactorUserId: formData.contactorUserId,
+        contactName: formData.contactName || undefined,
+        contactorUserId: formData.contactorUserId || undefined,
         highlightThresholdDays: formData.highlightThresholdDays,
         contactEmail: formData.contactEmail || undefined,
         contactPhone: formData.contactPhone || undefined,
@@ -98,7 +99,7 @@ const EditProspectiveSponsorPage = ({ showPage, handleClose, prospectiveSponsor 
       title="Edit Prospective Sponsor"
       component={
         <Box display="flex" flexDirection="column" alignItems="flex-end">
-          <ProspectiveSponsorForm control={control} errors={errors} defaultValues={prospectiveSponsor} isEditMode />
+          <ProspectiveSponsorForm control={control} errors={errors} defaultValues={prospectiveSponsor} />
           {submitError && (
             <Box color="error.main" mb={2} fontWeight="bold">
               {submitError}

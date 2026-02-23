@@ -791,10 +791,11 @@ export const toggleSponsorTaskDone = (sponsorTaskId: string) => {
 
 export interface CreateProspectiveSponsorPayload {
   organizationName: string;
-  lastContactDate: Date;
-  firstContactMethod: FirstContactMethod;
-  contactName: string;
-  contactorUserId: string;
+  status: ProspectiveSponsorStatus;
+  lastContactDate?: Date;
+  firstContactMethod?: FirstContactMethod;
+  contactName?: string;
+  contactorUserId?: string;
   highlightThresholdDays?: number;
   contactEmail?: string;
   contactPhone?: string;
@@ -805,11 +806,11 @@ export interface CreateProspectiveSponsorPayload {
 
 export interface EditProspectiveSponsorPayload {
   organizationName: string;
-  lastContactDate: Date;
   status: ProspectiveSponsorStatus;
-  firstContactMethod: FirstContactMethod;
-  contactName: string;
-  contactorUserId: string;
+  lastContactDate?: Date;
+  firstContactMethod?: FirstContactMethod;
+  contactName?: string;
+  contactorUserId?: string;
   highlightThresholdDays?: number;
   contactEmail?: string;
   contactPhone?: string;

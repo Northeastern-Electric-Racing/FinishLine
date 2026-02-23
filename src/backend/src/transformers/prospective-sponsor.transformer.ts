@@ -11,17 +11,21 @@ export const prospectiveSponsorTransformer = (
     prospectiveSponsorId: prospectiveSponsor.prospectiveSponsorId,
     organizationName: prospectiveSponsor.organizationName,
     dateCreated: prospectiveSponsor.dateCreated,
-    lastContactDate: prospectiveSponsor.lastContactDate,
+    lastContactDate: prospectiveSponsor.lastContactDate ?? undefined,
     highlightThresholdDays: prospectiveSponsor.highlightThresholdDays,
     status: prospectiveSponsor.status as ProspectiveSponsorStatus,
-    firstContactMethod: prospectiveSponsor.firstContactMethod as FirstContactMethod,
-    contactor: userTransformer(prospectiveSponsor.contactor),
-    contact: {
-      name: prospectiveSponsor.contact.name,
-      email: prospectiveSponsor.contact.email ?? undefined,
-      phone: prospectiveSponsor.contact.phone ?? undefined,
-      position: prospectiveSponsor.contact.position ?? undefined
-    },
+    firstContactMethod: prospectiveSponsor.firstContactMethod
+      ? (prospectiveSponsor.firstContactMethod as FirstContactMethod)
+      : undefined,
+    contactor: prospectiveSponsor.contactor ? userTransformer(prospectiveSponsor.contactor) : undefined,
+    contact: prospectiveSponsor.contact
+      ? {
+          name: prospectiveSponsor.contact.name,
+          email: prospectiveSponsor.contact.email ?? undefined,
+          phone: prospectiveSponsor.contact.phone ?? undefined,
+          position: prospectiveSponsor.contact.position ?? undefined
+        }
+      : undefined,
     notes: prospectiveSponsor.notes ?? undefined,
     tasks: prospectiveSponsor.tasks.map(sponsorTaskTransformer)
   };

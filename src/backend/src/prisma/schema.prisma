@@ -876,14 +876,14 @@ model Prospective_Sponsor {
   organization           Organization               @relation(fields: [organizationId], references: [organizationId])
   organizationName       String
   dateCreated            DateTime                   @default(now())
-  lastContactDate        DateTime
+  lastContactDate        DateTime?
   highlightThresholdDays Int                        @default(10)
-  status                 Prospective_Sponsor_Status @default(IN_PROGRESS)
-  firstContactMethod     First_Contact_Method
-  contactor              User                       @relation(fields: [contactorUserId], references: [userId], name: "prospectiveSponsorContactor")
-  contactorUserId        String
-  contact                Sponsor_Contact            @relation(fields: [contactId], references: [sponsorContactId])
-  contactId              String                     @unique
+  status                 Prospective_Sponsor_Status @default(NOT_IN_CONTACT)
+  firstContactMethod     First_Contact_Method?
+  contactor              User?                      @relation(fields: [contactorUserId], references: [userId], name: "prospectiveSponsorContactor")
+  contactorUserId        String?
+  contact                Sponsor_Contact?           @relation(fields: [contactId], references: [sponsorContactId])
+  contactId              String?                    @unique
   notes                  String?
   dateDeleted            DateTime?
   tasks                  Sponsor_Task[]

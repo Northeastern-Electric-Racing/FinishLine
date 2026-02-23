@@ -14,7 +14,7 @@ import SidePage from './SidePagePopup';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ProspectiveSponsorForm, ProspectiveSponsorFormInputs, prospectiveSponsorSchema } from './ProspectiveSponsorForm';
-import { FirstContactMethod } from 'shared';
+import { ProspectiveSponsorStatus } from 'shared';
 
 interface CreateProspectiveSponsorPageProps {
   showPage: boolean;
@@ -30,11 +30,13 @@ const CreateProspectiveSponsorPage = ({ showPage, handleClose }: CreateProspecti
     control,
     formState: { errors }
   } = useForm<ProspectiveSponsorFormInputs>({
-    resolver: yupResolver(prospectiveSponsorSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: yupResolver(prospectiveSponsorSchema) as any,
     defaultValues: {
       organizationName: '',
-      lastContactDate: new Date(),
-      firstContactMethod: '' as FirstContactMethod,
+      status: ProspectiveSponsorStatus.NOT_IN_CONTACT,
+      lastContactDate: undefined,
+      firstContactMethod: undefined,
       contactName: '',
       contactorUserId: '',
       highlightThresholdDays: 10,
@@ -55,10 +57,11 @@ const CreateProspectiveSponsorPage = ({ showPage, handleClose }: CreateProspecti
       setSubmitError(null);
       await mutateAsync({
         organizationName: formData.organizationName,
+        status: formData.status,
         lastContactDate: formData.lastContactDate,
         firstContactMethod: formData.firstContactMethod,
-        contactName: formData.contactName,
-        contactorUserId: formData.contactorUserId,
+        contactName: formData.contactName || undefined,
+        contactorUserId: formData.contactorUserId || undefined,
         highlightThresholdDays: formData.highlightThresholdDays,
         contactEmail: formData.contactEmail || undefined,
         contactPhone: formData.contactPhone || undefined,

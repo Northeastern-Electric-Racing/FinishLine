@@ -60,6 +60,7 @@ const ProspectiveSponsorsTable = () => {
   if (isError) return <ErrorPage message={error.message} />;
 
   const isHighlighted = (ps: ProspectiveSponsor) => {
+    if (!ps.lastContactDate) return false;
     const daysSinceContact = Math.floor(
       (new Date().getTime() - new Date(ps.lastContactDate).getTime()) / (1000 * 60 * 60 * 24)
     );
@@ -142,7 +143,7 @@ const ProspectiveSponsorsTable = () => {
       flex: 0.8,
       minWidth: 100,
       renderCell: (p: GridRenderCellParams<Date, MapRowResult<ProspectiveSponsor>>) =>
-        datePipe(new Date(String(p.value ?? '')))
+        p.value ? datePipe(new Date(String(p.value))) : '—'
     },
     {
       field: 'dateCreated',

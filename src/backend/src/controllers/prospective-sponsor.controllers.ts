@@ -6,6 +6,7 @@ export default class ProspectiveSponsorController {
     try {
       const {
         organizationName,
+        status,
         lastContactDate,
         firstContactMethod,
         contactName,
@@ -22,6 +23,7 @@ export default class ProspectiveSponsorController {
         req.currentUser,
         req.organization,
         organizationName,
+        status,
         lastContactDate,
         firstContactMethod,
         contactName,
@@ -71,8 +73,8 @@ export default class ProspectiveSponsorController {
         req.organization,
         prospectiveSponsorId,
         organizationName,
-        lastContactDate,
         status,
+        lastContactDate,
         firstContactMethod,
         contactName,
         contactorUserId,

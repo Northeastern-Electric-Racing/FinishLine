@@ -32,10 +32,11 @@ export default class ProspectiveSponsorServices {
     submitter: User,
     organization: Organization,
     organizationName: string,
-    lastContactDate: Date,
-    firstContactMethod: FirstContactMethod,
-    contactName: string,
-    contactorUserId: string,
+    status: ProspectiveSponsorStatus,
+    lastContactDate?: Date,
+    firstContactMethod?: FirstContactMethod,
+    contactName?: string,
+    contactorUserId?: string,
     highlightThresholdDays?: number,
     contactEmail?: string,
     contactPhone?: string,
@@ -47,8 +48,16 @@ export default class ProspectiveSponsorServices {
       throw new AccessDeniedException('Only finance team members or heads can create prospective sponsors');
     }
 
-    if (!contactEmail && !contactPhone) {
-      throw new HttpException(400, 'At least one of contact email or contact phone is required');
+    const isNotInContact = status === ProspectiveSponsorStatus.NOT_IN_CONTACT;
+
+    if (!isNotInContact) {
+      if (!lastContactDate) throw new HttpException(400, 'Last contact date is required');
+      if (!firstContactMethod) throw new HttpException(400, 'First contact method is required');
+      if (!contactName) throw new HttpException(400, 'Contact name is required');
+      if (!contactorUserId) throw new HttpException(400, 'Contactor is required');
+      if (!contactEmail && !contactPhone) {
+        throw new HttpException(400, 'At least one of contact email or contact phone is required');
+      }
     }
 
     const existingProspectiveSponsor = await prisma.prospective_Sponsor.findFirst({
@@ -63,26 +72,27 @@ export default class ProspectiveSponsorServices {
       throw new HttpException(400, `A prospective sponsor with the name "${organizationName}" already exists.`);
     }
 
-    const contactor = await prisma.user.findUnique({
-      where: { userId: contactorUserId }
-    });
-
-    if (!contactor) {
-      throw new NotFoundException('User', contactorUserId);
+    if (contactorUserId) {
+      const contactor = await prisma.user.findUnique({ where: { userId: contactorUserId } });
+      if (!contactor) throw new NotFoundException('User', contactorUserId);
     }
 
-    const contact = await prisma.sponsor_Contact.create({
-      data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
-    });
+    const contact =
+      !isNotInContact && contactName
+        ? await prisma.sponsor_Contact.create({
+            data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
+          })
+        : null;
 
     const prospectiveSponsor = await prisma.prospective_Sponsor.create({
       data: {
         organizationName,
-        lastContactDate,
+        lastContactDate: lastContactDate ?? null,
         highlightThresholdDays: highlightThresholdDays ?? 10,
-        firstContactMethod,
-        contactorUserId,
-        contactId: contact.sponsorContactId,
+        status,
+        firstContactMethod: firstContactMethod ?? null,
+        contactorUserId: contactorUserId ?? null,
+        contactId: contact?.sponsorContactId ?? null,
         notes,
         organizationId: organization.organizationId,
         tasks: tasks?.length
@@ -138,11 +148,11 @@ export default class ProspectiveSponsorServices {
     organization: Organization,
     prospectiveSponsorId: string,
     organizationName: string,
-    lastContactDate: Date,
     status: ProspectiveSponsorStatus,
-    firstContactMethod: FirstContactMethod,
-    contactName: string,
-    contactorUserId: string,
+    lastContactDate?: Date,
+    firstContactMethod?: FirstContactMethod,
+    contactName?: string,
+    contactorUserId?: string,
     highlightThresholdDays?: number,
     contactEmail?: string,
     contactPhone?: string,
@@ -154,8 +164,16 @@ export default class ProspectiveSponsorServices {
       throw new AccessDeniedException('Only finance team members or heads can edit prospective sponsors');
     }
 
-    if (!contactEmail && !contactPhone) {
-      throw new HttpException(400, 'At least one of contact email or contact phone is required');
+    const isNotInContact = status === ProspectiveSponsorStatus.NOT_IN_CONTACT;
+
+    if (!isNotInContact) {
+      if (!lastContactDate) throw new HttpException(400, 'Last contact date is required');
+      if (!firstContactMethod) throw new HttpException(400, 'First contact method is required');
+      if (!contactName) throw new HttpException(400, 'Contact name is required');
+      if (!contactorUserId) throw new HttpException(400, 'Contactor is required');
+      if (!contactEmail && !contactPhone) {
+        throw new HttpException(400, 'At least one of contact email or contact phone is required');
+      }
     }
 
     const oldProspectiveSponsor = await prisma.prospective_Sponsor.findUnique({
@@ -180,12 +198,9 @@ export default class ProspectiveSponsorServices {
       }
     }
 
-    const contactor = await prisma.user.findUnique({
-      where: { userId: contactorUserId }
-    });
-
-    if (!contactor) {
-      throw new NotFoundException('User', contactorUserId);
+    if (contactorUserId) {
+      const contactor = await prisma.user.findUnique({ where: { userId: contactorUserId } });
+      if (!contactor) throw new NotFoundException('User', contactorUserId);
     }
 
     // Upsert tasks if provided
@@ -231,20 +246,38 @@ export default class ProspectiveSponsorServices {
       );
     }
 
-    await prisma.sponsor_Contact.update({
-      where: { sponsorContactId: oldProspectiveSponsor.contactId },
-      data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
-    });
+    // Handle contact upsert based on status
+    const { contactId: oldContactId } = oldProspectiveSponsor;
+    let contactId = oldContactId;
+    if (!isNotInContact && contactName) {
+      if (oldProspectiveSponsor.contactId) {
+        // Update existing contact
+        await prisma.sponsor_Contact.update({
+          where: { sponsorContactId: oldProspectiveSponsor.contactId },
+          data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
+        });
+      } else {
+        // Create new contact (transitioning from NOT_IN_CONTACT)
+        const contact = await prisma.sponsor_Contact.create({
+          data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
+        });
+        contactId = contact.sponsorContactId;
+      }
+    } else if (isNotInContact && oldProspectiveSponsor.contactId) {
+      // Clear contact when moving to NOT_IN_CONTACT
+      contactId = null;
+    }
 
     const updatedProspectiveSponsor = await prisma.prospective_Sponsor.update({
       where: { prospectiveSponsorId },
       data: {
         organizationName,
-        lastContactDate,
+        lastContactDate: isNotInContact ? null : lastContactDate,
         highlightThresholdDays: highlightThresholdDays ?? 10,
         status,
-        firstContactMethod,
-        contactorUserId,
+        firstContactMethod: isNotInContact ? null : firstContactMethod,
+        contactorUserId: isNotInContact ? null : contactorUserId,
+        contactId,
         notes
       },
       ...getProspectiveSponsorQueryArgs(organization.organizationId)
@@ -413,10 +446,10 @@ export default class ProspectiveSponsorServices {
     // Create a new contact for the sponsor, copied from the prospective sponsor's contact
     const sponsorContact = await prisma.sponsor_Contact.create({
       data: {
-        name: prospectiveSponsor.contact.name,
-        email: prospectiveSponsor.contact.email,
-        phone: prospectiveSponsor.contact.phone,
-        position: prospectiveSponsor.contact.position
+        name: prospectiveSponsor.contact?.name ?? '',
+        email: prospectiveSponsor.contact?.email,
+        phone: prospectiveSponsor.contact?.phone,
+        position: prospectiveSponsor.contact?.position
       }
     });
 

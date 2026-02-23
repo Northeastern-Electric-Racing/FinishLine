@@ -66,12 +66,12 @@ export interface ProspectiveSponsor {
   prospectiveSponsorId: string;
   organizationName: string;
   dateCreated: Date;
-  lastContactDate: Date;
+  lastContactDate?: Date;
   highlightThresholdDays: number;
   status: ProspectiveSponsorStatus;
-  firstContactMethod: FirstContactMethod;
-  contactor: User;
-  contact: ContactInfo;
+  firstContactMethod?: FirstContactMethod;
+  contactor?: User;
+  contact?: ContactInfo;
   notes?: string;
   tasks: SponsorTask[];
 }
