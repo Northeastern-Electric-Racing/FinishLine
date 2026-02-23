@@ -13,10 +13,7 @@ interface ProspectiveSponsorTasksModalProps {
   prospectiveSponsor: ProspectiveSponsor;
 }
 
-const ProspectiveSponsorTasksModal: React.FC<ProspectiveSponsorTasksModalProps> = ({
-  onClose,
-  prospectiveSponsor
-}) => {
+const ProspectiveSponsorTasksModal: React.FC<ProspectiveSponsorTasksModalProps> = ({ onClose, prospectiveSponsor }) => {
   const { data: tasks } = useProspectiveSponsorTasks(prospectiveSponsor.prospectiveSponsorId);
   const { mutate: createTask } = useCreateProspectiveSponsorTask(prospectiveSponsor.prospectiveSponsorId);
 

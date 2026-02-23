@@ -157,9 +157,7 @@ const SponsorTaskCard: React.FC<SponsorTaskCardProps> = ({
                 onChange={(_, newValue) => field.onChange(newValue?.userId || undefined)}
                 size="small"
                 fullWidth
-                renderInput={(params) => (
-                  <TextField {...params} placeholder={defaultAssigneeName || 'Select Member'} />
-                )}
+                renderInput={(params) => <TextField {...params} placeholder={defaultAssigneeName || 'Select Member'} />}
               />
             )}
           />

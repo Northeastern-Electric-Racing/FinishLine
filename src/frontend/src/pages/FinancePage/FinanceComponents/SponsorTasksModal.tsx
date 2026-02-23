@@ -131,7 +131,14 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: s
       <Button
         startIcon={<AddCircle />}
         onClick={() =>
-          append({ dueDate: new Date(), notifyDate: undefined, assignee: '', notes: '', sponsorTaskId: undefined, done: false })
+          append({
+            dueDate: new Date(),
+            notifyDate: undefined,
+            assignee: '',
+            notes: '',
+            sponsorTaskId: undefined,
+            done: false
+          })
         }
         sx={{ mb: 2 }}
       >

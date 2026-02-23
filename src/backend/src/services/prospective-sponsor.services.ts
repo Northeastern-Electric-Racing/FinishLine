@@ -249,7 +249,6 @@ export default class ProspectiveSponsorServices {
       },
       ...getProspectiveSponsorQueryArgs(organization.organizationId)
     });
-
     return prospectiveSponsorTransformer(updatedProspectiveSponsor);
   }
 
@@ -287,10 +286,7 @@ export default class ProspectiveSponsorServices {
   /**
    * Gets tasks for a prospective sponsor.
    */
-  static async getProspectiveSponsorTasks(
-    prospectiveSponsorId: string,
-    organizationId: string
-  ): Promise<SponsorTask[]> {
+  static async getProspectiveSponsorTasks(prospectiveSponsorId: string, organizationId: string): Promise<SponsorTask[]> {
     const prospectiveSponsor = await prisma.prospective_Sponsor.findUnique({
       where: { prospectiveSponsorId, dateDeleted: null }
     });

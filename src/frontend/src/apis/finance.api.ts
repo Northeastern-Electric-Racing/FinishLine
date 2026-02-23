@@ -44,8 +44,13 @@ import {
   SponsorTask,
   ReimbursementRequestData,
   SpendingBarData,
-  SponsorTier
+  SponsorTier,
+  ProspectiveSponsor,
+  FirstContactMethod,
+  ProspectiveSponsorStatus,
+  CreateSponsorTask
 } from 'shared';
+import { prospectiveSponsorTransformer } from './transformers/prospective-sponsor.transformer';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -783,9 +788,6 @@ export const toggleSponsorTaskDone = (sponsorTaskId: string) => {
 };
 
 /**************** Prospective Sponsors API ****************/
-
-import { ProspectiveSponsor, FirstContactMethod, ProspectiveSponsorStatus, CreateSponsorTask } from 'shared';
-import { prospectiveSponsorTransformer } from './transformers/prospective-sponsor.transformer';
 
 export interface CreateProspectiveSponsorPayload {
   organizationName: string;

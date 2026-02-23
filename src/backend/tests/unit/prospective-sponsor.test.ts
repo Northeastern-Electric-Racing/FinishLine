@@ -1,13 +1,8 @@
 import { Organization } from '@prisma/client';
 import ProspectiveSponsorServices from '../../src/services/prospective-sponsor.services.js';
 import FinanceServices from '../../src/services/finance.services.js';
-import {
-  AccessDeniedException,
-  DeletedException,
-  HttpException,
-  NotFoundException
-} from '../../src/utils/errors.utils.js';
-import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data.js';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
+import { batmanAppAdmin, wonderwomanGuest, supermanAdmin } from '../test-data/users.test-data.js';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import { FirstContactMethod, ProspectiveSponsorStatus } from 'shared';
@@ -599,9 +594,9 @@ describe('Prospective Sponsor Tests', () => {
 
   describe('Get Prospective Sponsor Tasks', () => {
     it('Fails if prospective sponsor does not exist', async () => {
-      await expect(
-        ProspectiveSponsorServices.getProspectiveSponsorTasks('nonexistent-id', orgId)
-      ).rejects.toThrow(new NotFoundException('ProspectiveSponsor', 'nonexistent-id'));
+      await expect(ProspectiveSponsorServices.getProspectiveSponsorTasks('nonexistent-id', orgId)).rejects.toThrow(
+        new NotFoundException('ProspectiveSponsor', 'nonexistent-id')
+      );
     });
 
     it('Returns tasks for prospective sponsor', async () => {
@@ -668,7 +663,9 @@ describe('Prospective Sponsor Tests', () => {
           new Date(),
           'Follow up'
         )
-      ).rejects.toThrow(new AccessDeniedException('Only finance team members or heads can create prospective sponsor tasks'));
+      ).rejects.toThrow(
+        new AccessDeniedException('Only finance team members or heads can create prospective sponsor tasks')
+      );
     });
 
     it('Fails if prospective sponsor does not exist', async () => {

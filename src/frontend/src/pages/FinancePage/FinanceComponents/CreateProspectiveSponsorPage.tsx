@@ -13,11 +13,7 @@ import { useCreateProspectiveSponsor } from '../../../hooks/finance.hooks';
 import SidePage from './SidePagePopup';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
-import {
-  ProspectiveSponsorForm,
-  ProspectiveSponsorFormInputs,
-  prospectiveSponsorSchema
-} from './ProspectiveSponsorForm';
+import { ProspectiveSponsorForm, ProspectiveSponsorFormInputs, prospectiveSponsorSchema } from './ProspectiveSponsorForm';
 import { FirstContactMethod } from 'shared';
 
 interface CreateProspectiveSponsorPageProps {

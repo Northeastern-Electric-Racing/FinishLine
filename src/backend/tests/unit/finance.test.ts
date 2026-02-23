@@ -808,11 +808,7 @@ describe('Finance Tests', () => {
 
       expect(sponsorTask.done).toBe(false);
 
-      const toggledTask = await FinanceServices.toggleSponsorTaskDone(
-        user,
-        organization,
-        sponsorTask.sponsorTaskId
-      );
+      const toggledTask = await FinanceServices.toggleSponsorTaskDone(user, organization, sponsorTask.sponsorTaskId);
 
       expect(toggledTask.done).toBe(true);
     });
@@ -849,11 +845,7 @@ describe('Finance Tests', () => {
       await FinanceServices.toggleSponsorTaskDone(user, organization, sponsorTask.sponsorTaskId);
 
       // Toggle back to false
-      const toggledTask = await FinanceServices.toggleSponsorTaskDone(
-        user,
-        organization,
-        sponsorTask.sponsorTaskId
-      );
+      const toggledTask = await FinanceServices.toggleSponsorTaskDone(user, organization, sponsorTask.sponsorTaskId);
 
       expect(toggledTask.done).toBe(false);
     });
@@ -888,17 +880,17 @@ describe('Finance Tests', () => {
         sponsor.sponsorId
       );
 
-      await expect(
-        FinanceServices.toggleSponsorTaskDone(guest, organization, sponsorTask.sponsorTaskId)
-      ).rejects.toThrow(new AccessDeniedException('Only finance team members, heads, or the task assignee can toggle task status'));
+      await expect(FinanceServices.toggleSponsorTaskDone(guest, organization, sponsorTask.sponsorTaskId)).rejects.toThrow(
+        new AccessDeniedException('Only finance team members, heads, or the task assignee can toggle task status')
+      );
     });
 
     it('Fails if sponsor task does not exist', async () => {
       const user = await createTestUser(supermanAdmin, orgId);
 
-      await expect(
-        FinanceServices.toggleSponsorTaskDone(user, organization, 'nonexistent-id')
-      ).rejects.toThrow(new NotFoundException('SponsorTask', 'nonexistent-id'));
+      await expect(FinanceServices.toggleSponsorTaskDone(user, organization, 'nonexistent-id')).rejects.toThrow(
+        new NotFoundException('SponsorTask', 'nonexistent-id')
+      );
     });
 
     it('Fails if sponsor task is deleted', async () => {
@@ -931,9 +923,9 @@ describe('Finance Tests', () => {
 
       await FinanceServices.deleteSponsorTask(sponsorTask.sponsorTaskId, user, organization);
 
-      await expect(
-        FinanceServices.toggleSponsorTaskDone(user, organization, sponsorTask.sponsorTaskId)
-      ).rejects.toThrow(new NotFoundException('SponsorTask', sponsorTask.sponsorTaskId));
+      await expect(FinanceServices.toggleSponsorTaskDone(user, organization, sponsorTask.sponsorTaskId)).rejects.toThrow(
+        new NotFoundException('SponsorTask', sponsorTask.sponsorTaskId)
+      );
     });
   });
 });

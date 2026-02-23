@@ -13,11 +13,7 @@ import { useEditProspectiveSponsor } from '../../../hooks/finance.hooks';
 import SidePage from './SidePagePopup';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
-import {
-  ProspectiveSponsorForm,
-  ProspectiveSponsorFormInputs,
-  prospectiveSponsorSchema
-} from './ProspectiveSponsorForm';
+import { ProspectiveSponsorForm, ProspectiveSponsorFormInputs, prospectiveSponsorSchema } from './ProspectiveSponsorForm';
 import { ProspectiveSponsor } from 'shared';
 
 interface EditProspectiveSponsorPageProps {
@@ -26,11 +22,7 @@ interface EditProspectiveSponsorPageProps {
   prospectiveSponsor: ProspectiveSponsor;
 }
 
-const EditProspectiveSponsorPage = ({
-  showPage,
-  handleClose,
-  prospectiveSponsor
-}: EditProspectiveSponsorPageProps) => {
+const EditProspectiveSponsorPage = ({ showPage, handleClose, prospectiveSponsor }: EditProspectiveSponsorPageProps) => {
   const toast = useToast();
   const { isLoading, mutateAsync } = useEditProspectiveSponsor();
 
@@ -106,12 +98,7 @@ const EditProspectiveSponsorPage = ({
       title="Edit Prospective Sponsor"
       component={
         <Box display="flex" flexDirection="column" alignItems="flex-end">
-          <ProspectiveSponsorForm
-            control={control}
-            errors={errors}
-            defaultValues={prospectiveSponsor}
-            isEditMode
-          />
+          <ProspectiveSponsorForm control={control} errors={errors} defaultValues={prospectiveSponsor} isEditMode />
           {submitError && (
             <Box color="error.main" mb={2} fontWeight="bold">
               {submitError}

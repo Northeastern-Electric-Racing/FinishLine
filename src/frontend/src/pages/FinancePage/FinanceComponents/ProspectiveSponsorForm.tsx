@@ -5,17 +5,7 @@
 
 import * as yup from 'yup';
 import { Control, Controller, FieldErrors, FieldValues, useFieldArray } from 'react-hook-form';
-import {
-  FormControl,
-  Grid,
-  FormHelperText,
-  Button,
-  MenuItem,
-  Select,
-  Typography,
-  Box,
-  Tooltip
-} from '@mui/material';
+import { FormControl, Grid, FormHelperText, Button, MenuItem, Select, Typography, Box, Tooltip } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useTheme } from '@mui/system';
 import ReactHookTextField from '../../../components/ReactHookTextField';
@@ -142,7 +132,12 @@ export const ProspectiveSponsorForm: React.FC<ProspectiveSponsorFormProps> = ({
           <Typography variant="h5" color="#EF4345">
             Organization Name:*
           </Typography>
-          <ReactHookTextField name="organizationName" control={control} sx={{ width: 1 }} placeholder="Enter Organization Name" />
+          <ReactHookTextField
+            name="organizationName"
+            control={control}
+            sx={{ width: 1 }}
+            placeholder="Enter Organization Name"
+          />
           <FormHelperText error>{errors.organizationName?.message}</FormHelperText>
         </FormControl>
       </Grid>
@@ -159,7 +154,17 @@ export const ProspectiveSponsorForm: React.FC<ProspectiveSponsorFormProps> = ({
               <NERAutocomplete
                 sx={{ width: '100%', backgroundColor: theme.palette.grey[750] }}
                 id="contactor-autocomplete"
-                value={members.find((m) => m.userId === value) ? { label: members.find((m) => m.userId === value)!.firstName + ' ' + members.find((m) => m.userId === value)!.lastName, id: value } : null}
+                value={
+                  members.find((m) => m.userId === value)
+                    ? {
+                        label:
+                          members.find((m) => m.userId === value)!.firstName +
+                          ' ' +
+                          members.find((m) => m.userId === value)!.lastName,
+                        id: value
+                      }
+                    : null
+                }
                 onChange={(_event, newValue) => onChange(newValue ? newValue.id : '')}
                 options={members.map((m) => ({ label: m.firstName + ' ' + m.lastName, id: m.userId }))}
                 size="small"
@@ -205,7 +210,10 @@ export const ProspectiveSponsorForm: React.FC<ProspectiveSponsorFormProps> = ({
             <Typography variant="h5" color="#EF4345">
               First Contact Method:*
             </Typography>
-            <Tooltip title="How did we first get in contact with this sponsor? Inbound means they reached out to us, outbound means we reached out to them." arrow>
+            <Tooltip
+              title="How did we first get in contact with this sponsor? Inbound means they reached out to us, outbound means we reached out to them."
+              arrow
+            >
               <InfoOutlinedIcon sx={{ fontSize: 16, color: 'gray', cursor: 'help' }} />
             </Tooltip>
           </Box>
@@ -274,7 +282,10 @@ export const ProspectiveSponsorForm: React.FC<ProspectiveSponsorFormProps> = ({
             <Typography variant="h5" color="#EF4345">
               Highlight Threshold (Days):
             </Typography>
-            <Tooltip title="If we haven't contacted this sponsor in more than this many days, the row will be highlighted in red as a reminder to follow up. Default is 10 days." arrow>
+            <Tooltip
+              title="If we haven't contacted this sponsor in more than this many days, the row will be highlighted in red as a reminder to follow up. Default is 10 days."
+              arrow
+            >
               <InfoOutlinedIcon sx={{ fontSize: 16, color: 'gray', cursor: 'help' }} />
             </Tooltip>
           </Box>
@@ -330,7 +341,12 @@ export const ProspectiveSponsorForm: React.FC<ProspectiveSponsorFormProps> = ({
           <Typography variant="h6" color="#EF4345">
             Contact Position:
           </Typography>
-          <ReactHookTextField name="contactPosition" control={control} sx={{ width: 1 }} placeholder="Enter Contact Position" />
+          <ReactHookTextField
+            name="contactPosition"
+            control={control}
+            sx={{ width: 1 }}
+            placeholder="Enter Contact Position"
+          />
           <FormHelperText error>{errors.contactPosition?.message}</FormHelperText>
         </FormControl>
       </Grid>

@@ -43,12 +43,7 @@ const statusDisplayNames: Record<string, string> = {
 };
 
 const ProspectiveSponsorsTable = () => {
-  const {
-    data: prospectiveSponsors,
-    isLoading,
-    isError,
-    error
-  } = useAllProspectiveSponsors();
+  const { data: prospectiveSponsors, isLoading, isError, error } = useAllProspectiveSponsors();
   const [showAddProspectiveSponsor, setShowAddProspectiveSponsor] = useState(false);
   const [prospectiveSponsorToEdit, setProspectiveSponsorToEdit] = useState<ProspectiveSponsor | undefined>(undefined);
   const [prospectiveSponsorToDelete, setProspectiveSponsorToDelete] = useState<ProspectiveSponsor | undefined>(undefined);
@@ -101,13 +96,7 @@ const ProspectiveSponsorsTable = () => {
       minWidth: 100,
       renderCell: (p: GridRenderCellParams<ProspectiveSponsorStatus, MapRowResult<ProspectiveSponsor>>) => {
         const status = p.value as string;
-        return (
-          <Chip
-            label={statusDisplayNames[status] || status}
-            color={statusColors[status] || 'default'}
-            size="small"
-          />
-        );
+        return <Chip label={statusDisplayNames[status] || status} color={statusColors[status] || 'default'} size="small" />;
       }
     },
     {
@@ -350,10 +339,7 @@ const ProspectiveSponsorsTable = () => {
         title={selectedProspectiveSponsor ? `Tasks for ${selectedProspectiveSponsor.organizationName}` : ''}
         component={
           selectedProspectiveSponsor ? (
-            <ProspectiveSponsorTasksModal
-              onClose={closeTasksModal}
-              prospectiveSponsor={selectedProspectiveSponsor}
-            />
+            <ProspectiveSponsorTasksModal onClose={closeTasksModal} prospectiveSponsor={selectedProspectiveSponsor} />
           ) : (
             <></>
           )

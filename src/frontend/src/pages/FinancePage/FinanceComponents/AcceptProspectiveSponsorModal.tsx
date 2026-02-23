@@ -93,12 +93,7 @@ const AcceptProspectiveSponsorModal = ({
   showModal
 }: AcceptProspectiveSponsorModalProps) => {
   const { isLoading, isError, error, mutateAsync } = useAcceptProspectiveSponsor();
-  const {
-    isLoading: tiersLoading,
-    isError: tiersIsError,
-    error: tiersError,
-    data: sponsorTiers
-  } = useGetAllSponsorTiers();
+  const { isLoading: tiersLoading, isError: tiersIsError, error: tiersError, data: sponsorTiers } = useGetAllSponsorTiers();
   const toast = useToast();
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -231,9 +226,7 @@ const AcceptProspectiveSponsorModal = ({
                   <TextField {...params} placeholder="Select Value Types" error={!!errors.valueTypes} />
                 )}
                 renderTags={(tagValue, getTagProps) =>
-                  tagValue.map((option, index) => (
-                    <Chip label={option.label} {...getTagProps({ index })} size="small" />
-                  ))
+                  tagValue.map((option, index) => <Chip label={option.label} {...getTagProps({ index })} size="small" />)
                 }
                 isOptionEqualToValue={(option, val) => option.value === val.value}
                 disableCloseOnSelect
@@ -332,9 +325,7 @@ const AcceptProspectiveSponsorModal = ({
                 getOptionLabel={(option) => option.toString()}
                 onChange={(_, data) => field.onChange(data)}
                 size="small"
-                renderInput={(params) => (
-                  <TextField {...params} placeholder="Select Years" error={!!errors.activeYears} />
-                )}
+                renderInput={(params) => <TextField {...params} placeholder="Select Years" error={!!errors.activeYears} />}
                 isOptionEqualToValue={(option, value) => option === value}
                 disableCloseOnSelect
               />
@@ -349,11 +340,7 @@ const AcceptProspectiveSponsorModal = ({
               control={control}
               name="taxExempt"
               render={({ field: { onChange, value } }) => (
-                <Checkbox
-                  checked={!!value}
-                  onChange={(e) => onChange(e.target.checked)}
-                  sx={{ p: 0 }}
-                />
+                <Checkbox checked={!!value} onChange={(e) => onChange(e.target.checked)} sx={{ p: 0 }} />
               )}
             />
             <Typography variant="subtitle2" color="#EF4345">
@@ -366,12 +353,7 @@ const AcceptProspectiveSponsorModal = ({
           <Typography variant="subtitle2" color="#EF4345">
             Discount Code:
           </Typography>
-          <ReactHookTextField
-            name="discountCode"
-            control={control}
-            size="small"
-            placeholder="Enter Code"
-          />
+          <ReactHookTextField name="discountCode" control={control} size="small" placeholder="Enter Code" />
         </FormControl>
 
         <FormControl fullWidth>

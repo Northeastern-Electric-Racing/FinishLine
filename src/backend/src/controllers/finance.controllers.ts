@@ -414,11 +414,7 @@ export default class FinanceController {
   static async toggleSponsorTaskDone(req: Request, res: Response, next: NextFunction) {
     try {
       const { sponsorTaskId } = req.params as Record<string, string>;
-      const updatedTask = await FinanceServices.toggleSponsorTaskDone(
-        req.currentUser,
-        req.organization,
-        sponsorTaskId
-      );
+      const updatedTask = await FinanceServices.toggleSponsorTaskDone(req.currentUser, req.organization, sponsorTaskId);
       res.status(200).json(updatedTask);
     } catch (error: unknown) {
       next(error);

@@ -244,25 +244,56 @@ export default class NotificationsService {
     });
 
     const promises = sponsorTasks.map(async (sponsorTask) => {
-      const sponsor = await prisma.sponsor.findUnique({
-        where: { sponsorId: sponsorTask.sponsorId }
-      });
+      const slackMention = sponsorTask.assignee?.userSettings?.slackId
+        ? `<@${sponsorTask.assignee.userSettings.slackId}>`
+        : '';
 
-      const organization = await prisma.organization.findUnique({
-        where: { organizationId: sponsor?.organizationId }
-      });
+      if (sponsorTask.sponsorId) {
+        const sponsor = await prisma.sponsor.findUnique({
+          where: { sponsorId: sponsorTask.sponsorId }
+        });
 
-      if (!sponsor || !organization) return;
+        if (!sponsor) return;
 
-      const message = `${sponsorTask.assignee?.userSettings?.slackId ? `<@${sponsorTask.assignee?.userSettings?.slackId}>` : ''} Reminder for your task for ${sponsor.name}: ${sponsorTask.notes}`;
+        const organization = await prisma.organization.findUnique({
+          where: { organizationId: sponsor.organizationId ?? undefined }
+        });
 
-      if (organization.sponsorshipNotificationsSlackChannelId) {
-        await sendMessage(
-          organization.sponsorshipNotificationsSlackChannelId,
-          message,
-          `finishlinebyner.com/finance/companies/sponsors/${sponsor.sponsorId}`,
-          `View Tasks for ${sponsor.name}`
-        );
+        if (!organization) return;
+
+        const message = `${slackMention} Reminder for your task for ${sponsor.name}: ${sponsorTask.notes}`;
+
+        if (organization.sponsorshipNotificationsSlackChannelId) {
+          await sendMessage(
+            organization.sponsorshipNotificationsSlackChannelId,
+            message,
+            `finishlinebyner.com/finance/companies/sponsors/${sponsor.sponsorId}`,
+            `View Tasks for ${sponsor.name}`
+          );
+        }
+      } else if (sponsorTask.prospectiveSponsorId) {
+        const prospectiveSponsor = await prisma.prospective_Sponsor.findUnique({
+          where: { prospectiveSponsorId: sponsorTask.prospectiveSponsorId }
+        });
+
+        if (!prospectiveSponsor) return;
+
+        const organization = await prisma.organization.findUnique({
+          where: { organizationId: prospectiveSponsor.organizationId }
+        });
+
+        if (!organization) return;
+
+        const message = `${slackMention} Reminder for your task for prospective sponsor ${prospectiveSponsor.organizationName}: ${sponsorTask.notes}`;
+
+        if (organization.sponsorshipNotificationsSlackChannelId) {
+          await sendMessage(
+            organization.sponsorshipNotificationsSlackChannelId,
+            message,
+            `finishlinebyner.com/finance/companies/sponsors`,
+            `View Prospective Sponsors`
+          );
+        }
       }
     });
 

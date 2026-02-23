@@ -1,12 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import {
-  nonEmptyString,
-  validateInputs,
-  isDate,
-  isOptionalDate,
-  intMinZero
-} from '../utils/validation.utils.js';
+import { nonEmptyString, validateInputs, isDate, isOptionalDate, intMinZero } from '../utils/validation.utils.js';
 import ProspectiveSponsorController from '../controllers/prospective-sponsor.controllers.js';
 
 const prospectiveSponsorRouter = express.Router();
@@ -63,16 +57,10 @@ prospectiveSponsorRouter.post(
 );
 
 // Delete prospective sponsor
-prospectiveSponsorRouter.post(
-  '/:prospectiveSponsorId/delete',
-  ProspectiveSponsorController.deleteProspectiveSponsor
-);
+prospectiveSponsorRouter.post('/:prospectiveSponsorId/delete', ProspectiveSponsorController.deleteProspectiveSponsor);
 
 // Get tasks for prospective sponsor
-prospectiveSponsorRouter.get(
-  '/:prospectiveSponsorId/tasks',
-  ProspectiveSponsorController.getProspectiveSponsorTasks
-);
+prospectiveSponsorRouter.get('/:prospectiveSponsorId/tasks', ProspectiveSponsorController.getProspectiveSponsorTasks);
 
 // Create task for prospective sponsor
 prospectiveSponsorRouter.post(
