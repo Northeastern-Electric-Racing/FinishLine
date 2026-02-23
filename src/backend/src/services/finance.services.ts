@@ -1226,7 +1226,16 @@ export default class FinanceServices {
     // Create new tasks
     await Promise.all(
       tasksToCreate.map((t) =>
-        this.createSponsorTask(submitter, organization, t.dueDate, t.notes, sponsorId, t.notifyDate, t.assigneeUserId, t.done)
+        this.createSponsorTask(
+          submitter,
+          organization,
+          t.dueDate,
+          t.notes,
+          sponsorId,
+          t.notifyDate,
+          t.assigneeUserId,
+          t.done
+        )
       )
     );
 
