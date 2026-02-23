@@ -247,7 +247,7 @@ export const useCreateBudgetChangeRequest = () => {
 export const useCreateLeadershipChangeRequest = () => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, LeadershipChangeCreateArgs>(
-    ['change-requests', 'create', 'leadership'],
+    ['change requests', 'create', 'leadership'],
     async (payload: LeadershipChangeCreateArgs) => {
       const { data } = await createLeadershipChangeRequest(
         payload.submitterId,
@@ -259,7 +259,7 @@ export const useCreateLeadershipChangeRequest = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['change-requests']);
+        queryClient.invalidateQueries(['change requests']);
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['work-packages']);
       }
