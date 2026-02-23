@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Task, TaskPriority, TaskStatus, WbsNumber, wbsPipe } from 'shared';
+import { Task, TaskCardPreview, TaskPriority, TaskStatus, WbsNumber, wbsPipe } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { taskTransformer } from './transformers/tasks.transformers';
@@ -114,7 +114,7 @@ export const deleteSingleTask = (taskId: string) => {
 };
 
 export const getOverdueTasksByTeamLeader = (userId: string) => {
-  return axios.get<Task[]>(apiUrls.overdueTasksByTeamLeadership(userId), {
+  return axios.get<TaskCardPreview[]>(apiUrls.overdueTasksByTeamLeadership(userId), {
     transformResponse: (data) => JSON.parse(data).map(taskTransformer)
   });
 };
