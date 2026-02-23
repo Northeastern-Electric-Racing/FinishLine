@@ -66,6 +66,18 @@ export const getOrganizationNewMemberImage = async () => {
   });
 };
 
+export const setOrganizationPlatformLogoImage = async (file: File) => {
+  const formData = new FormData();
+  formData.append('platformLogo', file);
+  return axios.post<Organization>(apiUrls.organizationsSetPlatformLogoImage(), formData);
+};
+
+export const getOrganizationPlatformLogoImage = async () => {
+  return axios.get<string>(apiUrls.organizationsPlatformLogoImage(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
 export const setOrganizationFeaturedProjects = async (featuredProjectIds: string[]) => {
   return axios.post<Organization>(apiUrls.organizationsSetFeaturedProjects(), {
     projectIds: featuredProjectIds

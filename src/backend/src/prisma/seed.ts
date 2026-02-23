@@ -127,9 +127,9 @@ const performSeed: () => Promise<void> = async () => {
         'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).',
       applicationLink:
         'https://docs.google.com/forms/d/e/1FAIpQLSeCvG7GqmZm_gmSZiahbVTW9ZFpEWG0YfGQbkSB_whhHzxXpA/closedform',
-      finishlineDescription:
+      platformDescription:
         'Finishline is a Project Management Dashboard developed by the Software Team at Northeastern Electric Racing.',
-      finishlineLogo: '1auQO3GYydZOo1-vCn0D2iyCfaxaVFssx'
+      platformLogoImageId: '1auQO3GYydZOo1-vCn0D2iyCfaxaVFssx'
     }
   });
 

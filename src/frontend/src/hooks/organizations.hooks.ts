@@ -19,7 +19,9 @@ import {
   getFinanceDelegates,
   setFinanceDelegates,
   setOrganizationNewMemberImage,
-  getOrganizationNewMemberImage
+  getOrganizationNewMemberImage,
+  setOrganizationPlatformLogoImage,
+  getOrganizationPlatformLogoImage
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/organizations.api';
 
@@ -215,6 +217,25 @@ export const useSetOrganizationNewMemberImage = () => {
     queryClient.invalidateQueries(['organizations']);
     queryClient.invalidateQueries(['organizations', 'new-member-image']);
     return data;
+  });
+};
+
+export const useSetOrganizationPlatformLogoImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, File>(['organizations', 'platform-logo'], async (file: File) => {
+    const { data } = await setOrganizationPlatformLogoImage(file);
+    queryClient.invalidateQueries(['organizations']);
+    return data;
+  });
+};
+
+export const useOrganizationPlatformLogoImage = () => {
+  return useQuery<Blob | undefined, Error>(['organizations', 'platform-logo'], async () => {
+    const { data: fileId } = await getOrganizationPlatformLogoImage();
+    if (!fileId) {
+      return;
+    }
+    return await downloadGoogleImage(fileId);
   });
 };
 

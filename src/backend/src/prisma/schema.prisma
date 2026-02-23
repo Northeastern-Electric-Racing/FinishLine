@@ -1320,8 +1320,8 @@ model Organization {
   partReviewSampleImageId                String?
   partReviewGuideLink                    String?
   sponsorshipNotificationsSlackChannelId String?
-  finishlineDescription                  String    @default("")
-  finishlineLogo                         String?
+  platformDescription                    String    @default("")
+  platformLogoImageId                    String?
 
   // Relation references
   wbsElements              WBS_Element[]

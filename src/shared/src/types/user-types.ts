@@ -42,7 +42,14 @@ export type ThemeName = 'DARK' | 'LIGHT';
 
 export type OrganizationPreview = Pick<
   Organization,
-  'organizationId' | 'name' | 'dateCreated' | 'dateDeleted' | 'description' | 'applicationLink' | 'newMemberImageId'
+  | 'organizationId'
+  | 'name'
+  | 'dateCreated'
+  | 'dateDeleted'
+  | 'description'
+  | 'applicationLink'
+  | 'newMemberImageId'
+  | 'platformLogoImageId'
 >;
 
 export interface Organization {
@@ -62,8 +69,8 @@ export interface Organization {
   slackWorkspaceId?: string;
   partReviewGuideLink?: string;
   sponsorshipNotificationsSlackChannelId?: string;
-  finishlineDescription: string;
-  finishlineLogo: string;
+  platformDescription: string;
+  platformLogoImageId?: string;
 }
 
 /**

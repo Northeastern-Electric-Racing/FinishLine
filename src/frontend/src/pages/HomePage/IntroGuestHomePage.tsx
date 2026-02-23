@@ -38,7 +38,7 @@ const IntroGuestHomePage = () => {
     isLoading: finishlineImageIsLoading,
     isError: finishlineImageIsError,
     error: finishlineImageError
-  } = useGetImageUrl(organization?.finishlineLogo ?? null);
+  } = useGetImageUrl(organization?.platformLogoImageId ?? null);
 
   if (organizationIsError) {
     return <ErrorPage message={organizationError.message} />;
@@ -97,7 +97,7 @@ const IntroGuestHomePage = () => {
       </Box>
 
       <Typography mt={2} align="center" sx={{ maxWidth: 560 }}>
-        {organization.finishlineDescription}
+        {organization.platformDescription}
       </Typography>
       <Box sx={{ mt: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Stack direction="row" flexWrap="wrap" gap={2} useFlexGap justifyContent="center">

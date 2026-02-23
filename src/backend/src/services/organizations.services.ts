@@ -545,4 +545,50 @@ export default class OrganizationsService {
 
     return updatedOrg.financeDelegates.map(userTransformer);
   }
+
+  /**
+   * sets an organizations platform image
+   * @param submitter the user who is setting the images
+   * @param organizationId the organization which the images will be set up
+   * @param images the images which are being set
+   */
+  static async setPlatformLogoImage(
+    platformLogoImageId: Express.Multer.File | null,
+    submitter: User,
+    organization: Organization
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update platform logo');
+    }
+
+    const platformLogoImageData = platformLogoImageId ? await uploadFile(platformLogoImageId) : null;
+
+    const updateData = {
+      ...(platformLogoImageData && { platformLogoImageId: platformLogoImageData.id })
+    };
+
+    const newImages = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: updateData
+    });
+
+    return newImages;
+  }
+
+  /**
+   * Gets platform logo image for the given organization
+   * @param organizationId organization Id of the milestone
+   * @returns all the milestones from the given organization
+   */
+  static async getPlatformLogoImage(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    return organization.platformLogoImageId;
+  }
 }

@@ -111,6 +111,29 @@ export default class OrganizationsController {
     }
   }
 
+  static async setPlatformLogoImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.file) {
+        throw new HttpException(400, 'Invalid or undefined image data');
+      }
+
+      const updatedOrg = await OrganizationsService.setPlatformLogoImage(req.file, req.currentUser, req.organization);
+
+      res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getPlatformLogoImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const platformLogoImageId = await OrganizationsService.getPlatformLogoImage(req.organization.organizationId);
+      res.status(200).json(platformLogoImageId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async setNewMemberImage(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.file) {

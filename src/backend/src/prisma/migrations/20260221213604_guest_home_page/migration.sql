@@ -8,5 +8,5 @@
 -- AlterTable
 ALTER TABLE "Organization" DROP COLUMN "applyInterestImageId",
 DROP COLUMN "exploreAsGuestImageId",
-ADD COLUMN     "finishlineDescription" TEXT NOT NULL DEFAULT '',
-ADD COLUMN     "finishlineLogo" TEXT;
+ADD COLUMN     "platformDescription" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "platformLogoImageId" TEXT;

@@ -43,6 +43,14 @@ organizationRouter.post(
 );
 organizationRouter.post('/logo/update', upload.single('logo'), OrganizationsController.setLogoImage);
 organizationRouter.get('/logo', OrganizationsController.getOrganizationLogoImage);
+
+organizationRouter.post(
+  '/platform-logo/update',
+  upload.single('platformLogo'),
+  OrganizationsController.setPlatformLogoImage
+);
+organizationRouter.get('/platform-logo', OrganizationsController.getPlatformLogoImage);
+
 organizationRouter.post(
   '/new-member-image/update',
   upload.single('newMemberImage'),

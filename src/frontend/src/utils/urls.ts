@@ -367,6 +367,8 @@ const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
 const organizationsNewMemberImage = () => `${organizations()}/new-member-image`;
 const organizationsSetNewMemberImage = () => `${organizations()}/new-member-image/update`;
+const organizationsPlatformLogoImage = () => `${organizations()}/platform-logo`;
+const organizationsSetPlatformLogoImage = () => `${organizationsPlatformLogoImage()}/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
@@ -727,6 +729,8 @@ export const apiUrls = {
   organizationsSetLogoImage,
   organizationsNewMemberImage,
   organizationsSetNewMemberImage,
+  organizationsPlatformLogoImage,
+  organizationsSetPlatformLogoImage,
   organizationsSetFeaturedProjects,
   organizationsSetWorkspaceId,
   organizationsGetPartReviewGuideLink,

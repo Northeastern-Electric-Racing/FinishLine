@@ -295,4 +295,64 @@ describe('Organization Tests', () => {
       expect(updatedOrganization.partReviewGuideLink).toBe('newlink');
     });
   });
+
+  describe('Set Organization Platform Logo', () => {
+    const file1 = { originalname: 'image1.png' } as Express.Multer.File;
+    const file2 = { originalname: 'image2.png' } as Express.Multer.File;
+    const file3 = { originalname: 'image3.png' } as Express.Multer.File;
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        OrganizationsService.setPlatformLogoImage(file1, await createTestUser(wonderwomanGuest, orgId), organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update platform logo'));
+    });
+
+    it('Succeeds and updates all the images', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      (uploadFile as Mock).mockImplementation((file) => {
+        return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
+      });
+
+      await OrganizationsService.setPlatformLogoImage(file2, testBatman, organization);
+
+      const oldOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(oldOrganization).not.toBeNull();
+      expect(oldOrganization?.platformLogoImageId).toBe('uploaded-image2.png');
+
+      await OrganizationsService.setPlatformLogoImage(file3, testBatman, organization);
+
+      const updatedOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(updatedOrganization?.platformLogoImageId).toBe('uploaded-image3.png');
+    });
+  });
+
+  describe('Get Organization Platform Logo', () => {
+    it('Fails if an organization does not exist', async () => {
+      await expect(async () => await OrganizationsService.getPlatformLogoImage('1')).rejects.toThrow(
+        new NotFoundException('Organization', '1')
+      );
+    });
+
+    it('Succeeds and gets the image', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await OrganizationsService.setPlatformLogoImage(
+        { originalname: 'image1.png' } as Express.Multer.File,
+        testBatman,
+        organization
+      );
+      const image = await OrganizationsService.getPlatformLogoImage(orgId);
+
+      expect(image).not.toBeNull();
+      expect(image).toBe('uploaded-image1.png');
+    });
+  });
 });
