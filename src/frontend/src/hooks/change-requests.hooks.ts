@@ -261,7 +261,7 @@ export const useCreateLeadershipChangeRequest = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['change requests']);
         queryClient.invalidateQueries(['projects']);
-        queryClient.invalidateQueries(['work-packages']);
+        queryClient.invalidateQueries(['work packages']);
       }
     }
   );
