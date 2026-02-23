@@ -4,7 +4,7 @@ import { useEditWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import * as yup from 'yup';
-import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
+import { useCreateLeadershipChangeRequest, useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { routes } from '../../utils/routes';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 
@@ -20,12 +20,10 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, workP
   const { mutateAsync: editWorkPackage, isLoading } = useEditWorkPackage(wbsNum);
   const { mutateAsync: createWorkPackageScopeCR, isLoading: createStandardChangeRequestIsLoading } =
     useCreateStandardChangeRequest();
-  // TODO: Create auto-approved leadership CR hook for work packages
-  // const { mutateAsync: createAutoApprovedWPLeadershipCR, isLoading: createAutoApprovedWPIsLoading } =
-  //   useCreateAutoApprovedWPLeadershipCR();
 
-  if (isLoading || createStandardChangeRequestIsLoading) return <LoadingIndicator />;
-  // if (isLoading || createStandardChangeRequestIsLoading || createAutoApprovedWPIsLoading) return <LoadingIndicator />;
+  const { mutateAsync: mutateLeadershipCR, isLoading: isLeadershipCRLoading } = useCreateLeadershipChangeRequest();
+
+  if (isLoading || createStandardChangeRequestIsLoading || isLeadershipCRLoading) return <LoadingIndicator />;
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
@@ -57,7 +55,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, workP
       wbsNum={wbsNum}
       workPackageMutateAsync={editWorkPackageWrapper}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
-      createAutoApprovedLeadershipCR={/*createAutoApprovedWPLeadershipCR*/ () => {}}
+      createLeadershipCR={mutateLeadershipCR}
       exitActiveMode={() => {
         setPageMode(false);
         history.push(`${history.location.pathname}`);

@@ -11,7 +11,9 @@ import {
   validateWBS,
   WbsElement,
   wbsPipe,
-  WorkPackageTemplate
+  WorkPackageTemplate,
+  WorkPackageStage,
+  LeadershipChangeCreateArgs
 } from 'shared';
 import {
   Control,
@@ -34,7 +36,6 @@ import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
-import { WorkPackageStage } from 'shared';
 import { ObjectSchema } from 'yup';
 import { getMonday, transformDate } from '../../utils/datetime.utils';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
@@ -68,7 +69,7 @@ interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
   workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
-  createAutoApprovedLeadershipCR: (data: any) => void;
+  createLeadershipCR: (data: LeadershipChangeCreateArgs) => void;
   defaultValues?: WorkPackageFormViewPayload;
   wbsElement: WbsElement;
   leadOrManagerOptions: User[];
@@ -93,7 +94,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   exitActiveMode,
   workPackageMutateAsync,
   createWorkPackageScopeCR,
-  createAutoApprovedLeadershipCR,
+  createLeadershipCR,
   defaultValues,
   wbsElement,
   leadOrManagerOptions,
@@ -262,12 +263,12 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
       if (onlyLeadershipChanged) {
         const autoCRPayload = {
+          submitterId: user.userId,
           wbsNum: wbsElement.wbsNum,
-          workPackageId: defaultValues?.workPackageId,
           leadId,
           managerId
         };
-        // await createAutoApprovedLeadershipCR(autoCRPayload);
+        await createLeadershipCR(autoCRPayload);
         exitActiveMode();
         return;
       }

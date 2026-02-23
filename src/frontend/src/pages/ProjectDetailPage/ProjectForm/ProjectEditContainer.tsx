@@ -16,12 +16,17 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import * as yup from 'yup';
 import { StandardChangeRequestType } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 import { FormInput, FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequestView';
-import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
+import {
+  CreateStandardChangeRequestPayload,
+  useCreateLeadershipChangeRequest,
+  useCreateStandardChangeRequest
+} from '../../../hooks/change-requests.hooks';
 import { routes } from '../../../utils/routes';
 import { useHistory } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import ProjectFormContainer from './ProjectForm';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface ProjectEditContainerProps {
   project: Project;
@@ -34,6 +39,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const toast = useToast();
   const query = useQuery();
   const history = useHistory();
+  const user = useCurrentUser();
   const { name, budget, summary, workPackages } = project;
   const [managerId, setManagerId] = useState<string | undefined>(project.manager?.userId.toString());
   const [leadId, setLeadId] = useState<string | undefined>(project.lead?.userId.toString());
@@ -42,8 +48,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
   const { mutateAsync, isLoading } = useEditSingleProject(project.wbsNum);
   const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
-  // TODO: Create auto-approved leadership CR hook
-  // const { mutateAsync: mutateAutoApprovedCR, isLoading: isAutoApprovedLoading } = useCreateAutoApprovedLeadershipCR();
+
+  const { mutateAsync: mutateLeadershipCR, isLoading: isLeadershipCRLoading } = useCreateLeadershipChangeRequest();
 
   const {
     data: allLinkTypes,
@@ -109,7 +115,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             }
   });
 
-  if (isLoading || isCRHookLoading) return <LoadingIndicator />;
+  if (isLoading || isCRHookLoading || isLeadershipCRLoading) return <LoadingIndicator />;
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
 
@@ -225,12 +231,12 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
       if (onlyLeadershipChanged) {
         const autoCRPayload = {
+          submitterId: user.userId,
           wbsNum: project.wbsNum,
-          projectId: project.id,
           leadId,
           managerId
         };
-        // await mutateAutoApprovedCR(autoCRPayload);
+        await mutateLeadershipCR(autoCRPayload);
         exitEditMode();
         return;
       }
