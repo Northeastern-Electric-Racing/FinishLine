@@ -264,6 +264,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
             reason: product.reason as WbsNumber,
             cost: product.cost,
             name: product.name,
+            materialId: product.materialId,
             refundSources: product.refundSources
           });
         }
@@ -321,6 +322,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
                 reason: product.reason as WbsNumber,
                 cost: product.cost,
                 name: product.name,
+                materialId: product.materialId,
                 refundSources: product.refundSources
               });
             }
