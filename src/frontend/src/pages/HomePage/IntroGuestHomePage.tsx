@@ -1,8 +1,6 @@
 import { Typography, Box } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import ImageWithButton from './components/ImageWithButton';
 import { useHistory } from 'react-router-dom';
-import { routes } from '../../utils/routes';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useEffect } from 'react';
 import { useHomePageContext } from '../../app/HomePageContext';
@@ -10,6 +8,7 @@ import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useGetImageUrl } from '../../hooks/onboarding.hook';
+import FeaturedProjects from './components/FeaturedProjects';
 
 const IntroGuestHomePage = () => {
   const user = useCurrentUser();
@@ -22,31 +21,31 @@ const IntroGuestHomePage = () => {
   } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
 
-  const {
-    data: applyInterestImageUrl,
-    isLoading: applyImageLoading,
-    isError: applyImageIsError,
-    error: applyImageError
-  } = useGetImageUrl(organization?.applyInterestImageId ?? null);
-  const {
-    data: exploreGuestImageUrl,
-    isLoading: exploreImageLoading,
-    isError: exploreImageIsError,
-    error: exploreImageError
-  } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
+  // const {
+  //   data: applyInterestImageUrl,
+  //   isLoading: applyImageLoading,
+  //   isError: applyImageIsError,
+  //   error: applyImageError
+  // } = useGetImageUrl(organization?.applyInterestImageId ?? null);
+  // const {
+  //   data: exploreGuestImageUrl,
+  //   isLoading: exploreImageLoading,
+  //   isError: exploreImageIsError,
+  //   error: exploreImageError
+  // } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
 
   useEffect(() => {
     setCurrentHomePage('guest');
   }, [setCurrentHomePage]);
 
-  if (organizationIsError) {
-    return <ErrorPage message={organizationError.message} />;
-  }
-  if (applyImageIsError) return <ErrorPage message={applyImageError.message} />;
-  if (exploreImageIsError) return <ErrorPage message={exploreImageError.message} />;
+  // if (organizationIsError) {
+  //   return <ErrorPage message={organizationError.message} />;
+  // }
+  // if (applyImageIsError) return <ErrorPage message={applyImageError.message} />;
+  // if (exploreImageIsError) return <ErrorPage message={exploreImageError.message} />;
 
-  if (!organization || organizationIsLoading || applyImageLoading || exploreImageLoading) return <LoadingIndicator />;
-  if (!applyInterestImageUrl || !exploreGuestImageUrl) return <LoadingIndicator />;
+  // if (!organization || organizationIsLoading || applyImageLoading || exploreImageLoading) return <LoadingIndicator />;
+  // if (!applyInterestImageUrl || !exploreGuestImageUrl) return <LoadingIndicator />;
 
   return (
     <PageLayout title="Home" hidePageTitle>
@@ -60,22 +59,15 @@ const IntroGuestHomePage = () => {
           alignItems: 'center',
           flexDirection: { xs: 'column', md: 'row' },
           mt: 4,
-          padding: '20px'
+          padding: '20px',
+          px: { xs: 1, sm: 2 },
+          width: '100%',
+          boxSizing: 'border-box',
+          overflow: 'hidden'
         }}
       >
-        <Box sx={{ display: 'flex', gap: 5 }}>
-          <ImageWithButton
-            title="Interested in applying"
-            imageSrc={applyInterestImageUrl}
-            buttonText="Learn More"
-            onClick={() => history.push(routes.HOME_PNM)}
-          />
-          <ImageWithButton
-            title="Explore Our Work as a Guest"
-            imageSrc={exploreGuestImageUrl}
-            buttonText="FinishLine"
-            onClick={() => history.push(routes.HOME_MEMBER)}
-          />
+        <Box sx={{ width: '100%', minWidth: 0 }}>
+          <FeaturedProjects />
         </Box>
       </Box>
     </PageLayout>

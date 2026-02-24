@@ -13,6 +13,8 @@ const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, tit
     <Card
       sx={{
         height: '100%',
+        width: 'fit-content',
+        maxWidth: '100%',
         background: theme.palette.background.paper
       }}
       variant="outlined"
