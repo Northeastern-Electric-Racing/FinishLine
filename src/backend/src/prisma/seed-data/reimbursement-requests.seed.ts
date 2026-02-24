@@ -49,6 +49,8 @@ export const seedReimbursementRequests = async (
     patrick: any;
     squidward: any;
     sandy: any;
+    pearl: any;
+    larry: any;
   },
   vendors: {
     tesla: Vendor;
