@@ -1049,6 +1049,9 @@ export default class ChangeRequestsService {
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
     if (wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('WBS Element');
 
+    // avoid merge conflicts
+    await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
+
     const numChangeRequests = await prisma.change_Request.count({
       where: { organizationId: organization.organizationId }
     });
