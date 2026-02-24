@@ -48,20 +48,9 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
-          // Point to the source SKILL.md files in .claude/skills/
-          editUrl: ({ docPath }) => {
-            // Don't show edit link for intro page (it's generated)
-            if (docPath === 'intro.md') {
-              return undefined;
-            }
-            // Convert docs path back to skills path
-            // e.g., general-practices/backend-endpoints.md -> general-practices/backend-endpoints/SKILL.md
-            const pathWithoutExt = docPath.replace('.md', '');
-            const pathParts = pathWithoutExt.split('/');
-            const fileName = pathParts.pop();
-            const skillPath = [...pathParts, fileName, 'SKILL.md'].join('/');
-            return `https://github.com/Northeastern-Electric-Racing/FinishLine/edit/main/.claude/skills/${skillPath}`;
-          },
+          // Point to the source documentation files in docs-site/docs/
+          editUrl:
+            'https://github.com/Northeastern-Electric-Racing/FinishLine/edit/main/docs-site/docs/',
         },
         blog: false,
         theme: {

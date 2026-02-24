@@ -1,11 +1,8 @@
 ---
-name: backend-endpoints
-description: >-
-  Guide for creating backend API endpoints in FinishLine following the
-  Route → Controller → Service pattern with multi-tenant security.
-  Use when creating new endpoints, adding API routes, implementing
-  controllers or services, building backend request handlers, or
-  when asked how the backend works.
+title: Backend Endpoints
+description: Guide for creating backend API endpoints in FinishLine following the Route → Controller → Service pattern with multi-tenant security. Use when creating new endpoints, adding API routes, implementing controllers or services, building backend request handlers, or when asked how the backend works.
+skill: true
+skill_name: backend-endpoints
 ---
 
 # Backend Endpoints
@@ -73,7 +70,7 @@ If a service throws an exception, it bubbles up through the controller's `next(e
 | Errors | `src/backend/src/utils/errors.utils.ts` | `HttpException` subclasses |
 | Express types | `src/backend/custom.d.ts` | `currentUser` and `organization` on `Request` |
 
-For query args and transformers, see the [query-args-and-transformers](../query-args-and-transformers/SKILL.md) skill.
+For query args and transformers, see the [query-args-and-transformers](./query-args-and-transformers) skill.
 
 ## How Endpoint URLs Work
 
@@ -309,7 +306,7 @@ export default class CalendarService {
 - ALWAYS filter `dateDeleted: null` on queries at both the top level and within nested includes/selects.
 - Deleting an entity MUST be a soft delete (`dateDeleted: new Date()`), never `prisma.*.delete()`.
 
-For query args and transformer patterns, see the [query-args-and-transformers](../query-args-and-transformers/SKILL.md) skill.
+For query args and transformer patterns, see the [query-args-and-transformers](./query-args-and-transformers) skill.
 
 ### Step 5: Deciding the Access Level
 
@@ -433,7 +430,7 @@ For complex reusable validators, spread them: `...descriptionBulletsValidators`.
 - [ ] Entity name added to `ExceptionObjectNames` if needed
 - [ ] All queries filter `dateDeleted: null` at every level
 - [ ] Delete operations are soft deletes
-- [ ] Service returns transformed shared types (see [query-args-and-transformers](../query-args-and-transformers/SKILL.md))
+- [ ] Service returns transformed shared types (see [query-args-and-transformers](./query-args-and-transformers))
 - [ ] Multiple writes wrapped in `prisma.$transaction()`
 - [ ] All imports use `.js` extensions
 - [ ] Router registered in `index.ts` (if new feature)

@@ -28,6 +28,9 @@
 *.env
 .agent
 
+# Generated Claude skills (source is docs-site/docs/)
+.claude/skills/
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
