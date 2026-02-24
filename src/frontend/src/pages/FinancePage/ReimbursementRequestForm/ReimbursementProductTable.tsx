@@ -576,10 +576,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                   shouldValidate: true,
                                                   shouldDirty: true
                                                 });
-                                                setValue(`reimbursementProducts.${product.index}.materialId`, material.materialId, {
-                                                  shouldValidate: true,
-                                                  shouldDirty: true
-                                                });
+                                                setValue(
+                                                  `reimbursementProducts.${product.index}.materialId`,
+                                                  material.materialId,
+                                                  {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true
+                                                  }
+                                                );
                                               } else {
                                                 setValue(`reimbursementProducts.${product.index}.name`, '', {
                                                   shouldValidate: true,
