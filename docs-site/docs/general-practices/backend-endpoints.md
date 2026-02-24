@@ -60,15 +60,15 @@ If a service throws an exception, it bubbles up through the controller's `next(e
 
 ## File Locations
 
-| Layer | Path | Naming |
-|-------|------|--------|
-| Entry point | `src/backend/index.ts` | — |
-| Routes | `src/backend/src/routes/{feature}.routes.ts` | `{feature}Router` |
-| Controllers | `src/backend/src/controllers/{feature}.controllers.ts` | `{Feature}Controller` class |
-| Services | `src/backend/src/services/{feature}.services.ts` | `{Feature}Service` class |
-| Validation | `src/backend/src/utils/validation.utils.ts` | Shared validators |
-| Errors | `src/backend/src/utils/errors.utils.ts` | `HttpException` subclasses |
-| Express types | `src/backend/custom.d.ts` | `currentUser` and `organization` on `Request` |
+| Layer         | Path                                                   | Naming                                        |
+| ------------- | ------------------------------------------------------ | --------------------------------------------- |
+| Entry point   | `src/backend/index.ts`                                 | —                                             |
+| Routes        | `src/backend/src/routes/{feature}.routes.ts`           | `{feature}Router`                             |
+| Controllers   | `src/backend/src/controllers/{feature}.controllers.ts` | `{Feature}Controller` class                   |
+| Services      | `src/backend/src/services/{feature}.services.ts`       | `{Feature}Service` class                      |
+| Validation    | `src/backend/src/utils/validation.utils.ts`            | Shared validators                             |
+| Errors        | `src/backend/src/utils/errors.utils.ts`                | `HttpException` subclasses                    |
+| Express types | `src/backend/custom.d.ts`                              | `currentUser` and `organization` on `Request` |
 
 For query args and transformers, see the [query-args-and-transformers](./query-args-and-transformers) skill.
 
@@ -77,11 +77,13 @@ For query args and transformers, see the [query-args-and-transformers](./query-a
 The full URL path for any endpoint is the **combination** of the base path registered in `src/backend/index.ts` and the route path in the router file. This is a very common source of confusion.
 
 For example, if `index.ts` registers:
+
 ```typescript
 app.use('/calendar', calendarRouter);
 ```
 
 And the router defines:
+
 ```typescript
 calendarRouter.post('/shop/create', ...);
 ```
@@ -100,13 +102,8 @@ Add validation rules using `express-validator` and the helpers from `validation.
 // src/backend/src/routes/calendar.routes.ts
 import express from 'express';
 import { body } from 'express-validator';
-import {
-  nonEmptyString,
-  isDate,
-  validateInputs
-} from '../utils/validation.utils.js';
-import CalendarController
-  from '../controllers/calendar.controllers.js';
+import { nonEmptyString, isDate, validateInputs } from '../utils/validation.utils.js';
+import CalendarController from '../controllers/calendar.controllers.js';
 
 const calendarRouter = express.Router();
 
@@ -132,6 +129,7 @@ export default calendarRouter;
 - URL params use `param()`, query strings use `query()`, body fields use `body()`.
 
 **When to abstract validators:** Keep validation inline in the route by default. Only extract validators into `validation.utils.ts` when:
+
 - The request body contains a **nested object** that is itself a known entity (e.g., a work package embedded inside a project create payload). Create a named validator array like `workPackageProposedChangesValidators`.
 - The **same set of validations** is repeated across multiple routes (e.g., `descriptionBulletsValidators` used in both work package and project routes).
 
@@ -143,8 +141,7 @@ If creating a brand new feature router, register it in `src/backend/index.ts`:
 
 ```typescript
 // src/backend/index.ts
-import calendarRouter
-  from './src/routes/calendar.routes.js';
+import calendarRouter from './src/routes/calendar.routes.js';
 
 // ... after getUserAndOrganization middleware ...
 app.use('/calendar', calendarRouter);
@@ -159,30 +156,18 @@ Controllers follow a rigid structure: try/catch, extract request data, call serv
 ```typescript
 // src/backend/src/controllers/calendar.controllers.ts
 import { NextFunction, Request, Response } from 'express';
-import CalendarService
-  from '../services/calendar.services.js';
+import CalendarService from '../services/calendar.services.js';
 
 export default class CalendarController {
-  static async createShop(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async createShop(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, description, dateEstablished }
-        = req.body;
+      const { name, description, dateEstablished } = req.body;
 
       // Parse date strings to Date objects
       // before passing to the service
       const parsedDate = new Date(dateEstablished);
 
-      const shop = await CalendarService.createShop(
-        req.currentUser,
-        name,
-        description,
-        parsedDate,
-        req.organization
-      );
+      const shop = await CalendarService.createShop(req.currentUser, name, description, parsedDate, req.organization);
 
       res.status(200).json(shop);
     } catch (error: unknown) {
@@ -211,16 +196,10 @@ Services contain all business logic.
 // src/backend/src/services/calendar.services.ts
 import { User, Shop, notGuest } from 'shared';
 import prisma from '../prisma/prisma.js';
-import {
-  AccessDeniedGuestException,
-  HttpException
-} from '../utils/errors.utils.js';
-import { shopTransformer }
-  from '../transformers/calendar.transformer.js';
-import { getShopQueryArgs }
-  from '../prisma-query-args/shop.query-args.js';
-import { userHasPermission }
-  from '../utils/users.utils.js';
+import { AccessDeniedGuestException, HttpException } from '../utils/errors.utils.js';
+import { shopTransformer } from '../transformers/calendar.transformer.js';
+import { getShopQueryArgs } from '../prisma-query-args/shop.query-args.js';
+import { userHasPermission } from '../utils/users.utils.js';
 import { Organization } from '@prisma/client';
 
 export default class CalendarService {
@@ -246,16 +225,8 @@ export default class CalendarService {
     organization: Organization
   ): Promise<Shop> {
     // 1. Permission check
-    if (
-      !(await userHasPermission(
-        submitter.userId,
-        organization.organizationId,
-        notGuest
-      ))
-    ) {
-      throw new AccessDeniedGuestException(
-        'create shops'
-      );
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('create shops');
     }
 
     // 2. Business rule validation (inline select)
@@ -269,10 +240,7 @@ export default class CalendarService {
     });
 
     if (duplicate) {
-      throw new HttpException(
-        400,
-        'A shop with that name already exists'
-      );
+      throw new HttpException(400, 'A shop with that name already exists');
     }
 
     // 3. Database write (query args for response)
@@ -314,22 +282,20 @@ Every write endpoint (and some sensitive reads) needs a permission check at the 
 
 ```typescript
 import {
-  notGuest,      // members and above
-  isLeadership,  // leads and above
-  isHead,        // heads and above
-  isAdmin        // admins and app-admins only
+  notGuest, // members and above
+  isLeadership, // leads and above
+  isHead, // heads and above
+  isAdmin // admins and app-admins only
 } from 'shared';
 
 if (
   !(await userHasPermission(
     submitter.userId,
     organization.organizationId,
-    isHead  // choose the right level
+    isHead // choose the right level
   ))
 ) {
-  throw new AccessDeniedAdminOnlyException(
-    'create event types'
-  );
+  throw new AccessDeniedAdminOnlyException('create event types');
 }
 ```
 
@@ -348,16 +314,16 @@ Match the exception class to the level: `AccessDeniedGuestException` for `notGue
 
 Services throw exceptions from `src/backend/src/utils/errors.utils.ts`. The global `errorHandler` middleware catches them.
 
-| Exception | Status | When to Use |
-|-----------|--------|-------------|
-| `HttpException(status, msg)` | any | General-purpose with custom status |
-| `NotFoundException(name, id)` | 404 | Entity not found |
-| `DeletedException(name, id)` | 404 | Entity is soft-deleted |
-| `AccessDeniedException(msg?)` | 403 | Generic permission failure |
-| `AccessDeniedAdminOnlyException(action)` | 403 | Non-admin attempting admin action |
-| `AccessDeniedMemberException(action)` | 403 | Guest/member attempting restricted action |
-| `AccessDeniedGuestException(action)` | 403 | Guest attempting non-guest action |
-| `InvalidOrganizationException(item)` | 400 | Entity not in current org |
+| Exception                                | Status | When to Use                               |
+| ---------------------------------------- | ------ | ----------------------------------------- |
+| `HttpException(status, msg)`             | any    | General-purpose with custom status        |
+| `NotFoundException(name, id)`            | 404    | Entity not found                          |
+| `DeletedException(name, id)`             | 404    | Entity is soft-deleted                    |
+| `AccessDeniedException(msg?)`            | 403    | Generic permission failure                |
+| `AccessDeniedAdminOnlyException(action)` | 403    | Non-admin attempting admin action         |
+| `AccessDeniedMemberException(action)`    | 403    | Guest/member attempting restricted action |
+| `AccessDeniedGuestException(action)`     | 403    | Guest attempting non-guest action         |
+| `InvalidOrganizationException(item)`     | 400    | Entity not in current org                 |
 
 The `name` parameter for `NotFoundException` and `DeletedException` MUST be one of the values in the `ExceptionObjectNames` type union in `errors.utils.ts`. Add your entity to that type if it's not listed.
 
@@ -365,17 +331,17 @@ The `name` parameter for `NotFoundException` and `DeletedException` MUST be one 
 
 `src/backend/src/utils/validation.utils.ts` provides reusable validation chains:
 
-| Helper | Validates |
-|--------|-----------|
-| `nonEmptyString(body('x'))` | Non-empty string |
-| `intMinZero(body('x'))` | Integer ≥ 0, not a string |
-| `decimalMinZero(body('x'))` | Decimal ≥ 0 |
-| `isDate(body('x'))` | Parseable date string |
-| `isOptionalDate(body('x'))` | Optional parseable date |
-| `isRole(body('x'))` | Valid `RoleEnum` value |
-| `isStatus(body('x'))` | Valid `WbsElementStatus` |
-| `isEventStatus(body('x'))` | Valid `Event_Status` |
-| `validateInputs` | Runs validation, returns 400 |
+| Helper                      | Validates                    |
+| --------------------------- | ---------------------------- |
+| `nonEmptyString(body('x'))` | Non-empty string             |
+| `intMinZero(body('x'))`     | Integer ≥ 0, not a string    |
+| `decimalMinZero(body('x'))` | Decimal ≥ 0                  |
+| `isDate(body('x'))`         | Parseable date string        |
+| `isOptionalDate(body('x'))` | Optional parseable date      |
+| `isRole(body('x'))`         | Valid `RoleEnum` value       |
+| `isStatus(body('x'))`       | Valid `WbsElementStatus`     |
+| `isEventStatus(body('x'))`  | Valid `Event_Status`         |
+| `validateInputs`            | Runs validation, returns 400 |
 
 For complex reusable validators, spread them: `...descriptionBulletsValidators`.
 

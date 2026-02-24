@@ -109,32 +109,32 @@ function transformLinksForSkills(content) {
     if (linkPath.endsWith('/SKILL.md')) {
       return fullMatch;
     }
-    
+
     // Skip external links (http/https)
     if (linkPath.startsWith('http://') || linkPath.startsWith('https://')) {
       return fullMatch;
     }
-    
+
     // Skip anchor links
     if (linkPath.startsWith('#')) {
       return fullMatch;
     }
-    
+
     // Transform ./doc → ../doc/SKILL.md
     if (linkPath.startsWith('./')) {
       const cleanPath = linkPath.substring(2); // Remove ./
       return `[${linkText}](../${cleanPath}/SKILL.md)`;
     }
-    
+
     // Transform ../doc → ../../doc/SKILL.md
     if (linkPath.startsWith('../')) {
       return `[${linkText}](../${linkPath}/SKILL.md)`;
     }
-    
+
     // Leave other links unchanged
     return fullMatch;
   });
-  
+
   return content;
 }
 

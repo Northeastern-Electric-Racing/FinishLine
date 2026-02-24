@@ -35,7 +35,7 @@ function buildSidebarStructure(dir, basePath = '') {
       items.push({
         type: 'category',
         label: label,
-        items: categoryItems,
+        items: categoryItems
       });
     }
   });

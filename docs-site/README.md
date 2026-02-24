@@ -186,6 +186,7 @@ The sidebar navigation is **automatically generated** from the `docs/` folder st
 The sidebar regenerates automatically when you run `yarn docs:dev` or `yarn docs:build`.
 
 You can also manually regenerate it:
+
 ```bash
 yarn generate-sidebar
 ```

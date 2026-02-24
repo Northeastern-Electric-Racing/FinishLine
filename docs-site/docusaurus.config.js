@@ -4,12 +4,12 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-import {themes as prismThemes} from 'prism-react-renderer';
+import { themes as prismThemes } from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'FinishLine Documentation',
-  tagline: 'Developer documentation for Northeastern Electric Racing\'s project management platform',
+  tagline: "Developer documentation for Northeastern Electric Racing's project management platform",
   favicon: 'img/favicon.ico',
 
   // Production URL - update this when deploying
@@ -29,8 +29,8 @@ const config = {
     format: 'mdx',
     mermaid: false,
     hooks: {
-      onBrokenMarkdownLinks: 'warn',
-    },
+      onBrokenMarkdownLinks: 'warn'
+    }
   },
 
   // Even if you don't use internationalization, you can use this field to set
@@ -38,7 +38,7 @@ const config = {
   // may want to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en']
   },
 
   presets: [
@@ -49,15 +49,14 @@ const config = {
         docs: {
           sidebarPath: './sidebars.js',
           // Point to the source documentation files in docs-site/docs/
-          editUrl:
-            'https://github.com/Northeastern-Electric-Racing/FinishLine/edit/main/docs-site/docs/',
+          editUrl: 'https://github.com/Northeastern-Electric-Racing/FinishLine/edit/main/docs-site/docs/'
         },
         blog: false,
         theme: {
-          customCss: './src/css/custom.css',
-        },
-      }),
-    ],
+          customCss: './src/css/custom.css'
+        }
+      })
+    ]
   ],
 
   themeConfig:
@@ -70,28 +69,28 @@ const config = {
         logo: {
           alt: 'NER Logo',
           src: 'img/logo.png',
-          href: '/docs/intro',
+          href: '/docs/intro'
         },
         items: [
           {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
             position: 'left',
-            label: 'Documentation',
+            label: 'Documentation'
           },
           {
             href: 'https://github.com/Northeastern-Electric-Racing/FinishLine',
             label: 'GitHub',
-            position: 'right',
-          },
-        ],
+            position: 'right'
+          }
+        ]
       },
 
       prism: {
         theme: prismThemes.github,
-        darkTheme: prismThemes.dracula,
-      },
-    }),
+        darkTheme: prismThemes.dracula
+      }
+    })
 };
 
 export default config;
