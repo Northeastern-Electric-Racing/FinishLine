@@ -29,7 +29,8 @@ function findMarkdownFiles(dir, fileList = []) {
  * Parse frontmatter from markdown
  */
 function parseFrontmatter(content) {
-  const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+  // Handle both Unix (\n) and Windows (\r\n) line endings
+  const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---/;
   const match = content.match(frontmatterRegex);
 
   if (!match) {
@@ -42,25 +43,43 @@ function parseFrontmatter(content) {
   // Parse YAML
   const lines = yamlContent.split('\n');
   const metadata = {};
+  let currentKey = null;
+  let currentValue = '';
 
   lines.forEach((line) => {
     const keyMatch = line.match(/^(\w+):\s*(.*)$/);
     if (keyMatch) {
-      const key = keyMatch[1];
-      let value = keyMatch[2].trim();
-      
-      // Handle booleans
-      if (value === 'true') value = true;
-      if (value === 'false') value = false;
-      
-      // Remove quotes
-      if (typeof value === 'string') {
-        value = value.replace(/^["']|["']$/g, '');
+      // Save previous key-value pair
+      if (currentKey) {
+        let value = currentValue.trim();
+        // Handle booleans
+        if (value === 'true') value = true;
+        else if (value === 'false') value = false;
+        // Remove quotes
+        else if (typeof value === 'string') {
+          value = value.replace(/^["']|["']$/g, '');
+        }
+        metadata[currentKey] = value;
       }
-      
-      metadata[key] = value;
+      // Start new key
+      currentKey = keyMatch[1];
+      currentValue = keyMatch[2];
+    } else if (currentKey && line.trim()) {
+      // Continue multi-line value
+      currentValue += ' ' + line.trim();
     }
   });
+
+  // Save last key-value pair
+  if (currentKey) {
+    let value = currentValue.trim();
+    if (value === 'true') value = true;
+    else if (value === 'false') value = false;
+    else if (typeof value === 'string') {
+      value = value.replace(/^["']|["']$/g, '');
+    }
+    metadata[currentKey] = value;
+  }
 
   return { metadata, content: restOfContent };
 }

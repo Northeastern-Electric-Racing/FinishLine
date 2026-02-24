@@ -1,6 +1,8 @@
 ---
-name: frontend-hooks-and-apis
+title: Frontend Hooks and APIs
 description: Guide for creating React Query hooks and Axios API client functions in FinishLine. Covers query hooks, mutation hooks, API functions, query keys, cache invalidation, toast notifications, and frontend transformers. Use when creating new hooks, adding API calls, writing query or mutation hooks, working with React Query, implementing cache invalidation, or when asked how frontend data fetching works.
+skill: true
+skill_name: frontend-hooks-and-apis
 ---
 
 # Frontend Hooks and API Client Functions
