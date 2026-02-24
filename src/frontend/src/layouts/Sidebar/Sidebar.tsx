@@ -9,6 +9,9 @@ import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { Typography, Box, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
+import RateReviewIcon from '@mui/icons-material/RateReview';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import FolderIcon from '@mui/icons-material/Folder';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import GroupIcon from '@mui/icons-material/Group';
@@ -21,7 +24,10 @@ import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
 import { Cached, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
-import { isGuest } from 'shared';
+import { isGuest, TeamType } from 'shared';
+import * as MuiIcons from '@mui/icons-material';
+import { useAllTeamTypes } from '../../hooks/team-types.hooks';
+import ErrorPage from '../../pages/ErrorPage';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
@@ -40,29 +46,69 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const user = useCurrentUser();
+  const { onGuestHomePage } = useHomePageContext();
+  const { isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamTypes();
 
+  const allTeams: LinkItem[] = (teams ?? []).map((team: TeamType) => {
+    const IconComponent = MuiIcons[(team.iconName in MuiIcons ? team.iconName : 'Circle') as keyof typeof MuiIcons];
+    return {
+      name: team.name,
+      icon: <IconComponent />,
+      route: routes.TEAMS + '/' + team.teamTypeId
+    };
+  });
+
+  if (teamsError) return <ErrorPage error={teamsErrorMsg} />;
   const memberLinkItems: LinkItem[] = [
     {
       name: 'Home',
       icon: <HomeIcon />,
-      route: routes.HOME
+      route: onGuestHomePage ? routes.HOME_GUEST : routes.HOME
     },
-    {
+    !onGuestHomePage && {
       name: 'Gantt',
       icon: <AlignHorizontalLeftIcon />,
       route: routes.GANTT
     },
-    {
-      name: 'Projects',
-      icon: <FolderIcon />,
-      route: routes.PROJECTS
-    },
-    {
+    !onGuestHomePage
+      ? {
+          name: 'Projects',
+          icon: <FolderIcon />,
+          route: routes.PROJECTS
+        }
+      : {
+          name: 'Project Management',
+          icon: <DashboardIcon />,
+          route: routes.PROJECTS,
+          subItems: [
+            {
+              name: 'Gantt',
+              icon: <AlignHorizontalLeftIcon />,
+              route: routes.GANTT
+            },
+            {
+              name: 'Projects',
+              icon: <FolderIcon />,
+              route: routes.PROJECTS
+            },
+            {
+              name: 'Change Requests',
+              icon: <SyncAltIcon />,
+              route: routes.CHANGE_REQUESTS
+            },
+            {
+              name: 'Design Review',
+              icon: <RateReviewIcon />,
+              route: routes.CALENDAR
+            }
+          ]
+        },
+    !onGuestHomePage && {
       name: 'Change Requests',
       icon: <SyncAltIcon />,
       route: routes.CHANGE_REQUESTS
     },
-    {
+    !onGuestHomePage && {
       name: 'Finance',
       icon: <AttachMoneyIcon />,
       route: routes.FINANCE,
@@ -84,19 +130,31 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
         }
       ]
     },
-    {
-      name: 'Teams',
-      icon: <GroupIcon />,
-      route: routes.TEAMS
-    },
-    {
+    !onGuestHomePage
+      ? {
+          name: 'Teams',
+          icon: <GroupIcon />,
+          route: routes.TEAMS
+        }
+      : {
+          name: 'Divisions',
+          icon: <GroupIcon />,
+          route: routes.TEAMS,
+          subItems: allTeams
+        },
+    !onGuestHomePage && {
       name: 'Calendar',
       icon: <CalendarTodayIcon />,
       route: routes.CALENDAR
     },
-    {
+    !onGuestHomePage && {
       name: 'Retrospective',
       icon: <Cached />,
+      route: routes.RETROSPECTIVE
+    },
+    onGuestHomePage && {
+      name: 'Sponsors',
+      icon: <VolunteerActivismIcon />,
       route: routes.RETROSPECTIVE
     },
     {
@@ -104,9 +162,9 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       icon: <QuestionMarkIcon />,
       route: routes.INFO
     }
-  ];
+  ].filter(Boolean) as LinkItem[];
 
-  if (!isGuest(user.role)) {
+  if (!isGuest(user.role) && !onGuestHomePage) {
     memberLinkItems.splice(6, 0, {
       name: 'Statistics',
       icon: <BarChartIcon />,
