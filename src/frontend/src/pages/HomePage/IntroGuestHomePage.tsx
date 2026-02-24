@@ -1,24 +1,24 @@
 import { Typography, Box } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useEffect } from 'react';
 import { useHomePageContext } from '../../app/HomePageContext';
-import { useCurrentOrganization } from '../../hooks/organizations.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
-import { useGetImageUrl } from '../../hooks/onboarding.hook';
+// import { useCurrentOrganization } from '../../hooks/organizations.hooks';
+// import LoadingIndicator from '../../components/LoadingIndicator';
+// import ErrorPage from '../ErrorPage';
+// import { useGetImageUrl } from '../../hooks/onboarding.hook';
 import FeaturedProjects from './components/FeaturedProjects';
 
 const IntroGuestHomePage = () => {
   const user = useCurrentUser();
-  const history = useHistory();
-  const {
-    data: organization,
-    isLoading: organizationIsLoading,
-    isError: organizationIsError,
-    error: organizationError
-  } = useCurrentOrganization();
+  // const history = useHistory();
+  // const {
+  //   data: organization,
+  //   isLoading: organizationIsLoading,
+  //   isError: organizationIsError,
+  //   error: organizationError
+  // } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
 
   // const {
