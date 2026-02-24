@@ -67,20 +67,21 @@ const GanttChart = <E, T>({
     >
       <GanttChartTimeline start={startDate} end={endDate} />
       <Box sx={{ position: 'relative' }}>
-        {collections.map((collection) => {
-          return collection.tasks ? (
-            <GanttChartCollectionSection
-              startDate={startDate}
-              endDate={endDate}
-              collection={collection}
-              shouldShowChildren={shouldShowChildren}
-              onShowChildrenToggle={onShowChildrenToggle}
-              editability={editability}
-            />
-          ) : (
-            <></>
-          );
-        })}
+        {collections
+          .filter((collection) => collection.tasks.length > 0)
+          .map((collection) => {
+            return (
+              <GanttChartCollectionSection
+                key={collection.id}
+                startDate={startDate}
+                endDate={endDate}
+                collection={collection}
+                shouldShowChildren={shouldShowChildren}
+                onShowChildrenToggle={onShowChildrenToggle}
+                editability={editability}
+              />
+            );
+          })}
 
         {currentWeekCol > 0 && (
           <Box
