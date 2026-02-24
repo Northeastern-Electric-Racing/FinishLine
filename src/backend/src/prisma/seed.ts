@@ -3053,10 +3053,10 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax,
     ner,
     daysFromNow(30),
-    'notes...',
+    'Send Google mid-year impact report with project highlights',
     sponsor.sponsorId,
-    daysAgo(60),
-    thomasEmrax.userId
+    daysFromNow(20),
+    superman.userId
   );
 
   const altiumSponsor = await FinanceServices.createSponsor(
@@ -3242,7 +3242,7 @@ const performSeed: () => Promise<void> = async () => {
       highlightThresholdDays: 14,
       status: 'IN_PROGRESS',
       firstContactMethod: 'OUTBOUND_EMAIL',
-      contactorUserId: thomasEmrax.userId,
+      contactorUserId: lexLuther.userId,
       contactId: prospectiveContact1.sponsorContactId,
       notes: 'Reached out about potential parts sponsorship for battery systems'
     }
@@ -3256,7 +3256,7 @@ const performSeed: () => Promise<void> = async () => {
       highlightThresholdDays: 10,
       status: 'NO_RESPONSE',
       firstContactMethod: 'OUTBOUND_EMAIL',
-      contactorUserId: thomasEmrax.userId,
+      contactorUserId: wonderwoman.userId,
       contactId: prospectiveContact2.sponsorContactId,
       notes: 'Sent initial sponsorship proposal, no reply yet'
     }
@@ -3270,7 +3270,7 @@ const performSeed: () => Promise<void> = async () => {
       highlightThresholdDays: 7,
       status: 'IN_PROGRESS',
       firstContactMethod: 'INBOUND_EMAIL',
-      contactorUserId: thomasEmrax.userId,
+      contactorUserId: flash.userId,
       contactId: prospectiveContact3.sponsorContactId,
       notes: 'They reached out offering software licenses for the team'
     }
@@ -3284,7 +3284,7 @@ const performSeed: () => Promise<void> = async () => {
       highlightThresholdDays: 10,
       status: 'IN_PROGRESS',
       firstContactMethod: 'INBOUND_FORM',
-      contactorUserId: thomasEmrax.userId,
+      contactorUserId: aquaman.userId,
       contactId: prospectiveContact4.sponsorContactId,
       notes: 'Filled out our sponsorship interest form, interested in providing microcontrollers and dev boards'
     }
@@ -3312,7 +3312,7 @@ const performSeed: () => Promise<void> = async () => {
       highlightThresholdDays: 10,
       status: 'IN_PROGRESS',
       firstContactMethod: 'OTHER',
-      contactorUserId: thomasEmrax.userId,
+      contactorUserId: batman.userId,
       contactId: prospectiveContact6.sponsorContactId,
       notes: 'Met at local manufacturing expo, interested in providing machining services at reduced cost'
     }
@@ -3326,7 +3326,7 @@ const performSeed: () => Promise<void> = async () => {
       highlightThresholdDays: 14,
       status: 'DECLINED',
       firstContactMethod: 'OUTBOUND_EMAIL',
-      contactorUserId: thomasEmrax.userId,
+      contactorUserId: superman.userId,
       contactId: prospectiveContact7.sponsorContactId,
       notes: 'Declined for this year, suggested we reapply next fiscal year in September'
     }
@@ -3340,7 +3340,7 @@ const performSeed: () => Promise<void> = async () => {
       highlightThresholdDays: 7,
       status: 'IN_PROGRESS',
       firstContactMethod: 'INBOUND_EMAIL',
-      contactorUserId: thomasEmrax.userId,
+      contactorUserId: lexLuther.userId,
       contactId: prospectiveContact8.sponsorContactId,
       notes: 'Interested in providing MATLAB/Simulink licenses, scheduling a call next week'
     }
@@ -3363,7 +3363,8 @@ const performSeed: () => Promise<void> = async () => {
     daysFromNow(60),
     'Send McMaster-Carr updated parts list for spring semester',
     mcmasterSponsor.sponsorId,
-    daysFromNow(45)
+    daysFromNow(45),
+    lexLuther.userId
   );
 
   await FinanceServices.createSponsorTask(
@@ -3373,7 +3374,7 @@ const performSeed: () => Promise<void> = async () => {
     'Submit Bose quarterly progress report',
     boseSponsor.sponsorId,
     daysAgo(10),
-    thomasEmrax.userId
+    wonderwoman.userId
   );
 
   await FinanceServices.createSponsorTask(
@@ -3383,7 +3384,7 @@ const performSeed: () => Promise<void> = async () => {
     'Prepare annual sponsorship renewal presentation for NEU COE',
     neuSponsor.sponsorId,
     daysFromNow(60),
-    thomasEmrax.userId
+    batman.userId
   );
 
   await FinanceServices.createSponsorTask(
@@ -3391,7 +3392,9 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     daysFromNow(7),
     'Send thank-you letter and team photo to Bose',
-    boseSponsor.sponsorId
+    boseSponsor.sponsorId,
+    undefined,
+    aquaman.userId
   );
 
   // Prospective sponsor tasks
@@ -3401,7 +3404,7 @@ const performSeed: () => Promise<void> = async () => {
       notes: 'Follow up email with Tesla partnership proposal PDF',
       prospectiveSponsorId: teslaProsSpons.prospectiveSponsorId,
       notifyDate: daysFromNow(1),
-      assigneeUserId: thomasEmrax.userId
+      assigneeUserId: lexLuther.userId
     }
   });
 
@@ -3410,7 +3413,7 @@ const performSeed: () => Promise<void> = async () => {
       dueDate: daysFromNow(10),
       notes: 'Schedule demo call with SolidWorks academic team',
       prospectiveSponsorId: solidworksProsSpons.prospectiveSponsorId,
-      assigneeUserId: thomasEmrax.userId
+      assigneeUserId: flash.userId
     }
   });
 
@@ -3420,7 +3423,7 @@ const performSeed: () => Promise<void> = async () => {
       notes: 'Send TI the team roster for university program enrollment',
       prospectiveSponsorId: tiProsSpons.prospectiveSponsorId,
       notifyDate: daysAgo(5),
-      assigneeUserId: thomasEmrax.userId,
+      assigneeUserId: aquaman.userId,
       done: true
     }
   });
@@ -3430,7 +3433,8 @@ const performSeed: () => Promise<void> = async () => {
       dueDate: daysFromNow(5),
       notes: 'Prepare MathWorks sponsorship tier options document',
       prospectiveSponsorId: mathworksProsSpons.prospectiveSponsorId,
-      notifyDate: daysFromNow(2)
+      notifyDate: daysFromNow(2),
+      assigneeUserId: lexLuther.userId
     }
   });
 
@@ -3439,7 +3443,7 @@ const performSeed: () => Promise<void> = async () => {
       dueDate: daysFromNow(14),
       notes: 'Draft MATLAB workshop proposal to show value of partnership',
       prospectiveSponsorId: mathworksProsSpons.prospectiveSponsorId,
-      assigneeUserId: thomasEmrax.userId
+      assigneeUserId: wonderwoman.userId
     }
   });
 

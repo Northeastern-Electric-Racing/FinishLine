@@ -407,10 +407,6 @@ export default class ProspectiveSponsorServices {
     stockDescription?: string,
     discountDescription?: string
   ): Promise<ProspectiveSponsor> {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
-      throw new AccessDeniedException('Only heads can accept prospective sponsors');
-    }
-
     const prospectiveSponsor = await prisma.prospective_Sponsor.findUnique({
       where: { prospectiveSponsorId, organizationId: organization.organizationId },
       include: { contact: true }
@@ -418,6 +414,12 @@ export default class ProspectiveSponsorServices {
 
     if (!prospectiveSponsor) throw new NotFoundException('ProspectiveSponsor', prospectiveSponsorId);
     if (prospectiveSponsor.dateDeleted) throw new DeletedException('ProspectiveSponsor', prospectiveSponsorId);
+
+    const isContactor = prospectiveSponsor.contactorUserId === submitter.userId;
+    const isUserHead = await userHasPermission(submitter.userId, organization.organizationId, isHead);
+    if (!isUserHead && !isContactor) {
+      throw new AccessDeniedException('Only heads or the assigned contactor can accept prospective sponsors');
+    }
     if (prospectiveSponsor.status === Prospective_Sponsor_Status.ACCEPTED) {
       throw new HttpException(400, 'This prospective sponsor has already been accepted');
     }

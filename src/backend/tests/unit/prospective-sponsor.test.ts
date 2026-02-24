@@ -891,7 +891,7 @@ describe('Prospective Sponsor Tests', () => {
   });
 
   describe('Accept Prospective Sponsor', () => {
-    it('Fails if user is not a head', async () => {
+    it('Fails if user is not a head or contactor', async () => {
       const head = await createTestUser(batmanAppAdmin, orgId);
       const guest = await createTestUser(wonderwomanGuest, orgId);
 
@@ -920,7 +920,44 @@ describe('Prospective Sponsor Tests', () => {
           false,
           5000
         )
-      ).rejects.toThrow(new AccessDeniedException('Only heads can accept prospective sponsors'));
+      ).rejects.toThrow(new AccessDeniedException('Only heads or the assigned contactor can accept prospective sponsors'));
+    });
+
+    it('Succeeds when the contactor accepts', async () => {
+      const head = await createTestUser(batmanAppAdmin, orgId);
+      const contactor = await createTestUser(wonderwomanGuest, orgId);
+      const joinDate = new Date(2024, 6, 1);
+
+      const ps = await ProspectiveSponsorServices.createProspectiveSponsor(
+        head,
+        organization,
+        'Contactor Accept Corp',
+        ProspectiveSponsorStatus.IN_PROGRESS,
+        new Date(),
+        FirstContactMethod.INBOUND_EMAIL,
+        'Jane Smith',
+        contactor.userId,
+        undefined,
+        'jane@contactorcorp.com'
+      );
+
+      const result = await ProspectiveSponsorServices.acceptProspectiveSponsor(
+        contactor,
+        organization,
+        ps.prospectiveSponsorId,
+        undefined,
+        ['MONETARY'],
+        joinDate,
+        [2024],
+        false,
+        3000
+      );
+
+      expect(result.status).toBe(ProspectiveSponsorStatus.ACCEPTED);
+      const sponsors = await FinanceServices.getAllSponsors(organization);
+      const createdSponsor = sponsors.find((s) => s.name === 'Contactor Accept Corp');
+      expect(createdSponsor).toBeDefined();
+      expect(createdSponsor!.sponsorValue).toBe(3000);
     });
 
     it('Fails if prospective sponsor does not exist', async () => {

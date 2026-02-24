@@ -22,7 +22,7 @@ const taskSchema = yup.object().shape({
   sponsorTaskId: yup.string().optional(),
   dueDate: yup.date().required('Due date is required'),
   notifyDate: yup.date().nullable().optional(),
-  assignee: yup.string().nullable().optional(),
+  assigneeUserId: yup.string().nullable().optional(),
   notes: yup.string().required('Notes is required'),
   done: yup.boolean().optional()
 });
@@ -57,7 +57,7 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: s
         sponsorTaskId: task.sponsorTaskId,
         dueDate: task.dueDate ? new Date(task.dueDate) : new Date(),
         notifyDate: task.notifyDate ? new Date(task.notifyDate) : undefined,
-        assignee: task.assignee?.userId || '',
+        assigneeUserId: task.assignee?.userId || '',
         notes: task.notes || '',
         done: task.done || false
       }));
@@ -79,7 +79,7 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: s
       const payload = {
         dueDate: task.dueDate,
         notifyDate: task.notifyDate || undefined,
-        assigneeUserId: task.assignee || undefined,
+        assigneeUserId: task.assigneeUserId || undefined,
         notes: task.notes,
         done: task.done ?? false
       };
@@ -134,7 +134,7 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: s
           append({
             dueDate: new Date(),
             notifyDate: undefined,
-            assignee: '',
+            assigneeUserId: '',
             notes: '',
             sponsorTaskId: undefined,
             done: false

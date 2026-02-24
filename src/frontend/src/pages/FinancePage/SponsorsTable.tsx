@@ -52,6 +52,35 @@ const SponsorsTable = () => {
     setIsTasksModalOpen(false);
   };
 
+  const sponsorToInlinePayload = (sponsor: Sponsor, overrides: Partial<Sponsor>) => ({
+    sponsorId: sponsor.sponsorId,
+    name: sponsor.name,
+    activeStatus: sponsor.activeStatus,
+    valueTypes: sponsor.valueTypes,
+    sponsorValue: sponsor.sponsorValue,
+    joinDate: sponsor.joinDate,
+    activeYears: sponsor.activeYears,
+    sponsorTierId: sponsor.tier?.sponsorTierId,
+    taxExempt: sponsor.taxExempt,
+    contactName: sponsor.contact.name,
+    contactEmail: sponsor.contact.email,
+    contactPhone: sponsor.contact.phone,
+    contactPosition: sponsor.contact.position,
+    sponsorTasks: sponsor.sponsorTasks.map((t) => ({
+      sponsorTaskId: t.sponsorTaskId,
+      dueDate: t.dueDate,
+      notifyDate: t.notifyDate,
+      assigneeUserId: t.assignee?.userId,
+      notes: t.notes,
+      done: t.done
+    })),
+    discountCode: sponsor.discountCode,
+    sponsorNotes: sponsor.sponsorNotes,
+    stockDescription: sponsor.stockDescription,
+    discountDescription: sponsor.discountDescription,
+    ...overrides
+  });
+
   const columns = [
     { field: 'name', headerName: 'Sponsor', flex: 1, minWidth: 50 },
     {
@@ -66,10 +95,9 @@ const SponsorsTable = () => {
           checked={!!p.value}
           onClick={async (e: MouseEvent<HTMLElement>) => {
             e.stopPropagation();
-            await editSponsorMutateAsync({
-              ...(p.row as MapRowResult<Sponsor>).raw,
-              activeStatus: !p.value
-            } as unknown as Parameters<typeof editSponsorMutateAsync>[0]);
+            const sponsor = (p.row as MapRowResult<Sponsor>).raw;
+            if (!sponsor) return;
+            await editSponsorMutateAsync(sponsorToInlinePayload(sponsor, { activeStatus: !p.value }));
           }}
         />
       )
@@ -151,10 +179,9 @@ const SponsorsTable = () => {
             checked={!!p.value}
             onClick={(e: MouseEvent<HTMLElement>) => {
               e.stopPropagation();
-              editSponsorMutateAsync({
-                ...(p.row as MapRowResult<Sponsor>).raw,
-                taxExempt: !p.value
-              } as unknown as Parameters<typeof editSponsorMutateAsync>[0]);
+              const sponsor = (p.row as MapRowResult<Sponsor>).raw;
+              if (!sponsor) return;
+              editSponsorMutateAsync(sponsorToInlinePayload(sponsor, { taxExempt: !p.value }));
             }}
           />
         );
