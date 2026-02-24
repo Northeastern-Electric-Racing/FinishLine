@@ -6,7 +6,8 @@
   "workspaces": [
     "src/backend",
     "src/frontend",
-    "src/shared"
+    "src/shared",
+    "src/chrome-extension"
   ],
   "scripts": {
     "prettier-check": "yarn prettier --check .",
@@ -59,7 +60,10 @@
     "docker:i": "cd devContainerization && docker compose -f docker-compose.dev.yml exec -T backend sh -c \"yarn install && cd src/backend && npx prisma generate\" && docker compose -f docker-compose.dev.yml exec -T frontend sh -c \"yarn install\"",
     "docker:test": "yarn test:setup && cd devContainerization && docker compose -f docker-compose.dev.yml exec backend bash -c \"yarn test:backend\" && docker compose -f docker-compose.dev.yml exec frontend sh -c \"yarn test:frontend\" && yarn test:teardown",
     "docker:rebuild": "docker compose -f devContainerization/docker-compose.dev.yml rm -f -s && yarn docker:start",
-    "db:pull": "node scripts/db-pull.mjs"
+    "db:pull": "node scripts/db-pull.mjs",
+    "extension:dev": "yarn workspace chrome-extension dev",
+    "extension:build": "yarn workspace chrome-extension build",
+    "extension:zip": "yarn workspace chrome-extension zip"
   },
   "resolutions": {
     "@types/react": "17.0.1",
