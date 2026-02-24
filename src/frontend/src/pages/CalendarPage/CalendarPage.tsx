@@ -14,7 +14,8 @@ import {
   Alert,
   Checkbox,
   FormControlLabel,
-  FormGroup
+  FormGroup,
+  Switch
 } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { Calendar, ConflictStatus, DayOfWeek, EventType, Event } from 'shared';
@@ -29,7 +30,13 @@ import FilterModal from './FilterModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
-import { convertIntToDay, eventsToEventInstances, getOverlapTime } from '../../utils/calendar.utils';
+import {
+  convertIntToDay,
+  eventsToEventInstances,
+  eventsToNextEventInstance,
+  getOverlapTime,
+  getSundayOfWeek
+} from '../../utils/calendar.utils';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useHistory } from 'react-router-dom';
@@ -37,6 +44,7 @@ import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { EventInstance } from 'shared';
+import CalendarWeekView from './CalendarWeekView';
 
 // localStorage key for calendar filters
 const CALENDAR_FILTERS_KEY = 'calendar-filters';
@@ -79,7 +87,12 @@ interface NewCalendarPageProps {
   yourEvents: EventInstance[];
   reviewEvents: Event[];
   allCalendars: Calendar[];
-  onCreateEventClick: (date: Date) => void;
+  onCreateEventClick: (date: Date, startTime?: Date, endTime?: Date) => void;
+  viewMode: 'month' | 'week';
+  displayMonthYear: Date;
+  setDisplayMonthYear: (date: Date) => void;
+  displayWeek: Date;
+  setDisplayWeek: (date: Date) => void;
 }
 
 const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
@@ -87,7 +100,12 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   yourEvents,
   reviewEvents,
   allCalendars,
-  onCreateEventClick
+  onCreateEventClick,
+  viewMode,
+  displayMonthYear,
+  setDisplayMonthYear,
+  displayWeek,
+  setDisplayWeek
 }) => {
   const theme = useTheme();
   const history = useHistory();
@@ -105,13 +123,12 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
 
   const [memberIds, setMemberIds] = useState<string[]>(savedFilters.memberIds ?? []);
   const [teamIds, setTeamIds] = useState<string[]>(savedFilters.teamIds ?? []);
-  const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(savedFilters.showInvitedEvents ?? true);
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(savedFilters.showTeamEvents ?? true);
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
   const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>([]);
-  const [allEventsMode, setAllEventsMode] = useState<boolean>(savedFilters.allEventsMode ?? false);
+  const [allEventsMode, setAllEventsMode] = useState<boolean>(savedFilters.allEventsMode ?? true);
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -149,8 +166,14 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     }
   }, [allTeams, teamList, additionalTeamIds.length, showTeamEvents, allEventsMode]);
 
-  const startPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15);
-  const endPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15);
+  const startPeriod =
+    viewMode === 'week'
+      ? new Date(displayWeek.getFullYear(), displayWeek.getMonth(), displayWeek.getDate())
+      : new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15);
+  const endPeriod =
+    viewMode === 'week'
+      ? new Date(displayWeek.getFullYear(), displayWeek.getMonth(), displayWeek.getDate() + 7, 23, 59, 59)
+      : new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15);
 
   // When allEventsMode is true, we don't filter by members/teams, but still filter by date and calendars
   const filterArgs = allEventsMode
@@ -232,9 +255,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     teamIds: teamList
   });
 
-  const upcomingOccurences = eventsToEventInstances(upcomingEvents ?? [])
-    .filter((event) => new Date(event.startTime) >= new Date())
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  const upcomingOccurences = eventsToNextEventInstance(upcomingEvents ?? []).sort(
+    (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+  );
 
   const toggleCalendar = (calendarId: string) => {
     setSelectedCalendarIds((prev) =>
@@ -516,7 +539,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
           </Alert>
         )}
       </Stack>
-      <PageLayout hidePageTitle>
+      <PageLayout title="Calendar" hidePageTitle>
         <Box
           sx={{
             display: 'flex',
@@ -527,80 +550,99 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
           }}
         >
           <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-            <Grid container sx={{ flexShrink: 0 }}>
-              {enumToArray(DAY_NAMES).map((day, index) => (
-                <Grid item xs={12 / 7} key={index}>
-                  <Typography align={'center'} sx={{ fontWeight: 'bold', fontSize: 18 }}>
-                    {
-                      // Day of the week display based on current breakpoint
-                      isLargerView ? day : isExtraSmallView ? day.charAt(0) : day.substring(0, 3)
-                    }
-                  </Typography>
+            {viewMode === 'week' ? (
+              <CalendarWeekView
+                allEventTypes={allEventTypes ?? []}
+                allCalendars={allCalendars ?? []}
+                eventInstances={eventInstances}
+                displayWeek={displayWeek}
+                onNavigateWeek={(offset) => {
+                  const newWeek = new Date(displayWeek);
+                  newWeek.setDate(newWeek.getDate() + offset * 7);
+                  setDisplayWeek(newWeek);
+                }}
+                onCreateEventClick={onCreateEventClick}
+              />
+            ) : (
+              <>
+                <Grid container sx={{ flexShrink: 0 }}>
+                  {enumToArray(DAY_NAMES).map((day, index) => (
+                    <Grid item xs={12 / 7} key={index}>
+                      <Typography align={'center'} sx={{ fontWeight: 'bold', fontSize: 18 }}>
+                        {
+                          // Day of the week display based on current breakpoint
+                          isLargerView ? day : isExtraSmallView ? day.charAt(0) : day.substring(0, 3)
+                        }
+                      </Typography>
+                    </Grid>
+                  ))}
                 </Grid>
-              ))}
-            </Grid>
-            <Box
-              sx={{
-                border: '2px solid white',
-                borderRadius: 2,
-                bgcolor: '#1a1a1a',
-                p: 1,
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden'
-              }}
-            >
-              {startOfEachWeek
-                .filter((week) => daysThisMonth.slice(week, week + 7).length > 0)
-                .map((week, weekIndex) => (
-                  <Box
-                    key={weekIndex}
-                    sx={{
-                      display: 'flex',
-                      flex: 1,
-                      minHeight: 0
-                    }}
-                  >
-                    {daysThisMonth.slice(week, week + 7).map((day, dayIndex) => {
-                      const cardDate = new Date(
-                        displayMonthYear.getFullYear(),
-                        displayMonthYear.getMonth() + (isDayInDifferentMonth(day, week) ? (day > 15 ? -1 : 1) : 0),
-                        day
-                      );
-                      return (
-                        <Box
-                          key={dayIndex}
-                          sx={{
-                            flex: 1,
-                            minWidth: 0,
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'stretch',
-                            p: 0.5
-                          }}
-                        >
-                          <CalendarDayCard
-                            cardDate={cardDate}
-                            displayMonth={displayMonthYear}
-                            events={
-                              eventDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
-                              []
-                            }
-                            eventTypes={allEventTypes ?? []}
-                            calendars={allCalendars ?? []}
-                            dayOfWeek={
-                              dayDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
-                              DayOfWeek.SUNDAY
-                            }
-                            onCreateEventClick={onCreateEventClick}
-                          />
-                        </Box>
-                      );
-                    })}
-                  </Box>
-                ))}
-            </Box>
+                <Box
+                  sx={{
+                    border: '2px solid white',
+                    borderRadius: 2,
+                    bgcolor: '#1a1a1a',
+                    p: 1,
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {startOfEachWeek
+                    .filter((week) => daysThisMonth.slice(week, week + 7).length > 0)
+                    .map((week, weekIndex) => (
+                      <Box
+                        key={weekIndex}
+                        sx={{
+                          display: 'flex',
+                          flex: 1,
+                          minHeight: 0
+                        }}
+                      >
+                        {daysThisMonth.slice(week, week + 7).map((day, dayIndex) => {
+                          const cardDate = new Date(
+                            displayMonthYear.getFullYear(),
+                            displayMonthYear.getMonth() + (isDayInDifferentMonth(day, week) ? (day > 15 ? -1 : 1) : 0),
+                            day
+                          );
+                          return (
+                            <Box
+                              key={dayIndex}
+                              sx={{
+                                flex: 1,
+                                minWidth: 0,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'stretch',
+                                p: 0.5
+                              }}
+                            >
+                              <CalendarDayCard
+                                cardDate={cardDate}
+                                displayMonth={displayMonthYear}
+                                events={
+                                  eventDict.get(
+                                    datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
+                                  ) ?? []
+                                }
+                                eventTypes={allEventTypes ?? []}
+                                calendars={allCalendars ?? []}
+                                dayOfWeek={
+                                  dayDict.get(
+                                    datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
+                                  ) ?? DayOfWeek.SUNDAY
+                                }
+                                onCreateEventClick={onCreateEventClick}
+                              />
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    ))}
+                </Box>
+              </>
+            )}
           </Box>
           <Box
             sx={{
@@ -613,10 +655,17 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
           >
             <Box sx={{ flexShrink: 0 }}>
               <DateCalendar
-                value={displayMonthYear}
-                onMonthChange={(newDate) => setDisplayMonthYear(newDate)}
+                value={viewMode === 'week' ? displayWeek : displayMonthYear}
+                onMonthChange={(newDate) => {
+                  if (viewMode !== 'week') setDisplayMonthYear(newDate);
+                }}
                 onChange={(newDate) => {
-                  if (newDate) setDisplayMonthYear(newDate);
+                  if (!newDate) return;
+                  if (viewMode === 'week') {
+                    setDisplayWeek(getSundayOfWeek(newDate));
+                  } else {
+                    setDisplayMonthYear(newDate);
+                  }
                 }}
                 slotProps={{
                   day: {
@@ -686,7 +735,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
               sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                flexShrink: 0
+                flex: 1,
+                minHeight: 0,
+                overflow: 'hidden'
               }}
             >
               <Stack
@@ -707,33 +758,49 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                   Calendars:
                 </Typography>
 
-                <Button
-                  size="small"
-                  variant="outlined"
-                  id="filter-events-button"
-                  onClick={() => setOpenFilterModal(true)}
-                  sx={{
-                    px: 1,
-                    py: 0,
-                    color: 'white',
-                    borderColor: 'white',
-                    backgroundColor: 'transparent',
-                    textTransform: 'none',
-                    fontSize: 14,
-                    fontFamily: (t) => t.typography.h4.fontFamily,
-                    '&:hover': {
-                      borderColor: 'white',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <FormControlLabel
+                    control={
+                      <Switch size="small" checked={allEventsMode} onChange={(e) => setAllEventsMode(e.target.checked)} />
                     }
-                  }}
-                >
-                  Filters
-                </Button>
+                    label={<Typography sx={{ fontSize: 12, color: 'white', whiteSpace: 'nowrap' }}>All Events</Typography>}
+                    sx={{ mr: 0 }}
+                  />
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    id="filter-events-button"
+                    disabled={allEventsMode}
+                    onClick={() => setOpenFilterModal(true)}
+                    sx={{
+                      px: 1,
+                      py: 0,
+                      color: 'white',
+                      borderColor: 'white',
+                      backgroundColor: 'transparent',
+                      textTransform: 'none',
+                      fontSize: 14,
+                      fontFamily: (t) => t.typography.h4.fontFamily,
+                      '&:hover': {
+                        borderColor: 'white',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                      },
+                      '&.Mui-disabled': {
+                        color: 'rgba(255, 255, 255, 0.3)',
+                        borderColor: 'rgba(255, 255, 255, 0.3)'
+                      }
+                    }}
+                  >
+                    Filters
+                  </Button>
+                </Stack>
               </Stack>
 
               {calendars.length > 0 && (
                 <Box
                   sx={{
+                    flex: 1,
+                    minHeight: 0,
                     overflowY: 'auto',
                     overflowX: 'hidden',
                     p: 2,
@@ -806,7 +873,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
           setTeamIds={(ids: string[]) => setTeamIds(ids)}
           setShowInvited={(changed: boolean) => updateAdditionalMemberIds(changed)}
           setShowTeam={(changed: boolean) => updateAdditionalTeamIds(changed)}
-          setAllEventsMode={(enabled: boolean) => setAllEventsMode(enabled)}
         />
       </PageLayout>
     </>

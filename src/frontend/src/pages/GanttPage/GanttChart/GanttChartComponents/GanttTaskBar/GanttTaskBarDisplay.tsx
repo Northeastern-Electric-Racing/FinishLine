@@ -148,7 +148,7 @@ const GanttTaskBarDisplay = <T,>({
   };
 
   return (
-    <div id={task.id} style={ganttTaskBarContainerStyles()}>
+    <div style={ganttTaskBarContainerStyles()}>
       <Box sx={ganttTaskBarBackgroundStyles(days.length)}>
         <ArcherElement
           id={task.id}

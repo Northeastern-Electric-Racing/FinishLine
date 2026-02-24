@@ -17,7 +17,20 @@ export const getTaskQueryArgs = (organizationId: string) =>
 export const getTaskPreviewQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.TaskDefaultArgs>()({
     include: {
-      wbsElement: true,
+      wbsElement: {
+        include: {
+          project: {
+            select: {
+              projectId: true,
+              wbsElement: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          }
+        }
+      },
       createdBy: getUserQueryArgs(organizationId),
       assignees: getUserQueryArgs(organizationId)
     }

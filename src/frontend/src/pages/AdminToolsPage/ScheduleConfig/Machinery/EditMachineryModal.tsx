@@ -1,11 +1,8 @@
-import ErrorPage from '../../../ErrorPage';
-import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { useEditMachinery, useAddMachineryToShop, MACHINERY_KEY } from '../../../../hooks/calendar.hooks';
+import { useEditMachinery, MACHINERY_KEY } from '../../../../hooks/calendar.hooks';
 import { postAddMachineryToShop } from '../../../../apis/calendar.api';
 import { useQueryClient } from 'react-query';
 import { Machinery } from 'shared';
-import MachineryFormModal from './MachineryFormModal';
-import { MachineryFormValues } from './MachineryFormModal';
+import MachineryFormModal, { MachineryFormValues } from './MachineryFormModal';
 
 interface EditMachineryModalProps {
   open: boolean;
@@ -14,38 +11,21 @@ interface EditMachineryModalProps {
 }
 
 const EditMachineryModal = ({ open, onClose, machinery }: EditMachineryModalProps) => {
-  const shopMachinery = machinery.shops?.[0];
-  const originalShopId = shopMachinery?.shop?.shopId || '';
   const queryClient = useQueryClient();
+  const { mutateAsync: editMachinery } = useEditMachinery(machinery.machineryId);
 
-  const {
-    isLoading: isEditing,
-    isError: isEditError,
-    error: editError,
-    mutateAsync: editMachinery
-  } = useEditMachinery(machinery.machineryId);
-  const {
-    isLoading: isAdding,
-    isError: isAddError,
-    error: addError,
-    mutateAsync: addMachineryToShop
-  } = useAddMachineryToShop(machinery.machineryId);
-
-  const isLoading = isEditing || isAdding;
-  const isError = isEditError || isAddError;
-  const error = editError || addError;
+  const originalShops = machinery.shops || [];
 
   const machineryData: MachineryFormValues = {
-    shopId: originalShopId,
     machineName: machinery.name,
-    quantity: shopMachinery?.quantity || 1
+    shopEntries:
+      originalShops.length > 0
+        ? originalShops.map((sm) => ({ shopId: sm.shop.shopId, quantity: sm.quantity }))
+        : [{ shopId: '', quantity: 1 }]
   };
 
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading) return <LoadingIndicator />;
-
-  const onSubmit = async (data: { shopId: string; machineName: string; quantity: number }) => {
-    const { machineName, shopId, quantity } = data;
+  const onSubmit = async (data: MachineryFormValues) => {
+    const { machineName, shopEntries } = data;
     let currentMachineryId = machinery.machineryId;
 
     // Check if name changed - this may merge with another machinery
@@ -54,25 +34,46 @@ const EditMachineryModal = ({ open, onClose, machinery }: EditMachineryModalProp
       currentMachineryId = updatedMachinery.machineryId;
     }
 
-    // Update shop/quantity relationship using the current machinery ID
-    if (currentMachineryId !== machinery.machineryId) {
-      // Use the API directly since the machinery ID changed after merge
-      const result = await postAddMachineryToShop({
-        machineryId: currentMachineryId,
-        shopId,
-        quantity,
-        originalShopId: originalShopId || undefined
-      });
-      queryClient.invalidateQueries(MACHINERY_KEY);
-      return result;
+    const newShopIds = new Set(shopEntries.map((e) => e.shopId));
+
+    // Remove shops that were removed from the form
+    for (const sm of originalShops) {
+      if (!newShopIds.has(sm.shop.shopId)) {
+        await postAddMachineryToShop({
+          machineryId: currentMachineryId,
+          shopId: sm.shop.shopId,
+          quantity: 0
+        });
+      }
     }
 
-    // Same machinery ID, use the hook as normal
-    return await addMachineryToShop({
-      shopId,
-      quantity,
-      originalShopId: originalShopId || undefined
-    });
+    // Add or update shop entries
+    for (const entry of shopEntries) {
+      if (!entry.shopId) continue;
+      const original = originalShops.find((sm) => sm.shop.shopId === entry.shopId);
+      if (original) {
+        // Existing shop - update if quantity changed
+        if (original.quantity !== entry.quantity) {
+          await postAddMachineryToShop({
+            machineryId: currentMachineryId,
+            shopId: entry.shopId,
+            quantity: entry.quantity,
+            originalShopId: entry.shopId
+          });
+        }
+      } else {
+        // New shop association
+        await postAddMachineryToShop({
+          machineryId: currentMachineryId,
+          shopId: entry.shopId,
+          quantity: entry.quantity
+        });
+      }
+    }
+
+    await queryClient.invalidateQueries(MACHINERY_KEY);
+    await queryClient.refetchQueries(MACHINERY_KEY);
+    return machinery;
   };
 
   return <MachineryFormModal open={open} onClose={onClose} onSubmit={onSubmit} initialValues={machineryData} />;

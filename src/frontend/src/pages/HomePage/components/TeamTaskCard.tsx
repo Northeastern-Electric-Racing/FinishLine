@@ -2,10 +2,7 @@ import { Box, Card, CardContent, Chip, Link, Stack, Typography } from '@mui/mate
 import { Link as RouterLink } from 'react-router-dom';
 import { useTheme } from '@mui/system';
 import React from 'react';
-import { Task, wbsPipe } from 'shared';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
-import { useSingleProject } from '../../../hooks/projects.hooks';
+import { Task, TaskCardPreview, wbsPipe } from 'shared';
 import { routes } from '../../../utils/routes';
 import { fullNamePipe } from '../../../utils/pipes';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
@@ -14,15 +11,12 @@ import { taskPriorityColor } from '../../../utils/task.utils';
 import { formatDate } from '../../../utils/datetime.utils';
 
 interface TeamTaskCardProps {
-  task: Task;
+  task: TaskCardPreview;
   taskNumber: number;
 }
 
 const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ task, taskNumber }) => {
   const theme = useTheme();
-  const { data: project, isLoading, isError, error } = useSingleProject(task.wbsNum);
-  if (isLoading || !project) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error.message} />;
 
   return (
     <Card
@@ -49,7 +43,7 @@ const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ task, taskNumber }) => {
             </Typography>
             <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(task.wbsNum)}`} noWrap>
               <Typography fontWeight={'regular'} variant="subtitle2">
-                {wbsPipe(task.wbsNum)} - {project.name}
+                {wbsPipe(task.wbsNum)} - {task.projectName}
               </Typography>
             </Link>
             <Stack direction={'row'} spacing={1}>
@@ -60,7 +54,7 @@ const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ task, taskNumber }) => {
           <Stack spacing={1}>
             <Chip
               sx={{
-                background: taskPriorityColor(task)
+                background: taskPriorityColor({ priority: task.priority } as Task)
               }}
               label={task.priority}
               size="medium"
