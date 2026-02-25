@@ -302,7 +302,7 @@ export default class TasksService {
     // Validate memberIds if provided
     if (memberIds && memberIds.length > 0) {
       const users = await prisma.user.findMany({
-        where: { userId: { in: memberIds } }
+        where: { userId: { in: memberIds }, organizations: { some: { organizationId: organization.organizationId } } }
       });
       if (users.length !== memberIds.length) {
         throw new NotFoundException('User', 'one or more member IDs');

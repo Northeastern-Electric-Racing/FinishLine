@@ -213,7 +213,12 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
         }
     : null;
 
-  const { data: filteredTasks } = useFilterTasks(taskFilterArgs);
+  const {
+    isLoading: tasksIsLoading,
+    isError: tasksIsError,
+    error: tasksError,
+    data: filteredTasks
+  } = useFilterTasks(taskFilterArgs);
 
   const [pendingEvent, setPendingEvent] = useState(
     yourEvents.filter((event) => event.approved === ConflictStatus.PENDING).length > 0
@@ -332,6 +337,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   if (conflictingEventsIsError) return <ErrorPage message={conflictingEventsError.message} />;
   if (conflictingDeniedEventsIsError) return <ErrorPage message={conflictingDeniedEventsError.message} />;
   if (conflictingReviewEventsIsError) return <ErrorPage message={conflictingReviewEventsError.message} />;
+  if (tasksIsError) return <ErrorPage message={tasksError.message} />;
 
   if (
     isLoading ||
@@ -341,7 +347,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     conflictingDeniedEventsLoading ||
     !conflictingDeniedEvents ||
     conflictingReviewEventsLoading ||
-    !conflictingReviewEvents
+    !conflictingReviewEvents ||
+    tasksIsLoading ||
+    !filteredTasks
   )
     return <LoadingIndicator />;
 

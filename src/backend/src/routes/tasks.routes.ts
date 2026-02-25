@@ -2,13 +2,14 @@ import express from 'express';
 import { body } from 'express-validator';
 import TasksController from '../controllers/tasks.controllers.js';
 import { nonEmptyString, isTaskPriority, isTaskStatus, validateInputs, isOptionalDate } from '../utils/validation.utils.js';
+import { isDate } from '../utils/validation.utils.js';
 
 const tasksRouter = express.Router();
 
 tasksRouter.post(
   '/filter',
-  body('startPeriod').isString(),
-  body('endPeriod').isString(),
+  isDate(body('startPeriod')),
+  isDate(body('endPeriod')),
   body('memberIds').optional().isArray(),
   body('memberIds.*').optional().isString(),
   body('teamIds').optional().isArray(),
