@@ -27,15 +27,16 @@ import {
   ReimbursementProductFormArgs,
   IndexCode,
   CreateRefundSourceArgs,
+  Material,
   ProjectPreview
 } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
-import { useGetAssembliesForWbsElement } from '../../../hooks/bom.hooks';
+import { useGetMaterialsForWbsElement, useGetAssembliesForWbsElement } from '../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { formatReasonName } from '../../../utils/reimbursement-request.utils';
@@ -65,6 +66,81 @@ interface ReimbursementProductTableProps {
 const ListItem = styled('li')(({ theme }) => ({
   margin: theme.spacing(0.5)
 }));
+
+const MaterialAutocomplete: React.FC<{
+  wbsNum: WbsNumber;
+  onSelect: (material: Material | null) => void;
+  initialValue?: string;
+}> = ({ wbsNum, onSelect, initialValue }) => {
+  const { data: materials, isLoading, isError, error } = useGetMaterialsForWbsElement(wbsNum);
+  const [materialSelected, setMaterialSelected] = useState<{ id: string; label: string } | null>(null);
+
+  const materialOptions = useMemo(
+    () =>
+      (materials ?? []).map((material) => ({
+        id: material.materialId,
+        label: `${material.name} (${material.materialTypeName}): ${material.manufacturerName ?? 'N/A'}, ${material.manufacturerPartNumber ?? 'N/A'}`
+      })),
+    [materials]
+  );
+
+  useEffect(() => {
+    if (!materials || !initialValue) return;
+
+    // Fetch pre-existing label
+    let match = materialOptions.find((o) => o.label === initialValue) ?? null;
+
+    // Otherwise fetch new material by name
+    if (!match) {
+      const materialByName = materials.find((m) => m.name === initialValue);
+      if (materialByName) match = materialOptions.find((o) => o.id === materialByName.materialId) ?? null;
+    }
+
+    if (match && match.id !== materialSelected?.id) {
+      setMaterialSelected(match);
+      // Update the form value to the formatted label
+      const fullMaterial = materials.find((m) => m.materialId === match!.id) ?? null;
+      onSelect(fullMaterial);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [materials, initialValue]);
+
+  if (isLoading || !materials) {
+    return <LoadingIndicator />;
+  }
+
+  if (isError) {
+    return (
+      <TextField
+        variant="outlined"
+        placeholder="Select Material"
+        fullWidth
+        size="small"
+        error
+        disabled
+        helperText={error?.message || 'Failed to load materials'}
+      />
+    );
+  }
+
+  return (
+    <Autocomplete
+      sx={{ flex: 1 }}
+      options={materialOptions}
+      getOptionLabel={(option) => option.label}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
+      onChange={(_, value) => {
+        setMaterialSelected(value);
+        const selectedMaterial = value ? (materials.find((m) => m.materialId === value.id) ?? null) : null;
+        onSelect(selectedMaterial);
+      }}
+      value={materialSelected}
+      blurOnSelect={true}
+      size={'small'}
+      renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select Material" fullWidth />}
+    />
+  );
+};
 
 const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   reimbursementProducts,
@@ -96,6 +172,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const [showCreateMaterialModal, setShowCreateMaterialModal] = useState(false);
   const [currentProductIndex, setCurrentProductIndex] = useState<number | null>(null);
   const [currentProject, setCurrentProject] = useState<ProjectPreview | null>(null);
+  const [pendingMaterialIndices, setPendingMaterialIndices] = useState<Set<number>>(new Set());
 
   const {
     data: assemblies,
@@ -180,6 +257,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const handleMaterialCreated = (materialName: string) => {
     if (currentProductIndex !== null) {
       setValue(`reimbursementProducts.${currentProductIndex}.name`, materialName);
+      setPendingMaterialIndices((prev) => new Set(prev).add(currentProductIndex));
     }
     handleCloseCreateMaterial();
   };
@@ -245,6 +323,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       setShowSecondSourceFields(false);
     }
   }, [secondRefundSourceName]);
+
   const {
     data: otherReasons,
     isLoading: otherReasonsIsLoading,
@@ -485,66 +564,97 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                     width: { xs: '100%', md: 'auto' }
                                   }}
                                 >
-                                  <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                    {hasWbsNum ? (
-                                      // Project-based product: Show field + "Create New Material" button
-                                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                        <Box sx={{ flex: 1 }}>
-                                          <Controller
-                                            name={`reimbursementProducts.${product.index}.name`}
-                                            control={control}
-                                            render={({ field }) => (
-                                              <TextField
-                                                {...field}
-                                                variant="outlined"
-                                                placeholder={'Product Name/Description'}
-                                                autoComplete="off"
-                                                fullWidth
-                                                error={!!errors.reimbursementProducts?.[product.index]?.name}
-                                              />
-                                            )}
-                                          />
-                                          <FormHelperText error>
-                                            {errors.reimbursementProducts?.[product.index]?.name?.message}
-                                          </FormHelperText>
-                                        </Box>
-                                        <Typography fontWeight="bold" sx={{ whiteSpace: 'nowrap', lineHeight: 1 }}>
-                                          OR
-                                        </Typography>
-                                        <Button
-                                          variant="outlined"
-                                          size="small"
-                                          onClick={() =>
-                                            handleOpenCreateMaterial(product.index, product.reason as WbsNumber)
-                                          }
-                                          sx={{ whiteSpace: 'nowrap' }}
-                                        >
-                                          Create New Material
-                                        </Button>
-                                      </Box>
-                                    ) : (
-                                      // Other Category: Show only text field
-                                      <>
-                                        <Controller
-                                          name={`reimbursementProducts.${product.index}.name`}
-                                          control={control}
-                                          render={({ field }) => (
-                                            <TextField
-                                              {...field}
-                                              variant="outlined"
-                                              placeholder={'Product Name/Description'}
-                                              autoComplete="off"
-                                              fullWidth
-                                              error={!!errors.reimbursementProducts?.[product.index]?.name}
+                                  {hasWbsNum ? (
+                                    <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                      {watch(`reimbursementProducts.${product.index}.materialId`) ||
+                                      !watch(`reimbursementProducts.${product.index}.name`) ||
+                                      pendingMaterialIndices.has(product.index) ? (
+                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                          <Box sx={{ flex: 1 }}>
+                                            <MaterialAutocomplete
+                                              wbsNum={product.reason as WbsNumber}
+                                              initialValue={watch(`reimbursementProducts.${product.index}.name`)}
+                                              onSelect={(material) => {
+                                                if (material) {
+                                                  const label = `${material.name} (${material.materialTypeName}): ${material.manufacturerName ?? 'N/A'}, ${material.manufacturerPartNumber ?? 'N/A'}`;
+                                                  setValue(`reimbursementProducts.${product.index}.name`, label, {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true
+                                                  });
+                                                  setValue(
+                                                    `reimbursementProducts.${product.index}.materialId`,
+                                                    material.materialId,
+                                                    {
+                                                      shouldValidate: true,
+                                                      shouldDirty: true
+                                                    }
+                                                  );
+                                                  setPendingMaterialIndices((prev) => {
+                                                    const next = new Set(prev);
+                                                    next.delete(product.index);
+                                                    return next;
+                                                  });
+                                                } else {
+                                                  setValue(`reimbursementProducts.${product.index}.name`, '', {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true
+                                                  });
+                                                  setValue(`reimbursementProducts.${product.index}.materialId`, undefined, {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true
+                                                  });
+                                                }
+                                              }}
                                             />
-                                          )}
+                                          </Box>
+                                          <Typography fontWeight="bold" sx={{ whiteSpace: 'nowrap' }}>
+                                            OR
+                                          </Typography>
+                                          <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={() =>
+                                              handleOpenCreateMaterial(product.index, product.reason as WbsNumber)
+                                            }
+                                            sx={{ whiteSpace: 'nowrap' }}
+                                          >
+                                            Create New Material
+                                          </Button>
+                                        </Box>
+                                      ) : (
+                                        <TextField
+                                          variant="outlined"
+                                          value={watch(`reimbursementProducts.${product.index}.name`)}
+                                          fullWidth
+                                          size="small"
+                                          disabled
                                         />
-                                        <FormHelperText error>
-                                          {errors.reimbursementProducts?.[product.index]?.name?.message}
-                                        </FormHelperText>
-                                      </>
-                                    )}
-                                  </FormControl>
+                                      )}
+                                      <FormHelperText error>
+                                        {errors.reimbursementProducts?.[product.index]?.name?.message}
+                                      </FormHelperText>
+                                    </FormControl>
+                                  ) : (
+                                    <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                      <Controller
+                                        name={`reimbursementProducts.${product.index}.name`}
+                                        control={control}
+                                        render={({ field }) => (
+                                          <TextField
+                                            {...field}
+                                            variant="outlined"
+                                            placeholder={'Product Name/Description'}
+                                            autoComplete="off"
+                                            fullWidth
+                                            error={!!errors.reimbursementProducts?.[product.index]?.name}
+                                          />
+                                        )}
+                                      />
+                                      <FormHelperText error>
+                                        {errors.reimbursementProducts?.[product.index]?.name?.message}
+                                      </FormHelperText>
+                                    </FormControl>
+                                  )}
                                 </Box>
                                 {!hasMultipleRefundSources && (
                                   <Box
