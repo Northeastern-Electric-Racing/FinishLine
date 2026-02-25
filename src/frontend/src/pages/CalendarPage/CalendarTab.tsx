@@ -12,6 +12,7 @@ import ErrorPage from '../ErrorPage';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import EventsTable from './EventsTable';
 import CreateEventModal from './Components/CreateEventModal';
+import CalendarCreateTaskModal from './Components/CalendarCreateTaskModal';
 import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { Add } from '@mui/icons-material';
@@ -26,6 +27,8 @@ const CalendarTab: React.FC = () => {
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
   const [displayWeek, setDisplayWeek] = useState<Date>(() => getSundayOfWeek(new Date()));
+  const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
+  const [createTaskDefaultDeadline, setCreateTaskDefaultDeadline] = useState<Date | undefined>(undefined);
   const user = useCurrentUser();
   const history = useHistory();
   const canViewReviews = isHead(user.role) || isLead(user.role);
@@ -212,6 +215,24 @@ const CalendarTab: React.FC = () => {
           defaultDate={createModalDate}
           defaultStartTime={createModalStartTime}
           defaultEndTime={createModalEndTime}
+          onSwitchToCreateTask={() => {
+            setCreateTaskDefaultDeadline(createModalDate);
+            setIsCreateModalOpen(false);
+            setCreateModalStartTime(undefined);
+            setCreateModalEndTime(undefined);
+            setIsCreateTaskModalOpen(true);
+          }}
+        />
+      )}
+
+      {isCreateTaskModalOpen && (
+        <CalendarCreateTaskModal
+          open={isCreateTaskModalOpen}
+          onClose={() => {
+            setIsCreateTaskModalOpen(false);
+            setCreateTaskDefaultDeadline(undefined);
+          }}
+          defaultDeadline={createTaskDefaultDeadline}
         />
       )}
     </>

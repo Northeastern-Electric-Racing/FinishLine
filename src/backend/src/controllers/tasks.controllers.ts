@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import TasksService from '../services/tasks.services.js';
-import { validateWBS, WbsNumber } from 'shared';
+import { FilterTaskArgs, validateWBS, WbsNumber } from 'shared';
 
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
@@ -87,6 +87,26 @@ export default class TasksController {
       const updatedTask = await TasksService.deleteTask(req.currentUser, taskId, req.organization);
 
       res.status(200).json(updatedTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getFilteredTasks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { memberIds, teamIds, startPeriod, endPeriod } = req.body;
+
+      const tasks = await TasksService.getFilteredTasks(
+        {
+          memberIds,
+          teamIds,
+          startPeriod: new Date(startPeriod),
+          endPeriod: new Date(endPeriod)
+        },
+        req.organization
+      );
+
+      res.status(200).json(tasks);
     } catch (error: unknown) {
       next(error);
     }

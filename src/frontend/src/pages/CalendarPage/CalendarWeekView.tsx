@@ -6,7 +6,8 @@ import { useRef, useState, useCallback } from 'react';
 import { Box, Card, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { Calendar, ConflictStatus, EventInstance, EventStatus, EventType, isGuest } from 'shared';
+import { Calendar, CalendarTask, ConflictStatus, EventInstance, EventStatus, EventType, isGuest } from 'shared';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import { EventClickContent } from './EventClickPopup';
 import EditEventModal from './Components/EditEventModal';
 import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmationModal';
@@ -16,6 +17,7 @@ import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { getMutedColor } from '../../utils/calendar.utils';
 import { getTeamTypeIcon } from './CalendarDayCard';
+import { TaskClickContent } from './TaskClickPopup';
 
 // ─── Layout constants ────────────────────────────────────────────────────────
 
@@ -128,6 +130,7 @@ interface CalendarWeekViewProps {
   displayWeek: Date; // Sunday of the displayed week
   onNavigateWeek: (offset: -1 | 1) => void;
   onCreateEventClick: (date: Date, startTime?: Date, endTime?: Date) => void;
+  tasks?: CalendarTask[];
 }
 
 // ─── Drag state ───────────────────────────────────────────────────────────────
@@ -147,7 +150,8 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   eventInstances,
   displayWeek,
   onNavigateWeek,
-  onCreateEventClick
+  onCreateEventClick,
+  tasks = []
 }) => {
   const theme = useTheme();
   const user = useCurrentUser();
@@ -208,6 +212,14 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
       const dayEnd = new Date(day);
       dayEnd.setDate(dayEnd.getDate() + 1);
       return start < dayEnd && end > dayStart;
+    })
+  );
+
+  // Build per-day task lists (tasks appear on their deadline day)
+  const tasksByDay: CalendarTask[][] = weekDays.map((day) =>
+    tasks.filter((t) => {
+      if (!t.deadline) return false;
+      return isSameDay(new Date(t.deadline), day);
     })
   );
 
@@ -550,6 +562,75 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
     );
   };
 
+  const AllDayTaskBlock = ({ task }: { task: CalendarTask }) => {
+    const [blockHovered, setBlockHovered] = useState(false);
+    const [tooltipHovered, setTooltipHovered] = useState(false);
+    const tooltipKey = `task-${task.taskId}`;
+    const isLocked = lockedTooltipEventId === tooltipKey;
+    const isOpen = isLocked || blockHovered || tooltipHovered;
+
+    return (
+      <Tooltip
+        placement="right"
+        arrow
+        open={isOpen}
+        disableHoverListener
+        disableFocusListener
+        disableTouchListener
+        enterDelay={0}
+        leaveDelay={200}
+        title={
+          <Box onMouseEnter={() => setTooltipHovered(true)} onMouseLeave={() => setTooltipHovered(false)}>
+            <TaskClickContent task={task} onClose={() => setLockedTooltipEventId(null)} />
+          </Box>
+        }
+        slotProps={{
+          popper: { sx: { zIndex: 1200 } },
+          tooltip: {
+            sx: {
+              maxWidth: 'none',
+              borderRadius: 4,
+              p: 0,
+              bgcolor: 'transparent',
+              boxShadow: '0 0 15px rgba(255,255,255,1.0)'
+            }
+          },
+          arrow: { sx: { color: theme.palette.grey[900], fontSize: 16 } }
+        }}
+        PopperProps={{ modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] }}
+      >
+        <Card
+          onMouseEnter={() => setBlockHovered(true)}
+          onMouseLeave={() => {
+            setTimeout(() => {
+              if (!isLocked && !tooltipHovered) setBlockHovered(false);
+            }, 100);
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setLockedTooltipEventId(tooltipKey);
+          }}
+          sx={{
+            bgcolor: '#7B68EE',
+            borderRadius: 0.5,
+            px: 0.5,
+            py: 0.25,
+            mb: 0.25,
+            cursor: 'pointer',
+            overflow: 'hidden'
+          }}
+        >
+          <Typography
+            noWrap
+            sx={{ fontSize: 11, fontWeight: 'bold', lineHeight: 1.3, display: 'flex', alignItems: 'center', gap: 0.25 }}
+          >
+            <AssignmentIcon sx={{ fontSize: 11 }} /> {task.title}
+          </Typography>
+        </Card>
+      </Tooltip>
+    );
+  };
+
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -707,6 +788,9 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
             >
               {allDayEventsByDay[i].map((event) => (
                 <AllDayEventBlock key={event.eventId + event.scheduleSlotId} event={event} />
+              ))}
+              {tasksByDay[i].map((task) => (
+                <AllDayTaskBlock key={task.taskId} task={task} />
               ))}
             </Box>
           ))}

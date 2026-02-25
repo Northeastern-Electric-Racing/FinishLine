@@ -6,6 +6,18 @@ import { nonEmptyString, isTaskPriority, isTaskStatus, validateInputs, isOptiona
 const tasksRouter = express.Router();
 
 tasksRouter.post(
+  '/filter',
+  body('startPeriod').isString(),
+  body('endPeriod').isString(),
+  body('memberIds').optional().isArray(),
+  body('memberIds.*').optional().isString(),
+  body('teamIds').optional().isArray(),
+  body('teamIds.*').optional().isString(),
+  validateInputs,
+  TasksController.getFilteredTasks
+);
+
+tasksRouter.post(
   '/:wbsNum',
   nonEmptyString(body('title')),
   isOptionalDate(body('deadline')),

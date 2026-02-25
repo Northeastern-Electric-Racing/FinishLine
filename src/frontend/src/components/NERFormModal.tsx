@@ -5,10 +5,12 @@ import NERModal, { NERModalProps } from './NERModal';
 interface NERFormModalProps<T extends FieldValues> extends NERModalProps {
   reset: UseFormReset<T>;
   handleUseFormSubmit: UseFormHandleSubmit<T, any>;
-  onFormSubmit: (data: T) => void;
+  onFormSubmit: (data: T) => Promise<void>;
   formId: string;
   children?: ReactNode;
   paperProps?: any;
+  titleChildren?: ReactNode;
+  actionsLeftChildren?: ReactNode;
 }
 
 const NERFormModal = ({
@@ -25,7 +27,9 @@ const NERFormModal = ({
   children,
   showCloseButton,
   hideBackDrop = false,
-  paperProps
+  paperProps,
+  titleChildren,
+  actionsLeftChildren
 }: NERFormModalProps<any>) => {
   /**
    * Wrapper function for onSubmit so that form data is reset after submit
@@ -56,6 +60,8 @@ const NERFormModal = ({
       showCloseButton={showCloseButton}
       hideBackDrop={hideBackDrop}
       paperProps={paperProps}
+      titleChildren={titleChildren}
+      actionsLeftChildren={actionsLeftChildren}
     >
       <form id={formId} onSubmit={handleFormSubmit} noValidate>
         {children}
