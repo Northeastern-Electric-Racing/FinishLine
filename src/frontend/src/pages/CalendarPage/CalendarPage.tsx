@@ -349,7 +349,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     conflictingReviewEventsLoading ||
     !conflictingReviewEvents ||
     tasksIsLoading ||
-    !filteredTasks
+    (showTasks && !filteredTasks)
   )
     return <LoadingIndicator />;
 
@@ -905,15 +905,15 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                     Filters
                   </Button>
                   <FormControlLabel
-                    control={<Switch size="small" checked={showEvents} onChange={(e) => setShowEvents(e.target.checked)} />}
-                    label={<Typography sx={{ fontSize: 12, color: 'white', whiteSpace: 'nowrap' }}>Events</Typography>}
-                    sx={{ mr: 0 }}
-                  />
-                  <FormControlLabel
                     control={
                       <Switch size="small" checked={allEventsMode} onChange={(e) => setAllEventsMode(e.target.checked)} />
                     }
                     label={<Typography sx={{ fontSize: 12, color: 'white', whiteSpace: 'nowrap' }}>Show All</Typography>}
+                    sx={{ mr: 0 }}
+                  />
+                  <FormControlLabel
+                    control={<Switch size="small" checked={showEvents} onChange={(e) => setShowEvents(e.target.checked)} />}
+                    label={<Typography sx={{ fontSize: 12, color: 'white', whiteSpace: 'nowrap' }}>Events</Typography>}
                     sx={{ mr: 0 }}
                   />
                   <FormControlLabel
