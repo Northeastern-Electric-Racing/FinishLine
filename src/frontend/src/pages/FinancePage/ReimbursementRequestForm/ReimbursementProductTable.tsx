@@ -566,7 +566,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 >
                                   {hasWbsNum ? (
                                     <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                      {watch(`reimbursementProducts.${product.index}.materialId`) || !watch(`reimbursementProducts.${product.index}.name`) || pendingMaterialIndices.has(product.index) ? (
+                                      {watch(`reimbursementProducts.${product.index}.materialId`) ||
+                                      !watch(`reimbursementProducts.${product.index}.name`) ||
+                                      pendingMaterialIndices.has(product.index) ? (
                                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                                           <Box sx={{ flex: 1 }}>
                                             <MaterialAutocomplete
