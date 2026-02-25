@@ -25,7 +25,8 @@ import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
 import { Cached, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
-import { isGuest, TeamType } from 'shared';
+// once divisions developed, import TeamType from shared
+import { isGuest } from 'shared';
 // To be uncommented after divisions page is developed
 // import * as MuiIcons from '@mui/icons-material';
 // import { useAllTeamTypes } from '../../hooks/team-types.hooks';
