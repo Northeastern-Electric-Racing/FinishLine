@@ -11,7 +11,8 @@ import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
+// To be uncommented after guest sponsors page is developed
+// import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import FolderIcon from '@mui/icons-material/Folder';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import GroupIcon from '@mui/icons-material/Group';
@@ -25,9 +26,10 @@ import DrawerHeader from '../../components/DrawerHeader';
 import { Cached, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
 import { isGuest, TeamType } from 'shared';
-import * as MuiIcons from '@mui/icons-material';
-import { useAllTeamTypes } from '../../hooks/team-types.hooks';
-import ErrorPage from '../../pages/ErrorPage';
+// To be uncommented after divisions page is developed
+// import * as MuiIcons from '@mui/icons-material';
+// import { useAllTeamTypes } from '../../hooks/team-types.hooks';
+// import ErrorPage from '../../pages/ErrorPage';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
@@ -47,18 +49,19 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const user = useCurrentUser();
   const { onGuestHomePage } = useHomePageContext();
-  const { isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamTypes();
+  // const { isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamTypes();
 
-  const allTeams: LinkItem[] = (teams ?? []).map((team: TeamType) => {
-    const IconComponent = MuiIcons[(team.iconName in MuiIcons ? team.iconName : 'Circle') as keyof typeof MuiIcons];
-    return {
-      name: team.name,
-      icon: <IconComponent />,
-      route: routes.TEAMS + '/' + team.teamTypeId
-    };
-  });
+  // To be uncommented once guest divisions pages are developed
+  // const allTeams: LinkItem[] = (teams ?? []).map((team: TeamType) => {
+  //   const IconComponent = MuiIcons[(team.iconName in MuiIcons ? team.iconName : 'Circle') as keyof typeof MuiIcons];
+  //   return {
+  //     name: team.name,
+  //     icon: <IconComponent />,
+  //     route: routes.TEAMS + '/' + team.teamTypeId
+  //   };
+  // });
 
-  if (teamsError) return <ErrorPage error={teamsErrorMsg} />;
+  // if (teamsError) return <ErrorPage error={teamsErrorMsg} />;
   const memberLinkItems: LinkItem[] = [
     {
       name: 'Home',
@@ -130,18 +133,25 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
         }
       ]
     },
-    !onGuestHomePage
-      ? {
-          name: 'Teams',
-          icon: <GroupIcon />,
-          route: routes.TEAMS
-        }
-      : {
-          name: 'Divisions',
-          icon: <GroupIcon />,
-          route: routes.TEAMS,
-          subItems: allTeams
-        },
+
+    // Teams tab here to be replaced with below code once guest divisions is developed
+    !onGuestHomePage && {
+      name: 'Teams',
+      icon: <GroupIcon />,
+      route: routes.TEAMS
+    },
+    // !onGuestHomePage
+    //   ? {
+    //       name: 'Teams',
+    //       icon: <GroupIcon />,
+    //       route: routes.TEAMS
+    //     }
+    //   : {
+    //       name: 'Divisions',
+    //       icon: <GroupIcon />,
+    //       route: routes.TEAMS,
+    //       subItems: allTeams
+    //     },
     !onGuestHomePage && {
       name: 'Calendar',
       icon: <CalendarTodayIcon />,
@@ -152,11 +162,12 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       icon: <Cached />,
       route: routes.RETROSPECTIVE
     },
-    onGuestHomePage && {
-      name: 'Sponsors',
-      icon: <VolunteerActivismIcon />,
-      route: routes.RETROSPECTIVE
-    },
+    // To be uncommented once guest mode sponsors page is developed
+    // onGuestHomePage && {
+    //   name: 'Sponsors',
+    //   icon: <VolunteerActivismIcon />,
+    //   route: routes.RETROSPECTIVE
+    // },
     {
       name: 'Info',
       icon: <QuestionMarkIcon />,
