@@ -49,7 +49,7 @@ const config = {
         docs: {
           sidebarPath: './sidebars.js',
           // Point to the source documentation files in docs-site/docs/
-          editUrl: 'https://github.com/Northeastern-Electric-Racing/FinishLine/edit/main/docs-site/docs/'
+          editUrl: 'https://github.com/Northeastern-Electric-Racing/FinishLine/edit/main/docs-site/'
         },
         blog: false,
         theme: {

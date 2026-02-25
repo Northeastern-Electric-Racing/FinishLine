@@ -12,8 +12,8 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "sync-skills": "node scripts/sync-skills.js",
-    "generate-sidebar": "node scripts/generate-sidebar.js",
+    "sync-skills": "node scripts/sync-skills.mjs",
+    "generate-sidebar": "node scripts/generate-sidebar.mjs",
     "docs:dev": "yarn generate-sidebar && yarn start",
     "docs:build": "yarn generate-sidebar && yarn build"
   },
