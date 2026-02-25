@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import TasksService from '../services/tasks.services.js';
-import { FilterTaskArgs, validateWBS, WbsNumber } from 'shared';
+import { validateWBS, WbsNumber } from 'shared';
 
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
