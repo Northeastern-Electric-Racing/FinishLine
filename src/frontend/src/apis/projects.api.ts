@@ -29,9 +29,8 @@ import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/t
 /**
  * Fetches all projects with querry args needed for Gantt chart
  */
-export const getAllProjectsGantt = (carId?: string) => {
+export const getAllProjectsGantt = () => {
   return axios.get<ProjectGantt[]>(apiUrls.allProjectsGantt(), {
-    params: { carId },
     transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer)
   });
 };
@@ -39,9 +38,8 @@ export const getAllProjectsGantt = (carId?: string) => {
 /**
  * Fetches all projects with preview querry args
  */
-export const getAllProjects = (carId?: string) => {
+export const getAllProjects = () => {
   return axios.get<ProjectPreview[]>(apiUrls.allProjectPreviews(), {
-    params: { carId },
     transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
   });
 };
@@ -49,9 +47,8 @@ export const getAllProjects = (carId?: string) => {
 /**
  * Fetches all the projects that are on the users teams
  */
-export const getUsersTeamsProjects = (carId?: string) => {
+export const getUsersTeamsProjects = () => {
   return axios.get<ProjectOverview[]>(apiUrls.usersTeamsProjects(), {
-    params: { carId },
     transformResponse: (data) => JSON.parse(data).map(projectOverviewTransformer)
   });
 };
@@ -59,9 +56,8 @@ export const getUsersTeamsProjects = (carId?: string) => {
 /**
  * Fetches all projects that the user is the manager or lead of.
  */
-export const getUsersLeadingProjects = (carId?: string) => {
+export const getUsersLeadingProjects = () => {
   return axios.get<ProjectOverview[]>(apiUrls.usersLeadingProjects(), {
-    params: { carId },
     transformResponse: (data) => JSON.parse(data).map(projectOverviewTransformer)
   });
 };
