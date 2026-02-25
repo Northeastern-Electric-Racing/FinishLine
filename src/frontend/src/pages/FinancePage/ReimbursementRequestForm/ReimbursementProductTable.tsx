@@ -172,6 +172,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const [showCreateMaterialModal, setShowCreateMaterialModal] = useState(false);
   const [currentProductIndex, setCurrentProductIndex] = useState<number | null>(null);
   const [currentProject, setCurrentProject] = useState<ProjectPreview | null>(null);
+  const [pendingMaterialIndices, setPendingMaterialIndices] = useState<Set<number>>(new Set());
 
   const {
     data: assemblies,
@@ -256,6 +257,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const handleMaterialCreated = (materialName: string) => {
     if (currentProductIndex !== null) {
       setValue(`reimbursementProducts.${currentProductIndex}.name`, materialName);
+      setPendingMaterialIndices((prev) => new Set(prev).add(currentProductIndex));
     }
     handleCloseCreateMaterial();
   };
@@ -564,53 +566,68 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 >
                                   {hasWbsNum ? (
                                     <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                        <Box sx={{ flex: 1 }}>
-                                          <MaterialAutocomplete
-                                            wbsNum={product.reason as WbsNumber}
-                                            initialValue={watch(`reimbursementProducts.${product.index}.name`)}
-                                            onSelect={(material) => {
-                                              if (material) {
-                                                const label = `${material.name} (${material.materialTypeName}): ${material.manufacturerName ?? 'N/A'}, ${material.manufacturerPartNumber ?? 'N/A'}`;
-                                                setValue(`reimbursementProducts.${product.index}.name`, label, {
-                                                  shouldValidate: true,
-                                                  shouldDirty: true
-                                                });
-                                                setValue(
-                                                  `reimbursementProducts.${product.index}.materialId`,
-                                                  material.materialId,
-                                                  {
+                                      {watch(`reimbursementProducts.${product.index}.materialId`) || !watch(`reimbursementProducts.${product.index}.name`) || pendingMaterialIndices.has(product.index) ? (
+                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                          <Box sx={{ flex: 1 }}>
+                                            <MaterialAutocomplete
+                                              wbsNum={product.reason as WbsNumber}
+                                              initialValue={watch(`reimbursementProducts.${product.index}.name`)}
+                                              onSelect={(material) => {
+                                                if (material) {
+                                                  const label = `${material.name} (${material.materialTypeName}): ${material.manufacturerName ?? 'N/A'}, ${material.manufacturerPartNumber ?? 'N/A'}`;
+                                                  setValue(`reimbursementProducts.${product.index}.name`, label, {
                                                     shouldValidate: true,
                                                     shouldDirty: true
-                                                  }
-                                                );
-                                              } else {
-                                                setValue(`reimbursementProducts.${product.index}.name`, '', {
-                                                  shouldValidate: true,
-                                                  shouldDirty: true
-                                                });
-                                                setValue(`reimbursementProducts.${product.index}.materialId`, undefined, {
-                                                  shouldValidate: true,
-                                                  shouldDirty: true
-                                                });
-                                              }
-                                            }}
-                                          />
+                                                  });
+                                                  setValue(
+                                                    `reimbursementProducts.${product.index}.materialId`,
+                                                    material.materialId,
+                                                    {
+                                                      shouldValidate: true,
+                                                      shouldDirty: true
+                                                    }
+                                                  );
+                                                  setPendingMaterialIndices((prev) => {
+                                                    const next = new Set(prev);
+                                                    next.delete(product.index);
+                                                    return next;
+                                                  });
+                                                } else {
+                                                  setValue(`reimbursementProducts.${product.index}.name`, '', {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true
+                                                  });
+                                                  setValue(`reimbursementProducts.${product.index}.materialId`, undefined, {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true
+                                                  });
+                                                }
+                                              }}
+                                            />
+                                          </Box>
+                                          <Typography fontWeight="bold" sx={{ whiteSpace: 'nowrap' }}>
+                                            OR
+                                          </Typography>
+                                          <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={() =>
+                                              handleOpenCreateMaterial(product.index, product.reason as WbsNumber)
+                                            }
+                                            sx={{ whiteSpace: 'nowrap' }}
+                                          >
+                                            Create New Material
+                                          </Button>
                                         </Box>
-                                        <Typography fontWeight="bold" sx={{ whiteSpace: 'nowrap' }}>
-                                          OR
-                                        </Typography>
-                                        <Button
+                                      ) : (
+                                        <TextField
                                           variant="outlined"
+                                          value={watch(`reimbursementProducts.${product.index}.name`)}
+                                          fullWidth
                                           size="small"
-                                          onClick={() =>
-                                            handleOpenCreateMaterial(product.index, product.reason as WbsNumber)
-                                          }
-                                          sx={{ whiteSpace: 'nowrap' }}
-                                        >
-                                          Create New Material
-                                        </Button>
-                                      </Box>
+                                          disabled
+                                        />
+                                      )}
                                       <FormHelperText error>
                                         {errors.reimbursementProducts?.[product.index]?.name?.message}
                                       </FormHelperText>

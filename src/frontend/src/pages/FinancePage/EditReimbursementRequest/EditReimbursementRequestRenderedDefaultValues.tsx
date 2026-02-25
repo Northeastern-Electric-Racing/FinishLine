@@ -47,6 +47,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
               ? (product.reimbursementProductReason as WBSElementData).wbsNum
               : (product.reimbursementProductReason as OtherProductReason),
             name: product.name,
+            materialId: product.materialId,
             refundSources: product.refundSources,
             cost: Number(centsToDollar(product.cost))
           })),
