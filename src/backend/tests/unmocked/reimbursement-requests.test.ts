@@ -1409,4 +1409,153 @@ describe('Reimbursement Requests', () => {
       ).rejects.toThrow(new HttpException(400, 'Material is already linked to another reimbursement request'));
     });
   });
+
+  describe('Editing a reimbursement request', () => {
+    test('editing preserves refund sources on existing products', async () => {
+      // Get the original product info
+      const [originalProduct] = reimbursementRequest.reimbursementProducts;
+
+      // Edit the request, updating the product name but keeping the same refund source
+      await ReimbursementRequestService.editReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        createdAccountCode.accountCodeId,
+        reimbursementRequest.totalCost,
+        [],
+        [
+          {
+            id: originalProduct.reimbursementProductId,
+            name: 'UPDATED GLUE',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 200000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 200
+              }
+            ]
+          }
+        ],
+        [],
+        createdUser,
+        org,
+        new Date()
+      );
+
+      // Fetch the updated request and verify refund sources are preserved
+      const updatedRR = await ReimbursementRequestService.getSingleReimbursementRequest(
+        createdUser,
+        reimbursementRequest.reimbursementRequestId,
+        org
+      );
+
+      expect(updatedRR.reimbursementProducts).toHaveLength(1);
+      expect(updatedRR.reimbursementProducts[0].name).toEqual('UPDATED GLUE');
+      expect(updatedRR.reimbursementProducts[0].cost).toEqual(200000);
+      expect(updatedRR.reimbursementProducts[0].refundSources).toHaveLength(1);
+      expect(updatedRR.reimbursementProducts[0].refundSources[0].amount).toEqual(200);
+      expect(updatedRR.reimbursementProducts[0].refundSources[0].indexCode.indexCodeId).toEqual(
+        createdIndexCode.indexCodeId
+      );
+    });
+
+    test('editing updates refund source amounts on existing products', async () => {
+      const [originalProduct] = reimbursementRequest.reimbursementProducts;
+
+      // Edit with a different refund source amount
+      await ReimbursementRequestService.editReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        createdAccountCode.accountCodeId,
+        reimbursementRequest.totalCost,
+        [],
+        [
+          {
+            id: originalProduct.reimbursementProductId,
+            name: 'GLUE',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 300000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 300
+              }
+            ]
+          }
+        ],
+        [],
+        createdUser,
+        org,
+        new Date()
+      );
+
+      const updatedRR = await ReimbursementRequestService.getSingleReimbursementRequest(
+        createdUser,
+        reimbursementRequest.reimbursementRequestId,
+        org
+      );
+
+      expect(updatedRR.reimbursementProducts).toHaveLength(1);
+      expect(updatedRR.reimbursementProducts[0].cost).toEqual(300000);
+      expect(updatedRR.reimbursementProducts[0].refundSources).toHaveLength(1);
+      expect(updatedRR.reimbursementProducts[0].refundSources[0].amount).toEqual(300);
+    });
+
+    test('editing with new products (no id) creates them with refund sources', async () => {
+      // Edit the request, replacing the old product with a new one (no id)
+      await ReimbursementRequestService.editReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        createdAccountCode.accountCodeId,
+        reimbursementRequest.totalCost,
+        [],
+        [
+          {
+            name: 'NEW TAPE',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 500,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 500
+              }
+            ]
+          }
+        ],
+        [],
+        createdUser,
+        org,
+        new Date()
+      );
+
+      const updatedRR = await ReimbursementRequestService.getSingleReimbursementRequest(
+        createdUser,
+        reimbursementRequest.reimbursementRequestId,
+        org
+      );
+
+      // Old product should be soft-deleted, new one created
+      const activeProducts = updatedRR.reimbursementProducts;
+      expect(activeProducts).toHaveLength(1);
+      expect(activeProducts[0].name).toEqual('NEW TAPE');
+      expect(activeProducts[0].cost).toEqual(500);
+      expect(activeProducts[0].refundSources).toHaveLength(1);
+      expect(activeProducts[0].refundSources[0].amount).toEqual(500);
+    });
+  });
 });

@@ -95,6 +95,7 @@ const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
 const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
+const tasksFilter = () => `${tasks()}/filter`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
 
 /**************** Work Packages Endpoints ****************/
@@ -556,6 +557,7 @@ export const apiUrls = {
 
   tasksCreate,
   tasks,
+  tasksFilter,
   editTaskById,
   taskEditStatus,
   editTaskAssignees,

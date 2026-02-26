@@ -92,6 +92,26 @@ export default class TasksController {
     }
   }
 
+  static async getFilteredTasks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { memberIds, teamIds, startPeriod, endPeriod } = req.body;
+
+      const tasks = await TasksService.getFilteredTasks(
+        {
+          memberIds,
+          teamIds,
+          startPeriod: new Date(startPeriod),
+          endPeriod: new Date(endPeriod)
+        },
+        req.organization
+      );
+
+      res.status(200).json(tasks);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getOverdueTasksByTeamLeadership(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.params as Record<string, string>;

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Task, TaskPriority, TaskStatus, WbsNumber, wbsPipe } from 'shared';
+import { CalendarTask, FilterTaskArgs, Task, TaskCardPreview, TaskPriority, TaskStatus, WbsNumber, wbsPipe } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { taskTransformer } from './transformers/tasks.transformers';
@@ -113,8 +113,19 @@ export const deleteSingleTask = (taskId: string) => {
   return axios.post<{ message: string }>(apiUrls.deleteTask(taskId), {});
 };
 
+/**
+ * Gets all tasks that match the filter criteria.
+ * @param payload the filter criteria
+ * @returns an array of tasks that match the filter criteria
+ */
+export const getFilterTasks = (payload: FilterTaskArgs) => {
+  return axios.post<CalendarTask[]>(apiUrls.tasksFilter(), payload, {
+    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  });
+};
+
 export const getOverdueTasksByTeamLeader = (userId: string) => {
-  return axios.get<Task[]>(apiUrls.overdueTasksByTeamLeadership(userId), {
+  return axios.get<TaskCardPreview[]>(apiUrls.overdueTasksByTeamLeadership(userId), {
     transformResponse: (data) => JSON.parse(data).map(taskTransformer)
   });
 };
