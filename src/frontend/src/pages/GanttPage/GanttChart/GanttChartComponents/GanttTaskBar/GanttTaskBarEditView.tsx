@@ -16,7 +16,7 @@ import { ArcherElement } from 'react-archer';
 import { v4 as uuidv4 } from 'uuid';
 
 const CELL_SIZE_PX = 38 + 2; // 38px cell + 2px for borders (1px each side)
-const GAP_SIZE_PX = 10;      // empirically determined, see note above
+const GAP_SIZE_PX = 10; // empirically determined, see note above
 const WIDTH_PER_DAY = 7.2; //width per day to use for resizing calculations, kind of arbitrary,
 
 interface GanttTaskBarEditProps<T> {
@@ -72,14 +72,11 @@ export const GanttTaskBarEditView = <T,>({
     right: '-10'
   };
 
-  const getCorrectWidth = useCallback(
-    (rawWidth: number) => {
-      const newEventLengthInDays = floorToMultipleOf7(rawWidth / WIDTH_PER_DAY);
-      const displayWeeks = newEventLengthInDays / 7 + 1;
-      return displayWeeks * CELL_SIZE_PX + (displayWeeks - 1) * GAP_SIZE_PX;
-    },
-    []
-  );
+  const getCorrectWidth = useCallback((rawWidth: number) => {
+    const newEventLengthInDays = floorToMultipleOf7(rawWidth / WIDTH_PER_DAY);
+    const displayWeeks = newEventLengthInDays / 7 + 1;
+    return displayWeeks * CELL_SIZE_PX + (displayWeeks - 1) * GAP_SIZE_PX;
+  }, []);
 
   useEffect(() => {
     if (!hasMeasuredRef.current && bounds.width > 0) {
@@ -101,7 +98,7 @@ export const GanttTaskBarEditView = <T,>({
   };
 
   const handleMouseDown = (e: MouseEvent<HTMLElement>) => {
-    const bar = (e.currentTarget as HTMLElement).closest('[data-gantt-bar]')
+    const bar = (e.currentTarget as HTMLElement).closest('[data-gantt-bar]');
     if (!bar) return;
 
     boxRef.current = (e.currentTarget as HTMLElement).closest('[data-gantt-bar]') as HTMLDivElement;
@@ -118,21 +115,21 @@ export const GanttTaskBarEditView = <T,>({
   };
 
   const handleMouseUp = () => {
-  if (isResizing) {
-    setIsResizing(false);
-    const newEventLengthInDays = floorToMultipleOf7(width / WIDTH_PER_DAY);
-    const displayWeeks = newEventLengthInDays / 7 + 1;
-    const correctWidth = displayWeeks * 40 + (displayWeeks - 1) * 10;
-    setWidth(correctWidth);
-    createChange({
-      id: uuidv4(),
-      element: task.element,
-      type: 'change-end-date',
-      originalEnd: task.end,
-      newEnd: addDaysToDate(task.start, newEventLengthInDays)
-    });
-  }
-};
+    if (isResizing) {
+      setIsResizing(false);
+      const newEventLengthInDays = floorToMultipleOf7(width / WIDTH_PER_DAY);
+      const displayWeeks = newEventLengthInDays / 7 + 1;
+      const correctWidth = displayWeeks * 40 + (displayWeeks - 1) * 10;
+      setWidth(correctWidth);
+      createChange({
+        id: uuidv4(),
+        element: task.element,
+        type: 'change-end-date',
+        originalEnd: task.end,
+        newEnd: addDaysToDate(task.start, newEventLengthInDays)
+      });
+    }
+  };
 
   const onDragStart = () => {
     setShowDropPoints(true);
