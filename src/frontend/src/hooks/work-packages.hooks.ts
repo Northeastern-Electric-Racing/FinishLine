@@ -36,7 +36,17 @@ export const useAllWorkPackages = (queryParams?: { [field: string]: string }) =>
 export const useAllWorkPackagesPreview = (status?: string) => {
   return useQuery<WorkPackagePreview[], Error>(['work packages', 'preview', status], async () => {
     const { data } = await getAllWorkPackagesPreview(status);
-    return data;
+    
+    const seen = new Set<string>();
+
+    const uniqueData = data.filter((item: WorkPackagePreview) => {
+      const key = `${item.wbsNum.carNumber}-${item.wbsNum.projectNumber}-${item.wbsNum.workPackageNumber}`;
+      const isDuplicate = seen.has(key);
+      seen.add(key);
+      return !isDuplicate;
+    });
+
+    return uniqueData;
   });
 };
 
