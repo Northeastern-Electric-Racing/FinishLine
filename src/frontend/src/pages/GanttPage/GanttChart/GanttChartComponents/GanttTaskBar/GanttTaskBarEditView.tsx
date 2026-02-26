@@ -15,6 +15,10 @@ import {
 import { ArcherElement } from 'react-archer';
 import { v4 as uuidv4 } from 'uuid';
 
+const CELL_SIZE_PX = 38 + 2; // 38px cell + 2px for borders (1px each side)
+const GAP_SIZE_PX = 10;      // empirically determined, see note above
+const WIDTH_PER_DAY = 7.2; //width per day to use for resizing calculations, kind of arbitrary,
+
 interface GanttTaskBarEditProps<T> {
   days: Date[];
   task: GanttTask<T>;
@@ -40,7 +44,6 @@ export const GanttTaskBarEditView = <T,>({
   const [measureRef, bounds] = useMeasure();
   const hasMeasuredRef = useRef(false);
   const boxRef = useRef<HTMLDivElement | null>(null);
-  const widthPerDay = 7.2; //width per day to use for resizing calculations, kind of arbitrary,
 
   const taskBarDisplayStyles: CSSProperties = {
     gridColumnStart: getStartCol(task.start),
@@ -69,11 +72,14 @@ export const GanttTaskBarEditView = <T,>({
     right: '-10'
   };
 
-  const getCorrectWidth = useCallback((rawWidth: number) => {
-    const newEventLengthInDays = roundToMultipleOf7(rawWidth / widthPerDay);
-    const displayWeeks = newEventLengthInDays / 7 + 1;
-    return displayWeeks * 40 + (displayWeeks - 1) * 10;
-  }, []);
+  const getCorrectWidth = useCallback(
+    (rawWidth: number) => {
+      const newEventLengthInDays = floorToMultipleOf7(rawWidth / WIDTH_PER_DAY);
+      const displayWeeks = newEventLengthInDays / 7 + 1;
+      return displayWeeks * CELL_SIZE_PX + (displayWeeks - 1) * GAP_SIZE_PX;
+    },
+    []
+  );
 
   useEffect(() => {
     if (!hasMeasuredRef.current && bounds.width > 0) {
@@ -84,18 +90,22 @@ export const GanttTaskBarEditView = <T,>({
   }, [bounds.width, getCorrectWidth]);
 
   // used to make sure that any changes to the start and end dates are made in multiples of 7
-  const roundToMultipleOf7 = (num: number) => {
-    return Math.ceil(num / 7) * 7;
+  const floorToMultipleOf7 = (num: number) => {
+    return Math.floor(num / 7) * 7;
   };
 
   const getDistanceFromLeft = (clientX: number) => {
-    const rect = boxRef.current!.getBoundingClientRect();
+    if (!boxRef.current) return 0;
+    const rect = boxRef.current.getBoundingClientRect();
     return clientX - rect.left;
   };
 
   const handleMouseDown = (e: MouseEvent<HTMLElement>) => {
-    setIsResizing(true);
+    const bar = (e.currentTarget as HTMLElement).closest('[data-gantt-bar]')
+    if (!bar) return;
+
     boxRef.current = (e.currentTarget as HTMLElement).closest('[data-gantt-bar]') as HTMLDivElement;
+    setIsResizing(true);
   };
 
   const handleMouseMove = (e: MouseEvent<HTMLElement>) => {
@@ -108,18 +118,21 @@ export const GanttTaskBarEditView = <T,>({
   };
 
   const handleMouseUp = () => {
-    if (isResizing) {
-      setIsResizing(false);
-      const newEventLengthInDays = roundToMultipleOf7(width / widthPerDay);
-      createChange({
-        id: uuidv4(),
-        element: task.element,
-        type: 'change-end-date',
-        originalEnd: task.end,
-        newEnd: addDaysToDate(task.start, newEventLengthInDays)
-      });
-    }
-  };
+  if (isResizing) {
+    setIsResizing(false);
+    const newEventLengthInDays = floorToMultipleOf7(width / WIDTH_PER_DAY);
+    const displayWeeks = newEventLengthInDays / 7 + 1;
+    const correctWidth = displayWeeks * 40 + (displayWeeks - 1) * 10;
+    setWidth(correctWidth);
+    createChange({
+      id: uuidv4(),
+      element: task.element,
+      type: 'change-end-date',
+      originalEnd: task.end,
+      newEnd: addDaysToDate(task.start, newEventLengthInDays)
+    });
+  }
+};
 
   const onDragStart = () => {
     setShowDropPoints(true);
@@ -132,7 +145,7 @@ export const GanttTaskBarEditView = <T,>({
     e.preventDefault();
   };
   const onDrop = (day: Date) => {
-    const days = roundToMultipleOf7(differenceInDays(day, task.start));
+    const days = floorToMultipleOf7(differenceInDays(day, task.start));
     createChange({ id: uuidv4(), element: task.element, type: 'shift-by-days', days });
   };
 
