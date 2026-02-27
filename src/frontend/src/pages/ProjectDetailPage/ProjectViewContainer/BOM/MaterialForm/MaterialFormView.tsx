@@ -1,4 +1,5 @@
 import {
+  Button,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -22,6 +23,7 @@ import { displayEnum } from '../../../../../utils/pipes';
 import { MaterialStatus } from 'shared';
 import React from 'react';
 import { AddCircle } from '@mui/icons-material';
+import BOMCopyConfirmModal from './BOMCopyConfirmModal';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -70,6 +72,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   const quantity = watch('quantity');
   const price = watch('price');
   const subtotal = quantity && price ? quantity * price : 0;
+  const [bomConfirmOpen, setBomConfirmOpen] = React.useState(false);
 
   return (
     <NERFormModal
@@ -477,7 +480,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           </FormControl>
         </Box>
       </Grid>
-      {/*submitText === 'Add' && (
+      {submitText === 'Add' && (
         <Grid item xs={12} sx={{ pl: 0, pr: 0 }}>
           <Box
             sx={{
@@ -487,9 +490,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             <Button
               variant="contained"
               disableElevation
-              onClick={() => {}}
+              onClick={() => {
+                setBomConfirmOpen(true);
+              }}
               sx={{
                 mx: 0,
+                my: 1,
                 textTransform: 'none',
                 bgcolor: '#EF4345',
                 color: (t) => t.palette.getContrastText('#EF4345'),
@@ -500,7 +506,14 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             </Button>
           </Box>
         </Grid>
-      )*/}
+      )}
+      <BOMCopyConfirmModal
+        open={bomConfirmOpen}
+        onHide={() => {
+          setBomConfirmOpen(false);
+        }}
+        onSuccess={() => {}}
+      ></BOMCopyConfirmModal>
     </NERFormModal>
   );
 };
