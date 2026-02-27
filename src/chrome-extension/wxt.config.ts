@@ -4,10 +4,15 @@ export default defineConfig({
   srcDir: '.',
   entrypointsDir: 'entrypoints',
   modules: ['@wxt-dev/module-react'],
+  dev: {
+    server: {
+      port: 3400
+    }
+  },
   manifest: {
     name: 'FinishLine for Concur',
     description: 'Auto-fill SAP Concur expense reports from FinishLine reimbursement requests',
-    permissions: ['storage', 'activeTab'],
+    permissions: ['storage', 'activeTab', 'identity'],
     host_permissions: [
       'https://www.concursolutions.com/*',
       'https://us2.concursolutions.com/*',

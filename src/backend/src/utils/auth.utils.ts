@@ -42,10 +42,12 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
     notificationEndpointAuth(req, res, next);
   } else {
     const { token } = req.cookies;
+    const authHeader = req.headers.authorization;
+    const jwtToken = token || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
 
-    if (!token) res.status(401).json({ message: 'Authentication Failed: Cookie not found!' });
+    if (!jwtToken) res.status(401).json({ message: 'Authentication Failed: Cookie not found!' });
     else {
-      jwt.verify(token, TOKEN_SECRET, (err: VerifyErrors | null, decoded: string | JwtPayload | undefined) => {
+      jwt.verify(jwtToken, TOKEN_SECRET, (err: VerifyErrors | null, decoded: string | JwtPayload | undefined) => {
         if (err) res.status(401).json({ message: 'Authentication Failed: Invalid JWT!' });
         else if (!decoded || typeof decoded === 'string') {
           res.status(401).json({ message: 'Authentication Failed: Invalid JWT payload!' });

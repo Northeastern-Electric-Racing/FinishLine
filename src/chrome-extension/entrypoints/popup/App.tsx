@@ -1,109 +1,227 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { AuthState, BackgroundMessage, DevUser, RRListItem } from '../../lib/messages';
+import { colors, fonts, fontSizes, spacing, mixins } from '../../lib/theme';
+import RRList from './RRList';
 
-/**
- * MVP Popup — lets the user type a CSS selector and value,
- * then sends a message to the content script to fill that field on the Concur page.
- */
+const IS_DEV = import.meta.env.DEV;
+
 export default function App() {
-  const [selector, setSelector] = useState('');
-  const [value, setValue] = useState('');
-  const [status, setStatus] = useState<string | null>(null);
+  const [auth, setAuth] = useState<AuthState | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFill = async () => {
-    setStatus('Filling...');
+  // Dev login state
+  const [devUsers, setDevUsers] = useState<DevUser[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState('');
+
+  // RR list state
+  const [rrItems, setRrItems] = useState<RRListItem[]>([]);
+  const [rrLoading, setRrLoading] = useState(false);
+  const [rrError, setRrError] = useState<string | null>(null);
+
+  useEffect(() => {
+    sendMessage({ type: 'auth:check' })
+      .then((result) => {
+        setAuth(result as AuthState | null);
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => setLoading(false));
+
+    if (IS_DEV) {
+      sendMessage({ type: 'auth:users' })
+        .then((result) => {
+          setDevUsers(result as DevUser[]);
+        })
+        .catch(() => {});
+    }
+  }, []);
+
+  // Fetch RR list when authenticated
+  useEffect(() => {
+    if (!auth) return;
+    setRrLoading(true);
+    setRrError(null);
+    sendMessage({ type: 'rr:list' })
+      .then((result) => {
+        if (result && typeof result === 'object' && 'error' in (result as any)) {
+          setRrError((result as any).error);
+        } else {
+          setRrItems(result as RRListItem[]);
+        }
+      })
+      .catch((err) => {
+        setRrError(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => setRrLoading(false));
+  }, [auth]);
+
+  const handleLogin = async () => {
+    setError(null);
+    setLoading(true);
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab?.id) {
-        setStatus('Error: No active tab');
-        return;
-      }
-
-      const response = await chrome.tabs.sendMessage(tab.id, {
-        type: 'fill-field',
-        payload: { selector, value }
-      });
-
-      if (response?.success) {
-        setStatus('Filled successfully!');
+      const message: BackgroundMessage = IS_DEV
+        ? { type: 'auth:login', payload: { userId: selectedUserId } }
+        : { type: 'auth:login:google' };
+      const result = (await sendMessage(message)) as AuthState | { error: string };
+      if ('error' in result) {
+        setError(result.error);
       } else {
-        setStatus(`Error: ${response?.error ?? 'Unknown error'}`);
+        setAuth(result);
       }
     } catch (err) {
-      setStatus(`Error: ${err instanceof Error ? err.message : String(err)}`);
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <div style={{ padding: 16 }}>
-      <h2 style={{ fontSize: 16, marginBottom: 12 }}>FinishLine for Concur</h2>
-      <p style={{ fontSize: 12, color: '#666', marginBottom: 16 }}>
-        MVP: Fill a single field on the current Concur page.
-      </p>
+  const handleLogout = async () => {
+    await sendMessage({ type: 'auth:logout' });
+    setAuth(null);
+    setRrItems([]);
+    setRrError(null);
+  };
 
-      <label style={labelStyle}>CSS Selector</label>
-      <input
-        style={inputStyle}
-        type="text"
-        placeholder='e.g. #expenseName'
-        value={selector}
-        onChange={(e) => setSelector(e.target.value)}
-      />
+  if (loading) {
+    return (
+      <div style={{ ...mixins.body, padding: spacing.lg, fontSize: fontSizes.base }}>
+        Loading...
+      </div>
+    );
+  }
 
-      <label style={labelStyle}>Value</label>
-      <input
-        style={inputStyle}
-        type="text"
-        placeholder="Value to fill"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-      />
+  // Not logged in
+  if (!auth) {
+    return (
+      <div style={{ ...mixins.body, padding: spacing.xl }}>
+        <Header />
 
-      <button
-        style={buttonStyle}
-        onClick={handleFill}
-        disabled={!selector || !value}
-      >
-        Fill Field
-      </button>
-
-      {status && (
-        <p style={{
-          marginTop: 12,
-          fontSize: 13,
-          color: status.startsWith('Error') ? '#d32f2f' : '#2e7d32'
-        }}>
-          {status}
+        <p style={{ ...mixins.subtleText, marginBottom: spacing.xl, marginTop: spacing.xs }}>
+          Sign in to manage your reimbursement requests.
         </p>
-      )}
+
+        {IS_DEV ? (
+          <>
+            <label style={mixins.label}>Select User (dev)</label>
+            <select
+              style={mixins.select}
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
+            >
+              <option value="" disabled>
+                Select a user...
+              </option>
+              {devUsers.map((user) => (
+                <option key={user.userId} value={user.userId}>
+                  {user.firstName} {user.lastName} ({user.role.toLowerCase()})
+                </option>
+              ))}
+            </select>
+            <button style={mixins.primaryButton} onClick={handleLogin} disabled={!selectedUserId}>
+              Dev Login
+            </button>
+          </>
+        ) : (
+          <button style={mixins.primaryButton} onClick={handleLogin}>
+            Sign in with Google
+          </button>
+        )}
+
+        {error && <p style={{ ...mixins.errorText, marginTop: spacing.md }}>{error}</p>}
+      </div>
+    );
+  }
+
+  // Logged in
+  return (
+    <div style={{ ...mixins.body, maxHeight: 520, overflowY: 'auto' }}>
+      {/* Header bar */}
+      <div
+        style={{
+          background: colors.primary,
+          padding: `${spacing.md}px ${spacing.lg}px`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1
+        }}
+      >
+        <h1
+          style={{
+            fontFamily: fonts.heading,
+            fontSize: fontSizes.lg,
+            fontWeight: 600,
+            color: colors.textOnPrimary,
+            margin: 0
+          }}
+        >
+          FinishLine for Concur
+        </h1>
+        <button
+          style={{
+            ...mixins.linkButton,
+            color: colors.textOnPrimary,
+            fontSize: fontSizes.sm,
+            opacity: 0.9
+          }}
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+      </div>
+
+      {/* Content */}
+      <div style={{ padding: spacing.lg }}>
+        <p style={{ ...mixins.subtleText, marginBottom: spacing.lg }}>
+          Logged in as <strong style={{ color: colors.textPrimary }}>{auth.name}</strong>
+        </p>
+
+        {rrLoading && (
+          <p style={{ ...mixins.subtleText, textAlign: 'center', marginTop: spacing.xl }}>
+            Loading reimbursement requests...
+          </p>
+        )}
+        {rrError && <p style={mixins.errorText}>Error: {rrError}</p>}
+        {!rrLoading && !rrError && <RRList items={rrItems} />}
+      </div>
     </div>
   );
 }
 
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: 12,
-  fontWeight: 600,
-  marginBottom: 4,
-  color: '#444',
-};
+function Header() {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: spacing.sm,
+        marginBottom: spacing.md
+      }}
+    >
+      <div
+        style={{
+          width: 6,
+          height: 28,
+          background: colors.primary,
+          borderRadius: 3
+        }}
+      />
+      <h1
+        style={{
+          ...mixins.heading,
+          fontSize: fontSizes.xl
+        }}
+      >
+        FinishLine for Concur
+      </h1>
+    </div>
+  );
+}
 
-const inputStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '8px 10px',
-  marginBottom: 12,
-  border: '1px solid #ccc',
-  borderRadius: 4,
-  fontSize: 13,
-};
-
-const buttonStyle: React.CSSProperties = {
-  padding: '8px 16px',
-  background: '#ef4444',
-  color: '#fff',
-  border: 'none',
-  borderRadius: 4,
-  cursor: 'pointer',
-  fontSize: 14,
-  fontWeight: 600,
-};
+function sendMessage(message: BackgroundMessage): Promise<unknown> {
+  return chrome.runtime.sendMessage(message);
+}

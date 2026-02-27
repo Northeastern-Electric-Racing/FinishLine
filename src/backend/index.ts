@@ -48,7 +48,7 @@ const options: cors.CorsOptions = {
     // allow requests with no origin like postman or curl requests
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin) || origin.startsWith('chrome-extension://')) {
       return callback(null, true);
     }
 

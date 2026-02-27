@@ -103,7 +103,7 @@ export default class UsersController {
       const { user, token } = await UsersService.logUserIn(idToken, header!);
 
       res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
-      res.status(200).json(user);
+      res.status(200).json({ ...user, token });
     } catch (error: unknown) {
       next(error);
     }

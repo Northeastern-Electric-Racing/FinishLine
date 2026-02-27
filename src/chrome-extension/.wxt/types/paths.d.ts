@@ -6,6 +6,11 @@ declare module "wxt/browser" {
     | "/"
     | "/background.js"
     | "/content-scripts/concur.js"
+    | "/fonts/fonts.css"
+    | "/fonts/lato-bold.ttf"
+    | "/fonts/lato-regular.ttf"
+    | "/fonts/oswald-500.ttf"
+    | "/fonts/oswald-600.ttf"
     | "/popup.html"
   type HtmlPublicPath = Extract<PublicPath, `${string}.html`>
   export interface WxtRuntime {

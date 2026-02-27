@@ -6,11 +6,13 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   const auth = await storage.getAuth();
   if (!auth) throw new Error('Not authenticated');
 
+  const authHeader = auth.mode === 'dev' ? auth.userId : `Bearer ${auth.jwt}`;
+
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${auth.jwt}`,
+      Authorization: authHeader,
       organizationId: auth.organizationId,
       ...options.headers
     }
