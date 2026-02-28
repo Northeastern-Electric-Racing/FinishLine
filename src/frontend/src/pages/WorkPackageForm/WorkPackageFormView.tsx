@@ -6,6 +6,7 @@
 import {
   ChangeRequestReason,
   ChangeRequestType,
+  dateToUtcMidnight,
   DescriptionBulletPreview,
   User,
   validateWBS,
@@ -235,7 +236,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         userId,
         name,
         crId: crId === 'null' ? undefined : crId,
-        startDate: transformDate(startDate),
+        startDate: transformDate(dateToUtcMidnight(startDate)),
         duration,
         blockedBy: blockedByWbsNums,
         descriptionBullets,

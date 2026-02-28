@@ -13,8 +13,7 @@ import {
   WorkPackagePreview,
   WorkPackageStage,
   User,
-  WorkPackageSelection,
-  dateToUtcMidnight
+  WorkPackageSelection
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -236,8 +235,6 @@ export default class WorkPackagesService {
 
     const date = new Date(startDate);
 
-    const adjustedDate = dateToUtcMidnight(date);
-
     const changesToCreate = crId
       ? [
           {
@@ -267,7 +264,7 @@ export default class WorkPackagesService {
         },
         stage,
         project: { connect: { projectId } },
-        startDate: adjustedDate,
+        startDate: date,
         duration,
         orderInProject: project.workPackages.filter((wp) => !wp.wbsElement.dateDeleted).length + 1,
         blockedBy: { connect: blockedByElements.map((ele) => ({ wbsElementId: ele.wbsElementId })) }
@@ -281,7 +278,7 @@ export default class WorkPackagesService {
       null,
       stage,
       null,
-      adjustedDate,
+      new Date(startDate),
       null,
       duration,
       [],
@@ -368,15 +365,13 @@ export default class WorkPackagesService {
 
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
 
-    const adjustedDate = new Date(startDate);
-    const normalizedEdit = dateToUtcMidnight(adjustedDate);
     const changes = await getWorkPackageChanges(
       originalWorkPackage.wbsElement.name,
       name,
       originalWorkPackage.stage,
       stage,
       originalWorkPackage.startDate,
-      normalizedEdit,
+      new Date(startDate),
       originalWorkPackage.duration,
       duration,
       originalWorkPackage.blockedBy,
@@ -391,8 +386,8 @@ export default class WorkPackagesService {
       wbsElementId,
       userId
     );
-    // Store at 00:00 UTC (canonical)
-    const date = normalizedEdit;
+
+    const date = new Date(startDate);
 
     // set the status of the wbs element to active if an edit is made to a completed version
     const status =
