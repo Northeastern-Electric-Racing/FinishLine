@@ -13,7 +13,7 @@ interface WorkPackageDurationProps {
 
 const calculateEndDate = (start: Date, weeks: number) => {
   const end = new Date(start);
-  end.setDate(start.getUTCDate() + weeks * 7);
+  end.setUTCDate(start.getUTCDate() + weeks * 7);
   return end;
 };
 

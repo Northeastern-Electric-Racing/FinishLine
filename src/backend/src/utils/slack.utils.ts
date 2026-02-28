@@ -437,6 +437,7 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
   const drName = event.title + (wpNames ? ` (${wpNames})` : '');
 
   // Get the first scheduled time
+  // Fine as temporary fix because only DRs with single slots are sending notifications
   const [firstScheduledTime] = event.scheduledTimes;
   if (!firstScheduledTime) {
     throw new HttpException(400, 'Event has no scheduled times');

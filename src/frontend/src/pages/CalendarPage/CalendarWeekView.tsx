@@ -203,14 +203,12 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   );
 
   // Build per-day all-day event lists
-  // Unscheduled design reviews have startTime from @db.Date (midnight UTC) — use UTC comparison.
-  // Scheduled all-day events use local time range comparison for multi-day spans.
   const allDayEventsByDay: EventInstance[][] = weekDays.map((day) =>
     allDayEvents.filter((e) => {
       const start = new Date(e.startTime);
       const end = new Date(e.endTime);
       if (start.getTime() === end.getTime()) {
-        // Single-point event (e.g., unscheduled design review from @db.Date) — compare UTC date
+        // Single-point event (e.g., unscheduled design review or all day event) — compare UTC date
         return (
           start.getUTCFullYear() === day.getFullYear() &&
           start.getUTCMonth() === day.getMonth() &&

@@ -11,7 +11,6 @@ ALTER TABLE "Sponsor" ALTER COLUMN "joinDate" SET DATA TYPE date;
 ALTER TABLE "Sponsor_Task" ALTER COLUMN "dueDate" SET DATA TYPE date;
 ALTER TABLE "Sponsor_Task" ALTER COLUMN "notifyDate" SET DATA TYPE date;
 ALTER TABLE "Availability" ALTER COLUMN "dateSet" SET DATA TYPE date;
-ALTER TABLE "Event" ALTER COLUMN "initialDateScheduled" SET DATA TYPE date;
 ALTER TABLE "Milestone" ALTER COLUMN "dateOfEvent" SET DATA TYPE date;
 ALTER TABLE "Graph" ALTER COLUMN "startDate" SET DATA TYPE date;
 ALTER TABLE "Graph" ALTER COLUMN "endDate" SET DATA TYPE date;

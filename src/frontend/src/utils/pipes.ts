@@ -14,10 +14,10 @@ import {
   UserPreview,
   ScheduleSlot,
   Event,
-  formatDateOnly,
   formatEventTime,
   formatEventDate
 } from 'shared';
+import dayjs from 'dayjs';
 
 /**
  * Pipes:
@@ -71,13 +71,14 @@ export const emDashPipe = (str: string) => {
 
 /**
  * Return a given date as a string in the local en-US format.
- * For date-only values (@db.Date columns), uses UTC formatting to preserve the stored calendar date.
+ * @db.Date values should be normalized to local dates via dbDateToLocalDate in transformers
+ * before reaching this function, so local formatting is correct for all inputs.
  */
 export const datePipe = (date?: Date | string, includeYear = true) => {
   if (!date) return '';
   date = typeof date === 'string' ? new Date(date) : date;
   const format = includeYear ? 'MM/DD/YYYY' : 'MM/DD';
-  return formatDateOnly(date, format);
+  return dayjs(date).format(format);
 };
 
 /** returns a given number as a string with a percent sign */
@@ -137,7 +138,7 @@ export const eventNamePipe = (event: Event) => {
 };
 
 export const dateRangePipe = (startDate: Date, endDate: Date) => {
-  return `${formatDateOnly(startDate, 'M/D')} - ${formatDateOnly(endDate, 'M/D')}`;
+  return `${dayjs(startDate).format('M/D')} - ${dayjs(endDate).format('M/D')}`;
 };
 
 export const undefinedPipe = (element: any) => {

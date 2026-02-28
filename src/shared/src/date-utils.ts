@@ -20,9 +20,7 @@ const addWeeksToDate = (start: Date, weeks: number) => addDaysToDate(start, week
  * @returns the outcome of adding the days to the start date
  */
 const addDaysToDate = (start: Date, days: number) => {
-  const end = new Date(start);
-  end.setDate(start.getDate() + days);
-  return end;
+  return new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
 };
 
 /**

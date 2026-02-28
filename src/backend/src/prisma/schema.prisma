@@ -779,7 +779,7 @@ model Vendor {
   organizationId        String
   organization          Organization            @relation(fields: [organizationId], references: [organizationId])
   username              String?
-  password              String? // password is encrypted  
+  password              String? // password is encrypted
   discountCode          String?
   twoFactorContacts     User[]                  @relation(name: "twoFactorContactVendors")
   notes                 String?
@@ -1088,9 +1088,9 @@ model Event {
   shops                      Shop[]
   machinery                  Machinery[]
   workPackages               Work_Package[]
-  documents                  Document[]      
+  documents                  Document[]
   status                     Event_Status
-  initialDateScheduled       DateTime?       @db.Date
+  initialDateScheduled       DateTime?
   questionDocumentLink       String?
   description                String?
   notificationSlackThreads   Message_Info[]

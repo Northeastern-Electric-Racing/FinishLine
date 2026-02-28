@@ -129,8 +129,7 @@ export const EventAvailabilityPage: React.FC = () => {
     if (dateParam) {
       return new Date(dateParam);
     }
-    // initialDateScheduled is @db.Date (midnight UTC) — normalize to local calendar date
-    return event?.initialDateScheduled ? dbDateToLocalDate(event.initialDateScheduled) : new Date();
+    return event?.initialDateScheduled;
   }, [dateParam, event]);
 
   const isUserMember = useMemo(() => {
