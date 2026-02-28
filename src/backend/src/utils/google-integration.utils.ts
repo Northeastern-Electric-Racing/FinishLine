@@ -233,13 +233,13 @@ export const createCalendarEvent = async (
         location: isInPerson ? location : zoomLink,
         summary: eventTitle,
         start: slot.allDay
-          ? { date: slot.startTime ? toDateString(slot.startTime) : undefined }
+          ? { date: slot.startTime ? slot.startTime.toISOString().split('T')[0] : undefined }
           : {
               dateTime: slot.startTime ? slot.startTime.toISOString() : undefined,
               timeZone: 'America/New_York'
             },
         end: slot.allDay
-          ? { date: slot.endTime ? toDateString(slot.endTime) : undefined }
+          ? { date: slot.endTime ? slot.endTime.toISOString().split('T')[0] : undefined }
           : {
               dateTime: slot.endTime ? slot.endTime.toISOString() : undefined,
               timeZone: 'America/New_York'

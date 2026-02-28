@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { Availability, dbDateToLocalDate, Event, EventWithMembers, getDayOfWeek, getNextSevenDays, User } from 'shared';
+import { Availability, Event, EventWithMembers, getDayOfWeek, getNextSevenDays, User } from 'shared';
 import React, { useState } from 'react';
 import { enumToArray, getBackgroundColor, NUMBER_OF_TIME_SLOTS, REVIEW_TIMES } from '../../utils/design-review.utils';
 import { datePipe } from '../../utils/pipes';
