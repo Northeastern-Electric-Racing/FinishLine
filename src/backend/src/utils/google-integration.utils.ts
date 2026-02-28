@@ -4,7 +4,7 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
 import { HttpException } from './errors.utils.js';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
-import { User, toDateString } from 'shared';
+import { User } from 'shared';
 import { Schedule_Slot } from '@prisma/client';
 import { getUsers } from './users.utils.js';
 
