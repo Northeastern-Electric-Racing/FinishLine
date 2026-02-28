@@ -6,7 +6,6 @@ import {
 } from '../../../../../utils/gantt.utils';
 import { Collapse } from '@mui/material';
 import GanttTaskBar from './GanttTaskBar';
-import BlockedGanttTaskView from './BlockedTaskBarView';
 import GanttTaskBarDisplay from './GanttTaskBarDisplay';
 
 interface GanttTaskBarViewProps<T> {
@@ -54,7 +53,7 @@ const GanttTaskBarView = <T,>({
         highlightTaskComparator={highlightTaskComparator}
       />
 
-      <Collapse in={showChildren}>
+      <Collapse in={showChildren} unmountOnExit>
         {task.children.map((child) => {
           return (
             <GanttTaskBar
@@ -74,23 +73,6 @@ const GanttTaskBarView = <T,>({
           );
         })}
       </Collapse>
-      {task.blocking.map((blocking) => {
-        return (
-          <BlockedGanttTaskView
-            key={blocking.id}
-            task={blocking}
-            days={days}
-            getStartCol={getStartCol}
-            getEndCol={getEndCol}
-            handleOnMouseOver={handleOnMouseOver}
-            onShowChildrenToggle={onShowChildrenToggle}
-            highlightSubtaskComparator={highlightSubtaskComparator}
-            highlightTaskComparator={highlightTaskComparator}
-            handleOnMouseLeave={handleOnMouseLeave}
-            highlightedChange={highlightedChange}
-          />
-        );
-      })}
     </>
   );
 };

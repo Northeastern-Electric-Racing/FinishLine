@@ -465,6 +465,7 @@ const ProjectGanttChartPage: FC = () => {
             toast.error('No Team Selected');
           }
         }}
+        cars={cars}
       />
     );
   };
