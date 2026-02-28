@@ -7,7 +7,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { LocationOnOutlined, Computer } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../../components/NERButton';
-import { formatDateOnly, formatEventDate } from 'shared';
+import { formatEventDate } from 'shared';
 
 interface EventProps {
   event: Event;
@@ -58,10 +58,7 @@ const DisplayStatus: React.FC<EventProps> = ({ event, user }) => {
   );
 };
 
-const getWeekday = (date: Date, utc = false): string => {
-  if (utc) {
-    return formatDateOnly(date, 'dddd');
-  }
+const getWeekday = (date: Date): string => {
   const weekdays: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   return weekdays[date.getDay()];
 };
@@ -70,9 +67,7 @@ const UpcomingEventCard: React.FC<EventProps> = ({ event, user }) => {
   const theme = useTheme();
   const firstScheduledDate = event.initialDateScheduled || event.scheduledTimes[0]?.startTime;
   const displayDate = firstScheduledDate ? new Date(firstScheduledDate) : new Date();
-  // initialDateScheduled is a date-only field (@db.Date), scheduledTimes startTime is a full datetime
-  const isDateOnly = !!event.initialDateScheduled;
-  const formattedDate = isDateOnly ? formatDateOnly(displayDate, 'MM/DD') : formatEventDate(displayDate);
+  const formattedDate = formatEventDate(displayDate);
 
   const [firstWorkPackage] = event.workPackages;
 
@@ -110,7 +105,7 @@ const UpcomingEventCard: React.FC<EventProps> = ({ event, user }) => {
             <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
               <Typography>{<CalendarMonthIcon sx={{ fontSize: 21 }} />}</Typography>
               <Typography fontWeight={'regular'} variant="body2">
-                {getWeekday(displayDate, isDateOnly) +
+                {getWeekday(displayDate) +
                   ', ' +
                   formattedDate +
                   ' @ ' +

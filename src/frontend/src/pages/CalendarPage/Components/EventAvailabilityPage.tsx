@@ -8,7 +8,6 @@ import { useQuery as useQueryParam } from '../../../hooks/utils.hooks';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import {
   Availability,
-  dbDateToLocalDate,
   getMostRecentAvailabilities,
   User,
   UserWithScheduleSettings,
