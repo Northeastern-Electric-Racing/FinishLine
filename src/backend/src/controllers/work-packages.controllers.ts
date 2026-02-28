@@ -8,8 +8,16 @@ export default class WorkPackagesController {
   static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { query } = req;
+      // Parse car parameter from string to number if provided
+      const queryWithParsedCar = {
+        ...query,
+        car: query.car ? parseInt(query.car as string, 10) : undefined
+      };
 
-      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, req.organization);
+      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(
+        queryWithParsedCar,
+        req.organization
+      );
 
       res.status(200).json(outputWorkPackages);
     } catch (error: unknown) {
@@ -32,9 +40,9 @@ export default class WorkPackagesController {
 
   static async getManyWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNums } = req.body;
+      const { wbsNums, car } = req.body;
 
-      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization);
+      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization, car);
       res.status(200).json(workPackages);
     } catch (error: unknown) {
       next(error);
