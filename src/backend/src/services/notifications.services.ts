@@ -7,7 +7,7 @@ import {
   EventWithAttendees
 } from '../utils/notifications.utils.js';
 import { sendMessage } from '../integrations/slack.js';
-import { daysBetween, meetingStartTimePipeNumbers, startOfDay, wbsPipe } from 'shared';
+import { daysBetween, startOfDay, wbsPipe, formatTimeForSlack } from 'shared';
 import { buildDueString, sendThreadResponse } from '../utils/slack.utils.js';
 import WorkPackagesService from './work-packages.services.js';
 import { addWeeksToDate } from 'shared';
@@ -196,15 +196,15 @@ export default class NotificationsService {
           // Get work package names for this event
           const workPackageNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
 
-          // Extract meeting times from scheduled slots
-          const meetingTimes = event.scheduledTimes
-            .map((slot) => (slot.startTime ? new Date(slot.startTime).getHours() : null))
-            .filter((hour): hour is number => hour !== null)
-            .sort((a, b) => a - b);
+          // Get the earliest scheduled start time for display
+          const earliestSlot = event.scheduledTimes
+            .filter((slot) => slot.startTime)
+            .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime())[0];
+          const timeDisplay = earliestSlot ? formatTimeForSlack(new Date(earliestSlot.startTime!)) : 'TBD';
 
           return (
             `${usersToSlackPings(event.attendees ?? [])} ${event.title} (${workPackageNames}) ` +
-            `will be having an event today at ${meetingStartTimePipeNumbers(meetingTimes)} EST! ` +
+            `will be having an event today at ${timeDisplay} ET! ` +
             zoomLink +
             questionDocLink
           );

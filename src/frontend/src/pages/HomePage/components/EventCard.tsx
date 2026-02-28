@@ -7,7 +7,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { LocationOnOutlined, Computer } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../../components/NERButton';
-import { timezoneOffset } from '../../../utils/datetime.utils';
+import { formatDateOnly, formatEventDate } from 'shared';
 
 interface EventProps {
   event: Event;
@@ -70,7 +70,10 @@ const removeYear = (str: string): string => {
 const UpcomingEventCard: React.FC<EventProps> = ({ event, user }) => {
   const theme = useTheme();
   const firstScheduledDate = event.initialDateScheduled || event.scheduledTimes[0]?.startTime;
-  const timezoneAdjustedDate = firstScheduledDate ? timezoneOffset(firstScheduledDate) : new Date();
+  const displayDate = firstScheduledDate ? new Date(firstScheduledDate) : new Date();
+  // initialDateScheduled is a date-only field (@db.Date), scheduledTimes startTime is a full datetime
+  const isDateOnly = !!event.initialDateScheduled;
+  const formattedDate = isDateOnly ? formatDateOnly(displayDate, 'MM/DD') : formatEventDate(displayDate);
 
   const [firstWorkPackage] = event.workPackages;
 
@@ -108,9 +111,9 @@ const UpcomingEventCard: React.FC<EventProps> = ({ event, user }) => {
             <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
               <Typography>{<CalendarMonthIcon sx={{ fontSize: 21 }} />}</Typography>
               <Typography fontWeight={'regular'} variant="body2">
-                {getWeekday(timezoneAdjustedDate) +
+                {getWeekday(displayDate) +
                   ', ' +
-                  removeYear(datePipe(timezoneAdjustedDate)) +
+                  formattedDate +
                   ' @ ' +
                   meetingStartTimePipeScheduleSlot(event.scheduledTimes)}
               </Typography>

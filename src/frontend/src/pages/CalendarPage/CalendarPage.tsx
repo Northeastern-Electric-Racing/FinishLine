@@ -669,7 +669,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                                 events={
                                   showEvents
                                     ? (eventDict.get(
-                                        datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
+                                        datePipe(cardDate)
                                       ) ?? [])
                                     : []
                                 }
@@ -677,13 +677,13 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                                 calendars={allCalendars ?? []}
                                 dayOfWeek={
                                   dayDict.get(
-                                    datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
+                                    datePipe(cardDate)
                                   ) ?? DayOfWeek.SUNDAY
                                 }
                                 onCreateEventClick={onCreateEventClick}
                                 tasks={
                                   taskDict.get(
-                                    datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
+                                    datePipe(cardDate)
                                   ) ?? []
                                 }
                               />

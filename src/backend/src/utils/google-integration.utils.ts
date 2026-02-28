@@ -4,7 +4,7 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
 import { HttpException } from './errors.utils.js';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
-import { User } from 'shared';
+import { User, toDateString } from 'shared';
 import { Schedule_Slot } from '@prisma/client';
 import { getUsers } from './users.utils.js';
 
@@ -233,13 +233,13 @@ export const createCalendarEvent = async (
         location: isInPerson ? location : zoomLink,
         summary: eventTitle,
         start: slot.allDay
-          ? { date: slot.startTime ? slot.startTime.toISOString().split('T')[0] : undefined }
+          ? { date: slot.startTime ? toDateString(slot.startTime) : undefined }
           : {
               dateTime: slot.startTime ? slot.startTime.toISOString() : undefined,
               timeZone: 'America/New_York'
             },
         end: slot.allDay
-          ? { date: slot.endTime ? slot.endTime.toISOString().split('T')[0] : undefined }
+          ? { date: slot.endTime ? toDateString(slot.endTime) : undefined }
           : {
               dateTime: slot.endTime ? slot.endTime.toISOString() : undefined,
               timeZone: 'America/New_York'

@@ -20,7 +20,9 @@ import {
   wbsPipe,
   WorkPackageProposedChangesCreateArgs,
   WorkPackageStage,
-  User
+  User,
+  formatDateOnly,
+  toDateString
 } from 'shared';
 import { DeletedException, HttpException, NotFoundException } from './errors.utils.js';
 import { ChangeRequestStatus } from 'shared';
@@ -38,7 +40,6 @@ import {
 } from '../prisma-query-args/scope-change-requests.query-args.js';
 import ProjectsService from '../services/projects.services.js';
 import WorkPackagesService from '../services/work-packages.services.js';
-import { transformDate } from './datetime.utils.js';
 import { descriptionBulletToDescriptionBulletPreview } from './description-bullets.utils.js';
 import { sendSlackCRReviewedNotification } from './slack.utils.js';
 import { validateBlockedBys } from './work-packages.utils.js';
@@ -106,8 +107,8 @@ export const updateBlocking = async (
       implementerId: reviewer.userId,
       detail: buildChangeDetail(
         'Start Date',
-        currWbs.workPackage.startDate.toLocaleDateString(),
-        newStartDate.toLocaleDateString()
+        formatDateOnly(currWbs.workPackage.startDate),
+        formatDateOnly(newStartDate)
       )
     };
 
@@ -452,7 +453,7 @@ export const applyWorkPackageProposedChanges = async (
       workPackageProposedChanges.wbsProposedChanges.name,
       crId,
       workPackageProposedChanges.stage as WorkPackageStage,
-      transformDate(workPackageProposedChanges.startDate),
+      toDateString(workPackageProposedChanges.startDate),
       workPackageProposedChanges.duration,
       workPackageProposedChanges.blockedBy,
       workPackageProposedChanges.wbsProposedChanges.proposedDescriptionBulletChanges.map(
@@ -468,7 +469,7 @@ export const applyWorkPackageProposedChanges = async (
       wbsProposedChanges.name,
       crId,
       workPackageProposedChanges.stage as WorkPackageStage,
-      transformDate(workPackageProposedChanges.startDate),
+      toDateString(workPackageProposedChanges.startDate),
       workPackageProposedChanges.duration,
       workPackageProposedChanges.blockedBy,
       wbsProposedChanges.proposedDescriptionBulletChanges.map(descriptionBulletToDescriptionBulletPreview),

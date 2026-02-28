@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Chip, IconButton, Link, Stack, Typography, useTheme } from '@mui/material';
-import { CalendarTask, isAdmin, notGuest, TaskPriority, TaskStatus, wbsPipe } from 'shared';
+import { CalendarTask, isAdmin, notGuest, TaskPriority, TaskStatus, wbsPipe, formatDateOnly } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../utils/routes';
@@ -191,11 +191,7 @@ export const TaskClickContent: React.FC<TaskClickContentProps> = ({ task, onClos
               <EventIcon fontSize="small" />
               <Typography variant="body2">
                 <b>Deadline:</b>{' '}
-                {new Date(task.deadline).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric'
-                })}
+                {formatDateOnly(new Date(task.deadline), 'MMM D, YYYY')}
               </Typography>
             </Stack>
           )}

@@ -330,10 +330,6 @@ export default class ReimbursementRequestService {
 
     await validateRefund(submitter, amount, organization.organizationId);
 
-    // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-    const dateCreated = new Date(dateReceived.split('T')[0]);
-    dateCreated.setTime(dateCreated.getTime() + 12 * 60 * 60 * 1000);
-
     const newReimbursement = await prisma.reimbursement.create({
       data: {
         purchaserId: submitter.userId,

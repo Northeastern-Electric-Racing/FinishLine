@@ -449,7 +449,7 @@ model Activation_CR {
   lead            User           @relation(name: "markAsLead", fields: [leadId], references: [userId])
   managerId       String
   manager         User           @relation(name: "markAsManager", fields: [managerId], references: [userId])
-  startDate       DateTime
+  startDate       DateTime  @db.Date
   confirmDetails  Boolean
 
   @@index([changeRequestId])
@@ -551,7 +551,7 @@ model Work_Package {
   projectId      String
   project        Project             @relation(fields: [projectId], references: [projectId])
   orderInProject Int
-  startDate      DateTime
+  startDate      DateTime              @db.Date
   duration       Int
   blockedBy      WBS_Element[]       @relation(name: "blockedBy")
   stage          Work_Package_Stage?
@@ -649,8 +649,8 @@ model Task {
   taskId          String        @id @default(uuid())
   title           String
   notes           String
-  deadline        DateTime?
-  startDate       DateTime?
+  deadline        DateTime?     @db.Date
+  startDate       DateTime?     @db.Date
   assignees       User[]        @relation(name: "assignedTo")
   priority        Task_Priority
   status          Task_Status
@@ -700,7 +700,7 @@ model Reimbursement_Request {
   saboId                   Int?                            @unique
   dateCreated              DateTime                        @default(now())
   dateDeleted              DateTime?
-  dateOfExpense            DateTime?
+  dateOfExpense            DateTime?                       @db.Date
   reimbursementStatuses    Reimbursement_Status[]
   recipientId              String
   recipient                User                            @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
@@ -711,7 +711,7 @@ model Reimbursement_Request {
   totalCost                Int
   receiptPictures          Receipt[]
   reimbursementProducts    Reimbursement_Product[]
-  dateDelivered            DateTime?
+  dateDelivered            DateTime?                       @db.Date
   accountCodeId            String
   accountCode              Account_Code                    @relation(fields: [accountCodeId], references: [accountCodeId])
   organizationId           String
@@ -803,7 +803,7 @@ model Sponsor {
   tier           Sponsor_Tier   @relation(fields: [sponsorTierId], references: [sponsorTierId])
   sponsorTierId  String
   sponsorValue   Int
-  joinDate       DateTime
+  joinDate       DateTime  @db.Date
   discountCode   String?
   activeYears    Int[]
   taxExempt      Boolean
@@ -818,8 +818,8 @@ model Sponsor {
 
 model Sponsor_Task {
   sponsorTaskId  String    @id @default(uuid())
-  dueDate        DateTime
-  notifyDate     DateTime?
+  dueDate        DateTime  @db.Date
+  notifyDate     DateTime? @db.Date
   assignee       User?     @relation(fields: [assigneeUserId], references: [userId], name: "assignedSponsorTasks")
   assigneeUserId String?
   notes          String
@@ -1090,7 +1090,7 @@ model Event {
   workPackages               Work_Package[]
   documents                  Document[]      
   status                     Event_Status
-  initialDateScheduled       DateTime?
+  initialDateScheduled       DateTime?       @db.Date
   questionDocumentLink       String?
   description                String?
   notificationSlackThreads   Message_Info[]
@@ -1173,7 +1173,7 @@ model Availability {
 
   // Availibilies are integers between 0 and 11 from 10am - 10pm for a given day at hour intervals see meetingTime field in Design_Review
   availability Int[]
-  dateSet      DateTime
+  dateSet      DateTime  @db.Date
 
   @@index([scheduleSettingsId])
 }
@@ -1383,7 +1383,7 @@ model FrequentlyAskedQuestion {
 model Milestone {
   milestoneId    String       @id @default(uuid())
   name           String
-  dateOfEvent    DateTime
+  dateOfEvent    DateTime     @db.Date
   description    String
   userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "milestoneCreator")
   userCreatedId  String
@@ -1399,8 +1399,8 @@ model Milestone {
 
 model Graph {
   id                 String               @id @default(uuid())
-  startDate          DateTime?
-  endDate            DateTime?
+  startDate          DateTime?            @db.Date
+  endDate            DateTime?            @db.Date
   title              String
   graphType          Graph_Type
   displayGraphType   Graph_Display_Type

@@ -13,7 +13,10 @@ import {
   WbsElementPreview,
   UserPreview,
   ScheduleSlot,
-  Event
+  Event,
+  formatDateOnly,
+  formatEventTime,
+  formatEventDate
 } from 'shared';
 
 /**
@@ -67,22 +70,14 @@ export const emDashPipe = (str: string) => {
 };
 
 /**
- * Return a given date as a string in the local en-US format,
- * with single digit numbers starting with a zero.
- *
- * Prisma sends date in UTC but TypeScript assumes it's in your local time,
- * so to get around that we do the toDateString() of the time and pass it into the Date constructor
- * where the constructor assumes it's in UTC and makes the correct Date object finally
+ * Return a given date as a string in the local en-US format.
+ * For date-only values (@db.Date columns), uses UTC formatting to preserve the stored calendar date.
  */
 export const datePipe = (date?: Date, includeYear = true) => {
   if (!date) return '';
-  date = typeof date == 'string' ? new Date(date) : new Date(date.toDateString());
-  return date.toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: '2-digit',
-    year: includeYear ? 'numeric' : undefined,
-    timeZone: 'UTC'
-  });
+  date = typeof date === 'string' ? new Date(date) : date;
+  const format = includeYear ? 'MM/DD/YYYY' : 'MM/DD';
+  return formatDateOnly(date, format);
 };
 
 /** returns a given number as a string with a percent sign */
@@ -142,9 +137,7 @@ export const eventNamePipe = (event: Event) => {
 };
 
 export const dateRangePipe = (startDate: Date, endDate: Date) => {
-  return `${(startDate.getMonth() + 1).toString()}/${startDate.getDate().toString()} - ${(
-    endDate.getMonth() + 1
-  ).toString()}/${endDate.getDate().toString()}`;
+  return `${formatDateOnly(startDate, 'M/D')} - ${formatDateOnly(endDate, 'M/D')}`;
 };
 
 export const undefinedPipe = (element: any) => {
@@ -192,22 +185,13 @@ export const meetingStartTimePipeScheduleSlot = (scheduledTimes: ScheduleSlot[])
   const firstTime = scheduledTimes[0].startTime;
   if (!firstTime) return '';
 
-  const date = new Date(firstTime);
-  const hour = date.getHours();
-  const displayHour = hour % 12 || 12;
-  return displayHour + (hour < 12 ? 'am' : 'pm');
+  return formatEventTime(new Date(firstTime));
 };
 
 // takes in a Date and returns it as a string in the form mm/dd/yy
 export const meetingDatePipe = (date?: Date) => {
   if (!date) return '';
-  date = new Date(date.toDateString());
-  return date.toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-    timeZone: 'UTC'
-  });
+  return formatEventDate(new Date(date));
 };
 
 export const labelPipe = (label: string) => {

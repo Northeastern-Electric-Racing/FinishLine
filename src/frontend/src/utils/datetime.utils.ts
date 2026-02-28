@@ -1,5 +1,3 @@
-import dayjs from 'dayjs';
-
 /**
  * Returns monday of current week
  * @param date date for modify
@@ -11,47 +9,8 @@ export const getMonday = (date: Date) => {
   return new Date(newDate.setDate(diff));
 };
 
-export const dateToString = (date: Date) => {
-  return dayjs(date).format('YYYY-MM-DD');
-};
-
-export const dateFormatMonthDate = (date: Date) => {
-  return dayjs(date).format('MMM D');
-};
-
-export const transformDate = (date: Date) => {
-  const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
-  const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
-  return `${date.getFullYear().toString()}/${month}/${day}`;
-};
-
-export const formatDate = (date: Date) => {
-  const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
-  const day = date.getDate() + 1 < 10 ? `0${date.getDate() + 1}` : (date.getDate() + 1).toString();
-  return `${month}/${day}/${date.getFullYear().toString()}`;
-};
-
 export const daysOverdue = (deadline: Date) => {
   return Math.round((new Date().getTime() - deadline.getTime()) / (1000 * 60 * 60 * 24));
-};
-
-export const timezoneOffset = (date: Date) => {
-  const timestamp = new Date(date).getTime() - new Date(date).getTimezoneOffset() * -60000;
-  return new Date(timestamp);
-};
-
-/**
- * Formats a Date object in the form of Month Day, Year (ie: January 1, 2024)
- *
- * @param date the date object for modify
- * @returns a string representing the date
- */
-export const dateMonthDayYear = (date: Date): string => {
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
 };
 
 /**
@@ -62,8 +21,4 @@ export const dateMonthDayYear = (date: Date): string => {
  */
 export const isPastEvent = (startDate: Date, endDate: Date) => {
   return startDate < endDate;
-};
-
-export const formatTime = (date: Date) => {
-  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 };
