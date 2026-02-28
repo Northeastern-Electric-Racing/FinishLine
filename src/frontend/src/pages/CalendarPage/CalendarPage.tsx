@@ -666,26 +666,12 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                               <CalendarDayCard
                                 cardDate={cardDate}
                                 displayMonth={displayMonthYear}
-                                events={
-                                  showEvents
-                                    ? (eventDict.get(
-                                        datePipe(cardDate)
-                                      ) ?? [])
-                                    : []
-                                }
+                                events={showEvents ? (eventDict.get(datePipe(cardDate)) ?? []) : []}
                                 eventTypes={allEventTypes ?? []}
                                 calendars={allCalendars ?? []}
-                                dayOfWeek={
-                                  dayDict.get(
-                                    datePipe(cardDate)
-                                  ) ?? DayOfWeek.SUNDAY
-                                }
+                                dayOfWeek={dayDict.get(datePipe(cardDate)) ?? DayOfWeek.SUNDAY}
                                 onCreateEventClick={onCreateEventClick}
-                                tasks={
-                                  taskDict.get(
-                                    datePipe(cardDate)
-                                  ) ?? []
-                                }
+                                tasks={taskDict.get(datePipe(cardDate)) ?? []}
                               />
                             </Box>
                           );

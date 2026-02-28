@@ -203,11 +203,21 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   );
 
   // Build per-day all-day event lists
+  // Unscheduled design reviews have startTime from @db.Date (midnight UTC) — use UTC comparison.
+  // Scheduled all-day events use local time range comparison for multi-day spans.
   const allDayEventsByDay: EventInstance[][] = weekDays.map((day) =>
     allDayEvents.filter((e) => {
       const start = new Date(e.startTime);
       const end = new Date(e.endTime);
-      // Normalize end to compare day boundaries
+      if (start.getTime() === end.getTime()) {
+        // Single-point event (e.g., unscheduled design review from @db.Date) — compare UTC date
+        return (
+          start.getUTCFullYear() === day.getFullYear() &&
+          start.getUTCMonth() === day.getMonth() &&
+          start.getUTCDate() === day.getDate()
+        );
+      }
+      // Multi-day range — use local time boundary comparison
       const dayStart = new Date(day);
       const dayEnd = new Date(day);
       dayEnd.setDate(dayEnd.getDate() + 1);
@@ -216,10 +226,15 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   );
 
   // Build per-day task lists (tasks appear on their deadline day)
+  // Task deadlines are date-only values (@db.Date, midnight UTC).
+  // Extract UTC components from deadline, local components from weekDay, and compare.
   const tasksByDay: CalendarTask[][] = weekDays.map((day) =>
     tasks.filter((t) => {
       if (!t.deadline) return false;
-      return isSameDay(new Date(t.deadline), day);
+      const d = new Date(t.deadline);
+      return (
+        d.getUTCFullYear() === day.getFullYear() && d.getUTCMonth() === day.getMonth() && d.getUTCDate() === day.getDate()
+      );
     })
   );
 

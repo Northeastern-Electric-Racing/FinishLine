@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { Alert, Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
-import { Calendar, DayOfWeek, EventInstance, EventStatus, EventType, formatEventTime, isAdmin, isHead, wbsPipe } from 'shared';
+import {
+  Calendar,
+  DayOfWeek,
+  EventInstance,
+  EventStatus,
+  EventType,
+  formatEventTime,
+  isAdmin,
+  isHead,
+  wbsPipe
+} from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../utils/routes';

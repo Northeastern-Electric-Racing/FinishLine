@@ -105,11 +105,7 @@ export const updateBlocking = async (
     const change = {
       changeRequestId: crId,
       implementerId: reviewer.userId,
-      detail: buildChangeDetail(
-        'Start Date',
-        formatDateOnly(currWbs.workPackage.startDate),
-        formatDateOnly(newStartDate)
-      )
+      detail: buildChangeDetail('Start Date', formatDateOnly(currWbs.workPackage.startDate), formatDateOnly(newStartDate))
     };
 
     await prisma.work_Package.update({

@@ -67,7 +67,7 @@ describe('Finance Tests', () => {
       expect(result.name).toEqual('Google');
       expect(result.activeStatus).toBe(true);
       expect(result.sponsorValue).toBe(5000);
-      expect(result.joinDate).toEqual(new Date(12, 1, 24));
+      expect(result.joinDate).toEqual(new Date(Date.UTC(12, 1, 24)));
       expect(result.activeYears).toEqual([2024, 2025]);
       expect(result.tier.sponsorTierId).toEqual(sponsorTierId);
       expect(result.taxExempt).toBe(true);
@@ -228,8 +228,8 @@ describe('Finance Tests', () => {
       );
 
       expect(newSponsorTask.notes).toEqual('newNotes');
-      expect(newSponsorTask.dueDate).toEqual(new Date(12, 10, 24));
-      expect(newSponsorTask.notifyDate).toEqual(new Date(12, 20, 24));
+      expect(newSponsorTask.dueDate).toEqual(new Date(Date.UTC(12, 10, 24)));
+      expect(newSponsorTask.notifyDate).toEqual(new Date(Date.UTC(12, 20, 24)));
       expect(newSponsorTask.assigneeUserId).toEqual(user.userId);
     });
     it('Edit fails with non head user trying to edit', async () => {
@@ -459,7 +459,7 @@ describe('Finance Tests', () => {
 
       expect(result.assignee?.userId).toEqual(user.userId);
       expect(result.notes).toEqual('hello notes');
-      expect(result.dueDate).toEqual(new Date(1, 2, 3));
+      expect(result.dueDate).toEqual(new Date(Date.UTC(1, 2, 3)));
       expect(result.assignee?.userId).toEqual(user.userId);
     });
   });
@@ -529,7 +529,7 @@ describe('Finance Tests', () => {
       expect(updatedSponsor.name).toBe('newName');
       expect(updatedSponsor.activeStatus).toBe(false);
       expect(updatedSponsor.sponsorValue).toBe(4000);
-      expect(updatedSponsor.joinDate).toEqual(new Date(5, 11, 25));
+      expect(updatedSponsor.joinDate).toEqual(new Date(Date.UTC(5, 11, 25)));
       expect(updatedSponsor.activeYears).toEqual([2024, 2025]);
       expect(updatedSponsor.tier.sponsorTierId).toBe(sponsorTierId);
       expect(updatedSponsor.sponsorContact).toBe('New Vendor Contact');

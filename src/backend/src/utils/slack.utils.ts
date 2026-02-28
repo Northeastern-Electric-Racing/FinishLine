@@ -7,9 +7,7 @@ import {
   CreateSponsorTask,
   User,
   Event,
-  formatForSlack,
-  formatDateForSlack,
-  formatTimeForSlack
+  formatForSlack
 } from 'shared';
 import { Account_Code, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
 import {

@@ -197,9 +197,9 @@ export default class NotificationsService {
           const workPackageNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
 
           // Get the earliest scheduled start time for display
-          const earliestSlot = event.scheduledTimes
+          const [earliestSlot] = event.scheduledTimes
             .filter((slot) => slot.startTime)
-            .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime())[0];
+            .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime());
           const timeDisplay = earliestSlot ? formatTimeForSlack(new Date(earliestSlot.startTime!)) : 'TBD';
 
           return (

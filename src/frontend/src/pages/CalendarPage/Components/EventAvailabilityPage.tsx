@@ -8,6 +8,7 @@ import { useQuery as useQueryParam } from '../../../hooks/utils.hooks';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import {
   Availability,
+  dbDateToLocalDate,
   getMostRecentAvailabilities,
   User,
   UserWithScheduleSettings,
@@ -128,7 +129,8 @@ export const EventAvailabilityPage: React.FC = () => {
     if (dateParam) {
       return new Date(dateParam);
     }
-    return event?.initialDateScheduled ?? new Date();
+    // initialDateScheduled is @db.Date (midnight UTC) — normalize to local calendar date
+    return event?.initialDateScheduled ? dbDateToLocalDate(event.initialDateScheduled) : new Date();
   }, [dateParam, event]);
 
   const isUserMember = useMemo(() => {

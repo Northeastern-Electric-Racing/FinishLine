@@ -73,7 +73,7 @@ export const emDashPipe = (str: string) => {
  * Return a given date as a string in the local en-US format.
  * For date-only values (@db.Date columns), uses UTC formatting to preserve the stored calendar date.
  */
-export const datePipe = (date?: Date, includeYear = true) => {
+export const datePipe = (date?: Date | string, includeYear = true) => {
   if (!date) return '';
   date = typeof date === 'string' ? new Date(date) : date;
   const format = includeYear ? 'MM/DD/YYYY' : 'MM/DD';
@@ -188,7 +188,7 @@ export const meetingStartTimePipeScheduleSlot = (scheduledTimes: ScheduleSlot[])
   return formatEventTime(new Date(firstTime));
 };
 
-// takes in a Date and returns it as a string in the form mm/dd/yy
+// takes in a Date and returns it as a string in the form mm/dd/yyyy
 export const meetingDatePipe = (date?: Date) => {
   if (!date) return '';
   return formatEventDate(new Date(date));

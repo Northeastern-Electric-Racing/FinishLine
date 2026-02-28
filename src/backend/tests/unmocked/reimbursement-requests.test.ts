@@ -193,7 +193,7 @@ describe('Reimbursement Requests', () => {
       expect(rr.indexCode.name).toEqual('CASH');
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
-      expect(rr.dateOfExpense).toEqual(new Date('12-29-2023'));
+      expect(rr.dateOfExpense).toEqual(new Date('2023-12-29'));
       expect(rr.reimbursementProducts).toHaveLength(1);
       expect(rr.reimbursementProducts[0].name).toEqual('GLUE');
       expect(rr.reimbursementProducts[0].cost).toEqual(200000);
@@ -274,7 +274,11 @@ describe('Reimbursement Requests', () => {
         dateToSetAsDelivered
       );
 
-      expect(updatedRR.dateDelivered).toEqual(dateToSetAsDelivered);
+      // @db.Date strips time component, so compare date portion only
+      const expectedDate = new Date(
+        Date.UTC(dateToSetAsDelivered.getFullYear(), dateToSetAsDelivered.getMonth(), dateToSetAsDelivered.getDate())
+      );
+      expect(updatedRR.dateDelivered).toEqual(expectedDate);
     });
   });
 

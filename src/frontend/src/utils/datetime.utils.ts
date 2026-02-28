@@ -1,12 +1,20 @@
 /**
- * Returns monday of current week
- * @param date date for modify
+ * Returns monday of current week.
+ * @param date date to find the Monday for
+ * @param utc if true, uses UTC getters — required for @db.Date values (midnight UTC) to avoid
+ *            timezone shift in negative-offset timezones. Pass false (default) for local dates.
  */
-export const getMonday = (date: Date) => {
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+export const getMonday = (date: Date, utc = false) => {
+  const day = utc ? date.getUTCDay() : date.getDay();
+  const dateOfMonth = utc ? date.getUTCDate() : date.getDate();
+  const diff = dateOfMonth - day + (day === 0 ? -6 : 1); // adjust when day is sunday
   const newDate = new Date(date.getTime());
-  return new Date(newDate.setDate(diff));
+  if (utc) {
+    newDate.setUTCDate(diff);
+  } else {
+    newDate.setDate(diff);
+  }
+  return newDate;
 };
 
 export const daysOverdue = (deadline: Date) => {

@@ -1,6 +1,6 @@
 import { Box, Card, CardContent, Link, Stack, Typography, useTheme } from '@mui/material';
 import { AuthenticatedUser, Event } from 'shared';
-import { datePipe, meetingStartTimePipeScheduleSlot, projectWbsPipe } from '../../../utils/pipes';
+import { meetingStartTimePipeScheduleSlot, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -58,13 +58,12 @@ const DisplayStatus: React.FC<EventProps> = ({ event, user }) => {
   );
 };
 
-const getWeekday = (date: Date): string => {
+const getWeekday = (date: Date, utc = false): string => {
+  if (utc) {
+    return formatDateOnly(date, 'dddd');
+  }
   const weekdays: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   return weekdays[date.getDay()];
-};
-
-const removeYear = (str: string): string => {
-  return str.substring(0, str.length - 5);
 };
 
 const UpcomingEventCard: React.FC<EventProps> = ({ event, user }) => {
@@ -111,7 +110,7 @@ const UpcomingEventCard: React.FC<EventProps> = ({ event, user }) => {
             <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
               <Typography>{<CalendarMonthIcon sx={{ fontSize: 21 }} />}</Typography>
               <Typography fontWeight={'regular'} variant="body2">
-                {getWeekday(displayDate) +
+                {getWeekday(displayDate, isDateOnly) +
                   ', ' +
                   formattedDate +
                   ' @ ' +

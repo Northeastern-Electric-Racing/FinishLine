@@ -37,8 +37,7 @@ export const formatEventDate = (date: Date, tz?: string): string =>
 /**
  * Format a full timestamp for Slack messages — always Eastern time.
  */
-export const formatForSlack = (date: Date): string =>
-  dayjs(date).tz('America/New_York').format('M/D/YYYY [at] h:mm A');
+export const formatForSlack = (date: Date): string => dayjs(date).tz('America/New_York').format('M/D/YYYY [at] h:mm A');
 
 /**
  * Format a date for Slack messages — always Eastern time.
@@ -54,3 +53,11 @@ export const formatTimeForSlack = (date: Date): string => dayjs(date).tz('Americ
  * Convert a Date to YYYY-MM-DD string for sending date-only values to the backend.
  */
 export const toDateString = (date: Date): string => dayjs(date).format('YYYY-MM-DD');
+
+/**
+ * Convert a @db.Date value (midnight UTC) to a local Date representing the same calendar date.
+ * Use this when passing date-only values to functions that use local-time methods (getDay, getDate, etc).
+ * Example: 2025-03-15T00:00:00Z in UTC-5 → 2025-03-15T00:00:00 local (instead of 2025-03-14T19:00:00 local).
+ */
+export const dbDateToLocalDate = (date: Date): Date =>
+  new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());

@@ -190,8 +190,7 @@ export const TaskClickContent: React.FC<TaskClickContentProps> = ({ task, onClos
             <Stack direction="row" spacing={1.25} alignItems="center">
               <EventIcon fontSize="small" />
               <Typography variant="body2">
-                <b>Deadline:</b>{' '}
-                {formatDateOnly(new Date(task.deadline), 'MMM D, YYYY')}
+                <b>Deadline:</b> {formatDateOnly(new Date(task.deadline), 'MMM D, YYYY')}
               </Typography>
             </Stack>
           )}

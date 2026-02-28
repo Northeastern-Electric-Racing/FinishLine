@@ -121,7 +121,7 @@ describe('Recruitment Tests', () => {
 
         expect(result.name).toEqual('name');
         expect(result.description).toEqual('description');
-        expect(result.dateOfEvent).toEqual(new Date('11/12/24'));
+        expect(result.dateOfEvent).toEqual(new Date('2024-11-12'));
       });
     });
 
@@ -202,7 +202,7 @@ describe('Recruitment Tests', () => {
 
         expect(updatedMilestone.name).toEqual('new name');
         expect(updatedMilestone.description).toEqual('new description');
-        expect(updatedMilestone.dateOfEvent).toEqual(new Date('11/14/24'));
+        expect(updatedMilestone.dateOfEvent).toEqual(new Date('2024-11-14'));
       });
     });
 
