@@ -77,7 +77,7 @@ export const emDashPipe = (str: string) => {
 export const datePipe = (date?: Date, includeYear = true) => {
   if (!date) return '';
   const utcDate = typeof date === 'string' ? new Date(date) : date;
-  return date.toLocaleDateString('en-US', {
+  return utcDate.toLocaleDateString('en-US', {
     day: '2-digit',
     month: '2-digit',
     year: includeYear ? 'numeric' : undefined,

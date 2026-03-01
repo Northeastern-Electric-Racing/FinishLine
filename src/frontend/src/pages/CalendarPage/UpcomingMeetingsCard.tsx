@@ -3,7 +3,7 @@ import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { Calendar, EventInstance, EventType } from 'shared';
+import { Calendar, dateToUtcMidnight, EventInstance, EventType } from 'shared';
 import { datePipe } from '../../utils/pipes';
 import { formatTime } from '../../utils/datetime.utils';
 import { getMutedColor, getPendingReason } from '../../utils/calendar.utils';
@@ -58,9 +58,9 @@ const UpcomingMeetingsCard: React.FC<UpcomingMeetingProp> = ({ event, calendars 
             <Typography sx={{ wordBreak: 'break-word' }}>{event.title}</Typography>
           </Box>
 
-          {/* Event Time */}
+          {/* Event Date */}
           <Box marginLeft="auto" whiteSpace="nowrap">
-            {datePipe(event.startTime)}
+            {datePipe(dateToUtcMidnight(event.startTime))}
           </Box>
         </Box>
 

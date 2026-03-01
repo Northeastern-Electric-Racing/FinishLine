@@ -18,7 +18,16 @@ import {
   Switch
 } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { Calendar, CalendarTask, ConflictStatus, DayOfWeek, EventType, Event, FilterTaskArgs } from 'shared';
+import {
+  Calendar,
+  CalendarTask,
+  ConflictStatus,
+  DayOfWeek,
+  EventType,
+  Event,
+  FilterTaskArgs,
+  dateToUtcMidnight
+} from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import { useConflictingEvents, useFilterEvents } from '../../hooks/calendar.hooks';
@@ -408,9 +417,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
 
   eventInstances.forEach((event) => {
     const eventDate = new Date(event.startTime);
-    const dateString = datePipe(eventDate);
-    eventDate.setHours(0, 0, 0, 0);
-    const day = convertIntToDay(eventDate.getDay());
+    const utcMidnight = dateToUtcMidnight(eventDate);
+    const dateString = datePipe(utcMidnight);
+    const day = convertIntToDay(utcMidnight.getUTCDay());
     dayDict.set(dateString, day);
     if (eventDict.has(dateString)) {
       const existingEvents = eventDict.get(dateString)!;
@@ -426,7 +435,10 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     filteredTasks.forEach((task) => {
       if (!task.deadline) return;
       const deadlineDate = new Date(task.deadline);
-      const dateString = datePipe(deadlineDate);
+      const utcDate = new Date(
+        Date.UTC(deadlineDate.getUTCFullYear(), deadlineDate.getUTCMonth(), deadlineDate.getUTCDate())
+      );
+      const dateString = datePipe(utcDate);
       if (taskDict.has(dateString)) {
         taskDict.get(dateString)!.push(task);
       } else {
@@ -666,26 +678,12 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                               <CalendarDayCard
                                 cardDate={cardDate}
                                 displayMonth={displayMonthYear}
-                                events={
-                                  showEvents
-                                    ? (eventDict.get(
-                                        datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
-                                      ) ?? [])
-                                    : []
-                                }
+                                events={showEvents ? (eventDict.get(datePipe(cardDate)) ?? []) : []}
                                 eventTypes={allEventTypes ?? []}
                                 calendars={allCalendars ?? []}
-                                dayOfWeek={
-                                  dayDict.get(
-                                    datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
-                                  ) ?? DayOfWeek.SUNDAY
-                                }
+                                dayOfWeek={dayDict.get(datePipe(cardDate)) ?? DayOfWeek.SUNDAY}
                                 onCreateEventClick={onCreateEventClick}
-                                tasks={
-                                  taskDict.get(
-                                    datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))
-                                  ) ?? []
-                                }
+                                tasks={taskDict.get(datePipe(cardDate)) ?? []}
                               />
                             </Box>
                           );
