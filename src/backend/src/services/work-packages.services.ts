@@ -46,19 +46,22 @@ export default class WorkPackagesService {
    *
    * @param query the filters on the query
    * @param organizationId the id of the organization that the user is currently in
-   * @param car the car number to filter by (only returns work packages from this car when provided)
+   * @param carId the car number to filter by (only returns work packages from this car when provided)
    * @returns a list of work packages
    */
   static async getAllWorkPackages(
     query: {
       status?: WbsElementStatus;
       daysUntilDeadline?: string;
-      car?: number;
+      carId?: string;
     },
     organization: Organization
   ): Promise<WorkPackage[]> {
     const workPackages = await prisma.work_Package.findMany({
-      where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
+      where: {
+        wbsElement: { dateDeleted: null, organizationId: organization.organizationId },
+        ...(query.carId && { carId: query.carId })
+      },
       ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
@@ -72,14 +75,9 @@ export default class WorkPackagesService {
       return passes;
     });
 
-    const outputWorkPackages =
-      query.car !== undefined
-        ? filteredWorkPackages.filter((wp) => wp.wbsNum.carNumber === query.car)
-        : filteredWorkPackages;
+    filteredWorkPackages.sort((wpA, wpB) => wpA.endDate.getTime() - wpB.endDate.getTime());
 
-    outputWorkPackages.sort((wpA, wpB) => wpA.endDate.getTime() - wpB.endDate.getTime());
-
-    return outputWorkPackages;
+    return filteredWorkPackages;
   }
 
   /**
@@ -123,11 +121,15 @@ export default class WorkPackagesService {
    * Retrieve a subset of work packages.
    * @param wbsNums the WBS numbers of the work packages to retrieve
    * @param organizationId the id of the organization that the user is currently in
-   * @param car optional car number to filter work packages by
+   * @param carId optional car number to filter work packages by
    * @returns the work packages with the given WBS numbers
    * @throws if any of the work packages are not found or are not part of the organization
    */
-  static async getManyWorkPackages(wbsNums: WbsNumber[], organization: Organization, car?: number): Promise<WorkPackage[]> {
+  static async getManyWorkPackages(
+    wbsNums: WbsNumber[],
+    organization: Organization,
+    carId?: string
+  ): Promise<WorkPackage[]> {
     wbsNums.forEach((wbsNum) => {
       if (!isWorkPackageWbs(wbsNum)) {
         throw new HttpException(
@@ -137,7 +139,8 @@ export default class WorkPackagesService {
       }
     });
 
-    const filteredWorkPackages = car !== undefined ? wbsNums.filter((wbsNum) => car === wbsNum.carNumber) : wbsNums;
+    const filteredWorkPackages =
+      carId !== undefined ? wbsNums.filter((wbsNum) => parseInt(carId) === wbsNum.carNumber) : wbsNums;
 
     const workPackagePromises = filteredWorkPackages.map(async (wbsNum) => {
       return WorkPackagesService.getSingleWorkPackage(wbsNum, organization);
@@ -511,9 +514,14 @@ export default class WorkPackagesService {
    * Gets the work packages the given work package is blocking
    * @param wbsNum the wbs number of the work package to get the blocking work packages for
    * @param organizationId the id of the organization that the user is currently in
+   * @param carId the optional carId to filter work packages by
    * @returns the blocking work packages for the given work package
    */
-  static async getBlockingWorkPackages(wbsNum: WbsNumber, organization: Organization): Promise<WorkPackage[]> {
+  static async getBlockingWorkPackages(
+    wbsNum: WbsNumber,
+    organization: Organization,
+    carId?: string
+  ): Promise<WorkPackage[]> {
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 
     // is a project or car so just return empty array until we implement blocking projects/cars
@@ -542,7 +550,13 @@ export default class WorkPackagesService {
 
     const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
 
-    return blockingWorkPackages.map(workPackageTransformer);
+    const transformedPackages = blockingWorkPackages.map(workPackageTransformer);
+
+    if (carId) {
+      return transformedPackages.filter((wp) => wp.wbsNum.carNumber === parseInt(carId));
+    }
+
+    return transformedPackages;
   }
 
   /**
@@ -586,12 +600,14 @@ export default class WorkPackagesService {
    *
    * @param user The current user
    * @param organization The organization the current user is logged in for
-   * @param onlyOverdue Whether to only return overdue workpackages
+   * @param selection The selection type for filtering workpackages
+   * @param carId Optional car number to filter work packages by
    */
   static async getHomePageWorkPackages(
     user: User,
     organization: Organization,
-    selection: WorkPackageSelection
+    selection: WorkPackageSelection,
+    carId?: string
   ): Promise<WorkPackagePreview[]> {
     const selectionArgs =
       selection === WorkPackageSelection.ALL_OVERDUE
@@ -626,7 +642,8 @@ export default class WorkPackagesService {
           ...selectionArgs,
           dateDeleted: null,
           organizationId: organization.organizationId,
-          status: { not: WBS_Element_Status.COMPLETE }
+          status: { not: WBS_Element_Status.COMPLETE },
+          ...(carId && { carNumber: parseInt(carId) })
         }
       },
       select: {
