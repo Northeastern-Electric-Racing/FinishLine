@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import WorkPackagesController from '../controllers/work-packages.controllers.js';
 import {
   blockedByValidators,
@@ -13,13 +13,20 @@ import {
 import { WorkPackageSelection } from 'shared';
 const workPackagesRouter = express.Router();
 
-workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
+workPackagesRouter.get(
+  '/',
+  query('carId').optional().isNumeric(),
+  validateInputs,
+  WorkPackagesController.getAllWorkPackages
+);
+
 workPackagesRouter.post(
   '/get-many',
   body('wbsNums').isArray(),
   intMinZero(body('wbsNums.*.carNumber')),
   intMinZero(body('wbsNums.*.projectNumber')),
   intMinZero(body('wbsNums.*.workPackageNumber')),
+  body('carId').optional().isNumeric(),
   validateInputs,
   WorkPackagesController.getManyWorkPackages
 );
@@ -56,7 +63,14 @@ workPackagesRouter.post(
   WorkPackagesController.editWorkPackage
 );
 workPackagesRouter.delete('/:wbsNum/delete', WorkPackagesController.deleteWorkPackage);
-workPackagesRouter.get('/:wbsNum/blocking', WorkPackagesController.getBlockingWorkPackages);
+
+workPackagesRouter.get(
+  '/:wbsNum/blocking',
+  query('carId').optional().isNumeric(),
+  validateInputs,
+  WorkPackagesController.getBlockingWorkPackages
+);
+
 workPackagesRouter.post(
   '/slack-upcoming-deadlines',
   isDate(body('deadline')),
@@ -67,6 +81,7 @@ workPackagesRouter.post(
 workPackagesRouter.get(
   '/home-page/:selection',
   param('selection').isIn(Object.values(WorkPackageSelection)),
+  query('carId').optional().isNumeric(),
   validateInputs,
   WorkPackagesController.getHomePageWorkPackages
 );
