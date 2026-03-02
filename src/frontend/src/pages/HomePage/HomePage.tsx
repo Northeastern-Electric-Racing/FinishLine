@@ -32,7 +32,7 @@ const HomePage = () => {
         <AdminHomePage user={user} />
       ) : (
         <GuestHomePage user={user} />
-      )}o
+      )}
     </>
   );
 };
