@@ -334,25 +334,4 @@ describe('Organization Tests', () => {
       expect(updatedOrganization?.platformLogoImageId).toBe('uploaded-image3.png');
     });
   });
-
-  describe('Get Organization Platform Logo', () => {
-    it('Fails if an organization does not exist', async () => {
-      await expect(async () => await OrganizationsService.getPlatformLogoImage('1')).rejects.toThrow(
-        new NotFoundException('Organization', '1')
-      );
-    });
-
-    it('Succeeds and gets the image', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      await OrganizationsService.setPlatformLogoImage(
-        { originalname: 'image1.png' } as Express.Multer.File,
-        testBatman,
-        organization
-      );
-      const image = await OrganizationsService.getPlatformLogoImage(orgId);
-
-      expect(image).not.toBeNull();
-      expect(image).toBe('uploaded-image1.png');
-    });
-  });
 });

@@ -569,43 +569,24 @@ export default class OrganizationsService {
    * @param organizationId the organization which the images will be set up
    * @param images the images which are being set
    */
-  static async setPlatformLogoImage(
-    platformLogoImageId: Express.Multer.File | null,
-    submitter: User,
-    organization: Organization
-  ) {
+  static async setPlatformLogoImage(platformLogoImage: Express.Multer.File, submitter: User, organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('update platform logo');
     }
 
-    const platformLogoImageData = platformLogoImageId ? await uploadFile(platformLogoImageId) : null;
+    const platformLogoImageData = await uploadFile(platformLogoImage);
 
-    const updateData = {
-      ...(platformLogoImageData && { platformLogoImageId: platformLogoImageData.id })
-    };
+    if (!platformLogoImageData?.id || !platformLogoImageData?.name) {
+      throw new HttpException(500, 'Platform logo upload failed');
+    }
 
     const newImages = await prisma.organization.update({
       where: { organizationId: organization.organizationId },
-      data: updateData
+      data: {
+        platformLogoImageId: platformLogoImageData.id
+      }
     });
 
     return newImages;
-  }
-
-  /**
-   * Gets platform logo image for the given organization
-   * @param organizationId organization Id of the milestone
-   * @returns all the milestones from the given organization
-   */
-  static async getPlatformLogoImage(organizationId: string) {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    return organization.platformLogoImageId;
   }
 }

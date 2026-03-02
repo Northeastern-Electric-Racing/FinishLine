@@ -6,7 +6,7 @@ export const organizationTransformer = (organization: Organization): Organizatio
     ...organization,
     applicationLink: organization.applicationLink ?? undefined,
     newMemberImageId: organization.newMemberImageId ?? undefined,
-    platformDescription: organization.platformDescription ?? '',
+    platformDescription: organization.platformDescription,
     platformLogoImageId: organization.platformLogoImageId ?? undefined
   };
 };

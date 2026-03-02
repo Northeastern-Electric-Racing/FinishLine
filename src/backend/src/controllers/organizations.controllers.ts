@@ -125,15 +125,6 @@ export default class OrganizationsController {
     }
   }
 
-  static async getPlatformLogoImage(req: Request, res: Response, next: NextFunction) {
-    try {
-      const platformLogoImageId = await OrganizationsService.getPlatformLogoImage(req.organization.organizationId);
-      res.status(200).json(platformLogoImageId);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   static async setNewMemberImage(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.file) {

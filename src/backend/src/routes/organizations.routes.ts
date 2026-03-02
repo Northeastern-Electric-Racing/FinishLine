@@ -49,7 +49,6 @@ organizationRouter.post(
   upload.single('platformLogo'),
   OrganizationsController.setPlatformLogoImage
 );
-organizationRouter.get('/platform-logo', OrganizationsController.getPlatformLogoImage);
 
 organizationRouter.post(
   '/new-member-image/update',
@@ -65,7 +64,7 @@ organizationRouter.post(
 );
 organizationRouter.post(
   '/platform-description/set',
-  body('platformDescription').isString(),
+  nonEmptyString(body('platformDescription')),
   validateInputs,
   OrganizationsController.setPlatformDescription
 );
