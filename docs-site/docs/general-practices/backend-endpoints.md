@@ -13,11 +13,11 @@ skill_name: backend-endpoints
 
 FinishLine's backend is an Express.js application written in TypeScript. All request handling is split into three distinct layers with clear responsibilities:
 
-1. **Routes** define the HTTP method and path, declare validation rules using `express-validator`, and point to a controller method. They contain zero business logic.
-2. **Controllers** are thin glue — they extract data from `req.params`, `req.body`, and `req.query`, call the appropriate service method, and return the result as JSON. They MUST delegate all errors to Express via `next(error)`.
+1. **Routes** define the HTTP method and path, declare validation rules using `express-validator`, and point to a controller method.
+2. **Controllers** are lightweight wrappers around the service functions. They extract data from `req.params`, `req.body`, and `req.query`, call the appropriate service method, and return the result as JSON. They also catch service errors and delegate to Express via `next(error)`.
 3. **Services** contain all business logic: permission checks, database queries via Prisma, data transformation, and side effects (Slack notifications, Google integrations, etc.). Services throw custom exceptions when something goes wrong.
 
-Two key objects are available on every request thanks to global middleware: `req.currentUser` (the authenticated `User`) and `req.organization` (the Prisma `Organization` record). These are set by the `getUserAndOrganization` middleware in `src/backend/index.ts` and typed via `src/backend/custom.d.ts`.
+Two key objects are available on every request from middleware: `req.currentUser` (the authenticated `User`) and `req.organization` (the Prisma `Organization` record). These are set by the `getUserAndOrganization` middleware in `src/backend/index.ts` and typed via `src/backend/custom.d.ts`.
 
 ## Architecture
 
@@ -26,7 +26,7 @@ Two key objects are available on every request thanks to global middleware: `req
        │
        ▼
 ┌──────────────┐  JWT validated, user
-│  Middleware   │  and organization
+│  Middleware  │  and organization
 │  (global)    │  attached to req
 └──────┬───────┘
        │
@@ -58,19 +58,13 @@ Two key objects are available on every request thanks to global middleware: `req
 
 If a service throws an exception, it bubbles up through the controller's `next(error)` call and is caught by the global `errorHandler` middleware registered at the bottom of `src/backend/index.ts`.
 
-## File Locations
+## File Structure
 
-| Layer         | Path                                                   | Naming                                        |
-| ------------- | ------------------------------------------------------ | --------------------------------------------- |
-| Entry point   | `src/backend/index.ts`                                 | —                                             |
-| Routes        | `src/backend/src/routes/{feature}.routes.ts`           | `{feature}Router`                             |
-| Controllers   | `src/backend/src/controllers/{feature}.controllers.ts` | `{Feature}Controller` class                   |
-| Services      | `src/backend/src/services/{feature}.services.ts`       | `{Feature}Service` class                      |
-| Validation    | `src/backend/src/utils/validation.utils.ts`            | Shared validators                             |
-| Errors        | `src/backend/src/utils/errors.utils.ts`                | `HttpException` subclasses                    |
-| Express types | `src/backend/custom.d.ts`                              | `currentUser` and `organization` on `Request` |
+Finishline uses a layer-based architecture, where 3 folders (routes, controllers, services) contain all the files related to that layer for every domain. The naming convention looks like:
 
-For query args and transformers, see the [query-args-and-transformers](./query-args-and-transformers) skill.
+- `src/backend/src/routes/{feature}.routes.ts`
+- `src/backend/src/controllers/{feature}.controllers.ts`
+- `src/backend/src/services/{feature}.services.ts`
 
 ## How Endpoint URLs Work
 
@@ -181,12 +175,10 @@ export default class CalendarController {
 
 - Every method MUST be `static async` with signature `(req: Request, res: Response, next: NextFunction)`.
 - Every method body MUST be wrapped in `try { ... } catch (error: unknown) { next(error); }`.
-- NEVER handle errors directly in the controller. Always call `next(error)`.
 - Extract URL params with: `const { id } = req.params as Record<string, string>;`
 - **Parse date strings to `Date` objects in the controller** before passing to the service: `new Date(startTime)`.
-- Always pass `req.currentUser` and `req.organization` to service methods that need them.
+- Pass `req.currentUser` and `req.organization` to service methods that need them.
 - Return `res.status(200).json(result)` for all successful responses.
-- Controllers contain ZERO business logic — no permission checks, no database queries.
 
 ### Step 4: Write the Service Method
 
@@ -274,7 +266,7 @@ export default class CalendarService {
 - ALWAYS filter `dateDeleted: null` on queries at both the top level and within nested includes/selects.
 - Deleting an entity MUST be a soft delete (`dateDeleted: new Date()`), never `prisma.*.delete()`.
 
-For query args and transformer patterns, see the [query-args-and-transformers](./query-args-and-transformers) skill.
+For query args and transformer patterns, see the [query-args-and-transformers](../query-args-and-transformers/SKILL.md) document.
 
 ### Step 5: Deciding the Access Level
 
@@ -312,20 +304,7 @@ Match the exception class to the level: `AccessDeniedGuestException` for `notGue
 
 ## Error Handling
 
-Services throw exceptions from `src/backend/src/utils/errors.utils.ts`. The global `errorHandler` middleware catches them.
-
-| Exception                                | Status | When to Use                               |
-| ---------------------------------------- | ------ | ----------------------------------------- |
-| `HttpException(status, msg)`             | any    | General-purpose with custom status        |
-| `NotFoundException(name, id)`            | 404    | Entity not found                          |
-| `DeletedException(name, id)`             | 404    | Entity is soft-deleted                    |
-| `AccessDeniedException(msg?)`            | 403    | Generic permission failure                |
-| `AccessDeniedAdminOnlyException(action)` | 403    | Non-admin attempting admin action         |
-| `AccessDeniedMemberException(action)`    | 403    | Guest/member attempting restricted action |
-| `AccessDeniedGuestException(action)`     | 403    | Guest attempting non-guest action         |
-| `InvalidOrganizationException(item)`     | 400    | Entity not in current org                 |
-
-The `name` parameter for `NotFoundException` and `DeletedException` MUST be one of the values in the `ExceptionObjectNames` type union in `errors.utils.ts`. Add your entity to that type if it's not listed.
+Services throw exceptions from `src/backend/src/utils/errors.utils.ts`. The global `errorHandler` middleware catches them. The `name` parameter for `NotFoundException` and `DeletedException` MUST be one of the values in the `ExceptionObjectNames` type union in `errors.utils.ts`. Add your entity to that type if it's not listed.
 
 ## Validation Helpers
 
@@ -396,13 +375,7 @@ For complex reusable validators, spread them: `...descriptionBulletsValidators`.
 - [ ] Entity name added to `ExceptionObjectNames` if needed
 - [ ] All queries filter `dateDeleted: null` at every level
 - [ ] Delete operations are soft deletes
-- [ ] Service returns transformed shared types (see [query-args-and-transformers](./query-args-and-transformers))
+- [ ] Service returns transformed shared types (see [query-args-and-transformers](../query-args-and-transformers/SKILL.md))
 - [ ] Multiple writes wrapped in `prisma.$transaction()`
 - [ ] All imports use `.js` extensions
 - [ ] Router registered in `index.ts` (if new feature)
-
-## Migration Notes
-
-> New code MUST follow the patterns above. When modifying existing files, update them to match where practical.
-
-`work-packages.routes.ts` contains one endpoint using the `DELETE` HTTP method (`workPackagesRouter.delete('/:wbsNum/delete', ...)`). This is legacy. The prescribed pattern is `POST` for all mutations including deletions. When touching this endpoint, migrate it to `POST`.

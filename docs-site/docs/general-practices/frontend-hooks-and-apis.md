@@ -192,7 +192,7 @@ export const getAllEvents = () => {
 };
 ```
 
-See the [query-args-and-transformers](./query-args-and-transformers) for detailed transformer patterns.
+See the [query-args-and-transformers skill](../../general-practices/query-args-and-transformers/SKILL.md) for detailed transformer patterns.
 
 ### Step 4: Write the Query Hook
 

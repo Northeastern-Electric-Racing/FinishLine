@@ -71,8 +71,6 @@ data changes.
 - **NERDraggableFormModal:** `src/frontend/src/components/NERDraggableFormModal.tsx`
 - **ReactHookTextField:** `src/frontend/src/components/ReactHookTextField.tsx`
 - **ReactHookEditableList:** `src/frontend/src/components/ReactHookEditableList.tsx`
-- **Modal forms:** `src/frontend/src/pages/{Feature}/{Components}/XFormModal.tsx`
-- **Full-page forms:** `src/frontend/src/pages/{Feature}Form/XFormView.tsx`
 
 ## Core Concepts
 
@@ -91,8 +89,7 @@ management. It accepts these key props:
 NERFormModal internally:
 
 1. Wraps `onFormSubmit` to call `reset()` after the submit callback
-2. Calls `reset()` when the modal is closed via `onHide`
-3. Renders a `<form>` element with `noValidate` and `e.stopPropagation()`
+2. Renders a `<form>` element with `noValidate` and `e.stopPropagation()`
 
 ### useForm Setup
 
@@ -209,6 +206,8 @@ For `Autocomplete` (multi-select):
   )}
 />
 ```
+
+NOTE: For taking in a user as an input to a form, always prefer autocomplete over select, and in general only show members as options.
 
 ## Step-by-Step: Creating a Modal Form
 
@@ -373,6 +372,8 @@ const EditThingModal = ({ showModal, handleClose, thing }: EditThingModalProps) 
   return <ThingFormModal showModal={showModal} handleClose={handleClose} onSubmit={mutateAsync} defaultValues={thing} />;
 };
 ```
+
+NOTE: while `CreateXModal.tsx` and `EditXModal.tsx` will typically be dealing with the same payload structure to pass to their mutation hooks, this is not always the case. To allow for differences between create and edit functionality, you can create a type with optional fields that contain all the data needed for both create and update mutations, and use that as the input parameter type for your onSubmit. In the form, you can determine if you are are editting or creating based on the detault values. For an example of these concepts look at the calendar event form.
 
 ## Step-by-Step: Creating a Full-Page Form
 
@@ -599,23 +600,3 @@ These files demonstrate the prescribed patterns well:
 - [ ] Form submit handler uses `e.stopPropagation()`
 - [ ] `<form>` element has `noValidate` attribute
 - [ ] Error messages display via `<FormHelperText error>`
-
-## Migration Notes
-
-> This section describes how this pattern differs from older code in the
-> codebase. New code MUST follow the patterns above. When modifying existing
-> files, update them to match these patterns where practical.
-
-Some existing form components use `useEffect` to synchronize form state
-with loaded data (e.g., `EventModal.tsx` uses `useEffect` to populate
-Autocomplete selections from `initialValues` when `users` data loads).
-The prescribed pattern avoids this entirely by computing all initial
-values in the `defaultValues` object passed to `useForm`. When modifying
-these files, replace `useEffect`-based synchronization with proper
-`defaultValues` computation or direct `reset()` calls in event handlers.
-
-Some older form modals also maintain parallel `useState` for values that
-should be managed by React Hook Form (e.g., separate `useState` for
-selected members alongside the form's member IDs). New forms MUST keep
-all form state within React Hook Form — use `watch()` to read values
-and `setValue()` to write them programmatically when needed.
