@@ -459,6 +459,7 @@ export default class FinanceServices {
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: {
+        dateDeleted: null,
         reimbursementProducts: {
           some: {
             reimbursementProductReason: {
@@ -498,7 +499,7 @@ export default class FinanceServices {
       }
     });
 
-    const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
+    const { approved, pendingApproval, addedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
 
     const totalBalance =
       reimbursementRequests.reduce((acc, curr) => {
@@ -510,9 +511,9 @@ export default class FinanceServices {
 
     const data: ReimbursementRequestData = {
       totalBudget: project.budget,
-      pendingFinance,
-      pendingLeadership,
-      submittedToSabo,
+      approved,
+      pendingApproval,
+      addedToSabo,
       reimbursed,
       available
     };
@@ -596,7 +597,7 @@ export default class FinanceServices {
 
     const totalBudget = team.projects.reduce((acc, curr) => acc + curr.budget, 0);
 
-    const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
+    const { approved, pendingApproval, addedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
 
     const totalBalance =
       reimbursementRequests.reduce((acc, curr) => {
@@ -608,9 +609,9 @@ export default class FinanceServices {
 
     const data: ReimbursementRequestData = {
       totalBudget,
-      pendingFinance,
-      pendingLeadership,
-      submittedToSabo,
+      approved,
+      pendingApproval,
+      addedToSabo,
       reimbursed,
       available
     };
@@ -649,33 +650,79 @@ export default class FinanceServices {
 
     if (!division) throw new NotFoundException('Team Type', teamTypeId);
 
-    const results: ReimbursementRequestData = {
-      totalBudget: 0,
-      pendingFinance: 0,
-      pendingLeadership: 0,
-      submittedToSabo: 0,
-      reimbursed: 0,
-      available: 0
-    };
-
+    const projectsById = new Map<string, { budget: number }>();
     for (const team of division.teams) {
-      const data: ReimbursementRequestData = await this.getReimbursementRequestTeamData(
-        organization,
-        team.teamId,
-        startDate,
-        endDate,
-        carNumber
-      );
-
-      results.totalBudget += data.totalBudget;
-      results.pendingFinance += data.pendingFinance;
-      results.pendingLeadership += data.pendingLeadership;
-      results.submittedToSabo += data.submittedToSabo;
-      results.reimbursed += data.reimbursed;
-      results.available += data.available;
+      for (const project of team.projects) {
+        if (!projectsById.has(project.projectId)) {
+          projectsById.set(project.projectId, { budget: project.budget });
+        }
+      }
     }
+    const totalBudget = [...projectsById.values()].reduce((acc, p) => acc + p.budget, 0);
+    const divisionProjectIds = [...projectsById.keys()];
 
-    return results;
+    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: {
+        dateDeleted: null,
+        reimbursementProducts: {
+          some: {
+            dateDeleted: null,
+            reimbursementProductReason: {
+              wbsElement: {
+                project: {
+                  projectId: { in: divisionProjectIds }
+                }
+              }
+            }
+          }
+        },
+        reimbursementStatuses: {
+          none: {
+            type: Reimbursement_Status_Type.DENIED
+          }
+        },
+        ...getReimbursementRequestWhereInput(startDate, endDate, carNumber)
+      },
+      select: {
+        reimbursementStatuses: true,
+        totalCost: true,
+        reimbursementProducts: {
+          where: {
+            dateDeleted: null,
+            reimbursementProductReason: {
+              wbsElement: {
+                project: {
+                  projectId: { in: divisionProjectIds }
+                }
+              }
+            }
+          },
+          select: {
+            cost: true
+          }
+        }
+      }
+    });
+
+    const { approved, pendingApproval, addedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
+
+    const totalBalance =
+      reimbursementRequests.reduce((acc, curr) => {
+        const teamProductsCost = curr.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
+        return acc + teamProductsCost;
+      }, 0) / 100;
+
+    const available = totalBudget - totalBalance;
+
+    const data: ReimbursementRequestData = {
+      totalBudget,
+      approved,
+      pendingApproval,
+      addedToSabo,
+      reimbursed,
+      available
+    };
+    return data;
   }
 
   static async getSpendingBarTeamData(
@@ -855,10 +902,16 @@ export default class FinanceServices {
       }
     });
 
-    const allTotalBudget = teams.reduce((teamAcc, team) => {
-      const teamBudget = team.projects.reduce((projAcc, project) => projAcc + project.budget, 0);
-      return teamAcc + teamBudget;
-    }, 0);
+    // project budgets no longer double counted if in multiple teams
+    const projectsById = new Map<string, { budget: number }>();
+    for (const team of teams) {
+      for (const project of team.projects) {
+        if (!projectsById.has(project.projectId)) {
+          projectsById.set(project.projectId, { budget: project.budget });
+        }
+      }
+    }
+    const allTotalBudget = [...projectsById.values()].reduce((acc, p) => acc + p.budget, 0);
 
     const cashTotalBudget =
       cashReimbursementRequests.reduce((reqAcc, rr) => {
@@ -871,9 +924,9 @@ export default class FinanceServices {
       }, 0) / 100;
 
     const {
-      pendingFinance: allPendingFinance,
-      pendingLeadership: allPendingLeadership,
-      submittedToSabo: allSubmittedToSabo,
+      approved: allApproved,
+      pendingApproval: allPendingApproval,
+      addedToSabo: allAddedToSabo,
       reimbursed: allReimbursed
     } = computeRRTotals(allReimbursementRequests);
 
@@ -882,9 +935,9 @@ export default class FinanceServices {
     const allAvailable = allTotalBudget - allTotalBalance;
 
     const {
-      pendingFinance: cashPendingFinance,
-      pendingLeadership: cashPendingLeadership,
-      submittedToSabo: cashSubmittedToSabo,
+      approved: cashApproved,
+      pendingApproval: cashPendingApproval,
+      addedToSabo: cashAddedToSabo,
       reimbursed: cashReimbursed
     } = computeRRTotals(cashReimbursementRequests);
 
@@ -893,9 +946,9 @@ export default class FinanceServices {
     const cashAvailable = cashTotalBudget - cashTotalBalance;
 
     const {
-      pendingFinance: budgetPendingFinance,
-      pendingLeadership: budgetPendingLeadership,
-      submittedToSabo: budgetSubmittedToSabo,
+      approved: budgetApproved,
+      pendingApproval: budgetPendingApproval,
+      addedToSabo: budgetAddedToSabo,
       reimbursed: budgetReimbursed
     } = computeRRTotals(budgetReimbursementRequests);
 
@@ -905,27 +958,27 @@ export default class FinanceServices {
 
     const allData: ReimbursementRequestData = {
       totalBudget: allTotalBudget,
-      pendingFinance: allPendingFinance,
-      pendingLeadership: allPendingLeadership,
-      submittedToSabo: allSubmittedToSabo,
+      approved: allApproved,
+      pendingApproval: allPendingApproval,
+      addedToSabo: allAddedToSabo,
       reimbursed: allReimbursed,
       available: allAvailable
     };
 
     const cashData: ReimbursementRequestData = {
       totalBudget: cashTotalBudget,
-      pendingFinance: cashPendingFinance,
-      pendingLeadership: cashPendingLeadership,
-      submittedToSabo: cashSubmittedToSabo,
+      approved: cashApproved,
+      pendingApproval: cashPendingApproval,
+      addedToSabo: cashAddedToSabo,
       reimbursed: cashReimbursed,
       available: cashAvailable
     };
 
     const budgetData: ReimbursementRequestData = {
       totalBudget: budgetTotalBudget,
-      pendingFinance: budgetPendingFinance,
-      pendingLeadership: budgetPendingLeadership,
-      submittedToSabo: budgetSubmittedToSabo,
+      approved: budgetApproved,
+      pendingApproval: budgetPendingApproval,
+      addedToSabo: budgetAddedToSabo,
       reimbursed: budgetReimbursed,
       available: budgetAvailable
     };
@@ -1022,39 +1075,21 @@ export default class FinanceServices {
 
     const totalBudget = category.budget;
 
-    const totals: Partial<Record<Reimbursement_Status_Type, number>> = {
-      [Reimbursement_Status_Type.PENDING_FINANCE]: 0,
-      [Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL]: 0,
-      [Reimbursement_Status_Type.SABO_SUBMITTED]: 0,
-      [Reimbursement_Status_Type.REIMBURSED]: 0
-    };
+    const { approved, pendingApproval, addedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
 
-    reimbursementRequests.forEach((req) => {
-      const lastStatus = req.reimbursementStatuses.at(-1)?.type;
-
-      if (lastStatus && totals[lastStatus] !== undefined) {
-        const categoryProductsCost = req.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
-        totals[lastStatus] += categoryProductsCost;
-      }
-    });
-
-    const pendingFinance = totals[Reimbursement_Status_Type.PENDING_FINANCE] ?? 0;
-    const pendingLeadership = totals[Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL] ?? 0;
-    const submittedToSabo = totals[Reimbursement_Status_Type.SABO_SUBMITTED] ?? 0;
-    const reimbursed = totals[Reimbursement_Status_Type.REIMBURSED] ?? 0;
-
-    const totalBalance = reimbursementRequests.reduce((acc, curr) => {
-      const categoryProductsCost = curr.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
-      return acc + categoryProductsCost;
-    }, 0);
+    const totalBalance =
+      reimbursementRequests.reduce((acc, curr) => {
+        const categoryProductsCost = curr.reimbursementProducts.reduce((prodAcc, prod) => prodAcc + prod.cost, 0);
+        return acc + categoryProductsCost;
+      }, 0) / 100;
 
     const available = totalBudget - totalBalance;
 
     const data: ReimbursementRequestData = {
       totalBudget,
-      pendingFinance,
-      pendingLeadership,
-      submittedToSabo,
+      approved,
+      pendingApproval,
+      addedToSabo,
       reimbursed,
       available
     };

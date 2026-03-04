@@ -327,10 +327,6 @@ export default class ReimbursementRequestService {
 
     await validateRefund(submitter, amount, organization.organizationId);
 
-    // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-    const dateCreated = new Date(dateReceived.split('T')[0]);
-    dateCreated.setTime(dateCreated.getTime() + 12 * 60 * 60 * 1000);
-
     const newReimbursement = await prisma.reimbursement.create({
       data: {
         purchaserId: submitter.userId,
@@ -415,11 +411,25 @@ export default class ReimbursementRequestService {
         totalCost,
         accountCodeId: accountCode.accountCodeId,
         vendorId: vendor.vendorId
+      },
+      include: {
+        notificationSlackThreads: true
       }
     });
 
     //set any deleted receipts with a dateDeleted
     await removeDeletedReceiptPictures(receiptPictures, oldReimbursementRequest.receiptPictures || [], submitter);
+
+    try {
+      await sendPendingSaboSubmissionNotification(
+        updatedReimbursementRequest.notificationSlackThreads,
+        submitter.userId,
+        updatedReimbursementRequest.recipientId,
+        updatedReimbursementRequest.reimbursementRequestId
+      );
+    } catch (e: unknown) {
+      console.error('Error sending pending SABO submission notification:', e);
+    }
 
     return updatedReimbursementRequest;
   }
@@ -1279,15 +1289,12 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    try {
-      await sendPendingSaboSubmissionNotification(
-        reimbursementRequest.notificationSlackThreads,
-        submitter.userId,
-        reimbursementRequest.recipientId
-      );
-    } catch (e: unknown) {
-      console.error('Error sending pending SABO submission notification:', e);
-    }
+    await sendPendingSaboSubmissionNotification(
+      reimbursementRequest.notificationSlackThreads,
+      submitter.userId,
+      reimbursementRequest.recipientId,
+      reimbursementRequest.reimbursementRequestId
+    );
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1361,11 +1368,7 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    try {
-      await sendSubmittedToSaboNotification(reimbursementRequest.notificationSlackThreads);
-    } catch (e: unknown) {
-      console.error('Error sending submitted to SABO notification:', e);
-    }
+    await sendSubmittedToSaboNotification(reimbursementRequest.notificationSlackThreads);
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1434,11 +1437,7 @@ export default class ReimbursementRequestService {
         'Reimbursement Request successfully updated, however no slack message was sent as recipient is missing their settings!'
       );
 
-    try {
-      await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
-    } catch (e: unknown) {
-      console.error('Error sending reimbursement request denied notification:', e);
-    }
+    await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1722,14 +1721,10 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    try {
-      await sendReimbursementRequestPendingFinanceNotification(
-        reimbursementRequest.notificationSlackThreads,
-        reimbursementRequest.assigneeId
-      );
-    } catch (e: unknown) {
-      console.error('Error sending reimbursement request pending finance notification:', e);
-    }
+    await sendReimbursementRequestPendingFinanceNotification(
+      reimbursementRequest.notificationSlackThreads,
+      reimbursementRequest.assigneeId
+    );
 
     return reimbursementStatusTransformer(updatedReimbursementStatus);
   }
@@ -1783,11 +1778,7 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    try {
-      await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads, user.userId);
-    } catch (e: unknown) {
-      console.error('Error sending reimbursement request changes requested notification:', e);
-    }
+    await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads, user.userId);
 
     return reimbursementStatusTransformer(deletedStatus);
   }
@@ -2063,7 +2054,7 @@ export default class ReimbursementRequestService {
     // find all names that have been tagged in the @FirstLast format
     const taggedNames = [...comment.matchAll(tagRegex)].map((match) => match[1]);
 
-    // spliot the tagged names into first and last names
+    // split the tagged names into first and last names
     const splitTaggedNames = taggedNames.map((name) => {
       const match = name.match(/([A-Z][a-z'-]+)([A-Z][a-z'-]+)/);
 

@@ -48,13 +48,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
   }
 
   const emptyRRData =
-    rrData.pendingLeadership === 0 &&
-    rrData.pendingFinance === 0 &&
-    rrData.submittedToSabo === 0 &&
+    rrData.pendingApproval === 0 &&
+    rrData.approved === 0 &&
+    rrData.addedToSabo === 0 &&
     rrData.reimbursed === 0 &&
     rrData.available === 0;
 
-  const amountUsed = rrData.pendingFinance + rrData.pendingLeadership + rrData.submittedToSabo + rrData.reimbursed;
+  const amountUsed = rrData.approved + rrData.pendingApproval + rrData.addedToSabo + rrData.reimbursed;
 
   const overBudget = project.budget < amountUsed;
 
@@ -130,9 +130,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           </Box>
           <PieChart
             totalBalance={rrData.totalBudget}
-            pendingLeadership={rrData.pendingLeadership}
-            pendingFinance={rrData.pendingFinance}
-            submittedToSABO={rrData.submittedToSabo}
+            pendingApproval={rrData.pendingApproval}
+            approved={rrData.approved}
+            addedToSABO={rrData.addedToSabo}
             reimbursed={rrData.reimbursed}
             available={rrData.available}
           />

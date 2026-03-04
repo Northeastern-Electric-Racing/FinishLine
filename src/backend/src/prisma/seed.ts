@@ -31,7 +31,7 @@ import ProjectsService from '../services/projects.services.js';
 import { Decimal } from 'decimal.js';
 import BillOfMaterialsService from '../services/boms.services.js';
 import UsersService from '../services/users.services.js';
-import { transformDate } from '../utils/datetime.utils.js';
+import { toDateString } from 'shared';
 import { writeFileSync, readFileSync } from 'fs';
 import WbsElementTemplatesService from '../services/wbs-element-templates.services.js';
 import RecruitmentServices from '../services/recruitment.services.js';
@@ -273,6 +273,23 @@ const performSeed: () => Promise<void> = async () => {
         create: {
           name: 'Fergus',
           carNumber: 0,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          organizationId
+        }
+      }
+    },
+    include: {
+      wbsElement: true
+    }
+  });
+
+  const miles = await prisma.car.create({
+    data: {
+      wbsElement: {
+        create: {
+          name: 'Miles',
+          carNumber: 1,
           projectNumber: 0,
           workPackageNumber: 0,
           organizationId
@@ -1120,7 +1137,7 @@ const performSeed: () => Promise<void> = async () => {
     'Bodywork Concept of Design',
     changeRequestProject1Id,
     WorkPackageStage.Design,
-    weeksAgo(12).toISOString().split('T')[0],
+    toDateString(weeksAgo(12)),
     6,
     [],
     [],
@@ -1166,7 +1183,7 @@ const performSeed: () => Promise<void> = async () => {
     'Adhesive Shear Strength Test',
     changeRequestProject1Id,
     WorkPackageStage.Research,
-    weeksAgo(10).toISOString().split('T')[0],
+    toDateString(weeksAgo(10)),
     5,
     [],
     [],
@@ -1184,7 +1201,7 @@ const performSeed: () => Promise<void> = async () => {
     'Manufacture Wiring Harness',
     changeRequestProject5Id,
     WorkPackageStage.Manufacturing,
-    weeksAgo(9).toISOString().split('T')[0],
+    toDateString(weeksAgo(9)),
     4,
     [],
     [],
@@ -1217,7 +1234,7 @@ const performSeed: () => Promise<void> = async () => {
     'Install Wiring Harness',
     changeRequestProject5Id,
     WorkPackageStage.Install,
-    weeksAgo(5).toISOString().split('T')[0],
+    toDateString(weeksAgo(5)),
     6,
     [],
     [],
@@ -1250,7 +1267,7 @@ const performSeed: () => Promise<void> = async () => {
     'Design Plush',
     changeRequestProject6Id,
     WorkPackageStage.Design,
-    weeksAgo(16).toISOString().split('T')[0],
+    toDateString(weeksAgo(16)),
     7,
     [],
     [],
@@ -1283,7 +1300,7 @@ const performSeed: () => Promise<void> = async () => {
     'Put Plush Together',
     changeRequestProject6Id,
     WorkPackageStage.Manufacturing,
-    weeksAgo(9).toISOString().split('T')[0],
+    toDateString(weeksAgo(9)),
     5,
     [],
     [],
@@ -1316,7 +1333,7 @@ const performSeed: () => Promise<void> = async () => {
     'Plush Testing',
     changeRequestProject6Id,
     WorkPackageStage.Testing,
-    weeksAgo(4).toISOString().split('T')[0],
+    toDateString(weeksAgo(4)),
     4,
     [],
     [],
@@ -1350,7 +1367,7 @@ const performSeed: () => Promise<void> = async () => {
     'Design Laser Canon',
     changeRequestProject7Id,
     WorkPackageStage.Design,
-    weeksAgo(8).toISOString().split('T')[0],
+    toDateString(weeksAgo(8)),
     5,
     [],
     [],
@@ -1378,12 +1395,12 @@ const performSeed: () => Promise<void> = async () => {
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, project3WP1ActivationCrId, 'Approved!', true, ner, null);
 
   /** Work Package 2 */
-  await seedWorkPackage(
+  const { workPackage: project3WP2 } = await seedWorkPackage(
     lexLuther,
     'Laser Canon Research',
     changeRequestProject7Id,
     WorkPackageStage.Research,
-    weeksAgo(3).toISOString().split('T')[0],
+    toDateString(weeksAgo(3)),
     6,
     [],
     [],
@@ -1401,9 +1418,9 @@ const performSeed: () => Promise<void> = async () => {
     'Laser Canon Testing',
     changeRequestProject7Id,
     WorkPackageStage.Testing,
-    weeksFromNow(3).toISOString().split('T')[0],
+    toDateString(weeksFromNow(3)),
     4,
-    [],
+    [project3WP1.wbsNum, project3WP2.wbsNum],
     [],
     zatanna,
     WbsElementStatus.Active,
@@ -1420,7 +1437,7 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Research',
     changeRequestProject8Id,
     WorkPackageStage.Research,
-    weeksAgo(14).toISOString().split('T')[0],
+    toDateString(weeksAgo(14)),
     7,
     [],
     [],
@@ -1453,7 +1470,7 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Install',
     changeRequestProject8Id,
     WorkPackageStage.Install,
-    weeksAgo(7).toISOString().split('T')[0],
+    toDateString(weeksAgo(7)),
     6,
     [],
     [],
@@ -1471,7 +1488,7 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Testing',
     changeRequestProject8Id,
     WorkPackageStage.Testing,
-    weeksAgo(1).toISOString().split('T')[0],
+    toDateString(weeksAgo(1)),
     5,
     [],
     [],
@@ -2394,7 +2411,7 @@ const performSeed: () => Promise<void> = async () => {
       leadId: batman.userId,
       managerId: cyborg.userId,
       duration: 5,
-      startDate: transformDate(new Date()),
+      startDate: toDateString(new Date()),
       stage: WorkPackageStage.Design,
       blockedBy: [],
       descriptionBullets: [],
@@ -2408,7 +2425,7 @@ const performSeed: () => Promise<void> = async () => {
     'Slim and Light Car',
     newWorkPackageChangeRequest.crId,
     WorkPackageStage.Design,
-    weeksAgo(2).toISOString().split('T')[0],
+    toDateString(weeksAgo(2)),
     5,
     [],
     [],
@@ -2436,7 +2453,7 @@ const performSeed: () => Promise<void> = async () => {
       leadId: batman.userId,
       managerId: cyborg.userId,
       duration: 5,
-      startDate: transformDate(new Date()),
+      startDate: toDateString(new Date()),
       stage: WorkPackageStage.Design,
       blockedBy: [],
       descriptionBullets: [],

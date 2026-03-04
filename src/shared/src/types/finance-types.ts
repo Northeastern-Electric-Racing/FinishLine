@@ -86,9 +86,9 @@ export interface SpendingBarData {
 
 export interface ReimbursementRequestData {
   totalBudget: number;
-  pendingFinance: number;
-  pendingLeadership: number;
-  submittedToSabo: number;
+  approved: number;
+  pendingApproval: number;
+  addedToSabo: number;
   reimbursed: number;
   available: number;
 }

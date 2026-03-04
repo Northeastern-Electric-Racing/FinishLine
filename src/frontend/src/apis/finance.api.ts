@@ -26,6 +26,7 @@ import {
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+import { dateToMidnightUTC } from 'shared';
 import {
   reimbursementRequestDataTransformer,
   reimbursementRequestTransformer,
@@ -76,7 +77,10 @@ export const uploadSingleReceipt = (file: File, id: string) => {
  * @returns the created reimbursement request
  */
 export const createReimbursementRequest = (formData: CreateReimbursementRequestPayload) => {
-  return axios.post(apiUrls.financeCreateReimbursementRequest(), formData);
+  return axios.post(apiUrls.financeCreateReimbursementRequest(), {
+    ...formData,
+    dateOfExpense: formData.dateOfExpense ? dateToMidnightUTC(formData.dateOfExpense) : undefined
+  });
 };
 
 /**
@@ -107,7 +111,10 @@ export const markReimbursementRequestAsReimbursed = (id: string) => {
  * @returns the edited reimbursement request
  */
 export const editReimbursementRequest = (id: string, formData: EditReimbursementRequestPayload) => {
-  return axios.post(apiUrls.financeEditReimbursementRequest(id), formData);
+  return axios.post(apiUrls.financeEditReimbursementRequest(id), {
+    ...formData,
+    dateOfExpense: formData.dateOfExpense ? dateToMidnightUTC(formData.dateOfExpense) : undefined
+  });
 };
 
 /**
