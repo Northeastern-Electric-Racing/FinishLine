@@ -38,7 +38,14 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom((value) => value === ChangeRequestType.Activation),
-  body('startDate').custom((value) => !isNaN(Date.parse(value))),
+  body('startDate').custom((value) => {
+    const parsed = Date.parse(value);
+    if (isNaN(parsed)) return false;
+    const date = new Date(parsed);
+    return (
+      date.getUTCHours() === 0 && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0 && date.getUTCMilliseconds() === 0
+    );
+  }),
   nonEmptyString(body('leadId')),
   nonEmptyString(body('managerId')),
   body('confirmDetails').isBoolean(),
