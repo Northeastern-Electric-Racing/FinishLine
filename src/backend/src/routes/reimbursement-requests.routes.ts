@@ -8,10 +8,11 @@ import { body } from 'express-validator';
 import {
   intMinZero,
   isDate,
-  isOptionalDate,
+  isOptionalDateOnly,
   nonEmptyString,
   validateInputs,
-  validateReimbursementProducts
+  validateReimbursementProducts,
+  validateReimbursementProductsForEdit
 } from '../utils/validation.utils.js';
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers.js';
 import multer, { memoryStorage } from 'multer';
@@ -115,7 +116,7 @@ reimbursementRequestsRouter.post('/:vendorId/vendors/delete', ReimbursementReque
 
 reimbursementRequestsRouter.post(
   '/create',
-  isOptionalDate(body('dateOfExpense')),
+  isOptionalDateOnly(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   nonEmptyString(body('indexCodeId')),
   nonEmptyString(body('accountCodeId')),
@@ -131,7 +132,7 @@ reimbursementRequestsRouter.get('/:requestId', ReimbursementRequestController.ge
 
 reimbursementRequestsRouter.post(
   '/:requestId/edit',
-  isOptionalDate(body('dateOfExpense')),
+  isOptionalDateOnly(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   nonEmptyString(body('indexCodeId')),
   body('receiptPictures').isArray(),
@@ -139,7 +140,7 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('receiptPictures.*.googleFileId')),
   nonEmptyString(body('accountCodeId')),
   intMinZero(body('totalCost')),
-  validateReimbursementProducts(),
+  validateReimbursementProductsForEdit(),
   validateInputs,
   ReimbursementRequestController.editReimbursementRequest
 );

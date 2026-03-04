@@ -14,7 +14,8 @@ import {
   FilterArgs,
   Machinery,
   ScheduleSlot,
-  notGuest
+  notGuest,
+  isSameDay
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
@@ -65,7 +66,7 @@ import {
   updateUserAvailability,
   areUsersinList
 } from '../utils/users.utils.js';
-import { Conflict_Status, Event_Status, Organization } from '@prisma/client';
+import { Conflict_Status, Event_Status, Organization, Team } from '@prisma/client';
 
 export default class CalendarService {
   /**
@@ -286,8 +287,8 @@ export default class CalendarService {
       if (!hasPermission) {
         throw new AccessDeniedException('Only admins and heads can create events under this event type');
       }
-    } else if (notGuest(submitter.role)) {
-      throw new AccessDeniedGuestException('Guests cannot create events');
+    } else if (!(await userHasPermission(submitter.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('create events');
     }
 
     // Validate event follows event type configuration
@@ -497,10 +498,6 @@ export default class CalendarService {
         where: { userId: { in: optionalMemberIds.concat(requiredMemberIds) } }
       });
 
-      if (!members) {
-        throw new NotFoundException('User', 'Cannot find members who are invited to the design review');
-      }
-
       // get the user settings for all the members invited, who are leaderingship
       const memberUserSettings = await prisma.user_Settings.findMany({
         where: { userId: { in: members.map((member) => member.userId) } }
@@ -514,17 +511,12 @@ export default class CalendarService {
       if (newEvent.status === Event_Status.UNCONFIRMED) {
         for (const memberUserSetting of memberUserSettings) {
           if (memberUserSetting.slackId) {
-            try {
-              // For each project associated with this event
-              await sendSlackEventConfirmNotification(
-                memberUserSetting.slackId,
-                newEvent.eventId,
-                newEvent.title,
-                projects.map((project) => project.wbsElement.name).join(', ')
-              );
-            } catch (err: unknown) {
-              console.error('Failed to send slack notification for event:', err);
-            }
+            await sendSlackEventConfirmNotification(
+              memberUserSetting.slackId,
+              newEvent.eventId,
+              newEvent.title,
+              projects.map((project) => project.wbsElement.name).join(', ')
+            );
           }
         }
       }
@@ -532,22 +524,24 @@ export default class CalendarService {
       // Send popup notification
       await sendEventPopUp(newEvent, members, submitter, workPackageNames, organization.organizationId);
 
+      const teamsToNotify = new Set<Team>();
       for (const project of projects) {
-        const projectTeams = project.teams;
-        if (projectTeams.length > 0) {
-          try {
-            await sendSlackEventNotifications(
-              projectTeams,
-              createdEvent,
-              submitter,
-              workPackageNames,
-              project.wbsElement.name
-            );
-          } catch (err: unknown) {
-            console.error('Failed to send slack notification for event:', err);
-          }
+        for (const team of project.teams) {
+          teamsToNotify.add(team);
         }
       }
+
+      for (const team of newEvent.teams) {
+        teamsToNotify.add(team);
+      }
+
+      await sendSlackEventNotifications(
+        Array.from(teamsToNotify),
+        createdEvent,
+        submitter,
+        workPackageNames,
+        organization.name
+      );
     }
 
     return createdEvent;
@@ -616,15 +610,6 @@ export default class CalendarService {
     if (foundEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
 
     // NOTE: Use editScheduleSlot to modify individual schedule slots
-
-    // question document is required if the status is scheduled or done
-    if (foundEventType.requiresConfirmation) {
-      if (status === Event_Status.SCHEDULED || status === Event_Status.DONE) {
-        if (questionDocumentLink == null) {
-          throw new HttpException(400, 'doc template link is required for scheduled and done design reviews');
-        }
-      }
-    }
 
     if (requiredMemberIds.length > 0 && requiredMemberIds.some((rMemberId) => optionalMemberIds.includes(rMemberId))) {
       throw new HttpException(400, 'required members cannot be in optional members');
@@ -1467,6 +1452,24 @@ export default class CalendarService {
       },
       ...getEventQueryArgs(organization.organizationId)
     });
+
+    // Remove the scheduled time from confirmed members' availabilities so they can't be
+    // double-booked for other events that require confirmation during the same time slot
+    const startHour = startTime.getHours();
+    const endHour = endTime.getHours();
+    for (const member of event.confirmedMembers) {
+      if (!member.drScheduleSettings) continue;
+      const existingAvailability = member.drScheduleSettings.availabilities.find((a) => isSameDay(a.dateSet, startTime));
+      if (!existingAvailability) continue;
+      // Availability index i represents local hour (10 + i); remove indices that fall within [startHour, endHour)
+      const updatedAvailability = existingAvailability.availability.filter(
+        (i) => !(10 + i >= startHour && 10 + i < endHour)
+      );
+      await prisma.availability.update({
+        where: { availabilityId: existingAvailability.availabilityId },
+        data: { availability: updatedAvailability }
+      });
+    }
 
     const { eventTypeId } = updatedEvent;
     const foundEventType = await prisma.event_Type.findUnique({

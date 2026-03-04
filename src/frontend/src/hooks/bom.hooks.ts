@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Assembly, Manufacturer, Material, MaterialType, Unit, WbsNumber, wbsPipe } from 'shared';
+import { useToast } from '../hooks/toasts.hooks';
 import {
   assignMaterialToAssembly,
   createAssembly,
   createManufacturer,
   deleteManufacturer,
   createMaterial,
+  copyMaterialsToProject,
   createMaterialType,
   createUnit,
   deleteSingleAssembly,
@@ -134,6 +136,32 @@ export const useDeleteMaterial = (wbsNum: WbsNumber) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to copy materials to a project.
+ * @returns the mutation function to copy materials
+ */
+export const useCopyMaterialsToProject = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<string[], Error, { materialIds: string[]; destinationWbsNum: string }>(
+    ['materials', 'copy'],
+    async ({ materialIds, destinationWbsNum }) => {
+      const data = await copyMaterialsToProject(materialIds, destinationWbsNum);
+      return data;
+    },
+    {
+      onSuccess: (newMaterialIds, variables) => {
+        queryClient.invalidateQueries(['materials', variables.destinationWbsNum]);
+        toast.success(`Successfully copied ${newMaterialIds.length} material${newMaterialIds.length !== 1 ? 's' : ''}!`);
+      },
+      onError: () => {
+        toast.error('Failed to copy materials');
       }
     }
   );
