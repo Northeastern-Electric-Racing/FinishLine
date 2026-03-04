@@ -34,7 +34,7 @@ import {
   validateUserEditRRPermissions,
   validateRefund,
   validateUserIsPartOfFinanceTeamOrHead,
-  isUserOnFinanceTeam
+  isUserFinanceTeamOrHead
 } from '../utils/reimbursement-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
@@ -188,10 +188,7 @@ export default class ReimbursementRequestService {
    * @returns All the reimbursements in the database
    */
   static async getAllReimbursements(user: User, organization: Organization): Promise<Reimbursement[]> {
-    const isUserAuthorized =
-      (await isUserOnFinanceTeam(user, organization.organizationId)) ||
-      (await userHasPermission(user.userId, organization.organizationId, isHead));
-    if (!isUserAuthorized) {
+    if (!(await isUserFinanceTeamOrHead(user, organization.organizationId))) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
 
@@ -879,10 +876,7 @@ export default class ReimbursementRequestService {
    * @returns the 'deleted' account code
    */
   static async deleteAccountCode(accountCodeId: string, submitter: User, organization: Organization) {
-    const isUserAuthorized =
-      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
-      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
-    if (!isUserAuthorized) {
+    if (!(await isUserFinanceTeamOrHead(submitter, organization.organizationId))) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
 
@@ -991,10 +985,7 @@ export default class ReimbursementRequestService {
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
   static async getAllReimbursementRequests(user: User, organization: Organization): Promise<ReimbursementRequest[]> {
-    const isUserAuthorized =
-      (await isUserOnFinanceTeam(user, organization.organizationId)) ||
-      (await userHasPermission(user.userId, organization.organizationId, isHead));
-    if (!isUserAuthorized) {
+    if (!(await isUserFinanceTeamOrHead(user, organization.organizationId))) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
 
@@ -1510,8 +1501,7 @@ export default class ReimbursementRequestService {
 
     const isUserAuthorized =
       existingVendor.addedByUserId === submitter.userId ||
-      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
-      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
+      (await isUserFinanceTeamOrHead(submitter, organization.organizationId));
     if (!isUserAuthorized) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
@@ -1564,8 +1554,7 @@ export default class ReimbursementRequestService {
 
     const isUserAuthorized =
       existingVendor.addedByUserId === submitter.userId ||
-      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
-      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
+      (await isUserFinanceTeamOrHead(submitter, organization.organizationId));
     if (!isUserAuthorized) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
@@ -1602,8 +1591,7 @@ export default class ReimbursementRequestService {
 
     const isUserAuthorized =
       existingVendor.addedByUserId === submitter.userId ||
-      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
-      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
+      (await isUserFinanceTeamOrHead(submitter, organization.organizationId));
     if (!isUserAuthorized) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }

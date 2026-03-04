@@ -1,20 +1,29 @@
-import { useDeleteSponsor } from '../../../hooks/finance.hooks';
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+import { useDeleteProspectiveSponsor } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { Sponsor } from 'shared';
+import { ProspectiveSponsor } from 'shared';
 import NERModal from '../../../components/NERModal';
 import { Typography } from '@mui/material';
 import { useToast } from '../../../hooks/toasts.hooks';
 
-interface DeleteSponsorProps {
+interface DeleteProspectiveSponsorModalProps {
   handleClose: () => void;
-  sponsor: Sponsor;
+  prospectiveSponsor: ProspectiveSponsor;
   showModal: boolean;
 }
 
-const DeleteSponsorModal = ({ handleClose, sponsor, showModal }: DeleteSponsorProps) => {
+const DeleteProspectiveSponsorModal = ({
+  handleClose,
+  prospectiveSponsor,
+  showModal
+}: DeleteProspectiveSponsorModalProps) => {
   const toast = useToast();
-  const { isLoading, isError, error, mutateAsync } = useDeleteSponsor(sponsor.sponsorId);
+  const { isLoading, isError, error, mutateAsync } = useDeleteProspectiveSponsor();
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
@@ -27,8 +36,8 @@ const DeleteSponsorModal = ({ handleClose, sponsor, showModal }: DeleteSponsorPr
       submitText="Delete"
       onSubmit={async () => {
         try {
-          await mutateAsync();
-          toast.success(`Sponsor "${sponsor.name}" deleted successfully!`);
+          await mutateAsync(prospectiveSponsor.prospectiveSponsorId);
+          toast.success(`Prospective sponsor "${prospectiveSponsor.organizationName}" deleted successfully!`);
           handleClose();
         } catch (err: unknown) {
           if (err instanceof Error) {
@@ -38,11 +47,11 @@ const DeleteSponsorModal = ({ handleClose, sponsor, showModal }: DeleteSponsorPr
       }}
     >
       <Typography gutterBottom>
-        Are you sure you want to delete the sponsor <i>{sponsor.name}</i>?
+        Are you sure you want to delete the prospective sponsor <i>{prospectiveSponsor.organizationName}</i>?
       </Typography>
       <Typography fontWeight="bold">This action cannot be undone!</Typography>
     </NERModal>
   );
 };
 
-export default DeleteSponsorModal;
+export default DeleteProspectiveSponsorModal;

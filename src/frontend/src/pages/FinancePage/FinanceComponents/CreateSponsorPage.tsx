@@ -8,6 +8,7 @@ import SidePage from './SidePagePopup';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { useState } from 'react';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface CreateSponsorPageProps {
   showPage: boolean;
@@ -15,25 +16,33 @@ interface CreateSponsorPageProps {
 }
 
 const CreateSponsorPage = ({ showPage, handleClose }: CreateSponsorPageProps) => {
+  const toast = useToast();
   const { isLoading, mutateAsync } = useCreateSponsor();
 
   const {
     handleSubmit,
     control,
+    setValue,
     formState: { errors }
   } = useForm<SponsorPayload>({
     resolver: yupResolver(sponsorSchema),
     defaultValues: {
       name: '',
       activeStatus: undefined,
+      valueTypes: ['MONETARY'],
       sponsorValue: 0,
-      joinDate: undefined,
+      joinDate: new Date(),
       activeYears: [],
       sponsorTierId: '',
-      sponsorContact: '',
+      contactName: '',
+      contactEmail: '',
+      contactPhone: '',
+      contactPosition: '',
       taxExempt: false,
       discountCode: '',
       sponsorNotes: '',
+      stockDescription: '',
+      discountDescription: '',
       sponsorTasks: []
     }
   });
@@ -45,9 +54,11 @@ const CreateSponsorPage = ({ showPage, handleClose }: CreateSponsorPageProps) =>
     try {
       setSubmitError(null);
       await mutateAsync({ ...formData });
+      toast.success('Sponsor created successfully!');
       handleClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
+        toast.error(err.message);
         setSubmitError(err.message);
       }
     }
@@ -60,7 +71,7 @@ const CreateSponsorPage = ({ showPage, handleClose }: CreateSponsorPageProps) =>
       title="Add Sponsor"
       component={
         <Box display="flex" flexDirection="column" alignItems="flex-end">
-          <SponsorForm control={control} errors={errors} />
+          <SponsorForm control={control} errors={errors} setValue={setValue} />
           {submitError && (
             <Box color="error.main" mb={2} fontWeight="bold">
               {submitError}
