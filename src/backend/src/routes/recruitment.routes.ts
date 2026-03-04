@@ -50,4 +50,16 @@ recruitmentRouter.post(
 
 recruitmentRouter.delete('/faq/:faqId/delete', RecruitmentController.deleteFaq);
 
+recruitmentRouter.post(
+  '/guestDefinition/create',
+  nonEmptyString(body('term')),
+  nonEmptyString(body('description')),
+  body('order').isInt(),
+  nonEmptyString(body('icon')).optional(),
+  nonEmptyString(body('buttonText')).optional(),
+  nonEmptyString(body('buttonLink')).optional(),
+  validateInputs,
+  RecruitmentController.createGuestDefinition
+);
+
 export default recruitmentRouter;
