@@ -3,7 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { CalendarTask, FilterTaskArgs, Task, TaskCardPreview, TaskPriority, TaskStatus, WbsNumber, wbsPipe } from 'shared';
+import {
+  CalendarTask,
+  dateToMidnightUTC,
+  FilterTaskArgs,
+  Task,
+  TaskCardPreview,
+  TaskPriority,
+  TaskStatus,
+  WbsNumber,
+  wbsPipe
+} from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { taskTransformer } from './transformers/tasks.transformers';
@@ -69,8 +79,8 @@ export const editTask = (
     title,
     notes,
     priority,
-    deadline,
-    startDate
+    deadline: deadline ? dateToMidnightUTC(deadline) : undefined,
+    startDate: startDate ? dateToMidnightUTC(startDate) : undefined
   });
 };
 

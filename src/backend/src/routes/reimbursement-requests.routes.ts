@@ -8,7 +8,7 @@ import { body } from 'express-validator';
 import {
   intMinZero,
   isDate,
-  isOptionalDate,
+  isOptionalDateOnly,
   nonEmptyString,
   validateInputs,
   validateReimbursementProducts
@@ -115,7 +115,7 @@ reimbursementRequestsRouter.post('/:vendorId/vendors/delete', ReimbursementReque
 
 reimbursementRequestsRouter.post(
   '/create',
-  isOptionalDate(body('dateOfExpense')),
+  isOptionalDateOnly(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   nonEmptyString(body('indexCodeId')),
   nonEmptyString(body('accountCodeId')),
@@ -131,7 +131,7 @@ reimbursementRequestsRouter.get('/:requestId', ReimbursementRequestController.ge
 
 reimbursementRequestsRouter.post(
   '/:requestId/edit',
-  isOptionalDate(body('dateOfExpense')),
+  isOptionalDateOnly(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   nonEmptyString(body('indexCodeId')),
   body('receiptPictures').isArray(),
