@@ -207,7 +207,15 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
     allDayEvents.filter((e) => {
       const start = new Date(e.startTime);
       const end = new Date(e.endTime);
-      // Normalize end to compare day boundaries
+      if (start.getTime() === end.getTime()) {
+        // Single-point event (e.g., unscheduled design review or all day event) — compare UTC date
+        return (
+          start.getUTCFullYear() === day.getFullYear() &&
+          start.getUTCMonth() === day.getMonth() &&
+          start.getUTCDate() === day.getDate()
+        );
+      }
+      // Multi-day range — use local time boundary comparison
       const dayStart = new Date(day);
       const dayEnd = new Date(day);
       dayEnd.setDate(dayEnd.getDate() + 1);
@@ -216,6 +224,8 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   );
 
   // Build per-day task lists (tasks appear on their deadline day)
+  // Task deadlines are date-only values normalized to local midnight by dbDateToLocalDate
+  // in the transformer, so compare local components on both sides.
   const tasksByDay: CalendarTask[][] = weekDays.map((day) =>
     tasks.filter((t) => {
       if (!t.deadline) return false;

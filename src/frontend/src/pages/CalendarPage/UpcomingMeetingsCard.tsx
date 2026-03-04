@@ -3,9 +3,9 @@ import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { Calendar, EventInstance, EventType } from 'shared';
+import { Calendar, EventInstance, EventType, formatEventTime } from 'shared';
 import { datePipe } from '../../utils/pipes';
-import { formatTime } from '../../utils/datetime.utils';
+
 import { getMutedColor, getPendingReason } from '../../utils/calendar.utils';
 
 interface UpcomingMeetingProp {
@@ -72,7 +72,7 @@ const UpcomingMeetingsCard: React.FC<UpcomingMeetingProp> = ({ event, calendars 
 
           {/* Event Time */}
           <Box marginLeft="auto" whiteSpace="nowrap">
-            {formatTime(new Date(event.startTime))}
+            {formatEventTime(new Date(event.startTime))}
           </Box>
         </Box>
 

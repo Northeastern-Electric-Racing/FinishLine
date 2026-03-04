@@ -7,7 +7,7 @@ import {
   CreateSponsorTask,
   User,
   Event,
-  meetingStartTimePipeNumbers
+  formatForSlack
 } from 'shared';
 import { Account_Code, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
 import {
@@ -437,6 +437,7 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
   const drName = event.title + (wpNames ? ` (${wpNames})` : '');
 
   // Get the first scheduled time
+  // Fine as temporary fix because only DRs with single slots are sending notifications
   const [firstScheduledTime] = event.scheduledTimes;
   if (!firstScheduledTime) {
     throw new HttpException(400, 'Event has no scheduled times');
@@ -448,13 +449,7 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
     throw new HttpException(400, 'Event scheduled time has no start time');
   }
 
-  // Extract meeting times from scheduled slots
-  const meetingTimes = event.scheduledTimes
-    .map((slot) => (slot.startTime ? new Date(slot.startTime).getHours() : null))
-    .filter((hour): hour is number => hour !== null)
-    .sort((a, b) => a - b);
-
-  const drTime = `${dateScheduled.toLocaleDateString()} at ${meetingStartTimePipeNumbers(meetingTimes)}`;
+  const drTime = formatForSlack(dateScheduled);
   const drSubmitter = `${event.userCreated.firstName} ${event.userCreated.lastName}`;
 
   // Check for online/in-person location

@@ -1,13 +1,13 @@
 import { Box, Card, CardContent, Link, Stack, Typography, useTheme } from '@mui/material';
 import { AuthenticatedUser, Event } from 'shared';
-import { datePipe, meetingStartTimePipeScheduleSlot, projectWbsPipe } from '../../../utils/pipes';
+import { meetingStartTimePipeScheduleSlot, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { LocationOnOutlined, Computer } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../../components/NERButton';
-import { timezoneOffset } from '../../../utils/datetime.utils';
+import { formatDateOnly } from 'shared';
 
 interface EventProps {
   event: Event;
@@ -63,14 +63,11 @@ const getWeekday = (date: Date): string => {
   return weekdays[date.getDay()];
 };
 
-const removeYear = (str: string): string => {
-  return str.substring(0, str.length - 5);
-};
-
 const UpcomingEventCard: React.FC<EventProps> = ({ event, user }) => {
   const theme = useTheme();
   const firstScheduledDate = event.initialDateScheduled || event.scheduledTimes[0]?.startTime;
-  const timezoneAdjustedDate = firstScheduledDate ? timezoneOffset(firstScheduledDate) : new Date();
+  const displayDate = firstScheduledDate ? new Date(firstScheduledDate) : new Date();
+  const formattedDate = formatDateOnly(displayDate);
 
   const [firstWorkPackage] = event.workPackages;
 
@@ -108,9 +105,9 @@ const UpcomingEventCard: React.FC<EventProps> = ({ event, user }) => {
             <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
               <Typography>{<CalendarMonthIcon sx={{ fontSize: 21 }} />}</Typography>
               <Typography fontWeight={'regular'} variant="body2">
-                {getWeekday(timezoneAdjustedDate) +
+                {getWeekday(displayDate) +
                   ', ' +
-                  removeYear(datePipe(timezoneAdjustedDate)) +
+                  formattedDate +
                   ' @ ' +
                   meetingStartTimePipeScheduleSlot(event.scheduledTimes)}
               </Typography>

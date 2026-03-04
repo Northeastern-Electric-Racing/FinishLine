@@ -421,12 +421,18 @@ export const createReimbursementProducts = async (
  * finance team.
  */
 export const validateUserIsPartOfFinanceTeamOrHead = async (user: User, organizationId: string) => {
-  const isUserAuthorized =
-    (await isUserOnFinanceTeam(user, organizationId)) || (await userHasPermission(user.userId, organizationId, isHead));
-
-  if (!isUserAuthorized) {
-    throw new AccessDeniedException(`You are not a member of the finance team!`);
+  // Check isHead first since it doesn't require finance team to exist
+  if (await userHasPermission(user.userId, organizationId, isHead)) {
+    return;
   }
+  try {
+    if (await isUserOnFinanceTeam(user, organizationId)) {
+      return;
+    }
+  } catch {
+    // Finance team may not exist yet
+  }
+  throw new AccessDeniedException(`You are not a member of the finance team!`);
 };
 
 const getFinanceTeam = async (organizationId: string) => {
@@ -457,6 +463,26 @@ const getFinanceTeam = async (organizationId: string) => {
  */
 export const isUserOnFinanceTeam = async (user: User, organizationId: string): Promise<boolean> => {
   return isUserOnTeam(await getFinanceTeam(organizationId), user);
+};
+
+/**
+ * Checks if a user is on the finance team or is a head.
+ * Checks isHead first since it doesn't require the finance team to exist.
+ *
+ * @param user the user to check
+ * @param organizationId the organization id
+ * @returns whether the user is on the finance team or is a head
+ */
+export const isUserFinanceTeamOrHead = async (user: User, organizationId: string): Promise<boolean> => {
+  if (await userHasPermission(user.userId, organizationId, isHead)) {
+    return true;
+  }
+  try {
+    return await isUserOnFinanceTeam(user, organizationId);
+  } catch {
+    // Finance team may not exist yet
+    return false;
+  }
 };
 
 /**
