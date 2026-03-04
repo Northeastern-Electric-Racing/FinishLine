@@ -34,7 +34,8 @@ import {
   validateUserEditRRPermissions,
   validateRefund,
   validateUserIsPartOfFinanceTeamOrHead,
-  isUserFinanceTeamOrHead
+  isUserFinanceTeamOrHead,
+  updateMaterialStatusesOnPayment
 } from '../utils/reimbursement-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
@@ -1720,6 +1721,8 @@ export default class ReimbursementRequestService {
       },
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
+
+    await updateMaterialStatusesOnPayment(reimbursementRequestId);
 
     await sendReimbursementRequestPendingFinanceNotification(
       reimbursementRequest.notificationSlackThreads,

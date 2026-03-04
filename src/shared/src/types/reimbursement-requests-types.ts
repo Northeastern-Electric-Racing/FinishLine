@@ -82,10 +82,11 @@ export type WBSElementData = { wbsNum: WbsNumber; wbsName: string };
 export type ReimbursementProductReason = WBSElementData | OtherProductReason;
 export interface ReimbursementProduct {
   reimbursementProductId: string;
-  name: string;
+  name?: string;
   cost: number;
   refundSources: RefundSource[];
   reimbursementProductReason: ReimbursementProductReason;
+  materialId?: string;
 }
 
 export interface Vendor {
@@ -123,7 +124,8 @@ export interface CreateRefundSourceArgs {
 
 export interface ReimbursementProductCreateArgs {
   id?: string;
-  name: string;
+  name?: string;
+  materialId?: string;
   cost: number;
   refundSources: CreateRefundSourceArgs[];
 }
