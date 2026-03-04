@@ -13,7 +13,8 @@ import {
   wbsPipe,
   WorkPackageTemplate,
   WorkPackageStage,
-  LeadershipChangeCreateArgs
+  LeadershipChangeCreateArgs,
+  isSameDay
 } from 'shared';
 import {
   Control,
@@ -240,7 +241,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
     return (
       formName === defaultValues.name &&
-      transformDate(formStartDate) === transformDate(defaultValues.startDate) &&
+      isSameDay(formStartDate, defaultValues.startDate) &&
       formDuration === defaultValues.duration &&
       JSON.stringify(formBlockedBy.sort()) === JSON.stringify((defaultValues.blockedBy || []).sort()) &&
       formStage === defaultValues.stage &&
