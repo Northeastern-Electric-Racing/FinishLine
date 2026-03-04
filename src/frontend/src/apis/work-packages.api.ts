@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { DescriptionBulletPreview, WbsNumber, WorkPackage, WorkPackagePreview, WorkPackageStage } from 'shared';
+import { dateToMidnightUTC, DescriptionBulletPreview, WbsNumber, WorkPackage, WorkPackagePreview, WorkPackageStage } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackagePreviewTransformer, workPackageTransformer } from './transformers/work-packages.transformers';
@@ -109,7 +109,7 @@ export const getManyWorkPackages = (wbsNums: WbsNumber[]) => {
  */
 export const slackUpcomingDeadlines = (deadline: Date) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
-    deadline
+    deadline: dateToMidnightUTC(deadline)
   });
 };
 

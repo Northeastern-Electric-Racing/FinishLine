@@ -55,6 +55,14 @@ export const formatTimeForSlack = (date: Date): string => dayjs(date).tz('Americ
 export const toDateString = (date: Date): string => dayjs(date).format('YYYY-MM-DD');
 
 /**
+ * Normalize a Date to midnight UTC, preserving the local calendar date.
+ * Use this before sending date-only values to the backend so they pass isDateOnly validation.
+ * Example: 2026-03-04T16:49:00 local → 2026-03-04T00:00:00.000Z
+ */
+export const dateToMidnightUTC = (date: Date): Date =>
+  new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+
+/**
  * Convert a @db.Date value (midnight UTC) to a local Date representing the same calendar date.
  * Use this when passing date-only values to functions that use local-time methods (getDay, getDate, etc).
  * Example: 2025-03-15T00:00:00Z in UTC-5 → 2025-03-15T00:00:00 local (instead of 2025-03-14T19:00:00 local).

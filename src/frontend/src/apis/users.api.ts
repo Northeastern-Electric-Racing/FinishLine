@@ -5,6 +5,7 @@
 
 import axios from '../utils/axios';
 import {
+  dateToMidnightUTC,
   ProjectOverview,
   SetUserScheduleSettingsPayload,
   Task,
@@ -170,7 +171,10 @@ export const updateUserSecureSettings = (settings: UserSecureSettings) => {
  * Update the given user's schedule settings by UserId
  */
 export const updateUserScheduleSettings = (settings: SetUserScheduleSettingsPayload) => {
-  return axios.post<UserScheduleSettings>(apiUrls.userScheduleSettingsSet(), settings);
+  return axios.post<UserScheduleSettings>(apiUrls.userScheduleSettingsSet(), {
+    ...settings,
+    availability: settings.availability.map((a) => ({ ...a, dateSet: dateToMidnightUTC(a.dateSet) }))
+  });
 };
 
 export const updateUserRole = (id: string, role: string) => {
