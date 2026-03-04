@@ -20,7 +20,7 @@ import * as yup from 'yup';
 import { FormInput } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 import { StandardChangeRequestType } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
-import { ProjectProposedChangesCreateArgs, WbsNumber, WorkPackageStage } from 'shared';
+import { dateToMidnightUTC, ProjectProposedChangesCreateArgs, WbsNumber, WorkPackageStage } from 'shared';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useCreateSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useGetAllCars } from '../../../hooks/cars.hooks';
@@ -249,7 +249,7 @@ const ProjectCreateContainer: React.FC = () => {
       for (const wp of sortedWorkPackages) {
         const created = await createWpMutateAsync({
           name: wp.name,
-          startDate: wp.startDate.toISOString(),
+          startDate: dateToMidnightUTC(wp.startDate).toISOString(),
           duration: Number(wp.duration),
           blockedBy: wp.blockedBy.map((blocker) => idToWbs.get(blocker)!),
           projectWbsNum: project.wbsNum,

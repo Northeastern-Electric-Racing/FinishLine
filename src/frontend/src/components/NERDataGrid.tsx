@@ -13,7 +13,7 @@ interface NERDataGridProps<T> {
   columns: GridColDef[];
   pageSizeDefault?: number;
   rowsPerPageOptions?: number[];
-  onAdd: () => void;
+  onAdd?: () => void;
   addLabel?: string; // optional label for the add/create button (defaults to 'Add')
   onRowClick?: (item: T) => void;
   // optional simple search fields (keys of mapped row) or a custom filter function
@@ -25,6 +25,10 @@ interface NERDataGridProps<T> {
   rowHeight?: number;
   paperSx?: SxProps<Theme>;
   canEditRow?: (row: MapRowResult<T>) => boolean;
+  // optional function to add custom CSS class names to rows
+  getRowClassName?: (row: MapRowResult<T>) => string;
+  // optional custom sx styles for the DataGrid
+  dataGridSx?: SxProps<Theme>;
 }
 
 function NERDataGrid<T>({
@@ -42,7 +46,9 @@ function NERDataGrid<T>({
   headerHeight = 56,
   rowHeight = 52,
   paperSx,
-  canEditRow
+  canEditRow,
+  getRowClassName: customGetRowClassName,
+  dataGridSx
 }: NERDataGridProps<T>) {
   const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState<number>(pageSizeDefault);
@@ -97,9 +103,11 @@ function NERDataGrid<T>({
             placeholder="Search"
             sx={{ flex: 1 }}
           />
-          <Button variant="contained" size="small" onClick={onAdd} sx={{ ml: 1 }}>
-            {addLabel}
-          </Button>
+          {onAdd && (
+            <Button variant="contained" size="small" onClick={onAdd} sx={{ ml: 1 }}>
+              {addLabel}
+            </Button>
+          )}
         </Box>
 
         <Box sx={{ flex: 1, minHeight: 0 }}>
@@ -125,7 +133,9 @@ function NERDataGrid<T>({
             getRowClassName={(params) => {
               const row = params.row as MapRowResult<T>;
               const editable = canEditRow ? canEditRow(row) : true;
-              return editable ? 'editable-row' : 'non-editable-row';
+              const editableClass = editable ? 'editable-row' : 'non-editable-row';
+              const customClass = customGetRowClassName ? customGetRowClassName(row) : '';
+              return `${editableClass} ${customClass}`.trim();
             }}
             sx={{
               height: '100%',
@@ -150,7 +160,8 @@ function NERDataGrid<T>({
               },
               '& .MuiDataGrid-columnSeparator': {
                 display: 'none'
-              }
+              },
+              ...dataGridSx
             }}
           />
         </Box>

@@ -87,15 +87,71 @@ export const isOptionalDate = (validationObject: ValidationChain): ValidationCha
   return validationObject.optional().custom((value) => !isNaN(Date.parse(value)));
 };
 
+export const isDateOnly = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.custom((value) => {
+    const parsed = Date.parse(value);
+    if (isNaN(parsed)) return false;
+    const date = new Date(parsed);
+    return (
+      date.getUTCHours() === 0 && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0 && date.getUTCMilliseconds() === 0
+    );
+  });
+};
+
+export const isOptionalDateOnly = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.optional().custom((value) => {
+    const parsed = Date.parse(value);
+    if (isNaN(parsed)) return false;
+    const date = new Date(parsed);
+    return (
+      date.getUTCHours() === 0 && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0 && date.getUTCMilliseconds() === 0
+    );
+  });
+};
+
 export const validateReimbursementProducts = () => {
   return [
+    // Other products (non-project) - keep as strings
     body('otherReimbursementProducts').isArray(),
     nonEmptyString(body('otherReimbursementProducts.*.name')),
     nonEmptyString(body('otherReimbursementProducts.*.reason.otherProductReasonId')),
     nonEmptyString(body('otherReimbursementProducts.*.reason.name')),
     intMinZero(body('otherReimbursementProducts.*.cost')),
+
+    // WBS products - now materials
     body('wbsReimbursementProducts').isArray(),
-    nonEmptyString(body('wbsReimbursementProducts.*.name')),
+    nonEmptyString(body('wbsReimbursementProducts.*.materialId')),
+    intMinZero(body('wbsReimbursementProducts.*.cost')),
+    intMinZero(body('wbsReimbursementProducts.*.reason.carNumber')),
+    intMinZero(body('wbsReimbursementProducts.*.reason.projectNumber')),
+    intMinZero(body('wbsReimbursementProducts.*.reason.workPackageNumber'))
+  ];
+};
+
+export const validateReimbursementProductsForEdit = (): ValidationChain[] => {
+  return [
+    // Other products (non-project) - keep as strings
+    body('otherReimbursementProducts').isArray(),
+    nonEmptyString(body('otherReimbursementProducts.*.name')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason.otherProductReasonId')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason.name')),
+    intMinZero(body('otherReimbursementProducts.*.cost')),
+
+    // WBS products
+    body('wbsReimbursementProducts').isArray(),
+
+    // Either materialId OR name must be present
+    body('wbsReimbursementProducts.*.materialId').optional().isString(),
+    body('wbsReimbursementProducts.*.name').optional().isString(),
+
+    // Ensure at least one is provided
+    body('wbsReimbursementProducts.*').custom((product) => {
+      if (!product.materialId && !product.name) {
+        throw new Error('Either materialId or name must be provided');
+      }
+      return true;
+    }),
+
     intMinZero(body('wbsReimbursementProducts.*.cost')),
     intMinZero(body('wbsReimbursementProducts.*.reason.carNumber')),
     intMinZero(body('wbsReimbursementProducts.*.reason.projectNumber')),
@@ -117,7 +173,7 @@ export const workPackageProposedChangesValidators = (base: string) => [
   nonEmptyString(body(`${base}.leadId`).optional()),
   nonEmptyString(body(`${base}.managerId`).optional()),
   isWorkPackageStageOrNone(workPackageProposedChangesExists(body(`${base}.stage`).optional())),
-  isDate(workPackageProposedChangesExists(body(`${base}.startDate`))),
+  isDateOnly(workPackageProposedChangesExists(body(`${base}.startDate`))),
   intMinZero(workPackageProposedChangesExists(body(`${base}.duration`))),
   workPackageProposedChangesExists(body(`${base}.blockedBy`)).isArray(),
   intMinZero(body(`${base}.blockedBy.*.carNumber`)),
@@ -222,14 +278,14 @@ export const materialValidators = [
   nonEmptyString(body('assemblyId').optional()),
   isMaterialStatus(body('status')),
   nonEmptyString(body('materialTypeName')),
-  nonEmptyString(body('manufacturerName')),
-  nonEmptyString(body('manufacturerPartNumber')),
+  body('manufacturerName').optional().isString(),
+  body('manufacturerPartNumber').optional().isString(),
   body('pdmFileName').optional().isString(),
-  decimalMinZero(body('quantity')),
+  decimalMinZero(body('quantity')).optional(),
   nonEmptyString(body('unitName')).optional(),
-  intMinZero(body('price')), // in cents
-  intMinZero(body('subtotal')), // in cents
-  nonEmptyString(body('linkUrl')),
+  intMinZero(body('price')).optional(), // in cents
+  intMinZero(body('subtotal')).optional(), // in cents
+  body('linkUrl').optional().isString(),
   nonEmptyString(body('reimbursementRequestId')).optional(),
   body('notes').isString().optional()
 ];

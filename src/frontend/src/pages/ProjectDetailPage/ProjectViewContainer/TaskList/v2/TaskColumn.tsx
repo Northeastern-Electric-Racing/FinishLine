@@ -6,7 +6,7 @@ import { statusNames, TaskCard } from '.';
 import { NERButton } from '../../../../../components/NERButton';
 import { useCreateTask } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
-import { transformDate } from '../../../../../utils/datetime.utils';
+import { toDateString } from 'shared';
 import TaskFormModal, { EditTaskFormInput } from '../TaskFormModal';
 
 export const TaskColumn = ({
@@ -34,8 +34,8 @@ export const TaskColumn = ({
       const task = await createTask({
         wbsNum: project.wbsNum,
         title,
-        deadline: deadline ? transformDate(deadline) : undefined,
-        startDate: startDate ? transformDate(startDate) : undefined,
+        deadline: deadline ? toDateString(deadline) : undefined,
+        startDate: startDate ? toDateString(startDate) : undefined,
         priority,
         status: status as TaskStatus,
         assignees,

@@ -17,11 +17,11 @@ export * from './src/types/checklist-types.js';
 export * from './src/types/pop-up-types.js';
 export * from './src/types/announcements.types.js';
 export * from './src/types/part-review.types.js';
-export * from './src/types/finance-types.js';
 export * from './src/types/calendar-types.js';
 
 export * from './src/validate-wbs.js';
 export * from './src/date-utils.js';
+export * from './src/date-format.js';
 
 export * from './src/backend-supports/project-supports.js';
 export * from './src/word-count.js';

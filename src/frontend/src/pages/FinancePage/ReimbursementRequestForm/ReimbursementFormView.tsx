@@ -34,11 +34,10 @@ import {
   IndexCode,
   isHead,
   MAX_FILE_SIZE,
+  ProjectPreview,
   ReimbursementProductFormArgs,
   ReimbursementReceiptUploadArgs,
-  Vendor,
-  WbsNumber,
-  wbsPipe
+  Vendor
 } from 'shared';
 import { ClearIcon, DatePicker } from '@mui/x-date-pickers';
 import ReimbursementProductTable from './ReimbursementProductTable';
@@ -50,7 +49,6 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-import { wbsNumComparator } from 'shared';
 import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
 import { imagePreviewUrl } from '../../../utils/reimbursement-request.utils';
 import { useCreateVendor } from '../../../hooks/finance.hooks';
@@ -64,9 +62,10 @@ interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
   allAccountCodes: AccountCode[];
   receiptFiles: ReimbursementReceiptUploadArgs[];
-  allWbsElements: {
-    wbsNum: WbsNumber;
-    wbsName: string;
+  allProjects: ProjectPreview[];
+  projectAutocompleteOptions: {
+    label: string;
+    id: string;
   }[];
   control: Control<ReimbursementRequestFormInput, any>;
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -92,7 +91,8 @@ interface ReimbursementRequestFormViewProps {
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
   allVendors,
   allAccountCodes,
-  allWbsElements,
+  allProjects,
+  projectAutocompleteOptions,
   receiptFiles,
   reimbursementProducts,
   control,
@@ -235,13 +235,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const calculatedTotalCost = products
     .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost), 0)
     .toFixed(2);
-
-  const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
-    label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
-    id: wbsPipe(wbsElement.wbsNum)
-  }));
-
-  wbsElementAutocompleteOptions.sort((wbsNum1, wbsNum2) => wbsNumComparator(wbsNum1.id, wbsNum2.id));
 
   const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();
 
@@ -859,7 +852,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               reimbursementProducts={reimbursementProducts}
               appendProduct={reimbursementProductAppend}
               removeProduct={reimbursementProductRemove}
-              wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
+              projectAutocompleteOptions={projectAutocompleteOptions}
               watch={watch}
               register={register}
               setValue={setValue}
@@ -869,6 +862,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               secondRefundSourceIndexCode={secondRefundSourcePassed}
               firstRefundSourceName={firstRefundSource.name}
               secondRefundSourceName={secondRefundSource.name}
+              allProjects={allProjects}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>

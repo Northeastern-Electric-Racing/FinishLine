@@ -59,9 +59,9 @@ const AdminBalance = ({ data }: { data: ReimbursementRequestData[] }) => {
       {selectedTab === 'total' && (
         <PieChart
           totalBalance={data[0].totalBudget}
-          pendingFinance={data[0].pendingFinance}
-          pendingLeadership={data[0].pendingLeadership}
-          submittedToSABO={data[0].submittedToSabo}
+          approved={data[0].approved}
+          pendingApproval={data[0].pendingApproval}
+          addedToSABO={data[0].addedToSabo}
           reimbursed={data[0].reimbursed}
           available={data[0].available}
         />
@@ -70,9 +70,9 @@ const AdminBalance = ({ data }: { data: ReimbursementRequestData[] }) => {
         <Box display="flex" flexDirection="column" gap={4}>
           <PieChart
             totalBalance={data[1].totalBudget}
-            pendingFinance={data[1].pendingFinance}
-            pendingLeadership={data[1].pendingLeadership}
-            submittedToSABO={data[1].submittedToSabo}
+            approved={data[1].approved}
+            pendingApproval={data[1].pendingApproval}
+            addedToSABO={data[1].addedToSabo}
             reimbursed={data[1].reimbursed}
             available={data[1].available}
           />
@@ -82,9 +82,9 @@ const AdminBalance = ({ data }: { data: ReimbursementRequestData[] }) => {
       {selectedTab === 'cash' && (
         <PieChart
           totalBalance={data[2].totalBudget}
-          pendingFinance={data[2].pendingFinance}
-          pendingLeadership={data[2].pendingLeadership}
-          submittedToSABO={data[2].submittedToSabo}
+          approved={data[2].approved}
+          pendingApproval={data[2].pendingApproval}
+          addedToSABO={data[2].addedToSabo}
           reimbursed={data[2].reimbursed}
           available={data[2].available}
         />
