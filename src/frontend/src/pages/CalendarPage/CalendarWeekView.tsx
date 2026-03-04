@@ -224,15 +224,12 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   );
 
   // Build per-day task lists (tasks appear on their deadline day)
-  // Task deadlines are date-only values (@db.Date, midnight UTC).
-  // Extract UTC components from deadline, local components from weekDay, and compare.
+  // Task deadlines are date-only values normalized to local midnight by dbDateToLocalDate
+  // in the transformer, so compare local components on both sides.
   const tasksByDay: CalendarTask[][] = weekDays.map((day) =>
     tasks.filter((t) => {
       if (!t.deadline) return false;
-      const d = new Date(t.deadline);
-      return (
-        d.getUTCFullYear() === day.getFullYear() && d.getUTCMonth() === day.getMonth() && d.getUTCDate() === day.getDate()
-      );
+      return isSameDay(new Date(t.deadline), day);
     })
   );
 

@@ -4,7 +4,14 @@
  */
 
 import axios from '../utils/axios';
-import { dateToMidnightUTC, DescriptionBulletPreview, WbsNumber, WorkPackage, WorkPackagePreview, WorkPackageStage } from 'shared';
+import {
+  dateToMidnightUTC,
+  DescriptionBulletPreview,
+  WbsNumber,
+  WorkPackage,
+  WorkPackagePreview,
+  WorkPackageStage
+} from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackagePreviewTransformer, workPackageTransformer } from './transformers/work-packages.transformers';

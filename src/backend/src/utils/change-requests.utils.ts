@@ -21,8 +21,7 @@ import {
   WorkPackageProposedChangesCreateArgs,
   WorkPackageStage,
   User,
-  formatDateOnly,
-  toDateString
+  formatDateOnly
 } from 'shared';
 import { DeletedException, HttpException, NotFoundException } from './errors.utils.js';
 import { ChangeRequestStatus } from 'shared';
@@ -449,7 +448,7 @@ export const applyWorkPackageProposedChanges = async (
       workPackageProposedChanges.wbsProposedChanges.name,
       crId,
       workPackageProposedChanges.stage as WorkPackageStage,
-      toDateString(workPackageProposedChanges.startDate),
+      workPackageProposedChanges.startDate.toISOString().split('T')[0],
       workPackageProposedChanges.duration,
       workPackageProposedChanges.blockedBy,
       workPackageProposedChanges.wbsProposedChanges.proposedDescriptionBulletChanges.map(
@@ -465,7 +464,7 @@ export const applyWorkPackageProposedChanges = async (
       wbsProposedChanges.name,
       crId,
       workPackageProposedChanges.stage as WorkPackageStage,
-      toDateString(workPackageProposedChanges.startDate),
+      workPackageProposedChanges.startDate.toISOString().split('T')[0],
       workPackageProposedChanges.duration,
       workPackageProposedChanges.blockedBy,
       wbsProposedChanges.proposedDescriptionBulletChanges.map(descriptionBulletToDescriptionBulletPreview),
