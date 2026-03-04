@@ -47,11 +47,12 @@ export default class ProjectsService {
   /**
    * Get all the non deleted projects in the database for the given organization
    * @param organization the organization the user is currently in
+   * @param carId optional car id to filter projects by
    * @returns all the projects with query args for use in the gantt chart
    */
-  static async getAllProjectsGantt(organization: Organization): Promise<ProjectGantt[]> {
+  static async getAllProjectsGantt(organization: Organization, carId?: string): Promise<ProjectGantt[]> {
     const projects = await prisma.project.findMany({
-      where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
+      where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId }, ...(carId && { carId }) },
       ...getProjectGanttQueryArgs(organization.organizationId)
     });
 
@@ -61,11 +62,12 @@ export default class ProjectsService {
   /**
    * Get all projects for given organization
    * @param organization the organization the user is in
+   * @param carId optional car id to filter projects by
    * @returns all the projects with preview query args
    */
-  static async getAllProjects(organization: Organization): Promise<ProjectPreview[]> {
+  static async getAllProjects(organization: Organization, carId?: string): Promise<ProjectPreview[]> {
     const projects = await prisma.project.findMany({
-      where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
+      where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId }, ...(carId && { carId }) },
       ...getProjectPreviewQueryArgs(organization.organizationId)
     });
 
@@ -76,16 +78,18 @@ export default class ProjectsService {
    * Get all projects that the user is the lead or manager of
    * @param user the user making the request
    * @param organization the oranization the user is in
+   * @param carId optional car id to filter projects by
    * @returns the projects the user is a lead or manager of with preview query args
    */
-  static async getUsersLeadingProjects(user: User, organization: Organization): Promise<ProjectOverview[]> {
+  static async getUsersLeadingProjects(user: User, organization: Organization, carId?: string): Promise<ProjectOverview[]> {
     const projects = await prisma.project.findMany({
       where: {
         wbsElement: {
           organizationId: organization.organizationId,
           dateDeleted: null,
           OR: [{ leadId: user.userId }, { managerId: user.userId }]
-        }
+        },
+        ...(carId && { carId })
       },
       ...getProjectOverviewQueryArgs(organization.organizationId)
     });
@@ -97,9 +101,10 @@ export default class ProjectsService {
    * Get all projects related to teams the user is on
    * @param user the user making the request
    * @param organization the organization the user is in
+   * @param carId optional car id to filter projects by
    * @returns all projects associated with teams the user is on with overview card query args
    */
-  static async getUsersTeamsProjects(user: User, organization: Organization): Promise<ProjectOverview[]> {
+  static async getUsersTeamsProjects(user: User, organization: Organization, carId?: string): Promise<ProjectOverview[]> {
     const projects = await prisma.project.findMany({
       where: {
         wbsElement: {
@@ -128,7 +133,8 @@ export default class ProjectsService {
               }
             ]
           }
-        }
+        },
+        ...(carId && { carId })
       },
       ...getProjectOverviewQueryArgs(organization.organizationId)
     });
@@ -140,9 +146,10 @@ export default class ProjectsService {
    * Get the projects for a given team
    * @param organization
    * @param teamId
+   * @param carId optional car id to filter projects by
    * @returns all the projects for the given team with full project query args
    */
-  static async getTeamsProjects(organization: Organization, teamId: string): Promise<Project[]> {
+  static async getTeamsProjects(organization: Organization, teamId: string, carId?: string): Promise<Project[]> {
     const projects = await prisma.project.findMany({
       where: {
         wbsElement: {
@@ -153,7 +160,8 @@ export default class ProjectsService {
           some: {
             teamId
           }
-        }
+        },
+        ...(carId && { carId })
       },
       ...getProjectQueryArgs(organization.organizationId)
     });
