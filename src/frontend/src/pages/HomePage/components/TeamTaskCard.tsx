@@ -8,7 +8,7 @@ import { fullNamePipe } from '../../../utils/pipes';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { taskPriorityColor } from '../../../utils/task.utils';
-import { formatDate } from '../../../utils/datetime.utils';
+import { formatDateOnly } from 'shared';
 
 interface TeamTaskCardProps {
   task: TaskCardPreview;
@@ -61,7 +61,7 @@ const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ task, taskNumber }) => {
             />
             <Chip
               icon={<CalendarMonthIcon />}
-              label={task.deadline ? formatDate(new Date(task.deadline)) : 'No Deadline'}
+              label={task.deadline ? formatDateOnly(new Date(task.deadline)) : 'No Deadline'}
               size="medium"
             />
           </Stack>

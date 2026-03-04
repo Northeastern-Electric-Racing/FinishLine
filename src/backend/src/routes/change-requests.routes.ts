@@ -4,6 +4,7 @@ import { ChangeRequestReason, ChangeRequestType } from 'shared';
 import ChangeRequestsController from '../controllers/change-requests.controllers.js';
 import {
   intMinZero,
+  isDateOnly,
   nonEmptyString,
   projectProposedChangesValidators,
   validateInputs,
@@ -38,7 +39,7 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom((value) => value === ChangeRequestType.Activation),
-  body('startDate').custom((value) => !isNaN(Date.parse(value))),
+  isDateOnly(body('startDate')),
   nonEmptyString(body('leadId')),
   nonEmptyString(body('managerId')),
   body('confirmDetails').isBoolean(),

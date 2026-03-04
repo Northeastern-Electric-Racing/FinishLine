@@ -16,6 +16,7 @@ export const filterEventTransformer = (event: Event): Event => {
   }
   return {
     ...event,
+    initialDateScheduled: event.initialDateScheduled ? new Date(event.initialDateScheduled) : undefined,
     dateCreated: new Date(event.dateCreated),
     scheduledTimes: event.scheduledTimes.map((schedule) => ({
       ...schedule,
