@@ -779,7 +779,7 @@ model Vendor {
   organizationId        String
   organization          Organization            @relation(fields: [organizationId], references: [organizationId])
   username              String?
-  password              String? // password is encrypted
+  password              String? // password is encrypted  
   discountCode          String?
   twoFactorContacts     User[]                  @relation(name: "twoFactorContactVendors")
   notes                 String?
@@ -1088,7 +1088,7 @@ model Event {
   shops                      Shop[]
   machinery                  Machinery[]
   workPackages               Work_Package[]
-  documents                  Document[]
+  documents                  Document[]      
   status                     Event_Status
   initialDateScheduled       DateTime?
   questionDocumentLink       String?
@@ -1174,6 +1174,7 @@ model Availability {
   // Availibilies are integers between 0 and 11 from 10am - 10pm for a given day at hour intervals see meetingTime field in Design_Review
   availability Int[]
   dateSet      DateTime
+
   @@index([scheduleSettingsId])
 }
 
@@ -1228,7 +1229,7 @@ model Project_Proposed_Changes {
 
 model Work_Package_Proposed_Changes {
   workPackageProposedChangesId String                    @id @default(uuid())
-  startDate                    DateTime
+  startDate                    DateTime                  @db.Date
   duration                     Int
   blockedBy                    WBS_Element[]             @relation(name: "proposedBlockedBy")
   stage                        Work_Package_Stage?
