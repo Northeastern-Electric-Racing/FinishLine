@@ -449,7 +449,7 @@ model Activation_CR {
   lead            User           @relation(name: "markAsLead", fields: [leadId], references: [userId])
   managerId       String
   manager         User           @relation(name: "markAsManager", fields: [managerId], references: [userId])
-  startDate       DateTime  @db.Date
+  startDate       DateTime
   confirmDetails  Boolean
 
   @@index([changeRequestId])
@@ -551,7 +551,7 @@ model Work_Package {
   projectId      String
   project        Project             @relation(fields: [projectId], references: [projectId])
   orderInProject Int
-  startDate      DateTime              @db.Date
+  startDate      DateTime
   duration       Int
   blockedBy      WBS_Element[]       @relation(name: "blockedBy")
   stage          Work_Package_Stage?
@@ -649,8 +649,8 @@ model Task {
   taskId          String        @id @default(uuid())
   title           String
   notes           String
-  deadline        DateTime?     @db.Date
-  startDate       DateTime?     @db.Date
+  deadline        DateTime?
+  startDate       DateTime?
   assignees       User[]        @relation(name: "assignedTo")
   priority        Task_Priority
   status          Task_Status
@@ -700,7 +700,7 @@ model Reimbursement_Request {
   saboId                   Int?                            @unique
   dateCreated              DateTime                        @default(now())
   dateDeleted              DateTime?
-  dateOfExpense            DateTime?                       @db.Date
+  dateOfExpense            DateTime?
   reimbursementStatuses    Reimbursement_Status[]
   recipientId              String
   recipient                User                            @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
@@ -711,7 +711,7 @@ model Reimbursement_Request {
   totalCost                Int
   receiptPictures          Receipt[]
   reimbursementProducts    Reimbursement_Product[]
-  dateDelivered            DateTime?                       @db.Date
+  dateDelivered            DateTime?
   accountCodeId            String
   accountCode              Account_Code                    @relation(fields: [accountCodeId], references: [accountCodeId])
   organizationId           String
@@ -803,7 +803,7 @@ model Sponsor {
   tier           Sponsor_Tier   @relation(fields: [sponsorTierId], references: [sponsorTierId])
   sponsorTierId  String
   sponsorValue   Int
-  joinDate       DateTime  @db.Date
+  joinDate       DateTime
   discountCode   String?
   activeYears    Int[]
   taxExempt      Boolean
@@ -818,8 +818,8 @@ model Sponsor {
 
 model Sponsor_Task {
   sponsorTaskId  String    @id @default(uuid())
-  dueDate        DateTime  @db.Date
-  notifyDate     DateTime? @db.Date
+  dueDate        DateTime
+  notifyDate     DateTime?
   assignee       User?     @relation(fields: [assigneeUserId], references: [userId], name: "assignedSponsorTasks")
   assigneeUserId String?
   notes          String
@@ -1173,8 +1173,7 @@ model Availability {
 
   // Availibilies are integers between 0 and 11 from 10am - 10pm for a given day at hour intervals see meetingTime field in Design_Review
   availability Int[]
-  dateSet      DateTime  @db.Date
-
+  dateSet      DateTime
   @@index([scheduleSettingsId])
 }
 
@@ -1229,7 +1228,7 @@ model Project_Proposed_Changes {
 
 model Work_Package_Proposed_Changes {
   workPackageProposedChangesId String                    @id @default(uuid())
-  startDate                    DateTime                  @db.Date
+  startDate                    DateTime
   duration                     Int
   blockedBy                    WBS_Element[]             @relation(name: "proposedBlockedBy")
   stage                        Work_Package_Stage?
@@ -1383,7 +1382,7 @@ model FrequentlyAskedQuestion {
 model Milestone {
   milestoneId    String       @id @default(uuid())
   name           String
-  dateOfEvent    DateTime     @db.Date
+  dateOfEvent    DateTime
   description    String
   userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "milestoneCreator")
   userCreatedId  String
@@ -1399,8 +1398,8 @@ model Milestone {
 
 model Graph {
   id                 String               @id @default(uuid())
-  startDate          DateTime?            @db.Date
-  endDate            DateTime?            @db.Date
+  startDate          DateTime?
+  endDate            DateTime?
   title              String
   graphType          Graph_Type
   displayGraphType   Graph_Display_Type

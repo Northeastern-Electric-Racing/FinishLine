@@ -152,9 +152,8 @@ describe('Statistics Tests', () => {
         graphDisplayType: 'PIE',
         measure: Measure.AVG
       });
-      expect(result.startDate).toStrictEqual(new Date('1970-12-12'));
-      // @db.Date stores only date portion, so endDate becomes 2024-12-12 midnight UTC
-      expect(result.endDate).toStrictEqual(new Date('2024-12-12'));
+      expect(result.startDate).toStrictEqual(new Date('12/12/1970'));
+      expect(result.endDate?.getTime()).toBeGreaterThan(new Date('12/12/2024').getTime());
 
       expect(result.graphData).toStrictEqual([
         {
@@ -195,7 +194,7 @@ describe('Statistics Tests', () => {
         graphDisplayType: 'BAR',
         measure: Measure.SUM
       });
-      expect(result.startDate).toStrictEqual(new Date('1970-12-12'));
+      expect(result.startDate).toStrictEqual(new Date('12/12/1970'));
       expect(result.endDate?.getTime()).toBeGreaterThan(new Date('12/12/2024').getTime());
 
       expect(result.graphData).toStrictEqual([
@@ -277,8 +276,8 @@ describe('Statistics Tests', () => {
         graphDisplayType: 'BAR',
         measure: Measure.SUM
       });
-      expect(result.startDate).toStrictEqual(new Date('1970-12-12'));
-      expect(result.endDate).toStrictEqual(new Date('1971-12-12'));
+      expect(result.startDate).toStrictEqual(new Date('12/12/1970'));
+      expect(result.endDate).toStrictEqual(new Date('12/12/1971'));
 
       expect(result.graphData).toStrictEqual([
         {
@@ -460,8 +459,8 @@ describe('Statistics Tests', () => {
 
   describe('Edit Graph', () => {
     it('Edit graph correctly updates startDate, endDate, title, and graphType', async () => {
-      const updatedStartDate = new Date('2024-12-13');
-      const updatedEndDate = new Date('2024-12-14');
+      const updatedStartDate = new Date('12/13/2024');
+      const updatedEndDate = new Date(updatedStartDate.getTime() + 10000);
       const updatedTitle = 'Updated Graph';
       const updatedGraphType = Graph_Type.PROJECT_BUDGET_BY_PROJECT;
       const updatedMeasure = Measure.AVG;
