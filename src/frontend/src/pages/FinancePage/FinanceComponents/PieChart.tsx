@@ -8,26 +8,27 @@ import { Button, List, ListItem, Typography } from '@mui/material';
 
 interface FinancePieChartProps {
   totalBalance: number;
-  pendingLeadership: number;
-  pendingFinance: number;
-  submittedToSABO: number;
+  pendingApproval: number;
+  approved: number;
+  addedToSABO: number;
   reimbursed: number;
   available: number;
 }
 
 const FinancePieChart: React.FC<FinancePieChartProps> = ({
   totalBalance,
-  pendingLeadership,
-  pendingFinance,
-  submittedToSABO,
+  pendingApproval,
+  approved,
+  addedToSABO,
   reimbursed,
   available
 }) => {
   const [isLegendOpen, setIsLegendOpen] = useState(true);
+
   const [sectionStates, setSectionStates] = useState([
-    { title: 'Pending Leadership', color: '#562016', expanded: false },
-    { title: 'Pending Finance', color: '#8e3c2d', expanded: false },
-    { title: 'Submitted to SABO', color: '#dd514c', expanded: false },
+    { title: 'Pending Approval', color: '#562016', expanded: false },
+    { title: 'Approved', color: '#8e3c2d', expanded: false },
+    { title: 'Added to SABO', color: '#dd514c', expanded: false },
     { title: 'Reimbursed', color: '#797a7a', expanded: false },
     { title: 'Available', color: '#afafaf', expanded: false }
   ]);
@@ -35,9 +36,9 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   const MIN_PERCENTAGE = 0.05;
 
   const data = [
-    { name: 'Pending Leadership', value: pendingLeadership },
-    { name: 'Pending Finance', value: pendingFinance },
-    { name: 'Submitted to SABO', value: submittedToSABO },
+    { name: 'Pending Approval', value: pendingApproval },
+    { name: 'Approved', value: approved },
+    { name: 'Added to SABO', value: addedToSABO },
     { name: 'Reimbursed', value: reimbursed },
     { name: 'Available', value: available }
   ];
@@ -73,9 +74,9 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   }
 
   const sectionColorMap = new Map([
-    ['Pending Leadership', '#562016'],
-    ['Pending Finance', '#8e3c2d'],
-    ['Submitted to SABO', '#dd514c'],
+    ['Pending Approval', '#562016'],
+    ['Approved', '#8e3c2d'],
+    ['Added to SABO', '#dd514c'],
     ['Reimbursed', '#797a7a'],
     ['Available', '#afafaf']
   ]);
@@ -171,7 +172,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
                     }}
                   >
                     {data[index].value < 0
-                      ? `($${Math.abs(data[index].value).toLocaleString()})`
+                      ? `-$${Math.abs(data[index].value).toLocaleString()}`
                       : `$${data[index].value.toLocaleString()}`}
                   </Box>
                 )}

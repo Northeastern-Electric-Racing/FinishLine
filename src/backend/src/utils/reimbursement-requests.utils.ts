@@ -125,17 +125,21 @@ export const updateReimbursementProducts = async (
   }
 
   //if a product has an id that means it existed before and was updated
-  const updatedOtherExistingProducts = updatedOtherReimbursementProducts.filter((product) => product.id);
-
-  const updatedWbsExistingProducts = updatedWbsReimbursementProducts.filter((product) => product.id);
-
-  const updatedExistingProducts = (updatedOtherExistingProducts as ReimbursementProductCreateArgs[]).concat(
-    updatedWbsExistingProducts as ReimbursementProductCreateArgs[]
+  const updatedOtherExistingProducts = updatedOtherReimbursementProducts.filter(
+    (product): product is OtherReimbursementProductCreateArgs & { id: string } => !!product.id
   );
+
+  const updatedWbsExistingProducts = updatedWbsReimbursementProducts.filter(
+    (product): product is WbsReimbursementProductCreateArgs & { id: string } => !!product.id
+  );
+
+  const updatedExistingProducts = (
+    updatedOtherExistingProducts as (ReimbursementProductCreateArgs & { id: string })[]
+  ).concat(updatedWbsExistingProducts as (ReimbursementProductCreateArgs & { id: string })[]);
 
   validateUpdatedProductsExistInDatabase(currentReimbursementProducts, updatedExistingProducts);
 
-  const updatedExistingProductIds = updatedExistingProducts.map((product) => product.id!);
+  const updatedExistingProductIds = updatedExistingProducts.map((product) => product.id);
 
   //if the product does not have an id that means it is new
   const newOtherProducts = updatedOtherReimbursementProducts.filter((product) => !product.id);
@@ -159,15 +163,25 @@ export const updateReimbursementProducts = async (
  *
  * @param products the products to update
  */
-const updateExistingProducts = async (products: ReimbursementProductCreateArgs[]) => {
-  //updates the cost and name of the remaining products, which should be products that existed before that were not deleted
+const updateExistingProducts = async (products: (ReimbursementProductCreateArgs & { id: string })[]) => {
+  //updates the cost, name, and refund sources of the remaining products, which should be products that existed before that were not deleted
   // Does not update wbs element id because we are requiring the user on the frontend to delete it from the wbs number and then adding it to another one
   for (const product of products) {
+    const refundSources = product.refundSources.map((rs) => ({
+      indexCode: { connect: { indexCodeId: rs.indexCode.indexCodeId } },
+      amount: rs.amount
+    }));
+
+    // Delete old refund sources and update product atomically
     await prisma.reimbursement_Product.update({
       where: { reimbursementProductId: product.id },
       data: {
         name: product.name,
-        cost: product.cost
+        cost: product.cost,
+        refundSources: {
+          deleteMany: {},
+          create: refundSources
+        }
       }
     });
   }

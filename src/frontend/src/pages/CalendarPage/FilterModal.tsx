@@ -1,15 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Autocomplete,
-  Box,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  Switch,
-  TextField,
-  Typography,
-  useTheme
-} from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, TextField, Typography } from '@mui/material';
 import NERModal from '../../components/NERModal';
 import PeopleIcon from '@mui/icons-material/People';
 import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
@@ -32,7 +22,6 @@ export interface BaseFilterModalProps {
   setTeamIds: (ids: string[]) => void;
   setShowInvited: (changed: boolean) => void;
   setShowTeam: (changed: boolean) => void;
-  setAllEventsMode: (enabled: boolean) => void;
 }
 
 const FilterModal: React.FC<BaseFilterModalProps> = ({
@@ -42,14 +31,11 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
   setMemberIds,
   setTeamIds,
   setShowInvited,
-  setShowTeam,
-  setAllEventsMode
+  setShowTeam
 }) => {
   const [dropDownMembersOpen, setDropDownMembersOpen] = useState(false);
   const [dropDownTeamOpen, setDropDownTeamOpen] = useState(false);
   const currUser = useCurrentUser();
-  const theme = useTheme();
-  const allEventsMode = filterValues?.allEventsMode ?? false;
 
   const MemberDropdown = () => {
     const memberIds = filterValues?.memberIds ?? [];
@@ -284,26 +270,7 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
       formId="shop-form"
       showCloseButton
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={allEventsMode}
-              onChange={(e) => setAllEventsMode(e.target.checked)}
-              sx={{
-                '& .MuiSwitch-switchBase.Mui-checked': {
-                  color: theme.palette.primary.main
-                },
-                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                  backgroundColor: theme.palette.primary.main
-                }
-              }}
-            />
-          }
-          label={<Typography sx={{ fontSize: 16, color: 'white' }}>Show All Events</Typography>}
-        />
-      </Box>
-      <Box sx={{ opacity: allEventsMode ? 0.5 : 1, pointerEvents: allEventsMode ? 'none' : 'auto' }}>
+      <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <PeopleIcon sx={{ color: 'white', mr: 1 }} />
           <Typography variant="h6">Attendees</Typography>

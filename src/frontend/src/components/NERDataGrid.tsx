@@ -13,7 +13,7 @@ interface NERDataGridProps<T> {
   columns: GridColDef[];
   pageSizeDefault?: number;
   rowsPerPageOptions?: number[];
-  onAdd: () => void;
+  onAdd?: () => void;
   addLabel?: string; // optional label for the add/create button (defaults to 'Add')
   onRowClick?: (item: T) => void;
   // optional simple search fields (keys of mapped row) or a custom filter function
@@ -97,9 +97,11 @@ function NERDataGrid<T>({
             placeholder="Search"
             sx={{ flex: 1 }}
           />
-          <Button variant="contained" size="small" onClick={onAdd} sx={{ ml: 1 }}>
-            {addLabel}
-          </Button>
+          {onAdd && (
+            <Button variant="contained" size="small" onClick={onAdd} sx={{ ml: 1 }}>
+              {addLabel}
+            </Button>
+          )}
         </Box>
 
         <Box sx={{ flex: 1, minHeight: 0 }}>
