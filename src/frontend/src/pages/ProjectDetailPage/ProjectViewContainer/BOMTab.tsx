@@ -100,6 +100,7 @@ const BOMTab = ({ project }: { project: Project }) => {
         wbsNum={project.wbsNum}
         allMaterialTypes={materialTypes}
         allUnits={units}
+        assemblies={assemblies}
       />
       <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <BOMTableWrapper

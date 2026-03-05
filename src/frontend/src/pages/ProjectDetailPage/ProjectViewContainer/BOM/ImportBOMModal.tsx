@@ -18,7 +18,8 @@ import {
   IconButton,
   Checkbox,
   TextField,
-  Autocomplete
+  Autocomplete,
+  Tooltip
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CloseIcon from '@mui/icons-material/Close';
@@ -26,11 +27,12 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
 import { NERButton } from '../../../../components/NERButton';
 import NERSuccessButton from '../../../../components/NERSuccessButton';
-import { MaterialStatus } from 'shared';
+import { Assembly, MaterialStatus } from 'shared';
 import { Decimal } from 'decimal.js';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { useCreateMaterial } from '../../../../hooks/bom.hooks';
+import { useCreateMaterial, useCreateManufacturer } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
+import InfoIcon from '@mui/icons-material/Info';
 
 interface ParsedMaterial {
   name: string;
@@ -44,14 +46,15 @@ interface ParsedMaterial {
   lifecycle: string | null;
   supplier: string | null;
   supplierPartNumber: string | null;
-  isGeneric: boolean;
   warnings: string[];
+  additionalDetails: string;
 }
 
 interface MaterialWithMetadata extends ParsedMaterial {
   selected: boolean;
   materialType: string;
   unit: string;
+  assemblyId: string;
 }
 
 interface ImportBOMModalProps {
@@ -60,6 +63,7 @@ interface ImportBOMModalProps {
   wbsNum: { carNumber: number; projectNumber: number; workPackageNumber: number };
   allMaterialTypes: { name: string }[];
   allUnits: { name: string }[];
+  assemblies: Assembly[];
 }
 
 interface HeaderMapping {
@@ -73,14 +77,17 @@ interface HeaderMapping {
   supplier: string | null;
   supplierPartNumber: string | null;
   unitPrice: string | null;
+  recognizedHeaders: Set<string>;
 }
 
 interface CSVRow {
   [key: string]: string;
 }
 
-// Header mapping function
-const createHeaderMapping = (headers: string[]) => {
+// Create header mapping
+const createHeaderMapping = (headers: string[]): HeaderMapping => {
+  const recognizedHeaders = new Set<string>();
+
   const map: HeaderMapping = {
     name: null,
     description: null,
@@ -91,7 +98,8 @@ const createHeaderMapping = (headers: string[]) => {
     lifecycle: null,
     supplier: null,
     supplierPartNumber: null,
-    unitPrice: null
+    unitPrice: null,
+    recognizedHeaders
   };
 
   headers.forEach((header) => {
@@ -99,47 +107,71 @@ const createHeaderMapping = (headers: string[]) => {
 
     if (/^name$/i.test(normalized) || /^partname$/i.test(normalized)) {
       map.name = header;
+      recognizedHeaders.add(header);
     } else if (/^description$/i.test(normalized) || /^desc$/i.test(normalized)) {
       map.description = header;
-    } else if (/^designator$/i.test(normalized) || /^refdes$/i.test(normalized)) {
+      recognizedHeaders.add(header);
+    } else if (/^designator$/i.test(normalized) || /^refdes$/i.test(normalized) || /^reference$/i.test(normalized)) {
       map.designator = header;
-    } else if (/^quantity$/i.test(normalized) || /^qty$/i.test(normalized)) {
+      recognizedHeaders.add(header);
+    } else if (/^quantity$/i.test(normalized) || /^qty$/i.test(normalized) || /^quan$/i.test(normalized)) {
       map.quantity = header;
+      recognizedHeaders.add(header);
     } else if (/^manufacturer1?$/i.test(normalized) || /^mfr1?$/i.test(normalized)) {
       map.manufacturer = header;
-    } else if (/^manufacturer.*part.*number1?$/i.test(normalized) || /^mpn1?$/i.test(normalized)) {
+      recognizedHeaders.add(header);
+    } else if (
+      /^manufacturer.*part.*number1?$/i.test(normalized) ||
+      /^mpn1?$/i.test(normalized) ||
+      /^mfrpartnumber1?$/i.test(normalized)
+    ) {
       map.manufacturerPartNumber = header;
+      recognizedHeaders.add(header);
     } else if (/^manufacturer.*lifecycle1?$/i.test(normalized) || /^lifecycle1?$/i.test(normalized)) {
       map.lifecycle = header;
-    } else if (/^supplier1?$/i.test(normalized) || /^dist1?$/i.test(normalized)) {
+      recognizedHeaders.add(header);
+    } else if (/^supplier1?$/i.test(normalized) || /^dist1?$/i.test(normalized) || /^distributor1?$/i.test(normalized)) {
       map.supplier = header;
+      recognizedHeaders.add(header);
     } else if (/^supplier.*part.*number1?$/i.test(normalized) || /^spn1?$/i.test(normalized)) {
       map.supplierPartNumber = header;
+      recognizedHeaders.add(header);
     } else if (
       /^supplier.*unit.*price1?$/i.test(normalized) ||
       /^unitprice1?$/i.test(normalized) ||
       /^price1?$/i.test(normalized)
     ) {
       map.unitPrice = header;
+      recognizedHeaders.add(header);
     }
   });
 
   return map;
 };
 
-const parseMaterialRow = (row: CSVRow, headerMap: HeaderMapping): ParsedMaterial => {
+// Parse a single material row
+const parseMaterialRow = (row: CSVRow, headerMap: HeaderMapping, allHeaders: string[]): ParsedMaterial => {
   const warnings: string[] = [];
 
-  const name = row[headerMap.name!] || '';
-  const description = row[headerMap.description!] || '';
-  const designatorStr = row[headerMap.designator!] || '';
-  const quantityStr = row[headerMap.quantity!] || '';
-  const manufacturer = row[headerMap.manufacturer!] || '';
-  const manufacturerPartNumber = row[headerMap.manufacturerPartNumber!] || '';
-  const lifecycle = row[headerMap.lifecycle!] || '';
-  const supplier = row[headerMap.supplier!] || '';
-  const supplierPartNumber = row[headerMap.supplierPartNumber!] || '';
-  const unitPriceStr = row[headerMap.unitPrice!] || '';
+  const name = (headerMap.name && row[headerMap.name]) || '';
+  const description = (headerMap.description && row[headerMap.description]) || '';
+  const designatorStr = (headerMap.designator && row[headerMap.designator]) || '';
+  const quantityStr = (headerMap.quantity && row[headerMap.quantity]) || '';
+  const manufacturer = (headerMap.manufacturer && row[headerMap.manufacturer]) || '';
+  const manufacturerPartNumber = (headerMap.manufacturerPartNumber && row[headerMap.manufacturerPartNumber]) || '';
+  const lifecycle = (headerMap.lifecycle && row[headerMap.lifecycle]) || '';
+  const supplier = (headerMap.supplier && row[headerMap.supplier]) || '';
+  const supplierPartNumber = (headerMap.supplierPartNumber && row[headerMap.supplierPartNumber]) || '';
+  const unitPriceStr = (headerMap.unitPrice && row[headerMap.unitPrice]) || '';
+
+  // Collect additional details
+  const additionalDetailsParts: string[] = [];
+  allHeaders.forEach((header) => {
+    if (!headerMap.recognizedHeaders.has(header) && row[header]) {
+      additionalDetailsParts.push(`${header}: ${row[header]}`);
+    }
+  });
+  const additionalDetails = additionalDetailsParts.join('\n');
 
   const quantity = parseInt(quantityStr) || 0;
   if (quantity === 0) warnings.push('Quantity is 0 or invalid');
@@ -151,10 +183,7 @@ const parseMaterialRow = (row: CSVRow, headerMap: HeaderMapping): ParsedMaterial
     .map((d: string) => d.trim())
     .filter((d: string) => d.length > 0);
 
-  const isGeneric = /generic|placeholder|tbd|tba|unknown/i.test(name) || /generic|placeholder/i.test(description);
-  if (isGeneric) warnings.push('Generic or placeholder part');
   if (!name && !manufacturerPartNumber) warnings.push('Missing name and MPN');
-  if (!manufacturer && manufacturerPartNumber) warnings.push('MPN without manufacturer');
 
   const subtotal = Math.round(unitPrice * quantity * 100);
 
@@ -170,8 +199,8 @@ const parseMaterialRow = (row: CSVRow, headerMap: HeaderMapping): ParsedMaterial
     subtotal,
     description: description || null,
     designators,
-    isGeneric,
-    warnings
+    warnings,
+    additionalDetails
   };
 };
 
@@ -180,22 +209,18 @@ const parseAltiumBOM = (fileContent: string): { materials: ParsedMaterial[]; err
   const materials: ParsedMaterial[] = [];
 
   try {
-    // Split into lines
     const lines = fileContent.split('\n').filter((line) => line.trim());
     if (lines.length < 2) {
       errors.push('File appears to be empty or has no data rows');
       return { materials, errors };
     }
 
-    // Detect delimiter (tab or comma)
-    const firstLine = lines[0];
+    const [firstLine] = lines;
     const delimiter = firstLine.includes('\t') ? '\t' : ',';
 
-    // Parse header
     const headers = firstLine.split(delimiter).map((h) => h.trim().replace(/^"|"$/g, ''));
     const headerMap = createHeaderMapping(headers);
 
-    // Parse data rows
     for (let i = 1; i < lines.length; i++) {
       try {
         const line = lines[i];
@@ -203,7 +228,6 @@ const parseAltiumBOM = (fileContent: string): { materials: ParsedMaterial[]; err
         let currentValue = '';
         let insideQuotes = false;
 
-        // CSV parser that handles quoted values
         for (let j = 0; j < line.length; j++) {
           const char = line[j];
 
@@ -216,15 +240,14 @@ const parseAltiumBOM = (fileContent: string): { materials: ParsedMaterial[]; err
             currentValue += char;
           }
         }
-        values.push(currentValue.trim()); // Push last value
+        values.push(currentValue.trim());
 
-        // Create row
         const row: CSVRow = {};
         headers.forEach((header, index) => {
           row[header] = values[index] || '';
         });
 
-        const material = parseMaterialRow(row, headerMap);
+        const material = parseMaterialRow(row, headerMap, headers);
         materials.push(material);
       } catch (error) {
         if (error instanceof Error) {
@@ -241,15 +264,15 @@ const parseAltiumBOM = (fileContent: string): { materials: ParsedMaterial[]; err
   return { materials, errors };
 };
 
-const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, allMaterialTypes, allUnits }) => {
+const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, allMaterialTypes, allUnits, assemblies }) => {
   const [step, setStep] = useState<'upload' | 'review'>('upload');
   const [materials, setMaterials] = useState<MaterialWithMetadata[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [_, setEditingIndex] = useState<number | null>(null);
 
   const toast = useToast();
   const { mutateAsync: createMaterial } = useCreateMaterial(wbsNum);
+  const { mutateAsync: createManufacturer } = useCreateManufacturer();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -271,12 +294,12 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
         return;
       }
 
-      // Add metadata for editing
       const materialsWithMetadata: MaterialWithMetadata[] = parsedMaterials.map((m) => ({
         ...m,
         selected: true,
         materialType: '',
-        unit: ''
+        unit: '',
+        assemblyId: ''
       }));
 
       setMaterials(materialsWithMetadata);
@@ -300,7 +323,6 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
       return;
     }
 
-    // Validate required fields
     const missingTypes = selectedMaterials.filter((m) => !m.materialType);
     if (missingTypes.length > 0) {
       toast.error(`${missingTypes.length} material(s) missing Material Type`, 4000);
@@ -314,6 +336,12 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
     try {
       for (const material of selectedMaterials) {
         try {
+          if (material.manufacturer) {
+            try {
+              await createManufacturer({ name: material.manufacturer });
+            } catch (error) {}
+          }
+
           await createMaterial({
             name: material.name,
             status: MaterialStatus.NotReadyToOrder,
@@ -324,22 +352,35 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
             price: material.unitPrice,
             subtotal: material.subtotal,
             unitName: material.unit || undefined,
+            assemblyId: material.assemblyId || undefined,
             linkUrl: '',
             notes: [
               material.description,
               material.designators.length > 0 ? `Designators: ${material.designators.join(', ')}` : null,
               material.lifecycle ? `Lifecycle: ${material.lifecycle}` : null,
               material.supplier ? `Supplier: ${material.supplier}` : null,
-              material.supplierPartNumber ? `Supplier PN: ${material.supplierPartNumber}` : null
+              material.supplierPartNumber ? `Supplier PN: ${material.supplierPartNumber}` : null,
+              material.additionalDetails || null
             ]
               .filter(Boolean)
               .join('\n')
           });
-          handleClose();
-          toast.success(`Successfully imported ${successCount} material${successCount !== 1 ? 's' : ''}!`, 4000);
+          successCount++;
         } catch (error) {
-          toast.warning(`Failed to import ${failCount} material${failCount !== 1 ? 's' : ''}`, 4000);
+          failCount++;
+          console.error(`Failed to create material ${material.name}:`, error);
         }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Successfully imported ${successCount} material${successCount !== 1 ? 's' : ''}!`, 4000);
+      }
+      if (failCount > 0) {
+        toast.warning(`Failed to import ${failCount} material${failCount !== 1 ? 's' : ''}`, 4000);
+      }
+
+      if (successCount > 0) {
+        handleClose();
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -354,7 +395,6 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
     setStep('upload');
     setMaterials([]);
     setErrors([]);
-    setEditingIndex(null);
     onHide();
   };
 
@@ -367,8 +407,21 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
     setMaterials(materials.map((m, i) => (i === index ? { ...m, selected: !m.selected } : m)));
   };
 
-  const updateMaterial = (index: number, field: keyof MaterialWithMetadata, value: string) => {
-    setMaterials(materials.map((m, i) => (i === index ? { ...m, [field]: value } : m)));
+  const updateMaterial = (index: number, field: keyof MaterialWithMetadata, value: string | number | null) => {
+    setMaterials(
+      materials.map((m, i) => {
+        if (i === index) {
+          const updated = { ...m, [field]: value };
+          if (field === 'quantity' || field === 'unitPrice') {
+            const qty = field === 'quantity' ? Number(value) : m.quantity;
+            const price = field === 'unitPrice' ? Number(value) : m.unitPrice;
+            updated.subtotal = Math.round(qty * price);
+          }
+          return updated;
+        }
+        return m;
+      })
+    );
   };
 
   const selectedCount = materials.filter((m) => m.selected).length;
@@ -390,7 +443,10 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
             <CloudUploadIcon sx={{ fontSize: 64, color: '#1976d2' }} />
             <Typography variant="h6">Upload Altium BOM File</Typography>
             <Typography color="text.secondary" textAlign="center">
-              Supports CSV and TSV formats exported from Altium Designer
+              Supports CSV and TSV formats
+            </Typography>
+            <Typography color="text.secondary" textAlign="center" fontSize="small" sx={{ mt: 1 }}>
+              For Excel files: Save as CSV in Excel, then upload
             </Typography>
 
             <label>
@@ -430,7 +486,6 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
 
         {step === 'review' && (
           <Box>
-            {/* Summary Stats */}
             <Box display="flex" gap={2} mb={3}>
               <Chip icon={<CheckCircleIcon />} label={`${selectedCount} selected`} color="primary" variant="outlined" />
               <Chip label={`${materials.length} total`} variant="outlined" />
@@ -442,7 +497,6 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
               />
             </Box>
 
-            {/* Materials Table */}
             <TableContainer component={Paper} sx={{ maxHeight: '500px' }}>
               <Table stickyHeader size="small">
                 <TableHead>
@@ -456,6 +510,8 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
                     <TableCell>MPN</TableCell>
                     <TableCell>Material Type*</TableCell>
                     <TableCell>Unit</TableCell>
+                    <TableCell>Assembly</TableCell>
+                    <TableCell>Additional Details</TableCell>
                     <TableCell align="right">Price</TableCell>
                     <TableCell align="right">Subtotal</TableCell>
                     <TableCell>Warnings</TableCell>
@@ -468,24 +524,52 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
                         <Checkbox checked={material.selected} onChange={() => toggleSelect(index)} />
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" fontWeight={500}>
-                          {material.name}
-                        </Typography>
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={material.name}
+                          onChange={(e) => updateMaterial(index, 'name', e.target.value)}
+                          variant="outlined"
+                          sx={{ minWidth: '200px' }}
+                        />
                         {material.description && (
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
                             {material.description.substring(0, 50)}
                             {material.description.length > 50 ? '...' : ''}
                           </Typography>
                         )}
                       </TableCell>
-                      <TableCell>{material.quantity}</TableCell>
                       <TableCell>
-                        <Typography variant="body2">{material.manufacturer || '-'}</Typography>
+                        <TextField
+                          size="small"
+                          type="number"
+                          value={material.quantity}
+                          onChange={(e) => updateMaterial(index, 'quantity', parseInt(e.target.value) || 0)}
+                          variant="outlined"
+                          sx={{ width: '80px' }}
+                        />
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {material.manufacturerPartNumber || '-'}
-                        </Typography>
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={material.manufacturer || ''}
+                          onChange={(e) => updateMaterial(index, 'manufacturer', e.target.value || null)}
+                          variant="outlined"
+                          placeholder="Optional"
+                          sx={{ minWidth: '120px' }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={material.manufacturerPartNumber || ''}
+                          onChange={(e) => updateMaterial(index, 'manufacturerPartNumber', e.target.value || null)}
+                          variant="outlined"
+                          placeholder="Optional"
+                          sx={{ minWidth: '150px' }}
+                        />
                       </TableCell>
                       <TableCell>
                         <Autocomplete
@@ -509,17 +593,82 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
                           sx={{ minWidth: '120px' }}
                         />
                       </TableCell>
-                      <TableCell align="right">${(material.unitPrice / 100).toFixed(2)}</TableCell>
-                      <TableCell align="right">${(material.subtotal / 100).toFixed(2)}</TableCell>
                       <TableCell>
-                        {material.warnings.length > 0 && (
-                          <Chip
-                            icon={<WarningIcon sx={{ fontSize: 14 }} />}
-                            label={material.warnings.length}
-                            size="small"
-                            color="warning"
-                            title={material.warnings.join(', ')}
-                          />
+                        <Autocomplete
+                          size="small"
+                          options={assemblies}
+                          getOptionLabel={(option) => option.name}
+                          value={assemblies.find((a) => a.assemblyId === material.assemblyId) || null}
+                          onChange={(_, value) => updateMaterial(index, 'assemblyId', value?.assemblyId || '')}
+                          renderInput={(params) => <TextField {...params} placeholder="None" />}
+                          sx={{ minWidth: '150px' }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {material.additionalDetails ? (
+                          <Tooltip title={<Box sx={{ whiteSpace: 'pre-line' }}>{material.additionalDetails}</Box>} arrow>
+                            <Chip
+                              icon={<InfoIcon sx={{ fontSize: 14 }} />}
+                              label={material.additionalDetails.split('\n').length}
+                              size="small"
+                              color="info"
+                              variant="outlined"
+                            />
+                          </Tooltip>
+                        ) : (
+                          <Typography variant="caption" color="text.secondary">
+                            -
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        <TextField
+                          size="small"
+                          type="number"
+                          value={(material.unitPrice / 100).toFixed(2)}
+                          onChange={(e) => updateMaterial(index, 'unitPrice', Math.round(parseFloat(e.target.value) * 100))}
+                          variant="outlined"
+                          sx={{ width: '100px' }}
+                          InputProps={{
+                            startAdornment: (
+                              <Box component="span" sx={{ mr: 0.5 }}>
+                                $
+                              </Box>
+                            )
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" fontWeight={500}>
+                          ${(material.subtotal / 100).toFixed(2)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        {material.warnings.length > 0 ? (
+                          <Tooltip
+                            title={
+                              <Box>
+                                {material.warnings.map((warning, wIdx) => (
+                                  <Typography key={wIdx} variant="caption" display="block">
+                                    • {warning}
+                                  </Typography>
+                                ))}
+                              </Box>
+                            }
+                            arrow
+                          >
+                            <Chip
+                              icon={<WarningIcon sx={{ fontSize: 14 }} />}
+                              label={material.warnings.length}
+                              size="small"
+                              color="warning"
+                              title={material.warnings.join(', ')}
+                            />
+                          </Tooltip>
+                        ) : (
+                          <Typography variant="caption" color="text.secondary">
+                            -
+                          </Typography>
                         )}
                       </TableCell>
                     </TableRow>
