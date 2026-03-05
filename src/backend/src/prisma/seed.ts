@@ -547,15 +547,22 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Link Types */
-  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'description', true, ner);
+  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'description', true, ner, false);
 
-  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'bar_chart', true, ner);
+  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'bar_chart', true, ner, false);
 
-  const mainWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Website', 'bar_chart', true, ner);
+  const mainWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Website', 'bar_chart', true, ner, false);
 
-  const instagramWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Instagram', 'bar_chart', true, ner);
+  const instagramWebsiteLinkType = await ProjectsService.createLinkType(
+    batman,
+    'NER Instagram',
+    'bar_chart',
+    true,
+    ner,
+    false
+  );
 
-  await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, ner);
+  await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, ner, false);
 
   /**
    * Projects
