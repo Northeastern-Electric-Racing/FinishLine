@@ -1,7 +1,8 @@
-import { Box, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
+import { Box, Link, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import { getUniqueWbsElementsWithProductsFromReimbursementRequest } from '../../../utils/reimbursement-request.utils';
 import { ReimbursementRequest } from 'shared';
 import { centsToDollar } from '../../../utils/pipes';
+import { routes } from '../../../utils/routes';
 
 interface ReimbursementRequestProductsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -21,7 +22,6 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
     (product) => product.refundSources.length > 1
   );
 
-  // put all the refund source names in a set to avoid duplicate names
   const refundSourceNames: string[] = Array.from(
     new Set(
       reimbursementRequest.reimbursementProducts.flatMap((product) => product.refundSources.map((rs) => rs.indexCode.name))
@@ -58,16 +58,26 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
               return (
                 <TableRow key={key}>
                   <TableCell>
-                    <Box
-                      sx={{
-                        maxWidth: '64ch',
-                        overflowWrap: 'anywhere',
-                        whiteSpace: 'normal'
-                      }}
-                    >
-                      {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
-                        <div key={index}>{product.name}</div>
-                      ))}
+                    <Box sx={{ maxWidth: '64ch', overflowWrap: 'anywhere', whiteSpace: 'normal' }}>
+                      {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => {
+                        const bomUrl = (() => {
+                          if (!product.materialId) return undefined;
+                          const reason = product.reimbursementProductReason;
+                          if (!('wbsNum' in reason)) return undefined;
+                          return `${routes.PROJECTS}/${reason.wbsNum.carNumber}.${reason.wbsNum.projectNumber}.${reason.wbsNum.workPackageNumber}/bom`;
+                        })();
+                        return (
+                          <div key={index}>
+                            {bomUrl ? (
+                              <Link href={bomUrl} underline="hover">
+                                {product.name}
+                              </Link>
+                            ) : (
+                              product.name
+                            )}
+                          </div>
+                        );
+                      })}
                     </Box>
                   </TableCell>
                   {!allKeysAreSame && <TableCell>{key}</TableCell>}
