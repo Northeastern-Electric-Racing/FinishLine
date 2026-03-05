@@ -31,7 +31,8 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
       .required('LinkType Name is Required')
       .test('unique-LinkType-test', 'LinkType name must be unique', uniqueLinkTypeTest),
     iconName: yup.string().required('Icon name is required'),
-    required: yup.boolean().required('Required field must be specified')
+    required: yup.boolean().required('Required field must be specified'),
+    isOnGuestHomePage: yup.boolean().required('Guest page field must be specified')
   });
 
   const theme = useTheme();
@@ -47,7 +48,8 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
     defaultValues: {
       name: defaultValues?.name ?? '',
       iconName: defaultValues?.iconName ?? '',
-      required: defaultValues?.required ?? false
+      required: defaultValues?.required ?? false,
+      isOnGuestHomePage: defaultValues?.required ?? false
     }
   });
 
@@ -93,6 +95,19 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
             <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>Required</FormLabel>
             <Controller
               name="required"
+              control={control}
+              render={({ field }) => <Switch {...field} checked={field.value} />}
+            />
+            <FormHelperText error>{errors.required?.message}</FormHelperText>
+          </FormControl>
+        </Grid>
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>
+              Appears on Guest Home Page
+            </FormLabel>
+            <Controller
+              name="isOnGuestHomePage"
               control={control}
               render={({ field }) => <Switch {...field} checked={field.value} />}
             />

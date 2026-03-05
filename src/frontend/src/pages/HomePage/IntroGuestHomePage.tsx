@@ -62,6 +62,8 @@ const IntroGuestHomePage = () => {
   )
     return <LoadingIndicator />;
 
+  const guestPageLinks = usefulLinks?.filter((link) => link.linkType.isOnGuestHomePage);
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', px: 2 }}>
       <Typography mt={2} variant="h4" sx={{ fontWeight: 'bold' }}>
@@ -101,7 +103,7 @@ const IntroGuestHomePage = () => {
       </Typography>
       <Box sx={{ mt: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Stack direction="row" flexWrap="wrap" gap={2} useFlexGap justifyContent="center">
-          {usefulLinks.map((link) => (
+          {guestPageLinks.map((link) => (
             <Link
               key={link.linkId}
               href={link.url}

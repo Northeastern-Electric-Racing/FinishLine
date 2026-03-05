@@ -583,16 +583,17 @@ model Work_Package {
 }
 
 model Link_Type {
-  id             String       @id @default(uuid())
-  name           String
-  dateCreated    DateTime     @default(now())
-  iconName       String
-  required       Boolean
-  creatorId      String
-  creator        User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links          Link[]       @relation(name: "linkTypes")
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  id                String       @id @default(uuid())
+  name              String
+  dateCreated       DateTime     @default(now())
+  iconName          String
+  required          Boolean
+  creatorId         String
+  creator           User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links             Link[]       @relation(name: "linkTypes")
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [organizationId])
+  isOnGuestHomePage Boolean      @default(false)
 
   @@unique([name, organizationId], name: "uniqueLinkType")
   @@index([organizationId])
