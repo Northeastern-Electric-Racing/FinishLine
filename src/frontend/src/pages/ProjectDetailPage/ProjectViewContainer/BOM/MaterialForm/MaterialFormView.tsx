@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { Assembly, Manufacturer, MaterialType, ReimbursementRequest, Unit } from 'shared';
+import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
@@ -34,15 +34,10 @@ export interface MaterialFormViewProps {
   onHide: () => void;
   control: Control<MaterialFormInput>;
   errors: FieldErrors<MaterialFormInput>;
-  allMaterialTypes: MaterialType[];
-  allUnits: Unit[];
-  allManufacturers: Manufacturer[];
-  manufacturersLoading?: boolean;
-  materialTypesLoading?: boolean;
-  unitsLoading?: boolean;
-  assemblies: Assembly[];
-  assembliesLoading?: boolean;
-  reimbursementRequests: ReimbursementRequest[];
+  allMaterialTypes?: MaterialType[];
+  allUnits?: Unit[];
+  allManufacturers?: Manufacturer[];
+  assemblies?: Assembly[];
   open: boolean;
   watch: UseFormWatch<MaterialFormInput>;
   createManufacturer: (name: string) => void;
@@ -67,14 +62,9 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   control,
   errors,
   allMaterialTypes,
-  materialTypesLoading,
   allUnits,
-  unitsLoading,
   allManufacturers,
-  manufacturersLoading,
   assemblies,
-  assembliesLoading,
-  reimbursementRequests,
   open,
   watch,
   createManufacturer,
@@ -116,7 +106,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             name="manufacturerName"
             control={control}
             render={({ field: { onChange, value } }) => {
-              const mappedManufacturers = allManufacturers
+              const mappedManufacturers = (allManufacturers ?? [])
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map(manufacturersToAutocomplete);
               const onClear = () => {
@@ -129,10 +119,10 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                     sx={{ bgcolor: 'inherit' }}
                     id={'manufacturer'}
                     size="medium"
-                    disabled={manufacturersLoading}
+                    disabled={!allManufacturers}
                     options={mappedManufacturers}
                     value={mappedManufacturers.find((manufacturer) => manufacturer.label === value) || null}
-                    placeholder={manufacturersLoading ? 'Loading...' : 'Select Manufacturer'}
+                    placeholder={!allManufacturers ? 'Loading...' : 'Select Manufacturer'}
                     onChange={(_event, newValue) => {
                       newValue ? onChange(newValue.id) : onClear();
                     }}
@@ -237,7 +227,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                 <TextField
                   {...field}
                   select
-                  disabled={unitsLoading}
+                  disabled={!allUnits}
                   variant="outlined"
                   error={!!errors.unitName}
                   helperText={errors.unitName?.message}
@@ -245,7 +235,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   SelectProps={{
                     displayEmpty: true,
                     renderValue: (selected) =>
-                      unitsLoading ? (
+                      !allUnits ? (
                         <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>Loading...</Typography>
                       ) : selected ? (
                         allUnits.find((unit) => unit.name === selected)?.name
@@ -254,7 +244,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                       )
                   }}
                 >
-                  {unitsLoading ? (
+                  {!allUnits ? (
                     <MenuItem disabled value="">
                       Loading...
                     </MenuItem>
@@ -321,43 +311,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           />
         </FormControl>
       </Grid>
-      {!fromRRForm && (
-        <Grid item xs={12}>
-          <FormControl fullWidth>
-            <Controller
-              name="reimbursementRequestId"
-              control={control}
-              defaultValue={control._defaultValues.reimbursementRequestId}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  variant="outlined"
-                  error={!!errors.reimbursementRequestId}
-                  helperText={errors.reimbursementRequestId?.message}
-                  SelectProps={{
-                    displayEmpty: true,
-                    renderValue: (selected) =>
-                      selected ? (
-                        reimbursementRequests.find((rr) => rr.reimbursementRequestId === selected)?.identifier
-                      ) : (
-                        <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>
-                          Select Corresponding Reimbursement Request Number
-                        </Typography>
-                      )
-                  }}
-                >
-                  {reimbursementRequests.map((rr: ReimbursementRequest) => (
-                    <MenuItem key={rr.reimbursementRequestId} value={rr.reimbursementRequestId}>
-                      {rr.identifier}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
-          </FormControl>
-        </Grid>
-      )}
       <Grid item xs={12}>
         <FormControl fullWidth>
           <Controller
@@ -368,14 +321,14 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               <TextField
                 {...field}
                 select
-                disabled={assembliesLoading}
+                disabled={!assemblies}
                 variant="outlined"
                 error={!!errors.assemblyId}
                 helperText={errors.assemblyId?.message}
                 SelectProps={{
                   displayEmpty: true,
                   renderValue: (selected) =>
-                    assembliesLoading ? (
+                    !assemblies ? (
                       <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>Loading...</Typography>
                     ) : selected ? (
                       assemblies.find((a) => a.assemblyId === selected)?.name
@@ -386,7 +339,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                     )
                 }}
               >
-                {assembliesLoading ? (
+                {!assemblies ? (
                   <MenuItem disabled value="">
                     Loading...
                   </MenuItem>
@@ -488,7 +441,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               control={control}
               defaultValue=""
               render={({ field: { onChange, value } }) => {
-                const mappedTypes = allMaterialTypes
+                const mappedTypes = (allMaterialTypes ?? [])
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map(materialTypeToAutocomplete);
 
@@ -502,10 +455,10 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                       sx={{ bgcolor: 'inherit' }}
                       id={'material-type'}
                       size="medium"
-                      disabled={materialTypesLoading}
+                      disabled={!allMaterialTypes}
                       options={mappedTypes}
                       value={mappedTypes.find((type) => type.label === value) || null}
-                      placeholder={materialTypesLoading ? 'Loading...' : 'Select Material Type'}
+                      placeholder={!allMaterialTypes ? 'Loading...' : 'Select Material Type'}
                       onChange={(_event, newValue) => {
                         newValue ? onChange(newValue.id) : onClear();
                       }}

@@ -1,0 +1,73 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/docs",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/docs",
+          "mainDocId": "intro",
+          "docs": [
+            {
+              "id": "general-practices/backend-endpoints",
+              "path": "/docs/general-practices/backend-endpoints",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "general-practices/frontend-forms",
+              "path": "/docs/general-practices/frontend-forms",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "general-practices/frontend-hooks-and-apis",
+              "path": "/docs/general-practices/frontend-hooks-and-apis",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "general-practices/postman-api-testing",
+              "path": "/docs/general-practices/postman-api-testing",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "general-practices/prisma-schema-shared-types",
+              "path": "/docs/general-practices/prisma-schema-shared-types",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "general-practices/query-args-and-transformers",
+              "path": "/docs/general-practices/query-args-and-transformers",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "general-practices/react-components",
+              "path": "/docs/general-practices/react-components",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "general-practices/repository-overview",
+              "path": "/docs/general-practices/repository-overview",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "intro",
+              "path": "/docs/intro",
+              "sidebar": "tutorialSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "tutorialSidebar": {
+              "link": {
+                "path": "/docs/intro",
+                "label": "Introduction"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

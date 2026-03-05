@@ -1,0 +1,29 @@
+{
+  "id": "general-practices/prisma-schema-shared-types",
+  "title": "Prisma Schema and Shared Types",
+  "description": "Guide for defining Prisma data models and keeping shared TypeScript types in sync in FinishLine. Covers schema conventions, enum patterns, multi-tenant organizationId scoping, the migration workflow, and the shared type barrel export. Use when adding new database models, creating or editing Prisma schema, defining shared types or interfaces, adding enums, running migrations, or when asked how the data layer works.",
+  "source": "@site/docs/general-practices/prisma-schema-shared-types.md",
+  "sourceDirName": "general-practices",
+  "slug": "/general-practices/prisma-schema-shared-types",
+  "permalink": "/docs/general-practices/prisma-schema-shared-types",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Northeastern-Electric-Racing/FinishLine/edit/main/docs-site/docs/general-practices/prisma-schema-shared-types.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Prisma Schema and Shared Types",
+    "description": "Guide for defining Prisma data models and keeping shared TypeScript types in sync in FinishLine. Covers schema conventions, enum patterns, multi-tenant organizationId scoping, the migration workflow, and the shared type barrel export. Use when adding new database models, creating or editing Prisma schema, defining shared types or interfaces, adding enums, running migrations, or when asked how the data layer works.",
+    "skill": true,
+    "skill_name": "prisma-schema-shared-types"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Postman API Testing",
+    "permalink": "/docs/general-practices/postman-api-testing"
+  },
+  "next": {
+    "title": "Query Args and Transformers",
+    "permalink": "/docs/general-practices/query-args-and-transformers"
+  }
+}

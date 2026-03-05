@@ -1,0 +1,101 @@
+{
+  "/__docusaurus/debug-5ff": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/config-5ba": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/content-a2b": {
+    "__comp": "__comp---theme-debug-contentba-8-ce7",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    },
+    "__props": "__props---docusaurus-debug-content-3-c-0-be2"
+  },
+  "/__docusaurus/debug/globalData-c3c": {
+    "__comp": "__comp---theme-debug-global-dataede-0fa",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/metadata-156": {
+    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/registry-88c": {
+    "__comp": "__comp---theme-debug-registry-679-501",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/routes-000": {
+    "__comp": "__comp---theme-debug-routes-946-699",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/docs-914": {
+    "__comp": "__comp---theme-docs-root-5-e-9-0b6",
+    "__context": {
+      "plugin": "plugin---docsaba-d7c"
+    }
+  },
+  "/docs-82a": {
+    "__comp": "__comp---theme-doc-version-roota-7-b-5de",
+    "__props": "__props---docs-005-788"
+  },
+  "/docs-fd4": {
+    "__comp": "__comp---theme-doc-roota-94-67a"
+  },
+  "/docs/general-practices/backend-endpoints-a26": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-general-practices-backend-endpoints-2-e-9-f7b"
+  },
+  "/docs/general-practices/frontend-forms-714": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-general-practices-frontend-forms-1-b-4-9a8"
+  },
+  "/docs/general-practices/frontend-hooks-and-apis-0a3": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-general-practices-frontend-hooks-and-apis-1-fd-bf1"
+  },
+  "/docs/general-practices/postman-api-testing-d87": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-general-practices-postman-api-testing-790-c2a"
+  },
+  "/docs/general-practices/prisma-schema-shared-types-9b7": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-general-practices-prisma-schema-shared-types-3-be-73d"
+  },
+  "/docs/general-practices/query-args-and-transformers-abd": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-general-practices-query-args-and-transformers-532-8fa"
+  },
+  "/docs/general-practices/react-components-249": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-general-practices-react-componentsb-7-c-297"
+  },
+  "/docs/general-practices/repository-overview-d78": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-general-practices-repository-overview-4-ba-e58"
+  },
+  "/docs/intro-61d": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-intro-0-e-3-be1"
+  },
+  "/-2e1": {
+    "__comp": "__comp---site-src-pages-index-jsc-4-f-f99",
+    "__context": {
+      "plugin": "plugin---a-74-9d6"
+    },
+    "config": "config---5-e-9-4f3"
+  }
+}

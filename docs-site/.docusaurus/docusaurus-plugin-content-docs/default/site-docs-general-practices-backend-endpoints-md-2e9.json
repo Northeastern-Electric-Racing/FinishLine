@@ -1,0 +1,29 @@
+{
+  "id": "general-practices/backend-endpoints",
+  "title": "Backend Endpoints",
+  "description": "Guide for creating backend API endpoints in FinishLine following the Route → Controller → Service pattern with multi-tenant security. Use when creating new endpoints, adding API routes, implementing controllers or services, building backend request handlers, or when asked how the backend works.",
+  "source": "@site/docs/general-practices/backend-endpoints.md",
+  "sourceDirName": "general-practices",
+  "slug": "/general-practices/backend-endpoints",
+  "permalink": "/docs/general-practices/backend-endpoints",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Northeastern-Electric-Racing/FinishLine/edit/main/docs-site/docs/general-practices/backend-endpoints.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Backend Endpoints",
+    "description": "Guide for creating backend API endpoints in FinishLine following the Route → Controller → Service pattern with multi-tenant security. Use when creating new endpoints, adding API routes, implementing controllers or services, building backend request handlers, or when asked how the backend works.",
+    "skill": true,
+    "skill_name": "backend-endpoints"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Introduction",
+    "permalink": "/docs/intro"
+  },
+  "next": {
+    "title": "Frontend Forms",
+    "permalink": "/docs/general-practices/frontend-forms"
+  }
+}

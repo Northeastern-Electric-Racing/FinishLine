@@ -1,0 +1,28 @@
+{
+  "id": "general-practices/postman-api-testing",
+  "title": "Postman API Testing",
+  "description": "Guide for using Postman to test and interact with the FinishLine API during development. Use when testing API endpoints, debugging backend issues, verifying request/response formats, or when asked how to use Postman with the local development environment.",
+  "source": "@site/docs/general-practices/postman-api-testing.md",
+  "sourceDirName": "general-practices",
+  "slug": "/general-practices/postman-api-testing",
+  "permalink": "/docs/general-practices/postman-api-testing",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Northeastern-Electric-Racing/FinishLine/edit/main/docs-site/docs/general-practices/postman-api-testing.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Postman API Testing",
+    "description": "Guide for using Postman to test and interact with the FinishLine API during development. Use when testing API endpoints, debugging backend issues, verifying request/response formats, or when asked how to use Postman with the local development environment.",
+    "skill": false
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Frontend Hooks and APIs",
+    "permalink": "/docs/general-practices/frontend-hooks-and-apis"
+  },
+  "next": {
+    "title": "Prisma Schema and Shared Types",
+    "permalink": "/docs/general-practices/prisma-schema-shared-types"
+  }
+}
