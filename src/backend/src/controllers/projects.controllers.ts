@@ -236,6 +236,22 @@ export default class ProjectsController {
     }
   }
 
+  static async copyMaterialsToProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { materialIds, destinationWbsNum } = req.body;
+
+      const newMaterialIds = await BillOfMaterialsService.copyMaterialsToProject(
+        req.currentUser,
+        materialIds,
+        destinationWbsNum,
+        req.organization
+      );
+      res.status(200).json(newMaterialIds);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createManufacturer(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;

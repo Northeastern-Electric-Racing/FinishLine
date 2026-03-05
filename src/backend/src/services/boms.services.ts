@@ -158,6 +158,78 @@ export default class BillOfMaterialsService {
   }
 
   /**
+   * Copy materials to project
+   * @param user The user making the copy
+   * @param materialIds The ids of the materials to be copied
+   * @param destinationProjectId The id of the project to copy the materials to
+   * @param organization The organization the user is currently in
+   * @returns an array of the newly created material ids
+   * @throws errors that will be added here later
+   */
+  static async copyMaterialsToProject(
+    user: User,
+    materialIds: string[],
+    destinationProjectId: WbsNumber,
+    organization: Organization
+  ): Promise<string[]> {
+    // Fetch materials to be copied
+    const materials = await prisma.material.findMany({
+      where: {
+        materialId: { in: materialIds },
+        dateDeleted: null
+      },
+      ...getMaterialQueryArgs(organization.organizationId)
+    });
+
+    if (materials.length !== materialIds.length) throw new NotFoundException('Material', 'Not all materials found');
+
+    const invalidMaterials = materials.filter(
+      (material) => material.materialType.organizationId !== organization.organizationId
+    );
+    if (invalidMaterials.length > 0) throw new HttpException(400, 'All materials must be from the current organization');
+
+    const destinationProject = await ProjectsService.getSingleProjectWithQueryArgs(destinationProjectId, organization);
+
+    const perms =
+      (await userHasPermission(user.userId, organization.organizationId, isLeadership)) ||
+      isUserPartOfTeams(destinationProject.teams, user);
+
+    if (!perms) throw new AccessDeniedException('Permission to copy materials denied');
+
+    return await prisma.$transaction(async (tx) => {
+      const newMaterialIds: string[] = [];
+
+      for (const material of materials) {
+        const newMaterial = await tx.material.create({
+          data: {
+            name: material.name,
+            status: Material_Status.NOT_READY_TO_ORDER,
+            materialTypeId: material.materialTypeId,
+            manufacturerId: material.manufacturerId,
+            manufacturerPartNumber: material.manufacturerPartNumber,
+            pdmFileName: material.pdmFileName,
+            quantity: material.quantity,
+            unitId: material.unitId,
+            price: material.price,
+            subtotal: material.subtotal,
+            linkUrl: material.linkUrl,
+            notes: material.notes,
+            dateCreated: new Date(),
+            userCreatedId: user.userId,
+            wbsElementId: destinationProject.wbsElementId,
+            assemblyId: null
+          },
+          ...getMaterialQueryArgs(organization.organizationId)
+        });
+
+        newMaterialIds.push(newMaterial.materialId);
+      }
+
+      return newMaterialIds;
+    });
+  }
+
+  /**
    * Create an assembly
    * @param name The name of the assembly to be created
    * @param userCreated The user creating the assembly

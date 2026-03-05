@@ -1,5 +1,4 @@
 import {
-  Button,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -478,7 +477,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           </FormControl>
         </Box>
       </Grid>
-      {submitText === 'Add' && (
+      {/*submitText === 'Add' && (
         <Grid item xs={12} sx={{ pl: 0, pr: 0 }}>
           <Box
             sx={{
@@ -501,7 +500,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             </Button>
           </Box>
         </Grid>
-      )}
+      )*/}
     </NERFormModal>
   );
 };

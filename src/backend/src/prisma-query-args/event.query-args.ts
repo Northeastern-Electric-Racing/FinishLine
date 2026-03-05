@@ -13,12 +13,7 @@ export const getEventQueryArgs = (organizationId: string) =>
       optionalMembers: getUserQueryArgs(organizationId),
       confirmedMembers: getUserWithSettingsQueryArgs(organizationId),
       deniedMembers: getUserQueryArgs(organizationId),
-      teams: {
-        select: {
-          teamName: true,
-          teamId: true
-        }
-      },
+      teams: true,
       teamType: {
         select: {
           teamTypeId: true,

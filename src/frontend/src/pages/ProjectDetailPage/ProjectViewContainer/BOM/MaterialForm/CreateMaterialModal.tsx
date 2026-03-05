@@ -1,4 +1,4 @@
-import { Assembly, WbsElement } from 'shared';
+import { Assembly, WbsElementPreview } from 'shared';
 import MaterialForm, { MaterialDataSubmission } from './MaterialForm';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import { useToast } from '../../../../../hooks/toasts.hooks';
@@ -8,11 +8,12 @@ import ErrorPage from '../../../../ErrorPage';
 export interface CreateMaterialModalProps {
   open: boolean;
   onHide: () => void;
-  wbsElement: WbsElement;
+  wbsElement: WbsElementPreview;
   assemblies: Assembly[];
+  onSuccess?: (materialName: string) => void;
 }
 
-const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide, assemblies, wbsElement }) => {
+const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide, assemblies, wbsElement, onSuccess }) => {
   const { mutateAsync: createMaterial, isLoading, isError, error } = useCreateMaterial(wbsElement.wbsNum);
   const toast = useToast();
 
@@ -23,6 +24,11 @@ const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide,
     try {
       await createMaterial(data);
       toast.success('Material Created Successfully');
+
+      if (onSuccess) {
+        onSuccess(data.name);
+      }
+
       onHide();
     } catch (error) {
       if (error instanceof Error) {

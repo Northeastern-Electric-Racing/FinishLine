@@ -1,11 +1,11 @@
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { Calendar, EventInstance, EventType } from 'shared';
+import { Calendar, EventInstance, EventType, formatEventTime } from 'shared';
 import GroupIcon from '@mui/icons-material/Group';
 import { Stack } from '@mui/system';
 import { getTeamTypeIcon } from './CalendarDayCard';
 import { Typography } from '@mui/material';
-import { formatTime } from '../../utils/datetime.utils';
+
 import { getMutedColor } from '../../utils/calendar.utils';
 
 interface EventInfoProps {
@@ -48,13 +48,28 @@ const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, cal
       }}
     >
       <Stack direction="row" spacing={5}>
-        <Stack direction="row" sx={{ minWidth: 200 }}>
+        <Stack direction="row" sx={{ minWidth: 0, flex: 1 }}>
           {getTeamTypeIcon(event.teamType?.name ?? '', false)}
-          <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
+          <Typography
+            marginX={0.5}
+            marginY={0.5}
+            lineHeight={'120%'}
+            fontSize={12}
+            fontWeight="bold"
+            align="left"
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
             {name}
           </Typography>
         </Stack>
-        <Stack direction="row" sx={{ minWidth: 150 }}>
+
+        <Stack direction="row" sx={{ minWidth: 150, flexShrink: 0 }}>
           <AccessTimeIcon />
           {event.allDay ? (
             <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
@@ -62,19 +77,33 @@ const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, cal
             </Typography>
           ) : (
             <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
-              {formatTime(event.startTime)} - {formatTime(event.endTime)}
+              {formatEventTime(event.startTime)} - {formatEventTime(event.endTime)}
             </Typography>
           )}
         </Stack>
       </Stack>
+
       <Stack direction="row" spacing={5}>
-        <Stack direction="row" sx={{ minWidth: 200 }}>
+        <Stack direction="row" sx={{ minWidth: 0, flex: 1 }}>
           <LocationOnIcon />
-          <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
+          <Typography
+            marginX={0.5}
+            marginY={0.5}
+            lineHeight={'120%'}
+            fontSize={12}
+            fontWeight="bold"
+            align="left"
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
             {event.location ?? 'N/A'}
           </Typography>
         </Stack>
-        <Stack direction="row" sx={{ minWidth: 150 }}>
+
+        <Stack direction="row" sx={{ minWidth: 150, flexShrink: 0 }}>
           <GroupIcon />
           <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
             {event.requiredMembers[0]

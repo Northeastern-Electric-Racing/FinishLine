@@ -87,6 +87,28 @@ export const isOptionalDate = (validationObject: ValidationChain): ValidationCha
   return validationObject.optional().custom((value) => !isNaN(Date.parse(value)));
 };
 
+export const isDateOnly = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.custom((value) => {
+    const parsed = Date.parse(value);
+    if (isNaN(parsed)) return false;
+    const date = new Date(parsed);
+    return (
+      date.getUTCHours() === 0 && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0 && date.getUTCMilliseconds() === 0
+    );
+  });
+};
+
+export const isOptionalDateOnly = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.optional().custom((value) => {
+    const parsed = Date.parse(value);
+    if (isNaN(parsed)) return false;
+    const date = new Date(parsed);
+    return (
+      date.getUTCHours() === 0 && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0 && date.getUTCMilliseconds() === 0
+    );
+  });
+};
+
 export const validateReimbursementProducts = () => {
   return [
     // Other products (non-project) - keep as strings
@@ -151,7 +173,7 @@ export const workPackageProposedChangesValidators = (base: string) => [
   nonEmptyString(body(`${base}.leadId`).optional()),
   nonEmptyString(body(`${base}.managerId`).optional()),
   isWorkPackageStageOrNone(workPackageProposedChangesExists(body(`${base}.stage`).optional())),
-  isDate(workPackageProposedChangesExists(body(`${base}.startDate`))),
+  isDateOnly(workPackageProposedChangesExists(body(`${base}.startDate`))),
   intMinZero(workPackageProposedChangesExists(body(`${base}.duration`))),
   workPackageProposedChangesExists(body(`${base}.blockedBy`)).isArray(),
   intMinZero(body(`${base}.blockedBy.*.carNumber`)),

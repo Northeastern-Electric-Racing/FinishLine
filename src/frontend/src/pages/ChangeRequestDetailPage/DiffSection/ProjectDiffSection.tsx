@@ -18,7 +18,7 @@ const ProjectDiffSection = ({
 
   useEffect(() => {
     if (originalProject) {
-      setCollections(getChangesForProject(originalProject, projectProposedChanges));
+      setCollections(getChangesForProject(projectProposedChanges, originalProject));
     }
   }, [originalProject, projectProposedChanges, setCollections]);
 

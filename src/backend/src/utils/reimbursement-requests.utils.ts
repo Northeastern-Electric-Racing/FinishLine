@@ -148,17 +148,21 @@ export const updateReimbursementProducts = async (
   }
 
   //if a product has an id that means it existed before and was updated
-  const updatedOtherExistingProducts = updatedOtherReimbursementProducts.filter((product) => product.id);
-
-  const updatedWbsExistingProducts = updatedWbsReimbursementProducts.filter((product) => product.id);
-
-  const updatedExistingProducts = (updatedOtherExistingProducts as ReimbursementProductCreateArgs[]).concat(
-    updatedWbsExistingProducts as ReimbursementProductCreateArgs[]
+  const updatedOtherExistingProducts = updatedOtherReimbursementProducts.filter(
+    (product): product is OtherReimbursementProductCreateArgs & { id: string } => !!product.id
   );
+
+  const updatedWbsExistingProducts = updatedWbsReimbursementProducts.filter(
+    (product): product is WbsReimbursementProductCreateArgs & { id: string } => !!product.id
+  );
+
+  const updatedExistingProducts = (
+    updatedOtherExistingProducts as (ReimbursementProductCreateArgs & { id: string })[]
+  ).concat(updatedWbsExistingProducts as (ReimbursementProductCreateArgs & { id: string })[]);
 
   validateUpdatedProductsExistInDatabase(currentReimbursementProducts, updatedExistingProducts);
 
-  const updatedExistingProductIds = updatedExistingProducts.map((product) => product.id!);
+  const updatedExistingProductIds = updatedExistingProducts.map((product) => product.id);
 
   //if the product does not have an id that means it is new
   const newOtherProducts = updatedOtherReimbursementProducts.filter((product) => !product.id);
@@ -213,56 +217,54 @@ const updateExistingProducts = async (
   for (const product of products) {
     const currentProduct = currentProducts.find((p) => p.reimbursementProductId === product.id);
 
-    // For material-based products
+    const refundSources = product.refundSources.map((rs) => ({
+      indexCode: { connect: { indexCodeId: rs.indexCode.indexCodeId } },
+      amount: rs.amount
+    }));
+
     if (product.materialId) {
       await prisma.reimbursement_Product.update({
         where: { reimbursementProductId: product.id },
         data: {
           name: null,
           cost: product.cost,
-          materialId: product.materialId
+          materialId: product.materialId,
+          refundSources: {
+            deleteMany: {},
+            create: refundSources
+          }
         }
       });
 
-      // If the material changed, unlink old material and link new one
       if (currentProduct?.materialId && currentProduct.materialId !== product.materialId) {
         await prisma.material.update({
           where: { materialId: currentProduct.materialId },
-          data: {
-            reimbursementRequestId: null,
-            status: 'NOT_READY_TO_ORDER'
-          }
+          data: { reimbursementRequestId: null, status: 'NOT_READY_TO_ORDER' }
         });
       }
 
-      // Link new material
       await prisma.material.update({
         where: { materialId: product.materialId },
-        data: {
-          status: 'READY_TO_ORDER',
-          reimbursementRequestId: currentProduct?.reimbursementRequestId
-        }
+        data: { status: 'READY_TO_ORDER', reimbursementRequestId: currentProduct?.reimbursementRequestId }
       });
-    }
-    // For string-based products
-    else if (product.name) {
+    } else {
       await prisma.reimbursement_Product.update({
         where: { reimbursementProductId: product.id },
         data: {
           name: product.name,
           cost: product.cost,
-          materialId: null
+          materialId: null,
+          refundSources: {
+            deleteMany: {},
+            create: refundSources
+          }
         }
       });
 
-      // If this product previously had a material linked, unlink it
       if (currentProduct?.materialId) {
         await prisma.material.update({
           where: { materialId: currentProduct.materialId },
-          data: {
-            reimbursementRequestId: null,
-            status: 'NOT_READY_TO_ORDER'
-          }
+          data: { reimbursementRequestId: null, status: 'NOT_READY_TO_ORDER' }
         });
       }
     }
@@ -419,12 +421,18 @@ export const createReimbursementProducts = async (
  * finance team.
  */
 export const validateUserIsPartOfFinanceTeamOrHead = async (user: User, organizationId: string) => {
-  const isUserAuthorized =
-    (await isUserOnFinanceTeam(user, organizationId)) || (await userHasPermission(user.userId, organizationId, isHead));
-
-  if (!isUserAuthorized) {
-    throw new AccessDeniedException(`You are not a member of the finance team!`);
+  // Check isHead first since it doesn't require finance team to exist
+  if (await userHasPermission(user.userId, organizationId, isHead)) {
+    return;
   }
+  try {
+    if (await isUserOnFinanceTeam(user, organizationId)) {
+      return;
+    }
+  } catch {
+    // Finance team may not exist yet
+  }
+  throw new AccessDeniedException(`You are not a member of the finance team!`);
 };
 
 const getFinanceTeam = async (organizationId: string) => {
@@ -455,6 +463,26 @@ const getFinanceTeam = async (organizationId: string) => {
  */
 export const isUserOnFinanceTeam = async (user: User, organizationId: string): Promise<boolean> => {
   return isUserOnTeam(await getFinanceTeam(organizationId), user);
+};
+
+/**
+ * Checks if a user is on the finance team or is a head.
+ * Checks isHead first since it doesn't require the finance team to exist.
+ *
+ * @param user the user to check
+ * @param organizationId the organization id
+ * @returns whether the user is on the finance team or is a head
+ */
+export const isUserFinanceTeamOrHead = async (user: User, organizationId: string): Promise<boolean> => {
+  if (await userHasPermission(user.userId, organizationId, isHead)) {
+    return true;
+  }
+  try {
+    return await isUserOnFinanceTeam(user, organizationId);
+  } catch {
+    // Finance team may not exist yet
+    return false;
+  }
 };
 
 /**
