@@ -3,7 +3,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import { Assembly, MaterialStatus, RoleEnum } from 'shared';
 import * as yup from 'yup';
-import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import {
   useCreateManufacturer,
   useGetAllManufacturers,
@@ -16,6 +15,7 @@ import { useCurrentUser } from '../../../../../hooks/users.hooks';
 import MaterialAdminWrapper from './MaterialAdminWrapper';
 import MaterialHeadWrapper from './MaterialHeadWrapper';
 import MaterialMemberWrapper from './MaterialMemberWrapper';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
 
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
@@ -73,9 +73,20 @@ export interface MaterialFormProps {
   onHide: () => void;
   open: boolean;
   assemblies: Assembly[];
+  assembliesLoading?: boolean;
+  fromRRForm?: boolean;
 }
 
-const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onSubmit, defaultValues, onHide, open }) => {
+const MaterialForm: React.FC<MaterialFormProps> = ({
+  submitText,
+  assemblies,
+  assembliesLoading,
+  onSubmit,
+  defaultValues,
+  onHide,
+  open,
+  fromRRForm = false
+}) => {
   const {
     handleSubmit,
     control,
@@ -85,10 +96,10 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
   } = useForm<MaterialFormInput>({
     defaultValues: {
       name: defaultValues?.name ?? '',
-      status: defaultValues?.status ?? MaterialStatus.NotReadyToOrder,
+      status: defaultValues?.status ?? (fromRRForm ? MaterialStatus.ReadyToOrder : MaterialStatus.NotReadyToOrder),
       materialTypeName: defaultValues?.materialTypeName ?? '',
       manufacturerPartNumber: defaultValues?.manufacturerPartNumber ?? '',
-      quantity: defaultValues?.quantity ?? 0,
+      quantity: defaultValues?.quantity ?? 1,
       manufacturerName: defaultValues?.manufacturerName ?? '',
       pdmFileName: defaultValues?.pdmFileName,
       price: defaultValues?.price ?? 0,
@@ -125,15 +136,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
   if (unitsIsError) return <ErrorPage message={unitsError.message} />;
   if (manufacturersIsError) return <ErrorPage message={manufacturersError.message} />;
 
-  if (
-    isLoadingManufactuers ||
-    isLoadingMaterialTypes ||
-    isLoadingUnits ||
-    !materialTypes ||
-    !units ||
-    !manufactuers ||
-    isLoadingCreateManufacturer
-  ) {
+  if (isLoadingCreateManufacturer) {
     return <LoadingIndicator />;
   }
 
@@ -160,9 +163,13 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
 
   const sharedProps = {
     assemblies,
-    allManufacturers: manufactuers,
-    allMaterialTypes: materialTypes,
-    allUnits: units,
+    assembliesLoading,
+    allManufacturers: manufactuers ?? [],
+    allMaterialTypes: materialTypes ?? [],
+    allUnits: units ?? [],
+    manufacturersLoading: isLoadingManufactuers,
+    materialTypesLoading: isLoadingMaterialTypes,
+    unitsLoading: isLoadingUnits,
     onSubmit: onSubmitWrapper,
     handleSubmit,
     submitText,
@@ -172,7 +179,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
     open,
     watch,
     createManufacturer: createManufacturerWrapper,
-    setValue
+    setValue,
+    fromRRForm
   };
 
   if (user.role === RoleEnum.APP_ADMIN || user.role === RoleEnum.ADMIN) {

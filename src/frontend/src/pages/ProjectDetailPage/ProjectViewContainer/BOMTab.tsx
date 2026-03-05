@@ -50,12 +50,7 @@ const BOMTab = ({ project }: { project: Project }) => {
 
   return (
     <Box>
-      <CreateMaterialModal
-        open={showAddMaterial}
-        onHide={() => setShowAddMaterial(false)}
-        wbsElement={project}
-        assemblies={assemblies}
-      />
+      <CreateMaterialModal open={showAddMaterial} onHide={() => setShowAddMaterial(false)} wbsElement={project} />
       <CreateAssemblyModal open={showAddAssembly} onHide={() => setShowAddAssembly(false)} wbsElement={project} />
       <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <BOMTableWrapper

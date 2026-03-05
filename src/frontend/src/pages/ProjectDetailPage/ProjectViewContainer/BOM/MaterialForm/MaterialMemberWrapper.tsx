@@ -17,11 +17,16 @@ export interface MaterialMemberWrapperProps {
   allMaterialTypes: MaterialType[];
   allUnits: Unit[];
   allManufacturers: Manufacturer[];
+  manufacturersLoading?: boolean;
+  materialTypesLoading?: boolean;
+  unitsLoading?: boolean;
   assemblies: Assembly[];
+  assembliesLoading?: boolean;
   open: boolean;
   watch: UseFormWatch<MaterialFormInput>;
   createManufacturer: (name: string) => void;
   setValue: UseFormSetValue<MaterialFormInput>;
+  fromRRForm?: boolean;
 }
 
 const MaterialMemberWrapper: React.FC<MaterialMemberWrapperProps> = ({
@@ -32,13 +37,18 @@ const MaterialMemberWrapper: React.FC<MaterialMemberWrapperProps> = ({
   control,
   errors,
   allMaterialTypes,
+  materialTypesLoading,
   allUnits,
+  unitsLoading,
   allManufacturers,
+  manufacturersLoading,
   assemblies,
+  assembliesLoading,
   open,
   watch,
   createManufacturer,
-  setValue
+  setValue,
+  fromRRForm = false
 }) => {
   const {
     data: reimbursementRequests,
@@ -53,9 +63,13 @@ const MaterialMemberWrapper: React.FC<MaterialMemberWrapperProps> = ({
   return (
     <MaterialFormView
       assemblies={assemblies}
+      assembliesLoading={assembliesLoading}
       allManufacturers={allManufacturers}
+      manufacturersLoading={manufacturersLoading}
       allMaterialTypes={allMaterialTypes}
+      materialTypesLoading={materialTypesLoading}
       allUnits={allUnits}
+      unitsLoading={unitsLoading}
       onSubmit={onSubmit}
       handleSubmit={handleSubmit}
       submitText={submitText}
@@ -67,6 +81,7 @@ const MaterialMemberWrapper: React.FC<MaterialMemberWrapperProps> = ({
       watch={watch}
       createManufacturer={createManufacturer}
       setValue={setValue}
+      fromRRForm={fromRRForm}
     />
   );
 };
