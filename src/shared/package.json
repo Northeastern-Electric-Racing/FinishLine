@@ -26,5 +26,8 @@
     "@types/node": "18.17.1",
     "ts-node": "^8.10.1",
     "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.19"
   }
 }

@@ -15,7 +15,7 @@ import ErrorPage from '../../ErrorPage';
 import { useGetAssembliesForWbsElement, useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 
 export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialPreview) =>
-  currentMaterial.subtotal + accumulator;
+  (currentMaterial.subtotal ?? 0) + accumulator;
 
 const BOMTab = ({ project }: { project: Project }) => {
   const initialHideColumn = new Array(12).fill(false);
@@ -93,6 +93,11 @@ const BOMTab = ({ project }: { project: Project }) => {
             >
               Show All Columns
             </NERButton>
+            {/*
+            <NERButton variant="contained" onClick={() => {}} disabled={isGuest(user.role)}>
+              Copy Existing BOM
+            </NERButton>
+            */}
           </Box>
           <Box display="flex" gap="20px" alignItems="center">
             <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '8px 14px 8px 14px', borderRadius: '6px' }}>

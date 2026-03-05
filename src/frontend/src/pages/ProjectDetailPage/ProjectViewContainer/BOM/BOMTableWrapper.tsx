@@ -11,7 +11,7 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useAssignMaterialToAssembly, useDeleteAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
-import { Link, Typography } from '@mui/material';
+import { Button, Link, Typography } from '@mui/material';
 import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
 import { renderStatusBOM } from './BOMTableCustomCells';
@@ -217,20 +217,54 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       hide: hideColumn[0],
       renderCell: (params) => {
         const material = materials.find((m) => m.materialId === params.row.materialId);
-        const reimbursementRequest = material?.reimbursementRequest;
+        if (!material) return null;
 
-        if (!reimbursementRequest) return null;
+        const { reimbursementRequest } = material;
+
+        // case 1 (if reimbursement request exists): link to the reimbursement request page
+        if (reimbursementRequest) {
+          return (
+            <Link
+              component={RouterLink}
+              to={`${routes.REIMBURSEMENT_REQUESTS}/view/${reimbursementRequest.reimbursementRequestId}`}
+              underline="hover"
+              sx={{ color: '#dd514c', fontWeight: 'bold', cursor: 'pointer' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {reimbursementRequest.identifier}
+            </Link>
+          );
+        }
+
+        // case 2 (if reimbursement request does not exist): link to the create reimbursement request page with pre-filled info
+        const { quantity, price } = material;
+
+        const prefillCost = quantity != null && price != null ? (Number(quantity) * Number(price)) / 100 : undefined;
 
         return (
-          <Link
+          <Button
             component={RouterLink}
-            to={`${routes.REIMBURSEMENT_REQUESTS}/view/${reimbursementRequest.reimbursementRequestId}`}
-            underline="hover"
-            sx={{ color: '#dd514c', fontWeight: 'bold', cursor: 'pointer' }}
-            onClick={(e) => e.stopPropagation()}
+            to={{
+              pathname: routes.NEW_REIMBURSEMENT_REQUEST,
+              state: {
+                projectWbsNum: project.wbsNum,
+                materialId: material.materialId,
+                materialName: material.name,
+                prefillCost
+              }
+            }}
+            variant="contained"
+            size="small"
+            onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
+            sx={{
+              backgroundColor: '#dd514c',
+              textTransform: 'none',
+              fontWeight: 600,
+              '&:hover': { backgroundColor: '#c7443f' }
+            }}
           >
-            {reimbursementRequest.identifier}
-          </Link>
+            Create RR
+          </Button>
         );
       }
     },

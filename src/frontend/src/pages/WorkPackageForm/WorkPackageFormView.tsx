@@ -36,7 +36,8 @@ import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
 import { ObjectSchema } from 'yup';
-import { getMonday, transformDate } from '../../utils/datetime.utils';
+import { getMonday } from '../../utils/datetime.utils';
+import { toDateString } from 'shared';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
 import { StandardChangeRequestType } from '../CreateChangeRequestPage/CreateChangeRequestView';
 import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequestView';
@@ -235,7 +236,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         userId,
         name,
         crId: crId === 'null' ? undefined : crId,
-        startDate: transformDate(startDate),
+        startDate: toDateString(startDate),
         duration,
         blockedBy: blockedByWbsNums,
         descriptionBullets,

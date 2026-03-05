@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { Alert, Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
-import { Calendar, DayOfWeek, EventInstance, EventStatus, EventType, isAdmin, isHead, wbsPipe } from 'shared';
+import {
+  Calendar,
+  DayOfWeek,
+  EventInstance,
+  EventStatus,
+  EventType,
+  formatEventTime,
+  isAdmin,
+  isHead,
+  wbsPipe
+} from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../utils/routes';
@@ -29,7 +39,7 @@ import EditEventModal from './Components/EditEventModal';
 import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmationModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import NERDeleteModal from '../../components/NERDeleteModal';
-import { formatTime } from '../../utils/datetime.utils';
+
 import { getPendingReason } from '../../utils/calendar.utils';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
@@ -215,7 +225,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
           {dayOfWeek && <AccessTimeIcon fontSize="small" />}
           {dayOfWeek && !event.allDay && (
             <Typography variant="body2">
-              {formatTime(event.startTime)} – {formatTime(event.endTime)}
+              {formatEventTime(event.startTime)} – {formatEventTime(event.endTime)}
             </Typography>
           )}
           {dayOfWeek && event.allDay && <Typography variant="body2">All day</Typography>}
