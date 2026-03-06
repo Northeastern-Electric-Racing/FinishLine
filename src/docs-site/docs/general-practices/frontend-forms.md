@@ -1,6 +1,8 @@
 ---
-name: frontend-forms
+title: Frontend Forms
 description: Guide for building forms in FinishLine using React Hook Form with MUI components and the NERFormModal abstraction. Covers useForm setup, Controller wrapping, create vs edit mode, form-modal reset lifecycle, and shared form field components. Use when creating new forms, adding form fields, building create/edit modals, working with React Hook Form, or debugging form state issues. NEVER use useEffect to sync form state.
+skill: true
+skill_name: frontend-forms
 ---
 
 # Frontend Forms

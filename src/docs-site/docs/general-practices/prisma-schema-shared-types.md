@@ -1,6 +1,8 @@
 ---
-name: prisma-schema-shared-types
+title: Prisma Schema and Shared Types
 description: Guide for defining Prisma data models and keeping shared TypeScript types in sync in FinishLine. Covers schema conventions, enum patterns, multi-tenant organizationId scoping, the migration workflow, and the shared type barrel export. Use when adding new database models, creating or editing Prisma schema, defining shared types or interfaces, adding enums, running migrations, or when asked how the data layer works.
+skill: true
+skill_name: prisma-schema-shared-types
 ---
 
 # Prisma Schema and Shared Types
