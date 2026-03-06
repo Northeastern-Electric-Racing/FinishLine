@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 // Paths
 const DOCS_DIR = path.join(__dirname, '../docs');
-const SKILLS_DIR = path.join(__dirname, '../../.claude/skills');
+const SKILLS_DIR = path.join(__dirname, '../../../.claude/skills');
 
 /**
  * Recursively find all markdown files

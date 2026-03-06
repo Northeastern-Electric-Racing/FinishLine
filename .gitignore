@@ -28,7 +28,7 @@
 *.env
 .agent
 
-# Generated Claude skills (source is docs-site/docs/)
+# Generated Claude skills (source is src/docs-site/docs/)
 .claude/skills/
 
 npm-debug.log*

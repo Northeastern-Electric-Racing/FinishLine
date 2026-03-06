@@ -13865,9 +13865,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"finishline-docs@workspace:docs-site":
+"finishline-docs@workspace:src/docs-site":
   version: 0.0.0-use.local
-  resolution: "finishline-docs@workspace:docs-site"
+  resolution: "finishline-docs@workspace:src/docs-site"
   dependencies:
     "@docusaurus/core": ^3.1.0
     "@docusaurus/module-type-aliases": ^3.1.0

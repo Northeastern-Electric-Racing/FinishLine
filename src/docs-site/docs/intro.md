@@ -26,7 +26,7 @@ The documentation is organized by topic in the sidebar. Browse the categories to
 
 If you're new to the project, we recommend starting with:
 
-1. [Repository Overview](general-practices/repository-overview) - Understand the overall architecture and set up your development environment
+1. [Repository Overview](repository-overview) - Understand the overall architecture and set up your development environment
 2. [Backend Endpoints](general-practices/backend-endpoints) - Learn the backend patterns and API structure
 3. [Postman API Testing](general-practices/postman-api-testing) - Learn how to test APIs with Postman
 

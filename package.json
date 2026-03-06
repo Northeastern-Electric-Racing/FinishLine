@@ -7,14 +7,14 @@
     "src/backend",
     "src/frontend",
     "src/shared",
-    "docs-site"
+    "src/docs-site"
   ],
   "scripts": {
     "prettier-check": "yarn prettier --check .",
     "frontend": "yarn workspace frontend start",
     "backend": "yarn workspace backend start",
     "backend:dev": "yarn workspace backend dev",
-    "start": "yarn workspace shared build; concurrently --kill-others-on-fail \"yarn backend:dev\"  \"yarn frontend\"",
+    "start": "yarn workspace shared build; concurrently --kill-others-on-fail --hide 2 \"yarn backend:dev\" \"yarn frontend\" \"yarn docs:dev\"",
     "prisma:seed": "cd src/backend; npx prisma db seed",
     "prisma:reset:force": "yarn workspace shared build; cd src/backend; npx prisma migrate reset --force",
     "prisma:reset": "yarn workspace shared build; cd src/backend; npx prisma migrate reset",
@@ -158,8 +158,8 @@
       "build",
       "coverage",
       "docs",
-      "docs-site/.docusaurus",
-      "docs-site/build",
+      "src/docs-site/.docusaurus",
+      "src/docs-site/build",
       "lambda",
       "node_modules",
       "public",
