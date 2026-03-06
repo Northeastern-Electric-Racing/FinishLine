@@ -15,7 +15,7 @@ import ErrorPage from '../../ErrorPage';
 import { useGetAssembliesForWbsElement, useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 
 export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialPreview) =>
-  currentMaterial.subtotal ?? 0 + accumulator;
+  (currentMaterial.subtotal ?? 0) + accumulator;
 
 const BOMTab = ({ project }: { project: Project }) => {
   const initialHideColumn = new Array(12).fill(false);
@@ -50,12 +50,7 @@ const BOMTab = ({ project }: { project: Project }) => {
 
   return (
     <Box>
-      <CreateMaterialModal
-        open={showAddMaterial}
-        onHide={() => setShowAddMaterial(false)}
-        wbsElement={project}
-        assemblies={assemblies}
-      />
+      <CreateMaterialModal open={showAddMaterial} onHide={() => setShowAddMaterial(false)} wbsElement={project} />
       <CreateAssemblyModal open={showAddAssembly} onHide={() => setShowAddAssembly(false)} wbsElement={project} />
       <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <BOMTableWrapper

@@ -36,7 +36,7 @@ import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
-import { useGetMaterialsForWbsElement, useGetAssembliesForWbsElement } from '../../../hooks/bom.hooks';
+import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { formatReasonName } from '../../../utils/reimbursement-request.utils';
@@ -173,13 +173,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const [currentProductIndex, setCurrentProductIndex] = useState<number | null>(null);
   const [currentProject, setCurrentProject] = useState<ProjectPreview | null>(null);
   const [pendingMaterialIndices, setPendingMaterialIndices] = useState<Set<number>>(new Set());
-
-  const {
-    data: assemblies,
-    isLoading: assembliesLoading,
-    isError: assembliesIsError,
-    error: assembliesError
-  } = useGetAssembliesForWbsElement(currentProject?.wbsNum || { carNumber: 0, projectNumber: 0, workPackageNumber: 0 });
 
   const onCostBlurHandler = (value: number, index: number) => {
     setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
@@ -336,9 +329,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   }
   if (otherReasonIsError) {
     return <ErrorPage message={otherReasonError.message} />;
-  }
-  if (assembliesIsError) {
-    return <ErrorPage message={assembliesError?.message || 'Failed to load assemblies'} />;
   }
 
   return (
@@ -864,13 +854,13 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
         </Table>
       </TableContainer>
 
-      {currentProject && !assembliesLoading && assemblies && (
+      {currentProject && (
         <CreateMaterialModal
           open={showCreateMaterialModal}
           onHide={handleCloseCreateMaterial}
           wbsElement={currentProject}
-          assemblies={assemblies}
           onSuccess={handleMaterialCreated}
+          fromRRForm
         />
       )}
     </>
