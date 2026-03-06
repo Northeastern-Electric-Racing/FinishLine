@@ -281,7 +281,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               />
             )}
           />
-          <FormHelperText error>{errors.price}</FormHelperText>
+          <FormHelperText error>{errors.price?.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={3} display="flex" alignItems="center" color="#EF4345">

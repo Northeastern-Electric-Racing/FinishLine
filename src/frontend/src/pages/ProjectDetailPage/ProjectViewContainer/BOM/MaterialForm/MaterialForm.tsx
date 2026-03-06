@@ -21,7 +21,10 @@ const schema = yup.object().shape({
   manufacturerName: yup.string().optional(),
   manufacturerPartNumber: yup.string().optional(),
   quantity: yup.number().optional(),
-  price: yup.number().optional(),
+  price: yup
+    .number()
+    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+    .optional(),
   unitName: yup.string().optional(),
   linkUrl: yup.string().optional(),
   notes: yup.string().optional(),
@@ -97,7 +100,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({
       quantity: defaultValues?.quantity ?? 1,
       manufacturerName: defaultValues?.manufacturerName ?? '',
       pdmFileName: defaultValues?.pdmFileName,
-      price: defaultValues?.price ?? 0,
+      price: defaultValues?.price,
       unitName: defaultValues?.unitName,
       linkUrl: defaultValues?.linkUrl ?? '',
       notes: defaultValues?.notes,
@@ -124,12 +127,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({
   }
 
   const onSubmitWrapper = (data: MaterialFormInput): void => {
-    const price = data.price ? Math.round(data.price * 100) : undefined;
-    const subtotal = price
-      ? data.quantity != null
-        ? parseFloat((data.quantity * price).toFixed(2))
-        : undefined
-      : undefined;
+    const price = data.price != null ? Math.round(data.price * 100) : undefined;
+    const subtotal = price != null && data.quantity != null ? parseFloat((data.quantity * price).toFixed(2)) : undefined;
     onSubmit({ ...data, subtotal, price, quantity: data.quantity != null ? new Decimal(data.quantity) : undefined });
   };
 
