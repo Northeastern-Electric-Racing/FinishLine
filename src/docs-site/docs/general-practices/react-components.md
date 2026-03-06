@@ -1,6 +1,8 @@
 ---
-name: react-components
+title: React Components
 description: Guide for building and organizing React components in FinishLine. Covers shared vs page-specific component decisions, prop interface design, MUI sx styling, styled() MUI extensions, stateless component patterns, and the container/view split. Use when creating new React components, refactoring UI code, deciding where a component belongs, or when asked about component architecture or styling conventions.
+skill: true
+skill_name: react-components
 ---
 
 # React Component Architecture
