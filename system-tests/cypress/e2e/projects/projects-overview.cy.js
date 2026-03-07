@@ -1,10 +1,5 @@
 /// <reference types="cypress" />
-import {
-  NEW_PROJECT_BUTTON,
-  ALL_PROJECTS_TAB,
-  MY_TEAMS_PROJECTS,
-  PROJECTS_IM_LEADING
-} from '../../utils/selectors.utils';
+import { NEW_PROJECT_BUTTON, ALL_PROJECTS_TAB, MY_TEAMS_PROJECTS, PROJECTS_IM_LEADING } from '../../utils/selectors.utils';
 
 import { VISIBLE, LENGTH_GREATER_THAN, INCLUDE } from '../../utils/cypress-actions.utils';
 
@@ -15,20 +10,12 @@ describe('Projects Overview', () => {
 
   it("My Team's Projects Should Display At Least One Project", () => {
     cy.contains(MY_TEAMS_PROJECTS).should(VISIBLE);
-    cy.contains(MY_TEAMS_PROJECTS)
-      .parent()
-      .parent()
-      .find('a')
-      .should(LENGTH_GREATER_THAN, 0);
+    cy.contains(MY_TEAMS_PROJECTS).parent().parent().find('a').should(LENGTH_GREATER_THAN, 0);
   });
 
   it("Projects I'm Leading Should Display At Least One Project", () => {
     cy.contains(PROJECTS_IM_LEADING).should(VISIBLE);
-    cy.contains(PROJECTS_IM_LEADING)
-      .parent()
-      .parent()
-      .find('a')
-      .should(LENGTH_GREATER_THAN, 0);
+    cy.contains(PROJECTS_IM_LEADING).parent().parent().find('a').should(LENGTH_GREATER_THAN, 0);
   });
 
   it('Can Switch to All Projects Table', () => {
