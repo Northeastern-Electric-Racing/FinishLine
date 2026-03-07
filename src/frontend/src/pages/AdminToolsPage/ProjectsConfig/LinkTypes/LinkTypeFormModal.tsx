@@ -16,9 +16,17 @@ interface LinkTypeFormModalProps {
   defaultValues?: LinkType;
   onSubmit: (data: LinkTypeCreatePayload) => void;
   linkTypes: LinkType[];
+  isOnGuestHomePage?: boolean;
 }
 
-const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTypes }: LinkTypeFormModalProps) => {
+const LinkTypeFormModal = ({
+  open,
+  handleClose,
+  defaultValues,
+  onSubmit,
+  linkTypes,
+  isOnGuestHomePage
+}: LinkTypeFormModalProps) => {
   const toast = useToast();
   const creatingNew = defaultValues === undefined;
 
@@ -49,7 +57,7 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
       name: defaultValues?.name ?? '',
       iconName: defaultValues?.iconName ?? '',
       required: defaultValues?.required ?? false,
-      isOnGuestHomePage: defaultValues?.required ?? false
+      isOnGuestHomePage: isOnGuestHomePage ?? false
     }
   });
 
@@ -95,19 +103,6 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
             <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>Required</FormLabel>
             <Controller
               name="required"
-              control={control}
-              render={({ field }) => <Switch {...field} checked={field.value} />}
-            />
-            <FormHelperText error>{errors.required?.message}</FormHelperText>
-          </FormControl>
-        </Grid>
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>
-              Appears on Guest Home Page
-            </FormLabel>
-            <Controller
-              name="isOnGuestHomePage"
               control={control}
               render={({ field }) => <Switch {...field} checked={field.value} />}
             />

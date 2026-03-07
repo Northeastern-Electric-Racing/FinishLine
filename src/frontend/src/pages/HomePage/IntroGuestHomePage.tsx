@@ -35,7 +35,6 @@ const IntroGuestHomePage = () => {
 
   const {
     data: finishlineImageUrl,
-    isLoading: finishlineImageIsLoading,
     isError: finishlineImageIsError,
     error: finishlineImageError
   } = useGetImageUrl(organization?.platformLogoImageId ?? null);
@@ -52,15 +51,7 @@ const IntroGuestHomePage = () => {
     return <ErrorPage message={finishlineImageError.message} />;
   }
 
-  if (
-    !finishlineImageUrl ||
-    finishlineImageIsLoading ||
-    !organization ||
-    organizationIsLoading ||
-    !usefulLinks ||
-    usefulLinksIsLoading
-  )
-    return <LoadingIndicator />;
+  if (!organization || organizationIsLoading || !usefulLinks || usefulLinksIsLoading) return <LoadingIndicator />;
 
   const guestPageLinks = usefulLinks?.filter((link) => link.linkType.isOnGuestHomePage);
 
@@ -87,7 +78,7 @@ const IntroGuestHomePage = () => {
       >
         <Box
           component="img"
-          src={finishlineImageUrl}
+          src={finishlineImageUrl ?? '/NER-Logo-App-Icon.png'}
           alt="FinishLine logo"
           sx={{
             display: 'block',
@@ -129,12 +120,9 @@ const IntroGuestHomePage = () => {
         }}
       >
         <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
-          <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
-            Are you a student interested in joining NER?
-          </Typography>
           <RouterLink to={routes.HOME_PNM} style={{ textDecoration: 'none' }}>
-            <NERButton variant="contained" size="medium">
-              Learn more
+            <NERButton variant="outlined" size="small">
+              Interested in becoming a member? Learn more about joining {organization.name} here
             </NERButton>
           </RouterLink>
         </CardContent>
