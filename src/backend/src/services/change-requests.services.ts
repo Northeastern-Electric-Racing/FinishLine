@@ -1041,6 +1041,13 @@ export default class ChangeRequestsService {
           workPackageNumber,
           organizationId: organization.organizationId
         }
+      },
+      select: {
+        wbsElementId: true,
+        dateDeleted: true,
+        organizationId: true,
+        leadId: true,
+        managerId: true
       }
     });
 
@@ -1065,8 +1072,8 @@ export default class ChangeRequestsService {
         identifier: numChangeRequests + 1,
         leadershipChangeRequest: {
           create: {
-            ...(leadId && { lead: { connect: { userId: leadId } } }),
-            ...(managerId && { manager: { connect: { userId: managerId } } })
+            lead: leadId ? { connect: { userId: leadId } } : undefined,
+            manager: managerId ? { connect: { userId: managerId } } : undefined
           }
         }
       }
@@ -1102,16 +1109,20 @@ export default class ChangeRequestsService {
       await tx.wBS_Element.update({
         where: { wbsElementId: wbsElement.wbsElementId },
         data: {
-          ...(leadId && { lead: { connect: { userId: leadId } } }),
-          ...(managerId && { manager: { connect: { userId: managerId } } })
+          lead: leadId ? { connect: { userId: leadId } } : { disconnect: true },
+          manager: managerId ? { connect: { userId: managerId } } : { disconnect: true }
         }
       });
 
       const changes: { changeRequestId: string; implementerId: string; wbsElementId: string; detail: string }[] = [];
 
-      if (leadId !== undefined) {
+      const oldLeadId = wbsElement.leadId ?? undefined;
+      const oldManagerId = wbsElement.managerId ?? undefined;
+
+      if (leadId !== oldLeadId) {
+        // only update if lead changed
         const oldLead = await getUserFullName(wbsElement.leadId ?? null);
-        const newLead = await getUserFullName(leadId);
+        const newLead = await getUserFullName(leadId ?? null);
         changes.push({
           changeRequestId: crId,
           implementerId: submitter.userId,
@@ -1120,9 +1131,10 @@ export default class ChangeRequestsService {
         });
       }
 
-      if (managerId !== undefined) {
+      if (managerId !== oldManagerId) {
+        // only update if manager changed
         const oldManager = await getUserFullName(wbsElement.managerId ?? null);
-        const newManager = await getUserFullName(managerId);
+        const newManager = await getUserFullName(managerId ?? null);
         changes.push({
           changeRequestId: crId,
           implementerId: submitter.userId,
