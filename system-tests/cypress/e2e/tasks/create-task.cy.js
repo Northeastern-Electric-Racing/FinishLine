@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-import { VISIBLE, INCLUDE } from '../../utils/cypress-actions.utils';
+/* eslint-disable no-undef */
 
 const dismissAlerts = () => {
   // Remove all scheduling conflict alert banners from DOM directly
@@ -8,18 +8,13 @@ const dismissAlerts = () => {
       alert.remove();
     });
   });
-  cy.wait(300);
 };
 
 const openCreateTaskModal = () => {
   dismissAlerts();
-  // Wait to ensure page is stable, then click New Event
-  cy.wait(500);
   cy.contains('button', 'New Event').click({ force: true });
   cy.get('[role="dialog"]', { timeout: 10000 }).should('exist');
   cy.get('[role="dialog"]').contains('button', 'Create Task').click({ force: true });
-  // Wait for the second dialog (Create Task) to appear
-  cy.wait(500);
   cy.get('[role="dialog"]').find('h2').should('contain', 'Create Task');
 };
 
