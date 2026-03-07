@@ -22,7 +22,7 @@ import { dbSeedAllTeams } from './seed-data/teams.seed.js';
 import { seedReimbursementRequests } from './seed-data/reimbursement-requests.seed.js';
 import ChangeRequestsService from '../services/change-requests.services.js';
 import TeamsService from '../services/teams.services.js';
-import { DayOfWeek, MaterialStatus, RoleEnum, StandardChangeRequest, WbsElementStatus, WorkPackageStage } from 'shared';
+import { MaterialStatus, RoleEnum, StandardChangeRequest, WbsElementStatus, WorkPackageStage } from 'shared';
 import TasksService from '../services/tasks.services.js';
 import { seedProject } from './seed-data/projects.seed.js';
 import { seedWorkPackage } from './seed-data/work-packages.seed.js';
@@ -43,7 +43,7 @@ import FinanceServices from '../services/finance.services.js';
 import CalendarService from '../services/calendar.services.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL, max: 5 });
 const prisma = new PrismaClient({ adapter });
 
 // Compute relative dates for seeding
