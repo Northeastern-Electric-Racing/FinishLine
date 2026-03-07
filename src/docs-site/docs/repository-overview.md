@@ -1,6 +1,8 @@
 ---
-name: repository-overview
+title: Repository Overview
 description: High-level overview of the FinishLine monorepo structure, tech stack, tools, and how they work together. Use when onboarding to the codebase, asking about the project structure, wondering what technology FinishLine uses, asking where files live, or needing to understand how the frontend, backend, and shared packages relate to each other.
+skill: true
+skill_name: repository-overview
 ---
 
 # Repository Overview
