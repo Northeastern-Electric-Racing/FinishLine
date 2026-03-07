@@ -376,7 +376,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
                   <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
                 </Tooltip>
                 <NERButton
-                  disabled={!!changeRequestInputExists}
+                  disabled={!!changeRequestInputExists || onlyLeadershipChanged}
                   variant="contained"
                   onClick={() => setIsModalOpen(true)}
                   sx={{ mx: 1 }}

@@ -241,7 +241,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                   variant="contained"
                   onClick={() => setIsModalOpen(true)}
                   sx={{ mx: 1 }}
-                  disabled={changeRequestInputExists}
+                  disabled={changeRequestInputExists || onlyLeadershipChanged}
                 >
                   Create Change Request
                 </NERButton>
