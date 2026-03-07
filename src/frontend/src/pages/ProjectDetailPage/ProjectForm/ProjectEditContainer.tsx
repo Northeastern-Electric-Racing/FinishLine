@@ -27,6 +27,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import ProjectFormContainer from './ProjectForm';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useQueryClient } from 'react-query';
 
 interface ProjectEditContainerProps {
   project: Project;
@@ -40,6 +41,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const query = useQuery();
   const history = useHistory();
   const user = useCurrentUser();
+  const queryClient = useQueryClient();
   const { name, budget, summary, workPackages } = project;
   const [managerId, setManagerId] = useState<string | undefined>(project.manager?.userId.toString());
   const [leadId, setLeadId] = useState<string | undefined>(project.lead?.userId.toString());
@@ -237,6 +239,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           managerId
         };
         await mutateLeadershipCR(autoCRPayload);
+        // fixes cache issue
+        await queryClient.refetchQueries(['projects']);
         exitEditMode();
         return;
       }

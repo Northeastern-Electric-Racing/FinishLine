@@ -57,6 +57,7 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { wbsTester } from '../../utils/form';
 import * as yup from 'yup';
 import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeRequestModal';
+import { useQueryClient } from 'react-query';
 
 export interface WorkPackageFormReturn {
   register: UseFormRegister<WorkPackageFormViewPayload>;
@@ -108,6 +109,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const query = useQuery();
   const toast = useToast();
   const user = useCurrentUser();
+  const queryClient = useQueryClient();
   const { reset: resetWorkPackageForm, ...workPackageFormMethods } = useForm<WorkPackageFormViewPayload>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -136,6 +138,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     defaultValues ? wbsElement.manager?.userId.toString() : undefined
   );
   const [leadId, setLeadId] = useState<string | undefined>(defaultValues ? wbsElement.lead?.userId.toString() : undefined);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   let changeRequestFormInput: FormInput | undefined = undefined;
   const pageTitle = defaultValues ? 'Edit Work Package' : 'Create Work Package';
@@ -271,6 +274,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           managerId
         };
         await createLeadershipCR(autoCRPayload);
+        // fixes cache issue
+        await queryClient.refetchQueries(['work packages']);
         exitActiveMode();
         return;
       }
