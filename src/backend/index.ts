@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { getUserAndOrganization, prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils.js';
 import { errorHandler } from './src/utils/errors.utils.js';
+import { getCurrentCar } from './src/utils/car.utils.js';
 import userRouter from './src/routes/users.routes.js';
 import projectRouter from './src/routes/projects.routes.js';
 import teamsRouter from './src/routes/teams.routes.js';
@@ -80,6 +81,9 @@ app.use(isProd ? requireJwtProd : requireJwtDev);
 
 // get user and organization
 app.use(getUserAndOrganization);
+
+// get current car
+app.use(getCurrentCar);
 
 // routes
 app.use('/users', userRouter);
