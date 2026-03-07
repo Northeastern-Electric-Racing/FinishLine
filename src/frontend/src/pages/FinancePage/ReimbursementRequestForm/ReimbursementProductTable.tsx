@@ -26,23 +26,27 @@ import {
   wbsPipe,
   ReimbursementProductFormArgs,
   IndexCode,
-  CreateRefundSourceArgs
+  CreateRefundSourceArgs,
+  Material,
+  ProjectPreview
 } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
+import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { formatReasonName } from '../../../utils/reimbursement-request.utils';
+import CreateMaterialModal from '../../ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/CreateMaterialModal';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
   removeProduct: (index: number) => void;
   appendProduct: (args: ReimbursementProductFormArgs) => void;
-  wbsElementAutocompleteOptions: {
+  projectAutocompleteOptions: {
     label: string;
     id: string;
   }[];
@@ -56,17 +60,93 @@ interface ReimbursementProductTableProps {
   secondRefundSourceIndexCode?: IndexCode;
   firstRefundSourceName?: string;
   secondRefundSourceName?: string;
+  allProjects: ProjectPreview[];
 }
 
 const ListItem = styled('li')(({ theme }) => ({
   margin: theme.spacing(0.5)
 }));
 
+const MaterialAutocomplete: React.FC<{
+  wbsNum: WbsNumber;
+  onSelect: (material: Material | null) => void;
+  initialValue?: string;
+}> = ({ wbsNum, onSelect, initialValue }) => {
+  const { data: materials, isLoading, isError, error } = useGetMaterialsForWbsElement(wbsNum);
+  const [materialSelected, setMaterialSelected] = useState<{ id: string; label: string } | null>(null);
+
+  const materialOptions = useMemo(
+    () =>
+      (materials ?? []).map((material) => ({
+        id: material.materialId,
+        label: `${material.name} (${material.materialTypeName}): ${material.manufacturerName ?? 'N/A'}, ${material.manufacturerPartNumber ?? 'N/A'}`
+      })),
+    [materials]
+  );
+
+  useEffect(() => {
+    if (!materials || !initialValue) return;
+
+    // Fetch pre-existing label
+    let match = materialOptions.find((o) => o.label === initialValue) ?? null;
+
+    // Otherwise fetch new material by name
+    if (!match) {
+      const materialByName = materials.find((m) => m.name === initialValue);
+      if (materialByName) match = materialOptions.find((o) => o.id === materialByName.materialId) ?? null;
+    }
+
+    if (match && match.id !== materialSelected?.id) {
+      setMaterialSelected(match);
+      // Update the form value to the formatted label
+      const fullMaterial = materials.find((m) => m.materialId === match!.id) ?? null;
+      onSelect(fullMaterial);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [materials, initialValue]);
+
+  if (isLoading || !materials) {
+    return <LoadingIndicator />;
+  }
+
+  if (isError) {
+    return (
+      <TextField
+        variant="outlined"
+        placeholder="Select Material"
+        fullWidth
+        size="small"
+        error
+        disabled
+        helperText={error?.message || 'Failed to load materials'}
+      />
+    );
+  }
+
+  return (
+    <Autocomplete
+      sx={{ flex: 1 }}
+      options={materialOptions}
+      getOptionLabel={(option) => option.label}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
+      onChange={(_, value) => {
+        setMaterialSelected(value);
+        const selectedMaterial = value ? (materials.find((m) => m.materialId === value.id) ?? null) : null;
+        onSelect(selectedMaterial);
+      }}
+      value={materialSelected}
+      blurOnSelect={true}
+      size={'small'}
+      renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select Material" fullWidth />}
+    />
+  );
+};
+
 const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   reimbursementProducts,
   removeProduct,
   appendProduct,
-  wbsElementAutocompleteOptions,
+  projectAutocompleteOptions,
   control,
   errors,
   setValue,
@@ -75,18 +155,24 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   secondRefundSourceIndexCode,
   firstRefundSourceName,
   secondRefundSourceName,
-  watch
+  watch,
+  allProjects
 }) => {
   const uniqueWbsElementsWithProducts = new Map<
     string,
     {
-      name: string;
+      name?: string;
       cost: number;
       index: number;
       id?: string;
       reason: WbsNumber | OtherProductReason;
     }[]
   >();
+
+  const [showCreateMaterialModal, setShowCreateMaterialModal] = useState(false);
+  const [currentProductIndex, setCurrentProductIndex] = useState<number | null>(null);
+  const [currentProject, setCurrentProject] = useState<ProjectPreview | null>(null);
+  const [pendingMaterialIndices, setPendingMaterialIndices] = useState<Set<number>>(new Set());
 
   const onCostBlurHandler = (value: number, index: number) => {
     setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
@@ -140,6 +226,33 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
       setValue(`reimbursementProducts.${index}.cost`, firstSourceAmount + secondSourceAmount);
     }
+  };
+
+  const handleOpenCreateMaterial = (productIndex: number, projectWbsNum: WbsNumber) => {
+    const project = allProjects.find(
+      (proj) =>
+        proj.wbsNum.carNumber === projectWbsNum.carNumber && proj.wbsNum.projectNumber === projectWbsNum.projectNumber
+    );
+
+    if (project) {
+      setCurrentProductIndex(productIndex);
+      setCurrentProject(project); // Triggers useGetAssembliesForWbsElement
+      setShowCreateMaterialModal(true);
+    }
+  };
+
+  const handleCloseCreateMaterial = () => {
+    setShowCreateMaterialModal(false);
+    setCurrentProductIndex(null);
+    setCurrentProject(null);
+  };
+
+  const handleMaterialCreated = (materialName: string) => {
+    if (currentProductIndex !== null) {
+      setValue(`reimbursementProducts.${currentProductIndex}.name`, materialName);
+      setPendingMaterialIndices((prev) => new Set(prev).add(currentProductIndex));
+    }
+    handleCloseCreateMaterial();
   };
 
   const [showFirstSourceFields, setShowFirstSourceFields] = useState(false);
@@ -203,6 +316,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       setShowSecondSourceFields(false);
     }
   }, [secondRefundSourceName]);
+
   const {
     data: otherReasons,
     isLoading: otherReasonsIsLoading,
@@ -218,436 +332,538 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   }
 
   return (
-    <TableContainer sx={{ borderTop: '1px solid rgb(131, 131, 131)' }}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell
-              colSpan={2}
-              sx={{
-                paddingTop: '10px',
-                paddingBottom: '10px',
-                borderBottom: 0,
-                paddingLeft: '0px',
-                color: '#dd524c',
-                textShadow: '1.5px 0 #dd524c',
-                letterSpacing: '0.5px',
-                textDecoration: 'underline',
-                textUnderlineOffset: '3.5px',
-                textDecorationThickness: '0.6px',
-                fontSize: 'xx-large',
-                fontWeight: 'bold'
-              }}
-            >
-              Purchased Items*
-            </TableCell>
-          </TableRow>
-          <TableRow sx={{ width: '100%' }}>
-            <TableCell
-              colSpan={2}
-              sx={{
-                borderBottom: 'none',
-                padding: '0',
-                color: '#dd524c'
-              }}
-            >
-              Associate each item with a project, or select a category from "Other Categories" if the item is not linked to a
-              project.
-              <br />
-              Multiple items can be added under the same project or category.
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          <TableRow
-            sx={{
-              '& .MuiTableCell-root': {
-                paddingLeft: '0px',
-                paddingRight: '0px'
-              }
-            }}
-          >
-            <TableCell
-              colSpan={2}
-              sx={{
-                borderBottom: 0
-              }}
-            >
-              <Box
+    <>
+      <TableContainer sx={{ borderTop: '1px solid rgb(131, 131, 131)' }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell
+                colSpan={2}
                 sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  flexWrap: 'nowrap',
-                  alignItems: 'center',
-                  gap: 1,
-                  width: '100%'
+                  paddingTop: '10px',
+                  paddingBottom: '10px',
+                  borderBottom: 0,
+                  paddingLeft: '0px',
+                  color: '#dd524c',
+                  textShadow: '1.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3.5px',
+                  textDecorationThickness: '0.6px',
+                  fontSize: 'xx-large',
+                  fontWeight: 'bold'
                 }}
               >
-                <Autocomplete
-                  sx={{ flex: 1 }}
-                  options={wbsElementAutocompleteOptions}
-                  onChange={(_e, value) => {
-                    if (value) {
-                      appendProduct({
-                        reason: validateWBS(value.id),
-                        name: '',
-                        cost: 0,
-                        refundSources: []
-                      });
-                    }
-                  }}
-                  value={null}
-                  blurOnSelect={true}
-                  id={'append-product-autocomplete'}
-                  size={'small'}
-                  renderInput={(params) => (
-                    <TextField {...params} variant="outlined" placeholder="Select Project" fullWidth />
-                  )}
-                />
-                <Typography fontWeight="bold" sx={{ whiteSpace: 'nowrap' }}>
-                  OR
-                </Typography>
-                <Autocomplete
-                  sx={{ flex: 1 }}
-                  options={otherReasons || []}
-                  getOptionLabel={(option) => formatReasonName(option.name)}
-                  onChange={(_e, value) => {
-                    if (value) {
-                      appendProduct({
-                        reason: value,
-                        name: '',
-                        cost: 0,
-                        refundSources: []
-                      });
-                    }
-                  }}
-                  value={null}
-                  blurOnSelect={true}
-                  id={'append-other-category-autocomplete'}
-                  size={'small'}
-                  renderInput={(params) => (
-                    <TextField {...params} variant="outlined" placeholder="Select Other Category" fullWidth />
-                  )}
-                />
-              </Box>
-            </TableCell>
-          </TableRow>
-          {Array.from(uniqueWbsElementsWithProducts.keys()).map((key) => {
-            return (
-              <TableRow
+                Purchased Items*
+              </TableCell>
+            </TableRow>
+            <TableRow sx={{ width: '100%' }}>
+              <TableCell
+                colSpan={2}
                 sx={{
-                  '& .MuiTableCell-root': {
-                    paddingRight: '0px'
-                  }
+                  borderBottom: 'none',
+                  padding: '0',
+                  color: '#dd524c'
                 }}
-                key={key}
               >
-                <TableCell>
-                  <Typography
-                    sx={{
-                      color: '#dd524c',
-                      textShadow: '0.5px 0 #dd524c',
-                      letterSpacing: '0.5px',
-                      textDecoration: 'underline',
-                      textUnderlineOffset: '3.5px',
-                      textDecorationThickness: '0.6x',
-                      fontSize: 'medium'
-                    }}
-                  >
-                    {
-                      wbsElementAutocompleteOptions
-                        .concat(
-                          (otherReasons || []).map((reason) => ({
-                            id: reason.name,
-                            label: formatReasonName(reason.name)
-                          }))
-                        )
-                        .find((value) => value.id === key)?.label
-                    }
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ flexWrap: 'wrap', listStyle: 'none', p: 0, m: 0 }} component={'ul'}>
-                    <Box
-                      sx={{
-                        color: '#dd524c',
-                        textShadow: '0.5px 0 #dd524c',
-                        letterSpacing: '0.5px',
-                        textUnderlineOffset: '3.5px',
-                        textDecorationThickness: '0.6x',
-                        fontSize: 'large',
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: { xs: '3px', sm: '12px' },
-                        flexDirection: { xs: 'column', md: 'row' },
-                        mb: -1
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          flex: hasMultipleRefundSources ? { xs: '1', md: '4' } : '7',
-                          minWidth: '80px',
-                          width: { xs: '100%', md: 'auto' }
-                        }}
-                      ></Box>
-                      {!hasMultipleRefundSources && (
-                        <>
-                          <Box
-                            sx={{ flex: '1.5', width: '100%', textAlign: 'center', display: { xs: 'none', md: 'block' } }}
-                          >
-                            <label>{firstRefundSourceName}</label>
-                          </Box>
-                          <Box sx={{ width: '32.5px' }}></Box>
-                        </>
-                      )}
-                      {hasMultipleRefundSources && (
-                        <>
-                          <Box
-                            sx={{ flex: '1.5', width: '100%', textAlign: 'center', display: { xs: 'none', md: 'block' } }}
-                          >
-                            <label>{firstRefundSourceName}</label>
-                          </Box>
-                          <Box
-                            sx={{ flex: '1.5', width: '100%', textAlign: 'center', display: { xs: 'none', md: 'block' } }}
-                          >
-                            <label>{secondRefundSourceName}</label>
-                          </Box>
-                          <Box sx={{ width: '32.5px' }}></Box>
-                        </>
-                      )}
-                    </Box>
-                    {uniqueWbsElementsWithProducts.get(key)?.map((product) => (
-                      <ListItem key={product.id}>
-                        <Box sx={{ display: 'flex' }}>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              width: '100%',
-                              alignItems: 'center',
-                              gap: { xs: '3px', sm: '12px' },
-                              flexDirection: { xs: 'column', md: 'row' }
-                            }}
-                          >
-                            <Box
-                              sx={{
-                                flex: hasMultipleRefundSources ? { xs: '1', md: '4' } : '7',
-                                minWidth: '80px',
-                                width: { xs: '100%', md: 'auto' }
-                              }}
-                            >
-                              <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                <Controller
-                                  name={`reimbursementProducts.${product.index}.name`}
-                                  control={control}
-                                  render={({ field }) => (
-                                    <TextField
-                                      {...field}
-                                      variant="outlined"
-                                      placeholder={'Product Name/Description'}
-                                      autoComplete="off"
-                                      fullWidth
-                                      error={!!errors.reimbursementProducts?.[product.index]?.name}
-                                    />
-                                  )}
-                                />
-                                <FormHelperText error>
-                                  {errors.reimbursementProducts?.[product.index]?.name?.message}
-                                </FormHelperText>
-                              </FormControl>
-                            </Box>
-                            {!hasMultipleRefundSources && (
-                              <Box
-                                sx={{
-                                  flex: '1.5',
-                                  width: '100%'
-                                }}
-                              >
-                                <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                  <Controller
-                                    name={`reimbursementProducts.${product.index}.cost`}
-                                    control={control}
-                                    render={({ field }) => (
-                                      <TextField
-                                        {...field}
-                                        variant="outlined"
-                                        value={field.value === 0 ? '' : field.value}
-                                        placeholder={'$ Cost'}
-                                        type="number"
-                                        fullWidth
-                                        onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
-                                        error={!!errors.reimbursementProducts?.[product.index]?.cost}
-                                      />
-                                    )}
-                                  />
-                                  <FormHelperText error>
-                                    {errors.reimbursementProducts?.[product.index]?.cost?.message}
-                                  </FormHelperText>
-                                </FormControl>
-                              </Box>
-                            )}
-                            {hasMultipleRefundSources && (
-                              <>
-                                {showFirstSourceFields && (
-                                  <Box
-                                    sx={{
-                                      flex: '1.5',
-                                      width: '100%'
-                                    }}
-                                  >
-                                    <Box
-                                      sx={{
-                                        display: { xs: 'block', md: 'none' },
-                                        textAlign: 'left',
-                                        mb: 1,
-                                        color: '#dd524c',
-                                        textShadow: '0.5px 0 #dd524c',
-                                        letterSpacing: '0.5px'
-                                      }}
-                                    >
-                                      <Typography>{firstRefundSourceName}</Typography>
-                                    </Box>
-                                    <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                      <Controller
-                                        name={`reimbursementProducts.${product.index}.refundSources.${0}.amount`}
-                                        control={control}
-                                        render={({ field }) => (
-                                          <TextField
-                                            {...field}
-                                            value={field.value === 0 ? '' : field.value}
-                                            disabled={firstRefundSourceIndexCode === undefined}
-                                            variant="outlined"
-                                            placeholder={'$ Amt'}
-                                            type="number"
-                                            fullWidth
-                                            onBlur={(e) =>
-                                              onAmountBlurHandler(e.target.value, product.index, `refundSources.${0}.amount`)
-                                            }
-                                            error={
-                                              !!errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount
-                                            }
-                                          />
-                                        )}
-                                      />
-                                      <FormHelperText error>
-                                        {errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount?.message}
-                                      </FormHelperText>
-                                    </FormControl>
-                                  </Box>
-                                )}
-                                {showSecondSourceFields && (
-                                  <Box
-                                    sx={{
-                                      flex: '1.5',
-                                      width: '100%'
-                                    }}
-                                  >
-                                    <Box
-                                      sx={{
-                                        display: { xs: 'block', md: 'none' },
-                                        textAlign: 'left',
-                                        mb: 1,
-                                        color: '#dd524c',
-                                        textShadow: '0.5px 0 #dd524c',
-                                        letterSpacing: '0.5px'
-                                      }}
-                                    >
-                                      <Typography>{secondRefundSourceName}</Typography>
-                                    </Box>
-                                    <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                      <Controller
-                                        name={`reimbursementProducts.${product.index}.refundSources.${1}.amount`}
-                                        control={control}
-                                        render={({ field }) => (
-                                          <TextField
-                                            {...field}
-                                            value={field.value === 0 ? '' : field.value}
-                                            disabled={secondRefundSourceIndexCode === undefined}
-                                            variant="outlined"
-                                            placeholder={'$ Amt'}
-                                            type="number"
-                                            fullWidth
-                                            onBlur={(e) =>
-                                              onAmountBlurHandler(e.target.value, product.index, `refundSources.${1}.amount`)
-                                            }
-                                            error={
-                                              !!errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount
-                                            }
-                                          />
-                                        )}
-                                      />
-                                      <FormHelperText error>
-                                        {errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount?.message}
-                                      </FormHelperText>
-                                    </FormControl>
-                                  </Box>
-                                )}
-                                <Box
-                                  sx={{
-                                    display: { xs: 'block', md: 'none' },
-                                    width: '100%',
-                                    borderBottom: '1px solid rgb(81, 81, 81)',
-                                    my: 2
-                                  }}
-                                />
-                              </>
-                            )}
-                          </Box>
-                          <IconButton
-                            sx={{
-                              alignSelf: { xs: 'flex-start', md: 'center' },
-                              marginTop: { xs: '10px', md: '1px' },
-                              '&:hover': {
-                                backgroundColor: hoverColor
-                              }
-                            }}
-                            onClick={() => removeProduct(product.index)}
-                          >
-                            <RemoveCircleOutline />
-                          </IconButton>
-                        </Box>
-                      </ListItem>
-                    ))}
-                  </Box>
-                  <Button
-                    sx={{
-                      marginTop: '-5px'
-                    }}
-                    startIcon={
-                      <AddCircleOutline
-                        sx={{
-                          '&:focus': {
-                            backgroundColor: hoverColor
-                          },
-                          '&:hover': {
-                            backgroundColor: hoverColor
-                          },
-                          marginRight: '-5px'
-                        }}
-                      />
-                    }
-                    onClick={(e) => {
-                      const existingProducts = uniqueWbsElementsWithProducts.get(key);
-                      if (existingProducts && existingProducts.length > 0) {
+                Associate each item with a project, or select a category from "Other Categories" if the item is not linked to
+                a project.
+                <br />
+                Multiple items can be added under the same project or category.
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow
+              sx={{
+                '& .MuiTableCell-root': {
+                  paddingLeft: '0px',
+                  paddingRight: '0px'
+                }
+              }}
+            >
+              <TableCell
+                colSpan={2}
+                sx={{
+                  borderBottom: 0
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'nowrap',
+                    alignItems: 'center',
+                    gap: 1,
+                    width: '100%'
+                  }}
+                >
+                  <Autocomplete
+                    sx={{ flex: 1 }}
+                    options={projectAutocompleteOptions}
+                    onChange={(_e, value) => {
+                      if (value) {
                         appendProduct({
-                          reason: existingProducts[0].reason,
+                          reason: validateWBS(value.id),
                           name: '',
                           cost: 0,
                           refundSources: []
                         });
                       }
-                      e.currentTarget.blur();
                     }}
-                  >
-                    Add Product
-                  </Button>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                    value={null}
+                    blurOnSelect={true}
+                    id={'append-product-autocomplete'}
+                    size={'small'}
+                    renderInput={(params) => (
+                      <TextField {...params} variant="outlined" placeholder="Select Project" fullWidth />
+                    )}
+                  />
+                  <Typography fontWeight="bold" sx={{ whiteSpace: 'nowrap' }}>
+                    OR
+                  </Typography>
+                  <Autocomplete
+                    sx={{ flex: 1 }}
+                    options={otherReasons || []}
+                    getOptionLabel={(option) => formatReasonName(option.name)}
+                    onChange={(_e, value) => {
+                      if (value) {
+                        appendProduct({
+                          reason: value,
+                          name: '',
+                          cost: 0,
+                          refundSources: []
+                        });
+                      }
+                    }}
+                    value={null}
+                    blurOnSelect={true}
+                    id={'append-other-category-autocomplete'}
+                    size={'small'}
+                    renderInput={(params) => (
+                      <TextField {...params} variant="outlined" placeholder="Select Other Category" fullWidth />
+                    )}
+                  />
+                </Box>
+              </TableCell>
+            </TableRow>
+            {Array.from(uniqueWbsElementsWithProducts.keys()).map((key) => {
+              return (
+                <TableRow
+                  sx={{
+                    '& .MuiTableCell-root': {
+                      paddingRight: '0px'
+                    }
+                  }}
+                  key={key}
+                >
+                  <TableCell>
+                    <Typography
+                      sx={{
+                        color: '#dd524c',
+                        textShadow: '0.5px 0 #dd524c',
+                        letterSpacing: '0.5px',
+                        textDecoration: 'underline',
+                        textUnderlineOffset: '3.5px',
+                        textDecorationThickness: '0.6x',
+                        fontSize: 'medium'
+                      }}
+                    >
+                      {
+                        projectAutocompleteOptions
+                          .concat(
+                            (otherReasons || []).map((reason) => ({
+                              id: reason.name,
+                              label: formatReasonName(reason.name)
+                            }))
+                          )
+                          .find((value) => value.id === key)?.label
+                      }
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ flexWrap: 'wrap', listStyle: 'none', p: 0, m: 0 }} component={'ul'}>
+                      <Box
+                        sx={{
+                          color: '#dd524c',
+                          textShadow: '0.5px 0 #dd524c',
+                          letterSpacing: '0.5px',
+                          textUnderlineOffset: '3.5px',
+                          textDecorationThickness: '0.6x',
+                          fontSize: 'large',
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: { xs: '3px', sm: '12px' },
+                          flexDirection: { xs: 'column', md: 'row' },
+                          mb: -1
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            flex: hasMultipleRefundSources ? { xs: '1', md: '4' } : '7',
+                            minWidth: '80px',
+                            width: { xs: '100%', md: 'auto' }
+                          }}
+                        ></Box>
+                        {!hasMultipleRefundSources && (
+                          <>
+                            <Box
+                              sx={{ flex: '1.5', width: '100%', textAlign: 'center', display: { xs: 'none', md: 'block' } }}
+                            >
+                              <label>{firstRefundSourceName}</label>
+                            </Box>
+                            <Box sx={{ width: '32.5px' }}></Box>
+                          </>
+                        )}
+                        {hasMultipleRefundSources && (
+                          <>
+                            <Box
+                              sx={{ flex: '1.5', width: '100%', textAlign: 'center', display: { xs: 'none', md: 'block' } }}
+                            >
+                              <label>{firstRefundSourceName}</label>
+                            </Box>
+                            <Box
+                              sx={{ flex: '1.5', width: '100%', textAlign: 'center', display: { xs: 'none', md: 'block' } }}
+                            >
+                              <label>{secondRefundSourceName}</label>
+                            </Box>
+                            <Box sx={{ width: '32.5px' }}></Box>
+                          </>
+                        )}
+                      </Box>
+                      {uniqueWbsElementsWithProducts.get(key)?.map((product) => {
+                        const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
+
+                        return (
+                          <ListItem key={product.id}>
+                            <Box sx={{ display: 'flex' }}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  width: '100%',
+                                  alignItems: 'center',
+                                  gap: { xs: '3px', sm: '12px' },
+                                  flexDirection: { xs: 'column', md: 'row' }
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    flex: hasMultipleRefundSources ? { xs: '1', md: '4' } : '7',
+                                    minWidth: '80px',
+                                    width: { xs: '100%', md: 'auto' }
+                                  }}
+                                >
+                                  {hasWbsNum ? (
+                                    <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                      {watch(`reimbursementProducts.${product.index}.materialId`) ||
+                                      !watch(`reimbursementProducts.${product.index}.name`) ||
+                                      pendingMaterialIndices.has(product.index) ? (
+                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                          <Box sx={{ flex: 1 }}>
+                                            <MaterialAutocomplete
+                                              wbsNum={product.reason as WbsNumber}
+                                              initialValue={watch(`reimbursementProducts.${product.index}.name`)}
+                                              onSelect={(material) => {
+                                                if (material) {
+                                                  const label = `${material.name} (${material.materialTypeName}): ${material.manufacturerName ?? 'N/A'}, ${material.manufacturerPartNumber ?? 'N/A'}`;
+                                                  setValue(`reimbursementProducts.${product.index}.name`, label, {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true
+                                                  });
+                                                  setValue(
+                                                    `reimbursementProducts.${product.index}.materialId`,
+                                                    material.materialId,
+                                                    {
+                                                      shouldValidate: true,
+                                                      shouldDirty: true
+                                                    }
+                                                  );
+                                                  setPendingMaterialIndices((prev) => {
+                                                    const next = new Set(prev);
+                                                    next.delete(product.index);
+                                                    return next;
+                                                  });
+                                                } else {
+                                                  setValue(`reimbursementProducts.${product.index}.name`, '', {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true
+                                                  });
+                                                  setValue(`reimbursementProducts.${product.index}.materialId`, undefined, {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true
+                                                  });
+                                                }
+                                              }}
+                                            />
+                                          </Box>
+                                          <Typography fontWeight="bold" sx={{ whiteSpace: 'nowrap' }}>
+                                            OR
+                                          </Typography>
+                                          <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={() =>
+                                              handleOpenCreateMaterial(product.index, product.reason as WbsNumber)
+                                            }
+                                            sx={{ whiteSpace: 'nowrap' }}
+                                          >
+                                            Create New Material
+                                          </Button>
+                                        </Box>
+                                      ) : (
+                                        <TextField
+                                          variant="outlined"
+                                          value={watch(`reimbursementProducts.${product.index}.name`)}
+                                          fullWidth
+                                          size="small"
+                                          disabled
+                                        />
+                                      )}
+                                      <FormHelperText error>
+                                        {errors.reimbursementProducts?.[product.index]?.name?.message}
+                                      </FormHelperText>
+                                    </FormControl>
+                                  ) : (
+                                    <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                      <Controller
+                                        name={`reimbursementProducts.${product.index}.name`}
+                                        control={control}
+                                        render={({ field }) => (
+                                          <TextField
+                                            {...field}
+                                            variant="outlined"
+                                            placeholder={'Product Name/Description'}
+                                            autoComplete="off"
+                                            fullWidth
+                                            error={!!errors.reimbursementProducts?.[product.index]?.name}
+                                          />
+                                        )}
+                                      />
+                                      <FormHelperText error>
+                                        {errors.reimbursementProducts?.[product.index]?.name?.message}
+                                      </FormHelperText>
+                                    </FormControl>
+                                  )}
+                                </Box>
+                                {!hasMultipleRefundSources && (
+                                  <Box
+                                    sx={{
+                                      flex: '1.5',
+                                      width: '100%'
+                                    }}
+                                  >
+                                    <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                      <Controller
+                                        name={`reimbursementProducts.${product.index}.cost`}
+                                        control={control}
+                                        render={({ field }) => (
+                                          <TextField
+                                            {...field}
+                                            variant="outlined"
+                                            value={field.value === 0 ? '' : field.value}
+                                            placeholder={'$ Cost'}
+                                            type="number"
+                                            fullWidth
+                                            onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
+                                            error={!!errors.reimbursementProducts?.[product.index]?.cost}
+                                          />
+                                        )}
+                                      />
+                                      <FormHelperText error>
+                                        {errors.reimbursementProducts?.[product.index]?.cost?.message}
+                                      </FormHelperText>
+                                    </FormControl>
+                                  </Box>
+                                )}
+                                {hasMultipleRefundSources && (
+                                  <>
+                                    {showFirstSourceFields && (
+                                      <Box
+                                        sx={{
+                                          flex: '1.5',
+                                          width: '100%'
+                                        }}
+                                      >
+                                        <Box
+                                          sx={{
+                                            display: { xs: 'block', md: 'none' },
+                                            textAlign: 'left',
+                                            mb: 1,
+                                            color: '#dd524c',
+                                            textShadow: '0.5px 0 #dd524c',
+                                            letterSpacing: '0.5px'
+                                          }}
+                                        >
+                                          <Typography>{firstRefundSourceName}</Typography>
+                                        </Box>
+                                        <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                          <Controller
+                                            name={`reimbursementProducts.${product.index}.refundSources.${0}.amount`}
+                                            control={control}
+                                            render={({ field }) => (
+                                              <TextField
+                                                {...field}
+                                                value={field.value === 0 ? '' : field.value}
+                                                disabled={firstRefundSourceIndexCode === undefined}
+                                                variant="outlined"
+                                                placeholder={'$ Amt'}
+                                                type="number"
+                                                fullWidth
+                                                onBlur={(e) =>
+                                                  onAmountBlurHandler(
+                                                    e.target.value,
+                                                    product.index,
+                                                    `refundSources.${0}.amount`
+                                                  )
+                                                }
+                                                error={
+                                                  !!errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount
+                                                }
+                                              />
+                                            )}
+                                          />
+                                          <FormHelperText error>
+                                            {
+                                              errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount
+                                                ?.message
+                                            }
+                                          </FormHelperText>
+                                        </FormControl>
+                                      </Box>
+                                    )}
+                                    {showSecondSourceFields && (
+                                      <Box
+                                        sx={{
+                                          flex: '1.5',
+                                          width: '100%'
+                                        }}
+                                      >
+                                        <Box
+                                          sx={{
+                                            display: { xs: 'block', md: 'none' },
+                                            textAlign: 'left',
+                                            mb: 1,
+                                            color: '#dd524c',
+                                            textShadow: '0.5px 0 #dd524c',
+                                            letterSpacing: '0.5px'
+                                          }}
+                                        >
+                                          <Typography>{secondRefundSourceName}</Typography>
+                                        </Box>
+                                        <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                          <Controller
+                                            name={`reimbursementProducts.${product.index}.refundSources.${1}.amount`}
+                                            control={control}
+                                            render={({ field }) => (
+                                              <TextField
+                                                {...field}
+                                                value={field.value === 0 ? '' : field.value}
+                                                disabled={secondRefundSourceIndexCode === undefined}
+                                                variant="outlined"
+                                                placeholder={'$ Amt'}
+                                                type="number"
+                                                fullWidth
+                                                onBlur={(e) =>
+                                                  onAmountBlurHandler(
+                                                    e.target.value,
+                                                    product.index,
+                                                    `refundSources.${1}.amount`
+                                                  )
+                                                }
+                                                error={
+                                                  !!errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount
+                                                }
+                                              />
+                                            )}
+                                          />
+                                          <FormHelperText error>
+                                            {
+                                              errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount
+                                                ?.message
+                                            }
+                                          </FormHelperText>
+                                        </FormControl>
+                                      </Box>
+                                    )}
+                                    <Box
+                                      sx={{
+                                        display: { xs: 'block', md: 'none' },
+                                        width: '100%',
+                                        borderBottom: '1px solid rgb(81, 81, 81)',
+                                        my: 2
+                                      }}
+                                    />
+                                  </>
+                                )}
+                              </Box>
+                              <IconButton
+                                sx={{
+                                  alignSelf: { xs: 'flex-start', md: 'center' },
+                                  marginTop: { xs: '10px', md: '1px' },
+                                  '&:hover': {
+                                    backgroundColor: hoverColor
+                                  }
+                                }}
+                                onClick={() => removeProduct(product.index)}
+                              >
+                                <RemoveCircleOutline />
+                              </IconButton>
+                            </Box>
+                          </ListItem>
+                        );
+                      })}
+                    </Box>
+                    <Button
+                      sx={{
+                        marginTop: '-5px'
+                      }}
+                      startIcon={
+                        <AddCircleOutline
+                          sx={{
+                            '&:focus': {
+                              backgroundColor: hoverColor
+                            },
+                            '&:hover': {
+                              backgroundColor: hoverColor
+                            },
+                            marginRight: '-5px'
+                          }}
+                        />
+                      }
+                      onClick={(e) => {
+                        const existingProducts = uniqueWbsElementsWithProducts.get(key);
+                        if (existingProducts && existingProducts.length > 0) {
+                          appendProduct({
+                            reason: existingProducts[0].reason,
+                            name: '',
+                            cost: 0,
+                            refundSources: []
+                          });
+                        }
+                        e.currentTarget.blur();
+                      }}
+                    >
+                      Add Product
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {currentProject && (
+        <CreateMaterialModal
+          open={showCreateMaterialModal}
+          onHide={handleCloseCreateMaterial}
+          wbsElement={currentProject}
+          onSuccess={handleMaterialCreated}
+          fromRRForm
+        />
+      )}
+    </>
   );
 };
 

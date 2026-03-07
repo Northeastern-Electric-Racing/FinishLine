@@ -27,16 +27,21 @@ export const materialTransformer = (material: Prisma.MaterialGetPayload<Material
     userCreated: userTransformer(material.userCreated),
     status: material.status as MaterialStatus,
     materialTypeName: material.materialType.name,
-    manufacturerName: material.manufacturer.name,
-    manufacturerPartNumber: material.manufacturerPartNumber,
+    manufacturerName: material.manufacturer ? material.manufacturer.name : undefined,
+    manufacturerPartNumber: material.manufacturerPartNumber ?? undefined,
     pdmFileName: material.pdmFileName ?? undefined,
-    price: material.price,
-    subtotal: material.subtotal,
-    quantity: material.quantity,
+    price: material.price ?? undefined,
+    subtotal: material.subtotal ?? undefined,
+    quantity: material.quantity ?? undefined,
     linkUrl: material.linkUrl,
     unitName: material.unit?.name ?? undefined,
     materialType: { ...material.materialType, dateDeleted: material.materialType.dateDeleted ?? undefined },
-    manufacturer: { ...material.manufacturer, dateDeleted: material.manufacturer.dateDeleted ?? undefined },
+    manufacturer: material.manufacturer
+      ? {
+          ...material.manufacturer,
+          dateDeleted: material.manufacturer.dateDeleted ?? undefined
+        }
+      : undefined,
     notes: material.notes ?? undefined,
     reimbursementRequest: material.reimbursementRequest
       ? reimbursementRequestTransformer(material.reimbursementRequest)
@@ -56,7 +61,11 @@ export const materialPreviewTransformer = (
     status: material.status as MaterialStatus,
     unitName: material.unit?.name ?? undefined,
     materialTypeName: material.materialType.name,
-    manufacturerName: material.manufacturer.name,
+    manufacturerName: material.manufacturer?.name ?? undefined,
+    manufacturerPartNumber: material.manufacturerPartNumber ?? undefined,
+    quantity: material.quantity ?? undefined,
+    price: material.price ?? undefined,
+    subtotal: material.subtotal ?? undefined,
     reimbursementRequest: material.reimbursementRequest
       ? reimbursementRequestTransformer(material.reimbursementRequest)
       : undefined

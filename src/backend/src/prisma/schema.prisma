@@ -159,6 +159,27 @@ enum Review_Status {
   APPROVED
 }
 
+enum Prospective_Sponsor_Status {
+  IN_PROGRESS
+  DECLINED
+  NOT_IN_CONTACT
+  NO_RESPONSE
+  ACCEPTED
+}
+
+enum First_Contact_Method {
+  INBOUND_FORM
+  INBOUND_EMAIL
+  OUTBOUND_EMAIL
+  OTHER
+}
+
+enum Sponsor_Value_Type {
+  MONETARY
+  STOCK
+  DISCOUNT
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -281,6 +302,7 @@ model User {
   createdDocuments                        Document[]                           @relation(name: "documentsCreatedBy")
   leadershipCrAsLead                      Leadership_CR[]                      @relation(name: "leadershipCrLead")
   leadershipCrAsManager                   Leadership_CR[]                      @relation(name: "leadershipCrManager")
+  prospectiveSponsorsContacted            Prospective_Sponsor[]                @relation(name: "prospectiveSponsorContactor")
 }
 
 model Role {
@@ -761,9 +783,11 @@ model Reimbursement_Product_Reason {
 
 model Reimbursement_Product {
   reimbursementProductId       String                       @id @default(uuid())
-  name                         String
+  name                         String?
   dateDeleted                  DateTime?
   cost                         Int
+  material                     Material?                    @relation(fields: [materialId], references: [materialId])
+  materialId                   String?
   reimbursementProductReasonId String                       @unique
   reimbursementProductReason   Reimbursement_Product_Reason @relation(fields: [reimbursementProductReasonId], references: [reimbursementProductReasonId])
   reimbursementRequestId       String
@@ -772,6 +796,7 @@ model Reimbursement_Product {
 
   @@index([reimbursementRequestId])
   @@index([reimbursementProductReasonId])
+  @@index([materialId])
 }
 
 model Refund_Source {
@@ -807,25 +832,39 @@ model Vendor {
   @@index([organizationId])
 }
 
+model Sponsor_Contact {
+  sponsorContactId   String               @id @default(uuid())
+  name               String
+  email              String?
+  phone              String?
+  position           String?
+  sponsor            Sponsor?
+  prospectiveSponsor Prospective_Sponsor?
+}
+
 model Sponsor {
-  sponsorId      String         @id @default(uuid())
-  name           String
-  organizationId String
-  organization   Organization   @relation(fields: [organizationId], references: [organizationId])
-  dateCreated    DateTime       @default(now())
-  dateDeleted    DateTime?
-  activeStatus   Boolean
-  vendorContact  String
-  tier           Sponsor_Tier   @relation(fields: [sponsorTierId], references: [sponsorTierId])
-  sponsorTierId  String
-  sponsorValue   Int
-  joinDate       DateTime
-  discountCode   String?
-  activeYears    Int[]
-  taxExempt      Boolean
-  sponsorNotes   String?
-  sponsorTasks   Sponsor_Task[]
-  logoImageId    String?
+  sponsorId           String               @id @default(uuid())
+  name                String
+  organizationId      String
+  organization        Organization         @relation(fields: [organizationId], references: [organizationId])
+  dateCreated         DateTime             @default(now())
+  dateDeleted         DateTime?
+  activeStatus        Boolean
+  contact             Sponsor_Contact      @relation(fields: [contactId], references: [sponsorContactId])
+  contactId           String               @unique
+  tier                Sponsor_Tier?        @relation(fields: [sponsorTierId], references: [sponsorTierId])
+  sponsorTierId       String?
+  valueTypes          Sponsor_Value_Type[]
+  sponsorValue        Int?
+  stockDescription    String?
+  discountDescription String?
+  joinDate            DateTime
+  discountCode        String?
+  activeYears         Int[]
+  taxExempt           Boolean
+  sponsorNotes        String?
+  sponsorTasks        Sponsor_Task[]
+  logoImageId         String?
 
   @@unique([name, organizationId], name: "uniqueSponsor")
   @@index([sponsorTierId])
@@ -833,17 +872,44 @@ model Sponsor {
 }
 
 model Sponsor_Task {
-  sponsorTaskId  String    @id @default(uuid())
-  dueDate        DateTime
-  notifyDate     DateTime?
-  assignee       User?     @relation(fields: [assigneeUserId], references: [userId], name: "assignedSponsorTasks")
-  assigneeUserId String?
-  notes          String
-  sponsor        Sponsor   @relation(fields: [sponsorId], references: [sponsorId])
-  sponsorId      String
-  dateDeleted    DateTime?
+  sponsorTaskId        String               @id @default(uuid())
+  dueDate              DateTime
+  notifyDate           DateTime?
+  assignee             User?                @relation(fields: [assigneeUserId], references: [userId], name: "assignedSponsorTasks")
+  assigneeUserId       String?
+  notes                String
+  done                 Boolean              @default(false)
+  sponsor              Sponsor?             @relation(fields: [sponsorId], references: [sponsorId])
+  sponsorId            String?
+  prospectiveSponsor   Prospective_Sponsor? @relation(fields: [prospectiveSponsorId], references: [prospectiveSponsorId])
+  prospectiveSponsorId String?
+  dateDeleted          DateTime?
 
   @@index([sponsorId])
+  @@index([prospectiveSponsorId])
+}
+
+model Prospective_Sponsor {
+  prospectiveSponsorId   String                     @id @default(uuid())
+  organizationId         String
+  organization           Organization               @relation(fields: [organizationId], references: [organizationId])
+  organizationName       String
+  dateCreated            DateTime                   @default(now())
+  lastContactDate        DateTime?
+  highlightThresholdDays Int                        @default(10)
+  status                 Prospective_Sponsor_Status @default(NOT_IN_CONTACT)
+  firstContactMethod     First_Contact_Method?
+  contactor              User?                      @relation(fields: [contactorUserId], references: [userId], name: "prospectiveSponsorContactor")
+  contactorUserId        String?
+  contact                Sponsor_Contact?           @relation(fields: [contactId], references: [sponsorContactId])
+  contactId              String?                    @unique
+  notes                  String?
+  dateDeleted            DateTime?
+  tasks                  Sponsor_Task[]
+
+  @@unique([organizationName, organizationId], name: "uniqueProspectiveSponsor")
+  @@index([organizationId])
+  @@index([contactorUserId])
 }
 
 model Account_Code {
@@ -923,34 +989,35 @@ model Assembly {
 }
 
 model Material {
-  materialId             String                 @id @default(uuid())
-  assembly               Assembly?              @relation(fields: [assemblyId], references: [assemblyId])
+  materialId             String                  @id @default(uuid())
+  assembly               Assembly?               @relation(fields: [assemblyId], references: [assemblyId])
   assemblyId             String?
   name                   String
-  wbsElement             WBS_Element            @relation(fields: [wbsElementId], references: [wbsElementId])
+  wbsElement             WBS_Element             @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId           String
   dateDeleted            DateTime?
-  userDeleted            User?                  @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
+  userDeleted            User?                   @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
   userDeletedId          String?
   dateCreated            DateTime
-  userCreated            User                   @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
+  userCreated            User                    @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
   userCreatedId          String
   status                 Material_Status
-  materialType           Material_Type          @relation(fields: [materialTypeId], references: [id])
+  materialType           Material_Type           @relation(fields: [materialTypeId], references: [id])
   materialTypeId         String
-  manufacturer           Manufacturer           @relation(fields: [manufacturerId], references: [id])
-  manufacturerId         String
-  manufacturerPartNumber String
+  manufacturer           Manufacturer?           @relation(fields: [manufacturerId], references: [id])
+  manufacturerId         String?
+  manufacturerPartNumber String?
   pdmFileName            String?
-  quantity               Decimal
-  unit                   Unit?                  @relation(fields: [unitId], references: [id])
+  quantity               Decimal?
+  unit                   Unit?                   @relation(fields: [unitId], references: [id])
   unitId                 String?
-  price                  Int
-  subtotal               Int
+  price                  Int?
+  subtotal               Int?
   linkUrl                String
   notes                  String?
-  reimbursementRequest   Reimbursement_Request? @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+  reimbursementRequest   Reimbursement_Request?  @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
   reimbursementRequestId String?
+  reimbursementProducts  Reimbursement_Product[]
 
   @@index([assemblyId])
   @@index([materialTypeId])
@@ -1043,12 +1110,12 @@ enum DayOfWeek {
 }
 
 model Schedule_Slot {
-  scheduleSlotId       String      @id @default(uuid())
-  startTime            DateTime
-  endTime              DateTime
-  allDay               Boolean     @default(false)
-  eventId              String
-  event                Event       @relation(fields: [eventId], references: [eventId])
+  scheduleSlotId String   @id @default(uuid())
+  startTime      DateTime
+  endTime        DateTime
+  allDay         Boolean  @default(false)
+  eventId        String
+  event          Event    @relation(fields: [eventId], references: [eventId])
 
   @@index([endTime])
   @@index([startTime])
@@ -1104,7 +1171,7 @@ model Event {
   shops                      Shop[]
   machinery                  Machinery[]
   workPackages               Work_Package[]
-  documents                  Document[]      
+  documents                  Document[]
   status                     Event_Status
   initialDateScheduled       DateTime?
   questionDocumentLink       String?
@@ -1371,6 +1438,7 @@ model Organization {
   partTags                 Part_Tag[]
   sponsors                 Sponsor[]
   sponsorTiers             Sponsor_Tier[]
+  prospectiveSponsors      Prospective_Sponsor[]
   indexCodes               Index_Code[]
   financeDelegates         User[]                       @relation(name: "financeDelegates")
   guestDefinitions         Guest_Definition[]

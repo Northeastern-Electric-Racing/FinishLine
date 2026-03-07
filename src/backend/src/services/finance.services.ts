@@ -10,7 +10,7 @@ import {
   wbsPipe,
   User
 } from 'shared';
-import { Organization, Sponsor_Task, Reimbursement_Status_Type } from '@prisma/client';
+import { Organization, Sponsor_Task, Reimbursement_Status_Type, Sponsor_Value_Type } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils.js';
 import {
   getSponsorQueryArgs,
@@ -34,6 +34,7 @@ import {
   getReimbursementRequestWhereInput
 } from '../utils/finance.utils.js';
 import { notifySponsorTaskAssignee } from '../utils/slack.utils.js';
+import { isUserFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
 
 export default class FinanceServices {
   /**
@@ -49,7 +50,10 @@ export default class FinanceServices {
    * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
    * @param discountCode The discount code associated with the sponsor.
    * @param sponsorNotes Additional notes about the sponsor.
-   * @param sponsorContact The contact information for the sponsor.
+   * @param contactName The name of the sponsor contact.
+   * @param contactEmail The email of the sponsor contact.
+   * @param contactPhone The phone of the sponsor contact.
+   * @param contactPosition The position of the sponsor contact.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being created.
    *
@@ -61,19 +65,29 @@ export default class FinanceServices {
     submitter: User,
     name: string,
     activeStatus: boolean,
-    sponsorValue: number,
+    valueTypes: Sponsor_Value_Type[],
     joinDate: Date,
     activeYears: number[],
-    sponsorTierId: string,
+    sponsorTierId: string | undefined,
     taxExempt: boolean,
-    sponsorContact: string,
+    contactName: string,
     sponsorTasks: CreateSponsorTask[],
     organization: Organization,
+    sponsorValue?: number,
     discountCode?: string,
-    sponsorNotes?: string
+    sponsorNotes?: string,
+    contactEmail?: string,
+    contactPhone?: string,
+    contactPosition?: string,
+    stockDescription?: string,
+    discountDescription?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can create a sponsor');
+
+    if (!contactEmail && !contactPhone) {
+      throw new HttpException(400, 'At least one of contact email or contact phone is required');
+    }
 
     const existingSponsor = await prisma.sponsor.findFirst({
       where: {
@@ -86,18 +100,25 @@ export default class FinanceServices {
       throw new HttpException(400, `A sponsor with the name "${name}" already exists.`);
     }
 
+    const contact = await prisma.sponsor_Contact.create({
+      data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
+    });
+
     const sponsor = await prisma.sponsor.create({
       data: {
         name,
         activeStatus,
+        valueTypes,
         sponsorValue,
+        stockDescription,
+        discountDescription,
         joinDate,
         activeYears,
         sponsorTierId,
         taxExempt,
         discountCode,
         sponsorNotes,
-        vendorContact: sponsorContact,
+        contactId: contact.sponsorContactId,
         sponsorTasks: {
           create: sponsorTasks.map((task) => ({
             dueDate: task.dueDate,
@@ -224,17 +245,20 @@ export default class FinanceServices {
     dueDate: Date,
     notes: string,
     notifyDate?: Date,
-    assigneeUserId?: string
+    assigneeUserId?: string,
+    done?: boolean
   ): Promise<Sponsor_Task> {
-    if (!(await userHasPermission(submitter.userId, org.organizationId, isHead)))
-      throw new AccessDeniedException('Only heads can edit sponsor tasks.');
+    if (!(await isUserFinanceTeamOrHead(submitter, org.organizationId))) {
+      throw new AccessDeniedException('Only finance team members or heads can edit sponsor tasks');
+    }
 
-    const oldSponsorTask = await prisma.sponsor_Task.findUnique({
+    const oldSponsorTask = await prisma.sponsor_Task.findFirst({
       where: {
         sponsorTaskId,
-        sponsor: {
-          organizationId: org.organizationId
-        }
+        OR: [
+          { sponsor: { organizationId: org.organizationId } },
+          { prospectiveSponsor: { organizationId: org.organizationId } }
+        ]
       }
     });
 
@@ -266,21 +290,28 @@ export default class FinanceServices {
         notifyDate,
         assigneeUserId,
         dueDate,
-        notes
+        notes,
+        done: done ?? undefined
       }
     });
 
     if (assignee && oldSponsorTask.assigneeUserId !== assigneeUserId) {
-      const sponsor = await prisma.sponsor.findUnique({
-        where: { sponsorId: updatedSponsorTask.sponsorId }
-      });
-
-      if (!sponsor) {
-        throw new NotFoundException('Sponsor', updatedSponsorTask.sponsorId);
+      // Get sponsor or prospective sponsor name for notification
+      let sponsorName: string | undefined;
+      if (updatedSponsorTask.sponsorId) {
+        const sponsor = await prisma.sponsor.findUnique({
+          where: { sponsorId: updatedSponsorTask.sponsorId }
+        });
+        sponsorName = sponsor?.name;
+      } else if (updatedSponsorTask.prospectiveSponsorId) {
+        const prospectiveSponsor = await prisma.prospective_Sponsor.findUnique({
+          where: { prospectiveSponsorId: updatedSponsorTask.prospectiveSponsorId }
+        });
+        sponsorName = prospectiveSponsor?.organizationName;
       }
 
-      if (assignee) {
-        await notifySponsorTaskAssignee(assignee, updatedSponsorTask, sponsor.name);
+      if (sponsorName && assignee) {
+        await notifySponsorTaskAssignee(assignee, updatedSponsorTask, sponsorName);
       }
     }
 
@@ -326,11 +357,16 @@ export default class FinanceServices {
       where: { sponsorTaskId, dateDeleted: null }
     });
 
-    if (!(await userHasPermission(deleter.userId, organization.organizationId, isHead))) {
-      throw new AccessDeniedException('Only heads can delete sponsor tasks.');
-    }
-
     if (!sponsorTask) throw new NotFoundException('SponsorTask', sponsorTaskId);
+
+    const hasHeadPermission = await userHasPermission(deleter.userId, organization.organizationId, isHead);
+    const isAssignee = sponsorTask.assigneeUserId === deleter.userId;
+
+    // Heads can delete any task. Assignees can delete their own tasks.
+    // Others cannot delete tasks (especially tasks assigned to someone else).
+    if (!hasHeadPermission && !isAssignee) {
+      throw new AccessDeniedException('Only heads or the task assignee can delete sponsor tasks');
+    }
 
     const deletedSponsorTask = await prisma.sponsor_Task.update({
       where: { sponsorTaskId },
@@ -361,10 +397,11 @@ export default class FinanceServices {
     notes: string,
     sponsorId: string,
     notifyDate?: Date,
-    assigneeUserId?: string
+    assigneeUserId?: string,
+    done?: boolean
   ): Promise<SponsorTask> {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
-      throw new AccessDeniedException('Only heads can create a sponsor task');
+    if (!(await isUserFinanceTeamOrHead(submitter, organization.organizationId))) {
+      throw new AccessDeniedException('Only finance team members or heads can create a sponsor task');
     }
 
     const sponsor = await prisma.sponsor.findUnique({ where: { sponsorId, organizationId: organization.organizationId } });
@@ -382,6 +419,7 @@ export default class FinanceServices {
         notifyDate,
         assignee: assigneeUserId ? { connect: { userId: assigneeUserId } } : undefined,
         notes,
+        done: done ?? false,
         sponsor: { connect: { sponsorId } }
       },
       ...getSponsorTaskQueryArgs(organization.organizationId)
@@ -1141,7 +1179,10 @@ export default class FinanceServices {
    * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
    * @param discountCode The discount code associated with the sponsor.
    * @param sponsorNotes Additional notes about the sponsor.
-   * @param sponsorContact The contact information for the sponsor.
+   * @param contactName The name of the sponsor contact.
+   * @param contactEmail The email of the sponsor contact.
+   * @param contactPhone The phone of the sponsor contact.
+   * @param contactPosition The position of the sponsor contact.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being edited.
    * @returns the edited sponsor.
@@ -1153,18 +1194,28 @@ export default class FinanceServices {
     sponsorId: string,
     name: string,
     activeStatus: boolean,
-    sponsorValue: number,
+    valueTypes: Sponsor_Value_Type[],
     joinDate: Date,
     activeYears: number[],
-    sponsorTierId: string,
-    sponsorContact: string,
+    sponsorTierId: string | undefined,
+    contactName: string,
     taxExempt: boolean,
     sponsorTasks: CreateSponsorTask[],
+    sponsorValue?: number,
     discountCode?: string,
-    sponsorNotes?: string
+    sponsorNotes?: string,
+    contactEmail?: string,
+    contactPhone?: string,
+    contactPosition?: string,
+    stockDescription?: string,
+    discountDescription?: string
   ): Promise<Sponsor> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can edit sponsors.');
+
+    if (!contactEmail && !contactPhone) {
+      throw new HttpException(400, 'At least one of contact email or contact phone is required');
+    }
 
     const oldSponsor = await prisma.sponsor.findUnique({
       where: {
@@ -1178,24 +1229,61 @@ export default class FinanceServices {
 
     if (!oldSponsor) throw new NotFoundException('Sponsor', sponsorId);
 
+    // Determine which tasks to update, create, or delete
+    const incomingTaskIds = new Set(sponsorTasks.filter((t) => t.sponsorTaskId).map((t) => t.sponsorTaskId!));
+    const tasksToDelete = oldSponsor.sponsorTasks.filter((t) => !incomingTaskIds.has(t.sponsorTaskId));
+    const tasksToUpdate = sponsorTasks.filter((t) => t.sponsorTaskId);
+    const tasksToCreate = sponsorTasks.filter((t) => !t.sponsorTaskId);
+
+    // Delete removed tasks
+    if (tasksToDelete.length > 0) {
+      await prisma.sponsor_Task.deleteMany({
+        where: { sponsorTaskId: { in: tasksToDelete.map((t) => t.sponsorTaskId) } }
+      });
+    }
+
+    // Update existing tasks
     await Promise.all(
-      oldSponsor.sponsorTasks.map((t) =>
-        prisma.sponsor_Task.deleteMany({
-          where: {
-            sponsorTaskId: t.sponsorTaskId
+      tasksToUpdate.map((t) =>
+        prisma.sponsor_Task.update({
+          where: { sponsorTaskId: t.sponsorTaskId! },
+          data: {
+            dueDate: t.dueDate,
+            notifyDate: t.notifyDate,
+            assigneeUserId: t.assigneeUserId || null,
+            notes: t.notes,
+            done: t.done ?? false
           }
         })
       )
     );
 
-    const tier = await prisma.sponsor_Tier.findUnique({
-      where: {
-        sponsorTierId,
-        organizationId: organization.organizationId
-      }
-    });
+    // Create new tasks
+    await Promise.all(
+      tasksToCreate.map((t) =>
+        this.createSponsorTask(
+          submitter,
+          organization,
+          t.dueDate,
+          t.notes,
+          sponsorId,
+          t.notifyDate,
+          t.assigneeUserId,
+          t.done
+        )
+      )
+    );
 
-    if (!tier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
+    if (sponsorTierId) {
+      const tier = await prisma.sponsor_Tier.findUnique({
+        where: {
+          sponsorTierId,
+          organizationId: organization.organizationId
+        }
+      });
+
+      if (!tier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
+    }
 
     if (name !== oldSponsor.name) {
       const existingSponsor = await prisma.sponsor.findFirst({
@@ -1213,34 +1301,23 @@ export default class FinanceServices {
       }
     }
 
+    await prisma.sponsor_Contact.update({
+      where: { sponsorContactId: oldSponsor.contactId },
+      data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
+    });
+
     const updatedSponsor = await prisma.sponsor.update({
       where: { sponsorId: oldSponsor.sponsorId },
       data: {
         name,
         activeStatus,
+        valueTypes,
         sponsorValue,
+        stockDescription,
+        discountDescription,
         joinDate,
         activeYears,
-        tier: {
-          connect: { sponsorTierId }
-        },
-        sponsorTasks: {
-          connect: await Promise.all(
-            sponsorTasks.map(async (t) => {
-              const createdTask = await this.createSponsorTask(
-                submitter,
-                organization,
-                t.dueDate,
-                t.notes,
-                sponsorId,
-                t.notifyDate,
-                t.assigneeUserId
-              );
-              return { sponsorTaskId: createdTask.sponsorTaskId };
-            })
-          )
-        },
-        vendorContact: sponsorContact,
+        tier: sponsorTierId ? { connect: { sponsorTierId } } : { disconnect: true },
         taxExempt,
         discountCode,
         sponsorNotes
@@ -1249,6 +1326,49 @@ export default class FinanceServices {
     });
 
     return sponsorTransformer(updatedSponsor);
+  }
+
+  /**
+   * Toggles the done status of a sponsor task
+   * @param submitter The user toggling the task
+   * @param organization The organization the task belongs to
+   * @param sponsorTaskId The id of the sponsor task to toggle
+   * @returns The updated sponsor task
+   */
+  static async toggleSponsorTaskDone(
+    submitter: User,
+    organization: Organization,
+    sponsorTaskId: string
+  ): Promise<SponsorTask> {
+    const sponsorTask = await prisma.sponsor_Task.findFirst({
+      where: {
+        sponsorTaskId,
+        dateDeleted: null,
+        OR: [
+          { sponsor: { organizationId: organization.organizationId } },
+          { prospectiveSponsor: { organizationId: organization.organizationId } }
+        ]
+      },
+      ...getSponsorTaskQueryArgs(organization.organizationId)
+    });
+
+    if (!sponsorTask) throw new NotFoundException('SponsorTask', sponsorTaskId);
+
+    // Allow finance team, heads, or the task assignee to toggle done status
+    const isAssignee = sponsorTask.assigneeUserId === submitter.userId;
+    const isFinanceOrHead = await isUserFinanceTeamOrHead(submitter, organization.organizationId);
+
+    if (!isAssignee && !isFinanceOrHead) {
+      throw new AccessDeniedException('Only finance team members, heads, or the task assignee can toggle task status');
+    }
+
+    const updatedSponsorTask = await prisma.sponsor_Task.update({
+      where: { sponsorTaskId },
+      data: { done: !sponsorTask.done },
+      ...getSponsorTaskQueryArgs(organization.organizationId)
+    });
+
+    return sponsorTaskTransformer(updatedSponsorTask);
   }
 
   /**
