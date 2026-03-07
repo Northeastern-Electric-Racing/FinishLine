@@ -18,6 +18,12 @@ const SELECTORS = {
   TEAMS: 'Teams',
   OVERDUE: 'All Overdue Work Packages',
 
+  // Projects Page
+  NEW_PROJECT_BUTTON: 'New Project',
+  ALL_PROJECTS_TAB: 'All Projects',
+  MY_TEAMS_PROJECTS: "My Team's Projects",
+  PROJECTS_IM_LEADING: "Projects I'm Leading",
+
   // Change Request
   CR_ROW: (title) => testIdBuilder(`${title}crRow`),
   NEW_CHANGE_REQUEST_BUTTON: 'New Change Request',
