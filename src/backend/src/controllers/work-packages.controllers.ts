@@ -8,8 +8,15 @@ export default class WorkPackagesController {
   static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { query } = req;
+      const queryWithCarId = {
+        ...query,
+        carId: req.currentCar?.carId
+      };
 
-      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, req.organization);
+      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(
+        queryWithCarId,
+        req.organization
+      );
 
       res.status(200).json(outputWorkPackages);
     } catch (error: unknown) {
@@ -32,9 +39,13 @@ export default class WorkPackagesController {
 
   static async getManyWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNums, carId } = req.body;
+      const { wbsNums } = req.body;
 
-      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization, carId);
+      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(
+        wbsNums,
+        req.organization,
+        req.currentCar?.carId
+      );
       res.status(200).json(workPackages);
     } catch (error: unknown) {
       next(error);
@@ -112,12 +123,11 @@ export default class WorkPackagesController {
   static async getBlockingWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNum = validateWBS(req.params.wbsNum as string);
-      const carId = req.query.carId as string | undefined;
 
       const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(
         wbsNum,
         req.organization,
-        carId
+        req.currentCar?.carId
       );
 
       res.status(200).json(blockingWorkPackages);
@@ -140,13 +150,12 @@ export default class WorkPackagesController {
   static async getHomePageWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { selection } = req.params as Record<string, string>;
-      const carId = req.query.carId as string | undefined;
 
       const workPackages: WorkPackagePreview[] = await WorkPackagesService.getHomePageWorkPackages(
         req.currentUser,
         req.organization,
         selection as WorkPackageSelection,
-        carId
+        req.currentCar?.carId
       );
 
       res.status(200).json(workPackages);

@@ -60,7 +60,7 @@ export default class WorkPackagesService {
     const workPackages = await prisma.work_Package.findMany({
       where: {
         wbsElement: { dateDeleted: null, organizationId: organization.organizationId },
-        ...(query.carId && { carId: query.carId })
+        ...(query.carId && { project: { carId: query.carId } })
       },
       ...getWorkPackageQueryArgs(organization.organizationId)
     });
@@ -139,15 +139,25 @@ export default class WorkPackagesService {
       }
     });
 
-    const filteredWorkPackages =
-      carId !== undefined ? wbsNums.filter((wbsNum) => parseInt(carId) === wbsNum.carNumber) : wbsNums;
+    const whereConditions = wbsNums.map((wbsNum) => ({
+      wbsElement: {
+        carNumber: wbsNum.carNumber,
+        projectNumber: wbsNum.projectNumber,
+        workPackageNumber: wbsNum.workPackageNumber,
+        organizationId: organization.organizationId,
+        dateDeleted: null
+      },
+      ...(carId && { project: { carId } })
+    }));
 
-    const workPackagePromises = filteredWorkPackages.map(async (wbsNum) => {
-      return WorkPackagesService.getSingleWorkPackage(wbsNum, organization);
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        OR: whereConditions
+      },
+      ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
-    const resolvedWorkPackages = await Promise.all(workPackagePromises);
-    return resolvedWorkPackages;
+    return workPackages.map(workPackageTransformer);
   }
 
   /**
@@ -550,13 +560,11 @@ export default class WorkPackagesService {
 
     const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
 
-    const transformedPackages = blockingWorkPackages.map(workPackageTransformer);
+    const filteredWorkPackages = carId
+      ? blockingWorkPackages.filter((wp) => wp.project.carId === carId)
+      : blockingWorkPackages;
 
-    if (carId) {
-      return transformedPackages.filter((wp) => wp.wbsNum.carNumber === parseInt(carId));
-    }
-
-    return transformedPackages;
+    return filteredWorkPackages.map(workPackageTransformer);
   }
 
   /**
@@ -642,9 +650,9 @@ export default class WorkPackagesService {
           ...selectionArgs,
           dateDeleted: null,
           organizationId: organization.organizationId,
-          status: { not: WBS_Element_Status.COMPLETE },
-          ...(carId && { carNumber: parseInt(carId) })
-        }
+          status: { not: WBS_Element_Status.COMPLETE }
+        },
+        ...(carId && { project: { carId } })
       },
       select: {
         project: { select: { projectId: true, wbsElement: { select: { name: true } } } },
