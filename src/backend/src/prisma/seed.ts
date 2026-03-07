@@ -41,8 +41,10 @@ import OnboardingServices from '../services/onboarding.services.js';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed.js';
 import FinanceServices from '../services/finance.services.js';
 import CalendarService from '../services/calendar.services.js';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 // Compute relative dates for seeding
 const getRelativeDate = (daysOffset: number, hoursOffset: number = 0): Date => {

@@ -10,7 +10,8 @@
     "prisma:manual": "tsx --import dotenv/config ./src/prisma/manual.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.2.1",
+    "@prisma/adapter-pg": "^7.4.2",
+    "@prisma/client": "7",
     "@slack/bolt": "^3.22.0",
     "@types/concat-stream": "^2.0.0",
     "@types/cookie-parser": "^1.4.3",
@@ -33,13 +34,15 @@
     "jsonwebtoken": "^8.5.1",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.1",
-    "prisma": "^6.2.1",
+    "pg": "^8.20.0",
+    "prisma": "7",
     "shared": "1.0.0"
   },
   "devDependencies": {
     "@types/express-jwt": "^6.0.4",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/node": "^20.0.0",
+    "@types/pg": "^8.18.0",
     "@types/supertest": "^2.0.12",
     "nodemon": "^2.0.16",
     "supertest": "^6.2.4",

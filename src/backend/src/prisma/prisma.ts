@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 const SLOW_QUERY_THRESHOLD = 300;
 
@@ -38,7 +39,10 @@ const queryLoggerExtension: QueryLoggerExtension = {
   }
 };
 
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+
 const baseClient = new PrismaClient({
+  adapter,
   log: ['warn', 'error']
 });
 
