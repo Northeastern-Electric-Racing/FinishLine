@@ -45,7 +45,6 @@ const GanttTaskBarView = <T,>({
 
   const handleToggle = () => {
     if (!hasLoaded && task.loadChildren) {
-      // Transform children for this project only, once, on first click
       setLoadedChildren(task.loadChildren());
       setHasLoaded(true);
     }

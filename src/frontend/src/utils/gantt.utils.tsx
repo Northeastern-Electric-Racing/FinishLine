@@ -482,17 +482,12 @@ export const transformProjectToGanttTask = (
     start: startDate,
     end: endDate,
     blocking: [],
-
-    // Empty by default — populated lazily on first dropdown click
     children: [],
-
-    // Called once by GanttTaskBarView on first toggle, result cached in state
     loadChildren: () => [
       ...project.workPackages.map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
       ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
     ],
 
-    // Overlays stay eager — needed for colored bars visible on project row
     overlays: [
       ...project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, project.workPackages)),
       ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
