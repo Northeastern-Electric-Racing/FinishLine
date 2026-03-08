@@ -105,6 +105,7 @@ interface GanttTaskData<T> {
   children: GanttTaskData<T>[];
   events: GanttEvent[];
   overlays: GanttTaskData<T>[];
+  loadChildren?: () => GanttTaskData<T>[];
 
   // Optional Values
   styles?: GanttTaskStyles;
@@ -471,29 +472,32 @@ export const transformProjectToGanttTask = (
   hideTasks: boolean = false
 ): GanttTask<WbsElementPreview | Task> => {
   const startDate = getProjectStartDate(project);
-
   const endDate = getProjectEndDate(project);
-
   const taskList = hideTasks ? [] : project.tasks;
 
   return {
-    id: uuidv4(),
+    id: project.id,
     element: project,
-
     name: project.name,
     start: startDate,
     end: endDate,
     blocking: [],
-    children: [
-      ...project.workPackages
-        .filter((workPackage) => workPackage.blockedBy.length === 0)
-        .map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
+
+    // Empty by default — populated lazily on first dropdown click
+    children: [],
+
+    // Called once by GanttTaskBarView on first toggle, result cached in state
+    loadChildren: () => [
+      ...project.workPackages.map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
       ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
     ],
+
+    // Overlays stay eager — needed for colored bars visible on project row
     overlays: [
       ...project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, project.workPackages)),
       ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
     ],
+
     events: [],
     tooltip: {
       upperRightDisplay: <UserDisplay user={project.lead} label="Lead" />,

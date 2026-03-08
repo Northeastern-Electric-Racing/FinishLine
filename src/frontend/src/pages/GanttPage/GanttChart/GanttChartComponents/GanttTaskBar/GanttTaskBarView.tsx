@@ -8,6 +8,7 @@ import { Collapse } from '@mui/material';
 import GanttTaskBar from './GanttTaskBar';
 import BlockedGanttTaskView from './BlockedTaskBarView';
 import GanttTaskBarDisplay from './GanttTaskBarDisplay';
+import { useState } from 'react';
 
 interface GanttTaskBarViewProps<T> {
   days: Date[];
@@ -38,6 +39,19 @@ const GanttTaskBarView = <T,>({
   highlightSubtaskComparator,
   highlightTaskComparator
 }: GanttTaskBarViewProps<T>) => {
+  // Starts as task.children — empty [] for projects (lazy), pre-populated for work packages
+  const [loadedChildren, setLoadedChildren] = useState<GanttTask<T>[]>(task.children);
+  const [hasLoaded, setHasLoaded] = useState(task.children.length > 0);
+
+  const handleToggle = () => {
+    if (!hasLoaded && task.loadChildren) {
+      // Transform children for this project only, once, on first click
+      setLoadedChildren(task.loadChildren());
+      setHasLoaded(true);
+    }
+    onShowChildrenToggle();
+  };
+
   return (
     <>
       <GanttTaskBarDisplay
@@ -46,7 +60,7 @@ const GanttTaskBarView = <T,>({
         handleOnMouseOver={handleOnMouseOver}
         handleOnMouseLeave={handleOnMouseLeave}
         showChildren={showChildren}
-        onShowChildrenToggle={onShowChildrenToggle}
+        onShowChildrenToggle={handleToggle}
         highlightedChange={highlightedChange}
         getStartCol={getStartCol}
         getEndCol={getEndCol}
@@ -55,42 +69,39 @@ const GanttTaskBarView = <T,>({
       />
 
       <Collapse in={showChildren}>
-        {task.children.map((child) => {
-          return (
-            <GanttTaskBar
-              key={child.id}
-              days={days}
-              task={child}
-              isEditMode={false}
-              createChange={() => {}}
-              handleOnMouseOver={handleOnMouseOver}
-              handleOnMouseLeave={handleOnMouseLeave}
-              onShowChildrenToggle={onShowChildrenToggle}
-              highlightedChange={highlightedChange}
-              onAddTaskPressed={onAddTaskPressed}
-              highlightSubtaskComparator={highlightSubtaskComparator}
-              highlightTaskComparator={highlightTaskComparator}
-            />
-          );
-        })}
-      </Collapse>
-      {task.blocking.map((blocking) => {
-        return (
-          <BlockedGanttTaskView
-            key={blocking.id}
-            task={blocking}
+        {loadedChildren.map((child) => (
+          <GanttTaskBar
+            key={child.id}
             days={days}
-            getStartCol={getStartCol}
-            getEndCol={getEndCol}
+            task={child}
+            isEditMode={false}
+            createChange={() => {}}
             handleOnMouseOver={handleOnMouseOver}
+            handleOnMouseLeave={handleOnMouseLeave}
             onShowChildrenToggle={onShowChildrenToggle}
+            highlightedChange={highlightedChange}
+            onAddTaskPressed={onAddTaskPressed}
             highlightSubtaskComparator={highlightSubtaskComparator}
             highlightTaskComparator={highlightTaskComparator}
-            handleOnMouseLeave={handleOnMouseLeave}
-            highlightedChange={highlightedChange}
           />
-        );
-      })}
+        ))}
+      </Collapse>
+
+      {task.blocking.map((blocking) => (
+        <BlockedGanttTaskView
+          key={blocking.id}
+          task={blocking}
+          days={days}
+          getStartCol={getStartCol}
+          getEndCol={getEndCol}
+          handleOnMouseOver={handleOnMouseOver}
+          onShowChildrenToggle={onShowChildrenToggle}
+          highlightSubtaskComparator={highlightSubtaskComparator}
+          highlightTaskComparator={highlightTaskComparator}
+          handleOnMouseLeave={handleOnMouseLeave}
+          highlightedChange={highlightedChange}
+        />
+      ))}
     </>
   );
 };
