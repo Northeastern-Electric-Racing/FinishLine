@@ -112,6 +112,7 @@ interface GanttTaskData<T> {
   retro?: GanttRetroProps;
   onClick?: () => void;
   root?: boolean;
+  loadChildren?: () => GanttTaskData<T>[];
 }
 
 export type Date_Event = { id: string; start: Date; end: Date; title: string };
@@ -471,20 +472,18 @@ export const transformProjectToGanttTask = (
   hideTasks: boolean = false
 ): GanttTask<WbsElementPreview | Task> => {
   const startDate = getProjectStartDate(project);
-
   const endDate = getProjectEndDate(project);
-
   const taskList = hideTasks ? [] : project.tasks;
 
   return {
     id: project.id,
     element: project,
-
     name: project.name,
     start: startDate,
     end: endDate,
     blocking: [],
-    children: [
+    children: [],
+    loadChildren: () => [
       ...project.workPackages.map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
       ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
     ],

@@ -1,8 +1,3 @@
-/*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
- * See the LICENSE file in the repository root folder for details.
- */
-
 import { eachDayOfInterval, isMonday } from 'date-fns';
 import {
   GanttChange,
@@ -12,10 +7,10 @@ import {
   RequestEventChange
 } from '../../../utils/gantt.utils';
 import { Box, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
-import GanttToolTip from './GanttChartComponents/GanttToolTip';
 import { ArcherContainer } from 'react-archer';
+import GanttToolTip from './GanttChartComponents/GanttToolTip';
 
 interface GanttChartSectionProps<T> {
   start: Date;
@@ -24,12 +19,63 @@ interface GanttChartSectionProps<T> {
   isEditMode: boolean;
   createChange: (change: GanttChange<T>) => void;
   highlightedChange?: RequestEventChange<T>;
-  onShowChildrenToggle: (task: GanttTask<T>) => void;
-  shouldShowChildren: (task: GanttTask<T>) => boolean;
   onAddTaskPressed: (parentTask: GanttTask<T>) => void;
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
 }
+
+interface GanttTaskListProps<T> {
+  days: Date[];
+  tasks: GanttTask<T>[];
+  isEditMode: boolean;
+  createChange: (change: GanttChange<T>) => void;
+  highlightedChange?: RequestEventChange<T>;
+  onAddTaskPressed: (parentTask: GanttTask<T>) => void;
+  handleOnMouseOver: (e: React.MouseEvent, task: OnMouseOverOptions) => void;
+  handleOnMouseLeave: () => void;
+  highlightTaskComparator: HighlightTaskComparator<T>;
+  highlightSubtaskComparator: HighlightTaskComparator<T>;
+}
+
+const GanttTaskListInner = <T,>({
+  days,
+  tasks,
+  isEditMode,
+  createChange,
+  highlightedChange,
+  onAddTaskPressed,
+  handleOnMouseOver,
+  handleOnMouseLeave,
+  highlightSubtaskComparator,
+  highlightTaskComparator
+}: GanttTaskListProps<T>) => {
+  return (
+    <ArcherContainer strokeColor="#ef4545">
+      <Box sx={{ width: 'fit-content' }}>
+        <Box sx={{ mt: '1rem', width: 'fit-content' }}>
+          {tasks.map((task) => (
+            <Box key={task.id} display="flex" alignItems="center">
+              <GanttTaskBar
+                days={days}
+                task={task}
+                isEditMode={isEditMode}
+                createChange={createChange}
+                handleOnMouseOver={handleOnMouseOver}
+                handleOnMouseLeave={handleOnMouseLeave}
+                onAddTaskPressed={onAddTaskPressed}
+                highlightedChange={highlightedChange}
+                highlightSubtaskComparator={highlightSubtaskComparator}
+                highlightTaskComparator={highlightTaskComparator}
+              />
+            </Box>
+          ))}
+        </Box>
+      </Box>
+    </ArcherContainer>
+  );
+};
+
+const GanttTaskList = memo(GanttTaskListInner) as typeof GanttTaskListInner;
 
 const GanttChartSection = <T,>({
   start,
@@ -38,9 +84,7 @@ const GanttChartSection = <T,>({
   isEditMode,
   createChange,
   highlightedChange,
-  onShowChildrenToggle,
   onAddTaskPressed,
-  shouldShowChildren,
   highlightSubtaskComparator,
   highlightTaskComparator
 }: GanttChartSectionProps<T>) => {
@@ -48,60 +92,54 @@ const GanttChartSection = <T,>({
   const [currentTooltipOptions, setCurrentTooltipOptions] = useState<OnMouseOverOptions | undefined>(undefined);
   const [cursorY, setCursorY] = useState<number>(0);
 
-  const handleOnMouseOver = (e: React.MouseEvent, task: OnMouseOverOptions) => {
-    if (!isEditMode) {
-      setCurrentTooltipOptions(task);
-      setCursorY(e.clientY);
-    }
-  };
+  const handleOnMouseOver = useCallback(
+    (e: React.MouseEvent, task: OnMouseOverOptions) => {
+      if (!isEditMode) {
+        setCurrentTooltipOptions(task);
+        setCursorY(e.clientY);
+      }
+    },
+    [isEditMode]
+  );
 
-  const handleCreateProjectChange = (change: GanttChange<T>) => {
-    createChange(change);
-    setCurrentTooltipOptions(undefined);
-  };
+  const handleCreateProjectChange = useCallback(
+    (change: GanttChange<T>) => {
+      createChange(change);
+      setCurrentTooltipOptions(undefined);
+    },
+    [createChange]
+  );
 
-  const handleOnMouseLeave = () => {
+  const handleOnMouseLeave = useCallback(() => {
     setCurrentTooltipOptions(undefined);
-  };
+  }, []);
 
   return tasks.length > 0 ? (
-    <ArcherContainer strokeColor="#ef4545">
-      <Box sx={{ width: 'fit-content' }}>
-        <Box sx={{ mt: '1rem', width: 'fit-content' }}>
-          {tasks.map((task) => {
-            return (
-              <Box key={task.id} display="flex" alignItems="center">
-                <GanttTaskBar
-                  days={days}
-                  task={task}
-                  isEditMode={isEditMode}
-                  createChange={handleCreateProjectChange}
-                  handleOnMouseOver={handleOnMouseOver}
-                  handleOnMouseLeave={handleOnMouseLeave}
-                  onShowChildrenToggle={() => onShowChildrenToggle(task)}
-                  onAddTaskPressed={onAddTaskPressed}
-                  showChildren={shouldShowChildren(task)}
-                  highlightedChange={highlightedChange}
-                  highlightSubtaskComparator={highlightSubtaskComparator}
-                  highlightTaskComparator={highlightTaskComparator}
-                />
-              </Box>
-            );
-          })}
-        </Box>
-        {currentTooltipOptions && (
-          <GanttToolTip
-            yCoordinate={cursorY}
-            title={currentTooltipOptions.name}
-            startDate={currentTooltipOptions.start}
-            endDate={currentTooltipOptions.end}
-            color={currentTooltipOptions.styles?.backgroundColor}
-            upperRightDisplay={currentTooltipOptions.tooltip?.upperRightDisplay}
-            lowerRightDisplay={currentTooltipOptions.tooltip?.lowerRightDisplay}
-          />
-        )}
-      </Box>
-    </ArcherContainer>
+    <Box sx={{ width: 'fit-content' }}>
+      <GanttTaskList
+        days={days}
+        tasks={tasks}
+        isEditMode={isEditMode}
+        createChange={handleCreateProjectChange}
+        highlightedChange={highlightedChange}
+        onAddTaskPressed={onAddTaskPressed}
+        handleOnMouseOver={handleOnMouseOver}
+        handleOnMouseLeave={handleOnMouseLeave}
+        highlightSubtaskComparator={highlightSubtaskComparator}
+        highlightTaskComparator={highlightTaskComparator}
+      />
+      {currentTooltipOptions && (
+        <GanttToolTip
+          yCoordinate={cursorY}
+          title={currentTooltipOptions.name}
+          startDate={currentTooltipOptions.start ?? new Date()}
+          endDate={currentTooltipOptions.end ?? new Date()}
+          color={currentTooltipOptions.styles?.backgroundColor}
+          upperRightDisplay={currentTooltipOptions.tooltip?.upperRightDisplay}
+          lowerRightDisplay={currentTooltipOptions.tooltip?.lowerRightDisplay}
+        />
+      )}
+    </Box>
   ) : (
     <Typography sx={{ marginTop: 5 }}>No Projects to Display</Typography>
   );

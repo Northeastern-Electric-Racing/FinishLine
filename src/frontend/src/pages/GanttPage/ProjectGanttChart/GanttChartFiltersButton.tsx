@@ -22,8 +22,6 @@ interface GanttChartFiltersButtonProps {
     defaultChecked?: boolean;
   }[];
   resetHandler: () => void;
-  collapseHandler: () => void;
-  expandHandler: () => void;
 }
 
 const GanttChartFiltersButton = ({
@@ -32,11 +30,10 @@ const GanttChartFiltersButton = ({
   teamHandlers,
   overdueHandler,
   hideTasksHandler,
-  resetHandler,
-  collapseHandler,
-  expandHandler
+  resetHandler
 }: GanttChartFiltersButtonProps) => {
   const [anchorFilterEl, setAnchorFilterEl] = useState<HTMLButtonElement | null>(null);
+
   const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorFilterEl(event.currentTarget);
   };
@@ -46,6 +43,7 @@ const GanttChartFiltersButton = ({
   };
 
   const open = Boolean(anchorFilterEl);
+
   return (
     <>
       <IconButton onClick={handleFilterClick}>
@@ -55,14 +53,8 @@ const GanttChartFiltersButton = ({
         open={open}
         anchorEl={anchorFilterEl}
         onClose={handleFilterClose}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         sx={{ maxWidth: '100rem' }}
       >
         <GanttChartFilters
@@ -72,8 +64,6 @@ const GanttChartFiltersButton = ({
           overdueHandler={overdueHandler}
           hideTasksHandler={hideTasksHandler}
           resetHandler={resetHandler}
-          collapseHandler={collapseHandler}
-          expandHandler={expandHandler}
         />
       </Popover>
     </>

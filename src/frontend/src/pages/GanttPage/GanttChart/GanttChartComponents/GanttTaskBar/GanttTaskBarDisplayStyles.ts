@@ -1,16 +1,13 @@
 import { CSSProperties } from 'react';
 import { GanttTask, GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../../../utils/gantt.utils';
 
+// Single row container — position: relative so absolute children are anchored to it.
+// Width is the total chart width so the row spans the full timeline.
 export const ganttTaskBarBackgroundStyles = (numDays: number): CSSProperties => {
   return {
-    width: '100%',
-    display: 'grid',
-    gap: GANTT_CHART_GAP_SIZE,
-    gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
-    gridTemplateColumns: `repeat(${numDays}, minmax(${GANTT_CHART_CELL_SIZE}, 1fr))`
-    //  position: 'absolute', // These will make it so that the bar stays on top of the drop points, i kind of like it going to a new line though
-    //  top: 0,
-    //  left: 0
+    position: 'relative',
+    height: '2rem',
+    width: `calc(${numDays} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) - ${GANTT_CHART_GAP_SIZE})`
   };
 };
 

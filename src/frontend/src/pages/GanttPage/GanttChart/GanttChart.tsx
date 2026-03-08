@@ -11,6 +11,7 @@ import { GanttChartTimeline } from './GanttChartComponents/GanttChartTimeline';
 import { eachDayOfInterval, isMonday, differenceInDays } from 'date-fns';
 import { dateToString, getMonday } from '../../../utils/datetime.utils';
 import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../utils/gantt.utils';
+
 export interface GanttEditability<E, T> {
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
@@ -28,20 +29,10 @@ interface GanttChartProps<E, T> {
   startDate: Date;
   endDate: Date;
   collections: GanttCollection<E, T>[];
-  shouldShowChildren: (task: GanttTask<T>) => boolean;
-  onShowChildrenToggle: (task: GanttTask<T>) => void;
-
   editability?: GanttEditability<E, T>;
 }
 
-const GanttChart = <E, T>({
-  startDate,
-  endDate,
-  collections,
-  shouldShowChildren,
-  onShowChildrenToggle,
-  editability
-}: GanttChartProps<E, T>) => {
+const GanttChart = <E, T>({ startDate, endDate, collections, editability }: GanttChartProps<E, T>) => {
   const theme = useTheme();
   const days = eachDayOfInterval({ start: startDate, end: endDate }).filter((day) => isMonday(day));
 
@@ -55,33 +46,29 @@ const GanttChart = <E, T>({
     <Box
       sx={{
         width: '100%',
-        height: { xs: 'calc(100vh - 9.5rem )', md: 'calc(100vh - 6.25rem)' },
+        height: { xs: 'calc(100vh - 9.5rem)', md: 'calc(100vh - 6.25rem)' },
         overflow: 'scroll',
         position: 'relative',
-        '&::-webkit-scrollbar': {
-          display: 'none'
-        },
-        scrollbarWidth: 'none', // Firefox
-        msOverflowStyle: 'none' // IE and Edge
+        '&::-webkit-scrollbar': { display: 'none' },
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none'
       }}
     >
       <GanttChartTimeline start={startDate} end={endDate} />
       <Box sx={{ position: 'relative' }}>
-        {collections.map((collection) => {
-          return collection.tasks ? (
+        {collections.map((collection) =>
+          collection.tasks ? (
             <GanttChartCollectionSection
+              key={collection.id}
               startDate={startDate}
               endDate={endDate}
               collection={collection}
-              shouldShowChildren={shouldShowChildren}
-              onShowChildrenToggle={onShowChildrenToggle}
               editability={editability}
             />
           ) : (
             <></>
-          );
-        })}
-
+          )
+        )}
         {currentWeekCol > 0 && (
           <Box
             sx={{
