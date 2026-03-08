@@ -7,6 +7,7 @@ import { useState } from 'react';
 import BOMTableWrapper from './BOM/BOMTableWrapper';
 import CreateMaterialModal from './BOM/MaterialForm/CreateMaterialModal';
 import CreateAssemblyModal from './BOM/AssemblyForm/CreateAssemblyModal';
+import CopyBOMModal from './BOM/CopyBOM/CopyBOMModal';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { centsToDollar } from '../../../utils/pipes';
 import { useCurrentUser } from '../../../hooks/users.hooks';
@@ -22,6 +23,7 @@ const BOMTab = ({ project }: { project: Project }) => {
   const [hideColumn, setHideColumn] = useState<boolean[]>(initialHideColumn);
   const [showAddMaterial, setShowAddMaterial] = useState(false);
   const [showAddAssembly, setShowAddAssembly] = useState(false);
+  const [showCopyBOM, setShowCopyBOM] = useState(false);
   const theme = useTheme();
 
   const user = useCurrentUser();
@@ -57,6 +59,7 @@ const BOMTab = ({ project }: { project: Project }) => {
         assemblies={assemblies}
       />
       <CreateAssemblyModal open={showAddAssembly} onHide={() => setShowAddAssembly(false)} wbsElement={project} />
+      <CopyBOMModal open={showCopyBOM} onHide={() => setShowCopyBOM(false)} destinationWbsNum={project.wbsNum} />
       <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <BOMTableWrapper
           project={project}
@@ -93,11 +96,9 @@ const BOMTab = ({ project }: { project: Project }) => {
             >
               Show All Columns
             </NERButton>
-            {/*
-            <NERButton variant="contained" onClick={() => {}} disabled={isGuest(user.role)}>
+            <NERButton variant="contained" onClick={() => setShowCopyBOM(true)} disabled={isGuest(user.role)}>
               Copy Existing BOM
             </NERButton>
-            */}
           </Box>
           <Box display="flex" gap="20px" alignItems="center">
             <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '8px 14px 8px 14px', borderRadius: '6px' }}>
