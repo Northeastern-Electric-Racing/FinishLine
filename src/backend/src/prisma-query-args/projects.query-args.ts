@@ -100,6 +100,7 @@ export const getProjectPreviewQueryArgs = (organizationId: string) =>
       abbreviation: true,
       teams: {
         select: {
+          teamType: true,
           teamId: true,
           teamName: true
         }

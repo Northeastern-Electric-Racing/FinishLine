@@ -117,6 +117,7 @@ export const projectPreviewTransformer = (project: Prisma.ProjectGetPayload<Proj
     duration: calculateDuration(project.workPackages),
     startDate: calculateProjectStartDate(project.workPackages),
     abbreviation: project.abbreviation ?? undefined,
+    teamTypes: project.teams.map((team) => team.teamType),
     teams: project.teams,
     workPackages: project.workPackages.map((wp) => ({
       ...wp,

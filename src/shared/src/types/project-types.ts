@@ -82,6 +82,7 @@ export interface ProjectPreview extends WbsElementPreview {
   abbreviation?: string;
   workPackages: WorkPackagePreview[];
   teams: { teamName: string; teamId: string }[];
+  teamTypes: TeamType[];
 }
 
 export interface ProjectOverview extends ProjectPreview {

@@ -10,6 +10,7 @@ import ProjectsPage from './ProjectsPage';
 import CreateWorkPackageForm from '../WorkPackageForm/CreateWorkPackageForm';
 import ProjectCreateContainer from '../ProjectDetailPage/ProjectForm/ProjectCreateContainer';
 import PartPage from '../PartPage/PartPage';
+import GuestProjectsPage from '../GuestProjectsPage/GuestProjectsPage';
 
 const Projects: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ const Projects: React.FC = () => {
       <Route path={routes.WORK_PACKAGE_NEW} component={CreateWorkPackageForm} />
       <Route path={routes.PROJECTS_NEW} component={ProjectCreateContainer} />
       <Route path={routes.PROJECT_PART} component={PartPage} />
+      <Route path={routes.GUEST_PROJECTS} component={GuestProjectsPage} />
       <Route path={routes.PROJECTS_BY_WBS} component={WBSDetails} />
       <Route path={routes.PROJECTS} component={ProjectsPage} />
     </Switch>
