@@ -416,7 +416,9 @@ export default class ProspectiveSponsorServices {
     const isContactor = prospectiveSponsor.contactorUserId === submitter.userId;
     const canAccept = await isUserFinanceLeadOrHead(submitter, organization.organizationId);
     if (!canAccept && !isContactor) {
-      throw new AccessDeniedException('Only finance leads, heads, or the assigned contactor can accept prospective sponsors');
+      throw new AccessDeniedException(
+        'Only finance leads, heads, or the assigned contactor can accept prospective sponsors'
+      );
     }
     if (prospectiveSponsor.status === Prospective_Sponsor_Status.ACCEPTED) {
       throw new HttpException(400, 'This prospective sponsor has already been accepted');

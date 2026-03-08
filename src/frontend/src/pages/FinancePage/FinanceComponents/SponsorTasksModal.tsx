@@ -32,7 +32,12 @@ const schema = yup.object().shape({
   tasks: yup.array().of(taskSchema)
 });
 
-const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: sponsorTasks, createTask, canEdit = true }) => {
+const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({
+  onClose,
+  tasks: sponsorTasks,
+  createTask,
+  canEdit = true
+}) => {
   const toast = useToast();
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const { mutate: editTask } = useEditSponsorTask();
