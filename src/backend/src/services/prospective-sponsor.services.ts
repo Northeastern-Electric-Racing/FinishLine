@@ -1,14 +1,12 @@
 import {
   CreateSponsorTask,
   FirstContactMethod,
-  isHead,
   ProspectiveSponsor,
   ProspectiveSponsorStatus,
   SponsorTask,
   User
 } from 'shared';
 import { Organization, Prospective_Sponsor_Status, Sponsor_Value_Type } from '@prisma/client';
-import { userHasPermission } from '../utils/users.utils.js';
 import { getProspectiveSponsorQueryArgs } from '../prisma-query-args/prospective-sponsor.query-args.js';
 import { getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args.js';
 import {
@@ -22,7 +20,7 @@ import prisma from '../prisma/prisma.js';
 import { prospectiveSponsorTransformer } from '../transformers/prospective-sponsor.transformer.js';
 import { sponsorTaskTransformer } from '../transformers/sponsor-task.transformer.js';
 import { notifySponsorTaskAssignee } from '../utils/slack.utils.js';
-import { isUserFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
+import { isUserFinanceLeadOrHead, isUserFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
 
 export default class ProspectiveSponsorServices {
   /**
@@ -293,8 +291,8 @@ export default class ProspectiveSponsorServices {
     deleter: User,
     organization: Organization
   ): Promise<ProspectiveSponsor> {
-    if (!(await userHasPermission(deleter.userId, organization.organizationId, isHead))) {
-      throw new AccessDeniedException('Only heads can delete prospective sponsors');
+    if (!(await isUserFinanceLeadOrHead(deleter, organization.organizationId))) {
+      throw new AccessDeniedException('Only finance leads or heads can delete prospective sponsors');
     }
 
     const prospectiveSponsor = await prisma.prospective_Sponsor.findUnique({
@@ -416,9 +414,11 @@ export default class ProspectiveSponsorServices {
     if (prospectiveSponsor.dateDeleted) throw new DeletedException('ProspectiveSponsor', prospectiveSponsorId);
 
     const isContactor = prospectiveSponsor.contactorUserId === submitter.userId;
-    const isUserHead = await userHasPermission(submitter.userId, organization.organizationId, isHead);
-    if (!isUserHead && !isContactor) {
-      throw new AccessDeniedException('Only heads or the assigned contactor can accept prospective sponsors');
+    const canAccept = await isUserFinanceLeadOrHead(submitter, organization.organizationId);
+    if (!canAccept && !isContactor) {
+      throw new AccessDeniedException(
+        'Only finance leads, heads, or the assigned contactor can accept prospective sponsors'
+      );
     }
     if (prospectiveSponsor.status === Prospective_Sponsor_Status.ACCEPTED) {
       throw new HttpException(400, 'This prospective sponsor has already been accepted');
