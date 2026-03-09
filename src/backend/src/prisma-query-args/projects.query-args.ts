@@ -133,6 +133,7 @@ export const getProjectOverviewQueryArgs = (organizationId: string) =>
       abbreviation: true,
       teams: {
         select: {
+          teamType: true,
           teamId: true,
           teamName: true
         }
