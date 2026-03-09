@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Box, useTheme } from '@mui/material';
 import {
   GanttChange,
@@ -88,4 +89,4 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
   );
 };
 
-export default GanttChart;
+export default memo(GanttChart) as typeof GanttChart;

@@ -52,6 +52,8 @@ const GanttTaskBarView = <T,>({
     });
   };
 
+  console.log('I Rerender!');
+
   return (
     <>
       <GanttTaskBarDisplay

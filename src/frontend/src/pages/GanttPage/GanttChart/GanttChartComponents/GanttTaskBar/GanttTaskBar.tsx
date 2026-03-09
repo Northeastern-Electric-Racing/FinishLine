@@ -8,7 +8,7 @@ import {
   RequestEventChange
 } from '../../../../../utils/gantt.utils';
 import { dateToString, getMonday } from '../../../../../utils/datetime.utils';
-import { useCallback } from 'react';
+import { memo, useCallback } from 'react';
 
 interface GanttTaskBarProps<T> {
   days: Date[];
@@ -79,4 +79,4 @@ const GanttTaskBar = <T,>({
   );
 };
 
-export default GanttTaskBar;
+export default memo(GanttTaskBar) as typeof GanttTaskBar;

@@ -7,7 +7,7 @@ import {
   RequestEventChange
 } from '../../../utils/gantt.utils';
 import { Box, Typography } from '@mui/material';
-import { useState, useCallback, memo } from 'react';
+import { useState, useCallback, memo, useMemo } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import { ArcherContainer } from 'react-archer';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
@@ -88,7 +88,7 @@ const GanttChartSection = <T,>({
   highlightSubtaskComparator,
   highlightTaskComparator
 }: GanttChartSectionProps<T>) => {
-  const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
+  const days = useMemo(() => eachDayOfInterval({ start, end }).filter((day) => isMonday(day)), [start, end]);
   const [currentTooltipOptions, setCurrentTooltipOptions] = useState<OnMouseOverOptions | undefined>(undefined);
   const [cursorY, setCursorY] = useState<number>(0);
 

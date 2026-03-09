@@ -187,6 +187,92 @@ const ProjectGanttChartPage: FC = () => {
     [allWorkPackages]
   );
 
+  const handleCancel = useCallback((_collection?: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
+    setAddedProjects([]);
+    setEditedProjects([]);
+    setSelectedTeam(undefined);
+    setSelectedProject(undefined);
+  }, []);
+
+  const onAddNewTask = useCallback((collection: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
+    setSelectedTeam(collection.element);
+    setShowAddProjectModal(true);
+  }, []);
+
+  const onAddNewSubtask = useCallback((parent: GanttTask<WbsElementPreview | Task>) => {
+    if (isProjectPreview(parent.element)) {
+      setSelectedProject(parent.element);
+      setShowSelectionModal(true);
+    }
+  }, []);
+
+  const createChange = useCallback((change: GanttChange<WbsElementPreview | Task>) => {
+    setGanttChanges((prev) => [...prev, change]);
+  }, []);
+
+  const createChangeHandler = useCallback(
+    (change: GanttChange<WbsElementPreview | Task>) => {
+      const parentProject = allProjects.find((project) => wbsPipe(project.wbsNum) === projectWbsPipe(change.element.wbsNum));
+      if (!parentProject) return;
+
+      const { updatedProject } = applyChangesToWBSElement([change], change.element, parentProject);
+      const addedProject = addedProjects.find((proj) => proj.id === updatedProject.id);
+      if (addedProject) {
+        setAddedProjects((prev) => [...prev.filter((project) => project.id !== updatedProject.id), updatedProject]);
+      } else {
+        setEditedProjects((prev) => [...prev.filter((project) => project.id !== updatedProject.id), updatedProject]);
+      }
+      createChange(change);
+    },
+    [allProjects, addedProjects, createChange]
+  );
+
+  const onEditPressed = useCallback((collection: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
+    setSelectedTeam(collection.element);
+  }, []);
+
+  const saveChanges = useCallback(async () => {
+    try {
+      if (ganttChanges.length > 0) {
+        const finalizedChanges = constructFinalizedChanges(projects ?? [], addedProjects.concat(editedProjects), ganttChanges);
+        setRequestEventChanges(finalizedChanges);
+      } else {
+        toast.success('Changes saved successfully!');
+        handleCancel();
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
+  }, [ganttChanges, projects, addedProjects, editedProjects, toast, handleCancel]);
+
+  const editability = useMemo(
+    () => ({
+      onEditPressed,
+      onCancelChanges: handleCancel,
+      onCreateChange: createChangeHandler,
+      highlightedChange: requestEventChanges[requestEventChanges.length - 1],
+      onNewTaskPressed: onAddNewTask,
+      onNewSubTaskPressed: onAddNewSubtask,
+      createTaskTitle: 'Create New Project',
+      onSavePressed: saveChanges,
+      highlightSubtaskComparator: highlightWorkPackageComparator,
+      highlightTaskComparator: highlightProjectComparator
+    }),
+    [
+      onEditPressed,
+      handleCancel,
+      createChangeHandler,
+      requestEventChanges,
+      onAddNewTask,
+      onAddNewSubtask,
+      saveChanges,
+      highlightWorkPackageComparator,
+      highlightProjectComparator
+    ]
+  );
+
   // ---- Early returns after all hooks ----
 
   if (
@@ -295,25 +381,6 @@ const ProjectGanttChartPage: FC = () => {
   const resetHandler = () => {
     history.push(routes.GANTT);
     localStorage.removeItem('ganttURL');
-  };
-
-  const handleCancel = (_collection?: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
-    setAddedProjects([]);
-    setEditedProjects([]);
-    setSelectedTeam(undefined);
-    setSelectedProject(undefined);
-  };
-
-  const onAddNewSubtask = (parent: GanttTask<WbsElementPreview | Task>) => {
-    if (isProjectPreview(parent.element)) {
-      setSelectedProject(parent.element);
-      setShowSelectionModal(true);
-    }
-  };
-
-  const onAddNewTask = (collection: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
-    setSelectedTeam(collection.element);
-    setShowAddProjectModal(true);
   };
 
   const handleAddWorkPackageInfo = (
@@ -441,40 +508,6 @@ const ProjectGanttChartPage: FC = () => {
     setSelectedTeam(undefined);
   };
 
-  const createChange = (change: GanttChange<WbsElementPreview | Task>) => {
-    setGanttChanges([...ganttChanges, change]);
-  };
-
-  const createChangeHandler = (change: GanttChange<WbsElementPreview | Task>) => {
-    const parentProject = allProjects.find((project) => wbsPipe(project.wbsNum) === projectWbsPipe(change.element.wbsNum));
-    if (!parentProject) return;
-
-    const { updatedProject } = applyChangesToWBSElement([change], change.element, parentProject);
-    const addedProject = addedProjects.find((proj) => proj.id === updatedProject.id);
-    if (addedProject) {
-      setAddedProjects((prev) => [...prev.filter((project) => project.id !== updatedProject.id), updatedProject]);
-    } else {
-      setEditedProjects((prev) => [...prev.filter((project) => project.id !== updatedProject.id), updatedProject]);
-    }
-    createChange(change);
-  };
-
-  const saveChanges = async () => {
-    try {
-      if (ganttChanges.length > 0) {
-        const requestEventChanges = constructFinalizedChanges(projects, addedProjects.concat(editedProjects), ganttChanges);
-        setRequestEventChanges(requestEventChanges);
-      } else {
-        toast.success('Changes saved successfully!');
-        handleCancel();
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
-  };
-
   const reverseEventChange = (change: RequestEventChange<WbsElementPreview | Task>) => {
     const { element } = change;
     switch (change.type) {
@@ -537,20 +570,6 @@ const ProjectGanttChartPage: FC = () => {
         }
       }
     }
-  };
-
-  const editability = {
-    onEditPressed: (collection: GanttCollection<TeamPreview, WbsElementPreview | Task>) =>
-      setSelectedTeam(collection.element),
-    onCancelChanges: handleCancel,
-    onCreateChange: createChangeHandler,
-    highlightedChange: requestEventChanges[requestEventChanges.length - 1],
-    onNewTaskPressed: onAddNewTask,
-    onNewSubTaskPressed: onAddNewSubtask,
-    createTaskTitle: 'Create New Project',
-    onSavePressed: saveChanges,
-    highlightSubtaskComparator: highlightWorkPackageComparator,
-    highlightTaskComparator: highlightProjectComparator
   };
 
   const headerRight = (

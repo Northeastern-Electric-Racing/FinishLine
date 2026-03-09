@@ -2,7 +2,7 @@ import { Edit } from '@mui/icons-material';
 import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import GanttChartSection from './GanttChartSection';
 import { GanttCollection } from '../../../utils/gantt.utils';
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { GanttEditability } from './GanttChart';
 
 interface GanttChartCollectionSectionProps<E, T> {
@@ -60,8 +60,8 @@ const GanttChartCollectionSection = <E, T>({
     task.children.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
   });
 
-  const ignore = () => {};
-  const ignoreBool = () => false;
+  const ignore = useCallback(() => {}, []);
+  const ignoreBool = useCallback(() => false, []);
 
   return (
     <Box sx={collectionSectionBackgroundStyle}>
@@ -102,4 +102,4 @@ const GanttChartCollectionSection = <E, T>({
   );
 };
 
-export default GanttChartCollectionSection;
+export default memo(GanttChartCollectionSection) as typeof GanttChartCollectionSection;
