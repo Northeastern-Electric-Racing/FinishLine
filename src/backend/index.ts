@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { getUserAndOrganization, prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils.js';
@@ -13,12 +13,12 @@ import descriptionBulletsRouter from './src/routes/description-bullets.routes.js
 import tasksRouter from './src/routes/tasks.routes.js';
 import reimbursementRequestsRouter from './src/routes/reimbursement-requests.routes.js';
 import notificationsRouter from './src/routes/notifications.routes.js';
-import designReviewsRouter from './src/routes/design-reviews.routes.js';
 import wbsElementTemplatesRouter from './src/routes/wbs-element-templates.routes.js';
 import carsRouter from './src/routes/cars.routes.js';
 import organizationRouter from './src/routes/organizations.routes.js';
 import recruitmentRouter from './src/routes/recruitment.routes.js';
-import { slackEvents } from './src/routes/slack.routes.js';
+import { getReceiver } from './src/integrations/slack.js';
+import './src/routes/slack.routes.js';
 import announcementsRouter from './src/routes/announcements.routes.js';
 import onboardingRouter from './src/routes/onboarding.routes.js';
 import popUpsRouter from './src/routes/pop-up.routes.js';
@@ -26,6 +26,8 @@ import statisticsRouter from './src/routes/statistics.routes.js';
 import retrospectiveRouter from './src/routes/retrospective.routes.js';
 import partsRouter from './src/routes/parts.routes.js';
 import financeRouter from './src/routes/finance.routes.js';
+import calendarRouter from './src/routes/calendar.routes.js';
+import prospectiveSponsorRouter from './src/routes/prospective-sponsor.routes.js';
 
 const app = express();
 
@@ -62,9 +64,15 @@ const options: cors.CorsOptions = {
   allowedHeaders
 };
 
-// so we can listen to slack messages
-// NOTE: must be done before using json
-app.use('/slack', slackEvents.requestListener());
+// Mount Slack Bolt receiver BEFORE other middleware to handle raw body parsing
+// Bolt's receiver handles its own body parsing and request verification
+// The receiver is configured to handle requests at /slack/events
+// Only mount if Slack is configured (when SLACK_BOT_TOKEN is set)
+const receiver = getReceiver();
+if (receiver) {
+  app.use(receiver.router as unknown as Router);
+}
+
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'healthy' });
 });
@@ -94,7 +102,6 @@ app.use('/change-requests', changeRequestsRouter);
 app.use('/description-bullets', descriptionBulletsRouter);
 app.use('/tasks', tasksRouter);
 app.use('/reimbursement-requests', reimbursementRequestsRouter);
-app.use('/design-reviews', designReviewsRouter);
 app.use('/notifications', notificationsRouter);
 app.use('/templates', wbsElementTemplatesRouter);
 app.use('/cars', carsRouter);
@@ -107,6 +114,8 @@ app.use('/statistics', statisticsRouter);
 app.use('/retrospective', retrospectiveRouter);
 app.use('/parts', partsRouter);
 app.use('/finance', financeRouter);
+app.use('/calendar', calendarRouter);
+app.use('/prospective-sponsors', prospectiveSponsorRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

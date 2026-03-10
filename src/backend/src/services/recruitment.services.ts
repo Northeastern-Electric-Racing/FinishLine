@@ -212,4 +212,45 @@ export default class RecruitmentServices {
 
     return faq;
   }
+
+  /**
+   * Creates a guest definition
+   * @param creator user creating the definition
+   * @param organization org the definition is being created in
+   * @param term the term we are defining
+   * @param description the definition of the term
+   * @param order the order the term appears on the page
+   * @param icon the icon associated with the term
+   * @param buttonText the text displayed on the terms button
+   * @param buttonLink where the terms button links to
+   * @returns
+   */
+  static async createGuestDefinition(
+    creator: User,
+    organization: Organization,
+    term: string,
+    description: string,
+    order: number,
+    icon?: string,
+    buttonText?: string,
+    buttonLink?: string
+  ) {
+    if (!(await userHasPermission(creator.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('create a guest definition');
+
+    const definition = await prisma.guest_Definition.create({
+      data: {
+        term,
+        description,
+        order,
+        userCreatedId: creator.userId,
+        organizationId: organization.organizationId,
+        buttonText,
+        buttonLink,
+        icon
+      }
+    });
+
+    return definition;
+  }
 }

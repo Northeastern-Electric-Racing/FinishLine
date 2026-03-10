@@ -17,6 +17,7 @@ export const teamTransformer = (team: Team): Team => {
 
 export const teamPreviewTransformer = (team: TeamPreview): TeamPreview => {
   return {
+    dateArchived: team.dateArchived ? new Date(team.dateArchived) : undefined,
     ...team
   };
 };

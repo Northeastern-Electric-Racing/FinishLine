@@ -93,7 +93,7 @@ enum Material_Status {
   READY_TO_ORDER
 }
 
-enum Design_Review_Status {
+enum Event_Status {
   UNCONFIRMED
   CONFIRMED
   SCHEDULED
@@ -158,6 +158,27 @@ enum Review_Status {
   APPROVED
 }
 
+enum Prospective_Sponsor_Status {
+  IN_PROGRESS
+  DECLINED
+  NOT_IN_CONTACT
+  NO_RESPONSE
+  ACCEPTED
+}
+
+enum First_Contact_Method {
+  INBOUND_FORM
+  INBOUND_EMAIL
+  OUTBOUND_EMAIL
+  OTHER
+}
+
+enum Sponsor_Value_Type {
+  MONETARY
+  STOCK
+  DISCOUNT
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -206,13 +227,6 @@ model User {
   archivedTeams                           Team[]                               @relation(name: "userArchived")
   createdMaterialTypes                    Material_Type[]                      @relation(name: "materialTypeCreator")
   createdManufacturers                    Manufacturer[]                       @relation(name: "manufacturerCreator")
-  requiredDesignReviews                   Design_Review[]                      @relation(name: "requiredAttendee")
-  optionalDesignReviews                   Design_Review[]                      @relation(name: "optionalAttendee")
-  userConfirmedDesignReviews              Design_Review[]                      @relation(name: "confirmedAttendee")
-  userDeniedDesignReviews                 Design_Review[]                      @relation(name: "deniedAttendee")
-  attendedDesignReviews                   Design_Review[]                      @relation(name: "userAttended")
-  createdDesignReviews                    Design_Review[]                      @relation(name: "designReviewCreator")
-  deletedDesignReviews                    Design_Review[]                      @relation(name: "designReviewDeleter")
   drScheduleSettings                      Schedule_Settings?
   wbsProposedlead                         Wbs_Proposed_Changes[]               @relation(name: "wbslead")
   wbsProposedmanager                      Wbs_Proposed_Changes[]               @relation(name: "wbsmanager")
@@ -263,9 +277,29 @@ model User {
   deletedOtherReimbursementProductReasons Reimbursement_Product_Other_Reason[] @relation(name: "deletedOtherReimbursementProductReasons")
   reimbursementRequestComments            Reimbursement_Request_Comment[]      @relation(name: "createdReimbursementRequestComments")
   deletedReimbursementRequestComments     Reimbursement_Request_Comment[]      @relation(name: "deletedReimbursementRequestComments")
+  createdMachinery                        Machinery[]                          @relation(name: "machineryCreator")
+  deletedMachinery                        Machinery[]                          @relation(name: "machineryDeleter")
+  createdShops                            Shop[]                               @relation(name: "shopCreator")
+  deletedShops                            Shop[]                               @relation(name: "shopDeleter")
+  approvedEvents                          Event[]                              @relation(name: "eventApprovalRequiredBy")
+  createdEvents                           Event[]                              @relation(name: "eventCreator")
+  deletedEvents                           Event[]                              @relation(name: "eventDeleter")
+  createdCalendars                        Calendar[]                           @relation(name: "calendarCreator")
+  deletedCalendars                        Calendar[]                           @relation(name: "calendarDeleter")
+  createdEventTypes                       Event_Type[]                         @relation(name: "eventTypeCreator")
+  deletedEventTypes                       Event_Type[]                         @relation(name: "eventTypeDeleter")
   deletedSponsorTiers                     Sponsor_Tier[]
   financeDelegateForOrganizations         Organization[]                       @relation(name: "financeDelegates")
   assignedReimbursementRequests           Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
+  deletedGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionDeleter")
+  createdGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionCreator")
+  requiredEvents                          Event[]                              @relation(name: "requiredEventAttendee")
+  optionalEvents                          Event[]                              @relation(name: "optionalEventAttendee")
+  confirmedEvents                         Event[]                              @relation(name: "confirmedEventAttendee")
+  deniedEvents                            Event[]                              @relation(name: "deniedEventAttendee")
+  deletedDocuments                        Document[]                           @relation(name: "deletedDocuments")
+  createdDocuments                        Document[]                           @relation(name: "documentsCreatedBy")
+  prospectiveSponsorsContacted            Prospective_Sponsor[]                @relation(name: "prospectiveSponsorContactor")
 }
 
 model Role {
@@ -289,12 +323,12 @@ model Team {
   projects               Project[]                  @relation(name: "assignedBy")
   members                User[]                     @relation(name: "teamsAsMember")
   leads                  User[]                     @relation(name: "teamsAsLead")
+  events                 Event[]                    @relation(name: "affiliatedTeam")
   headId                 String
   head                   User                       @relation(name: "teamsAsHead", fields: [headId], references: [userId])
   dateArchived           DateTime?
   userArchivedId         String?
   userArchived           User?                      @relation(name: "userArchived", fields: [userArchivedId], references: [userId])
-  meetings               Meeting[]
   proposedProjectChanges Project_Proposed_Changes[] @relation(name: "proposedProjectTeams")
   teamType               Team_Type?                 @relation(fields: [teamTypeId], references: [teamTypeId])
   teamTypeId             String?
@@ -369,13 +403,13 @@ model Message_Info {
 
   changeRequestId        String?
   changeRequest          Change_Request?        @relation(fields: [changeRequestId], references: [crId])
-  designReviewId         String?
-  designReview           Design_Review?         @relation(fields: [designReviewId], references: [designReviewId])
+  eventId                String?
+  event                  Event?                 @relation(fields: [eventId], references: [eventId])
   reimbursementRequestId String?
   reimbursementRequest   Reimbursement_Request? @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 
   @@index([reimbursementRequestId])
-  @@index([designReviewId])
+  @@index([eventId])
   @@index([changeRequestId])
 }
 
@@ -504,7 +538,6 @@ model WBS_Element {
   assemblies                  Assembly[]
   materials                   Material[]
   reimbursementProductReasons Reimbursement_Product_Reason[]
-  designReviews               Design_Review[]
   proposedBlockedByChanges    Work_Package_Proposed_Changes[] @relation(name: "proposedBlockedBy")
   descriptionBullets          Description_Bullet[]
   organizationId              String
@@ -544,6 +577,7 @@ model Work_Package {
   duration       Int
   blockedBy      WBS_Element[]       @relation(name: "blockedBy")
   stage          Work_Package_Stage?
+  events         Event[]
 
   @@index([projectId])
 }
@@ -733,9 +767,11 @@ model Reimbursement_Product_Reason {
 
 model Reimbursement_Product {
   reimbursementProductId       String                       @id @default(uuid())
-  name                         String
+  name                         String?
   dateDeleted                  DateTime?
   cost                         Int
+  material                     Material?                    @relation(fields: [materialId], references: [materialId])
+  materialId                   String?
   reimbursementProductReasonId String                       @unique
   reimbursementProductReason   Reimbursement_Product_Reason @relation(fields: [reimbursementProductReasonId], references: [reimbursementProductReasonId])
   reimbursementRequestId       String
@@ -744,6 +780,7 @@ model Reimbursement_Product {
 
   @@index([reimbursementRequestId])
   @@index([reimbursementProductReasonId])
+  @@index([materialId])
 }
 
 model Refund_Source {
@@ -779,24 +816,39 @@ model Vendor {
   @@index([organizationId])
 }
 
+model Sponsor_Contact {
+  sponsorContactId   String               @id @default(uuid())
+  name               String
+  email              String?
+  phone              String?
+  position           String?
+  sponsor            Sponsor?
+  prospectiveSponsor Prospective_Sponsor?
+}
+
 model Sponsor {
-  sponsorId      String         @id @default(uuid())
-  name           String
-  organizationId String
-  organization   Organization   @relation(fields: [organizationId], references: [organizationId])
-  dateCreated    DateTime       @default(now())
-  dateDeleted    DateTime?
-  activeStatus   Boolean
-  vendorContact  String
-  tier           Sponsor_Tier   @relation(fields: [sponsorTierId], references: [sponsorTierId])
-  sponsorTierId  String
-  sponsorValue   Int
-  joinDate       DateTime
-  discountCode   String?
-  activeYears    Int[]
-  taxExempt      Boolean
-  sponsorNotes   String?
-  sponsorTasks   Sponsor_Task[]
+  sponsorId           String               @id @default(uuid())
+  name                String
+  organizationId      String
+  organization        Organization         @relation(fields: [organizationId], references: [organizationId])
+  dateCreated         DateTime             @default(now())
+  dateDeleted         DateTime?
+  activeStatus        Boolean
+  contact             Sponsor_Contact      @relation(fields: [contactId], references: [sponsorContactId])
+  contactId           String               @unique
+  tier                Sponsor_Tier?        @relation(fields: [sponsorTierId], references: [sponsorTierId])
+  sponsorTierId       String?
+  valueTypes          Sponsor_Value_Type[]
+  sponsorValue        Int?
+  stockDescription    String?
+  discountDescription String?
+  joinDate            DateTime
+  discountCode        String?
+  activeYears         Int[]
+  taxExempt           Boolean
+  sponsorNotes        String?
+  sponsorTasks        Sponsor_Task[]
+  logoImageId         String?
 
   @@unique([name, organizationId], name: "uniqueSponsor")
   @@index([sponsorTierId])
@@ -804,17 +856,44 @@ model Sponsor {
 }
 
 model Sponsor_Task {
-  sponsorTaskId  String    @id @default(uuid())
-  dueDate        DateTime
-  notifyDate     DateTime?
-  assignee       User?     @relation(fields: [assigneeUserId], references: [userId], name: "assignedSponsorTasks")
-  assigneeUserId String?
-  notes          String
-  sponsor        Sponsor   @relation(fields: [sponsorId], references: [sponsorId])
-  sponsorId      String
-  dateDeleted    DateTime?
+  sponsorTaskId        String               @id @default(uuid())
+  dueDate              DateTime
+  notifyDate           DateTime?
+  assignee             User?                @relation(fields: [assigneeUserId], references: [userId], name: "assignedSponsorTasks")
+  assigneeUserId       String?
+  notes                String
+  done                 Boolean              @default(false)
+  sponsor              Sponsor?             @relation(fields: [sponsorId], references: [sponsorId])
+  sponsorId            String?
+  prospectiveSponsor   Prospective_Sponsor? @relation(fields: [prospectiveSponsorId], references: [prospectiveSponsorId])
+  prospectiveSponsorId String?
+  dateDeleted          DateTime?
 
   @@index([sponsorId])
+  @@index([prospectiveSponsorId])
+}
+
+model Prospective_Sponsor {
+  prospectiveSponsorId   String                     @id @default(uuid())
+  organizationId         String
+  organization           Organization               @relation(fields: [organizationId], references: [organizationId])
+  organizationName       String
+  dateCreated            DateTime                   @default(now())
+  lastContactDate        DateTime?
+  highlightThresholdDays Int                        @default(10)
+  status                 Prospective_Sponsor_Status @default(NOT_IN_CONTACT)
+  firstContactMethod     First_Contact_Method?
+  contactor              User?                      @relation(fields: [contactorUserId], references: [userId], name: "prospectiveSponsorContactor")
+  contactorUserId        String?
+  contact                Sponsor_Contact?           @relation(fields: [contactId], references: [sponsorContactId])
+  contactId              String?                    @unique
+  notes                  String?
+  dateDeleted            DateTime?
+  tasks                  Sponsor_Task[]
+
+  @@unique([organizationName, organizationId], name: "uniqueProspectiveSponsor")
+  @@index([organizationId])
+  @@index([contactorUserId])
 }
 
 model Account_Code {
@@ -894,34 +973,35 @@ model Assembly {
 }
 
 model Material {
-  materialId             String                 @id @default(uuid())
-  assembly               Assembly?              @relation(fields: [assemblyId], references: [assemblyId])
+  materialId             String                  @id @default(uuid())
+  assembly               Assembly?               @relation(fields: [assemblyId], references: [assemblyId])
   assemblyId             String?
   name                   String
-  wbsElement             WBS_Element            @relation(fields: [wbsElementId], references: [wbsElementId])
+  wbsElement             WBS_Element             @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId           String
   dateDeleted            DateTime?
-  userDeleted            User?                  @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
+  userDeleted            User?                   @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
   userDeletedId          String?
   dateCreated            DateTime
-  userCreated            User                   @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
+  userCreated            User                    @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
   userCreatedId          String
   status                 Material_Status
-  materialType           Material_Type          @relation(fields: [materialTypeId], references: [id])
+  materialType           Material_Type           @relation(fields: [materialTypeId], references: [id])
   materialTypeId         String
-  manufacturer           Manufacturer           @relation(fields: [manufacturerId], references: [id])
-  manufacturerId         String
-  manufacturerPartNumber String
+  manufacturer           Manufacturer?           @relation(fields: [manufacturerId], references: [id])
+  manufacturerId         String?
+  manufacturerPartNumber String?
   pdmFileName            String?
-  quantity               Decimal
-  unit                   Unit?                  @relation(fields: [unitId], references: [id])
+  quantity               Decimal?
+  unit                   Unit?                   @relation(fields: [unitId], references: [id])
   unitId                 String?
-  price                  Int
-  subtotal               Int
+  price                  Int?
+  subtotal               Int?
   linkUrl                String
   notes                  String?
-  reimbursementRequest   Reimbursement_Request? @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+  reimbursementRequest   Reimbursement_Request?  @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
   reimbursementRequestId String?
+  reimbursementProducts  Reimbursement_Product[]
 
   @@index([assemblyId])
   @@index([materialTypeId])
@@ -960,60 +1040,197 @@ model Manufacturer {
   @@index([organizationId])
 }
 
+model Shop {
+  shopId         String           @id @default(uuid())
+  name           String
+  dateCreated    DateTime         @default(now())
+  dateDeleted    DateTime?
+  userCreatedId  String
+  userCreated    User             @relation(name: "shopCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId  String?
+  userDeleted    User?            @relation(fields: [userDeletedId], references: [userId], name: "shopDeleter")
+  machinery      Shop_Machinery[]
+  description    String
+  events         Event[]
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Machinery {
+  machineryId    String           @id @default(uuid())
+  name           String
+  dateCreated    DateTime         @default(now())
+  dateDeleted    DateTime?
+  userCreatedId  String
+  userCreated    User             @relation(name: "machineryCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId  String?
+  userDeleted    User?            @relation(fields: [userDeletedId], references: [userId], name: "machineryDeleter")
+  shops          Shop_Machinery[]
+  events         Event[]
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Shop_Machinery {
+  shopMachineryId String    @id @default(uuid())
+  shopId          String
+  machineryId     String
+  quantity        Int       @default(1)
+  shop            Shop      @relation(fields: [shopId], references: [shopId])
+  machinery       Machinery @relation(fields: [machineryId], references: [machineryId])
+
+  @@unique([shopId, machineryId], name: "uniqueShopMachinery")
+  @@index([machineryId])
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model Schedule_Slot {
+  scheduleSlotId String   @id @default(uuid())
+  startTime      DateTime
+  endTime        DateTime
+  allDay         Boolean  @default(false)
+  eventId        String
+  event          Event    @relation(fields: [eventId], references: [eventId])
+
+  @@index([endTime])
+  @@index([startTime])
+}
+
+enum Conflict_Status {
+  PENDING
+  APPROVED
+  DENIED
+  NO_CONFLICT
+}
+
+model Document {
+  documentId      String    @id @default(uuid())
+  googleFileId    String    @unique
+  name            String
+  deletedByUserId String?
+  deletedBy       User?     @relation(name: "deletedDocuments", fields: [deletedByUserId], references: [userId])
+  dateDeleted     DateTime?
+  createdBy       User      @relation(name: "documentsCreatedBy", fields: [createdByUserId], references: [userId])
+  createdByUserId String
+  dateCreated     DateTime  @default(now())
+  documentEventId String
+  documentEvent   Event     @relation(fields: [documentEventId], references: [eventId])
+
+  @@index([documentEventId])
+}
+
+model Event {
+  eventId                    String          @id @default(uuid())
+  dateCreated                DateTime        @default(now())
+  dateDeleted                DateTime?
+  title                      String
+  userCreatedId              String
+  userCreated                User            @relation(name: "eventCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId              String?
+  userDeleted                User?           @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
+  eventTypeId                String
+  eventType                  Event_Type      @relation(fields: [eventTypeId], references: [eventTypeId])
+  approved                   Conflict_Status
+  approvalRequiredFromUserId String?
+  approvalRequiredBy         User?           @relation(fields: [approvalRequiredFromUserId], references: [userId], name: "eventApprovalRequiredBy")
+  scheduledTimes             Schedule_Slot[]
+  requiredMembers            User[]          @relation(name: "requiredEventAttendee")
+  optionalMembers            User[]          @relation(name: "optionalEventAttendee")
+  confirmedMembers           User[]          @relation(name: "confirmedEventAttendee")
+  deniedMembers              User[]          @relation(name: "deniedEventAttendee")
+  teams                      Team[]          @relation(name: "affiliatedTeam")
+  teamType                   Team_Type?      @relation(fields: [teamTypeId], references: [teamTypeId])
+  teamTypeId                 String?
+  location                   String?
+  zoomLink                   String?
+  shops                      Shop[]
+  machinery                  Machinery[]
+  workPackages               Work_Package[]
+  documents                  Document[]
+  status                     Event_Status
+  initialDateScheduled       DateTime?
+  questionDocumentLink       String?
+  description                String?
+  notificationSlackThreads   Message_Info[]
+  calendarEventIds           String[]
+}
+
+model Calendar {
+  calendarId     String       @id @default(uuid())
+  name           String
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  userCreatedId  String
+  userCreated    User         @relation(name: "calendarCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId  String?
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "calendarDeleter")
+  description    String
+  colorHexCode   String
+  eventTypes     Event_Type[]
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Event_Type {
+  eventTypeId                      String       @id @default(uuid())
+  name                             String
+  dateCreated                      DateTime     @default(now())
+  dateDeleted                      DateTime?
+  userCreatedId                    String
+  userCreated                      User         @relation(name: "eventTypeCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId                    String?
+  userDeleted                      User?        @relation(fields: [userDeletedId], references: [userId], name: "eventTypeDeleter")
+  calendars                        Calendar[]
+  requiredMembers                  Boolean
+  optionalMembers                  Boolean
+  teams                            Boolean
+  teamType                         Boolean
+  location                         Boolean
+  zoomLink                         Boolean
+  shop                             Boolean
+  machinery                        Boolean
+  workPackage                      Boolean
+  questionDocument                 Boolean
+  documents                        Boolean
+  description                      Boolean
+  onlyHeadsOrAboveForEventCreation Boolean
+  requiresConfirmation             Boolean
+  sendSlackNotifications           Boolean
+  events                           Event[]
+  organizationId                   String
+  organization                     Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
 model Team_Type {
-  teamTypeId      String          @id @default(uuid())
+  teamTypeId      String       @id @default(uuid())
   name            String
   iconName        String
-  designReviews   Design_Review[]
   teams           Team[]
-  description     String          @default("")
+  description     String       @default("")
   imageFileId     String?
   organizationId  String
-  organization    Organization    @relation(fields: [organizationId], references: [organizationId])
+  organization    Organization @relation(fields: [organizationId], references: [organizationId])
   calendarId      String?
   checklists      Checklist[]
-  usersOnboarding User[]          @relation(name: "onboardingTeamTypes")
-  usersOnboarded  User[]          @relation(name: "onboardedTeamTypes")
+  usersOnboarding User[]       @relation(name: "onboardingTeamTypes")
+  usersOnboarded  User[]       @relation(name: "onboardedTeamTypes")
 
   dateDeleted DateTime?
   deletedById String?
   deletedBy   User?     @relation(name: "teamTypeDeleter", fields: [deletedById], references: [userId])
+  events      Event[]
 
   @@unique([name, organizationId], name: "uniqueTeamType")
   @@index([organizationId])
-}
-
-model Design_Review {
-  designReviewId           String               @id @default(uuid())
-  dateScheduled            DateTime             @db.Date
-  // Meeting times are an integer between 0 and 11 from 10am - 10pm for the date scheduled at hour intervals
-  meetingTimes             Int[]
-  initialDateScheduled     DateTime             @db.Date
-  dateCreated              DateTime             @default(now()) @db.Timestamp(3)
-  userCreated              User                 @relation(fields: [userCreatedId], references: [userId], name: "designReviewCreator")
-  userCreatedId            String
-  status                   Design_Review_Status
-  teamType                 Team_Type            @relation(fields: [teamTypeId], references: [teamTypeId])
-  teamTypeId               String
-  requiredMembers          User[]               @relation(name: "requiredAttendee")
-  optionalMembers          User[]               @relation(name: "optionalAttendee")
-  confirmedMembers         User[]               @relation(name: "confirmedAttendee")
-  deniedMembers            User[]               @relation(name: "deniedAttendee")
-  location                 String?
-  isOnline                 Boolean
-  isInPerson               Boolean
-  zoomLink                 String?
-  attendees                User[]               @relation(name: "userAttended")
-  dateDeleted              DateTime?            @db.Timestamp(3)
-  userDeleted              User?                @relation(fields: [userDeletedId], references: [userId], name: "designReviewDeleter")
-  userDeletedId            String?
-  docTemplateLink          String?
-  wbsElementId             String
-  wbsElement               WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
-  notificationSlackThreads Message_Info[]
-  calendarEventId          String?
-
-  @@index([teamTypeId])
 }
 
 model Availability {
@@ -1035,18 +1252,6 @@ model Schedule_Settings {
   User                 User           @relation(fields: [userId], references: [userId])
   userId               String         @unique
   availabilities       Availability[]
-}
-
-model Meeting {
-  meetingId String @id @default(uuid())
-  title     String
-
-  dateSet           DateTime
-  recurringInterval Int // the number of days between each meeting (0 = no recurring)
-  // meetingTimes are integers between 0 and 11 representing time from 10am - 10pm on the date the meeting is set for at hour intervals see meetingTime field in Design_Review
-  meetingTimes      Int[]
-  team              Team?    @relation(fields: [teamId], references: [teamId])
-  teamId            String
 }
 
 model Wbs_Proposed_Changes {
@@ -1217,8 +1422,14 @@ model Organization {
   partTags                 Part_Tag[]
   sponsors                 Sponsor[]
   sponsorTiers             Sponsor_Tier[]
+  prospectiveSponsors      Prospective_Sponsor[]
   indexCodes               Index_Code[]
   financeDelegates         User[]                       @relation(name: "financeDelegates")
+  guestDefinitions         Guest_Definition[]
+  shops                    Shop[]
+  machineries              Machinery[]
+  calendars                Calendar[]
+  eventTypes               Event_Type[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1555,4 +1766,24 @@ model Reimbursement_Request_Comment {
   reimbursementRequest          Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 
   @@index([reimbursementRequestId])
+}
+
+model Guest_Definition {
+  definitionId   String       @id @default(uuid())
+  term           String
+  description    String
+  order          Int
+  buttonText     String?
+  buttonLink     String?
+  icon           String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "guestDefinitionDeleter")
+  userDeletedId  String?
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "guestDefinitionCreator")
+  userCreatedId  String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@index([organizationId])
 }

@@ -68,6 +68,7 @@ export default class ProjectsService {
   static async getAllProjects(organization: Organization, carId?: string): Promise<ProjectPreview[]> {
     const projects = await prisma.project.findMany({
       where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId }, ...(carId && { carId }) },
+      orderBy: { wbsElement: { dateCreated: 'desc' } },
       ...getProjectPreviewQueryArgs(organization.organizationId)
     });
 

@@ -24,7 +24,7 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
-import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+import { getWorkPackageQueryArgs, getWorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer.js';
 import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils.js';
@@ -73,6 +73,31 @@ export default class WorkPackagesService {
     outputWorkPackages.sort((wpA, wpB) => wpA.endDate.getTime() - wpB.endDate.getTime());
 
     return outputWorkPackages;
+  }
+
+  /**
+   * Retrieve all work packages in preview format (minimal data for dropdowns/lists).
+   *
+   * @param status Optional status filter
+   * @param organization the organization
+   * @returns a list of work package previews
+   */
+  static async getAllWorkPackagesPreview(
+    status: WbsElementStatus | string | undefined,
+    organization: Organization
+  ): Promise<WorkPackagePreview[]> {
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        wbsElement: {
+          dateDeleted: null,
+          organizationId: organization.organizationId,
+          ...(status ? { status: status as WbsElementStatus } : {})
+        }
+      },
+      ...getWorkPackagePreviewQueryArgs()
+    });
+
+    return workPackages.map(workPackagePreviewTransformer);
   }
 
   /**
@@ -208,10 +233,6 @@ export default class WorkPackagesService {
         .map((element) => element.wbsElement.workPackageNumber)
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
-    // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-    const date = new Date(startDate.split('T')[0]);
-    date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
-
     const changesToCreate = crId
       ? [
           {
@@ -241,7 +262,7 @@ export default class WorkPackagesService {
         },
         stage,
         project: { connect: { projectId } },
-        startDate: date,
+        startDate: new Date(startDate),
         duration,
         orderInProject: project.workPackages.filter((wp) => !wp.wbsElement.dateDeleted).length + 1,
         blockedBy: { connect: blockedByElements.map((ele) => ({ wbsElementId: ele.wbsElementId })) }
@@ -364,10 +385,6 @@ export default class WorkPackagesService {
       userId
     );
 
-    // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-    const date = new Date(startDate);
-    date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
-
     // set the status of the wbs element to active if an edit is made to a completed version
     const status =
       originalWorkPackage.wbsElement.status === WbsElementStatus.Complete
@@ -378,7 +395,7 @@ export default class WorkPackagesService {
     const updatedWorkPackage = await prisma.work_Package.update({
       where: { wbsElementId },
       data: {
-        startDate: date,
+        startDate: new Date(startDate),
         duration,
         wbsElement: {
           update: {

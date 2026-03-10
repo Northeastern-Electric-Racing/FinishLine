@@ -10,7 +10,7 @@ import {
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import { addDaysToDate, IndexCode, ReimbursementRequest, ReimbursementStatusType, AccountCode } from 'shared';
-import { Organization, Role_Type, Theme, User, Vendor } from '@prisma/client';
+import { Organization, Role_Type, Theme, User, Vendor, Material } from '@prisma/client';
 import { UserWithSecureSettings } from '../../src/utils/auth.utils.js';
 
 describe('Reimbursement Requests', () => {
@@ -1123,6 +1123,439 @@ describe('Reimbursement Requests', () => {
 
       expect(updatedVendor).not.toBeNull();
       expect(updatedVendor.taxExempt).toBe(true);
+    });
+  });
+
+  describe('Material status updates on Pending Finance', () => {
+    let material: Material;
+
+    beforeEach(async () => {
+      const projectWBS = await prisma.wBS_Element.create({
+        data: {
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 0,
+          name: 'Test Project',
+          organizationId: org.organizationId,
+          dateCreated: new Date()
+        }
+      });
+
+      const materialType = await prisma.material_Type.create({
+        data: {
+          name: 'Test Material Type',
+          dateCreated: new Date(),
+          userCreatedId: createdUser.userId,
+          organizationId: org.organizationId
+        }
+      });
+
+      const manufacturer = await prisma.manufacturer.create({
+        data: {
+          name: 'Test Manufacturer',
+          dateCreated: new Date(),
+          userCreatedId: createdUser.userId,
+          organizationId: org.organizationId
+        }
+      });
+
+      material = await prisma.material.create({
+        data: {
+          name: 'Test Material',
+          wbsElementId: projectWBS.wbsElementId,
+          dateCreated: new Date(),
+          userCreatedId: createdUser.userId,
+          status: 'NOT_READY_TO_ORDER',
+          materialTypeId: materialType.id,
+          manufacturerId: manufacturer.id,
+          linkUrl: 'https://example.com',
+          quantity: 1,
+          price: 100,
+          subtotal: 100
+        }
+      });
+    });
+
+    test('Materials linked to RR are updated to READY_TO_ORDER when RR is created', async () => {
+      const rr = await ReimbursementRequestService.createReimbursementRequest(
+        createdUser,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        [],
+        [
+          {
+            materialId: material.materialId,
+            reason: {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            cost: 10000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 100
+              }
+            ]
+          }
+        ],
+        createdAccountCode.accountCodeId,
+        100,
+        org
+      );
+
+      const updatedMaterial = await prisma.material.findUnique({
+        where: { materialId: material.materialId }
+      });
+
+      expect(updatedMaterial).not.toBeNull();
+      expect(updatedMaterial!.status).toBe('READY_TO_ORDER');
+      expect(updatedMaterial!.reimbursementRequestId).toBe(rr.reimbursementRequestId);
+    });
+
+    test('Materials are updated to ORDERED when RR is marked as pending finance', async () => {
+      const rr = await ReimbursementRequestService.createReimbursementRequest(
+        createdUser,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        [],
+        [
+          {
+            materialId: material.materialId,
+            reason: {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            cost: 10000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 100
+              }
+            ]
+          }
+        ],
+        createdAccountCode.accountCodeId,
+        100,
+        org
+      );
+
+      await prisma.receipt.create({
+        data: {
+          googleFileId: 'test file id',
+          name: 'test receipt',
+          createdBy: { connect: { userId: createdUser.userId } },
+          reimbursementRequest: { connect: { reimbursementRequestId: rr.reimbursementRequestId } }
+        }
+      });
+
+      await prisma.reimbursement_Request.update({
+        where: { reimbursementRequestId: rr.reimbursementRequestId },
+        data: { dateOfExpense: new Date() }
+      });
+
+      await ReimbursementRequestService.markPendingFinance(createdUser, rr.reimbursementRequestId, org);
+
+      const updatedMaterial = await prisma.material.findUnique({
+        where: { materialId: material.materialId }
+      });
+
+      expect(updatedMaterial).not.toBeNull();
+      expect(updatedMaterial!.status).toBe('ORDERED');
+    });
+
+    test('Multiple materials on same RR are all updated to ORDERED', async () => {
+      const material2 = await prisma.material.create({
+        data: {
+          name: 'Second Material',
+          wbsElementId: material.wbsElementId,
+          dateCreated: new Date(),
+          userCreatedId: createdUser.userId,
+          status: 'NOT_READY_TO_ORDER',
+          materialTypeId: material.materialTypeId,
+          manufacturerId: material.manufacturerId,
+          linkUrl: 'https://example.com',
+          quantity: 2,
+          price: 200,
+          subtotal: 400
+        }
+      });
+
+      const rr = await ReimbursementRequestService.createReimbursementRequest(
+        createdUser,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        [],
+        [
+          {
+            materialId: material.materialId,
+            reason: {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            cost: 10000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 100
+              }
+            ]
+          },
+          {
+            materialId: material2.materialId,
+            reason: {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            cost: 40000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 400
+              }
+            ]
+          }
+        ],
+        createdAccountCode.accountCodeId,
+        500,
+        org
+      );
+
+      await prisma.receipt.create({
+        data: {
+          googleFileId: 'test file id',
+          name: 'test receipt',
+          createdBy: { connect: { userId: createdUser.userId } },
+          reimbursementRequest: { connect: { reimbursementRequestId: rr.reimbursementRequestId } }
+        }
+      });
+
+      await prisma.reimbursement_Request.update({
+        where: { reimbursementRequestId: rr.reimbursementRequestId },
+        data: { dateOfExpense: new Date() }
+      });
+
+      await ReimbursementRequestService.markPendingFinance(createdUser, rr.reimbursementRequestId, org);
+
+      const updatedMaterial1 = await prisma.material.findUnique({
+        where: { materialId: material.materialId }
+      });
+      const updatedMaterial2 = await prisma.material.findUnique({
+        where: { materialId: material2.materialId }
+      });
+
+      expect(updatedMaterial1!.status).toBe('ORDERED');
+      expect(updatedMaterial2!.status).toBe('ORDERED');
+    });
+
+    test('Cannot create RR with material that is already linked to another RR', async () => {
+      await ReimbursementRequestService.createReimbursementRequest(
+        createdUser,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        [],
+        [
+          {
+            materialId: material.materialId,
+            reason: {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            cost: 10000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 100
+              }
+            ]
+          }
+        ],
+        createdAccountCode.accountCodeId,
+        100,
+        org
+      );
+
+      await expect(
+        ReimbursementRequestService.createReimbursementRequest(
+          createdUser,
+          createdVendor.vendorId,
+          createdIndexCode.indexCodeId,
+          [],
+          [
+            {
+              materialId: material.materialId,
+              reason: {
+                carNumber: 1,
+                projectNumber: 1,
+                workPackageNumber: 0
+              },
+              cost: 10000,
+              refundSources: [
+                {
+                  indexCode: createdIndexCode,
+                  amount: 100
+                }
+              ]
+            }
+          ],
+          createdAccountCode.accountCodeId,
+          100,
+          org
+        )
+      ).rejects.toThrow(new HttpException(400, 'Material is already linked to another reimbursement request'));
+    });
+  });
+
+  describe('Editing a reimbursement request', () => {
+    test('editing preserves refund sources on existing products', async () => {
+      // Get the original product info
+      const [originalProduct] = reimbursementRequest.reimbursementProducts;
+
+      // Edit the request, updating the product name but keeping the same refund source
+      await ReimbursementRequestService.editReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        createdAccountCode.accountCodeId,
+        reimbursementRequest.totalCost,
+        [],
+        [
+          {
+            id: originalProduct.reimbursementProductId,
+            name: 'UPDATED GLUE',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 200000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 200
+              }
+            ]
+          }
+        ],
+        [],
+        createdUser,
+        org,
+        new Date()
+      );
+
+      // Fetch the updated request and verify refund sources are preserved
+      const updatedRR = await ReimbursementRequestService.getSingleReimbursementRequest(
+        createdUser,
+        reimbursementRequest.reimbursementRequestId,
+        org
+      );
+
+      expect(updatedRR.reimbursementProducts).toHaveLength(1);
+      expect(updatedRR.reimbursementProducts[0].name).toEqual('UPDATED GLUE');
+      expect(updatedRR.reimbursementProducts[0].cost).toEqual(200000);
+      expect(updatedRR.reimbursementProducts[0].refundSources).toHaveLength(1);
+      expect(updatedRR.reimbursementProducts[0].refundSources[0].amount).toEqual(200);
+      expect(updatedRR.reimbursementProducts[0].refundSources[0].indexCode.indexCodeId).toEqual(
+        createdIndexCode.indexCodeId
+      );
+    });
+
+    test('editing updates refund source amounts on existing products', async () => {
+      const [originalProduct] = reimbursementRequest.reimbursementProducts;
+
+      // Edit with a different refund source amount
+      await ReimbursementRequestService.editReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        createdAccountCode.accountCodeId,
+        reimbursementRequest.totalCost,
+        [],
+        [
+          {
+            id: originalProduct.reimbursementProductId,
+            name: 'GLUE',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 300000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 300
+              }
+            ]
+          }
+        ],
+        [],
+        createdUser,
+        org,
+        new Date()
+      );
+
+      const updatedRR = await ReimbursementRequestService.getSingleReimbursementRequest(
+        createdUser,
+        reimbursementRequest.reimbursementRequestId,
+        org
+      );
+
+      expect(updatedRR.reimbursementProducts).toHaveLength(1);
+      expect(updatedRR.reimbursementProducts[0].cost).toEqual(300000);
+      expect(updatedRR.reimbursementProducts[0].refundSources).toHaveLength(1);
+      expect(updatedRR.reimbursementProducts[0].refundSources[0].amount).toEqual(300);
+    });
+
+    test('editing with new products (no id) creates them with refund sources', async () => {
+      // Edit the request, replacing the old product with a new one (no id)
+      await ReimbursementRequestService.editReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        createdAccountCode.accountCodeId,
+        reimbursementRequest.totalCost,
+        [],
+        [
+          {
+            name: 'NEW TAPE',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 500,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 500
+              }
+            ]
+          }
+        ],
+        [],
+        createdUser,
+        org,
+        new Date()
+      );
+
+      const updatedRR = await ReimbursementRequestService.getSingleReimbursementRequest(
+        createdUser,
+        reimbursementRequest.reimbursementRequestId,
+        org
+      );
+
+      // Old product should be soft-deleted, new one created
+      const activeProducts = updatedRR.reimbursementProducts;
+      expect(activeProducts).toHaveLength(1);
+      expect(activeProducts[0].name).toEqual('NEW TAPE');
+      expect(activeProducts[0].cost).toEqual(500);
+      expect(activeProducts[0].refundSources).toHaveLength(1);
+      expect(activeProducts[0].refundSources[0].amount).toEqual(500);
     });
   });
 });
