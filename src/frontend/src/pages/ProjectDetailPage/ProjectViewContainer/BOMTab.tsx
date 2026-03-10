@@ -150,16 +150,17 @@ const BOMTab = ({ project }: { project: Project }) => {
               Copy Existing BOM
             </NERButton>
           </Box>
-          <BOMCopyConfirmModal
+          {/* <BOMCopyConfirmModal
             open={bomConfirmOpen}
             onHide={() => {
               setBomConfirmOpen(false);
             }}
             onSuccess={() => {}}
-            materialsCount={1}
-            sourceProjectName={'Source Project'}
-            currentProjectName={'Target Project'}
-          ></BOMCopyConfirmModal>
+            materialIds={materials.map((m) => m.materialId)} // Test: right now, it just copies everything to destination
+            sourceProjectName={'This Project'}
+            currentProjectName={'0.7.0 - Laser Cannon Prototype'}
+            destinationWbsNum={'0.7.0'}
+          ></BOMCopyConfirmModal> */}
           <Box display="flex" gap="20px" alignItems="center">
             <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '8px 14px 8px 14px', borderRadius: '6px' }}>
               Budget: ${project.budget}
