@@ -688,7 +688,7 @@ export default class ReimbursementRequestService {
 
   static async setSaboNumber(
     reimbursementRequestId: string,
-    saboNumber: number,
+    saboNumber: string,
     submitter: User,
     organization: Organization
   ) {

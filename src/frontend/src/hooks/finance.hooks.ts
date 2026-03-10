@@ -846,9 +846,9 @@ export const useEditRefund = (id: string) => {
  */
 export const useSetSaboNumber = (reimbursementRequestId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<void, Error, { saboNumber: number }>(
+  return useMutation<void, Error, { saboNumber: string }>(
     ['reimbursement-requests', reimbursementRequestId],
-    async (formData: { saboNumber: number }) => {
+    async (formData: { saboNumber: string }) => {
       await setSaboNumber(reimbursementRequestId, formData.saboNumber);
     },
     {

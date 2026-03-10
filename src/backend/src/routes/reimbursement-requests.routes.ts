@@ -164,7 +164,7 @@ reimbursementRequestsRouter.post(
 
 reimbursementRequestsRouter.post(
   '/:requestId/set-sabo-number',
-  intMinZero(body('saboNumber')),
+  nonEmptyString(body('saboNumber')),
   validateInputs,
   ReimbursementRequestController.setSaboNumber
 );
