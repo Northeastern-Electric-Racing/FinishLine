@@ -111,9 +111,10 @@ const BOMTab = ({ project }: { project: Project }) => {
               setBomConfirmOpen(false);
             }}
             onSuccess={() => {}}
-            materialsCount={1}
+            materialIds={materials.map((m) => m.materialId)} // Test: right now, it just copies everything to itself
             sourceProjectName={'Source Project'}
             currentProjectName={'Target Project'}
+            destinationWbsNum={'0.7.0'} // Or any project to copy to
           ></BOMCopyConfirmModal>
           <Box display="flex" gap="20px" alignItems="center">
             <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '8px 14px 8px 14px', borderRadius: '6px' }}>
