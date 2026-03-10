@@ -1,17 +1,26 @@
-import { Console } from 'console';
 import NERModal from '../../../../../components/NERModal';
 
 export interface BOMCopyConfirmModalProps {
   open: boolean;
   onHide: () => void;
   onSuccess?: () => void;
+  materialsCount: number;
+  sourceProjectName: string;
+  currentProjectName: string;
 }
 
-const BOMCopyConfirmModal = ({ open, onHide, onSuccess }: BOMCopyConfirmModalProps) => {
-  // TODO: make the actual message
+const BOMCopyConfirmModal = ({
+  open,
+  onHide,
+  onSuccess,
+  materialsCount,
+  sourceProjectName,
+  currentProjectName
+}: BOMCopyConfirmModalProps) => {
+  const message = `Are you sure you want to copy ${materialsCount} materials from ${sourceProjectName} to ${currentProjectName}?`;
   return (
     <NERModal open={open} onHide={onHide} onSubmit={onSuccess} title="Confirm Copy">
-      Are you sure you want to copy [X] materials from [Source Project Name] to [Current Project Name]?
+      <p>{message}</p>
     </NERModal>
   );
 };

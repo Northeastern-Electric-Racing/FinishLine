@@ -2,8 +2,8 @@ import { Box } from '@mui/system';
 import { MaterialPreview, Project, isGuest } from 'shared';
 import { NERButton } from '../../../components/NERButton';
 import WarningIcon from '@mui/icons-material/Warning';
+import React, { useState } from 'react';
 import { Tooltip, useTheme } from '@mui/material';
-import { useState } from 'react';
 import BOMTableWrapper from './BOM/BOMTableWrapper';
 import CreateMaterialModal from './BOM/MaterialForm/CreateMaterialModal';
 import CreateAssemblyModal from './BOM/AssemblyForm/CreateAssemblyModal';
@@ -13,6 +13,7 @@ import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useGetAssembliesForWbsElement, useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
+import BOMCopyConfirmModal from './BOM/MaterialForm/BOMCopyConfirmModal';
 
 export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialPreview) =>
   currentMaterial.subtotal ?? 0 + accumulator;
@@ -22,8 +23,9 @@ const BOMTab = ({ project }: { project: Project }) => {
   const [hideColumn, setHideColumn] = useState<boolean[]>(initialHideColumn);
   const [showAddMaterial, setShowAddMaterial] = useState(false);
   const [showAddAssembly, setShowAddAssembly] = useState(false);
-  const theme = useTheme();
+  const [bomConfirmOpen, setBomConfirmOpen] = React.useState(false);
 
+  const theme = useTheme();
   const user = useCurrentUser();
 
   const {
@@ -93,12 +95,26 @@ const BOMTab = ({ project }: { project: Project }) => {
             >
               Show All Columns
             </NERButton>
-            {/*
-            <NERButton variant="contained" onClick={() => {}} disabled={isGuest(user.role)}>
+            <NERButton
+              variant="contained"
+              onClick={() => {
+                setBomConfirmOpen(true);
+              }}
+              disabled={isGuest(user.role)}
+            >
               Copy Existing BOM
             </NERButton>
-            */}
           </Box>
+          <BOMCopyConfirmModal
+            open={bomConfirmOpen}
+            onHide={() => {
+              setBomConfirmOpen(false);
+            }}
+            onSuccess={() => {}}
+            materialsCount={1}
+            sourceProjectName={'Source Project'}
+            currentProjectName={'Target Project'}
+          ></BOMCopyConfirmModal>
           <Box display="flex" gap="20px" alignItems="center">
             <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '8px 14px 8px 14px', borderRadius: '6px' }}>
               Budget: ${project.budget}
