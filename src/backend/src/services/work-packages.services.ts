@@ -85,18 +85,21 @@ export default class WorkPackagesService {
    *
    * @param status Optional status filter
    * @param organization the organization
+   * @param carId the car number to filter by (only returns work packages from this car when provided)
    * @returns a list of work package previews
    */
   static async getAllWorkPackagesPreview(
     status: WbsElementStatus | string | undefined,
-    organization: Organization
+    organization: Organization,
+    carId?: string
   ): Promise<WorkPackagePreview[]> {
     const workPackages = await prisma.work_Package.findMany({
       where: {
         wbsElement: {
           dateDeleted: null,
           organizationId: organization.organizationId,
-          ...(status ? { status: status as WbsElementStatus } : {})
+          ...(status ? { status: status as WbsElementStatus } : {}),
+          ...(carId ? { project: { carId } } : {})
         }
       },
       ...getWorkPackagePreviewQueryArgs()

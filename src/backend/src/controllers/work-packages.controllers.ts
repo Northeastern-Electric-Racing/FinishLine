@@ -31,7 +31,8 @@ export default class WorkPackagesController {
 
       const outputWorkPackages: WorkPackagePreview[] = await WorkPackagesService.getAllWorkPackagesPreview(
         status,
-        req.organization
+        req.organization,
+        req.currentCar?.carId
       );
 
       res.status(200).json(outputWorkPackages);
