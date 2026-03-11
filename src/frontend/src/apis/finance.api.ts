@@ -374,7 +374,7 @@ export const setSaboNumber = async (requestId: string, saboNumber: string) => {
  * @param saboNumbers The sabo numbers of the reimbursement requests to request approval for
  * @returns the response from the backend
  */
-export const sendPendingAdvisorList = (saboNumbers: number[]) => {
+export const sendPendingAdvisorList = (saboNumbers: string[]) => {
   return axios.post(apiUrls.financeSendPendingAdvisorList(), {
     saboNumbers
   });

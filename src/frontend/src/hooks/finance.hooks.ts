@@ -794,9 +794,9 @@ export const useGetPendingAdvisorList = () => {
  * @returns the mutation to send the pending advisor list
  */
 export const useSendPendingAdvisorList = () => {
-  return useMutation<{ message: string }, Error, number[]>(
+  return useMutation<{ message: string }, Error, string[]>(
     ['reimbursement-requests', 'send-pending-advisor'],
-    async (saboNumbers: number[]) => {
+    async (saboNumbers: string[]) => {
       const { data } = await sendPendingAdvisorList(saboNumbers);
       return data;
     }
