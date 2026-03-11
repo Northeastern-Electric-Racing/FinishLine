@@ -720,7 +720,7 @@ model Receipt {
 model Reimbursement_Request {
   reimbursementRequestId   String                          @id @default(uuid())
   identifier               Int
-  saboId                   Int?                            @unique
+  saboId                   String?                            @unique
   dateCreated              DateTime                        @default(now())
   dateDeleted              DateTime?
   dateOfExpense            DateTime?
@@ -805,7 +805,7 @@ model Vendor {
   organizationId        String
   organization          Organization            @relation(fields: [organizationId], references: [organizationId])
   username              String?
-  password              String? // password is encrypted  
+  password              String? // password is encrypted
   discountCode          String?
   twoFactorContacts     User[]                  @relation(name: "twoFactorContactVendors")
   notes                 String?

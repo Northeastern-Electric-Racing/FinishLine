@@ -1314,7 +1314,7 @@ export const seedReimbursementRequests = async (
     organization,
     new Date('2024-07-15')
   );
-  await ReimbursementRequestService.setSaboNumber(rr30.reimbursementRequestId, 12345, users.richieRich, organization);
+  await ReimbursementRequestService.setSaboNumber(rr30.reimbursementRequestId, 'abc123', users.richieRich, organization);
   await ReimbursementRequestService.inputReimbursementRequestInSabo(
     rr30.reimbursementRequestId,
     users.richieRich,
@@ -1382,7 +1382,7 @@ export const seedReimbursementRequests = async (
     organization,
     new Date('2024-07-18')
   );
-  await ReimbursementRequestService.setSaboNumber(rr31.reimbursementRequestId, 12346, users.mrKrabs, organization);
+  await ReimbursementRequestService.setSaboNumber(rr31.reimbursementRequestId, 'sdfkj3', users.mrKrabs, organization);
   await ReimbursementRequestService.inputReimbursementRequestInSabo(
     rr31.reimbursementRequestId,
     users.mrKrabs,
@@ -1450,7 +1450,7 @@ export const seedReimbursementRequests = async (
     organization,
     new Date('2024-06-10')
   );
-  await ReimbursementRequestService.setSaboNumber(rr32.reimbursementRequestId, 12340, users.monopolyMan, organization);
+  await ReimbursementRequestService.setSaboNumber(rr32.reimbursementRequestId, '324jj', users.monopolyMan, organization);
   await ReimbursementRequestService.inputReimbursementRequestInSabo(
     rr32.reimbursementRequestId,
     users.monopolyMan,
@@ -1523,7 +1523,7 @@ export const seedReimbursementRequests = async (
     organization,
     new Date('2024-05-20')
   );
-  await ReimbursementRequestService.setSaboNumber(rr33.reimbursementRequestId, 12335, users.johnBoddy, organization);
+  await ReimbursementRequestService.setSaboNumber(rr33.reimbursementRequestId, 'kaljf23', users.johnBoddy, organization);
   await ReimbursementRequestService.inputReimbursementRequestInSabo(
     rr33.reimbursementRequestId,
     users.johnBoddy,
@@ -1596,7 +1596,7 @@ export const seedReimbursementRequests = async (
     organization,
     new Date('2024-05-08')
   );
-  await ReimbursementRequestService.setSaboNumber(rr34.reimbursementRequestId, 12330, users.richieRich, organization);
+  await ReimbursementRequestService.setSaboNumber(rr34.reimbursementRequestId, 'newklajfd', users.richieRich, organization);
   await ReimbursementRequestService.inputReimbursementRequestInSabo(
     rr34.reimbursementRequestId,
     users.richieRich,

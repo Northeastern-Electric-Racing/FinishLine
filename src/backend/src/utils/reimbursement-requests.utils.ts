@@ -502,6 +502,25 @@ export const isUserLeadOrHeadOfFinanceTeam = async (user: User, organizationId: 
   return user.userId === financeTeam.headId || financeTeam.leads.map((u) => u.userId).includes(user.userId);
 };
 
+/**
+ * Checks if a user is a lead/head of the finance team or has a system role of Head or higher.
+ * Checks isHead first since it doesn't require the finance team to exist.
+ *
+ * @param user the user to check
+ * @param organizationId the organization id
+ * @returns whether the user is a finance lead/head or has Head+ system role
+ */
+export const isUserFinanceLeadOrHead = async (user: User, organizationId: string): Promise<boolean> => {
+  if (await userHasPermission(user.userId, organizationId, isHead)) {
+    return true;
+  }
+  try {
+    return await isUserLeadOrHeadOfFinanceTeam(user, organizationId);
+  } catch {
+    return false;
+  }
+};
+
 export const isCurrentUserOnFinance = (user: Prisma.UserGetPayload<AuthUserQueryArgs>) => {
   return (
     user.teamsAsHead.some((team) => team.financeTeam) ||
