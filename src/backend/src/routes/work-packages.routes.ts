@@ -14,8 +14,12 @@ import { WorkPackageSelection, WbsElementStatus } from 'shared';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
-
-workPackagesRouter.get('/all-preview', WorkPackagesController.getAllWorkPackagesPreview);
+workPackagesRouter.get(
+  '/all-preview',
+  query('status').optional().isIn(Object.values(WbsElementStatus)),
+  validateInputs,
+  WorkPackagesController.getAllWorkPackagesPreview
+);
 workPackagesRouter.post(
   '/get-many',
   body('wbsNums').isArray(),
