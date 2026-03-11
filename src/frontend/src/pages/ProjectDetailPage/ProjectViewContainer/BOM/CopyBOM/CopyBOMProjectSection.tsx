@@ -19,10 +19,7 @@ const columns: GridColDef[] = [
   { field: 'assembly', headerName: 'Assembly Name', flex: 1 }
 ];
 
-const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({
-  selectedProject,
-  onSelectionChange
-}) => {
+const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({ selectedProject, onSelectionChange }) => {
   const [selectionModel, setSelectionModel] = useState<GridSelectionModel>([]);
   const {
     data: materials,

@@ -98,10 +98,7 @@ const CopyBOMView: React.FC<CopyBOMViewProps> = ({
 
         {selectedProject && (
           <Grid item xs={12}>
-            <CopyBOMProjectSection
-              selectedProject={selectedProject}
-              onSelectionChange={setSelectedMaterialIds}
-            />
+            <CopyBOMProjectSection selectedProject={selectedProject} onSelectionChange={setSelectedMaterialIds} />
           </Grid>
         )}
       </Grid>
