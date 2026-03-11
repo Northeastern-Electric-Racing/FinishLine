@@ -15,6 +15,7 @@ generator client {
 enum CR_Type {
   ISSUE
   DEFINITION_CHANGE
+  LEADERSHIP
   OTHER
   STAGE_GATE
   ACTIVATION
@@ -299,6 +300,8 @@ model User {
   deniedEvents                            Event[]                              @relation(name: "deniedEventAttendee")
   deletedDocuments                        Document[]                           @relation(name: "deletedDocuments")
   createdDocuments                        Document[]                           @relation(name: "documentsCreatedBy")
+  leadershipCrAsLead                      Leadership_CR[]                      @relation(name: "leadershipCrLead")
+  leadershipCrAsManager                   Leadership_CR[]                      @relation(name: "leadershipCrManager")
   prospectiveSponsorsContacted            Prospective_Sponsor[]                @relation(name: "prospectiveSponsorContactor")
 }
 
@@ -389,6 +392,7 @@ model Change_Request {
   stageGateChangeRequest   Stage_Gate_CR?
   activationChangeRequest  Activation_CR?
   budgetChangeRequest      Budget_CR?
+  leadershipChangeRequest  Leadership_CR?
   notificationSlackThreads Message_Info[]
 
   @@unique([identifier, organizationId], name: "uniqueChangeRequest")
@@ -482,6 +486,18 @@ model Budget_CR {
   changeRequestId String         @unique
   changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
   proposedBudget  Int
+
+  @@index([changeRequestId])
+}
+
+model Leadership_CR {
+  leadershipCrId  String         @id @default(uuid())
+  changeRequestId String         @unique
+  changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
+  leadId          String?
+  lead            User?          @relation(name: "leadershipCrLead", fields: [leadId], references: [userId])
+  managerId       String?
+  manager         User?          @relation(name: "leadershipCrManager", fields: [managerId], references: [userId])
 
   @@index([changeRequestId])
 }
