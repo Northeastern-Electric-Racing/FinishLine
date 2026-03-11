@@ -81,7 +81,8 @@ export const reimbursementProductTransformer = (
 ): ReimbursementProduct => {
   return {
     reimbursementProductId: reimbursementProduct.reimbursementProductId,
-    name: reimbursementProduct.name,
+    name: reimbursementProduct.name ?? undefined,
+    materialId: reimbursementProduct.materialId ?? undefined,
     cost: reimbursementProduct.cost,
     reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason),
     refundSources: reimbursementProduct.refundSources.map(refundSourceTransformer)

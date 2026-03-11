@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { RetrospectiveWorkPackage, WorkPackage, WorkPackagePreview } from 'shared';
+import { dbDateToLocalDate, RetrospectiveWorkPackage, WorkPackage, WorkPackagePreview } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
-import { designReviewPreviewTransformer } from './design-reviews.tranformers';
 import { descriptionBulletTransformer } from './projects.transformers';
+import { eventPreviewTransformer } from './calendar.transformer';
 
 /**
  * Transforms a work package to ensure deep field transformation of date objects.
@@ -18,11 +18,11 @@ export const workPackageTransformer = (workPackage: WorkPackage): WorkPackage =>
   return {
     ...workPackage,
     dateCreated: new Date(workPackage.dateCreated),
-    startDate: new Date(workPackage.startDate),
-    endDate: new Date(workPackage.endDate),
+    startDate: dbDateToLocalDate(new Date(workPackage.startDate)),
+    endDate: dbDateToLocalDate(new Date(workPackage.endDate)),
     descriptionBullets: workPackage.descriptionBullets.map(descriptionBulletTransformer),
     changes: workPackage.changes.map(implementedChangeTransformer),
-    designReviews: workPackage.designReviews.map(designReviewPreviewTransformer)
+    events: workPackage.events.map(eventPreviewTransformer)
   };
 };
 
@@ -30,14 +30,14 @@ export const retrospectiveWorkPackageTransformer = (workPackage: RetrospectiveWo
   return {
     ...workPackageTransformer(workPackage),
     originalDuration: workPackage.originalDuration,
-    originalStartDate: new Date(workPackage.originalStartDate)
+    originalStartDate: dbDateToLocalDate(new Date(workPackage.originalStartDate))
   };
 };
 
 export const workPackagePreviewTransformer = (workPackage: WorkPackagePreview): WorkPackagePreview => {
   return {
     ...workPackage,
-    startDate: new Date(workPackage.startDate),
-    endDate: new Date(workPackage.endDate)
+    startDate: dbDateToLocalDate(new Date(workPackage.startDate)),
+    endDate: dbDateToLocalDate(new Date(workPackage.endDate))
   };
 };

@@ -7,7 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDownloadPDFOfImages } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { ReimbursementRequest } from 'shared';
+import { ReimbursementRequest, startOfDay } from 'shared';
 import { useState } from 'react';
 
 const schema = yup.object().shape({
@@ -42,12 +42,8 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
     if (!allReimbursementRequests) return;
 
     const filteredRequests = allReimbursementRequests
-      .filter(
-        (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) >= new Date(data.startDate.toDateString())
-      )
-      .filter(
-        (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) <= new Date(data.endDate.toDateString())
-      )
+      .filter((val: ReimbursementRequest) => startOfDay(val.dateCreated) >= startOfDay(data.startDate))
+      .filter((val: ReimbursementRequest) => startOfDay(val.dateCreated) <= startOfDay(data.endDate))
       .filter((val: ReimbursementRequest) => data.refundSource === 'BOTH' || val.indexCode.name === data.refundSource);
 
     const receipts = filteredRequests?.flatMap((request: ReimbursementRequest) => request.receiptPictures);

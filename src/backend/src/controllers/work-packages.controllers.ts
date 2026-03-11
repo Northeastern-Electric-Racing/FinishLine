@@ -24,6 +24,22 @@ export default class WorkPackagesController {
     }
   }
 
+  // Fetch all work packages in preview format (minimal data for dropdowns/lists)
+  static async getAllWorkPackagesPreview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { status } = req.query as { status?: string };
+
+      const outputWorkPackages: WorkPackagePreview[] = await WorkPackagesService.getAllWorkPackagesPreview(
+        status,
+        req.organization
+      );
+
+      res.status(200).json(outputWorkPackages);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   // Fetch the work package for the specified WBS number
   static async getSingleWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {

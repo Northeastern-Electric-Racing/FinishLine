@@ -319,7 +319,7 @@ const ProjectGanttChartPage: FC = () => {
       dateCreated: new Date(),
       teamTypes: [],
       changes: [],
-      designReviews: [],
+      events: [],
       deleted: false
     };
 
@@ -484,6 +484,7 @@ const ProjectGanttChartPage: FC = () => {
             toast.error('No Team Selected');
           }
         }}
+        cars={cars}
       />
     );
   };

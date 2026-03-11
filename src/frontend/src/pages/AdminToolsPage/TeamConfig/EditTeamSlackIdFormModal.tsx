@@ -4,7 +4,7 @@ import { FormControl, FormLabel, FormHelperText } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { TeamPreview } from 'shared';
+import { TeamBase } from 'shared';
 import { useEffect } from 'react';
 import { useEditTeamSlackId } from '../../../hooks/teams.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -13,7 +13,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 interface EditTeamSlackIdFormModalProps {
   open: boolean;
   handleClose: () => void;
-  team: TeamPreview;
+  team: TeamBase;
 }
 
 const schema = yup.object().shape({

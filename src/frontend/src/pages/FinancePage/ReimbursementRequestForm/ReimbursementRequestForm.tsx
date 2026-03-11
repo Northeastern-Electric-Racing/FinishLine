@@ -9,7 +9,8 @@ import {
   ReimbursementProductFormArgs,
   ReimbursementReceiptUploadArgs,
   WbsNumber,
-  WbsReimbursementProductCreateArgs
+  WbsReimbursementProductCreateArgs,
+  wbsPipe
 } from 'shared';
 import { useGetAllAccountCodes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -100,7 +101,7 @@ const schema = yup.object().shape({
     .array()
     .of(
       yup.object().shape({
-        name: yup.string().required('Description is required'),
+        name: yup.string().required('Material / Description is required'),
         reason: yup.mixed().required(),
         refundSources: yup.array().of(
           yup.object({
@@ -263,6 +264,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
             reason: product.reason as WbsNumber,
             cost: product.cost,
             name: product.name,
+            materialId: product.materialId,
             refundSources: product.refundSources
           });
         }
@@ -282,12 +284,10 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     }
   };
 
-  const allProjectWbsElements = allProjects.map((proj) => {
-    return {
-      wbsNum: proj.wbsNum,
-      wbsName: proj.name
-    };
-  });
+  const projectAutocompleteOptions = allProjects.map((proj) => ({
+    label: wbsPipe(proj.wbsNum) + ' - ' + proj.name,
+    id: wbsPipe(proj.wbsNum)
+  }));
 
   const onSubmitToFinanceWrapper = onSubmitToFinance
     ? async (data: ReimbursementRequestFormInput) => {
@@ -322,6 +322,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
                 reason: product.reason as WbsNumber,
                 cost: product.cost,
                 name: product.name,
+                materialId: product.materialId,
                 refundSources: product.refundSources
               });
             }
@@ -356,7 +357,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       reimbursementProductRemove={reimbursementProductRemove}
       onSubmit={onSubmitWrapper}
       handleSubmit={handleSubmit}
-      allWbsElements={allProjectWbsElements}
+      allProjects={allProjects}
+      projectAutocompleteOptions={projectAutocompleteOptions}
       submitText={submitText}
       setValue={setValue}
       hasSecureSettingsSet={hasSecureSettingsSet}

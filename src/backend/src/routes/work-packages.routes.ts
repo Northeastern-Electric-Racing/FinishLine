@@ -5,12 +5,12 @@ import {
   blockedByValidators,
   descriptionBulletsValidators,
   intMinZero,
-  isDate,
+  isDateOnly,
   isWorkPackageStageOrNone,
   nonEmptyString,
   validateInputs
 } from '../utils/validation.utils.js';
-import { WorkPackageSelection } from 'shared';
+import { WorkPackageSelection, WbsElementStatus } from 'shared';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get(
@@ -20,6 +20,12 @@ workPackagesRouter.get(
   WorkPackagesController.getAllWorkPackages
 );
 
+workPackagesRouter.get(
+  '/all-preview',
+  query('status').optional().isIn(Object.values(WbsElementStatus)),
+  validateInputs,
+  WorkPackagesController.getAllWorkPackagesPreview
+);
 workPackagesRouter.post(
   '/get-many',
   body('wbsNums').isArray(),
@@ -36,7 +42,7 @@ workPackagesRouter.post(
   nonEmptyString(body('crId').optional()),
   nonEmptyString(body('name')),
   isWorkPackageStageOrNone(body('stage')),
-  isDate(body('startDate')),
+  isDateOnly(body('startDate')),
   intMinZero(body('duration')),
   intMinZero(body('projectWbsNum.carNumber')),
   intMinZero(body('projectWbsNum.projectNumber')),
@@ -52,7 +58,7 @@ workPackagesRouter.post(
   nonEmptyString(body('workPackageId')),
   nonEmptyString(body('crId')),
   nonEmptyString(body('name')),
-  isDate(body('startDate')),
+  isDateOnly(body('startDate')),
   intMinZero(body('duration')),
   isWorkPackageStageOrNone(body('stage')),
   ...blockedByValidators,
@@ -73,7 +79,7 @@ workPackagesRouter.get(
 
 workPackagesRouter.post(
   '/slack-upcoming-deadlines',
-  isDate(body('deadline')),
+  isDateOnly(body('deadline')),
   validateInputs,
   WorkPackagesController.slackMessageUpcomingDeadlines
 );
