@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Grid } from '@mui/material';
-import { GridSelectionModel } from '@mui/x-data-grid';
 import { Car, ProjectPreview, wbsPipe } from 'shared';
 import NERModal from '../../../../../components/NERModal';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
@@ -26,7 +25,7 @@ const CopyBOMView: React.FC<CopyBOMViewProps> = ({
   onCopy
 }) => {
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
-  const [selectionModel, setSelectionModel] = useState<GridSelectionModel>([]);
+  const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([]);
 
   const carOptions = cars.map((car) => ({
     label: `${car.wbsNum.carNumber} - ${car.name}`,
@@ -43,7 +42,7 @@ const CopyBOMView: React.FC<CopyBOMViewProps> = ({
   }));
 
   const handleSubmit = async () => {
-    await onCopy(selectionModel as string[]);
+    await onCopy(selectedMaterialIds);
   };
 
   return (
@@ -54,7 +53,7 @@ const CopyBOMView: React.FC<CopyBOMViewProps> = ({
       submitText="Copy BOM"
       cancelText="Cancel"
       onSubmit={handleSubmit}
-      disabled={selectionModel.length === 0}
+      disabled={selectedMaterialIds.length === 0}
       showCloseButton
       paperProps={{ minWidth: '700px' }}
     >
@@ -101,8 +100,7 @@ const CopyBOMView: React.FC<CopyBOMViewProps> = ({
           <Grid item xs={12}>
             <CopyBOMProjectSection
               selectedProject={selectedProject}
-              selectionModel={selectionModel}
-              setSelectionModel={setSelectionModel}
+              onSelectionChange={setSelectedMaterialIds}
             />
           </Grid>
         )}

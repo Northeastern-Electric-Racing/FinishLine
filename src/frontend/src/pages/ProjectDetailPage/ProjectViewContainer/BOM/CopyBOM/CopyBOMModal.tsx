@@ -20,7 +20,7 @@ const CopyBOMModal: React.FC<CopyBOMModalProps> = ({ open, onHide, destinationWb
   const { data: projects, isLoading: isLoadingProjects, isError: projectsIsError, error: projectsError } = useAllProjects();
   const { mutateAsync: copyMaterials } = useCopyMaterialsToProject();
 
-  if (isLoadingCars || isLoadingProjects) return <LoadingIndicator />;
+  if (isLoadingCars || !cars || isLoadingProjects || !projects) return <LoadingIndicator />;
   if (carsIsError) return <ErrorPage message={carsError?.message} />;
   if (projectsIsError) return <ErrorPage message={projectsError?.message} />;
 
@@ -36,8 +36,8 @@ const CopyBOMModal: React.FC<CopyBOMModalProps> = ({ open, onHide, destinationWb
     <CopyBOMView
       open={open}
       onHide={onHide}
-      cars={cars ?? []}
-      projects={projects ?? []}
+      cars={cars}
+      projects={projects}
       selectedProject={selectedProject}
       setSelectedProject={setSelectedProject}
       onCopy={handleCopy}

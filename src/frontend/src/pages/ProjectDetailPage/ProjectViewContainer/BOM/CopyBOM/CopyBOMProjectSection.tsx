@@ -1,6 +1,7 @@
 import React from 'react';
 import { Typography } from '@mui/material';
 import { DataGrid, GridColDef, GridSelectionModel } from '@mui/x-data-grid';
+import { useState } from 'react';
 import { ProjectPreview } from 'shared';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import { useGetAssembliesForWbsElement, useGetMaterialsForWbsElement } from '../../../../../hooks/bom.hooks';
@@ -8,8 +9,7 @@ import ErrorPage from '../../../../ErrorPage';
 
 interface CopyBOMProjectSectionProps {
   selectedProject: ProjectPreview;
-  selectionModel: GridSelectionModel;
-  setSelectionModel: (model: GridSelectionModel) => void;
+  onSelectionChange: (materialIds: string[]) => void;
 }
 
 const columns: GridColDef[] = [
@@ -21,9 +21,9 @@ const columns: GridColDef[] = [
 
 const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({
   selectedProject,
-  selectionModel,
-  setSelectionModel
+  onSelectionChange
 }) => {
+  const [selectionModel, setSelectionModel] = useState<GridSelectionModel>([]);
   const {
     data: materials,
     isLoading: isLoadingMaterials,
@@ -40,9 +40,11 @@ const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({
 
   React.useEffect(() => {
     if (materials) {
-      setSelectionModel(materials.map((m) => m.materialId));
+      const allIds = materials.map((m) => m.materialId);
+      setSelectionModel(allIds);
+      onSelectionChange(allIds);
     }
-  }, [materials, setSelectionModel]);
+  }, [materials]);
 
   if (isLoadingMaterials || isLoadingAssemblies || !materials || !assemblies) return <LoadingIndicator />;
   if (isErrorMaterials) return <ErrorPage message={materialsError?.message} />;
@@ -67,7 +69,10 @@ const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({
         checkboxSelection
         autoHeight
         selectionModel={selectionModel}
-        onSelectionModelChange={(newModel) => setSelectionModel(newModel)}
+        onSelectionModelChange={(newModel) => {
+          setSelectionModel(newModel);
+          onSelectionChange(newModel as string[]);
+        }}
         rowsPerPageOptions={[100]}
         hideFooterPagination
         sx={{
