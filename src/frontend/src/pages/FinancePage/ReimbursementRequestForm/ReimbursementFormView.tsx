@@ -744,7 +744,26 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
                   {/* Receipt Previews */}
                   <Box sx={{ mt: 2 }}>
-                    <Grid container spacing={2}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 2,
+                        overflowX: 'auto',
+                        overflowY: 'hidden',
+                        maxHeight: '250px',
+                        paddingBottom: '10px',
+                        '&::-webkit-scrollbar': {
+                          height: '0.55rem' // Adjust the the thickness of the scrollbar
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                          backgroundColor: '#EF4345', //FinishLine 'red' color
+                          borderRadius: '50px' //make the scrollbar rounded
+                        },
+                        '&::-webkit-scrollbar-thumb:hover': {
+                          backgroundColor: '#b0191a' // Change to a darker shade of red on hover
+                        }
+                      }}
+                    >
                       {receiptFiles.map((receiptFile, index) => {
                         let previewUrl = '';
                         // if file is newly uploaded, show local preview, else show google drive preview
@@ -755,7 +774,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                         }
 
                         return (
-                          <Grid item xs={6} key={index}>
+                          <Grid item xs={6} key={index} sx={{ minWidth: '250px' }}>
                             <Stack
                               direction="column"
                               spacing={1}
@@ -835,8 +854,39 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           </Grid>
                         );
                       })}
-                    </Grid>
+                    </Box>
                   </Box>
+                </FormControl>
+
+                {/* Description */}
+                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                  <FormLabel
+                    sx={{
+                      color: '#dd524c',
+                      textShadow: '1.5px 0 #dd524c',
+                      letterSpacing: '0.5px',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3.5px',
+                      textDecorationThickness: '0.6px',
+                      fontSize: 'x-large',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Description
+                  </FormLabel>
+                  <Controller
+                    name="description"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <TextField
+                        value={value || ''}
+                        onChange={onChange}
+                        placeholder="Enter Description"
+                        multiline
+                        rows={3}
+                      />
+                    )}
+                  />
                 </FormControl>
               </Stack>
             </Grid>

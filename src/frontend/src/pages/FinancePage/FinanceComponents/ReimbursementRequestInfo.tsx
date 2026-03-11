@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Tooltip, IconButton } from '@mui/material';
 import { useLocation, useHistory, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { isGuest, ReimbursementRequest } from 'shared';
@@ -14,6 +14,7 @@ import SidePage from './SidePagePopup';
 import ReimbursementRequestDetails from '../ReimbursementRequestDetailPage/ReimbursementRequestDetails';
 import NERDataGrid, { MapRowResult } from '../../../components/NERDataGrid';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 interface ReimbursementRequestInfoProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -169,6 +170,28 @@ const ReimbursementRequestInfo = ({
         flex: 0.7,
         minWidth: 180,
         valueGetter: (params: any) => dateUndefinedPipe(params.row.dateSubmittedToSabo)
+      },
+      {
+        field: 'description',
+        headerName: 'Description',
+        flex: 0.7,
+        minWidth: 180,
+        valueGetter: (params: any) => params.row.description,
+        renderCell: (params: any) => {
+          const { description } = params.row;
+
+          if (!description || description.trim() === '') {
+            return null;
+          }
+
+          return (
+            <Tooltip title={description} arrow placement="left">
+              <IconButton size="small" sx={{ p: 0.5, color: 'white' }}>
+                <InfoOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          );
+        }
       }
     );
 
@@ -212,7 +235,8 @@ const ReimbursementRequestInfo = ({
         ('$' + centsToDollar((rowData as any).amount)).toLowerCase().includes(lowercase_query) ||
         ('' + (rowData as any).reimbursementProducts.map((product: any) => product.name))
           .toLowerCase()
-          .includes(lowercase_query)
+          .includes(lowercase_query) ||
+        ('' + (rowData as any).description).toLowerCase().includes(lowercase_query)
       );
     });
   };
