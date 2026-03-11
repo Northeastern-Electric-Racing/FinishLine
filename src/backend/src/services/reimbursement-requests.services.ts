@@ -612,7 +612,7 @@ export default class ReimbursementRequestService {
    * @param saboNumbers the sabo numbers of the reimbursement requests to send
    * @param organizationId the organization the user is currently in
    */
-  static async sendPendingAdvisorList(sender: User, saboNumbers: number[], organizationId: string) {
+  static async sendPendingAdvisorList(sender: User, saboNumbers: string[], organizationId: string) {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
       include: { advisor: true }
@@ -688,7 +688,7 @@ export default class ReimbursementRequestService {
 
   static async setSaboNumber(
     reimbursementRequestId: string,
-    saboNumber: number,
+    saboNumber: string,
     submitter: User,
     organization: Organization
   ) {

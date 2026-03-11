@@ -12,7 +12,7 @@ export interface IndexCode {
 export interface ReimbursementRequestRow {
   identifier: number;
   id: string;
-  saboId: number | undefined;
+  saboId: string | undefined;
   amount: number;
   dateSubmitted: Date;
   status: ReimbursementStatusType;
@@ -51,7 +51,7 @@ export interface Receipt {
 export interface ReimbursementRequest {
   reimbursementRequestId: string;
   identifier: number;
-  saboId?: number;
+  saboId?: string;
   dateCreated: Date;
   dateOfExpense?: Date;
   reimbursementStatuses: ReimbursementStatus[];

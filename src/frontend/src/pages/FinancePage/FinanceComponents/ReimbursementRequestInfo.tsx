@@ -3,14 +3,7 @@ import { useLocation, useHistory, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { isGuest, ReimbursementRequest } from 'shared';
 import { ReimbursementProduct, ReimbursementStatusType } from 'shared';
-import {
-  undefinedPipe,
-  fullNamePipe,
-  centsToDollar,
-  datePipe,
-  dateUndefinedPipe,
-  formatSaboIdPipe
-} from '../../../utils/pipes';
+import { undefinedPipe, fullNamePipe, centsToDollar, datePipe, dateUndefinedPipe } from '../../../utils/pipes';
 import {
   createReimbursementRequestRowData,
   cleanReimbursementRequestStatus
@@ -161,7 +154,7 @@ const ReimbursementRequestInfo = ({
         headerName: 'SABO ID',
         flex: 0.5,
         minWidth: 100,
-        valueGetter: (params: any) => formatSaboIdPipe(params.row.saboId)
+        valueGetter: (params: any) => params.row.saboId
       },
       {
         field: 'dateSubmitted',
