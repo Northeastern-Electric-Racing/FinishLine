@@ -88,7 +88,7 @@ export interface ReimbursementRequestData {
   totalBudget: number;
   approved: number;
   pendingApproval: number;
-  addedToSabo: string;
+  addedToSabo: number;
   reimbursed: number;
   available: number;
 }
