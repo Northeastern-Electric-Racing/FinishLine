@@ -155,6 +155,29 @@ export const createBudgetChangeRequest = (
 };
 
 /**
+ * Create a leadership change request
+ * Updating the lead and/or manager of a project or work package does not require review
+ * @param submitterId The id of the user creating the change request
+ * @param wbsNum The WBS number of the project or work package being updated
+ * @param leadId The id of the new lead
+ * @param managerId The id of the new manager
+ */
+export const createLeadershipChangeRequest = (
+  submitterId: string,
+  wbsNum: WbsNumber,
+  leadId?: string,
+  managerId?: string
+) => {
+  return axios.post<{ message: string }>(apiUrls.changeRequestsCreateLeadership(), {
+    submitterId,
+    wbsNum,
+    leadId,
+    managerId,
+    type: ChangeRequestType.Leadership
+  });
+};
+
+/**
  * Create a propose solution
  * @param submitterId The ID of the user creating the change request.
  * @param crId The ID of the associated change request.

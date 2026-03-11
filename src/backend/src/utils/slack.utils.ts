@@ -225,7 +225,7 @@ export const sendPendingSaboSubmissionNotification = async (
     threads,
     `${await getUserSlackMentionOrName(financeUserId)} has added this reimbursement request to Concur. ${await getUserSlackMentionOrName(pendingSubmissionFromId)}, please check your email to approve the request in Concur and mark it as submitted on Finishline.`
   );
-  const userId = await getUserSlackId(financeUserId);
+  const userId = await getUserSlackId(pendingSubmissionFromId);
   if (threads && threads.length !== 0 && userId) {
     const msgs = threads.map((thread) =>
       sendEphemeralMessage(

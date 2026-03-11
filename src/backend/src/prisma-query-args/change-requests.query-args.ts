@@ -39,7 +39,10 @@ export const getChangeRequestQueryArgs = (organizationId: string) =>
       },
       budgetChangeRequest: true,
       deletedBy: getUserQueryArgs(organizationId),
-      requestedReviewers: getUserQueryArgs(organizationId)
+      requestedReviewers: getUserQueryArgs(organizationId),
+      leadershipChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      }
     }
   });
 
@@ -58,7 +61,10 @@ export const getManyChangeRequestQueryArgs = (organizationId: string) =>
       },
       budgetChangeRequest: true,
       deletedBy: getUserQueryArgs(organizationId),
-      requestedReviewers: getUserQueryArgs(organizationId)
+      requestedReviewers: getUserQueryArgs(organizationId),
+      leadershipChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      }
     }
   });
 
@@ -101,6 +107,9 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
       },
       budgetChangeRequest: true,
       deletedBy: getUserQueryArgs(organizationId),
-      requestedReviewers: getUserQueryArgs(organizationId)
+      requestedReviewers: getUserQueryArgs(organizationId),
+      leadershipChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      }
     }
   });
