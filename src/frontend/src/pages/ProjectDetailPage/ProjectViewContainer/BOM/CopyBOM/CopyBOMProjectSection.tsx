@@ -41,7 +41,7 @@ const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({ selectedP
       setSelectionModel(allIds);
       onSelectionChange(allIds);
     }
-  }, [materials]);
+  }, [materials, onSelectionChange]);
 
   if (isLoadingMaterials || isLoadingAssemblies || !materials || !assemblies) return <LoadingIndicator />;
   if (isErrorMaterials) return <ErrorPage message={materialsError?.message} />;
