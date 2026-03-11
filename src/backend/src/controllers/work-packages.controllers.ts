@@ -8,8 +8,15 @@ export default class WorkPackagesController {
   static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { query } = req;
+      const queryWithCarId = {
+        ...query,
+        carId: req.currentCar?.carId
+      };
 
-      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, req.organization);
+      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(
+        queryWithCarId,
+        req.organization
+      );
 
       res.status(200).json(outputWorkPackages);
     } catch (error: unknown) {
@@ -24,7 +31,8 @@ export default class WorkPackagesController {
 
       const outputWorkPackages: WorkPackagePreview[] = await WorkPackagesService.getAllWorkPackagesPreview(
         status,
-        req.organization
+        req.organization,
+        req.currentCar?.carId
       );
 
       res.status(200).json(outputWorkPackages);
@@ -50,7 +58,11 @@ export default class WorkPackagesController {
     try {
       const { wbsNums } = req.body;
 
-      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization);
+      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(
+        wbsNums,
+        req.organization,
+        req.currentCar?.carId
+      );
       res.status(200).json(workPackages);
     } catch (error: unknown) {
       next(error);
@@ -131,7 +143,8 @@ export default class WorkPackagesController {
 
       const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(
         wbsNum,
-        req.organization
+        req.organization,
+        req.currentCar?.carId
       );
 
       res.status(200).json(blockingWorkPackages);
@@ -158,7 +171,8 @@ export default class WorkPackagesController {
       const workPackages: WorkPackagePreview[] = await WorkPackagesService.getHomePageWorkPackages(
         req.currentUser,
         req.organization,
-        selection as WorkPackageSelection
+        selection as WorkPackageSelection,
+        req.currentCar?.carId
       );
 
       res.status(200).json(workPackages);
