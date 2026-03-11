@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { accountCodePipe, displayEnum, formatSaboIdPipe } from '../../../utils/pipes';
+import { accountCodePipe, displayEnum } from '../../../utils/pipes';
 import { Assignment, ChangeCircle, Edit, Pending } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -465,7 +465,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     },
     { content: `$${centsToDollar(reimbursementRequest.totalCost)}` },
     { content: reimbursementRequest.vendor.name },
-    { content: `${formatSaboIdPipe(reimbursementRequest.saboId)}` },
+    { content: `${reimbursementRequest.saboId}` },
     {
       content: refundSourceNames.join(', ')
     },

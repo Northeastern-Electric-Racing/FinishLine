@@ -9,7 +9,6 @@ import {
   centsToDollar,
   datePipe,
   dateUndefinedPipe,
-  formatSaboIdPipe
 } from '../../../utils/pipes';
 import {
   createReimbursementRequestRowData,
@@ -161,7 +160,7 @@ const ReimbursementRequestInfo = ({
         headerName: 'SABO ID',
         flex: 0.5,
         minWidth: 100,
-        valueGetter: (params: any) => formatSaboIdPipe(params.row.saboId)
+        valueGetter: (params: any) => params.row.saboId
       },
       {
         field: 'dateSubmitted',
