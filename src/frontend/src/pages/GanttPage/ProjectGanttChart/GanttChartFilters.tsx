@@ -94,19 +94,7 @@ interface GanttChartFiltersProps {
     defaultChecked: boolean;
   }[];
   teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
-  overdueHandler: {
-    filterLabel: string;
-    handler: (event: ChangeEvent<HTMLInputElement>) => void;
-    defaultChecked?: boolean;
-  }[];
-  hideTasksHandler: {
-    filterLabel: string;
-    handler: (event: ChangeEvent<HTMLInputElement>) => void;
-    defaultChecked?: boolean;
-  }[];
   resetHandler: () => void;
-  collapseHandler: () => void;
-  expandHandler: () => void;
   onClose: () => void;
 }
 
@@ -159,7 +147,7 @@ const GanttChartFilters = ({
         >
           Reset
         </Typography>
-        <Typography sx={{ color: '#ffffff', lineHeight: 2.75, fontSize: '0.5rem' }}>•</Typography>
+        <Typography sx={{ color: theme.palette.text.primary, lineHeight: 2.75, fontSize: '0.5rem' }}>•</Typography>
         <Typography
           fontSize="13px"
           sx={{ color: theme.palette.primary.main, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
@@ -167,7 +155,7 @@ const GanttChartFilters = ({
         >
           Expand All
         </Typography>
-        <Typography sx={{ color: '#ffffff', lineHeight: 2.75, fontSize: '0.5rem' }}>•</Typography>
+        <Typography sx={{ color: theme.palette.text.primary, lineHeight: 2.75, fontSize: '0.5rem' }}>•</Typography>
         <Typography
           fontSize="13px"
           sx={{ color: theme.palette.primary.main, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
