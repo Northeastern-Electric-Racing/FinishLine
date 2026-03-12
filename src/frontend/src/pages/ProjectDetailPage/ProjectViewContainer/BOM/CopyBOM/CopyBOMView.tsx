@@ -13,13 +13,7 @@ interface CopyBOMViewProps {
   onCopy: (materialIds: string[]) => Promise<void>;
 }
 
-const CopyBOMView: React.FC<CopyBOMViewProps> = ({
-  open,
-  onHide,
-  cars,
-  projects,
-  onCopy
-}) => {
+const CopyBOMView: React.FC<CopyBOMViewProps> = ({ open, onHide, cars, projects, onCopy }) => {
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [selectedProject, setSelectedProject] = useState<ProjectPreview | null>(null);
   const [hasSelection, setHasSelection] = useState(false);

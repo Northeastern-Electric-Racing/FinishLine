@@ -30,15 +30,7 @@ const CopyBOMModal: React.FC<CopyBOMModalProps> = ({ open, onHide, destinationWb
     onHide();
   };
 
-  return (
-    <CopyBOMView
-      open={open}
-      onHide={onHide}
-      cars={cars}
-      projects={projects}
-      onCopy={handleCopy}
-    />
-  );
+  return <CopyBOMView open={open} onHide={onHide} cars={cars} projects={projects} onCopy={handleCopy} />;
 };
 
 export default CopyBOMModal;
