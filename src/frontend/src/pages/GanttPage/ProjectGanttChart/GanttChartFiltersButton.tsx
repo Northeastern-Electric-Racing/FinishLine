@@ -12,31 +12,16 @@ interface GanttChartFiltersButtonProps {
     defaultChecked: boolean;
   }[];
   teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
-  overdueHandler: {
-    filterLabel: string;
-    handler: (event: ChangeEvent<HTMLInputElement>) => void;
-    defaultChecked?: boolean;
-  }[];
-  hideTasksHandler: {
-    filterLabel: string;
-    handler: (event: ChangeEvent<HTMLInputElement>) => void;
-    defaultChecked?: boolean;
-  }[];
   resetHandler: () => void;
-  collapseHandler: () => void;
-  expandHandler: () => void;
 }
 
 const GanttChartFiltersButton = ({
   carHandlers,
   teamTypeHandlers,
   teamHandlers,
-  overdueHandler,
-  hideTasksHandler,
-  resetHandler,
-  collapseHandler,
-  expandHandler
+  resetHandler
 }: GanttChartFiltersButtonProps) => {
+  const theme = useTheme();
   const [anchorFilterEl, setAnchorFilterEl] = useState<HTMLButtonElement | null>(null);
   const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorFilterEl(event.currentTarget);
@@ -68,7 +53,7 @@ const GanttChartFiltersButton = ({
         slotProps={{
           paper: {
             sx: {
-              backgroundColor: useTheme().palette.background.paper,
+              backgroundColor: theme.palette.background.paper,
               borderRadius: 2
             }
           }
@@ -78,11 +63,7 @@ const GanttChartFiltersButton = ({
           carHandlers={carHandlers}
           teamTypeHandlers={teamTypeHandlers}
           teamHandlers={teamHandlers}
-          overdueHandler={overdueHandler}
-          hideTasksHandler={hideTasksHandler}
           resetHandler={resetHandler}
-          collapseHandler={collapseHandler}
-          expandHandler={expandHandler}
           onClose={handleFilterClose}
         />
       </Popover>
