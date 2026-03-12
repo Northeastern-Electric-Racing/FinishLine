@@ -7,6 +7,7 @@ import {
   validateInputs,
   materialValidators
 } from '../utils/validation.utils.js';
+import { validateWBS } from 'shared';
 import ProjectsController from '../controllers/projects.controllers.js';
 
 const projectRouter = express.Router();
@@ -93,6 +94,16 @@ projectRouter.post(
 );
 projectRouter.post('/bom/material/:wbsNum/create', ...materialValidators, validateInputs, ProjectsController.createMaterial);
 projectRouter.post('/bom/material/:materialId/edit', ...materialValidators, validateInputs, ProjectsController.editMaterial);
+projectRouter.post(
+  '/bom/material/copy',
+  body('materialIds').isArray({ min: 1 }),
+  nonEmptyString(body('materialIds.*')),
+  body('destinationWbsNum').customSanitizer((value) => {
+    return validateWBS(value);
+  }),
+  validateInputs,
+  ProjectsController.copyMaterialsToProject
+);
 
 projectRouter.post(
   '/bom/assembly/:assemblyId/edit',
