@@ -842,6 +842,68 @@ const kingJulian: Prisma.UserCreateInput = {
   email: 'iliketomoveit@jungle.net'
 };
 
+const skipper: Prisma.UserCreateInput = {
+  firstName: 'Skipper',
+  lastName: 'Penguin',
+  googleAuthId: 'skipperpenguin',
+  email: 'allrightboys@penguin.net',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: SLACK_ID ? SLACK_ID : 'Penguin Boss'
+    }
+  }
+};
+
+const kowalski: Prisma.UserCreateInput = {
+  firstName: 'kowalski',
+  lastName: 'Penguin',
+  googleAuthId: 'kowalskipenguin',
+  email: 'kowalskipenguin@penguin.net'
+};
+
+const privat: Prisma.UserCreateInput = {
+  firstName: 'Private',
+  lastName: 'Penguin',
+  googleAuthId: 'privatepenguin',
+  email: 'privatepenguin@penguin.net'
+};
+
+const rico: Prisma.UserCreateInput = {
+  firstName: 'Rico',
+  lastName: 'Penguin',
+  googleAuthId: 'ricopenguin',
+  email: 'ricopenguin@penguin.net'
+};
+
+const alex: Prisma.UserCreateInput = {
+  firstName: 'Alex',
+  lastName: 'The Lion',
+  googleAuthId: 'alexlion',
+  email: 'alexthe@lion.org'
+};
+
+const marty: Prisma.UserCreateInput = {
+  firstName: 'Marty',
+  lastName: 'The Zebra',
+  googleAuthId: 'martyzebra',
+  email: 'marty@zebra.com'
+};
+
+const gloria: Prisma.UserCreateInput = {
+  firstName: 'Gloria',
+  lastName: 'The Hippo',
+  googleAuthId: 'gloriahippo',
+  email: 'gloria@hippo.hippo'
+};
+
+const melman: Prisma.UserCreateInput = {
+  firstName: 'Melman',
+  lastName: 'The Giraffe',
+  googleAuthId: 'melmangiraffe',
+  email: 'melman@giraffe.com'
+};
+
 const regina: Prisma.UserCreateInput = {
   firstName: 'Regina',
   lastName: 'George',
@@ -990,6 +1052,71 @@ const patrick: Prisma.UserCreateInput = {
   }
 };
 
+const squidward: Prisma.UserCreateInput = {
+  firstName: 'Squidward',
+  lastName: 'Tenticles',
+  googleAuthId: 'squidward',
+  email: 'squidwardtenticles@yahoo.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: SLACK_ID ? SLACK_ID : 'squidward'
+    }
+  }
+};
+
+const sandy: Prisma.UserCreateInput = {
+  firstName: 'Sandy',
+  lastName: 'Star',
+  googleAuthId: 'sandy',
+  email: 'sandystar@gmail.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: SLACK_ID ? SLACK_ID : 'sandy'
+    }
+  }
+};
+
+const pearl: Prisma.UserCreateInput = {
+  firstName: 'Pearl',
+  lastName: 'Whale',
+  googleAuthId: 'pearl',
+  email: 'pearlwhale@gmail.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: SLACK_ID ? SLACK_ID : 'pearl'
+    }
+  }
+};
+
+const larry: Prisma.UserCreateInput = {
+  firstName: 'Larry',
+  lastName: 'The Lobster',
+  googleAuthId: 'larry',
+  email: 'larryLobster@lobster.lob',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: SLACK_ID ? SLACK_ID : 'pearl'
+    }
+  }
+};
+
+const mrsPuff: Prisma.UserCreateInput = {
+  firstName: 'Mrs.',
+  lastName: 'Puff',
+  googleAuthId: 'puff',
+  email: 'puff@pufferfish.com',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: SLACK_ID ? SLACK_ID : 'puff'
+    }
+  }
+};
+
 export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
@@ -1090,6 +1217,14 @@ export const dbSeedAllUsers = {
   francis,
   victorPerkins,
   kingJulian,
+  skipper,
+  kowalski,
+  privat,
+  rico,
+  alex,
+  marty,
+  gloria,
+  melman,
   regina,
   gretchen,
   karen,
@@ -1105,7 +1240,12 @@ export const dbSeedAllUsers = {
   carr,
   trang,
   spongebob,
-  patrick
+  patrick,
+  squidward,
+  sandy,
+  pearl,
+  larry,
+  mrsPuff
 };
 
 export const createUser = async (user: Prisma.UserCreateInput, role: RoleEnum, organizationId: string) => {
