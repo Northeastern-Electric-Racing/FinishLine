@@ -91,6 +91,10 @@ export const GanttTaskBarEditView = <T,>({
     return Math.floor(num / 7) * 7;
   };
 
+  const ceilToMultipleOf7 = (num: number) => {
+    return Math.ceil(num / 7) * 7;
+  };
+
   const getDistanceFromLeft = (clientX: number) => {
     if (!boxRef.current) return 0;
     const rect = boxRef.current.getBoundingClientRect();
@@ -142,7 +146,7 @@ export const GanttTaskBarEditView = <T,>({
     e.preventDefault();
   };
   const onDrop = (day: Date) => {
-    const days = floorToMultipleOf7(differenceInDays(day, task.start));
+    const days = ceilToMultipleOf7(differenceInDays(day, task.start));
     createChange({ id: uuidv4(), element: task.element, type: 'shift-by-days', days });
   };
 
