@@ -657,11 +657,7 @@ const ProjectGanttChartPage: FC = () => {
         carHandlers={carHandlers}
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
-        overdueHandler={overdueHandler}
-        hideTasksHandler={hideTasksHandler}
         resetHandler={resetHandler}
-        collapseHandler={collapseHandler}
-        expandHandler={expandHandler}
       />
     </Box>
   );
