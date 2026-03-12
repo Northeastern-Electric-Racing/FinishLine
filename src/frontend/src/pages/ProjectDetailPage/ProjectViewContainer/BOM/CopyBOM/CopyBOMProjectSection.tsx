@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography } from '@mui/material';
-import { DataGrid, GridColDef, GridSelectionModel } from '@mui/x-data-grid';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { useState } from 'react';
 import { ProjectPreview } from 'shared';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
@@ -20,7 +20,7 @@ const columns: GridColDef[] = [
 ];
 
 const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({ selectedProject, onSelectionChange }) => {
-  const [selectionModel, setSelectionModel] = useState<GridSelectionModel>([]);
+  const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([]);
   const {
     data: materials,
     isLoading: isLoadingMaterials,
@@ -38,7 +38,7 @@ const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({ selectedP
   React.useEffect(() => {
     if (materials) {
       const allIds = materials.map((m) => m.materialId);
-      setSelectionModel(allIds);
+      setSelectedMaterialIds(allIds);
       onSelectionChange(allIds);
     }
   }, [materials, onSelectionChange]);
@@ -58,17 +58,18 @@ const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({ selectedP
   return (
     <>
       <Typography sx={{ mb: 1 }} variant="body2">
-        {selectionModel.length} material{selectionModel.length !== 1 ? 's' : ''} selected
+        {selectedMaterialIds.length} material{selectedMaterialIds.length !== 1 ? 's' : ''} selected
       </Typography>
       <DataGrid
         rows={rows}
         columns={columns}
         checkboxSelection
         autoHeight
-        selectionModel={selectionModel}
+        selectionModel={selectedMaterialIds}
         onSelectionModelChange={(newModel) => {
-          setSelectionModel(newModel);
-          onSelectionChange(newModel as string[]);
+          const ids = newModel as string[];
+          setSelectedMaterialIds(ids);
+          onSelectionChange(ids);
         }}
         rowsPerPageOptions={[100]}
         hideFooterPagination

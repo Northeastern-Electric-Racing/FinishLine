@@ -1,9 +1,9 @@
-import { ProjectPreview, WbsNumber, wbsPipe } from 'shared';
+import { WbsNumber, wbsPipe } from 'shared';
 import CopyBOMView from './CopyBOMView';
 import { useGetAllCars } from '../../../../../hooks/cars.hooks';
 import { useAllProjects } from '../../../../../hooks/projects.hooks';
 import { useCopyMaterialsToProject } from '../../../../../hooks/bom.hooks';
-import React, { useState } from 'react';
+import React from 'react';
 import ErrorPage from '../../../../ErrorPage';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 
@@ -14,8 +14,6 @@ export interface CopyBOMModalProps {
 }
 
 const CopyBOMModal: React.FC<CopyBOMModalProps> = ({ open, onHide, destinationWbsNum }) => {
-  const [selectedProject, setSelectedProject] = useState<ProjectPreview | null>(null);
-
   const { data: cars, isLoading: isLoadingCars, isError: carsIsError, error: carsError } = useGetAllCars();
   const { data: projects, isLoading: isLoadingProjects, isError: projectsIsError, error: projectsError } = useAllProjects();
   const { mutateAsync: copyMaterials } = useCopyMaterialsToProject();
@@ -38,8 +36,6 @@ const CopyBOMModal: React.FC<CopyBOMModalProps> = ({ open, onHide, destinationWb
       onHide={onHide}
       cars={cars}
       projects={projects}
-      selectedProject={selectedProject}
-      setSelectedProject={setSelectedProject}
       onCopy={handleCopy}
     />
   );

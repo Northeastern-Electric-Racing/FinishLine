@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Grid } from '@mui/material';
+import React, { useRef, useState } from 'react';
+import { Box, Grid } from '@mui/material';
 import { Car, ProjectPreview, wbsPipe } from 'shared';
 import NERModal from '../../../../../components/NERModal';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
@@ -10,8 +10,6 @@ interface CopyBOMViewProps {
   onHide: () => void;
   cars: Car[];
   projects: ProjectPreview[];
-  selectedProject: ProjectPreview | null;
-  setSelectedProject: (project: ProjectPreview | null) => void;
   onCopy: (materialIds: string[]) => Promise<void>;
 }
 
@@ -20,12 +18,12 @@ const CopyBOMView: React.FC<CopyBOMViewProps> = ({
   onHide,
   cars,
   projects,
-  selectedProject,
-  setSelectedProject,
   onCopy
 }) => {
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
-  const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([]);
+  const [selectedProject, setSelectedProject] = useState<ProjectPreview | null>(null);
+  const [hasSelection, setHasSelection] = useState(false);
+  const selectedMaterialIdsRef = useRef<string[]>([]);
 
   const carOptions = cars.map((car) => ({
     label: `${car.wbsNum.carNumber} - ${car.name}`,
@@ -42,7 +40,7 @@ const CopyBOMView: React.FC<CopyBOMViewProps> = ({
   }));
 
   const handleSubmit = async () => {
-    await onCopy(selectedMaterialIds);
+    await onCopy(selectedMaterialIdsRef.current);
   };
 
   return (
@@ -53,7 +51,7 @@ const CopyBOMView: React.FC<CopyBOMViewProps> = ({
       submitText="Copy BOM"
       cancelText="Cancel"
       onSubmit={handleSubmit}
-      disabled={selectedMaterialIds.length === 0}
+      disabled={!hasSelection}
       showCloseButton
       paperProps={{ minWidth: '700px' }}
     >
@@ -96,11 +94,32 @@ const CopyBOMView: React.FC<CopyBOMViewProps> = ({
           />
         </Grid>
 
-        {selectedProject && (
-          <Grid item xs={12}>
-            <CopyBOMProjectSection selectedProject={selectedProject} onSelectionChange={setSelectedMaterialIds} />
-          </Grid>
-        )}
+        <Grid item xs={12}>
+          {selectedProject ? (
+            <CopyBOMProjectSection
+              selectedProject={selectedProject}
+              onSelectionChange={(ids) => {
+                selectedMaterialIdsRef.current = ids;
+                setHasSelection(ids.length > 0);
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                height: '300px',
+                border: '1px dashed',
+                borderColor: 'grey.400',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'grey.500'
+              }}
+            >
+              Select a project to view its materials
+            </Box>
+          )}
+        </Grid>
       </Grid>
     </NERModal>
   );
