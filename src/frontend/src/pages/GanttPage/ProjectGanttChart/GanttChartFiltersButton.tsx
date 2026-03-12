@@ -2,6 +2,7 @@ import { ChangeEvent, useState } from 'react';
 import { IconButton, Popover } from '@mui/material';
 import GanttChartFilters from './GanttChartFilters';
 import { Tune } from '@mui/icons-material';
+import { useTheme } from '@mui/material';
 
 interface GanttChartFiltersButtonProps {
   carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
@@ -64,6 +65,14 @@ const GanttChartFiltersButton = ({
           horizontal: 'right'
         }}
         sx={{ maxWidth: '100rem' }}
+        slotProps={{
+          paper: {
+            sx: {
+              backgroundColor: useTheme().palette.background.paper,
+              borderRadius: 2
+            }
+          }
+        }}
       >
         <GanttChartFilters
           carHandlers={carHandlers}
@@ -74,6 +83,7 @@ const GanttChartFiltersButton = ({
           resetHandler={resetHandler}
           collapseHandler={collapseHandler}
           expandHandler={expandHandler}
+          onClose={handleFilterClose}
         />
       </Popover>
     </>
