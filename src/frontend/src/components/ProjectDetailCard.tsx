@@ -23,7 +23,7 @@ interface ProjectDetailCardProps {
 
 const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectIsFavorited }) => {
   const containsActiveWorkPackages = project.workPackages.filter((wp) => wp.status === WbsElementStatus.Active).length;
-  const tasksLeft: number = project.tasks.filter((task) => task.status !== TaskStatus.DONE).length;
+  const tasksLeft: number = project.tasks.filter((task) => !task.dateDeleted && task.status !== TaskStatus.DONE).length;
 
   const ProjectDetailCardTitle = () => (
     <Grid container alignItems="center">

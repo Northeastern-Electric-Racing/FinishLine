@@ -123,7 +123,7 @@ export const getProjectOverviewQueryArgs = (organizationId: string) =>
           manager: getUserQueryArgs(organizationId),
           status: true,
           links: getLinkQueryArgs(),
-          tasks: getTaskQueryArgs(organizationId)
+          tasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organizationId) }
         }
       },
       workPackages: getWorkPackagePreviewQueryArgs(),
