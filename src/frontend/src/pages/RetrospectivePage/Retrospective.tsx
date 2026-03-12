@@ -153,24 +153,6 @@ const RetrospectivePage = () => {
     };
   });
 
-  const overdueHandler = [
-    {
-      filterLabel: 'Overdue',
-      handler: (event: ChangeEvent<HTMLInputElement>) =>
-        handleSetGanttFilters({ ...filters, showOnlyOverdue: event.target.checked }),
-      defaultChecked: filters.showOnlyOverdue
-    }
-  ];
-
-  const hideTasksHandler = [
-    {
-      filterLabel: 'Hide Tasks',
-      handler: (event: ChangeEvent<HTMLInputElement>) =>
-        handleSetGanttFilters({ ...filters, hideTasks: event.target.checked }),
-      defaultChecked: filters.hideTasks
-    }
-  ];
-
   const carHandlers: {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -219,18 +201,6 @@ const RetrospectivePage = () => {
           { months: 6 }
         )
       : add(Date.now(), { weeks: 15 });
-
-  const collapseHandler = () => {
-    projects.forEach((project) => {
-      setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, false)));
-    });
-  };
-
-  const expandHandler = () => {
-    projects.forEach((project) => {
-      setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, true)));
-    });
-  };
 
   const elementId = (element: WbsElementPreview | Task) => (element as WbsElementPreview).id || (element as Task).taskId;
 
