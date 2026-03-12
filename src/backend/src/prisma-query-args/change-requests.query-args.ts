@@ -1,9 +1,41 @@
 import { Prisma } from '@prisma/client';
 import { getScopeChangeRequestQueryArgs } from './scope-change-requests.query-args.js';
-import { getUserQueryArgs } from './user.query-args.js';
+import { getUserQueryArgs, getUserPreviewQueryArgs } from './user.query-args.js';
 import { getWorkPackageQueryArgs } from './work-packages.query-args.js';
 import { getReimbursementProductOtherReasonQueryArgs } from './reimbursement-product-other-reason.query-args.js';
 import { getAccountCodeQueryArgs } from './account-code.query-args.js';
+
+export type ChangeRequestTableRowQueryArgs = ReturnType<typeof getChangeRequestTableRowQueryArgs>;
+
+export const getChangeRequestTableRowQueryArgs = (_organizationId: string) =>
+  Prisma.validator<Prisma.Change_RequestDefaultArgs>()({
+    include: {
+      submitter: getUserPreviewQueryArgs(),
+      wbsElement: { select: { carNumber: true, projectNumber: true, workPackageNumber: true, name: true } },
+      category: { select: { name: true } },
+      accountCode: { select: { accountCodeId: true, code: true, name: true } },
+      reviewer: getUserPreviewQueryArgs(),
+      changes: {
+        where: { wbsElement: { dateDeleted: null } },
+        select: { dateImplemented: true }
+      },
+      stageGateChangeRequest: { select: { leftoverBudget: true, confirmDone: true } },
+      activationChangeRequest: {
+        include: {
+          lead: getUserPreviewQueryArgs(),
+          manager: getUserPreviewQueryArgs()
+        }
+      },
+      budgetChangeRequest: { select: { proposedBudget: true } },
+      requestedReviewers: getUserPreviewQueryArgs(),
+      leadershipChangeRequest: {
+        include: {
+          lead: getUserPreviewQueryArgs(),
+          manager: getUserPreviewQueryArgs()
+        }
+      }
+    }
+  });
 
 export type ChangeRequestQueryArgs = ReturnType<typeof getChangeRequestQueryArgs>;
 

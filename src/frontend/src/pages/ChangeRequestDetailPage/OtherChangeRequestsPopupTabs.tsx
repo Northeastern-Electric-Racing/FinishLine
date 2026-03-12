@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { Box, useTheme, Collapse, Tabs, Tab, Typography } from '@mui/material';
-import { ChangeRequest, wbsPipe } from 'shared';
+import { ChangeRequest, ChangeRequestTableRow, wbsPipe } from 'shared';
 import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -13,7 +13,7 @@ import ErrorPage from '../ErrorPage';
 import { displayEnum, fullNamePipe } from '../../utils/pipes';
 
 interface OtherChangeRequestsPopupTabsProps {
-  changeRequest: ChangeRequest;
+  changeRequest: ChangeRequestTableRow | ChangeRequest;
 }
 
 const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> = ({
@@ -33,25 +33,25 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
         (cr.submitter.userId === changeRequest.submitter.userId || cr.reviewer?.userId === changeRequest.submitter.userId) &&
         cr.crId !== changeRequest.crId
     )
-    .sort((a: ChangeRequest, b: ChangeRequest) => {
+    .sort((a: ChangeRequestTableRow, b: ChangeRequestTableRow) => {
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
 
   const crsFromWbs = changeRequests
     ?.filter((cr) => cr.wbsName === changeRequest.wbsName)
-    .sort((a: ChangeRequest, b: ChangeRequest) => {
+    .sort((a: ChangeRequestTableRow, b: ChangeRequestTableRow) => {
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
 
   const crsFromCategory = changeRequests
     ?.filter((cr) => cr.category?.name === changeRequest.category?.name)
-    .sort((a: ChangeRequest, b: ChangeRequest) => {
+    .sort((a: ChangeRequestTableRow, b: ChangeRequestTableRow) => {
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
 
   const crsFromAccountCode = changeRequests
     ?.filter((cr) => cr.accountCode?.name === changeRequest.accountCode?.name)
-    .sort((a: ChangeRequest, b: ChangeRequest) => {
+    .sort((a: ChangeRequestTableRow, b: ChangeRequestTableRow) => {
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
 
@@ -59,7 +59,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
     <Tab value={value} sx={{ borderRadius: '16px 16px 0 0' }} label={title} onClick={() => tab === value && setTab(0)} />
   );
 
-  const displayCRCards = (crList: ChangeRequest[]) => (
+  const displayCRCards = (crList: ChangeRequestTableRow[]) => (
     <Box
       sx={{
         display: 'flex',
@@ -84,7 +84,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       }}
     >
       {crList.length !== 0 ? (
-        crList.map((cr: ChangeRequest) => <ChangeRequestDetailCard changeRequest={cr} />)
+        crList.map((cr: ChangeRequestTableRow) => <ChangeRequestDetailCard changeRequest={cr} />)
       ) : (
         <Typography>No related change requests.</Typography>
       )}

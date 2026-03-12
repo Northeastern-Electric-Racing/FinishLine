@@ -5,7 +5,7 @@
 
 import { renderHook, waitFor } from '@testing-library/react';
 import { AxiosResponse } from 'axios';
-import { ChangeRequest } from 'shared';
+import { ChangeRequest, ChangeRequestTableRow } from 'shared';
 import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import { exampleAllChangeRequests, exampleStageGateChangeRequest } from '../test-support/test-data/change-requests.stub';
@@ -16,8 +16,12 @@ vi.mock('../../apis/change-requests.api');
 
 describe('change request hooks', () => {
   it('handles getting a list of change requests', async () => {
-    const mockedGetAllChangeRequests = getAllChangeRequests as jest.Mock<Promise<AxiosResponse<ChangeRequest[]>>>;
-    mockedGetAllChangeRequests.mockReturnValue(mockPromiseAxiosResponse<ChangeRequest[]>(exampleAllChangeRequests));
+    const mockedGetAllChangeRequests = getAllChangeRequests as unknown as jest.Mock<
+      Promise<AxiosResponse<ChangeRequestTableRow[]>>
+    >;
+    mockedGetAllChangeRequests.mockReturnValue(
+      mockPromiseAxiosResponse<ChangeRequestTableRow[]>(exampleAllChangeRequests as unknown as ChangeRequestTableRow[])
+    );
 
     const { result } = renderHook(() => useAllChangeRequests(), { wrapper });
     await waitFor(() => result.current.isSuccess);

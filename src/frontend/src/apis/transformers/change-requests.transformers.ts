@@ -5,6 +5,7 @@
 
 import {
   ChangeRequest,
+  ChangeRequestTableRow,
   dbDateToLocalDate,
   ImplementedChange,
   ProjectProposedChanges,
@@ -34,6 +35,14 @@ const transformProjectProposedChanges = (projectProposedChanges: ProjectProposed
     workPackageProposedChanges: projectProposedChanges.workPackageProposedChanges.map(transformWorkPackageProposedChanges)
   };
 };
+
+export const changeRequestTableRowTransformer = (cr: ChangeRequestTableRow): ChangeRequestTableRow => ({
+  ...cr,
+  dateSubmitted: new Date(cr.dateSubmitted),
+  dateReviewed: cr.dateReviewed ? new Date(cr.dateReviewed) : undefined,
+  dateImplemented: cr.dateImplemented ? new Date(cr.dateImplemented) : undefined,
+  startDate: cr.startDate ? dbDateToLocalDate(new Date(cr.startDate)) : undefined
+});
 
 export const changeRequestTransformer = (changeRequest: ChangeRequest | StandardChangeRequest): ChangeRequest => {
   const data: any = {

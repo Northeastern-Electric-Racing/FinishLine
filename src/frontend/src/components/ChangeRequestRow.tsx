@@ -5,12 +5,12 @@
 
 import { Typography, Grid, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
-import { ChangeRequest } from 'shared';
+import { ChangeRequestTableRow } from 'shared';
 import ChangeRequestDetailCard from './ChangeRequestDetailCard';
 
 interface ChangeRequestRowProps {
   title: string;
-  changeRequests: ChangeRequest[];
+  changeRequests: ChangeRequestTableRow[];
   noChangeRequestsMessage: string;
 }
 
@@ -46,7 +46,7 @@ const ChangeRequestRow: React.FC<ChangeRequestRowProps> = ({ title, changeReques
             }}
             data-testid={title + 'crRow'}
           >
-            {changeRequests.map((cr: ChangeRequest) => (
+            {changeRequests.map((cr: ChangeRequestTableRow) => (
               <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
             ))}
           </Box>

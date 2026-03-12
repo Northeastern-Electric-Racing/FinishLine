@@ -2,6 +2,7 @@ import {
   ActivationChangeRequest,
   BudgetChangeRequest,
   ChangeRequest,
+  ChangeRequestTableRow,
   isAdmin,
   isGuest,
   isLeadership,
@@ -28,7 +29,10 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
-import changeRequestTransformer, { changeRequestManyTransformer } from '../transformers/change-requests.transformer.js';
+import changeRequestTransformer, {
+  changeRequestManyTransformer,
+  changeRequestTableRowTransformer
+} from '../transformers/change-requests.transformer.js';
 import {
   allChangeRequestsReviewed,
   validateProposedChangesFields,
@@ -54,6 +58,7 @@ import {
 import {
   ChangeRequestWithProjectAndWorkPackageQueryArgs,
   getChangeRequestQueryArgs,
+  getChangeRequestTableRowQueryArgs,
   getChangeRequestWithProjectAndWorkPackageQueryArgs,
   getManyChangeRequestQueryArgs
 } from '../prisma-query-args/change-requests.query-args.js';
@@ -88,13 +93,13 @@ export default class ChangeRequestsService {
    * @param organization The organization the user is currently in
    * @returns All of the change requests
    */
-  static async getAllChangeRequests(organization: Organization): Promise<ChangeRequest[]> {
+  static async getAllChangeRequests(organization: Organization): Promise<ChangeRequestTableRow[]> {
     const changeRequests = await prisma.change_Request.findMany({
       where: { dateDeleted: null, organizationId: organization.organizationId },
-      ...getManyChangeRequestQueryArgs(organization.organizationId)
+      ...getChangeRequestTableRowQueryArgs(organization.organizationId)
     });
 
-    return changeRequests.map(changeRequestManyTransformer);
+    return changeRequests.map(changeRequestTableRowTransformer);
   }
 
   /**
@@ -104,7 +109,7 @@ export default class ChangeRequestsService {
    * @param organization The organization the user is in
    * @returns The user's change requests for them to review
    */
-  static async getToReviewChangeRequests(user: User, organization: Organization): Promise<ChangeRequest[]> {
+  static async getToReviewChangeRequests(user: User, organization: Organization): Promise<ChangeRequestTableRow[]> {
     const wbsOr: Prisma.WBS_ElementWhereInput[] = [{ managerId: user.userId }, { leadId: user.userId }];
 
     if (await userHasPermission(user.userId, organization.organizationId, isLeadership)) {
@@ -153,10 +158,10 @@ export default class ChangeRequestsService {
         organizationId: organization.organizationId,
         OR: queryOr
       },
-      ...getManyChangeRequestQueryArgs(organization.organizationId)
+      ...getChangeRequestTableRowQueryArgs(organization.organizationId)
     });
 
-    return changeRequests.map(changeRequestManyTransformer);
+    return changeRequests.map(changeRequestTableRowTransformer);
   }
 
   /**
@@ -171,7 +176,7 @@ export default class ChangeRequestsService {
     user: User,
     wbsnum: WbsNumber | undefined,
     organization: Organization
-  ): Promise<ChangeRequest[]> {
+  ): Promise<ChangeRequestTableRow[]> {
     // Check that its unreviewed and a scope change request, omit activation and stage gate
     const queryAnd: Prisma.Change_RequestWhereInput[] = [
       {
@@ -191,10 +196,10 @@ export default class ChangeRequestsService {
         AND: queryAnd,
         dateDeleted: null
       },
-      ...getManyChangeRequestQueryArgs(organization.organizationId)
+      ...getChangeRequestTableRowQueryArgs(organization.organizationId)
     });
 
-    return changeRequests.map(changeRequestManyTransformer);
+    return changeRequests.map(changeRequestTableRowTransformer);
   }
 
   /**
@@ -209,7 +214,7 @@ export default class ChangeRequestsService {
     user: User,
     wbsnum: WbsNumber | undefined,
     organization: Organization
-  ): Promise<ChangeRequest[]> {
+  ): Promise<ChangeRequestTableRow[]> {
     const currentDate = new Date();
     const fiveDaysAgo = new Date(currentDate.getTime() - 1000 * 60 * 60 * 24 * 5); // Change requests that were reviewed less than five days ago
     const queryAnd = wbsnum
@@ -235,10 +240,10 @@ export default class ChangeRequestsService {
         dateDeleted: null,
         AND: queryAnd
       },
-      ...getManyChangeRequestQueryArgs(organization.organizationId)
+      ...getChangeRequestTableRowQueryArgs(organization.organizationId)
     });
 
-    return changeRequests.map(changeRequestManyTransformer);
+    return changeRequests.map(changeRequestTableRowTransformer);
   }
 
   /**

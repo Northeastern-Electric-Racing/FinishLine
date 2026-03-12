@@ -1,14 +1,14 @@
 import { Box, FormControl, FormLabel } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
 import { Control, Controller } from 'react-hook-form';
-import { AuthenticatedUser, ChangeRequest, wbsPipe } from 'shared';
+import { AuthenticatedUser, ChangeRequestTableRow, wbsPipe } from 'shared';
 import { useAllChangeRequests } from '../hooks/change-requests.hooks';
 import { useCurrentUser } from '../hooks/users.hooks';
 import LoadingIndicator from './LoadingIndicator';
 import NERAutocomplete from './NERAutocomplete';
 
 // Filter and sort change requests to display in the dropdown
-const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: AuthenticatedUser): ChangeRequest[] => {
+const getFilteredChangeRequests = (changeRequests: ChangeRequestTableRow[], user: AuthenticatedUser): ChangeRequestTableRow[] => {
   const today = new Date();
   const fiveDaysAgo = subDays(today, 5);
 
@@ -18,7 +18,7 @@ const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: Authen
   );
 
   // The current user's CRs should be at the top
-  filteredRequests.sort((a: ChangeRequest, b: ChangeRequest) => {
+  filteredRequests.sort((a: ChangeRequestTableRow, b: ChangeRequestTableRow) => {
     const isSubmitterAUser = a.submitter.userId === user.userId;
     const isSubmitterBUser = b.submitter.userId === user.userId;
 

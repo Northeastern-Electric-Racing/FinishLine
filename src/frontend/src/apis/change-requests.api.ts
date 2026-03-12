@@ -4,35 +4,35 @@
  */
 
 import axios from '../utils/axios';
-import { ChangeRequest, WbsNumber, ChangeRequestType } from 'shared';
+import { ChangeRequest, ChangeRequestTableRow, WbsNumber, ChangeRequestType } from 'shared';
 import { apiUrls } from '../utils/urls';
-import { changeRequestTransformer } from './transformers/change-requests.transformers';
+import { changeRequestTransformer, changeRequestTableRowTransformer } from './transformers/change-requests.transformers';
 import { CreateStandardChangeRequestPayload } from '../hooks/change-requests.hooks';
 
 /**
  * Fetches all change requests.
  */
 export const getAllChangeRequests = () => {
-  return axios.get<ChangeRequest[]>(apiUrls.changeRequests(), {
-    transformResponse: (data) => JSON.parse(data).map(changeRequestTransformer)
+  return axios.get<ChangeRequestTableRow[]>(apiUrls.changeRequests(), {
+    transformResponse: (data) => JSON.parse(data).map(changeRequestTableRowTransformer)
   });
 };
 
 export const getToReviewChangeRequests = () => {
-  return axios.get<ChangeRequest[]>(apiUrls.toReviewChangeRequests(), {
-    transformResponse: (data) => JSON.parse(data).map(changeRequestTransformer)
+  return axios.get<ChangeRequestTableRow[]>(apiUrls.toReviewChangeRequests(), {
+    transformResponse: (data) => JSON.parse(data).map(changeRequestTableRowTransformer)
   });
 };
 
 export const getUnreviewedChangeRequests = (wbsNum?: WbsNumber) => {
-  return axios.get<ChangeRequest[]>(apiUrls.unreviewedChangeRequests(wbsNum), {
-    transformResponse: (data) => JSON.parse(data).map(changeRequestTransformer)
+  return axios.get<ChangeRequestTableRow[]>(apiUrls.unreviewedChangeRequests(wbsNum), {
+    transformResponse: (data) => JSON.parse(data).map(changeRequestTableRowTransformer)
   });
 };
 
 export const getApprovedChangeRequests = (wbsNum?: WbsNumber) => {
-  return axios.get<ChangeRequest[]>(apiUrls.approvedChangeRequests(wbsNum), {
-    transformResponse: (data) => JSON.parse(data).map(changeRequestTransformer)
+  return axios.get<ChangeRequestTableRow[]>(apiUrls.approvedChangeRequests(wbsNum), {
+    transformResponse: (data) => JSON.parse(data).map(changeRequestTableRowTransformer)
   });
 };
 

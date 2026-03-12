@@ -1,7 +1,17 @@
 import { Prisma } from '@prisma/client';
-import { RoleEnum, User, UserWithScheduleSettings } from 'shared';
+import { RoleEnum, User, UserPreview, UserWithScheduleSettings } from 'shared';
 import userScheduleSettingsTransformer from './user-schedule-settings.transformer.js';
-import { UserQueryArgs, UserWithSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { getUserPreviewQueryArgs, UserQueryArgs, UserWithSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
+
+type UserPreviewPayload = Prisma.UserGetPayload<ReturnType<typeof getUserPreviewQueryArgs>>;
+
+export const userPreviewTransformer = (user: UserPreviewPayload): UserPreview => {
+  return {
+    userId: user.userId,
+    firstName: user.firstName,
+    lastName: user.lastName
+  };
+};
 
 export const userTransformer = (user: Prisma.UserGetPayload<UserQueryArgs>): User => {
   return {

@@ -6,14 +6,14 @@
 import { Card, CardContent, Grid, Typography, useTheme } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Link } from '@mui/material';
-import { ActivationChangeRequest, ChangeRequest, ChangeRequestStatus, ChangeRequestType, wbsPipe } from 'shared';
+import { ChangeRequestTableRow, ChangeRequestStatus, ChangeRequestType, wbsPipe } from 'shared';
 import { routes } from '../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import { displayEnum, fullNamePipe } from '../utils/pipes';
 import ChangeRequestTypePill from './ChangeRequestTypePill';
 import ChangeRequestStatusPill from './ChangeRequestStatusPill';
 
-const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
+const CRCardDescription = ({ cr }: { cr: ChangeRequestTableRow }) => {
   const theme = useTheme();
   const isAccepted = cr.status === ChangeRequestStatus.Implemented || cr.status === ChangeRequestStatus.Accepted;
   const isStageGate = cr.type === ChangeRequestType.StageGate;
@@ -41,10 +41,10 @@ const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
         ) : isActivation ? (
           <div>
             <Typography variant="body1" fontSize={14}>
-              Lead: {fullNamePipe((cr as ActivationChangeRequest).lead)}
+              Lead: {fullNamePipe(cr.lead)}
             </Typography>
             <Typography variant="body1" fontSize={14}>
-              Manager: {fullNamePipe((cr as ActivationChangeRequest).manager)}
+              Manager: {fullNamePipe(cr.manager)}
             </Typography>
           </div>
         ) : isStageGate && cr.wbsNum ? (
@@ -60,7 +60,7 @@ const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
 };
 
 interface ChangeRequestDetailCardProps {
-  changeRequest: ChangeRequest;
+  changeRequest: ChangeRequestTableRow;
 }
 
 const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ changeRequest }) => {

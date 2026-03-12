@@ -1,6 +1,8 @@
 import { Prisma } from '@prisma/client';
 import {
   ChangeRequest,
+  ChangeRequestStatus,
+  ChangeRequestTableRow,
   StandardChangeRequest,
   ActivationChangeRequest,
   StageGateChangeRequest,
@@ -10,13 +12,19 @@ import {
   WorkPackageStage,
   BudgetChangeRequest,
   isWorkPackageWbs,
-  LeadershipChangeRequest
+  LeadershipChangeRequest,
+  FullChangeRequest,
+  FullStandardChangeRequest,
+  FullActivationChangeRequest,
+  FullStageGateChangeRequest,
+  FullBudgetChangeRequest,
+  FullLeadershipChangeRequest
 } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
 import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils.js';
 import proposedSolutionTransformer from './proposed-solutions.transformer.js';
 import { getDateImplemented } from '../utils/change-requests.utils.js';
-import { userTransformer } from './user.transformer.js';
+import { userTransformer, userPreviewTransformer } from './user.transformer.js';
 import { descBulletConverter } from '../utils/description-bullets.utils.js';
 import teamTransformer from './teams.transformer.js';
 import {
@@ -26,6 +34,7 @@ import {
 import { HttpException } from '../utils/errors.utils.js';
 import {
   ChangeRequestManyQueryArgs,
+  ChangeRequestTableRowQueryArgs,
   ChangeRequestWithProjectAndWorkPackageQueryArgs
 } from '../prisma-query-args/change-requests.query-args.js';
 import { accountCodeTransformer, otherProductReasonTransformer } from './reimbursement-requests.transformer.js';
@@ -72,6 +81,84 @@ const workPackageProposedChangesTransformer = (
     descriptionBullets:
       workPackageProposedChanges.wbsProposedChanges.proposedDescriptionBulletChanges.map(descBulletConverter),
     stage: (workPackageProposedChanges.stage as WorkPackageStage) || undefined
+  };
+};
+
+export const changeRequestTableRowTransformer = (
+  changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestTableRowQueryArgs>
+): ChangeRequestTableRow => {
+  const changes = changeRequest.changes;
+  const hasChanges = changes.length > 0;
+
+  // Inline status calculation (avoids dependency on ChangeRequestManyQueryArgs type)
+  let status: ChangeRequestStatus;
+  if (hasChanges) {
+    status = ChangeRequestStatus.Implemented;
+  } else if (changeRequest.accepted && changeRequest.dateReviewed) {
+    status = ChangeRequestStatus.Accepted;
+  } else if (changeRequest.dateReviewed) {
+    status = ChangeRequestStatus.Denied;
+  } else {
+    status = ChangeRequestStatus.Open;
+  }
+
+  // Earliest change date
+  const dateImplemented = hasChanges
+    ? changes.reduce(
+        (res: Date | undefined, change) =>
+          !res || change.dateImplemented.valueOf() < res.valueOf() ? change.dateImplemented : res,
+        undefined
+      )
+    : undefined;
+
+  const wbsElement = changeRequest.wbsElement;
+
+  return {
+    crId: changeRequest.crId,
+    identifier: changeRequest.identifier,
+    type: changeRequest.type,
+    dateSubmitted: changeRequest.dateSubmitted,
+    dateReviewed: changeRequest.dateReviewed ?? undefined,
+    accepted: changeRequest.accepted ?? undefined,
+    reviewNotes: changeRequest.reviewNotes ?? undefined,
+    dateImplemented,
+    status,
+    wbsNum: wbsElement
+      ? {
+          carNumber: wbsElement.carNumber,
+          projectNumber: wbsElement.projectNumber,
+          workPackageNumber: wbsElement.workPackageNumber
+        }
+      : undefined,
+    wbsName: wbsElement?.name ?? undefined,
+    submitter: userPreviewTransformer(changeRequest.submitter),
+    reviewer: changeRequest.reviewer ? userPreviewTransformer(changeRequest.reviewer) : undefined,
+    category: changeRequest.category ? { name: changeRequest.category.name } : undefined,
+    accountCode: changeRequest.accountCode
+      ? {
+          accountCodeId: changeRequest.accountCode.accountCodeId,
+          code: changeRequest.accountCode.code,
+          name: changeRequest.accountCode.name
+        }
+      : undefined,
+    implementedChangesCount: changes.length,
+    requestedReviewers: changeRequest.requestedReviewers.map(userPreviewTransformer),
+    // Type-specific fields
+    lead: changeRequest.leadershipChangeRequest?.lead
+      ? userPreviewTransformer(changeRequest.leadershipChangeRequest.lead)
+      : changeRequest.activationChangeRequest?.lead
+        ? userPreviewTransformer(changeRequest.activationChangeRequest.lead)
+        : undefined,
+    manager: changeRequest.leadershipChangeRequest?.manager
+      ? userPreviewTransformer(changeRequest.leadershipChangeRequest.manager)
+      : changeRequest.activationChangeRequest?.manager
+        ? userPreviewTransformer(changeRequest.activationChangeRequest.manager)
+        : undefined,
+    startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
+    confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
+    leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
+    confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
+    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined
   };
 };
 

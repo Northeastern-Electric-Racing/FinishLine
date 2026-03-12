@@ -3,11 +3,101 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from './user-types.js';
-import { AccountCode, OtherProductReason } from './reimbursement-requests-types.js';
+import { User, UserPreview } from './user-types.js';
+import {
+  AccountCode,
+  AccountCodePreview,
+  AccountCodeSummary,
+  OtherProductReason,
+  OtherProductReasonPreview,
+  OtherProductReasonSummary
+} from './reimbursement-requests-types.js';
 import { LinkCreateArgs, ProjectProposedChanges, WbsNumber, WorkPackageProposedChanges } from './project-types.js';
 import { WorkPackageStage } from './work-package-types.js';
 
+// --- Base type: primitives only ---
+
+export interface ChangeRequestBase {
+  crId: string;
+  identifier: number;
+  type: ChangeRequestType;
+  dateSubmitted: Date;
+  dateReviewed?: Date;
+  accepted?: boolean;
+  reviewNotes?: string;
+  dateImplemented?: Date;
+  status: ChangeRequestStatus;
+  wbsNum?: WbsNumber;
+  wbsName?: string;
+}
+
+// --- Table row type: for list endpoints ---
+
+export interface ChangeRequestTableRow extends ChangeRequestBase {
+  submitter: UserPreview;
+  reviewer?: UserPreview;
+  category?: OtherProductReasonPreview;
+  accountCode?: AccountCodePreview;
+  implementedChangesCount: number;
+  requestedReviewers: UserPreview[];
+  // Type-specific fields accessed in list views
+  lead?: UserPreview;
+  manager?: UserPreview;
+  startDate?: Date;
+  confirmDetails?: boolean;
+  leftoverBudget?: number;
+  confirmDone?: boolean;
+  proposedBudget?: number;
+}
+
+// --- Full detail types: for single CR endpoint ---
+
+export interface FullChangeRequest extends ChangeRequestBase {
+  submitter: User;
+  reviewer?: User;
+  requestedReviewers: User[];
+  category?: OtherProductReasonSummary;
+  accountCode?: AccountCodeSummary;
+  implementedChanges?: ImplementedChange[];
+}
+
+export interface FullStandardChangeRequest extends FullChangeRequest {
+  what: string;
+  why: ChangeRequestExplanation[];
+  scopeImpact: string;
+  budgetImpact: number;
+  timelineImpact: number;
+  proposedSolutions: ProposedSolution[];
+  projectProposedChanges?: ProjectProposedChanges;
+  workPackageProposedChanges?: WorkPackageProposedChanges;
+  originalProjectData?: ProjectProposedChanges;
+  originalWorkPackageData?: WorkPackageProposedChanges;
+}
+
+export interface FullActivationChangeRequest extends FullChangeRequest {
+  lead: User;
+  manager: User;
+  startDate: Date;
+  confirmDetails: boolean;
+}
+
+export interface FullStageGateChangeRequest extends FullChangeRequest {
+  leftoverBudget: number;
+  confirmDone: boolean;
+}
+
+export interface FullBudgetChangeRequest extends FullChangeRequest {
+  proposedBudget: number;
+}
+
+export interface FullLeadershipChangeRequest extends FullChangeRequest {
+  lead?: User;
+  manager?: User;
+}
+
+// --- Legacy types (deprecated, kept for migration) ---
+
+/** @deprecated Use ChangeRequestTableRow or FullChangeRequest instead */
 export interface ChangeRequest {
   crId: string;
   identifier: number;
@@ -28,18 +118,7 @@ export interface ChangeRequest {
   requestedReviewers: User[];
 }
 
-export const ChangeRequestType = {
-  Issue: 'ISSUE',
-  Redefinition: 'DEFINITION_CHANGE',
-  Other: 'OTHER',
-  StageGate: 'STAGE_GATE',
-  Activation: 'ACTIVATION',
-  Budget: 'BUDGET',
-  Leadership: 'LEADERSHIP'
-} as const;
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export type ChangeRequestType = (typeof ChangeRequestType)[keyof typeof ChangeRequestType];
-
+/** @deprecated Use FullStandardChangeRequest instead */
 export interface StandardChangeRequest extends ChangeRequest {
   what: string;
   why: ChangeRequestExplanation[];
@@ -64,6 +143,7 @@ export interface ProposedSolution {
   approved: boolean;
 }
 
+/** @deprecated Use FullActivationChangeRequest instead */
 export interface ActivationChangeRequest extends ChangeRequest {
   lead: User;
   manager: User;
@@ -71,19 +151,34 @@ export interface ActivationChangeRequest extends ChangeRequest {
   confirmDetails: boolean;
 }
 
+/** @deprecated Use FullStageGateChangeRequest instead */
 export interface StageGateChangeRequest extends ChangeRequest {
   leftoverBudget: number;
   confirmDone: boolean;
 }
 
+/** @deprecated Use FullBudgetChangeRequest instead */
 export interface BudgetChangeRequest extends ChangeRequest {
   proposedBudget: number;
 }
 
+/** @deprecated Use FullLeadershipChangeRequest instead */
 export interface LeadershipChangeRequest extends ChangeRequest {
   lead?: User;
   manager?: User;
 }
+
+export const ChangeRequestType = {
+  Issue: 'ISSUE',
+  Redefinition: 'DEFINITION_CHANGE',
+  Other: 'OTHER',
+  StageGate: 'STAGE_GATE',
+  Activation: 'ACTIVATION',
+  Budget: 'BUDGET',
+  Leadership: 'LEADERSHIP'
+} as const;
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type ChangeRequestType = (typeof ChangeRequestType)[keyof typeof ChangeRequestType];
 
 export interface ChangeRequestExplanation {
   type: ChangeRequestReason;

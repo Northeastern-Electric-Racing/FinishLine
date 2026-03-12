@@ -8,7 +8,7 @@ import { Box, useTheme } from '@mui/system';
 import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { ChangeRequest, ChangeRequestType, WbsElement } from 'shared';
+import { ChangeRequestTableRow, ChangeRequestType, WbsElement } from 'shared';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import { datePipe, displayEnum, fullNamePipe, wbsPipe } from '../../utils/pipes';
@@ -163,10 +163,10 @@ const ChangeRequestsTable: React.FC = () => {
     },
     {
       ...baseColDef,
-      field: 'implementedChanges',
+      field: 'implementedChangesCount',
       headerName: '# Implemented Changes',
       filterable: false,
-      valueFormatter: (params) => params.value.length,
+      valueFormatter: (params) => params.value,
       maxWidth: 200
     },
     {
@@ -241,7 +241,7 @@ const ChangeRequestsTable: React.FC = () => {
         getRowClassName={(params) => (params.indexRelativeToCurrentPage % 2 === 0 ? 'Mui-even' : 'Mui-odd')}
         components={{
           Toolbar: TableCustomToolbar,
-          Row: (props: GridRowProps & { row: ChangeRequest }) => {
+          Row: (props: GridRowProps & { row: ChangeRequestTableRow }) => {
             return (
               <Link
                 component={RouterLink}
@@ -280,7 +280,7 @@ const ChangeRequestsTable: React.FC = () => {
           columns: {
             columnVisibilityModel: {
               carNumber: false,
-              implementedChanges: false
+              implementedChangesCount: false
             }
           }
         }}

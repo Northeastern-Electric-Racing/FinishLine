@@ -71,3 +71,4 @@ eb-deploy/
 # Claude Code Files
 CLAUDE.md
 .playwright-mcp/
+docs/

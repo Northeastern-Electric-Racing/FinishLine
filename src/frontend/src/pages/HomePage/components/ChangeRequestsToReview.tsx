@@ -2,7 +2,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useGetToReviewChangeRequests } from '../../../hooks/change-requests.hooks';
 import ScrollablePageBlock from './ScrollablePageBlock';
-import { ChangeRequest } from 'shared';
+import { ChangeRequestTableRow } from 'shared';
 import ChangeRequestDetailCard from '../../../components/ChangeRequestDetailCard';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
@@ -36,7 +36,7 @@ const ChangeRequestsToReview: React.FC<ChangeRequestsToReviewProps> = () => {
       {changeRequests.length === 0 ? (
         <NoChangeRequestsToReview />
       ) : (
-        changeRequests.map((cr: ChangeRequest) => <ChangeRequestDetailCard changeRequest={cr} />)
+        changeRequests.map((cr: ChangeRequestTableRow) => <ChangeRequestDetailCard changeRequest={cr} />)
       )}
     </ScrollablePageBlock>
   );

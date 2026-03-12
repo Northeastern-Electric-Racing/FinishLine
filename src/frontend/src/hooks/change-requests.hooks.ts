@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   ChangeRequest,
   ChangeRequestReason,
+  ChangeRequestTableRow,
   ChangeRequestType,
   ProjectProposedChangesCreateArgs,
   ProposedSolutionCreateArgs,
@@ -35,28 +36,28 @@ import {
  * Custom React Hook to supply all change requests.
  */
 export const useAllChangeRequests = () => {
-  return useQuery<ChangeRequest[], Error>(['change requests'], async () => {
+  return useQuery<ChangeRequestTableRow[], Error>(['change requests'], async () => {
     const { data } = await getAllChangeRequests();
     return data;
   });
 };
 
 export const useGetToReviewChangeRequests = () => {
-  return useQuery<ChangeRequest[], Error>(['change requests', 'to-review'], async () => {
+  return useQuery<ChangeRequestTableRow[], Error>(['change requests', 'to-review'], async () => {
     const { data } = await getToReviewChangeRequests();
     return data;
   });
 };
 
 export const useGetUnreviewedChangeRequests = (wbsNum?: WbsNumber) => {
-  return useQuery<ChangeRequest[], Error>(['change requests', 'unreviewed'], async () => {
+  return useQuery<ChangeRequestTableRow[], Error>(['change requests', 'unreviewed'], async () => {
     const { data } = await getUnreviewedChangeRequests(wbsNum);
     return data;
   });
 };
 
 export const useGetApprovedChangeRequests = (wbsNum?: WbsNumber) => {
-  return useQuery<ChangeRequest[], Error>(['change requests', 'approved'], async () => {
+  return useQuery<ChangeRequestTableRow[], Error>(['change requests', 'approved'], async () => {
     const { data } = await getApprovedChangeRequests(wbsNum);
     return data;
   });

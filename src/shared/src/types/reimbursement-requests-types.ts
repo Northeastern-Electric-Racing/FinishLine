@@ -69,6 +69,15 @@ export interface ReimbursementRequest {
   assignee?: User;
 }
 
+export interface OtherProductReasonPreview {
+  name: string;
+}
+
+export interface OtherProductReasonSummary extends OtherProductReasonPreview {
+  otherProductReasonId: string;
+  budget: number;
+}
+
 export interface OtherProductReason {
   otherProductReasonId: string;
   name: string;
@@ -102,6 +111,16 @@ export interface Vendor {
   addedBy: User;
   discountCode?: string;
   notes?: string;
+}
+
+export interface AccountCodePreview {
+  accountCodeId: string;
+  name: string;
+  code: number;
+}
+
+export interface AccountCodeSummary extends AccountCodePreview {
+  amount?: number;
 }
 
 export interface AccountCode {
