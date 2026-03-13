@@ -1177,7 +1177,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Materials linked to RR are updated to READY_TO_ORDER when RR is created', async () => {
-      const rr = await ReimbursementRequestService.createReimbursementRequest(
+      await ReimbursementRequestService.createReimbursementRequest(
         createdUser,
         createdVendor.vendorId,
         createdIndexCode.indexCodeId,

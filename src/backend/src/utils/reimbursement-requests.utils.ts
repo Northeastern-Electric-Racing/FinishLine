@@ -630,7 +630,7 @@ export const updateMaterialStatusesOnPayment = async (reimbursementRequestId: st
 
   if (materialIds.length > 0) {
     await prisma.material.updateMany({
-      where: { materialId: { in: materialIds }, dateDeleted: null, status: 'READY_TO_ORDER' },
+      where: { materialId: { in: materialIds }, dateDeleted: null },
       data: { status: 'ORDERED' }
     });
   }
