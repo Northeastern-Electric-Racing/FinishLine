@@ -121,14 +121,16 @@ const IntroGuestHomePage = () => {
       >
         <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
           <RouterLink to={routes.HOME_PNM} style={{ textDecoration: 'none' }}>
-            <NERButton variant="outlined" size="small">
-              Interested in becoming a member? Learn more about joining {organization.name} here
+            <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
+              Interested in becoming a member?
+            </Typography>
+            <NERButton variant="contained" size="medium">
+              Join {organization.name}
             </NERButton>
           </RouterLink>
         </CardContent>
       </Card>
-
-      <Box sx={{ width: '100%', mt: 3 }}>
+      <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', mt: 3 }}>
         <FeaturedProjects />
       </Box>
     </Box>

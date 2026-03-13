@@ -98,17 +98,19 @@ const LinkTypeFormModal = ({
             <FormHelperText error>{errors.name?.message}</FormHelperText>
           </FormControl>
         </Grid>
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>Required</FormLabel>
-            <Controller
-              name="required"
-              control={control}
-              render={({ field }) => <Switch {...field} checked={field.value} />}
-            />
-            <FormHelperText error>{errors.required?.message}</FormHelperText>
-          </FormControl>
-        </Grid>
+        {!isOnGuestHomePage && (
+          <Grid item xs={6}>
+            <FormControl fullWidth>
+              <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>Required</FormLabel>
+              <Controller
+                name="required"
+                control={control}
+                render={({ field }) => <Switch {...field} checked={field.value} />}
+              />
+              <FormHelperText error>{errors.required?.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+        )}
         <Grid item xs={6}>
           <FormControl fullWidth>
             <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>

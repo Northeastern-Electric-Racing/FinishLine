@@ -151,36 +151,32 @@ const GuestViewConfig: React.FC = () => {
               </Box>
             )}
           </Box>
+          <Box
+            sx={{
+              backgroundColor: (theme) => theme.palette.background.paper,
+              borderRadius: '10px',
+              padding: '16px'
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                color: 'white',
+                fontWeight: 'bold',
+                marginBottom: '12px'
+              }}
+            >
+              Guest Page Links
+            </Typography>
+            <UsefulLinksTable isOnGuestHomePage={true} />
+          </Box>
         </Stack>
       </Grid>
-      <Grid item>
+      <Grid item xs={12}>
         <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
           Links Config
         </Typography>
         <LinkTypeTable isOnGuestHomePage={true} />
-      </Grid>
-      <Grid item>
-        <Box
-          sx={{
-            backgroundColor: (theme) => theme.palette.background.paper,
-            height: '100%',
-            borderRadius: '10px',
-            padding: '16px',
-            width: '100%'
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              color: 'white',
-              fontWeight: 'bold',
-              marginBottom: '12px'
-            }}
-          >
-            Guest Page Links
-          </Typography>
-          <UsefulLinksTable isOnGuestHomePage={true} />
-        </Box>
       </Grid>
     </Grid>
   );
