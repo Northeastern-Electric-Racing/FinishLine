@@ -1,11 +1,11 @@
-import { Material, ReimbursementRequest } from 'shared';
+import { Material, MaterialReimbursementRequest } from 'shared';
 import { GridColDefStyle } from './tables';
 import { centsToDollar } from './pipes';
 import { DataGrid, GridValidRowModel } from '@mui/x-data-grid';
 import { styled } from '@mui/system';
 
 export interface BomRow extends GridValidRowModel {
-  reimbursementRequests: ReimbursementRequest[];
+  reimbursementRequests: MaterialReimbursementRequest[];
   id: string;
   materialId: string;
   status: string;

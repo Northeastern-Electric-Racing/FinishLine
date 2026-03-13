@@ -1349,7 +1349,6 @@ describe('Reimbursement Requests', () => {
       expect(updatedMaterial1!.status).toBe('ORDERED');
       expect(updatedMaterial2!.status).toBe('ORDERED');
     });
-
   });
 
   describe('Editing a reimbursement request', () => {
