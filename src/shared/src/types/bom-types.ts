@@ -72,7 +72,7 @@ export interface Material {
   subtotal?: number;
   linkUrl: string;
   notes?: string;
-  reimbursementRequest?: ReimbursementRequest;
+  reimbursementRequests: ReimbursementRequest[];
 }
 
 export type MaterialPreview = Omit<

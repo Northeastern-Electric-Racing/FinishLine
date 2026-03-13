@@ -2312,7 +2312,6 @@ const performSeed: () => Promise<void> = async () => {
     'Here are some notes',
     assembly1.assemblyId,
     undefined,
-    undefined,
     undefined
   );
 
@@ -2334,7 +2333,6 @@ const performSeed: () => Promise<void> = async () => {
     7,
     70,
     'Here are some more notes',
-    undefined,
     undefined,
     undefined,
     undefined
@@ -2359,9 +2357,7 @@ const performSeed: () => Promise<void> = async () => {
     50,
     undefined,
     undefined,
-    undefined,
-    undefined,
-    seededReimbursementRequests[0]?.reimbursementRequestId
+    undefined
   );
 
   // Need to do this because the design review cannot be scheduled for a past day

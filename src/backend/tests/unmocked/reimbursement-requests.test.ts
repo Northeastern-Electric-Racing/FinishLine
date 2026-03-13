@@ -1210,7 +1210,6 @@ describe('Reimbursement Requests', () => {
 
       expect(updatedMaterial).not.toBeNull();
       expect(updatedMaterial!.status).toBe('READY_TO_ORDER');
-      expect(updatedMaterial!.reimbursementRequestId).toBe(rr.reimbursementRequestId);
     });
 
     test('Materials are updated to ORDERED when RR is marked as pending finance', async () => {
@@ -1351,63 +1350,6 @@ describe('Reimbursement Requests', () => {
       expect(updatedMaterial2!.status).toBe('ORDERED');
     });
 
-    test('Cannot create RR with material that is already linked to another RR', async () => {
-      await ReimbursementRequestService.createReimbursementRequest(
-        createdUser,
-        createdVendor.vendorId,
-        createdIndexCode.indexCodeId,
-        [],
-        [
-          {
-            materialId: material.materialId,
-            reason: {
-              carNumber: 1,
-              projectNumber: 1,
-              workPackageNumber: 0
-            },
-            cost: 10000,
-            refundSources: [
-              {
-                indexCode: createdIndexCode,
-                amount: 100
-              }
-            ]
-          }
-        ],
-        createdAccountCode.accountCodeId,
-        100,
-        org
-      );
-
-      await expect(
-        ReimbursementRequestService.createReimbursementRequest(
-          createdUser,
-          createdVendor.vendorId,
-          createdIndexCode.indexCodeId,
-          [],
-          [
-            {
-              materialId: material.materialId,
-              reason: {
-                carNumber: 1,
-                projectNumber: 1,
-                workPackageNumber: 0
-              },
-              cost: 10000,
-              refundSources: [
-                {
-                  indexCode: createdIndexCode,
-                  amount: 100
-                }
-              ]
-            }
-          ],
-          createdAccountCode.accountCodeId,
-          100,
-          org
-        )
-      ).rejects.toThrow(new HttpException(400, 'Material is already linked to another reimbursement request'));
-    });
   });
 
   describe('Editing a reimbursement request', () => {

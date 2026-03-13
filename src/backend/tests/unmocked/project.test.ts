@@ -3,18 +3,16 @@ import { createTestReimbursementRequest, resetUsers } from '../test-utils.js';
 import { Organization, User } from '@prisma/client';
 import BillOfMaterials from '../../src/services/boms.services.js';
 import Decimal from 'decimal.js';
-import { MaterialStatus, ReimbursementRequest } from 'shared';
+import { MaterialStatus } from 'shared';
 import { NotFoundException } from '../../src/utils/errors.utils.js';
 
 describe('Material Tests', () => {
   let org: Organization;
-  let reimbursementRequest: ReimbursementRequest;
 
   let createdUser: User;
 
   beforeEach(async () => {
     const result = await createTestReimbursementRequest();
-    reimbursementRequest = result.rr;
     org = result.organization;
     createdUser = result.user;
   });
@@ -43,12 +41,7 @@ describe('Material Tests', () => {
         'lalsd',
         new Decimal(5),
         10,
-        50,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        reimbursementRequest.reimbursementRequestId
+        50
       );
 
       expect(material.name).toEqual('100k Resistor');
@@ -59,38 +52,6 @@ describe('Material Tests', () => {
       expect(material.manufacturerName).toEqual('Digikey');
       expect(material.manufacturerPartNumber).toEqual('lalsd');
       expect(material.quantity?.toString()).toEqual('5');
-      expect(material.reimbursementRequest?.reimbursementRequestId).toEqual(reimbursementRequest.reimbursementRequestId);
-    });
-
-    test('Fails on invalid reimbursement request id', async () => {
-      const materialType = await BillOfMaterials.createMaterialType('Resistor', createdUser, org);
-      const manufacturer = await BillOfMaterials.createManufacturer(createdUser, 'Digikey', org);
-      await expect(
-        async () =>
-          await BillOfMaterials.createMaterial(
-            createdUser,
-            '100k Resistor',
-            MaterialStatus.ReadyToOrder,
-            materialType.name,
-            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            {
-              carNumber: 0,
-              projectNumber: 1,
-              workPackageNumber: 0
-            },
-            org,
-            manufacturer.name,
-            'lalsd',
-            new Decimal(5),
-            10,
-            50,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            'invalid'
-          )
-      ).rejects.toThrow(new NotFoundException('Reimbursement Request', 'invalid'));
     });
   });
 
@@ -138,11 +99,7 @@ describe('Material Tests', () => {
         new Decimal(10),
         50,
         500,
-        'Test notes',
-        undefined,
-        undefined,
-        undefined,
-        reimbursementRequest.reimbursementRequestId
+        'Test notes'
       );
 
       const material2 = await BillOfMaterials.createMaterial(
@@ -182,7 +139,6 @@ describe('Material Tests', () => {
 
       expect(copiedMat1.status).toBe('NOT_READY_TO_ORDER');
       expect(copiedMat1.userCreatedId).toBe(createdUser.userId);
-      expect(copiedMat1.reimbursementRequestId).toBeNull();
       expect(copiedMat1.assemblyId).toBeNull();
 
       expect(copiedMat1.name).toBe('100uF Capacitor');
@@ -192,7 +148,6 @@ describe('Material Tests', () => {
       expect(copiedMat1.notes).toBe('Test notes');
 
       expect(copiedMat2.status).toBe('NOT_READY_TO_ORDER');
-      expect(copiedMat2.reimbursementRequestId).toBeNull();
     });
 
     test('Fails when material does not exist', async () => {
@@ -208,7 +163,7 @@ describe('Material Tests', () => {
   });
 
   describe('Edit a material', () => {
-    test('Updates the reimbursement request when originally undefined', async () => {
+    test('Successfully edits a material', async () => {
       const materialType = await BillOfMaterials.createMaterialType('Resistor', createdUser, org);
       const manufacturer = await BillOfMaterials.createManufacturer(createdUser, 'Digikey', org);
       const oldMaterial = await BillOfMaterials.createMaterial(
@@ -229,49 +184,14 @@ describe('Material Tests', () => {
         10,
         50
       );
-
-      expect(oldMaterial.reimbursementRequest?.reimbursementRequestId).toBeUndefined();
 
       const newMaterial = await BillOfMaterials.editMaterial(
         createdUser,
         oldMaterial.materialId,
-        '100k Resistor',
+        '100k Resistor Updated',
         MaterialStatus.ReadyToOrder,
         materialType.name,
         'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        org,
-        manufacturer.name,
-        'lalsd',
-        new Decimal(5),
-        10,
-        50,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        reimbursementRequest.reimbursementRequestId
-      );
-
-      expect(newMaterial.reimbursementRequest?.reimbursementRequestId).not.toEqual(
-        oldMaterial.reimbursementRequest?.reimbursementRequestId
-      );
-      expect(newMaterial.reimbursementRequest?.reimbursementRequestId).toEqual(reimbursementRequest.reimbursementRequestId);
-    });
-
-    test('Fails on invalid reimbursement request id', async () => {
-      const materialType = await BillOfMaterials.createMaterialType('Resistor', createdUser, org);
-      const manufacturer = await BillOfMaterials.createManufacturer(createdUser, 'Digikey', org);
-      const oldMaterial = await BillOfMaterials.createMaterial(
-        createdUser,
-        '100k Resistor',
-        MaterialStatus.ReadyToOrder,
-        materialType.name,
-        'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        {
-          carNumber: 0,
-          projectNumber: 1,
-          workPackageNumber: 0
-        },
         org,
         manufacturer.name,
         'lalsd',
@@ -279,28 +199,8 @@ describe('Material Tests', () => {
         10,
         50
       );
-      await expect(
-        async () =>
-          await BillOfMaterials.editMaterial(
-            createdUser,
-            oldMaterial.materialId,
-            '100k Resistor',
-            MaterialStatus.ReadyToOrder,
-            materialType.name,
-            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            org,
-            manufacturer.name,
-            'lalsd',
-            new Decimal(5),
-            10,
-            50,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            'invalid'
-          )
-      ).rejects.toThrow(new NotFoundException('Reimbursement Request', 'invalid'));
+
+      expect(newMaterial.name).toEqual('100k Resistor Updated');
     });
   });
 });
