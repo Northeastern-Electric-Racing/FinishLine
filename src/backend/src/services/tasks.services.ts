@@ -122,7 +122,7 @@ export default class TasksService {
 
     const newTask = taskTransformer(createdTask);
 
-    await sendSlackTaskAssignedNotificationToUsers(newTask, assignees, organization.organizationId);
+    await sendSlackTaskAssignedNotificationToUsers(newTask, assignees, organization.organizationId, createdBy.userId);
 
     return newTask;
   }
@@ -254,7 +254,7 @@ export default class TasksService {
       })
     );
 
-    await sendSlackTaskAssignedNotificationToUsers(updatedTask, newAssigneeIds, organization.organizationId);
+    await sendSlackTaskAssignedNotificationToUsers(updatedTask, newAssigneeIds, organization.organizationId, user.userId);
 
     return updatedTask;
   }
