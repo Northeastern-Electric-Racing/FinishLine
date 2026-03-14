@@ -157,14 +157,14 @@ reimbursementRequestsRouter.get('/pending-advisor/list', ReimbursementRequestCon
 reimbursementRequestsRouter.post(
   '/pending-advisor/send',
   body('saboNumbers').isArray(),
-  intMinZero(body('saboNumbers.*')),
+  nonEmptyString(body('saboNumbers.*')),
   validateInputs,
   ReimbursementRequestController.sendPendingAdvisorList
 );
 
 reimbursementRequestsRouter.post(
   '/:requestId/set-sabo-number',
-  intMinZero(body('saboNumber')),
+  nonEmptyString(body('saboNumber')),
   validateInputs,
   ReimbursementRequestController.setSaboNumber
 );

@@ -215,8 +215,7 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes,
-        reimbursementRequestId
+        notes
       } = req.body;
       const wbsNum = validateWBS(req.params.wbsNum as string);
       const material = await BillOfMaterialsService.createMaterial(
@@ -235,8 +234,7 @@ export default class ProjectsController {
         notes,
         assemblyId,
         pdmFileName,
-        unitName,
-        reimbursementRequestId
+        unitName
       );
       res.status(200).json(material);
     } catch (error: unknown) {
@@ -394,8 +392,7 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes,
-        reimbursementRequestId
+        notes
       } = req.body;
       const updatedMaterial = await BillOfMaterialsService.editMaterial(
         req.currentUser,
@@ -413,8 +410,7 @@ export default class ProjectsController {
         notes,
         unitName,
         assemblyId,
-        pdmFileName,
-        reimbursementRequestId
+        pdmFileName
       );
       res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
