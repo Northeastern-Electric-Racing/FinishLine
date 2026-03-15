@@ -1160,30 +1160,36 @@ const EventModal: React.FC<BaseEventModalProps> = ({
           {/* Notification Section */}
           {selectedEventType && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <NotificationsIcon
-                sx={{ color: selectedEventType.sendSlackNotifications ? 'text.secondary' : 'text.disabled' }}
-              />
+              <NotificationsIcon sx={{ color: 'text.secondary' }} />
               <Tooltip
                 arrow
                 placement="right"
                 title={
                   !selectedEventType.sendSlackNotifications
                     ? 'Slack notifications are disabled for this event type.'
-                    : !selectedTeams.length && !workPackageIds.length
-                      ? ''
-                      : 'Slack notifications will be sent for this event.'
+                    : selectedTeams.length || workPackageIds.length
+                      ? 'Slack notifications will be sent for this event.'
+                      : ''
                 }
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'default' }}>
-                  <NERSwitch checked={selectedEventType.sendSlackNotifications} disabled />
-                  {selectedEventType.sendSlackNotifications && !selectedTeams.length && !workPackageIds.length ? (
+                  <Typography variant="body2" color={'text.disabled'} fontWeight={500}>
+                    {selectedEventType.sendSlackNotifications ? 'On' : 'Off'}
+                  </Typography>
+                  {selectedEventType.sendSlackNotifications && !selectedTeams.length && !workPackageIds.length && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <WarningAmberIcon sx={{ color: 'error.main', fontSize: 18 }} />
                       <Typography variant="body2" color="error.main">
-                        Add a team or work package to send notifications
+                        Add{' '}
+                        {selectedEventType.teams && selectedEventType.workPackage
+                          ? 'a team or work package'
+                          : selectedEventType.teams
+                            ? 'a team'
+                            : 'a work package'}{' '}
+                        to send notifications
                       </Typography>
                     </Box>
-                  ) : null}
+                  )}
                 </Box>
               </Tooltip>
             </Box>
