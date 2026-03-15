@@ -100,7 +100,12 @@ export const getProjectPreviewQueryArgs = (organizationId: string) =>
       abbreviation: true,
       teams: {
         select: {
-          teamType: true,
+          teamType: {
+            select: {
+              teamTypeId: true,
+              name: true
+            }
+          },
           teamId: true,
           teamName: true
         }
@@ -133,7 +138,12 @@ export const getProjectOverviewQueryArgs = (organizationId: string) =>
       abbreviation: true,
       teams: {
         select: {
-          teamType: true,
+          teamType: {
+            select: {
+              teamTypeId: true,
+              name: true
+            }
+          },
           teamId: true,
           teamName: true
         }
