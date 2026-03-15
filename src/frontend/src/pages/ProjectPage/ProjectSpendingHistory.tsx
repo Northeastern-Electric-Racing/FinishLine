@@ -75,7 +75,7 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
       budgetRemaining,
       budgetUsedPercentage
     };
-  }, [project, reimbursementRequests]);
+  }, [project, reimbursementRequests, wbsNum]);
 
   const columns: GridColDef[] = [
     {
