@@ -122,7 +122,8 @@ export default class TasksService {
 
     const newTask = taskTransformer(createdTask);
 
-    await sendSlackTaskAssignedNotificationToUsers(newTask, assignees, organization.organizationId, createdBy.userId);
+    const nonSelfAssigneeIds = assignees.filter((id) => id !== createdBy.userId);
+    await sendSlackTaskAssignedNotificationToUsers(newTask, nonSelfAssigneeIds, organization.organizationId);
 
     return newTask;
   }
@@ -254,7 +255,8 @@ export default class TasksService {
       })
     );
 
-    await sendSlackTaskAssignedNotificationToUsers(updatedTask, newAssigneeIds, organization.organizationId, user.userId);
+    const nonSelfAssigneeIds = newAssigneeIds.filter((id) => id !== user.userId);
+    await sendSlackTaskAssignedNotificationToUsers(updatedTask, nonSelfAssigneeIds, organization.organizationId);
 
     return updatedTask;
   }
