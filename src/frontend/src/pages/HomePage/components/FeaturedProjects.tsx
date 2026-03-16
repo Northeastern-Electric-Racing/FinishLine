@@ -3,10 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import FeaturedProjectsCard from './FeaturedProjectsCard';
 import { useFeaturedProjects } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
-import { wbsPipe } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
