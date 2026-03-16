@@ -8,15 +8,24 @@ interface CreateLinkTypeModalProps {
   open: boolean;
   handleClose: () => void;
   linkTypes: LinkType[];
+  isOnGuestHomePage?: boolean;
 }
 
-const CreateLinkTypeModal = ({ open, handleClose, linkTypes }: CreateLinkTypeModalProps) => {
+const CreateLinkTypeModal = ({ open, handleClose, linkTypes, isOnGuestHomePage }: CreateLinkTypeModalProps) => {
   const { isLoading, isError, error, mutateAsync } = useCreateLinkType();
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  return <LinkTypeFormModal open={open} handleClose={handleClose} onSubmit={mutateAsync} linkTypes={linkTypes} />;
+  return (
+    <LinkTypeFormModal
+      open={open}
+      handleClose={handleClose}
+      onSubmit={mutateAsync}
+      linkTypes={linkTypes}
+      isOnGuestHomePage={isOnGuestHomePage}
+    />
+  );
 };
 
 export default CreateLinkTypeModal;

@@ -599,16 +599,17 @@ model Work_Package {
 }
 
 model Link_Type {
-  id             String       @id @default(uuid())
-  name           String
-  dateCreated    DateTime     @default(now())
-  iconName       String
-  required       Boolean
-  creatorId      String
-  creator        User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links          Link[]       @relation(name: "linkTypes")
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  id                String       @id @default(uuid())
+  name              String
+  dateCreated       DateTime     @default(now())
+  iconName          String
+  required          Boolean
+  creatorId         String
+  creator           User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links             Link[]       @relation(name: "linkTypes")
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [organizationId])
+  isOnGuestHomePage Boolean      @default(false)
 
   @@unique([name, organizationId], name: "uniqueLinkType")
   @@index([organizationId])
@@ -1392,8 +1393,6 @@ model Organization {
   advisor                                User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
   advisorId                              String?
   description                            String    @default("")
-  applyInterestImageId                   String?
-  exploreAsGuestImageId                  String?
   newMemberImageId                       String?
   logoImageId                            String?
   slackWorkspaceId                       String?
@@ -1402,6 +1401,8 @@ model Organization {
   partReviewSampleImageId                String?
   partReviewGuideLink                    String?
   sponsorshipNotificationsSlackChannelId String?
+  platformDescription                    String    @default("")
+  platformLogoImageId                    String?
 
   // Relation references
   wbsElements              WBS_Element[]

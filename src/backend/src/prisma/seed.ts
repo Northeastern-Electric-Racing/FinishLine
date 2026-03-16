@@ -125,10 +125,11 @@ const performSeed: () => Promise<void> = async () => {
       userCreatedId: thomasEmrax.userId,
       description:
         'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).',
-      applyInterestImageId: '1_iak6ord4JP9TcR1sOYopyEs6EjTKQpw',
-      exploreAsGuestImageId: '1wRes7V_bMm9W7_3JCIDXYkMUiy6B3wRI',
       applicationLink:
-        'https://docs.google.com/forms/d/e/1FAIpQLSeCvG7GqmZm_gmSZiahbVTW9ZFpEWG0YfGQbkSB_whhHzxXpA/closedform'
+        'https://docs.google.com/forms/d/e/1FAIpQLSeCvG7GqmZm_gmSZiahbVTW9ZFpEWG0YfGQbkSB_whhHzxXpA/closedform',
+      platformDescription:
+        'Finishline is a Project Management Dashboard developed by the Software Team at Northeastern Electric Racing.',
+      platformLogoImageId: '1auQO3GYydZOo1-vCn0D2iyCfaxaVFssx'
     }
   });
 
@@ -277,6 +278,7 @@ const performSeed: () => Promise<void> = async () => {
   const pearl = await createUser(dbSeedAllUsers.pearl, RoleEnum.LEADERSHIP, organizationId);
   const larry = await createUser(dbSeedAllUsers.larry, RoleEnum.LEADERSHIP, organizationId);
   const mrsPuff = await createUser(dbSeedAllUsers.mrsPuff, RoleEnum.LEADERSHIP, organizationId);
+  await createUser(dbSeedAllUsers.guestUser, RoleEnum.GUEST, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', ner);
 
@@ -380,21 +382,15 @@ const performSeed: () => Promise<void> = async () => {
   const mechanical = await TeamsService.createTeamType(
     batman,
     'Mechanical',
-    'YouTubeIcon',
+    'Construction',
     'This is the mechanical team',
     ner
   );
-  const software = await TeamsService.createTeamType(
-    thomasEmrax,
-    'Software',
-    'InstagramIcon',
-    'This is the software team',
-    ner
-  );
+  const software = await TeamsService.createTeamType(thomasEmrax, 'Software', 'Code', 'This is the software team', ner);
   const electrical = await TeamsService.createTeamType(
     cyborg,
     'Electrical',
-    'SettingsIcon',
+    'ElectricBolt',
     'This is the electrical team',
     ner
   );
@@ -579,15 +575,22 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Link Types */
-  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'description', true, ner);
+  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'description', true, ner, false);
 
-  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'bar_chart', true, ner);
+  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'bar_chart', true, ner, false);
 
-  const mainWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Website', 'bar_chart', true, ner);
+  const mainWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Website', 'bar_chart', true, ner, false);
 
-  const instagramWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Instagram', 'bar_chart', true, ner);
+  const instagramWebsiteLinkType = await ProjectsService.createLinkType(
+    batman,
+    'NER Instagram',
+    'bar_chart',
+    true,
+    ner,
+    false
+  );
 
-  await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, ner);
+  await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, ner, false);
 
   /**
    * Projects
