@@ -45,7 +45,8 @@ export const materialTransformer = (material: Prisma.MaterialGetPayload<Material
     notes: material.notes ?? undefined,
     reimbursementRequest: material.reimbursementRequest
       ? reimbursementRequestTransformer(material.reimbursementRequest)
-      : undefined
+      : undefined,
+    isCopied: material.isCopied
   };
 };
 

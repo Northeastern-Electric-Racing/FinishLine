@@ -60,6 +60,7 @@ describe('Material Tests', () => {
       expect(material.manufacturerPartNumber).toEqual('lalsd');
       expect(material.quantity?.toString()).toEqual('5');
       expect(material.reimbursementRequest?.reimbursementRequestId).toEqual(reimbursementRequest.reimbursementRequestId);
+      expect(material.isCopied).toBe(false);
     });
 
     test('Fails on invalid reimbursement request id', async () => {
@@ -193,6 +194,9 @@ describe('Material Tests', () => {
 
       expect(copiedMat2.status).toBe('NOT_READY_TO_ORDER');
       expect(copiedMat2.reimbursementRequestId).toBeNull();
+
+      expect(copiedMat1.isCopied).toBe(true);
+      expect(copiedMat2.isCopied).toBe(true);
     });
 
     test('Fails when material does not exist', async () => {

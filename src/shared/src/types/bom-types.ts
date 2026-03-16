@@ -73,6 +73,7 @@ export interface Material {
   linkUrl: string;
   notes?: string;
   reimbursementRequest?: ReimbursementRequest;
+  isCopied: boolean;
 }
 
 export type MaterialPreview = Omit<
