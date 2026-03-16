@@ -32,6 +32,7 @@ import { userTransformer } from '../transformers/user.transformer.js';
 import { SlackRichTextBlock } from '../services/slack.services.js';
 import UsersService from '../services/users.services.js';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args.js';
+import { create } from 'domain';
 
 interface SlackMessageThread {
   messageInfoId: string;
@@ -148,9 +149,8 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
 
   const { identifier, totalCost, description, vendor } = reimbursementRequest;
   const formattedCost = `$${(totalCost / 100).toFixed(2)}`; // convert from cents to dollars and cents
-  const formattedDesc = description !== '' ? `for ${description} ` : '';
 
-  const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request for ${formattedCost} ${formattedDesc}from ${vendor.name} (ID#: ${identifier}) 💲`;
+  const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request for ${formattedCost} at ${vendor.name} (ID#: ${identifier}) 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
@@ -163,13 +163,23 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
   const messageInfo = await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
   if (!messageInfo) return;
 
-  await prisma.message_Info.create({
+  const createdMessageInfo = await prisma.message_Info.create({
     data: {
       reimbursementRequestId: requestId,
       channelId: messageInfo.channelId,
       timestamp: messageInfo.ts
     }
   });
+
+  const { messageInfoId, channelId, timestamp } = createdMessageInfo;
+
+  // send reimbursement request description in slack thread
+  if (description !== '') {
+    await sendThreadResponse(
+      [{ messageInfoId, channelId, timestamp, changeRequestId: null }],
+      `Description: ${description}`
+    );
+  }
 };
 
 /**
