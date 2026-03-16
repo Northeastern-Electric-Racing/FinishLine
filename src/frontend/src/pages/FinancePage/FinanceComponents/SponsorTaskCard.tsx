@@ -20,6 +20,7 @@ interface SponsorTaskCardProps {
   showDoneCheckbox?: boolean;
   isExistingTask?: boolean;
   defaultAssigneeName?: string;
+  canEdit?: boolean;
 }
 
 const SponsorTaskCard: React.FC<SponsorTaskCardProps> = ({
@@ -30,7 +31,8 @@ const SponsorTaskCard: React.FC<SponsorTaskCardProps> = ({
   onRemove,
   showDoneCheckbox = false,
   isExistingTask = false,
-  defaultAssigneeName
+  defaultAssigneeName,
+  canEdit = true
 }) => {
   const doneValue = useWatch({ control, name: `${fieldPrefix}.done` });
   const isDone = !!doneValue;
@@ -81,16 +83,20 @@ const SponsorTaskCard: React.FC<SponsorTaskCardProps> = ({
               />
             )}
           />
-          <IconButton size="small" onClick={onRemove}>
-            <RemoveCircle sx={{ fontSize: 20 }} />
-          </IconButton>
+          {canEdit && (
+            <IconButton size="small" onClick={onRemove}>
+              <RemoveCircle sx={{ fontSize: 20 }} />
+            </IconButton>
+          )}
         </Box>
       ) : (
-        <Box sx={{ position: 'absolute', top: 4, right: 4 }}>
-          <IconButton size="small" onClick={onRemove}>
-            <RemoveCircleOutlineIcon sx={{ color: 'white', fontSize: 20 }} />
-          </IconButton>
-        </Box>
+        canEdit && (
+          <Box sx={{ position: 'absolute', top: 4, right: 4 }}>
+            <IconButton size="small" onClick={onRemove}>
+              <RemoveCircleOutlineIcon sx={{ color: 'white', fontSize: 20 }} />
+            </IconButton>
+          </Box>
+        )
       )}
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 1.5 }}>
         <Box sx={{ flex: '1 1 180px', minWidth: 0 }}>

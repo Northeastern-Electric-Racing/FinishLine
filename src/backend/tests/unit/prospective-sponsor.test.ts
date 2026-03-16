@@ -3,7 +3,7 @@ import ProspectiveSponsorServices from '../../src/services/prospective-sponsor.s
 import FinanceServices from '../../src/services/finance.services.js';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin } from '../test-data/users.test-data.js';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
+import { createFinanceTeamAndLead, createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import { FirstContactMethod, ProspectiveSponsorStatus } from 'shared';
 
@@ -627,7 +627,7 @@ describe('Prospective Sponsor Tests', () => {
   });
 
   describe('Delete Prospective Sponsor', () => {
-    it('Fails if user is not a head', async () => {
+    it('Fails if user is not a finance lead or head', async () => {
       const head = await createTestUser(batmanAppAdmin, orgId);
       const guest = await createTestUser(wonderwomanGuest, orgId);
 
@@ -646,7 +646,49 @@ describe('Prospective Sponsor Tests', () => {
 
       await expect(
         ProspectiveSponsorServices.deleteProspectiveSponsor(ps.prospectiveSponsorId, guest, organization)
-      ).rejects.toThrow(new AccessDeniedException('Only heads can delete prospective sponsors'));
+      ).rejects.toThrow(new AccessDeniedException('Only finance leads or heads can delete prospective sponsors'));
+    });
+
+    it('Fails if user is a finance team member (not lead)', async () => {
+      await createFinanceTeamAndLead(organization);
+      const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+      const financeMember = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeMember' } });
+
+      const ps = await ProspectiveSponsorServices.createProspectiveSponsor(
+        financeHead,
+        organization,
+        'Acme Corp',
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
+      );
+
+      await expect(
+        ProspectiveSponsorServices.deleteProspectiveSponsor(ps.prospectiveSponsorId, financeMember, organization)
+      ).rejects.toThrow(new AccessDeniedException('Only finance leads or heads can delete prospective sponsors'));
+    });
+
+    it('Succeeds if user is a finance team lead', async () => {
+      await createFinanceTeamAndLead(organization);
+      const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+      const financeLead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeLead' } });
+
+      const ps = await ProspectiveSponsorServices.createProspectiveSponsor(
+        financeHead,
+        organization,
+        'Acme Corp',
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
+      );
+
+      const result = await ProspectiveSponsorServices.deleteProspectiveSponsor(
+        ps.prospectiveSponsorId,
+        financeLead,
+        organization
+      );
+
+      expect(result.prospectiveSponsorId).toBe(ps.prospectiveSponsorId);
+      const deletedPs = await prisma.prospective_Sponsor.findUnique({
+        where: { prospectiveSponsorId: ps.prospectiveSponsorId }
+      });
+      expect(deletedPs?.dateDeleted).not.toBeNull();
     });
 
     it('Fails if prospective sponsor does not exist', async () => {
@@ -891,7 +933,7 @@ describe('Prospective Sponsor Tests', () => {
   });
 
   describe('Accept Prospective Sponsor', () => {
-    it('Fails if user is not a head or contactor', async () => {
+    it('Fails if user is not a finance lead, head, or contactor', async () => {
       const head = await createTestUser(batmanAppAdmin, orgId);
       const guest = await createTestUser(wonderwomanGuest, orgId);
 
@@ -920,7 +962,69 @@ describe('Prospective Sponsor Tests', () => {
           false,
           5000
         )
-      ).rejects.toThrow(new AccessDeniedException('Only heads or the assigned contactor can accept prospective sponsors'));
+      ).rejects.toThrow(
+        new AccessDeniedException('Only finance leads, heads, or the assigned contactor can accept prospective sponsors')
+      );
+    });
+
+    it('Fails if user is a finance team member (not lead or contactor)', async () => {
+      await createFinanceTeamAndLead(organization);
+      const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+      const financeMember = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeMember' } });
+
+      const ps = await ProspectiveSponsorServices.createProspectiveSponsor(
+        financeHead,
+        organization,
+        'Acme Corp',
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
+      );
+
+      await expect(
+        ProspectiveSponsorServices.acceptProspectiveSponsor(
+          financeMember,
+          organization,
+          ps.prospectiveSponsorId,
+          undefined,
+          ['MONETARY'],
+          new Date(),
+          [2024],
+          false
+        )
+      ).rejects.toThrow(
+        new AccessDeniedException('Only finance leads, heads, or the assigned contactor can accept prospective sponsors')
+      );
+    });
+
+    it('Succeeds if user is a finance team lead', async () => {
+      await createFinanceTeamAndLead(organization);
+      const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+      const financeLead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeLead' } });
+      const joinDate = new Date(2024, 6, 1);
+
+      const ps = await ProspectiveSponsorServices.createProspectiveSponsor(
+        financeHead,
+        organization,
+        'Finance Lead Accept Corp',
+        ProspectiveSponsorStatus.NOT_IN_CONTACT
+      );
+
+      const result = await ProspectiveSponsorServices.acceptProspectiveSponsor(
+        financeLead,
+        organization,
+        ps.prospectiveSponsorId,
+        undefined,
+        ['MONETARY'],
+        joinDate,
+        [2024],
+        false,
+        2500
+      );
+
+      expect(result.status).toBe(ProspectiveSponsorStatus.ACCEPTED);
+      const sponsors = await FinanceServices.getAllSponsors(organization);
+      const createdSponsor = sponsors.find((s) => s.name === 'Finance Lead Accept Corp');
+      expect(createdSponsor).toBeDefined();
+      expect(createdSponsor!.sponsorValue).toBe(2500);
     });
 
     it('Succeeds when the contactor accepts', async () => {

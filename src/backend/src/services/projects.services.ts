@@ -584,7 +584,8 @@ export default class ProjectsService {
     name: string,
     iconName: string,
     required: boolean,
-    organization: Organization
+    organization: Organization,
+    isOnGuestHomePage: boolean
   ): Promise<LinkType> {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('Only admins can create link types');
@@ -601,7 +602,8 @@ export default class ProjectsService {
         creatorId: user.userId,
         iconName,
         required,
-        organizationId: organization.organizationId
+        organizationId: organization.organizationId,
+        isOnGuestHomePage
       }
     });
 
@@ -623,6 +625,7 @@ export default class ProjectsService {
     required: boolean,
     submitter: User,
     organization: Organization,
+    isOnGuestHomePage: boolean,
     newName?: string
   ): Promise<LinkType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
@@ -660,7 +663,8 @@ export default class ProjectsService {
       data: {
         name: newName && newName ? newName : linkName,
         iconName,
-        required
+        required,
+        isOnGuestHomePage
       }
     });
     return linkTypeUpdated;

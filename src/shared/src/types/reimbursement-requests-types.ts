@@ -12,7 +12,7 @@ export interface IndexCode {
 export interface ReimbursementRequestRow {
   identifier: number;
   id: string;
-  saboId: number | undefined;
+  saboId: string | undefined;
   amount: number;
   dateSubmitted: Date;
   status: ReimbursementStatusType;
@@ -22,6 +22,7 @@ export interface ReimbursementRequestRow {
   refundSource: IndexCode;
   financeMemberAssigned: User | undefined;
   reimbursementProducts: ReimbursementProduct[];
+  description?: string;
 }
 
 export enum ReimbursementStatusType {
@@ -51,9 +52,10 @@ export interface Receipt {
 export interface ReimbursementRequest {
   reimbursementRequestId: string;
   identifier: number;
-  saboId?: number;
+  saboId?: string;
   dateCreated: Date;
   dateOfExpense?: Date;
+  description?: string;
   reimbursementStatuses: ReimbursementStatus[];
   recipient: User;
   vendor: Vendor;

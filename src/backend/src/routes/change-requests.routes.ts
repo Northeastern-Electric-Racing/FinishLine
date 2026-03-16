@@ -116,4 +116,15 @@ changeRequestsRouter.post(
   ChangeRequestsController.requestCRReview
 );
 
+changeRequestsRouter.post(
+  '/new/leadership',
+  intMinZero(body('wbsNum.carNumber')),
+  intMinZero(body('wbsNum.projectNumber')),
+  intMinZero(body('wbsNum.workPackageNumber')),
+  nonEmptyString(body('leadId')).optional(),
+  nonEmptyString(body('managerId')).optional(),
+  validateInputs,
+  ChangeRequestsController.createLeadershipChangeRequest
+);
+
 export default changeRequestsRouter;

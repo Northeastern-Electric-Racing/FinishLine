@@ -104,10 +104,6 @@ export const validateReimbursementProducts = async (
         if (material.wbsElementId !== wbsElement.wbsElementId) {
           throw new HttpException(400, `Material does not belong to project ${wbsPipe(wbsNum)}`);
         }
-
-        if (!product.id && material.reimbursementRequestId) {
-          throw new HttpException(400, `Material is already linked to another reimbursement request`);
-        }
       }
 
       return {
@@ -185,22 +181,27 @@ export const updateReimbursementProducts = async (
 };
 
 /**
- * Unlinks materials from products that are being deleted
+ * Unlinks materials from products that are being deleted, reverting status if no other active products remain
  * @param products the products being deleted
  */
 const unlinkMaterialsFromDeletedProducts = async (products: Reimbursement_Product[]) => {
+  const deletedProductIds = products.map((p) => p.reimbursementProductId);
   const materialIds = products.filter((p) => p.materialId).map((p) => p.materialId!);
 
-  if (materialIds.length > 0) {
-    await prisma.material.updateMany({
+  for (const materialId of materialIds) {
+    const otherProductCount = await prisma.reimbursement_Product.count({
       where: {
-        materialId: { in: materialIds }
-      },
-      data: {
-        reimbursementRequestId: null,
-        status: 'NOT_READY_TO_ORDER'
+        materialId,
+        dateDeleted: null,
+        reimbursementProductId: { notIn: deletedProductIds }
       }
     });
+    if (otherProductCount === 0) {
+      await prisma.material.update({
+        where: { materialId },
+        data: { status: 'NOT_READY_TO_ORDER' }
+      });
+    }
   }
 };
 
@@ -237,15 +238,24 @@ const updateExistingProducts = async (
       });
 
       if (currentProduct?.materialId && currentProduct.materialId !== product.materialId) {
-        await prisma.material.update({
-          where: { materialId: currentProduct.materialId },
-          data: { reimbursementRequestId: null, status: 'NOT_READY_TO_ORDER' }
+        const otherProductCount = await prisma.reimbursement_Product.count({
+          where: {
+            materialId: currentProduct.materialId,
+            dateDeleted: null,
+            reimbursementProductId: { not: product.id }
+          }
         });
+        if (otherProductCount === 0) {
+          await prisma.material.update({
+            where: { materialId: currentProduct.materialId },
+            data: { status: 'NOT_READY_TO_ORDER' }
+          });
+        }
       }
 
       await prisma.material.update({
         where: { materialId: product.materialId },
-        data: { status: 'READY_TO_ORDER', reimbursementRequestId: currentProduct?.reimbursementRequestId }
+        data: { status: 'READY_TO_ORDER' }
       });
     } else {
       await prisma.reimbursement_Product.update({
@@ -262,10 +272,19 @@ const updateExistingProducts = async (
       });
 
       if (currentProduct?.materialId) {
-        await prisma.material.update({
-          where: { materialId: currentProduct.materialId },
-          data: { reimbursementRequestId: null, status: 'NOT_READY_TO_ORDER' }
+        const otherProductCount = await prisma.reimbursement_Product.count({
+          where: {
+            materialId: currentProduct.materialId,
+            dateDeleted: null,
+            reimbursementProductId: { not: product.id }
+          }
         });
+        if (otherProductCount === 0) {
+          await prisma.material.update({
+            where: { materialId: currentProduct.materialId },
+            data: { status: 'NOT_READY_TO_ORDER' }
+          });
+        }
       }
     }
   }
@@ -400,10 +419,7 @@ export const createReimbursementProducts = async (
     if (product.materialId) {
       await prisma.material.update({
         where: { materialId: product.materialId },
-        data: {
-          status: 'READY_TO_ORDER',
-          reimbursementRequestId
-        }
+        data: { status: 'READY_TO_ORDER' }
       });
     }
     return reimbursementProduct;
@@ -502,6 +518,25 @@ export const isUserLeadOrHeadOfFinanceTeam = async (user: User, organizationId: 
   return user.userId === financeTeam.headId || financeTeam.leads.map((u) => u.userId).includes(user.userId);
 };
 
+/**
+ * Checks if a user is a lead/head of the finance team or has a system role of Head or higher.
+ * Checks isHead first since it doesn't require the finance team to exist.
+ *
+ * @param user the user to check
+ * @param organizationId the organization id
+ * @returns whether the user is a finance lead/head or has Head+ system role
+ */
+export const isUserFinanceLeadOrHead = async (user: User, organizationId: string): Promise<boolean> => {
+  if (await userHasPermission(user.userId, organizationId, isHead)) {
+    return true;
+  }
+  try {
+    return await isUserLeadOrHeadOfFinanceTeam(user, organizationId);
+  } catch {
+    return false;
+  }
+};
+
 export const isCurrentUserOnFinance = (user: Prisma.UserGetPayload<AuthUserQueryArgs>) => {
   return (
     user.teamsAsHead.some((team) => team.financeTeam) ||
@@ -587,13 +622,16 @@ export const validateRefund = async (user: User, refundAmount: number, organizat
  * @param reimbursementRequestId the id of the reimbursement request
  */
 export const updateMaterialStatusesOnPayment = async (reimbursementRequestId: string): Promise<void> => {
-  await prisma.material.updateMany({
-    where: {
-      reimbursementRequestId,
-      dateDeleted: null
-    },
-    data: {
-      status: 'ORDERED'
-    }
+  const products = await prisma.reimbursement_Product.findMany({
+    where: { reimbursementRequestId, dateDeleted: null, materialId: { not: null } }
   });
+
+  const materialIds = products.map((p) => p.materialId!);
+
+  if (materialIds.length > 0) {
+    await prisma.material.updateMany({
+      where: { materialId: { in: materialIds }, dateDeleted: null },
+      data: { status: 'ORDERED' }
+    });
+  }
 };
