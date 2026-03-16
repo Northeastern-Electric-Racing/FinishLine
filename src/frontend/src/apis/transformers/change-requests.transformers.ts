@@ -5,6 +5,7 @@
 
 import {
   ChangeRequest,
+  dbDateToLocalDate,
   ImplementedChange,
   ProjectProposedChanges,
   StandardChangeRequest,
@@ -23,7 +24,7 @@ const transformWorkPackageProposedChanges = (
 ): WorkPackageProposedChanges => {
   return {
     ...workPackageProposedChanges,
-    startDate: new Date(workPackageProposedChanges.startDate)
+    startDate: dbDateToLocalDate(new Date(workPackageProposedChanges.startDate))
   };
 };
 
@@ -43,7 +44,7 @@ export const changeRequestTransformer = (changeRequest: ChangeRequest | Standard
     dateImplemented: changeRequest.dateImplemented ? new Date(changeRequest.dateImplemented) : changeRequest.dateImplemented
   };
   if (data.startDate) {
-    data.startDate = new Date(data.startDate);
+    data.startDate = dbDateToLocalDate(new Date(data.startDate));
   }
   const output = data;
 

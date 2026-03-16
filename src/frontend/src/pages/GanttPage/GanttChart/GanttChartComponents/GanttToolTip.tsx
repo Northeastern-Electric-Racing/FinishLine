@@ -1,6 +1,7 @@
 import { Box, Typography, useTheme } from '@mui/material';
 import { ReactNode } from 'react';
 import { emDashPipe } from '../../../../utils/pipes';
+import { formatDateOnly } from 'shared';
 
 interface GanttToolTipProps {
   yCoordinate: number;
@@ -39,13 +40,13 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
         <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: '0 0 5px 5px', padding: '5px 10px' }}>
           <Box display={'flex'} flexDirection={'row'}>
             <Typography color={theme.palette.text.primary} marginRight={'10px'}>
-              Start: {startDate?.toLocaleDateString() ?? emDashPipe('')}
+              Start: {startDate ? formatDateOnly(startDate) : emDashPipe('')}
             </Typography>
             {upperRightDisplay}
           </Box>
           <Box display={'flex'} flexDirection={'row'}>
             <Typography color={theme.palette.text.primary} marginRight={'10px'}>
-              End: {endDate?.toLocaleDateString() ?? emDashPipe('')}
+              End: {endDate ? formatDateOnly(endDate) : emDashPipe('')}
             </Typography>
             {lowerRightDisplay}
           </Box>

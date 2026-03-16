@@ -1,16 +1,9 @@
-import { Box } from '@mui/material';
-import { useLocation, useHistory } from 'react-router-dom';
-import { useState } from 'react';
+import { Box, Tooltip, IconButton } from '@mui/material';
+import { useLocation, useHistory, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { isGuest, ReimbursementRequest } from 'shared';
 import { ReimbursementProduct, ReimbursementStatusType } from 'shared';
-import {
-  undefinedPipe,
-  fullNamePipe,
-  centsToDollar,
-  datePipe,
-  dateUndefinedPipe,
-  formatSaboIdPipe
-} from '../../../utils/pipes';
+import { undefinedPipe, fullNamePipe, centsToDollar, datePipe, dateUndefinedPipe } from '../../../utils/pipes';
 import {
   createReimbursementRequestRowData,
   cleanReimbursementRequestStatus
@@ -21,6 +14,7 @@ import SidePage from './SidePagePopup';
 import ReimbursementRequestDetails from '../ReimbursementRequestDetailPage/ReimbursementRequestDetails';
 import NERDataGrid, { MapRowResult } from '../../../components/NERDataGrid';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 interface ReimbursementRequestInfoProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -48,7 +42,12 @@ const ReimbursementRequestInfo = ({
   const user = useCurrentUser();
   const history = useHistory();
   const { pathname } = useLocation();
-  const [showSidePage, setShowSidePage] = useState(false);
+  const { id } = useParams<{ id?: string }>();
+  const [showSidePage, setShowSidePage] = useState(!!id);
+
+  useEffect(() => {
+    if (id) setShowSidePage(true);
+  }, [id]);
 
   const displayedReimbursementRequests =
     canViewAllReimbursementRequests && currentTab === 1 && allReimbursementRequests
@@ -156,7 +155,7 @@ const ReimbursementRequestInfo = ({
         headerName: 'SABO ID',
         flex: 0.5,
         minWidth: 100,
-        valueGetter: (params: any) => formatSaboIdPipe(params.row.saboId)
+        valueGetter: (params: any) => params.row.saboId
       },
       {
         field: 'dateSubmitted',
@@ -171,6 +170,28 @@ const ReimbursementRequestInfo = ({
         flex: 0.7,
         minWidth: 180,
         valueGetter: (params: any) => dateUndefinedPipe(params.row.dateSubmittedToSabo)
+      },
+      {
+        field: 'description',
+        headerName: 'Description',
+        flex: 0.7,
+        minWidth: 180,
+        valueGetter: (params: any) => params.row.description,
+        renderCell: (params: any) => {
+          const { description } = params.row;
+
+          if (!description || description.trim() === '') {
+            return null;
+          }
+
+          return (
+            <Tooltip title={description} arrow placement="left">
+              <IconButton size="small" sx={{ p: 0.5, color: 'white' }}>
+                <InfoOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          );
+        }
       }
     );
 
@@ -214,7 +235,8 @@ const ReimbursementRequestInfo = ({
         ('$' + centsToDollar((rowData as any).amount)).toLowerCase().includes(lowercase_query) ||
         ('' + (rowData as any).reimbursementProducts.map((product: any) => product.name))
           .toLowerCase()
-          .includes(lowercase_query)
+          .includes(lowercase_query) ||
+        ('' + (rowData as any).description).toLowerCase().includes(lowercase_query)
       );
     });
   };

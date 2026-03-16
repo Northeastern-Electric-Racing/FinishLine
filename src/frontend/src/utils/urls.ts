@@ -95,6 +95,7 @@ const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
 const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
+const tasksFilter = () => `${tasks()}/filter`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
 
 /**************** Work Packages Endpoints ****************/
@@ -131,6 +132,7 @@ const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
 const changeRequestsCreateBudget = () => `${changeRequestsCreate()}/budget`;
+const changeRequestsCreateLeadership = () => `${changeRequestsCreate()}/leadership`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
 const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/request-review';
@@ -315,6 +317,23 @@ const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/
 const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
 const deleteSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}`;
 const editSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}/edit`;
+const toggleSponsorTaskDone = (sponsorTaskId: string) =>
+  `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/toggle-done`;
+
+/**************** Prospective Sponsors Endpoints ****************/
+const prospectiveSponsorsEndpoint = () => `${API_URL}/prospective-sponsors`;
+const getAllProspectiveSponsors = () => `${prospectiveSponsorsEndpoint()}/`;
+const createProspectiveSponsor = () => `${prospectiveSponsorsEndpoint()}/create`;
+const editProspectiveSponsor = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/edit`;
+const deleteProspectiveSponsor = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/delete`;
+const getProspectiveSponsorTasks = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/tasks`;
+const createProspectiveSponsorTask = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/tasks`;
+const acceptProspectiveSponsor = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/accept`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -328,6 +347,7 @@ const bomGetAssembliesByWbsNum = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbs
 const bomCreateMaterial = (wbsNum: WbsNumber) => `${materialEndpoints()}/${wbsPipe(wbsNum)}/create`;
 const bomEditMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/edit`;
 const bomDeleteMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/delete`;
+const bomCopyMaterials = () => `${materialEndpoints()}/copy`;
 const bomCreateAssembly = (wbsNum: WbsNumber) => `${assemblyEndpoints()}/${wbsPipe(wbsNum)}/create`;
 const bomDeleteAssembly = (assemblyId: string) => `${assemblyEndpoints()}/${assemblyId}/delete`;
 const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${materialId}/assign-assembly`;
@@ -555,6 +575,7 @@ export const apiUrls = {
 
   tasksCreate,
   tasks,
+  tasksFilter,
   editTaskById,
   taskEditStatus,
   editTaskAssignees,
@@ -580,6 +601,7 @@ export const apiUrls = {
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
   changeRequestsCreateBudget,
+  changeRequestsCreateLeadership,
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
   changeRequestRequestReviewer,
@@ -677,6 +699,15 @@ export const apiUrls = {
   financeGetUsersTeamsReimbursementRequests,
   deleteSponsorTier,
   editSponsorTier,
+  toggleSponsorTaskDone,
+
+  getAllProspectiveSponsors,
+  createProspectiveSponsor,
+  editProspectiveSponsor,
+  deleteProspectiveSponsor,
+  getProspectiveSponsorTasks,
+  createProspectiveSponsorTask,
+  acceptProspectiveSponsor,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,
@@ -687,6 +718,7 @@ export const apiUrls = {
   bomCreateMaterial,
   bomEditMaterial,
   bomDeleteMaterial,
+  bomCopyMaterials,
   bomCreateAssembly,
   bomDeleteAssembly,
   bomAssignAssembly,

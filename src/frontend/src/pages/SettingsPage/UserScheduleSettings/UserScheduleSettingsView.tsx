@@ -6,7 +6,7 @@
 import { Grid } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { NERButton } from '../../../components/NERButton';
-import { Availability, Event, getMostRecentAvailabilities, UserScheduleSettings } from 'shared';
+import { Availability, Event, getMostRecentAvailabilities, UserScheduleSettings, formatEventDate } from 'shared';
 import { useEffect, useMemo, useState } from 'react';
 import SingleAvailabilityModal from './Availability/SingleAvailabilityModal';
 import AvailabilityEditModal from './Availability/AvailabilityEditModal';
@@ -38,9 +38,7 @@ const UserScheduleSettingsView = ({
 
   const confirmModalTitle =
     event && firstScheduledDate
-      ? `Update your availability for the ${workPackageNames} Design Review on the week of ${new Date(
-          firstScheduledDate.getTime() - firstScheduledDate.getTimezoneOffset() * -60000
-        ).toLocaleDateString()}`
+      ? `Update your availability for the ${workPackageNames} Design Review on the week of ${formatEventDate(firstScheduledDate)}`
       : '';
 
   const handleConfirm = async (payload: { availability: Availability[] }) => {

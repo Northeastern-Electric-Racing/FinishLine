@@ -207,8 +207,7 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes,
-        reimbursementRequestId
+        notes
       } = req.body;
       const wbsNum = validateWBS(req.params.wbsNum as string);
       const material = await BillOfMaterialsService.createMaterial(
@@ -216,21 +215,36 @@ export default class ProjectsController {
         name,
         status,
         materialTypeName,
+        linkUrl,
+        wbsNum,
+        req.organization,
         manufacturerName,
         manufacturerPartNumber,
         quantity,
         price,
         subtotal,
-        linkUrl,
-        wbsNum,
-        req.organization,
         notes,
         assemblyId,
-        pdmFileName === '' ? undefined : pdmFileName,
-        unitName,
-        reimbursementRequestId
+        pdmFileName,
+        unitName
       );
       res.status(200).json(material);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async copyMaterialsToProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { materialIds, destinationWbsNum } = req.body;
+
+      const newMaterialIds = await BillOfMaterialsService.copyMaterialsToProject(
+        req.currentUser,
+        materialIds,
+        destinationWbsNum,
+        req.organization
+      );
+      res.status(200).json(newMaterialIds);
     } catch (error: unknown) {
       next(error);
     }
@@ -370,8 +384,7 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes,
-        reimbursementRequestId
+        notes
       } = req.body;
       const updatedMaterial = await BillOfMaterialsService.editMaterial(
         req.currentUser,
@@ -379,18 +392,17 @@ export default class ProjectsController {
         name,
         status,
         materialTypeName,
+        linkUrl,
+        req.organization,
         manufacturerName,
         manufacturerPartNumber,
         quantity,
         price,
         subtotal,
-        linkUrl,
-        req.organization,
         notes,
         unitName,
         assemblyId,
-        pdmFileName === '' ? undefined : pdmFileName,
-        reimbursementRequestId
+        pdmFileName
       );
       res.status(200).json(updatedMaterial);
     } catch (error: unknown) {

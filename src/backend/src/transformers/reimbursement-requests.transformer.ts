@@ -51,6 +51,7 @@ export const reimbursementRequestTransformer = (
     saboId: reimbursementRequest.saboId ?? undefined,
     dateCreated: reimbursementRequest.dateCreated,
     dateOfExpense: reimbursementRequest.dateOfExpense ?? undefined,
+    description: reimbursementRequest.description,
     reimbursementStatuses: reimbursementRequest.reimbursementStatuses.map(reimbursementStatusTransformer),
     recipient: userTransformer(reimbursementRequest.recipient),
     vendor: vendorTransformer(reimbursementRequest.vendor),
@@ -81,7 +82,8 @@ export const reimbursementProductTransformer = (
 ): ReimbursementProduct => {
   return {
     reimbursementProductId: reimbursementProduct.reimbursementProductId,
-    name: reimbursementProduct.name,
+    name: reimbursementProduct.name ?? undefined,
+    materialId: reimbursementProduct.materialId ?? undefined,
     cost: reimbursementProduct.cost,
     reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason),
     refundSources: reimbursementProduct.refundSources.map(refundSourceTransformer)

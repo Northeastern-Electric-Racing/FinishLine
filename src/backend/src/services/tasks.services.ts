@@ -1,7 +1,18 @@
 import { Task_Priority, Task_Status, Organization } from '@prisma/client';
-import { isAdmin, isUnderWordCount, notGuest, Task, TaskCardPreview, WbsNumber, wbsPipe, User } from 'shared';
+import {
+  CalendarTask,
+  FilterTaskArgs,
+  isAdmin,
+  isUnderWordCount,
+  notGuest,
+  Task,
+  TaskCardPreview,
+  WbsNumber,
+  wbsPipe,
+  User
+} from 'shared';
 import prisma from '../prisma/prisma.js';
-import taskTransformer, { taskCardPreviewTransformer } from '../transformers/tasks.transformer.js';
+import taskTransformer, { calendarTaskTransformer, taskCardPreviewTransformer } from '../transformers/tasks.transformer.js';
 import {
   NotFoundException,
   AccessDeniedException,
@@ -13,7 +24,11 @@ import { sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils.j
 import { getUsers, userHasPermission } from '../utils/users.utils.js';
 import { wbsNumOf } from '../utils/utils.js';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
-import { getTaskPreviewQueryArgs, getTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
+import {
+  getCalendarTaskQueryArgs,
+  getTaskPreviewQueryArgs,
+  getTaskQueryArgs
+} from '../prisma-query-args/tasks.query-args.js';
 import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args.js';
 
 export default class TasksService {
@@ -107,7 +122,8 @@ export default class TasksService {
 
     const newTask = taskTransformer(createdTask);
 
-    await sendSlackTaskAssignedNotificationToUsers(newTask, assignees, organization.organizationId);
+    const nonSelfAssigneeIds = assignees.filter((id) => id !== createdBy.userId);
+    await sendSlackTaskAssignedNotificationToUsers(newTask, nonSelfAssigneeIds, organization.organizationId);
 
     return newTask;
   }
@@ -239,7 +255,8 @@ export default class TasksService {
       })
     );
 
-    await sendSlackTaskAssignedNotificationToUsers(updatedTask, newAssigneeIds, organization.organizationId);
+    const nonSelfAssigneeIds = newAssigneeIds.filter((id) => id !== user.userId);
+    await sendSlackTaskAssignedNotificationToUsers(updatedTask, nonSelfAssigneeIds, organization.organizationId);
 
     return updatedTask;
   }
@@ -279,6 +296,66 @@ export default class TasksService {
     });
 
     return deletedTask.taskId;
+  }
+
+  static async getFilteredTasks(filters: FilterTaskArgs, organization: Organization): Promise<CalendarTask[]> {
+    const { memberIds, teamIds, startPeriod, endPeriod } = filters;
+
+    // Validate memberIds if provided
+    if (memberIds && memberIds.length > 0) {
+      const users = await prisma.user.findMany({
+        where: { userId: { in: memberIds }, organizations: { some: { organizationId: organization.organizationId } } }
+      });
+      if (users.length !== memberIds.length) {
+        throw new NotFoundException('User', 'one or more member IDs');
+      }
+    }
+
+    // Validate teamIds if provided
+    if (teamIds && teamIds.length > 0) {
+      const teams = await prisma.team.findMany({
+        where: {
+          teamId: { in: teamIds },
+          organizationId: organization.organizationId
+        }
+      });
+      if (teams.length !== teamIds.length) {
+        throw new NotFoundException('Team', 'one or more team IDs');
+      }
+    }
+
+    const orFilters: any[] = [];
+    if (memberIds && memberIds.length > 0) {
+      orFilters.push({ assignees: { some: { userId: { in: memberIds } } } });
+      orFilters.push({ createdByUserId: { in: memberIds } });
+    }
+    if (teamIds && teamIds.length > 0) {
+      orFilters.push({
+        wbsElement: {
+          project: {
+            teams: { some: { teamId: { in: teamIds } } }
+          }
+        }
+      });
+    }
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        dateDeleted: null,
+        deadline: {
+          gte: startPeriod,
+          lte: endPeriod
+        },
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        },
+        ...(orFilters.length > 0 ? { OR: orFilters } : {})
+      },
+      ...getCalendarTaskQueryArgs(organization.organizationId)
+    });
+
+    return tasks.map(calendarTaskTransformer);
   }
 
   static async getOverdueTasksByTeamLeadership(userId: string, organization: Organization): Promise<TaskCardPreview[]> {

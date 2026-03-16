@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { GridRenderCellParams } from '@mui/x-data-grid';
 import type { MapRowResult } from '../../components/NERDataGrid';
 import type { MouseEvent } from 'react';
-import { Box, IconButton, Checkbox, Tooltip } from '@mui/material';
+import { Box, IconButton, Checkbox, Tooltip, Popover, Typography, Link } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useEditSponsor, useGetAllSponsors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
@@ -14,8 +14,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditSponsorModal from './FinanceComponents/EditSponsorPage';
 import DeleteSponsorModal from './FinanceComponents/DeleteSponsor';
 import SidePage from './FinanceComponents/SidePagePopup';
-import { isAtLeastRank, RoleEnum, Sponsor } from 'shared';
-import SponsorTasksModal from './FinanceComponents/SponsorTasksModal';
+import { isAtLeastRank, RoleEnum, Sponsor, ContactInfo } from 'shared';
+import SponsorTasksModalWrapper from './FinanceComponents/SponsorTasksModalWrapper';
 import SidePagePopup from './FinanceComponents/SidePagePopup';
 import NERDataGrid from '../../components/NERDataGrid';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -29,6 +29,8 @@ const SponsorsTable = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
   const [isTasksModalOpen, setIsTasksModalOpen] = useState(false);
+  const [contactAnchorEl, setContactAnchorEl] = useState<HTMLElement | null>(null);
+  const [selectedContact, setSelectedContact] = useState<ContactInfo | null>(null);
   const currentUser = useCurrentUser();
   const { mutateAsync: editSponsorMutateAsync } = useEditSponsor();
 
@@ -50,6 +52,35 @@ const SponsorsTable = () => {
     setIsTasksModalOpen(false);
   };
 
+  const sponsorToInlinePayload = (sponsor: Sponsor, overrides: Partial<Sponsor>) => ({
+    sponsorId: sponsor.sponsorId,
+    name: sponsor.name,
+    activeStatus: sponsor.activeStatus,
+    valueTypes: sponsor.valueTypes,
+    sponsorValue: sponsor.sponsorValue,
+    joinDate: sponsor.joinDate,
+    activeYears: sponsor.activeYears,
+    sponsorTierId: sponsor.tier?.sponsorTierId,
+    taxExempt: sponsor.taxExempt,
+    contactName: sponsor.contact.name,
+    contactEmail: sponsor.contact.email,
+    contactPhone: sponsor.contact.phone,
+    contactPosition: sponsor.contact.position,
+    sponsorTasks: sponsor.sponsorTasks.map((t) => ({
+      sponsorTaskId: t.sponsorTaskId,
+      dueDate: t.dueDate,
+      notifyDate: t.notifyDate,
+      assigneeUserId: t.assignee?.userId,
+      notes: t.notes,
+      done: t.done
+    })),
+    discountCode: sponsor.discountCode,
+    sponsorNotes: sponsor.sponsorNotes,
+    stockDescription: sponsor.stockDescription,
+    discountDescription: sponsor.discountDescription,
+    ...overrides
+  });
+
   const columns = [
     { field: 'name', headerName: 'Sponsor', flex: 1, minWidth: 50 },
     {
@@ -64,30 +95,67 @@ const SponsorsTable = () => {
           checked={!!p.value}
           onClick={async (e: MouseEvent<HTMLElement>) => {
             e.stopPropagation();
-            await editSponsorMutateAsync({
-              ...(p.row as MapRowResult<Sponsor>).raw,
-              activeStatus: !p.value
-            } as unknown as Parameters<typeof editSponsorMutateAsync>[0]);
+            const sponsor = (p.row as MapRowResult<Sponsor>).raw;
+            if (!sponsor) return;
+            await editSponsorMutateAsync(sponsorToInlinePayload(sponsor, { activeStatus: !p.value }));
           }}
         />
       )
     },
-    { field: 'sponsorContact', headerName: 'Contact', flex: 1, minWidth: 50 },
+    {
+      field: 'contact',
+      headerName: 'Contact',
+      flex: 1,
+      minWidth: 50,
+      renderCell: (p: GridRenderCellParams<any, MapRowResult<Sponsor>>) => {
+        const contact = (p.row as MapRowResult<Sponsor>).raw?.contact;
+        if (!contact) return null;
+        const hasDetails = !!(contact.email || contact.phone || contact.position);
+        return (
+          <span
+            onClick={
+              hasDetails
+                ? (e: React.MouseEvent<HTMLElement>) => {
+                    e.stopPropagation();
+                    setContactAnchorEl(e.currentTarget);
+                    setSelectedContact(contact);
+                  }
+                : undefined
+            }
+            style={{ cursor: hasDetails ? 'pointer' : 'default', textDecoration: hasDetails ? 'underline' : 'none' }}
+          >
+            {contact.name}
+          </span>
+        );
+      }
+    },
     {
       field: 'tier',
       headerName: 'Sponsor Tier',
       flex: 1,
       minWidth: 100,
-      renderCell: (params: GridRenderCellParams<any, MapRowResult<Sponsor>>) => (
-        <SponsorTierPill tier={(params.row as MapRowResult<Sponsor>).raw!.tier} />
-      )
+      renderCell: (params: GridRenderCellParams<string, MapRowResult<Sponsor>>) => {
+        const tier = (params.row as MapRowResult<Sponsor>).raw?.tier;
+        return tier ? <SponsorTierPill tier={tier} /> : <Typography variant="body2">—</Typography>;
+      }
+    },
+    {
+      field: 'valueTypes',
+      headerName: 'Type',
+      flex: 1,
+      minWidth: 80,
+      renderCell: (p: GridRenderCellParams<string[], MapRowResult<Sponsor>>) => {
+        const types = (p.row as MapRowResult<Sponsor>).raw?.valueTypes ?? [];
+        return types.map((t: string) => t.charAt(0) + t.slice(1).toLowerCase()).join(', ');
+      }
     },
     {
       field: 'sponsorValue',
       headerName: 'Sponsor Value',
       flex: 1,
       minWidth: 50,
-      renderCell: (p: GridRenderCellParams<number, MapRowResult<Sponsor>>) => `$${p.value}`
+      renderCell: (p: GridRenderCellParams<number | undefined, MapRowResult<Sponsor>>) =>
+        p.value != null ? `$${p.value}` : '\u2014'
     },
     {
       field: 'joinDate',
@@ -97,7 +165,7 @@ const SponsorsTable = () => {
       renderCell: (p: GridRenderCellParams<string | null, MapRowResult<Sponsor>>) =>
         datePipe(new Date(String(p.value ?? '')))
     },
-    { field: 'discountCode', headerName: 'Discount', flex: 1, minWidth: 50 },
+    { field: 'discountCode', headerName: 'Discount Code', flex: 1, minWidth: 50 },
     {
       field: 'taxExempt',
       headerName: 'Tax Exempt?',
@@ -111,10 +179,9 @@ const SponsorsTable = () => {
             checked={!!p.value}
             onClick={(e: MouseEvent<HTMLElement>) => {
               e.stopPropagation();
-              editSponsorMutateAsync({
-                ...(p.row as MapRowResult<Sponsor>).raw,
-                taxExempt: !p.value
-              } as unknown as Parameters<typeof editSponsorMutateAsync>[0]);
+              const sponsor = (p.row as MapRowResult<Sponsor>).raw;
+              if (!sponsor) return;
+              editSponsorMutateAsync(sponsorToInlinePayload(sponsor, { taxExempt: !p.value }));
             }}
           />
         );
@@ -262,14 +329,46 @@ const SponsorsTable = () => {
         canEditRow={() => canEditSponsors}
       />
       <CreateSponsorPage showPage={showAddSponsor} handleClose={() => setShowAddSponsor(false)} />
-      {selectedSponsor && (
-        <SidePagePopup
-          showPage={isTasksModalOpen}
-          handleClose={closeTasksModal}
-          title={`Tasks for ${selectedSponsor?.name}`}
-          component={<SponsorTasksModal onClose={closeTasksModal} sponsor={selectedSponsor} />}
-        />
-      )}
+      <SidePagePopup
+        showPage={isTasksModalOpen && !!selectedSponsor}
+        handleClose={closeTasksModal}
+        title={selectedSponsor ? `Tasks for ${selectedSponsor.name}` : ''}
+        component={
+          selectedSponsor ? <SponsorTasksModalWrapper onClose={closeTasksModal} sponsor={selectedSponsor} /> : <></>
+        }
+      />
+
+      <Popover
+        open={!!contactAnchorEl}
+        anchorEl={contactAnchorEl}
+        onClose={() => {
+          setContactAnchorEl(null);
+          setSelectedContact(null);
+        }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        {selectedContact && (
+          <Box sx={{ p: 2, minWidth: 200 }}>
+            <Typography fontWeight="bold">{selectedContact.name}</Typography>
+            {selectedContact.position && (
+              <Typography variant="body2" color="text.secondary">
+                {selectedContact.position}
+              </Typography>
+            )}
+            {selectedContact.email && (
+              <Typography variant="body2" sx={{ mt: 0.5 }}>
+                <Link href={`mailto:${selectedContact.email}`}>{selectedContact.email}</Link>
+              </Typography>
+            )}
+            {selectedContact.phone && (
+              <Typography variant="body2" sx={{ mt: 0.5 }}>
+                <Link href={`tel:${selectedContact.phone}`}>{selectedContact.phone}</Link>
+              </Typography>
+            )}
+          </Box>
+        )}
+      </Popover>
     </Box>
   );
 };
