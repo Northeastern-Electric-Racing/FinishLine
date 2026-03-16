@@ -31,6 +31,7 @@ import { Prisma } from '@prisma/client';
 import { userTransformer } from '../transformers/user.transformer.js';
 import { SlackRichTextBlock } from '../services/slack.services.js';
 import UsersService from '../services/users.services.js';
+import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args.js';
 
 interface SlackMessageThread {
   messageInfoId: string;
@@ -127,8 +128,9 @@ export const sendSlackTaskAssignedNotification = async (
 
 /**
  * Send a notification to users that a reimbursement request is created on Slack
- * @param requestId the id if the reimbursement request
+ * @param requestId the id of the reimbursement request
  * @param submitterId the id of the user who created the reimbursement request
+ * @param organizationId the organization id of the current user
  */
 export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = async (
   requestId: string,
@@ -137,6 +139,16 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
   organizationId: string
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
+
+  const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+    where: { reimbursementRequestId: requestId },
+    ...getReimbursementRequestQueryArgs(organizationId)
+  });
+
+  if (!reimbursementRequest) throw new HttpException(500, 'Reimbursement request does not exist!');
+
+  const { totalCost, description, vendor } = reimbursementRequest;
+  const formattedTotalCost = `$${(totalCost / 100).toFixed(2)}`; // convert from cents to dollars and limit to 2 decimal places
 
   const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request (ID#: ${requestIdentifier}) 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
