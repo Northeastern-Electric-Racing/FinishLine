@@ -42,7 +42,7 @@ const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
               >
                 {wbsNamePipe(singleProject)}
               </Typography>
-              {activeWorkPackages[0] ? (
+              {activeWorkPackages[0]?.stage ? (
                 <Chip
                   size="medium"
                   variant="filled"
@@ -52,7 +52,7 @@ const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
                     bgcolor: alpha(theme.palette.primary.main, 0.45),
                     color: theme.palette.primary.light
                   }}
-                  label={activeWorkPackages[0]?.stage}
+                  label={activeWorkPackages[0].stage}
                 />
               ) : null}
             </Box>
@@ -77,21 +77,25 @@ const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
           </Box>
         </Stack>
         <Typography>{singleProject.summary}</Typography>
-        <Box alignItems={'center'} display={'flex'} justifyContent={'center'} marginTop={2}>
-          <Link component={RouterLink} to={`/projects/${wbsPipe(project.wbsNum)}`}>
-            <NERButton
-              sx={{
-                backgroundColor: theme.palette.error.main,
-                color: theme.palette.error.contrastText,
-                '&:hover': {
-                  backgroundColor: theme.palette.error.dark
-                }
-              }}
-            >
-              Learn more
-            </NERButton>
-          </Link>
-        </Box>
+        <Link
+          component={RouterLink}
+          to={`/projects/${wbsPipe(project.wbsNum)}`}
+          sx={{ width: '100%', textDecoration: 'none' }}
+        >
+          <NERButton
+            fullWidth
+            sx={{
+              marginTop: 2,
+              backgroundColor: theme.palette.error.main,
+              color: theme.palette.error.contrastText,
+              '&:hover': {
+                backgroundColor: theme.palette.error.dark
+              }
+            }}
+          >
+            Learn more
+          </NERButton>
+        </Link>
       </CardContent>
     </Card>
   );

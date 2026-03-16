@@ -12,6 +12,7 @@ import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import { Box, Stack, useMediaQuery } from '@mui/material';
 import { Error } from '@mui/icons-material';
+import GuestProjectsCard from '../../GuestProjectsPage/GuestProjectsCard';
 
 const NoFeaturedProjectsDisplay: React.FC = () => {
   return (
@@ -51,7 +52,7 @@ const FeaturedProjects: React.FC = () => {
         {featuredProjects.length === 0 ? (
           <NoFeaturedProjectsDisplay />
         ) : (
-          featuredProjects.map((p) => <FeaturedProjectsCard key={wbsPipe(p.wbsNum)} project={p} />)
+          featuredProjects.map((p) => <GuestProjectsCard project={p} />)
         )}
       </Stack>
     </ScrollablePageBlock>
