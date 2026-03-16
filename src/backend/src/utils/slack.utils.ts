@@ -134,7 +134,6 @@ export const sendSlackTaskAssignedNotification = async (
  */
 export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = async (
   requestId: string,
-  requestIdentifier: number,
   submitterId: string,
   organizationId: string
 ): Promise<void> => {
@@ -147,10 +146,11 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
 
   if (!reimbursementRequest) throw new HttpException(500, 'Reimbursement request does not exist!');
 
-  const { totalCost, description, vendor } = reimbursementRequest;
-  const formattedTotalCost = `$${(totalCost / 100).toFixed(2)}`; // convert from cents to dollars and limit to 2 decimal places
+  const { identifier, totalCost, description, vendor } = reimbursementRequest;
+  const formattedCost = `$${(totalCost / 100).toFixed(2)}`; // convert from cents to dollars and cents
+  const formattedDesc = description !== '' ? `for ${description} ` : '';
 
-  const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request (ID#: ${requestIdentifier}) 💲`;
+  const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request for ${formattedCost} ${formattedDesc}from ${vendor.name} (ID#: ${identifier}) 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
