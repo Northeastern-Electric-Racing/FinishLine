@@ -102,8 +102,6 @@ export default class AttendanceService {
         attendees: { connect: { userId: userWithSettings.userId } }
       }
     });
-
-    console.log(`Attendance recorded: ${userWithSettings.firstName} ${userWithSettings.lastName} (${slackUserId})`);
   }
 
   static async closeAttendance(meetingAttendanceId: string): Promise<void> {
@@ -142,20 +140,6 @@ export default class AttendanceService {
     });
   }
 
-  static async cleanupStaleAttendances(organizationId?: string): Promise<void> {
-    const oneHourAgo = new Date(Date.now() - 3600000);
-
-    const staleAttendances = await prisma.meeting_Attendance.findMany({
-      where: {
-        closedAt: null,
-        openedAt: { lt: oneHourAgo },
-        ...(organizationId ? { organizationId } : {})
-      }
-    });
-
-    await Promise.all(staleAttendances.map((a) => AttendanceService.closeAttendance(a.meetingAttendanceId)));
-  }
-
   static async getOngoingAttendance(teamId: string, organization: Organization): Promise<MeetingAttendance | null> {
     const team = await prisma.team.findUnique({ where: { teamId } });
 
@@ -173,8 +157,6 @@ export default class AttendanceService {
 
   static async closeOngoingAttendance(teamId: string, submitter: User, organization: Organization): Promise<void> {
     const team = await prisma.team.findUnique({ where: { teamId } });
-
-    console.log(submitter);
 
     if (!team || team.organizationId !== organization.organizationId) {
       throw new NotFoundException('Team', teamId);

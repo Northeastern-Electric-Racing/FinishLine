@@ -28,7 +28,6 @@ import financeRouter from './src/routes/finance.routes.js';
 import calendarRouter from './src/routes/calendar.routes.js';
 import prospectiveSponsorRouter from './src/routes/prospective-sponsor.routes.js';
 import attendanceRouter from './src/routes/attendance.routes.js';
-import AttendanceService from './src/services/attendance.services.js';
 
 const app = express();
 
@@ -124,7 +123,6 @@ app.use(errorHandler);
 
 // start the server
 app.listen(port, () => {
-  AttendanceService.cleanupStaleAttendances().catch((err) => console.error('Failed to cleanup stale attendances:', err));
   console.log(
     `FinishLine listening at http://localhost:${port}. Currently running in ${isProd ? 'production' : 'development'} mode.`
   );
