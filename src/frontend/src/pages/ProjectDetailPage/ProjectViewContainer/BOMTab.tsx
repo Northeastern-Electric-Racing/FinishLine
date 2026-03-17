@@ -2,8 +2,8 @@ import { Box } from '@mui/system';
 import { MaterialPreview, Project, isGuest } from 'shared';
 import { NERButton } from '../../../components/NERButton';
 import WarningIcon from '@mui/icons-material/Warning';
+import React, { useState } from 'react';
 import { Tooltip, useTheme } from '@mui/material';
-import { useState } from 'react';
 import BOMTableWrapper from './BOM/BOMTableWrapper';
 import CreateMaterialModal from './BOM/MaterialForm/CreateMaterialModal';
 import CreateAssemblyModal from './BOM/AssemblyForm/CreateAssemblyModal';
@@ -20,6 +20,7 @@ import {
   useGetMaterialsForWbsElement
 } from '../../../hooks/bom.hooks';
 import ImportBOMModal from './BOM/ImportBOMModal';
+import BOMCopyConfirmModal from './BOM/MaterialForm/BOMCopyConfirmModal';
 
 export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialPreview) =>
   (currentMaterial.subtotal ?? 0) + accumulator;
@@ -31,8 +32,9 @@ const BOMTab = ({ project }: { project: Project }) => {
   const [showAddAssembly, setShowAddAssembly] = useState(false);
   const [showCopyBOM, setShowCopyBOM] = useState(false);
   const [showImportBOM, setShowImportBOM] = useState(false);
-  const theme = useTheme();
+  const [bomConfirmOpen, setBomConfirmOpen] = useState(false);
 
+  const theme = useTheme();
   const user = useCurrentUser();
 
   const {
@@ -148,6 +150,16 @@ const BOMTab = ({ project }: { project: Project }) => {
               Copy Existing BOM
             </NERButton>
           </Box>
+          <BOMCopyConfirmModal
+            open={bomConfirmOpen}
+            onHide={() => {
+              setBomConfirmOpen(false);
+            }}
+            onSuccess={() => {}}
+            materialsCount={1}
+            sourceProjectName={'Source Project'}
+            currentProjectName={'Target Project'}
+          ></BOMCopyConfirmModal>
           <Box display="flex" gap="20px" alignItems="center">
             <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '8px 14px 8px 14px', borderRadius: '6px' }}>
               Budget: ${project.budget}

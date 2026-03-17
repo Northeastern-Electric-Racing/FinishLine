@@ -2,6 +2,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Button,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -504,19 +505,22 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           )}
         </Grid>
       </Grid>
-      {/*submitText === 'Add' && (
+      {submitText === 'Add' && (
         <Grid item xs={12} sx={{ pl: 0, pr: 0 }}>
           <Box
             sx={{
               pt: 1
             }}
           >
-            <Button
+            {/* <Button
               variant="contained"
               disableElevation
-              onClick={() => {}}
+              onClick={() => {
+                setBomConfirmOpen(true);
+              }}
               sx={{
                 mx: 0,
+                my: 1,
                 textTransform: 'none',
                 bgcolor: '#EF4345',
                 color: (t) => t.palette.getContrastText('#EF4345'),
@@ -524,10 +528,10 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               }}
             >
               COPY FROM EXISTING BOM
-            </Button>
+            </Button> */}
           </Box>
         </Grid>
-      )*/}
+      )}
     </NERFormModal>
   );
 };
