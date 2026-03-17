@@ -141,7 +141,16 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
 
   const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
     where: { reimbursementRequestId: requestId },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      identifier: true,
+      totalCost: true,
+      description: true,
+      vendor: {
+        select: {
+          name: true
+        }
+      }
+    }
   });
 
   if (!reimbursementRequest) throw new HttpException(500, 'Reimbursement request does not exist!');
@@ -173,7 +182,7 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
   const { messageInfoId, channelId, timestamp } = createdMessageInfo;
 
   // send reimbursement request description in slack thread
-  if (description !== '') {
+  if (description) {
     await sendThreadResponse(
       [{ messageInfoId, channelId, timestamp, changeRequestId: null }],
       `Description: ${description}`
