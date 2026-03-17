@@ -1,4 +1,4 @@
-import { useMediaQuery, Typography, Theme } from '@mui/material';
+import { useMediaQuery, Theme } from '@mui/material';
 import { Project } from 'shared';
 import { TaskListContent } from './TaskListContent';
 import { GuestsTasksList } from '../GuestTasksList';
