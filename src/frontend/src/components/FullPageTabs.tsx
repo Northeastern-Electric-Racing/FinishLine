@@ -14,9 +14,18 @@ interface TabProps {
   defaultTab: string; //tab that the tabs component defaults to
   id: string;
   noUnderline?: boolean;
+  scrollable?: boolean;
 }
 
-const FullPageTabs = ({ setTab, tabsLabels, baseUrl, defaultTab, id, noUnderline = false }: TabProps) => {
+const FullPageTabs = ({
+  setTab,
+  tabsLabels,
+  baseUrl,
+  defaultTab,
+  id,
+  noUnderline = false,
+  scrollable = false
+}: TabProps) => {
   const tabUrlValues = tabsLabels.map((tab) => tab.tabUrlValue);
   const match = useRouteMatch<{ tabValueString: string }>(`${baseUrl}/:tabValueString`);
   const tabValueString = match?.params?.tabValueString;
@@ -37,7 +46,13 @@ const FullPageTabs = ({ setTab, tabsLabels, baseUrl, defaultTab, id, noUnderline
   };
 
   return (
-    <Tabs value={tabValue} onChange={handleTabChange} aria-label={`${id}-tabs`}>
+    <Tabs
+      value={tabValue}
+      onChange={handleTabChange}
+      aria-label={`${id}-tabs`}
+      variant={scrollable ? 'scrollable' : 'standard'}
+      scrollButtons={scrollable ? 'auto' : undefined}
+    >
       {tabsLabels.map((tab, idx) => (
         <Tab
           sx={noUnderline ? {} : { borderBottom: 1, borderColor: 'divider' }}
