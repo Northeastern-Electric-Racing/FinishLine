@@ -207,7 +207,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       {tab === 0 ? (
         <ProjectDetails project={project} />
       ) : tab === 1 ? (
-        <TaskList project={project} />
+        <TaskList project={project} isGuest={user.role == 'GUEST'} />
       ) : tab === 2 ? (
         <BOMTab project={project} />
       ) : tab === 3 ? (
