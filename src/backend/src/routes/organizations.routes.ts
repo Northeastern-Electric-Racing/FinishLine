@@ -11,14 +11,6 @@ const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStor
 organizationRouter.get('/current', OrganizationsController.getCurrentOrganization);
 organizationRouter.post('/useful-links/set', ...linkValidators, validateInputs, OrganizationsController.setUsefulLinks);
 organizationRouter.get('/useful-links', OrganizationsController.getAllUsefulLinks);
-organizationRouter.post(
-  '/images/update',
-  upload.fields([
-    { name: 'applyInterestImage', maxCount: 1 },
-    { name: 'exploreAsGuestImage', maxCount: 1 }
-  ]),
-  OrganizationsController.setImages
-);
 
 organizationRouter.post(
   '/application-link/update',
@@ -51,6 +43,13 @@ organizationRouter.post(
 );
 organizationRouter.post('/logo/update', upload.single('logo'), OrganizationsController.setLogoImage);
 organizationRouter.get('/logo', OrganizationsController.getOrganizationLogoImage);
+
+organizationRouter.post(
+  '/platform-logo/update',
+  upload.single('platformLogo'),
+  OrganizationsController.setPlatformLogoImage
+);
+
 organizationRouter.post(
   '/new-member-image/update',
   upload.single('newMemberImage'),
@@ -62,6 +61,12 @@ organizationRouter.post(
   body('description').isString(),
   validateInputs,
   OrganizationsController.setOrganizationDescription
+);
+organizationRouter.post(
+  '/platform-description/set',
+  nonEmptyString(body('platformDescription')),
+  validateInputs,
+  OrganizationsController.setPlatformDescription
 );
 organizationRouter.get('/featured-projects', OrganizationsController.getOrganizationFeaturedProjects);
 organizationRouter.post(

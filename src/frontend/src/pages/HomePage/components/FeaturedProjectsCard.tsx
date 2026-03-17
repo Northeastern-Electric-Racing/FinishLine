@@ -17,7 +17,7 @@ const FeaturedProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
         minWidth: 'fit-content',
         minHeight: 'fit-content',
         width: isMobilePortrait ? '100%' : 'auto',
-        background: theme.palette.background.paper,
+        background: theme.palette.mode === 'dark' ? '#000000' : 'rgb(255, 255, 255)',
         borderRadius: 2
       }}
     >

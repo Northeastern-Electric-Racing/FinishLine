@@ -29,8 +29,7 @@ const schema = yup.object().shape({
   linkUrl: yup.string().optional(),
   notes: yup.string().optional(),
   pdmFileName: yup.string().optional(),
-  assemblyId: yup.string().optional(),
-  reimbursementRequestId: yup.string().optional()
+  assemblyId: yup.string().optional()
 });
 
 export interface MaterialFormInput {
@@ -46,7 +45,6 @@ export interface MaterialFormInput {
   linkUrl?: string;
   notes?: string;
   assemblyId?: string;
-  reimbursementRequestId?: string;
 }
 
 export interface MaterialDataSubmission {
@@ -63,7 +61,6 @@ export interface MaterialDataSubmission {
   notes?: string;
   assemblyId?: string;
   subtotal?: number;
-  reimbursementRequestId?: string;
 }
 
 export interface MaterialFormProps {
@@ -104,8 +101,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({
       unitName: defaultValues?.unitName,
       linkUrl: defaultValues?.linkUrl ?? '',
       notes: defaultValues?.notes,
-      assemblyId: defaultValues?.assemblyId,
-      reimbursementRequestId: defaultValues?.reimbursementRequestId
+      assemblyId: defaultValues?.assemblyId
     },
     resolver: yupResolver(schema)
   });
