@@ -14,6 +14,7 @@ export const TaskColumn = ({
   tasks,
   project,
   equalizedHeight,
+  isDragging,
   onEditTask,
   onDeleteTask,
   onAddTask,
@@ -23,6 +24,7 @@ export const TaskColumn = ({
   tasks: TaskWithIndex[];
   project: Project;
   equalizedHeight: number;
+  isDragging: boolean;
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   onAddTask: (task: Task) => void;
@@ -41,7 +43,6 @@ export const TaskColumn = ({
     if (!droppableBoxRef.current) return;
 
     const droppableBox = droppableBoxRef.current;
-
     const observer = new ResizeObserver(() => {
       onHeightChange(status, droppableBox.scrollHeight);
     });
@@ -108,7 +109,7 @@ export const TaskColumn = ({
                 flexDirection: 'column',
                 borderRadius: 5,
                 padding: '5px',
-                minHeight: `${equalizedHeight}px`,
+                minHeight: isDragging ? `${equalizedHeight}px` : undefined,
                 '&.isDraggingOver': {
                   bgcolor: '#dadadf'
                 }

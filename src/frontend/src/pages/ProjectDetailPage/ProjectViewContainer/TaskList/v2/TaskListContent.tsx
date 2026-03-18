@@ -1,4 +1,4 @@
-import { DragDropContext, OnDragEndResponder } from '@hello-pangea/dnd';
+import { DragDropContext, OnDragEndResponder, OnDragStartResponder } from '@hello-pangea/dnd';
 import { Box } from '@mui/material';
 import { useCallback, useRef, useState } from 'react';
 import { Project, Task, TaskWithIndex } from 'shared';
@@ -22,6 +22,7 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   // ref to mapping of each column's status to its measured height, partial because heights may not exist
   const columnHeightsRef = useRef<Partial<Record<Task['status'], number>>>({});
   const [equalizedHeight, setEqualizedHeight] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   const onHeightChange = useCallback((status: Task['status'], height: number) => {
     columnHeightsRef.current[status] = height;
@@ -64,7 +65,12 @@ export const TaskListContent = ({ project }: TaskListProps) => {
     }));
   };
 
+  const onDragStart: OnDragStartResponder = () =>  {
+    setIsDragging(true);
+  }
+
   const onDragEnd: OnDragEndResponder = async (result) => {
+    setIsDragging(false);
     const { destination, source } = result;
 
     if (!destination) {
@@ -120,7 +126,7 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   };
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
+    <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <Box display="flex">
         {statuses.map((status) => (
           <TaskColumn
@@ -133,6 +139,7 @@ export const TaskListContent = ({ project }: TaskListProps) => {
             key={status}
             project={project}
             equalizedHeight={equalizedHeight}
+            isDragging={isDragging}
           />
         ))}
       </Box>
