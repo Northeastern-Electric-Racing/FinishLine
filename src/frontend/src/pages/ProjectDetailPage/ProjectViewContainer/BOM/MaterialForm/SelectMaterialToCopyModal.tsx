@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, CircularProgress, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
+import { Box, CircularProgress, Stack, TextField, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useQuery } from 'react-query';
 import { Car, Material, ProjectPreview, WbsNumber } from 'shared';
@@ -12,6 +12,11 @@ import { useAllProjects } from '../../../../../hooks/projects.hooks';
 import { getMaterialsForWbsElement } from '../../../../../apis/bom.api';
 
 type AutocompleteOption = { label: string; id: string };
+
+type SearchResult = {
+  material: Material;
+  project: ProjectPreview;
+};
 
 interface SelectMaterialToCopyModalProps {
   open: boolean;
@@ -43,33 +48,28 @@ const materialToOption = (material: Material): AutocompleteOption => ({
   id: material.materialId
 });
 
+const searchResultToOption = ({ material, project }: SearchResult): AutocompleteOption => ({
+  label: `${material.name} – ${project.wbsNum.carNumber}.${project.wbsNum.projectNumber} - ${project.name}`,
+  id: material.materialId
+});
+
 const projectToProjectWbs = (project: ProjectPreview): WbsNumber => ({
   carNumber: project.wbsNum.carNumber,
   projectNumber: project.wbsNum.projectNumber,
   workPackageNumber: 0
 });
 
-const dedupeMaterials = (materials: Material[]): Material[] => {
-  const seen = new Set<string>();
-  const out: Material[] = [];
-  for (const m of materials) {
-    if (!seen.has(m.materialId)) {
-      seen.add(m.materialId);
-      out.push(m);
-    }
-  }
-  return out;
+const getLatestCar = (cars: Car[]): Car | null => {
+  if (cars.length === 0) return null;
+  return [...cars].sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber)[0];
 };
 
 const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ open, onHide, onSelect }) => {
   const { reset, handleSubmit } = useForm<FormValues>();
 
-  const [tab, setTab] = useState<'byProject' | 'search'>('byProject');
-
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [selectedProject, setSelectedProject] = useState<ProjectPreview | null>(null);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
-
   const [searchText, setSearchText] = useState<string>('');
 
   const carsQuery = useGetAllCars();
@@ -77,6 +77,8 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
 
   const cars = carsQuery.data ?? [];
   const projects = projectsQuery.data ?? [];
+
+  const latestCar = useMemo(() => getLatestCar(cars), [cars]);
 
   const projectsForSelectedCar = useMemo(() => {
     if (!selectedCar) return [];
@@ -96,10 +98,10 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
       const { data } = await getMaterialsForWbsElement(selectedProjectWbsNum);
       return data;
     },
-    { enabled: !!selectedProjectWbsNum && open && tab === 'byProject' }
+    { enabled: !!selectedProjectWbsNum && open }
   );
 
-  const carMaterialsQuery = useQuery<Material[], Error>(
+  const carMaterialsQuery = useQuery<SearchResult[], Error>(
     ['materials', 'car', selectedCar?.wbsNum.carNumber ?? 'none'],
     async () => {
       if (!selectedCar) return [];
@@ -109,29 +111,49 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
       const results = await Promise.all(
         projectsInCar.map(async (p) => {
           const { data } = await getMaterialsForWbsElement(projectToProjectWbs(p));
-          return data;
+          return data.map((material) => ({
+            material,
+            project: p
+          }));
         })
       );
 
-      return dedupeMaterials(results.flat());
+      // (if I have two projects with the same name being searched, only show one)
+      const flattened = results.flat();
+      const seen = new Set<string>();
+
+      return flattened.filter(({ material, project }) => {
+        const key = `${material.name.toLowerCase()}-${project.name.toLowerCase()}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     },
-    { enabled: !!selectedCar && open && tab === 'search' }
+    { enabled: !!selectedCar && open }
   );
+
+  const projectMaterials = projectMaterialsQuery.data ?? [];
+  const carSearchResults = carMaterialsQuery.data ?? [];
 
   const carOptions = useMemo(() => cars.map(carToOption), [cars]);
   const projectOptions = useMemo(() => projectsForSelectedCar.map(projectToOption), [projectsForSelectedCar]);
-  
-
-  const projectMaterials = projectMaterialsQuery.data ?? [];
-  const carMaterials = carMaterialsQuery.data ?? [];
-
   const projectMaterialOptions = useMemo(() => projectMaterials.map(materialToOption), [projectMaterials]);
 
-  const carSearchMaterialOptions = useMemo(() => {
+  const searchOptions = useMemo(() => {
     const q = searchText.trim().toLowerCase();
-    const filtered = q.length === 0 ? carMaterials : carMaterials.filter((m) => m.name.toLowerCase().includes(q));
-    return filtered.map(materialToOption);
-  }, [carMaterials, searchText]);
+    const filtered =
+      q.length === 0
+        ? carSearchResults
+        : carSearchResults.filter(({ material }) => material.name.toLowerCase().includes(q));
+
+    return filtered.map(searchResultToOption);
+  }, [carSearchResults, searchText]);
+
+  useEffect(() => {
+    if (open && !selectedCar && latestCar) {
+      setSelectedCar(latestCar);
+    }
+  }, [open, selectedCar, latestCar]);
 
   useEffect(() => {
     setSelectedProject(null);
@@ -145,7 +167,6 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
 
   useEffect(() => {
     if (!open) {
-      setTab('byProject');
       setSelectedCar(null);
       setSelectedProject(null);
       setSelectedMaterial(null);
@@ -157,8 +178,8 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
   const anyLoading =
     carsQuery.isLoading ||
     projectsQuery.isLoading ||
-    (tab === 'byProject' ? projectMaterialsQuery.isLoading : false) ||
-    (tab === 'search' ? carMaterialsQuery.isLoading : false);
+    projectMaterialsQuery.isLoading ||
+    carMaterialsQuery.isLoading;
 
   const anyError =
     (carsQuery.error as Error | undefined) ||
@@ -188,24 +209,12 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
       reset={reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={handleCopy}
+      submitText="Copy"
       cancelText="Cancel"
       disabled={!canSubmit}
       showCloseButton
     >
       <Stack spacing={2} sx={{ p: 1 }}>
-        <Tabs
-          value={tab}
-          onChange={(_, v) => {
-            const next = v as 'byProject' | 'search';
-            setTab(next);
-            setSelectedMaterial(null);
-            setSearchText('');
-          }}
-        >
-          <Tab value="byProject" label="By Project" />
-          <Tab value="search" label="Search (by Car)" />
-        </Tabs>
-
         {anyLoading && (
           <Stack direction="row" spacing={1} alignItems="center">
             <CircularProgress size={18} />
@@ -218,6 +227,35 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
             {anyError.message}
           </Typography>
         )}
+
+        <TextField
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder={selectedCar ? 'Search materials by name…' : 'Select a car first'}
+          disabled={!selectedCar}
+          fullWidth
+        />
+
+        <Box>
+          <NERAutocomplete
+            id="search-material"
+            size="medium"
+            placeholder={selectedCar ? 'Search results' : 'Select a car first'}
+            options={searchOptions}
+            value={null}
+            onChange={(_, value) => {
+              if (!value) return;
+
+              const match = carSearchResults.find(({ material }) => material.materialId === value.id) ?? null;
+              if (!match) return;
+
+              setSelectedProject(match.project);
+              setSelectedMaterial(match.material);
+            }}
+            required={false}
+            disabled={!selectedCar || carMaterialsQuery.isLoading}
+          />
+        </Box>
 
         <NERAutocomplete
           id="select-car"
@@ -233,69 +271,37 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
           disabled={carsQuery.isLoading}
         />
 
-        {tab === 'byProject' && (
-          <>
-            <NERAutocomplete
-              id="select-project"
-              size="medium"
-              placeholder={selectedCar ? 'Select a project' : 'Select a car first'}
-              options={projectOptions}
-              value={selectedProjectOption}
-              onChange={(_, value) => {
-                const next = value ? projectsForSelectedCar.find((p) => p.wbsElementId === value.id) ?? null : null;
-                setSelectedProject(next);
-              }}
-              required={true}
-              disabled={!selectedCar || projectsQuery.isLoading}
-            />
+        <NERAutocomplete
+          id="select-project"
+          size="medium"
+          placeholder={selectedCar ? 'Select a project' : 'Select a car first'}
+          options={projectOptions}
+          value={selectedProjectOption}
+          onChange={(_, value) => {
+            const next = value ? projectsForSelectedCar.find((p) => p.wbsElementId === value.id) ?? null : null;
+            setSelectedProject(next);
+          }}
+          required={true}
+          disabled={!selectedCar || projectsQuery.isLoading}
+        />
 
-            <NERAutocomplete
-              id="select-material"
-              size="medium"
-              placeholder={selectedProject ? 'Select a material' : 'Select a project first'}
-              options={projectMaterialOptions}
-              value={selectedMaterialOption}
-              onChange={(_, value) => {
-                const next = value ? projectMaterials.find((m) => m.materialId === value.id) ?? null : null;
-                setSelectedMaterial(next);
-              }}
-              required={true}
-              disabled={!selectedProject || projectMaterialsQuery.isLoading}
-            />
-          </>
-        )}
-
-        {tab === 'search' && (
-          <>
-            <TextField
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder={selectedCar ? 'Search materials by name…' : 'Select a car first'}
-              disabled={!selectedCar}
-              fullWidth
-            />
-
-            <Box>
-              <NERAutocomplete
-                id="search-material"
-                size="medium"
-                placeholder={selectedCar ? 'Select a material' : 'Select a car first'}
-                options={carSearchMaterialOptions}
-                value={selectedMaterialOption}
-                onChange={(_, value) => {
-                  const next = value ? carMaterials.find((m) => m.materialId === value.id) ?? null : null;
-                  setSelectedMaterial(next);
-                }}
-                required={true}
-                disabled={!selectedCar || carMaterialsQuery.isLoading}
-              />
-            </Box>
-          </>
-        )}
+        <NERAutocomplete
+          id="select-material"
+          size="medium"
+          placeholder={selectedProject ? 'Select a material' : 'Select a project first'}
+          options={projectMaterialOptions}
+          value={selectedMaterialOption}
+          onChange={(_, value) => {
+            const next = value ? projectMaterials.find((m) => m.materialId === value.id) ?? null : null;
+            setSelectedMaterial(next);
+          }}
+          required={true}
+          disabled={!selectedProject || projectMaterialsQuery.isLoading}
+        />
 
         {!canSubmit && (
           <Typography variant="caption" color="text.secondary">
-            Pick a material to enable “Select”.
+            Pick a material to enable “Copy”.
           </Typography>
         )}
       </Stack>
