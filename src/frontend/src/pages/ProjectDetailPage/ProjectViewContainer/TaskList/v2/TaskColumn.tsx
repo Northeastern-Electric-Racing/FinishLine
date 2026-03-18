@@ -85,11 +85,14 @@ export const TaskColumn = ({
       <Box
         sx={{
           flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
           paddingTop: '8px',
           paddingBottom: '16px',
           backgroundColor: theme.palette.background.paper,
           marginLeft: '5px',
-          borderRadius: '5px'
+          borderRadius: '5px',
+          minHeight: isDragging ? `${equalizedHeight}px` : undefined
         }}
       >
         <Typography align="center" variant="h5">
@@ -109,7 +112,7 @@ export const TaskColumn = ({
                 flexDirection: 'column',
                 borderRadius: 5,
                 padding: '5px',
-                minHeight: isDragging ? `${equalizedHeight}px` : undefined,
+                flex: 1,
                 '&.isDraggingOver': {
                   bgcolor: '#dadadf'
                 }
