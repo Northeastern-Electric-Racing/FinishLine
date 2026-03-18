@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, CircularProgress, Stack, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, CircularProgress, Stack, TextField, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useQuery } from 'react-query';
 import { Car, Material, ProjectPreview, WbsNumber } from 'shared';
@@ -118,7 +118,6 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
         })
       );
 
-      // (if I have two projects with the same name being searched, only show one)
       const flattened = results.flat();
       const seen = new Set<string>();
 
@@ -213,6 +212,7 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
       cancelText="Cancel"
       disabled={!canSubmit}
       showCloseButton
+      paperProps={{ width: '500px', maxWidth: '95vw' }}
     >
       <Stack spacing={2} sx={{ p: 1 }}>
         {anyLoading && (
@@ -228,32 +228,45 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
           </Typography>
         )}
 
-        <TextField
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          placeholder={selectedCar ? 'Search materials by name…' : 'Select a car first'}
-          disabled={!selectedCar}
-          fullWidth
-        />
-
         <Box>
-          <NERAutocomplete
+          <Autocomplete
             id="search-material"
-            size="medium"
-            placeholder={selectedCar ? 'Search results' : 'Select a car first'}
             options={searchOptions}
             value={null}
-            onChange={(_, value) => {
+            getOptionLabel={(option) => option.label}
+            onInputChange={(_, value) => {
+              setSearchText(value);
+            }}
+            onChange={async (_, value) => {
               if (!value) return;
 
-              const match = carSearchResults.find(({ material }) => material.materialId === value.id) ?? null;
+              const match =
+                carSearchResults.find(({ material, project }) => {
+                  return (
+                    material.materialId === value.id &&
+                    `${material.name} – ${project.wbsNum.carNumber}.${project.wbsNum.projectNumber} - ${project.name}` ===
+                      value.label
+                  );
+                }) ?? null;
+
               if (!match) return;
 
               setSelectedProject(match.project);
-              setSelectedMaterial(match.material);
+              setSearchText(match.material.name);
+
+              const { data } = await getMaterialsForWbsElement(projectToProjectWbs(match.project));
+              const selected = data.find((m) => m.materialId === match.material.materialId) ?? null;
+
+              setSelectedMaterial(selected);
             }}
-            required={false}
             disabled={!selectedCar || carMaterialsQuery.isLoading}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder={selectedCar ? 'Search materials by name…' : 'Select a car first'}
+                fullWidth
+              />
+            )}
           />
         </Box>
 
