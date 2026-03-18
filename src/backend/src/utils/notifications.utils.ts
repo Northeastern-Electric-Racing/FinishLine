@@ -1,4 +1,4 @@
-import { Task as Prisma_Task, WBS_Element, Event, Work_Package } from '@prisma/client';
+import { Task as Prisma_Task, WBS_Element, Event, Work_Package, Team, Event_Type } from '@prisma/client';
 import { UserWithSettings } from './auth.utils.js';
 import { ScheduleSlot } from 'shared';
 
@@ -10,6 +10,8 @@ export type TaskWithAssignees = Prisma_Task & {
 export type EventWithAttendees = Event & {
   attendees: UserWithSettings[];
   scheduledTimes: ScheduleSlot[];
+  teams: Team[];
+  eventType: Event_Type;
   workPackages: (Work_Package & {
     wbsElement: WBS_Element;
   })[];
@@ -17,7 +19,7 @@ export type EventWithAttendees = Event & {
 
 export const usersToSlackPings = (users: UserWithSettings[]) => {
   // https://api.slack.com/reference/surfaces/formatting#mentioning-users
-  return users.map(userToSlackPing).join(' ');
+  return users.filter((user) => user.userSettings?.slackId).map(userToSlackPing).join(' ');
 };
 
 export const userToSlackPing = (user: UserWithSettings) => {

@@ -55,7 +55,6 @@ import Tooltip from '@mui/material/Tooltip';
 import { convertDayToInt, convertIntToDay } from '../../../utils/calendar.utils';
 import EditSeriesConfirmationModal from './EditSeriesConfirmationModal';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import NERSwitch from '../../../components/NERSwitch';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 export interface EventFormValues {
