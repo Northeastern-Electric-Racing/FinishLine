@@ -19,10 +19,7 @@ export type EventWithAttendees = Event & {
 
 export const usersToSlackPings = (users: UserWithSettings[]) => {
   // https://api.slack.com/reference/surfaces/formatting#mentioning-users
-  return users
-    .filter((user) => user.userSettings?.slackId)
-    .map(userToSlackPing)
-    .join(' ');
+  return users.map(userToSlackPing).join(' ');
 };
 
 export const userToSlackPing = (user: UserWithSettings) => {
