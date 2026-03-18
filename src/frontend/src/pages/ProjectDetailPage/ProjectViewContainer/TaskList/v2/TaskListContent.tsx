@@ -65,9 +65,9 @@ export const TaskListContent = ({ project }: TaskListProps) => {
     }));
   };
 
-  const onDragStart: OnDragStartResponder = () =>  {
+  const onDragStart: OnDragStartResponder = () => {
     setIsDragging(true);
-  }
+  };
 
   const onDragEnd: OnDragEndResponder = async (result) => {
     setIsDragging(false);
