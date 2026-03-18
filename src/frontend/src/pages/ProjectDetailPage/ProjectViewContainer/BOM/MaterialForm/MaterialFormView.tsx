@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
+import { Assembly, Manufacturer, MaterialType, ReimbursementRequest, Unit } from 'shared';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
@@ -44,6 +44,7 @@ export interface MaterialFormViewProps {
   setValue: UseFormSetValue<MaterialFormInput>;
   copyFromExistingBomAction?: React.ReactNode;
   fromRRForm?: boolean;
+  reimbursementRequests?: any[];
 }
 
 const manufacturersToAutocomplete = (manufacturer: Manufacturer): { label: string; id: string } => {
@@ -69,7 +70,8 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   watch,
   createManufacturer,
   setValue,
-  fromRRForm = false
+  fromRRForm = false,
+  reimbursementRequests = []
 }) => {
   const [additionalDetailsOpen, setAdditionalDetailsOpen] = useState(!fromRRForm);
 
@@ -503,6 +505,78 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             optionalFields
           )}
         </Grid>
+      </Grid>
+      <Grid item xs={12}>
+        <Grid item xs={12} mt={2}>
+          <FormControl fullWidth>
+            <Controller
+              name="reimbursementRequestId"
+              control={control}
+              defaultValue={control._defaultValues.reimbursementRequestId}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  select
+                  variant="outlined"
+                  error={!!errors.reimbursementRequestId}
+                  helperText={errors.reimbursementRequestId?.message}
+                  SelectProps={{
+                    displayEmpty: true,
+                    renderValue: (selected) =>
+                      selected ? (
+                        reimbursementRequests.find((rr) => rr.reimbursementRequestId === selected)?.identifier
+                      ) : (
+                        <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>
+                          Select Corresponding Reimbursement Request Number
+                        </Typography>
+                      )
+                  }}
+                >
+                  {reimbursementRequests.map((rr: ReimbursementRequest) => (
+                    <MenuItem key={rr.reimbursementRequestId} value={rr.reimbursementRequestId}>
+                      {rr.identifier}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </FormControl>
+        </Grid>
+        <Box display={'flex'} justifyContent={'flex-end'} mt={2}>
+          <FormControl fullWidth>
+            <Controller
+              name="assemblyId"
+              control={control}
+              defaultValue={control._defaultValues.assemblyId}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  select
+                  variant="outlined"
+                  error={!!errors.assemblyId}
+                  helperText={errors.assemblyId?.message}
+                  SelectProps={{
+                    displayEmpty: true,
+                    renderValue: (selected) =>
+                      selected ? (
+                        assemblies?.find((a) => a.assemblyId === selected)?.name
+                      ) : (
+                        <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>
+                          Enter Assembly Details
+                        </Typography>
+                      )
+                  }}
+                >
+                  {assemblies?.map((assembly) => (
+                    <MenuItem key={assembly.assemblyId} value={assembly.assemblyId}>
+                      {assembly.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </FormControl>
+        </Box>
       </Grid>
       {submitText === 'Add' && (
         <Grid item xs={12} sx={{ pl: 0, pr: 0 }}>
