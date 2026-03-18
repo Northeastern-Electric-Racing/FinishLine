@@ -20,10 +20,11 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   const toast = useToast();
 
   const [isDragging, setIsDragging] = useState(false);
-  const [maxColHeight, setMaxColumnHeight] = useState(0);
+  const [columnHeights, setColumnHeights] = useState<Partial<Record<Task['status'], number>>>({});
+  const equalizedHeight = Math.max(...(Object.values(columnHeights) as number[]));
 
-  const onHeightChange = useCallback((height: number) => {
-    setMaxColumnHeight((prev) => Math.max(height, prev));
+  const onHeightChange = useCallback((status: Task['status'], height: number) => {
+    setColumnHeights((prev) => ({ ...prev, [status]: height }));
   }, []);
 
   const onDeleteTask = (taskId: string) => {
@@ -134,7 +135,7 @@ export const TaskListContent = ({ project }: TaskListProps) => {
             tasks={tasksByStatus[status]}
             key={status}
             project={project}
-            equalizedHeight={maxColHeight}
+            equalizedHeight={equalizedHeight}
             isDragging={isDragging}
           />
         ))}

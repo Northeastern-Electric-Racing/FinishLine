@@ -20,7 +20,7 @@ export const TaskColumn = ({
   onAddTask,
   onHeightChange
 }: {
-  status: TaskStatus;
+  status: Task['status'];
   tasks: TaskWithIndex[];
   project: Project;
   equalizedHeight: number;
@@ -28,7 +28,7 @@ export const TaskColumn = ({
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   onAddTask: (task: Task) => void;
-  onHeightChange: (height: number) => void;
+  onHeightChange: (status: Task['status'], height: number) => void;
 }) => {
   const { mutateAsync: createTask } = useCreateTask();
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
@@ -100,7 +100,7 @@ export const TaskColumn = ({
                 if (!droppableBox) return;
 
                 const observer = new ResizeObserver(() => {
-                  onHeightChange(droppableBox.scrollHeight);
+                  onHeightChange(status, droppableBox.scrollHeight);
                 });
                 observer.observe(droppableBox);
                 return () => observer.disconnect();
