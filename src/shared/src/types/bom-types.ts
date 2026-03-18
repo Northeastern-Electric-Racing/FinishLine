@@ -1,6 +1,10 @@
 import { Decimal } from 'decimal.js';
 import { User } from './user-types.js';
-import { ReimbursementRequest } from './reimbursement-requests-types.js';
+
+export interface MaterialReimbursementRequest {
+  reimbursementRequestId: string;
+  identifier: number;
+}
 
 export enum MaterialStatus {
   Ordered = 'ORDERED',
@@ -72,7 +76,7 @@ export interface Material {
   subtotal?: number;
   linkUrl: string;
   notes?: string;
-  reimbursementRequest?: ReimbursementRequest;
+  reimbursementRequests: MaterialReimbursementRequest[];
   isCopied: boolean;
 }
 

@@ -16,6 +16,7 @@ interface SponsorTasksModalProps {
   onClose: () => void;
   tasks: SponsorTask[] | undefined;
   createTask: (payload: { dueDate: Date; notifyDate?: Date; assigneeUserId?: string; notes: string }) => void;
+  canEdit?: boolean;
 }
 
 const taskSchema = yup.object().shape({
@@ -31,7 +32,12 @@ const schema = yup.object().shape({
   tasks: yup.array().of(taskSchema)
 });
 
-const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: sponsorTasks, createTask }) => {
+const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({
+  onClose,
+  tasks: sponsorTasks,
+  createTask,
+  canEdit = true
+}) => {
   const toast = useToast();
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const { mutate: editTask } = useEditSponsorTask();
@@ -119,6 +125,7 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: s
             members={users}
             showDoneCheckbox
             isExistingTask={!!item.sponsorTaskId}
+            canEdit={canEdit}
             onRemove={() => {
               if (item.sponsorTaskId) {
                 deletedTaskIds.current.push(item.sponsorTaskId);
@@ -128,29 +135,33 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, tasks: s
           />
         </Box>
       ))}
-      <Button
-        startIcon={<AddCircle />}
-        onClick={() =>
-          append({
-            dueDate: new Date(),
-            notifyDate: undefined,
-            assigneeUserId: '',
-            notes: '',
-            sponsorTaskId: undefined,
-            done: false
-          })
-        }
-        sx={{ mb: 2 }}
-      >
-        Add Task
-      </Button>
+      {canEdit && (
+        <Button
+          startIcon={<AddCircle />}
+          onClick={() =>
+            append({
+              dueDate: new Date(),
+              notifyDate: undefined,
+              assigneeUserId: '',
+              notes: '',
+              sponsorTaskId: undefined,
+              done: false
+            })
+          }
+          sx={{ mb: 2 }}
+        >
+          Add Task
+        </Button>
+      )}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Button onClick={onClose} sx={{ mr: 2, color: 'white', border: '1px solid white', borderRadius: 1, px: 2 }}>
-          Cancel
+          {canEdit ? 'Cancel' : 'Close'}
         </Button>
-        <Button onClick={handleSave} sx={{ backgroundColor: '#EF4345', color: 'white', borderRadius: 1, px: 2 }}>
-          Save
-        </Button>
+        {canEdit && (
+          <Button onClick={handleSave} sx={{ backgroundColor: '#EF4345', color: 'white', borderRadius: 1, px: 2 }}>
+            Save
+          </Button>
+        )}
       </Box>
     </Box>
   );

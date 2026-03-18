@@ -55,6 +55,8 @@ export const ChangeRequestTypeTextPipe: (type: ChangeRequestType) => string = (t
       return 'Other';
     case ChangeRequestType.Budget:
       return 'Budget';
+    case ChangeRequestType.Leadership:
+      return 'Leadership';
   }
 };
 

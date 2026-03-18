@@ -15,6 +15,7 @@ generator client {
 enum CR_Type {
   ISSUE
   DEFINITION_CHANGE
+  LEADERSHIP
   OTHER
   STAGE_GATE
   ACTIVATION
@@ -299,6 +300,8 @@ model User {
   deniedEvents                            Event[]                              @relation(name: "deniedEventAttendee")
   deletedDocuments                        Document[]                           @relation(name: "deletedDocuments")
   createdDocuments                        Document[]                           @relation(name: "documentsCreatedBy")
+  leadershipCrAsLead                      Leadership_CR[]                      @relation(name: "leadershipCrLead")
+  leadershipCrAsManager                   Leadership_CR[]                      @relation(name: "leadershipCrManager")
   prospectiveSponsorsContacted            Prospective_Sponsor[]                @relation(name: "prospectiveSponsorContactor")
 }
 
@@ -389,6 +392,7 @@ model Change_Request {
   stageGateChangeRequest   Stage_Gate_CR?
   activationChangeRequest  Activation_CR?
   budgetChangeRequest      Budget_CR?
+  leadershipChangeRequest  Leadership_CR?
   notificationSlackThreads Message_Info[]
 
   @@unique([identifier, organizationId], name: "uniqueChangeRequest")
@@ -482,6 +486,18 @@ model Budget_CR {
   changeRequestId String         @unique
   changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
   proposedBudget  Int
+
+  @@index([changeRequestId])
+}
+
+model Leadership_CR {
+  leadershipCrId  String         @id @default(uuid())
+  changeRequestId String         @unique
+  changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
+  leadId          String?
+  lead            User?          @relation(name: "leadershipCrLead", fields: [leadId], references: [userId])
+  managerId       String?
+  manager         User?          @relation(name: "leadershipCrManager", fields: [managerId], references: [userId])
 
   @@index([changeRequestId])
 }
@@ -583,16 +599,17 @@ model Work_Package {
 }
 
 model Link_Type {
-  id             String       @id @default(uuid())
-  name           String
-  dateCreated    DateTime     @default(now())
-  iconName       String
-  required       Boolean
-  creatorId      String
-  creator        User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links          Link[]       @relation(name: "linkTypes")
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  id                String       @id @default(uuid())
+  name              String
+  dateCreated       DateTime     @default(now())
+  iconName          String
+  required          Boolean
+  creatorId         String
+  creator           User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links             Link[]       @relation(name: "linkTypes")
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [organizationId])
+  isOnGuestHomePage Boolean      @default(false)
 
   @@unique([name, organizationId], name: "uniqueLinkType")
   @@index([organizationId])
@@ -719,10 +736,11 @@ model Receipt {
 model Reimbursement_Request {
   reimbursementRequestId   String                          @id @default(uuid())
   identifier               Int
-  saboId                   Int?                            @unique
+  saboId                   String?                            @unique
   dateCreated              DateTime                        @default(now())
   dateDeleted              DateTime?
   dateOfExpense            DateTime?
+  description              String @default("")
   reimbursementStatuses    Reimbursement_Status[]
   recipientId              String
   recipient                User                            @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
@@ -739,7 +757,6 @@ model Reimbursement_Request {
   organizationId           String
   organization             Organization                    @relation(fields: [organizationId], references: [organizationId])
   notificationSlackThreads Message_Info[]
-  materials                Material[]
   reimbursementComments    Reimbursement_Request_Comment[]
   assigneeId               String?
   assignee                 User?                           @relation(name: "reimbursementRequestAssignee", fields: [assigneeId], references: [userId])
@@ -804,7 +821,7 @@ model Vendor {
   organizationId        String
   organization          Organization            @relation(fields: [organizationId], references: [organizationId])
   username              String?
-  password              String? // password is encrypted  
+  password              String? // password is encrypted
   discountCode          String?
   twoFactorContacts     User[]                  @relation(name: "twoFactorContactVendors")
   notes                 String?
@@ -999,15 +1016,12 @@ model Material {
   subtotal               Int?
   linkUrl                String
   notes                  String?
-  reimbursementRequest   Reimbursement_Request?  @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
-  reimbursementRequestId String?
   reimbursementProducts  Reimbursement_Product[]
   isCopied               Boolean                 @default(false)
 
   @@index([assemblyId])
   @@index([materialTypeId])
   @@index([manufacturerId])
-  @@index([reimbursementRequestId])
   @@index([wbsElementId])
 }
 
@@ -1380,8 +1394,6 @@ model Organization {
   advisor                                User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
   advisorId                              String?
   description                            String    @default("")
-  applyInterestImageId                   String?
-  exploreAsGuestImageId                  String?
   newMemberImageId                       String?
   logoImageId                            String?
   slackWorkspaceId                       String?
@@ -1390,6 +1402,8 @@ model Organization {
   partReviewSampleImageId                String?
   partReviewGuideLink                    String?
   sponsorshipNotificationsSlackChannelId String?
+  platformDescription                    String    @default("")
+  platformLogoImageId                    String?
 
   // Relation references
   wbsElements              WBS_Element[]

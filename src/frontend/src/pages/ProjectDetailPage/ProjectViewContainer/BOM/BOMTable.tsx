@@ -47,7 +47,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
     const assemblyMaterials = materials.filter((material) => material.assemblyId === assembly.assemblyId);
 
     materialsWithAssemblies.push({
-      reimbursementRequestId: undefined,
+      reimbursementRequests: [],
       id: `assembly-${assembly.name}`,
       materialId: '',
       status: '',

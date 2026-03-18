@@ -327,7 +327,7 @@ export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => 
         break;
       }
       default: {
-        console.log(blob.type + 'type not supported and will not be added to the PDF, name: ' + blob.name);
+        console.log(blob.type + ' type not supported and will not be added to the PDF');
         // throw new Error(blob.type + ' type not supported');
       }
     }
@@ -362,7 +362,7 @@ export const getPendingAdvisorList = () => {
  * @param requestId the request ID
  * @param saboNumber the SABO number to set
  */
-export const setSaboNumber = async (requestId: string, saboNumber: number) => {
+export const setSaboNumber = async (requestId: string, saboNumber: string) => {
   axios.post(apiUrls.financeSetSaboNumber(requestId), {
     saboNumber
   });
@@ -374,7 +374,7 @@ export const setSaboNumber = async (requestId: string, saboNumber: number) => {
  * @param saboNumbers The sabo numbers of the reimbursement requests to request approval for
  * @returns the response from the backend
  */
-export const sendPendingAdvisorList = (saboNumbers: number[]) => {
+export const sendPendingAdvisorList = (saboNumbers: string[]) => {
   return axios.post(apiUrls.financeSendPendingAdvisorList(), {
     saboNumbers
   });

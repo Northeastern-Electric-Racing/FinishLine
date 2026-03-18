@@ -132,6 +132,7 @@ const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
 const changeRequestsCreateBudget = () => `${changeRequestsCreate()}/budget`;
+const changeRequestsCreateLeadership = () => `${changeRequestsCreate()}/leadership`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
 const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/request-review';
@@ -377,16 +378,18 @@ const organizations = () => `${API_URL}/organizations`;
 const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
-const organizationsSetImages = () => `${organizations()}/images/update`;
 const organizationsUpdateContacts = () => `${organizations()}/contacts/set`;
 const organizationsSetOnboardingText = () => `${organizations()}/onboardingText/set`;
 const organizationsUpdateApplicationLink = () => `${organizations()}/application-link/update`;
 const organizationsSetDescription = () => `${organizations()}/description/set`;
+const organizationsSetPlatformDescription = () => `${organizations()}/platform-description/set`;
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
 const organizationsNewMemberImage = () => `${organizations()}/new-member-image`;
 const organizationsSetNewMemberImage = () => `${organizations()}/new-member-image/update`;
+const organizationsPlatformLogoImage = () => `${organizations()}/platform-logo`;
+const organizationsSetPlatformLogoImage = () => `${organizationsPlatformLogoImage()}/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
@@ -600,6 +603,7 @@ export const apiUrls = {
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
   changeRequestsCreateBudget,
+  changeRequestsCreateLeadership,
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
   changeRequestRequestReviewer,
@@ -749,16 +753,18 @@ export const apiUrls = {
   currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
-  organizationsSetImages,
   organizationsUpdateContacts,
   organizationsSetOnboardingText,
   organizationsUpdateApplicationLink,
   organizationsFeaturedProjects,
   organizationsSetDescription,
+  organizationsSetPlatformDescription,
   organizationsLogoImage,
   organizationsSetLogoImage,
   organizationsNewMemberImage,
   organizationsSetNewMemberImage,
+  organizationsPlatformLogoImage,
+  organizationsSetPlatformLogoImage,
   organizationsSetFeaturedProjects,
   organizationsSetWorkspaceId,
   organizationsGetPartReviewGuideLink,

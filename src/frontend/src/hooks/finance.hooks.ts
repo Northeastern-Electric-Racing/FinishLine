@@ -794,9 +794,9 @@ export const useGetPendingAdvisorList = () => {
  * @returns the mutation to send the pending advisor list
  */
 export const useSendPendingAdvisorList = () => {
-  return useMutation<{ message: string }, Error, number[]>(
+  return useMutation<{ message: string }, Error, string[]>(
     ['reimbursement-requests', 'send-pending-advisor'],
-    async (saboNumbers: number[]) => {
+    async (saboNumbers: string[]) => {
       const { data } = await sendPendingAdvisorList(saboNumbers);
       return data;
     }
@@ -846,9 +846,9 @@ export const useEditRefund = (id: string) => {
  */
 export const useSetSaboNumber = (reimbursementRequestId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<void, Error, { saboNumber: number }>(
+  return useMutation<void, Error, { saboNumber: string }>(
     ['reimbursement-requests', reimbursementRequestId],
-    async (formData: { saboNumber: number }) => {
+    async (formData: { saboNumber: string }) => {
       await setSaboNumber(reimbursementRequestId, formData.saboNumber);
     },
     {

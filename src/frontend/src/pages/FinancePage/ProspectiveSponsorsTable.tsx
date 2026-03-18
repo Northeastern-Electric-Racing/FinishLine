@@ -55,6 +55,11 @@ const ProspectiveSponsorsTable = () => {
   const currentUser = useCurrentUser();
 
   const canEditProspectiveSponsors = isAtLeastRank(RoleEnum.HEAD, currentUser.role) || !!currentUser.isFinance;
+  const canDeleteProspectiveSponsors = isAtLeastRank(RoleEnum.HEAD, currentUser.role) || !!currentUser.isAtLeastFinanceLead;
+  const canAcceptProspectiveSponsor = (ps: ProspectiveSponsor) =>
+    isAtLeastRank(RoleEnum.HEAD, currentUser.role) ||
+    !!currentUser.isAtLeastFinanceLead ||
+    ps.contactor?.userId === currentUser.userId;
 
   if (!prospectiveSponsors || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
@@ -219,7 +224,7 @@ const ProspectiveSponsorsTable = () => {
             <IconButton
               size="small"
               sx={{ color: '#4caf50' }}
-              disabled={!canEditProspectiveSponsors}
+              disabled={!canAcceptProspectiveSponsor(ps)}
               onClick={(e: MouseEvent<HTMLElement>) => {
                 e.stopPropagation();
                 setProspectiveSponsorToAccept(ps);
@@ -244,7 +249,7 @@ const ProspectiveSponsorsTable = () => {
           <IconButton
             size="small"
             sx={{ color: 'white' }}
-            disabled={!canEditProspectiveSponsors}
+            disabled={!canDeleteProspectiveSponsors}
             onClick={(e: MouseEvent<HTMLElement>) => {
               e.stopPropagation();
               setProspectiveSponsorToDelete(ps);
@@ -340,7 +345,11 @@ const ProspectiveSponsorsTable = () => {
         title={selectedProspectiveSponsor ? `Tasks for ${selectedProspectiveSponsor.organizationName}` : ''}
         component={
           selectedProspectiveSponsor ? (
-            <ProspectiveSponsorTasksModal onClose={closeTasksModal} prospectiveSponsor={selectedProspectiveSponsor} />
+            <ProspectiveSponsorTasksModal
+              onClose={closeTasksModal}
+              prospectiveSponsor={selectedProspectiveSponsor}
+              canEdit={canEditProspectiveSponsors}
+            />
           ) : (
             <></>
           )

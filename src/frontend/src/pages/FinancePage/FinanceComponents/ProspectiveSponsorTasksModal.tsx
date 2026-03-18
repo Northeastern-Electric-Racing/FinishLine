@@ -11,13 +11,18 @@ import SponsorTasksModal from './SponsorTasksModal';
 interface ProspectiveSponsorTasksModalProps {
   onClose: () => void;
   prospectiveSponsor: ProspectiveSponsor;
+  canEdit?: boolean;
 }
 
-const ProspectiveSponsorTasksModal: React.FC<ProspectiveSponsorTasksModalProps> = ({ onClose, prospectiveSponsor }) => {
+const ProspectiveSponsorTasksModal: React.FC<ProspectiveSponsorTasksModalProps> = ({
+  onClose,
+  prospectiveSponsor,
+  canEdit = true
+}) => {
   const { data: tasks } = useProspectiveSponsorTasks(prospectiveSponsor.prospectiveSponsorId);
   const { mutate: createTask } = useCreateProspectiveSponsorTask(prospectiveSponsor.prospectiveSponsorId);
 
-  return <SponsorTasksModal onClose={onClose} tasks={tasks} createTask={createTask} />;
+  return <SponsorTasksModal onClose={onClose} tasks={tasks} createTask={createTask} canEdit={canEdit} />;
 };
 
 export default ProspectiveSponsorTasksModal;
