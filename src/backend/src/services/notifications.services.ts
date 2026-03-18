@@ -3,11 +3,13 @@ import {
   TaskWithAssignees,
   endOfDayTomorrow,
   startOfDayTomorrow,
+  startOfTodayEST,
+  startOfTomorrowEST,
   usersToSlackPings,
   EventWithAttendees
 } from '../utils/notifications.utils.js';
 import { sendMessage } from '../integrations/slack.js';
-import { daysBetween, startOfDay, wbsPipe, formatTimeForSlack } from 'shared';
+import { daysBetween, wbsPipe, formatTimeForSlack } from 'shared';
 import { buildDueString, sendThreadResponse } from '../utils/slack.utils.js';
 import WorkPackagesService from './work-packages.services.js';
 import { addWeeksToDate } from 'shared';
@@ -30,7 +32,7 @@ export default class NotificationsService {
   static async sendTaskDeadlineSlackNotifications() {
     const endOfDay = endOfDayTomorrow();
 
-    if (endOfDay.getDay() === 0 || endOfDay.getDay() === 2 || endOfDay.getDay() === 4) return;
+    if (endOfDay.getUTCDay() === 0 || endOfDay.getUTCDay() === 2 || endOfDay.getUTCDay() === 4) return;
 
     const tasks = await prisma.task.findMany({
       where: {
@@ -81,7 +83,8 @@ export default class NotificationsService {
       const messageBlock = tasks
         .map((task) => {
           // prisma call earlier allows the forced unwrap (deadline is guaranteed to be a non-null value)
-          const daysUntilDeadline = daysBetween(task.deadline!, new Date());
+          const todayMidnightUTC = new Date(new Date().setUTCHours(0, 0, 0, 0));
+          const daysUntilDeadline = daysBetween(task.deadline!, todayMidnightUTC);
 
           return `${usersToSlackPings(task.assignees ?? [])} <https://finishlinebyner.com/projects/${wbsPipe(
             task.wbsElement
@@ -121,8 +124,8 @@ export default class NotificationsService {
    * Sends Slack notifications for all events scheduled for today whose event type has sendSlackNotifications enabled
    */
   static async sendEventSlackNotifications() {
-    const endOfToday = startOfDayTomorrow();
-    const startOfToday = startOfDay(new Date());
+    const endOfToday = startOfTomorrowEST();
+    const startOfToday = startOfTodayEST();
 
     const events = await prisma.event.findMany({
       where: {
@@ -231,7 +234,7 @@ export default class NotificationsService {
    * Sends the sponsor task slack notifications for all tasks with a notify date of today
    */
   static async sendSponsorTaskNotifications() {
-    const startOfToday = startOfDay(new Date());
+    const startOfToday = new Date(new Date().setUTCHours(0, 0, 0, 0));
     const endOfToday = startOfDayTomorrow();
 
     const sponsorTasks = await prisma.sponsor_Task.findMany({
