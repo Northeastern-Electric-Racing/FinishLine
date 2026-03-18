@@ -67,7 +67,7 @@ const EditLogo = () => {
         <EditLogoForm
           onSubmit={onSubmit}
           onHide={handleClose}
-          orgLogo={imageData ? new File([imageData], imageData.name, { type: imageData.type }) : undefined}
+          orgLogo={imageData ? new File([imageData], 'logo', { type: imageData.type }) : undefined}
         />
       ) : (
         <>
