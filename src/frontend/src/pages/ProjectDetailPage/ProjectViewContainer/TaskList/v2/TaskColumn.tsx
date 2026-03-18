@@ -98,6 +98,17 @@ export const TaskColumn = ({
         <Typography align="center" variant="h5">
           {statusNames[status]}
         </Typography>
+        <NERButton
+          sx={{
+            marginTop: '5px',
+            backgroundColor: theme.palette.secondary.contrastText,
+            width: 'calc(100% - 10px)',
+            marginX: '5px'
+          }}
+          onClick={() => setShowCreateTaskModal(true)}
+        >
+          + Add A Task
+        </NERButton>
         <Droppable droppableId={status}>
           {(droppableProvided, snapshot) => (
             <Box
@@ -132,17 +143,6 @@ export const TaskColumn = ({
             </Box>
           )}
         </Droppable>
-        <NERButton
-          sx={{
-            marginTop: '5px',
-            backgroundColor: theme.palette.secondary.contrastText,
-            width: 'calc(100% - 10px)',
-            marginX: '5px'
-          }}
-          onClick={() => setShowCreateTaskModal(true)}
-        >
-          + Add A Task
-        </NERButton>
       </Box>
     </>
   );
