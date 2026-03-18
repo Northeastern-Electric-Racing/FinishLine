@@ -1,6 +1,6 @@
 import { Droppable } from '@hello-pangea/dnd';
 import { Box, Typography, useTheme } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Project, Task, TaskStatus, TaskWithIndex } from 'shared';
 import { statusNames, TaskCard } from '.';
 import { NERButton } from '../../../../../components/NERButton';
@@ -13,21 +13,43 @@ export const TaskColumn = ({
   status,
   tasks,
   project,
+  equalizedHeight,
   onEditTask,
   onDeleteTask,
-  onAddTask
+  onAddTask,
+  onHeightChange
 }: {
   status: Task['status'];
   tasks: TaskWithIndex[];
   project: Project;
+  equalizedHeight: number;
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   onAddTask: (task: Task) => void;
+  onHeightChange: (status: Task['status'], height: number) => void;
 }) => {
   const { mutateAsync: createTask } = useCreateTask();
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const toast = useToast();
   const theme = useTheme();
+
+  // create ref to droppable box dom node so we can measure height
+  const droppableBoxRef = useRef<HTMLElement | null>(null);
+
+  // effectively runs once on mount because both deps (task status and callback func) are stable
+  useEffect(() => {
+    if (!droppableBoxRef.current) return;
+
+    const droppableBox = droppableBoxRef.current;
+
+    const observer = new ResizeObserver(() => {
+      onHeightChange(status, droppableBox.scrollHeight);
+    });
+    observer.observe(droppableBox);
+
+    // cleanup func to disconnect observer when component unmounts
+    return () => observer.disconnect();
+  }, [status, onHeightChange]);
 
   const handleCreateTask = async ({ notes, title, deadline, assignees, priority, startDate }: EditTaskFormInput) => {
     try {
@@ -75,7 +97,10 @@ export const TaskColumn = ({
         <Droppable droppableId={status}>
           {(droppableProvided, snapshot) => (
             <Box
-              ref={droppableProvided.innerRef}
+              ref={(droppableBox: HTMLElement | null) => {
+                droppableProvided.innerRef(droppableBox); // give dnd lib access to dom node
+                droppableBoxRef.current = droppableBox; // give ourselves access to dom node
+              }}
               {...droppableProvided.droppableProps}
               className={snapshot.isDraggingOver ? ' isDraggingOver' : ''}
               sx={{
@@ -83,6 +108,7 @@ export const TaskColumn = ({
                 flexDirection: 'column',
                 borderRadius: 5,
                 padding: '5px',
+                minHeight: `${equalizedHeight}px`,
                 '&.isDraggingOver': {
                   bgcolor: '#dadadf'
                 }

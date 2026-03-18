@@ -1,6 +1,6 @@
 import { DragDropContext, OnDragEndResponder } from '@hello-pangea/dnd';
 import { Box } from '@mui/material';
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Project, Task, TaskWithIndex } from 'shared';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
 import { useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
@@ -18,6 +18,16 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   const { mutateAsync: setTaskStatus } = useSetTaskStatus();
 
   const toast = useToast();
+
+  // ref to mapping of each column's status to its measured height, partial because heights may not exist
+  const columnHeightsRef = useRef<Partial<Record<Task['status'], number>>>({});
+  const [equalizedHeight, setEqualizedHeight] = useState(0);
+
+  const onHeightChange = useCallback((status: Task['status'], height: number) => {
+    columnHeightsRef.current[status] = height;
+    const max = Math.max(...(Object.values(columnHeightsRef.current) as number[]));
+    setEqualizedHeight(max);
+  }, []);
 
   const onDeleteTask = (taskId: string) => {
     setTasksByStatus((prev) => {
@@ -117,10 +127,12 @@ export const TaskListContent = ({ project }: TaskListProps) => {
             onAddTask={onAddTask}
             onDeleteTask={onDeleteTask}
             onEditTask={onEditTask}
+            onHeightChange={onHeightChange}
             status={status}
             tasks={tasksByStatus[status]}
             key={status}
             project={project}
+            equalizedHeight={equalizedHeight}
           />
         ))}
       </Box>
