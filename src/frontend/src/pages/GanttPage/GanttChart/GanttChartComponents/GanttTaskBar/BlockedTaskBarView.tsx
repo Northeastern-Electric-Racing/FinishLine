@@ -4,9 +4,11 @@ import {
   OnMouseOverOptions,
   RequestEventChange
 } from '../../../../../utils/gantt.utils';
+import { wbsPipe, WbsNumber } from 'shared';
 import GanttTaskBarDisplay from './GanttTaskBarDisplay';
 
 interface BlockedGanttTaskViewProps<T> {
+  parentTask: GanttTask<T>;
   task: GanttTask<T>;
   days: Date[];
   getStartCol: (start: Date) => number;
@@ -19,7 +21,33 @@ interface BlockedGanttTaskViewProps<T> {
   highlightSubtaskComparator: HighlightTaskComparator<T>;
 }
 
+interface TaskWithBlockingInfo {
+  blockedBy: WbsNumber[];
+  wbsNum: WbsNumber;
+}
+
+const hasBlockingInfo = (value: unknown): value is TaskWithBlockingInfo => {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'blockedBy' in value &&
+    'wbsNum' in value &&
+    Array.isArray((value as { blockedBy: unknown }).blockedBy)
+  );
+};
+
+const shouldRenderUnderParent = <T,>(parentTask: GanttTask<T>, task: GanttTask<T>): boolean => {
+  if (!hasBlockingInfo(task.element) || !hasBlockingInfo(parentTask.element)) {
+    return true;
+  }
+
+  const parentWbs = wbsPipe(parentTask.element.wbsNum);
+  const canonicalBlockedByParent = task.element.blockedBy.map(wbsPipe).sort()[0];
+  return canonicalBlockedByParent === parentWbs;
+};
+
 const BlockedGanttTaskView = <T,>({
+  parentTask,
   task,
   days,
   getStartCol,
@@ -31,6 +59,10 @@ const BlockedGanttTaskView = <T,>({
   highlightSubtaskComparator,
   highlightTaskComparator
 }: BlockedGanttTaskViewProps<T>) => {
+  if (!shouldRenderUnderParent(parentTask, task)) {
+    return null;
+  }
+
   return (
     <>
       <GanttTaskBarDisplay
@@ -50,6 +82,7 @@ const BlockedGanttTaskView = <T,>({
         return (
           <BlockedGanttTaskView
             key={child.id}
+            parentTask={task}
             task={child}
             days={days}
             getStartCol={getStartCol}

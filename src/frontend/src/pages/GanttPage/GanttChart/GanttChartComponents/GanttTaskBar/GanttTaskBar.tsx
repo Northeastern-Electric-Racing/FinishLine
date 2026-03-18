@@ -5,9 +5,6 @@
 
 import GanttTaskBarEdit from './GanttTaskBarEdit';
 import GanttTaskBarView from './GanttTaskBarView';
-import { ArcherContainer } from 'react-archer';
-import { useRef } from 'react';
-import { ArcherContainerHandle } from 'react-archer/lib/ArcherContainer/ArcherContainer.types';
 import {
   GanttChange,
   GanttTask,
@@ -46,8 +43,6 @@ const GanttTaskBar = <T,>({
   highlightSubtaskComparator,
   highlightTaskComparator
 }: GanttTaskBarProps<T>) => {
-  const archerRef = useRef<ArcherContainerHandle>(null);
-
   const getStartCol = (start: Date) => {
     const startCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(start))) + 1;
     return startCol;
@@ -64,43 +59,36 @@ const GanttTaskBar = <T,>({
 
   const handleChange = (change: GanttChange<T>) => {
     createChange(change);
-    setTimeout(() => {
-      if (archerRef.current) {
-        archerRef.current.refreshScreen();
-      }
-    }, 100); // wait for the change to be added to the state and the DOM to update
   };
 
   return (
-    <ArcherContainer ref={archerRef} strokeColor="#ef4545">
-      <div id={`gantt-task-${task.id}`}>
-        {isEditMode ? (
-          <GanttTaskBarEdit
-            days={days}
-            task={task}
-            createChange={handleChange}
-            getStartCol={getStartCol}
-            getEndCol={getEndCol}
-            onAddTaskPressed={onAddTaskPressed}
-          />
-        ) : (
-          <GanttTaskBarView
-            days={days}
-            task={task}
-            getStartCol={getStartCol}
-            getEndCol={getEndCol}
-            handleOnMouseOver={handleOnMouseOver}
-            handleOnMouseLeave={handleOnMouseLeave}
-            showChildren={showChildren}
-            onShowChildrenToggle={onShowChildrenToggle}
-            highlightedChange={highlightedChange}
-            onAddTaskPressed={onAddTaskPressed}
-            highlightSubtaskComparator={highlightSubtaskComparator}
-            highlightTaskComparator={highlightTaskComparator}
-          />
-        )}
-      </div>
-    </ArcherContainer>
+    <div id={`gantt-task-${task.id}`}>
+      {isEditMode ? (
+        <GanttTaskBarEdit
+          days={days}
+          task={task}
+          createChange={handleChange}
+          getStartCol={getStartCol}
+          getEndCol={getEndCol}
+          onAddTaskPressed={onAddTaskPressed}
+        />
+      ) : (
+        <GanttTaskBarView
+          days={days}
+          task={task}
+          getStartCol={getStartCol}
+          getEndCol={getEndCol}
+          handleOnMouseOver={handleOnMouseOver}
+          handleOnMouseLeave={handleOnMouseLeave}
+          showChildren={showChildren}
+          onShowChildrenToggle={onShowChildrenToggle}
+          highlightedChange={highlightedChange}
+          onAddTaskPressed={onAddTaskPressed}
+          highlightSubtaskComparator={highlightSubtaskComparator}
+          highlightTaskComparator={highlightTaskComparator}
+        />
+      )}
+    </div>
   );
 };
 

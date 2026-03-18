@@ -78,6 +78,7 @@ const GanttTaskBarView = <T,>({
         return (
           <BlockedGanttTaskView
             key={blocking.id}
+            parentTask={task}
             task={blocking}
             days={days}
             getStartCol={getStartCol}

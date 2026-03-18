@@ -411,7 +411,7 @@ const getBlockingGanttTasks = <T extends WorkPackage>(
 
 export const transformTaskToGanttTask = <T extends Task>(task: T, end: Date): GanttTask<T> => {
   return {
-    id: uuidv4(),
+    id: `task-${task.taskId}`,
     element: task,
 
     name: task.title,
@@ -441,7 +441,7 @@ export const transformWorkPackageToGanttTask = <T extends WorkPackage>(
   allWorkPackages: T[]
 ): GanttTask<T> => {
   return {
-    id: uuidv4(),
+    id: `work-package-${workPackage.id}`,
     element: workPackage,
 
     name: workPackage.name,
@@ -477,7 +477,7 @@ export const transformProjectToGanttTask = (
   const taskList = hideTasks ? [] : project.tasks;
 
   return {
-    id: uuidv4(),
+    id: `project-${project.id}`,
     element: project,
 
     name: project.name,
