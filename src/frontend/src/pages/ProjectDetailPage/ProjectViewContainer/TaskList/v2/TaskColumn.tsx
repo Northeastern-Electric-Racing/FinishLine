@@ -1,6 +1,6 @@
 import { Droppable } from '@hello-pangea/dnd';
 import { Box, Typography, useTheme } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Project, Task, TaskStatus, TaskWithIndex } from 'shared';
 import { statusNames, TaskCard } from '.';
 import { NERButton } from '../../../../../components/NERButton';
@@ -34,23 +34,6 @@ export const TaskColumn = ({
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const toast = useToast();
   const theme = useTheme();
-
-  // create ref to droppable box dom node so we can measure height
-  const droppableBoxRef = useRef<HTMLElement | null>(null);
-
-  // effectively runs once on mount because both deps (task status and callback func) are stable
-  useEffect(() => {
-    if (!droppableBoxRef.current) return;
-
-    const droppableBox = droppableBoxRef.current;
-    const observer = new ResizeObserver(() => {
-      onHeightChange(status, droppableBox.scrollHeight);
-    });
-    observer.observe(droppableBox);
-
-    // cleanup func to disconnect observer when component unmounts
-    return () => observer.disconnect();
-  }, [status, onHeightChange]);
 
   const handleCreateTask = async ({ notes, title, deadline, assignees, priority, startDate }: EditTaskFormInput) => {
     try {
@@ -114,7 +97,13 @@ export const TaskColumn = ({
             <Box
               ref={(droppableBox: HTMLElement | null) => {
                 droppableProvided.innerRef(droppableBox); // give dnd lib access to dom node
-                droppableBoxRef.current = droppableBox; // give ourselves access to dom node
+                if (!droppableBox) return;
+
+                const observer = new ResizeObserver(() => {
+                  onHeightChange(status, droppableBox.scrollHeight);
+                });
+                observer.observe(droppableBox);
+                return () => observer.disconnect();
               }}
               {...droppableProvided.droppableProps}
               className={snapshot.isDraggingOver ? ' isDraggingOver' : ''}
