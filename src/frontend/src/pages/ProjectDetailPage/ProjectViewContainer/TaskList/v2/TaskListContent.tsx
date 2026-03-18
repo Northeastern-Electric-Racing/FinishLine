@@ -1,6 +1,6 @@
 import { DragDropContext, OnDragEndResponder, OnDragStartResponder } from '@hello-pangea/dnd';
 import { Box } from '@mui/material';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Project, Task, TaskWithIndex } from 'shared';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
 import { useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
@@ -19,15 +19,12 @@ export const TaskListContent = ({ project }: TaskListProps) => {
 
   const toast = useToast();
 
-  // ref to mapping of each column's status to its measured height, partial because heights may not exist
-  const columnHeightsRef = useRef<Partial<Record<Task['status'], number>>>({});
-  const [equalizedHeight, setEqualizedHeight] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [columnHeights, setColumnHeights] = useState<Partial<Record<Task['status'], number>>>({});
+  const equalizedHeight = Math.max(...(Object.values(columnHeights) as number[]));
 
   const onHeightChange = useCallback((status: Task['status'], height: number) => {
-    columnHeightsRef.current[status] = height;
-    const max = Math.max(...(Object.values(columnHeightsRef.current) as number[]));
-    setEqualizedHeight(max);
+    setColumnHeights((prev) => ({ ...prev, [status]: height }));
   }, []);
 
   const onDeleteTask = (taskId: string) => {
