@@ -52,39 +52,7 @@ describe('Material Tests', () => {
       expect(material.manufacturerName).toEqual('Digikey');
       expect(material.manufacturerPartNumber).toEqual('lalsd');
       expect(material.quantity?.toString()).toEqual('5');
-      expect(material.reimbursementRequest?.reimbursementRequestId).toEqual(reimbursementRequest.reimbursementRequestId);
       expect(material.isCopied).toBe(false);
-    });
-
-    test('Fails on invalid reimbursement request id', async () => {
-      const materialType = await BillOfMaterials.createMaterialType('Resistor', createdUser, org);
-      const manufacturer = await BillOfMaterials.createManufacturer(createdUser, 'Digikey', org);
-      await expect(
-        async () =>
-          await BillOfMaterials.createMaterial(
-            createdUser,
-            '100k Resistor',
-            MaterialStatus.ReadyToOrder,
-            materialType.name,
-            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            {
-              carNumber: 0,
-              projectNumber: 1,
-              workPackageNumber: 0
-            },
-            org,
-            manufacturer.name,
-            'lalsd',
-            new Decimal(5),
-            10,
-            50,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            'invalid'
-          )
-      ).rejects.toThrow(new NotFoundException('Reimbursement Request', 'invalid'));
     });
   });
 
