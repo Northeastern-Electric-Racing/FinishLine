@@ -1,7 +1,7 @@
 import { DragDropContext, OnDragEndResponder, OnDragStartResponder } from '@hello-pangea/dnd';
 import { Box } from '@mui/material';
 import { useCallback, useState } from 'react';
-import { Project, Task, TaskWithIndex } from 'shared';
+import { Project, Task, TaskStatus, TaskWithIndex } from 'shared';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
 import { useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
@@ -20,10 +20,10 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   const toast = useToast();
 
   const [isDragging, setIsDragging] = useState(false);
-  const [columnHeights, setColumnHeights] = useState<Partial<Record<Task['status'], number>>>({});
+  const [columnHeights, setColumnHeights] = useState<Partial<Record<TaskStatus, number>>>({});
   const equalizedHeight = Math.max(...(Object.values(columnHeights) as number[]));
 
-  const onHeightChange = useCallback((status: Task['status'], height: number) => {
+  const onHeightChange = useCallback((status: TaskStatus, height: number) => {
     setColumnHeights((prev) => ({ ...prev, [status]: height }));
   }, []);
 

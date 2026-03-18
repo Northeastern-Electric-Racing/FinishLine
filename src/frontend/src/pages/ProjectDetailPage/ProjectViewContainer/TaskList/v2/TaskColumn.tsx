@@ -20,7 +20,7 @@ export const TaskColumn = ({
   onAddTask,
   onHeightChange
 }: {
-  status: Task['status'];
+  status: TaskStatus;
   tasks: TaskWithIndex[];
   project: Project;
   equalizedHeight: number;
@@ -28,7 +28,7 @@ export const TaskColumn = ({
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   onAddTask: (task: Task) => void;
-  onHeightChange: (status: Task['status'], height: number) => void;
+  onHeightChange: (status: TaskStatus, height: number) => void;
 }) => {
   const { mutateAsync: createTask } = useCreateTask();
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
