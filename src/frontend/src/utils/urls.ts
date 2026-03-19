@@ -498,6 +498,14 @@ const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${event
 const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 const calendarScheduleEvent = (eventId: string) => `${calendar()}/event/${eventId}/schedule`;
 
+/**************** Attendance Endpoints ****************/
+const attendance = () => `${API_URL}/attendance`;
+const attendanceTakeAttendance = () => `${attendance()}/`;
+const attendanceGetAll = () => `${attendance()}/`;
+const attendanceCheckChannel = (teamId: string) => `${attendance()}/check-channel/${teamId}`;
+const attendanceGetOngoing = (teamId: string) => `${attendance()}/ongoing/${teamId}`;
+const attendanceCloseOngoing = (teamId: string) => `${attendance()}/close/${teamId}`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -856,6 +864,12 @@ export const apiUrls = {
   calendarPreviewScheduleSlotRecurringEdits,
   calendarDeleteScheduleSlot,
   calendarScheduleEvent,
+
+  attendanceTakeAttendance,
+  attendanceGetAll,
+  attendanceCheckChannel,
+  attendanceGetOngoing,
+  attendanceCloseOngoing,
 
   version
 };
