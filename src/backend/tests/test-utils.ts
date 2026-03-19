@@ -122,6 +122,7 @@ export const resetUsers = async () => {
   await prisma.manufacturer.deleteMany();
   await prisma.material_Type.deleteMany();
   await prisma.assembly.deleteMany();
+  await prisma.meeting_Attendance.deleteMany();
   await prisma.team.deleteMany();
   await prisma.user_Secure_Settings.deleteMany();
   await prisma.receipt.deleteMany();
@@ -177,6 +178,8 @@ export const resetUsers = async () => {
   await prisma.shop_Machinery.deleteMany();
   await prisma.machinery.deleteMany();
   await prisma.shop.deleteMany();
+  await prisma.description_Bullet.deleteMany();
+  await prisma.description_Bullet_Type.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
