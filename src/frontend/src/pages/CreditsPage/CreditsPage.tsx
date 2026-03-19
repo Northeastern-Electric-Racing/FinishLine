@@ -122,6 +122,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Raghav Mathur', color: '#009933' },
     { name: 'Anika Sharma', color: '#ff0000' },
     { name: 'William (Jack) Turner', color: '#ff5733' },
+    { name: 'Natasha Joshi', color: '#00f7ffff' },
     {
       name: 'Samson Ajayi',
       color: '6a0dad',
