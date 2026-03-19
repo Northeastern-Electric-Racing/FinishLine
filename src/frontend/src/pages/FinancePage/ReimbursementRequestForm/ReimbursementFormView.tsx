@@ -98,7 +98,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   control,
   receiptPrepend,
   receiptRemove,
-  reimbursementProductAppend,
+  reimbursementProductPrepend,
   reimbursementProductRemove,
   onSubmit,
   handleSubmit,
@@ -900,7 +900,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             <ReimbursementProductTable
               errors={errors}
               reimbursementProducts={reimbursementProducts}
-              appendProduct={reimbursementProductAppend}
+              prependProduct={reimbursementProductPrepend}
               removeProduct={reimbursementProductRemove}
               projectAutocompleteOptions={projectAutocompleteOptions}
               watch={watch}
