@@ -50,4 +50,8 @@ recruitmentRouter.post(
 
 recruitmentRouter.delete('/faq/:faqId/delete', RecruitmentController.deleteFaq);
 
+/* Guest Definition Section */
+
+recruitmentRouter.delete('/guest-definition/:definitionId/delete', RecruitmentController.deleteGuestDefinition);
+
 export default recruitmentRouter;

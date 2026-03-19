@@ -345,4 +345,11 @@ describe('Recruitment Tests', () => {
       expect(deletedTestFaq?.dateDeleted).not.toBe(null);
     });
   });
+
+  describe('Delete Guest Definition', () => {
+    // Fail if not admin
+    // Fail if does not exist
+    // Fail if already deleted
+    // Otherwise, succeeds!
+  });
 });
