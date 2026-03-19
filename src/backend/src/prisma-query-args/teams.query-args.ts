@@ -13,7 +13,11 @@ export const getTeamQueryArgs = (organizationId: string) =>
       head: getUserQueryArgs(organizationId),
       leads: getUserQueryArgs(organizationId),
       userArchived: getUserQueryArgs(organizationId),
-      teamType: getTeamTypeQueryArgs(),
+      teamType: {
+        select: {
+          name: true
+        }
+      },
       projects: {
         where: {
           wbsElement: {
@@ -31,13 +35,10 @@ export const getTeamPreviewQueryArgs = (organizationId: string) =>
       members: getUserQueryArgs(organizationId),
       head: getUserQueryArgs(organizationId),
       leads: getUserQueryArgs(organizationId),
-      teamType: getTeamTypeQueryArgs()
-    }
-  });
-
-export const getTeamTypeQueryArgs = () =>
-  Prisma.validator<Prisma.Team_TypeDefaultArgs>()({
-    select: {
-      name: true
+      teamType: {
+        select: {
+          name: true
+        }
+      }
     }
   });
