@@ -91,7 +91,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
     setValue('linkUrl', m.linkUrl ?? '');
     setValue('quantity', m.quantity ?? undefined);
     setValue('unitName', m.unitName ?? undefined);
-    setValue('price', m.price ?? undefined);
+    setValue('price', m.price != null ? m.price / 100 : undefined);
     setValue('notes', m.notes ?? '');
     setValue('assemblyId', undefined);
 
@@ -548,6 +548,11 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           </Box>
         </Grid>
       )}
+      <SelectMaterialToCopyModal
+        open={copyModalOpen}
+        onHide={() => setCopyModalOpen(false)}
+        onSelect={handleCopySelect}
+      />
     </NERFormModal>
   );
 };
