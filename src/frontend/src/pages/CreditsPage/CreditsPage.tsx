@@ -369,7 +369,8 @@ const CreditsPage: React.FC = () => {
         }
       }
     },
-    { name: 'Josh Len', color: '#000000ff' }
+    { name: 'Josh Len', color: '#000000ff' },
+    { name: 'Jasper Pinkus', color: '#276221' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
