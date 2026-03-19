@@ -76,6 +76,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Martin Hema', color: '#9125cc' },
     { name: 'Shree Singhal', color: '#ff7ca4' },
     { name: 'Isaac Levine', color: '#6a3941' },
+    { name: 'Pooja Ramakrishnan', color: '#9125cc' },
     { name: 'Andrew Tsai', color: '#3281a8' },
     { name: 'Ahnaf Inkiad', color: '#ab38b5' },
     { name: 'Aaryan Jain', color: '#e53774' },
