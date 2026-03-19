@@ -15,7 +15,7 @@ const OnboardingInfoSection: React.FC = () => {
     error: organizationError
   } = useCurrentOrganization();
 
-  const { data: links, isError: linksIsError, error: linksError, isLoading: linksIsLoading } = useAllUsefulLinks();
+  const { data: usefulLinks, isError: linksIsError, error: linksError, isLoading: linksIsLoading } = useAllUsefulLinks();
 
   if (organizationIsError) {
     return <ErrorPage message={organizationError.message} />;
@@ -23,7 +23,9 @@ const OnboardingInfoSection: React.FC = () => {
 
   if (linksIsError) return <ErrorPage message={linksError?.message} />;
 
-  if (!organization || organizationIsLoading || !links || linksIsLoading) return <LoadingIndicator />;
+  if (!organization || organizationIsLoading || !usefulLinks || linksIsLoading) return <LoadingIndicator />;
+
+  const links = usefulLinks?.filter((link) => !link.linkType.isOnGuestHomePage);
 
   return (
     <Grid container item sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>

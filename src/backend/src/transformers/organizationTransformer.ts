@@ -5,8 +5,8 @@ export const organizationTransformer = (organization: Organization): Organizatio
   return {
     ...organization,
     applicationLink: organization.applicationLink ?? undefined,
-    applyInterestImageId: organization.applyInterestImageId ?? undefined,
-    exploreAsGuestImageId: organization.exploreAsGuestImageId ?? undefined,
-    newMemberImageId: organization.newMemberImageId ?? undefined
+    newMemberImageId: organization.newMemberImageId ?? undefined,
+    platformDescription: organization.platformDescription,
+    platformLogoImageId: organization.platformLogoImageId ?? undefined
   };
 };

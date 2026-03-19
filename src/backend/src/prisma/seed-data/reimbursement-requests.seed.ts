@@ -99,7 +99,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    3500,
+    350000,
     organization,
     new Date('2024-10-01'),
     'Reimbursement request for high performance battery pack'
@@ -130,7 +130,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    150,
+    15000,
     organization,
     new Date('2024-10-05')
   );
@@ -166,7 +166,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    50,
+    5000,
     organization,
     new Date('2024-09-25')
   );
@@ -207,7 +207,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    2000,
+    200000,
     organization,
     new Date('2024-09-20')
   );
@@ -253,7 +253,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    450,
+    45000,
     organization,
     new Date('2024-10-10')
   );
@@ -289,7 +289,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    80,
+    8000,
     organization,
     new Date('2024-09-15')
   );
@@ -330,7 +330,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    1250,
+    125000,
     organization,
     new Date('2024-10-12')
   );
@@ -360,7 +360,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    450,
+    45000,
     organization,
     new Date('2024-09-28')
   );
@@ -401,7 +401,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    120,
+    12000,
     organization,
     new Date('2024-10-08')
   );
@@ -437,7 +437,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    200,
+    20000,
     organization,
     new Date('2024-09-18')
   );
@@ -478,7 +478,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    50,
+    5000,
     organization,
     new Date('2024-10-11')
   );
@@ -508,7 +508,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    750,
+    75000,
     organization,
     new Date('2024-09-10')
   );
@@ -555,7 +555,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    1800,
+    180000,
     organization,
     new Date('2024-10-13')
   );
@@ -591,7 +591,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    250,
+    25000,
     organization,
     new Date('2024-10-07')
   );
@@ -626,7 +626,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    90,
+    9000,
     organization,
     new Date('2024-10-09')
   );
@@ -662,7 +662,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    60,
+    6000,
     organization,
     new Date('2024-10-06')
   );
@@ -703,7 +703,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    1500,
+    150000,
     organization,
     new Date('2024-09-22')
   );
@@ -734,7 +734,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    550,
+    55000,
     organization,
     new Date('2024-09-29')
   );
@@ -775,7 +775,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    180,
+    18000,
     organization,
     new Date('2024-10-04')
   );
@@ -811,7 +811,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    950,
+    95000,
     organization,
     new Date('2024-09-27')
   );
@@ -858,7 +858,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    75,
+    7500,
     organization,
     new Date('2024-10-10')
   );
@@ -888,7 +888,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    220,
+    22000,
     organization,
     new Date('2024-09-24')
   );
@@ -929,7 +929,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    140,
+    14000,
     organization,
     new Date('2024-10-02')
   );
@@ -995,7 +995,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    2350,
+    235000,
     organization,
     new Date('2024-09-12')
   );
@@ -1042,7 +1042,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    4250,
+    425000,
     organization,
     new Date('2024-10-14')
   );
@@ -1072,7 +1072,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    180,
+    18000,
     organization,
     new Date('2024-09-10')
   );
@@ -1123,7 +1123,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    320,
+    32000,
     organization,
     new Date('2024-09-12')
   );
@@ -1174,7 +1174,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    500,
+    50000,
     organization,
     new Date('2024-08-15')
   );
@@ -1231,7 +1231,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    120,
+    12000,
     organization,
     new Date('2024-08-18')
   );
@@ -1288,7 +1288,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    1500,
+    150000,
     organization,
     new Date('2024-07-10')
   );
@@ -1356,7 +1356,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    280,
+    28000,
     organization,
     new Date('2024-07-12')
   );
@@ -1424,7 +1424,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    2750,
+    275000,
     organization,
     new Date('2024-06-01')
   );
@@ -1497,7 +1497,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    890,
+    89000,
     organization,
     new Date('2024-05-15')
   );
@@ -1570,7 +1570,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    150,
+    15000,
     organization,
     new Date('2024-05-05')
   );
