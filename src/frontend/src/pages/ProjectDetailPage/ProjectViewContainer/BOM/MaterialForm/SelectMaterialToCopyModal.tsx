@@ -75,8 +75,8 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
   const carsQuery = useGetAllCars();
   const projectsQuery = useAllProjects();
 
-  const cars = carsQuery.data ?? [];
-  const projects = projectsQuery.data ?? [];
+  const cars = useMemo(() => carsQuery.data ?? [], [carsQuery.data]);
+  const projects = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data]);
 
   const latestCar = useMemo(() => getLatestCar(cars), [cars]);
 
@@ -134,8 +134,8 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
     { enabled: !!selectedCar && open }
   );
 
-  const projectMaterials = projectMaterialsQuery.data ?? [];
-  const carSearchResults = carMaterialsQuery.data ?? [];
+  const projectMaterials = useMemo(() => projectMaterialsQuery.data ?? [], [projectMaterialsQuery.data]);
+  const carSearchResults = useMemo(() => carMaterialsQuery.data ?? [], [carMaterialsQuery.data]);
 
   const carOptions = useMemo(() => cars.map(carToOption), [cars]);
   const projectOptions = useMemo(() => projectsForSelectedCar.map(projectToOption), [projectsForSelectedCar]);
