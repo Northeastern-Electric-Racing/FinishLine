@@ -4,12 +4,12 @@ import { bulletsToObject } from '../../utils/form';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { useAllUsers } from '../../hooks/users.hooks';
+import { useAllMembers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
-import { useQuery } from '../../hooks/utils.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { ObjectSchema } from 'yup';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
+import { LeadershipChangeCreateArgs } from '../../../../shared';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
@@ -17,6 +17,7 @@ interface WorkPackageFormProps {
   crId?: string;
   workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
+  createLeadershipCR: (data: LeadershipChangeCreateArgs) => void;
   schema: ObjectSchema<any>;
   breadcrumbs: { name: string; route: string }[];
 }
@@ -25,12 +26,13 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   wbsNum,
   workPackageMutateAsync,
   createWorkPackageScopeCR,
+  createLeadershipCR,
   exitActiveMode,
   crId,
   schema,
   breadcrumbs
 }) => {
-  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const {
     data: project,
     isLoading: projectIsLoading,
@@ -38,7 +40,6 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
     error: projectError
   } = useSingleProject({ ...wbsNum, workPackageNumber: 0 });
   const { data: workPackages, isLoading: wpIsLoading, isError: wpIsError, error: wpError } = useAllWorkPackages();
-  const query = useQuery();
 
   if (wpIsLoading || !workPackages || usersIsLoading || !users || projectIsLoading || !project) return <LoadingIndicator />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;
@@ -56,11 +57,10 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
     ? {
         ...workPackage,
         workPackageId: workPackage.id,
-        crId: query.get('crId') || '',
-        stage: workPackage!.stage ?? 'NONE',
-        blockedBy: workPackage!.blockedBy.map(wbsPipe),
-        expectedActivities: bulletsToObject(workPackage!.expectedActivities),
-        deliverables: bulletsToObject(workPackage!.deliverables)
+        crId,
+        stage: workPackage.stage ?? 'NONE',
+        blockedBy: workPackage.blockedBy.map(wbsPipe),
+        descriptionBullets: bulletsToObject(workPackage.descriptionBullets)
       }
     : undefined;
 
@@ -79,6 +79,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
       exitActiveMode={exitActiveMode}
       workPackageMutateAsync={workPackageMutateAsync}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
+      createLeadershipCR={createLeadershipCR}
       defaultValues={defaultValues}
       wbsElement={wbsElement}
       leadOrManagerOptions={leadOrManagerOptions}

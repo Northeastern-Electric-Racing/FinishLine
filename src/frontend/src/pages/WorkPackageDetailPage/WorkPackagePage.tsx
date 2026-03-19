@@ -32,7 +32,7 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
 
   return (
     <WorkPackageViewContainer
-      workPackage={data!}
+      workPackage={data}
       enterEditMode={() => setEditMode(true)}
       allowEdit={!isGuest(auth.user.role)}
       allowActivate={!isGuest(auth.user.role)}

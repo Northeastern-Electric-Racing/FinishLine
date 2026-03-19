@@ -8,7 +8,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import { Box, Card, CardContent, Link, Typography, Grid } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { calculateDaysLeftInProject, daysBetween, Project, TaskStatus, WbsElementStatus, wbsPipe } from 'shared';
+import { calculateDaysLeftInProject, daysBetween, ProjectOverview, TaskStatus, WbsElementStatus, wbsPipe } from 'shared';
 import { daysOrWeeksLeftOrLate, emDashPipe, fullNamePipe } from '../utils/pipes';
 import WorkPackageStageChip from './WorkPackageStageChip';
 import FavoriteProjectButton from './FavoriteProjectButton';
@@ -17,7 +17,7 @@ import DoneIcon from '@mui/icons-material/Done';
 import LinkView from './Link/LinkView';
 
 interface ProjectDetailCardProps {
-  project: Project;
+  project: ProjectOverview;
   projectIsFavorited: boolean;
 }
 

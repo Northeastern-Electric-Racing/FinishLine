@@ -1,7 +1,7 @@
 import { Box, FormControl, FormLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { Control, Controller } from 'react-hook-form';
 import LoadingIndicator from './LoadingIndicator';
-import { useAllTeams } from '../hooks/teams.hooks';
+import { useAllTeamPreviews } from '../hooks/teams.hooks';
 
 interface TeamDropdownProps {
   control: Control<any, any>;
@@ -10,7 +10,7 @@ interface TeamDropdownProps {
 }
 
 const TeamDropdown = ({ control, name, multiselect = false }: TeamDropdownProps) => {
-  const { isLoading, data: teams } = useAllTeams();
+  const { isLoading, data: teams } = useAllTeamPreviews();
   if (isLoading || !teams) return <LoadingIndicator />;
 
   return (
@@ -33,7 +33,6 @@ const TeamDropdown = ({ control, name, multiselect = false }: TeamDropdownProps)
               value={value}
               onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
               size={'small'}
-              placeholder={'Change Team'}
               sx={{ height: 56, width: '100%', textAlign: 'left' }}
               MenuProps={{
                 anchorOrigin: {

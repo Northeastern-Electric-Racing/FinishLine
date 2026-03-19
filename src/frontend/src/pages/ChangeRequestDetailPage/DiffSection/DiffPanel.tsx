@@ -1,108 +1,111 @@
-import { ProjectProposedChangesPreview, WorkPackageProposedChangesPreview, calculateEndDate } from 'shared';
 import { Box } from '@mui/system';
-import { Typography } from '@mui/material';
-import {
-  ChangeBullet,
-  PotentialChangeType,
-  changeBulletDetailText,
-  potentialChangeBackgroundMap
-} from '../../../utils/diff-page.utils';
+import { List, ListItem, Typography, useTheme } from '@mui/material';
+import { ComparableObject, PotentialChangeType, getPotentialChangeBackground } from '../../../utils/diff-page.utils';
 import { labelPipe } from '../../../utils/pipes';
 
 interface ProjectDiffPanelProps {
-  projectProposedChanges?: ProjectProposedChangesPreview;
-  workPackageProposedChanges?: WorkPackageProposedChangesPreview;
-  potentialChangeTypeMap: Map<string, PotentialChangeType>;
+  comparableObjects: {
+    label: string;
+    objects: ComparableObject[];
+  }[];
+  original?: boolean;
 }
 
-const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
-  projectProposedChanges,
-  workPackageProposedChanges,
-  potentialChangeTypeMap
-}) => {
-  const changeBullets: ChangeBullet[] = [];
-  for (var projectKey in projectProposedChanges) {
-    if (projectProposedChanges.hasOwnProperty(projectKey)) {
-      changeBullets.push({
-        label: projectKey,
-        detail: projectProposedChanges[projectKey as keyof ProjectProposedChangesPreview]!
-      });
-    }
-  }
+const DiffPanel: React.FC<ProjectDiffPanelProps> = ({ comparableObjects, original }) => {
+  const theme = useTheme();
 
-  for (var workPackageKey in workPackageProposedChanges) {
-    if (workPackageProposedChanges.hasOwnProperty(workPackageKey)) {
-      if (workPackageKey === 'duration') {
-        workPackageKey = 'endDate';
-
-        const startDate = new Date(
-          new Date(workPackageProposedChanges!.startDate).getTime() -
-            new Date(workPackageProposedChanges!.startDate).getTimezoneOffset() * -6000
-        );
-
-        const duration = workPackageProposedChanges.duration;
-        const endDate = calculateEndDate(startDate, duration);
-        changeBullets.push({
-          label: 'endDate',
-          detail: endDate
-        });
-      } else {
-        changeBullets.push({
-          label: workPackageKey,
-          detail: workPackageProposedChanges[workPackageKey as keyof WorkPackageProposedChangesPreview]!
-        });
-      }
-    }
-  }
-
-  const renderDetailText = (detailText: string | string[]) => {
-    if (typeof detailText === 'string') {
+  const renderDetailText = (detail: string | ComparableObject[]) => {
+    if (typeof detail === 'string' || detail instanceof String) {
       return (
         <Typography padding="3px" display="inline">
-          {detailText}
+          {detail}
         </Typography>
       );
-    } else {
+    } else if (Array.isArray(detail) && detail.length > 0) {
       return (
-        <ul style={{ paddingLeft: '23px', marginBottom: '3px', marginTop: '0px' }}>
-          {detailText.map((bullet) => (
-            <li>{bullet}</li>
-          ))}
-        </ul>
+        <List sx={{ listStyleType: 'disc', pl: 6, pb: 1, pt: 0 }}>
+          {detail.map((bullet) => {
+            return (
+              <ListItem sx={{ display: 'list-item', py: 0 }}>
+                {!bullet.changed ? (
+                  <Typography>{renderDetailText(bullet.value)}</Typography>
+                ) : (
+                  <Box
+                    sx={{
+                      backgroundColor: getPotentialChangeBackground(
+                        original ? PotentialChangeType.REMOVED : PotentialChangeType.ADDED,
+                        theme
+                      ),
+                      borderRadius: '5px',
+                      mb: '3px'
+                    }}
+                  >
+                    {renderDetailText(bullet.value)}
+                  </Box>
+                )}
+              </ListItem>
+            );
+          })}
+        </List>
       );
     }
+    return (
+      <Typography color="#ffff" display={'inline'} padding={'3px'}>
+        No Values
+      </Typography>
+    );
   };
 
   return (
-    <Box>
-      {changeBullets.map((changeBullet) => {
-        const detailText = changeBulletDetailText(changeBullet);
-        const potentialChangeType = potentialChangeTypeMap.get(changeBullet.label)!;
-
-        return potentialChangeType === PotentialChangeType.SAME ? (
-          <Typography>
-            {labelPipe(changeBullet.label)}: {renderDetailText(detailText)}
-          </Typography>
-        ) : (
-          <Box
-            sx={{ backgroundColor: potentialChangeBackgroundMap.get(potentialChangeType), borderRadius: '5px', mb: '3px' }}
-          >
-            <Box
-              sx={{
-                borderRadius: '5px',
-                width: 'fit-content'
-              }}
-              component="span"
-              display="inline"
-            >
-              <Typography fontWeight="bold" padding="3px" display="inline">
-                {labelPipe(changeBullet.label)}:
-              </Typography>
-            </Box>
-            <Box component="span" display="inline">
-              {renderDetailText(detailText)}
-            </Box>
-          </Box>
+    <Box sx={{ padding: '8px' }}>
+      {comparableObjects.map((changeSection) => {
+        return (
+          <>
+            <Typography>{changeSection.label}</Typography>
+            <List>
+              {changeSection.objects.map((bullet) => {
+                return (
+                  <ListItem>
+                    {!bullet.changed ? (
+                      <Typography>
+                        <Box pl={2}>
+                          {labelPipe(bullet.key)}: {renderDetailText(bullet.value)}
+                        </Box>
+                      </Typography>
+                    ) : (
+                      <Box
+                        sx={{
+                          backgroundColor: getPotentialChangeBackground(
+                            original ? PotentialChangeType.REMOVED : PotentialChangeType.ADDED,
+                            theme
+                          ),
+                          borderRadius: '5px',
+                          mb: '3px'
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            borderRadius: '5px',
+                            width: 'fit-content'
+                          }}
+                          pl={2}
+                          component="span"
+                          display="inline"
+                        >
+                          <Typography fontWeight="bold" padding="3px" display="inline">
+                            {labelPipe(bullet.key)}:
+                          </Typography>
+                        </Box>
+                        <Box component="span" display="inline">
+                          {renderDetailText(bullet.value)}
+                        </Box>
+                      </Box>
+                    )}
+                  </ListItem>
+                );
+              })}
+            </List>
+          </>
         );
       })}
     </Box>

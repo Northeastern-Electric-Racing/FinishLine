@@ -6,35 +6,42 @@
 import { Grid } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { NERButton } from '../../../components/NERButton';
-import { DesignReview, UserScheduleSettings } from 'shared';
-import { useState } from 'react';
+import { Availability, Event, getMostRecentAvailabilities, UserScheduleSettings, formatEventDate } from 'shared';
+import { useEffect, useMemo, useState } from 'react';
 import SingleAvailabilityModal from './Availability/SingleAvailabilityModal';
-import { useCurrentUser } from '../../../hooks/users.hooks';
 import AvailabilityEditModal from './Availability/AvailabilityEditModal';
-import { useMarkUserConfirmed } from '../../../hooks/design-reviews.hooks';
+import { useMarkUserConfirmed } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 const UserScheduleSettingsView = ({
   scheduleSettings,
-  designReview
+  event
 }: {
   scheduleSettings: UserScheduleSettings;
-  designReview?: DesignReview;
+  event?: Event;
 }) => {
   const [availabilityOpen, setAvailabilityOpen] = useState(false);
   const toast = useToast();
-  const user = useCurrentUser();
-  const defaultOpen = designReview && !designReview.confirmedMembers.map((user) => user.userId).includes(user.userId);
+  const defaultOpen = event !== undefined;
   const [confirmAvailabilityOpen, setConfirmAvailabilityOpen] = useState(defaultOpen || false);
-  const [confirmedAvailabilities, setConfirmedAvailabilities] = useState(scheduleSettings.availability);
-  const { mutateAsync } = useMarkUserConfirmed(designReview?.designReviewId || '');
-  const confirmModalTitle = designReview
-    ? `Update your availability for the ${designReview?.wbsName} Design Review on the week of ${new Date(
-        designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000
-      ).toLocaleDateString()}`
-    : '';
+  const [confirmedAvailabilities, setConfirmedAvailabilities] = useState(new Map());
+  const { mutateAsync } = useMarkUserConfirmed(event?.eventId || '');
 
-  const handleConfirm = async (payload: { availability: number[] }) => {
+  // Get first scheduled date from event
+  let firstScheduledDate: Date | undefined;
+  if (event && event.scheduledTimes && event.scheduledTimes.length > 0 && event.scheduledTimes[0].startTime) {
+    firstScheduledDate = new Date(event.scheduledTimes[0].startTime);
+  }
+
+  // Get work package names for the event title
+  const workPackageNames = event?.workPackages.map((wp) => wp.wbsElement.name).join(', ') || 'Event';
+
+  const confirmModalTitle =
+    event && firstScheduledDate
+      ? `Update your availability for the ${workPackageNames} Design Review on the week of ${formatEventDate(firstScheduledDate)}`
+      : '';
+
+  const handleConfirm = async (payload: { availability: Availability[] }) => {
     setConfirmAvailabilityOpen(false);
     try {
       await mutateAsync(payload);
@@ -46,21 +53,36 @@ const UserScheduleSettingsView = ({
     }
   };
 
+  const firstDate = useMemo(() => {
+    const raw = event?.scheduledTimes?.[0]?.startTime;
+    return raw ? new Date(raw as any) : new Date();
+  }, [event?.scheduledTimes]);
+
+  useEffect(() => {
+    if (confirmedAvailabilities.size === 0 && scheduleSettings.availabilities.length > 0) {
+      const confirmed = getMostRecentAvailabilities(scheduleSettings.availabilities, firstDate);
+      setConfirmedAvailabilities(new Map(confirmed.map((availability) => [availability.dateSet.getTime(), availability])));
+    }
+  }, [confirmedAvailabilities.size, scheduleSettings.availabilities, firstDate]);
+
   return (
     <Grid container rowSpacing={1} columnSpacing={4}>
       <SingleAvailabilityModal
         open={availabilityOpen}
         onHide={() => setAvailabilityOpen(false)}
         header={'Availability'}
-        availabilites={scheduleSettings.availability}
+        availabilites={scheduleSettings.availabilities}
       />
       <AvailabilityEditModal
         open={confirmAvailabilityOpen}
         onHide={() => setConfirmAvailabilityOpen(false)}
         header={confirmModalTitle}
-        availabilites={confirmedAvailabilities}
-        setAvailabilities={setConfirmedAvailabilities}
-        onSubmit={() => handleConfirm({ availability: confirmedAvailabilities })}
+        confirmedAvailabilities={confirmedAvailabilities}
+        setConfirmedAvailabilities={setConfirmedAvailabilities}
+        totalAvailabilities={scheduleSettings.availabilities}
+        initialDate={firstScheduledDate || new Date()}
+        onSubmit={() => handleConfirm({ availability: Array.from(confirmedAvailabilities.values()) })}
+        canChangeDateRange={false}
       />
       <Grid item xs={12} md={'auto'}>
         <DetailDisplay label="Personal Google Email" content={scheduleSettings.personalGmail} />

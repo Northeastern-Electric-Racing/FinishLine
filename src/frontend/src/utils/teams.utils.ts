@@ -1,11 +1,11 @@
-import { Team, TeamPreview, User } from 'shared';
+import { AuthenticatedUser, Team, TeamPreview, User } from 'shared';
 import { fullNamePipe } from './pipes';
 
 export const makeTeamList = (team: Team | TeamPreview): User[] => {
   return team.members.concat(team.head).concat(team.leads);
 };
 
-export const isUserOnTeam = (team: TeamPreview, user: User): boolean => {
+export const isUserOnTeam = (team: TeamPreview, user: AuthenticatedUser): boolean => {
   return (
     team.head.userId === user.userId ||
     team.leads.map((lead) => lead.userId).includes(user.userId) ||
@@ -32,3 +32,22 @@ export const userToAutocompleteOption = (user?: User): { label: string; id: stri
 export const userComparator = (user1: User, user2: User) => {
   return user1.firstName > user2.firstName ? 1 : -1;
 };
+
+export type SubmitText =
+  | 'Submit'
+  | 'Save'
+  | 'Create'
+  | 'Yes'
+  | 'Delete'
+  | 'Schedule'
+  | 'Send To Advisor'
+  | 'Mark as added to Concur'
+  | 'Mark Submitted'
+  | 'Create Change Request'
+  | 'Update'
+  | 'Submit Vendor'
+  | 'Accept'
+  | 'Send'
+  | 'Close Attendance';
+
+export type CancelText = 'Cancel' | 'Delete' | 'Exit' | 'No';

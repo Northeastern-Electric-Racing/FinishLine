@@ -4,17 +4,53 @@
  */
 
 import axios from '../utils/axios';
-import { Project, User, UserScheduleSettings, UserSecureSettings, UserWithScheduleSettings } from 'shared';
+import {
+  dateToMidnightUTC,
+  ProjectOverview,
+  SetUserScheduleSettingsPayload,
+  Task,
+  User,
+  UserScheduleSettings,
+  UserSecureSettings,
+  UserWithRole,
+  UserWithScheduleSettings
+} from 'shared';
 import { apiUrls } from '../utils/urls';
-import { authUserTransformer, userTransformer } from './transformers/users.transformers';
+import {
+  authUserTransformer,
+  userScheduleSettingsTransformer,
+  userTransformer,
+  userWithScheduleSettingsTransformer
+} from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
-import { projectTransformer } from './transformers/projects.transformers';
+import { projectOverviewTransformer } from './transformers/projects.transformers';
+import { taskTransformer } from './transformers/tasks.transformers';
 
 /**
  * Fetches all users.
  */
 export const getAllUsers = () => {
-  return axios.get<UserWithScheduleSettings[]>(apiUrls.users(), {
+  return axios.get<UserWithRole[]>(apiUrls.users(), {
+    transformResponse: (data) => JSON.parse(data).map(userTransformer)
+  });
+};
+
+/**
+ * All users in the current organization with their roles.
+ * @returns the users in the current organization with their roles
+ */
+export const getAllOrgUsers = () => {
+  return axios.get<UserWithRole[]>(apiUrls.orgUsers(), {
+    transformResponse: (data) => JSON.parse(data).map(userTransformer)
+  });
+};
+
+/**
+ * All users in the current organization that are member or higher in role
+ * @returns the members in the current organization with their roles
+ */
+export const getAllOrgMembers = () => {
+  return axios.get<UserWithRole[]>(apiUrls.orgMembers(), {
     transformResponse: (data) => JSON.parse(data).map(userTransformer)
   });
 };
@@ -24,8 +60,8 @@ export const getAllUsers = () => {
  *
  * @param id User ID of the requested user.
  */
-export const getSingleUser = (id: number) => {
-  return axios.get<User>(apiUrls.usersById(`${id}`), {
+export const getSingleUser = (id: string) => {
+  return axios.get<User>(apiUrls.usersById(id), {
     transformResponse: (data) => userTransformer(JSON.parse(data))
   });
 };
@@ -44,11 +80,23 @@ export const logUserIn = (id_token: string) => {
 };
 
 /**
+ * Attempts to get the current logged in user
+ *
+ * @returns The authenticated user
+ */
+export const getCurrentUser = () => {
+  return axios.get<AuthenticatedUser>(apiUrls.currentUser(), {
+    transformResponse: (data) => authUserTransformer(JSON.parse(data)),
+    timeout: 5000
+  });
+};
+
+/**
  * Log in a dev user.
  *
  * @param userId The userId to log in.
  */
-export const logUserInDev = (userId: number) => {
+export const logUserInDev = (userId: string) => {
   return axios.post<AuthenticatedUser>(
     apiUrls.usersLoginDev(),
     { userId },
@@ -61,8 +109,8 @@ export const logUserInDev = (userId: number) => {
  *
  * @param id User ID of the requested user's settings.
  */
-export const getSingleUserSettings = (id: number) => {
-  return axios.get<UserSettings>(apiUrls.userSettingsByUserId(`${id}`));
+export const getSingleUserSettings = (id: string) => {
+  return axios.get<UserSettings>(apiUrls.userSettingsByUserId(id));
 };
 
 /**
@@ -77,9 +125,9 @@ export const getCurrentUserSecureSettings = () => {
  *
  * @param id User ID of the requested user's favorite projects.
  */
-export const getUsersFavoriteProjects = (id: number) => {
-  return axios.get<Project[]>(apiUrls.userFavoriteProjects(`${id}`), {
-    transformResponse: (data) => JSON.parse(data).map(projectTransformer)
+export const getUsersFavoriteProjects = (id: string) => {
+  return axios.get<ProjectOverview[]>(apiUrls.userFavoriteProjects(id), {
+    transformResponse: (data) => JSON.parse(data).map(projectOverviewTransformer)
   });
 };
 
@@ -89,8 +137,8 @@ export const getUsersFavoriteProjects = (id: number) => {
  * @param id User ID of the requested user's secure settings
  * @returns the secure settings
  */
-export const getUserSecureSettings = (id: number) => {
-  return axios.get<UserSecureSettings>(apiUrls.userSecureSettings(`${id}`));
+export const getUserSecureSettings = (id: string) => {
+  return axios.get<UserSecureSettings>(apiUrls.userSecureSettings(id));
 };
 
 /**
@@ -99,15 +147,17 @@ export const getUserSecureSettings = (id: number) => {
  * @param userId User ID of the requested user's schedule settings
  * @returns the schedule settings
  */
-export const getUserScheduleSettings = (userId: number) => {
-  return axios.get<UserScheduleSettings>(apiUrls.userScheduleSettings(`${userId}`));
+export const getUserScheduleSettings = (userId: string) => {
+  return axios.get<UserScheduleSettings>(apiUrls.userScheduleSettings(userId), {
+    transformResponse: (data) => userScheduleSettingsTransformer(JSON.parse(data))
+  });
 };
 
 /**
  * Update the given user's settings by UserId
  */
-export const updateUserSettings = (id: number, settings: UserSettings) => {
-  return axios.post<{ message: string }>(apiUrls.userSettingsByUserId(`${id}`), settings);
+export const updateUserSettings = (id: string, settings: UserSettings) => {
+  return axios.post<{ message: string }>(apiUrls.userSettingsByUserId(id), settings);
 };
 
 /**
@@ -120,10 +170,45 @@ export const updateUserSecureSettings = (settings: UserSecureSettings) => {
 /**
  * Update the given user's schedule settings by UserId
  */
-export const updateUserScheduleSettings = (settings: UserScheduleSettings) => {
-  return axios.post<UserScheduleSettings>(apiUrls.userScheduleSettingsSet(), settings);
+export const updateUserScheduleSettings = (settings: SetUserScheduleSettingsPayload) => {
+  return axios.post<UserScheduleSettings>(apiUrls.userScheduleSettingsSet(), {
+    ...settings,
+    availability: settings.availability.map((a) => ({ ...a, dateSet: dateToMidnightUTC(a.dateSet) }))
+  });
 };
 
-export const updateUserRole = (id: number, role: string) => {
-  return axios.post<{ message: string }>(apiUrls.userRoleByUserId(`${id}`), { role });
+export const updateUserRole = (id: string, role: string) => {
+  return axios.post<{ message: string }>(apiUrls.userRoleByUserId(id), { role });
+};
+
+export const getUserTasks = (id: string) => {
+  return axios.get<Task[]>(apiUrls.userTasks(id), {
+    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  });
+};
+
+export const getManyUserTasks = (userIds: string[]) => {
+  return axios.post<Task[]>(
+    apiUrls.manyUserTasks(),
+    { userIds },
+    {
+      transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+    }
+  );
+};
+
+export const getManyUsersWithScheduleSettings = (userIds: string[]) => {
+  return axios.post<UserWithScheduleSettings[]>(
+    apiUrls.manyUsersWithScheduleSettings(),
+    {
+      userIds
+    },
+    {
+      transformResponse: (data) => JSON.parse(data).map(userWithScheduleSettingsTransformer)
+    }
+  );
+};
+
+export const logUserOut = () => {
+  return axios.post<{ message: string }>(apiUrls.logUserOut());
 };

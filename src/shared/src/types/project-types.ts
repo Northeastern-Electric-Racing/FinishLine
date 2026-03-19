@@ -3,11 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, UserPreview } from './user-types';
-import { ImplementedChange } from './change-request-types';
-import { TimelineStatus, WorkPackageStage } from './work-package-types';
-import { TeamPreview } from './team-types';
-import { Assembly, Material, Task } from 'shared';
+import { EventPreview, TeamType } from './calendar-types.js';
+import { ImplementedChange } from './change-request-types.js';
+import { Task } from './task-types.js';
+import { TeamPreview } from './team-types.js';
+import { User, UserPreview } from './user-types.js';
+import { WorkPackageStage } from './work-package-types.js';
 
 export interface WbsNumber {
   carNumber: number;
@@ -15,25 +16,22 @@ export interface WbsNumber {
   workPackageNumber: number;
 }
 
-export interface WbsElement {
-  id: number;
+export interface WbsElementPreview {
+  wbsElementId: string; // wbs element id
+  id: string; // project/ work package id
   wbsNum: WbsNumber;
   dateCreated: Date;
+  deleted: boolean;
   name: string;
   status: WbsElementStatus;
-  lead?: User;
-  manager?: User;
-  links: Link[];
-  changes: ImplementedChange[];
-  materials: Material[];
-  assemblies: Assembly[];
+  lead?: UserPreview;
+  manager?: UserPreview;
 }
 
-export interface WbsProposedChanges {
-  id: string;
-  name: string;
-  status: WbsElementStatus;
+export interface WbsElement extends WbsElementPreview {
   links: Link[];
+  changes: ImplementedChange[];
+  descriptionBullets: DescriptionBullet[];
   lead?: User;
   manager?: User;
 }
@@ -44,84 +42,102 @@ export enum WbsElementStatus {
   Complete = 'COMPLETE'
 }
 
-export interface ProjectProposedChanges extends WbsProposedChanges {
-  summary: string;
-  budget: number;
-  rules: string[];
-  goals: DescriptionBullet[];
-  features: DescriptionBullet[];
-  otherConstraints: DescriptionBullet[];
-  teams: TeamPreview[];
-  carNumber?: number;
-}
-
-export type ProjectProposedChangesPreview = Omit<ProjectProposedChanges, 'carNumber' | 'id' | 'status'>;
-
 export interface Project extends WbsElement {
   summary: string;
   budget: number;
-  rules: string[];
   endDate?: Date;
   duration: number;
   startDate?: Date;
-  goals: DescriptionBullet[];
-  features: DescriptionBullet[];
-  otherConstraints: DescriptionBullet[];
   workPackages: WorkPackage[];
   teams: TeamPreview[];
   tasks: Task[];
+  favoritedBy: User[];
+  abbreviation?: string;
 }
 
-export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status'>;
+export type RetrospectiveProjectPreview = Omit<ProjectGantt, 'workPackages'> & {
+  workPackages: RetrospectiveWorkPackage[];
+  originalStartDate?: Date;
+  originalEndDate?: Date;
+};
 
-export interface WorkPackageProposedChanges extends WbsProposedChanges {
-  startDate: Date;
+export interface ProjectGantt extends WbsElementPreview {
+  startDate?: Date;
+  endDate?: Date;
+  budget: number;
+  teams: { teamId: string; teamName: string }[];
+  workPackages: WorkPackage[];
+  tasks: Task[];
   duration: number;
-  blockedBy: WbsNumber[];
-  expectedActivities: DescriptionBullet[];
-  deliverables: DescriptionBullet[];
-  stage?: WorkPackageStage;
+  abbreviation?: string;
+  lead?: User;
+  manager?: User;
 }
 
-export type WorkPackageProposedChangesPreview = Omit<WorkPackageProposedChanges, 'id' | 'links' | 'status'>;
+export interface ProjectPreview extends WbsElementPreview {
+  startDate?: Date;
+  endDate?: Date;
+  budget: number;
+  duration: number;
+  abbreviation?: string;
+  workPackages: WorkPackagePreview[];
+  teams: { teamName: string; teamId: string }[];
+}
+
+export interface ProjectOverview extends ProjectPreview {
+  links: Link[];
+  tasks: Task[];
+}
+
+export interface RetrospectiveWorkPackage extends WorkPackage {
+  originalStartDate: Date;
+  originalDuration: number;
+}
 
 export interface WorkPackage extends WbsElement {
   orderInProject: number;
-  progress: number;
   startDate: Date;
   endDate: Date;
   duration: number;
-  expectedProgress: number;
-  timelineStatus: TimelineStatus;
   blockedBy: WbsNumber[];
-  expectedActivities: DescriptionBullet[];
-  deliverables: DescriptionBullet[];
+  blocking: WbsNumber[];
   projectName: string;
   stage?: WorkPackageStage;
+  teamTypes: TeamType[];
+  projectId: string;
+  events: EventPreview[];
+}
+
+export interface WorkPackagePreview extends WbsElementPreview {
+  projectName: string;
+  projectId: string;
+  startDate: Date;
+  duration: number;
+  endDate: Date;
+  stage?: WorkPackageStage;
+  blockedBy: WbsNumber[];
 }
 
 export interface DescriptionBullet {
-  id: number;
+  id: string;
   detail: string;
   dateAdded: Date;
+  type: string;
   dateDeleted?: Date;
-  userChecked?: User;
+  userChecked?: UserPreview;
   dateChecked?: Date;
 }
 
 export interface LinkType {
   name: string;
-  dateCreated: Date;
-  creator: UserPreview;
   required: boolean;
   iconName: string;
+  isOnGuestHomePage: boolean;
 }
 
 export interface Link {
   linkId: string;
   linkType: LinkType;
-  dateCreated: Date;
-  creator: User;
   url: string;
 }
 
@@ -130,3 +146,54 @@ export interface LinkCreateArgs {
   linkTypeName: string;
   url: string;
 }
+
+export interface WbsProposedChanges {
+  id: string;
+  name: string;
+  status: WbsElementStatus;
+  links: Link[];
+  descriptionBullets: DescriptionBullet[];
+  lead?: User;
+  manager?: User;
+}
+
+export interface ProjectProposedChanges extends WbsProposedChanges {
+  summary: string;
+  budget: number;
+  teams: TeamPreview[];
+  carNumber?: number;
+  workPackageProposedChanges: WorkPackageProposedChanges[];
+}
+
+export interface WorkPackageProposedChanges extends WbsProposedChanges {
+  startDate: Date;
+  duration: number;
+  blockedBy: WbsNumber[];
+  stage?: WorkPackageStage;
+}
+
+export type WorkPackageProposedChangesPreview = Omit<WorkPackageProposedChanges, 'id' | 'links' | 'status'>;
+
+export type ProjectProposedChangesPreview = Omit<ProjectProposedChanges, 'carNumber' | 'id' | 'status'>;
+
+export interface DescriptionBulletType {
+  id: string;
+  name: string;
+  workPackageRequired: boolean;
+  projectRequired: boolean;
+}
+
+export interface LinkTypeCreatePayload {
+  name: string;
+  iconName: string;
+  required: boolean;
+  isOnGuestHomePage: boolean;
+}
+
+export interface DescriptionBulletTypeCreatePayload {
+  name: string;
+  workPackageRequired: boolean;
+  projectRequired: boolean;
+}
+
+export interface Car extends WbsElement {}

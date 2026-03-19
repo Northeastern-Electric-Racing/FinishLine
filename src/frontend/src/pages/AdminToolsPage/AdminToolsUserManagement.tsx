@@ -12,7 +12,7 @@ import { useAllUsers, useCurrentUser, useUpdateUserRole } from '../../hooks/user
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
-import { RoleEnum, User, isAdmin, rankUserRole } from 'shared';
+import { RoleEnum, User, rankUserRole } from 'shared';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useToast } from '../../hooks/toasts.hooks';
 
@@ -65,6 +65,14 @@ const AdminToolsUserManagement: React.FC = () => {
     }
   };
 
+  const getAvailableRoles = () => {
+    return Object.values(RoleEnum).filter((v) => rankUserRole(v) < currentUserRank);
+  };
+
+  const getModifiableUsers = () => {
+    return users.filter((user) => rankUserRole(user.role) < currentUserRank);
+  };
+
   const handleClick = async () => {
     if (!user) return;
     try {
@@ -92,7 +100,7 @@ const AdminToolsUserManagement: React.FC = () => {
           <NERAutocomplete
             id="users-autocomplete"
             onChange={usersSearchOnChange}
-            options={users.filter((user) => rankUserRole(user.role) < currentUserRank).map(userToAutocompleteOptionWithRole)}
+            options={getModifiableUsers().map(userToAutocompleteOptionWithRole)}
             size="small"
             placeholder="Select a User"
             value={user ? userToAutocompleteOptionWithRole(user) : null}
@@ -108,21 +116,11 @@ const AdminToolsUserManagement: React.FC = () => {
             sx={styles.roleSelectStyle}
             disabled={!user}
           >
-            {isAdmin(currentUser.role)
-              ? Object.values(RoleEnum)
-                  .filter((v) => rankUserRole(v) <= currentUserRank)
-                  .map((v) => (
-                    <MenuItem value={v} key={v}>
-                      {v}
-                    </MenuItem>
-                  ))
-              : Object.values(RoleEnum)
-                  .filter((v) => rankUserRole(v) < currentUserRank)
-                  .map((v) => (
-                    <MenuItem value={v} key={v}>
-                      {v}
-                    </MenuItem>
-                  ))}
+            {getAvailableRoles().map((v) => (
+              <MenuItem value={v} key={v}>
+                {v}
+              </MenuItem>
+            ))}
           </Select>
         </Grid>
         <Grid item xs={12} md={'auto'} mt={-1.5}>

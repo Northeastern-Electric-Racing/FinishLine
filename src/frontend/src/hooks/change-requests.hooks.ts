@@ -11,7 +11,8 @@ import {
   ProjectProposedChangesCreateArgs,
   ProposedSolutionCreateArgs,
   WbsNumber,
-  WorkPackageProposedChangesCreateArgs
+  WorkPackageProposedChangesCreateArgs,
+  LeadershipChangeCreateArgs
 } from 'shared';
 import {
   createActivationChangeRequest,
@@ -22,7 +23,12 @@ import {
   reviewChangeRequest,
   addProposedSolution,
   deleteChangeRequest,
-  requestCRReview
+  requestCRReview,
+  getToReviewChangeRequests,
+  getUnreviewedChangeRequests,
+  getApprovedChangeRequests,
+  createBudgetChangeRequest,
+  createLeadershipChangeRequest
 } from '../apis/change-requests.api';
 
 /**
@@ -35,12 +41,33 @@ export const useAllChangeRequests = () => {
   });
 };
 
+export const useGetToReviewChangeRequests = () => {
+  return useQuery<ChangeRequest[], Error>(['change requests', 'to-review'], async () => {
+    const { data } = await getToReviewChangeRequests();
+    return data;
+  });
+};
+
+export const useGetUnreviewedChangeRequests = (wbsNum?: WbsNumber) => {
+  return useQuery<ChangeRequest[], Error>(['change requests', 'unreviewed'], async () => {
+    const { data } = await getUnreviewedChangeRequests(wbsNum);
+    return data;
+  });
+};
+
+export const useGetApprovedChangeRequests = (wbsNum?: WbsNumber) => {
+  return useQuery<ChangeRequest[], Error>(['change requests', 'approved'], async () => {
+    const { data } = await getApprovedChangeRequests(wbsNum);
+    return data;
+  });
+};
+
 /**
  * Custom React Hook to supply a single change request.
  *
  * @param id Change request ID of the requested change request.
  */
-export const useSingleChangeRequest = (id: number) => {
+export const useSingleChangeRequest = (id: string) => {
   return useQuery<ChangeRequest, Error>(['change requests', id], async () => {
     const { data } = await getSingleChangeRequest(id);
     return data;
@@ -48,11 +75,11 @@ export const useSingleChangeRequest = (id: number) => {
 };
 
 export interface ReviewPayload {
-  reviewerId: number;
-  crId: number;
+  reviewerId: string;
+  crId: string;
   accepted: boolean;
   reviewNotes: string;
-  psId: string;
+  psId?: string;
 }
 
 /**
@@ -85,9 +112,9 @@ export const useReviewChangeRequest = () => {
  */
 export const useDeleteChangeRequest = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, number>(
+  return useMutation<{ message: string }, Error, string>(
     ['change requests', 'delete'],
-    async (id: number) => {
+    async (id: string) => {
       const { data } = await deleteChangeRequest(id);
       return data;
     },
@@ -129,25 +156,33 @@ export const useCreateStandardChangeRequest = () => {
 };
 
 export interface CreateActivationChangeRequestPayload {
-  submitterId: number;
+  submitterId: string;
   wbsNum: WbsNumber;
-  projectLeadId: number;
-  projectManagerId: number;
+  leadId: string;
+  managerId: string;
   startDate: string;
   confirmDetails: boolean;
   type: string;
 }
 
 export interface CreateStageGateChangeRequestPayload {
-  submitterId: number;
+  submitterId: string;
   wbsNum: WbsNumber;
   confirmDone: boolean;
   type: string;
 }
 
-export interface CreateProposeSolutionPayload {
-  submitterId: number;
-  crId: number;
+export interface CreateBudgetChangeRequestPayload {
+  submitterId: string;
+  otherReasonId?: string;
+  accountCodeId?: string;
+  proposedBudget: number;
+  type: string;
+}
+
+export interface CreateProposedSolutionPayload {
+  submitterId: string;
+  crId: string;
   description: string;
   scopeImpact: string;
   timelineImpact: number;
@@ -164,8 +199,8 @@ export const useCreateActivationChangeRequest = () => {
       const { data } = await createActivationChangeRequest(
         payload.submitterId,
         payload.wbsNum,
-        payload.projectLeadId,
-        payload.projectManagerId,
+        payload.leadId,
+        payload.managerId,
         payload.startDate,
         payload.confirmDetails
       );
@@ -188,13 +223,58 @@ export const useCreateStageGateChangeRequest = () => {
 };
 
 /**
+ * Custom React Hook to create a budget change request.
+ */
+export const useCreateBudgetChangeRequest = () => {
+  return useMutation<{ message: string }, Error, CreateBudgetChangeRequestPayload>(
+    ['change requests', 'create', 'budget'],
+    async (payload: CreateBudgetChangeRequestPayload) => {
+      const { data } = await createBudgetChangeRequest(
+        payload.submitterId,
+        payload.proposedBudget,
+        payload.otherReasonId,
+        payload.accountCodeId
+      );
+      return data;
+    }
+  );
+};
+
+/**
+ * Custome React hook to create a leadership change request
+ * to change lead and/or manager of a project or work package
+ */
+export const useCreateLeadershipChangeRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, LeadershipChangeCreateArgs>(
+    ['change requests', 'create', 'leadership'],
+    async (payload: LeadershipChangeCreateArgs) => {
+      const { data } = await createLeadershipChangeRequest(
+        payload.submitterId,
+        payload.wbsNum,
+        payload.leadId,
+        payload.managerId
+      );
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['change requests']);
+        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['work packages']);
+      }
+    }
+  );
+};
+
+/**
  * Custom React Hook to create a proposed solution
  */
 export const useCreateProposeSolution = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, CreateProposeSolutionPayload>(
+  return useMutation<{ message: string }, Error, CreateProposedSolutionPayload>(
     ['change requests', 'create', 'propose solution'],
-    async (payload: CreateProposeSolutionPayload) => {
+    async (payload: CreateProposedSolutionPayload) => {
       const { data } = await addProposedSolution(
         payload.submitterId,
         payload.crId,
@@ -214,7 +294,7 @@ export const useCreateProposeSolution = () => {
 };
 
 export interface CRReviewPayload {
-  userIds: number[];
+  userIds: string[];
 }
 
 /**

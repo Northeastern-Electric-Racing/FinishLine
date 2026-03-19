@@ -1,27 +1,21 @@
+import { AuthenticatedUser, RoleEnum } from 'shared';
+import { AuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args.js';
+import { isCurrentUserAtLeastLeadForFinance, isCurrentUserOnFinance } from '../utils/reimbursement-requests.utils.js';
 import { Prisma } from '@prisma/client';
-import { AuthenticatedUser } from 'shared';
-import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
-import {
-  isAuthUserHeadOfFinance,
-  isAuthUserAtLeastLeadForFinance,
-  isAuthUserOnFinance
-} from '../utils/reimbursement-requests.utils';
 
-const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>): AuthenticatedUser => {
+const authenticatedUserTransformer = (user: Prisma.UserGetPayload<AuthUserQueryArgs>): AuthenticatedUser => {
   return {
     userId: user.userId,
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
-    emailId: user.emailId,
-    role: user.role,
+    role: user.roles.length > 0 ? user.roles[0].roleType : RoleEnum.GUEST,
     defaultTheme: user.userSettings?.defaultTheme,
-    teamAsHeadId: user.teamAsHead?.teamId,
-    favoritedProjectsId: user.favoriteProjects.map((project) => project.projectId),
-    isFinance: isAuthUserOnFinance(user),
-    isHeadOfFinance: isAuthUserHeadOfFinance(user),
-    isAtLeastFinanceLead: isAuthUserAtLeastLeadForFinance(user),
-    changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId)
+    isFinance: isCurrentUserOnFinance(user),
+    isAtLeastFinanceLead: isCurrentUserAtLeastLeadForFinance(user),
+    organizations: user.organizations.map((organization) => organization.organizationId),
+    onboardingTeamTypeIds: user.onboardingTeamTypes.map((teamType) => teamType.teamTypeId),
+    onboardedTeamTypeIds: user.onboardedTeamTypes.map((teamType) => teamType.teamTypeId)
   };
 };
 

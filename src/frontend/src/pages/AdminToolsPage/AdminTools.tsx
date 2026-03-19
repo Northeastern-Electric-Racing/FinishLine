@@ -4,6 +4,10 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
 import AdminToolsPage from './AdminToolsPage';
 import { canAccessAdminTools } from '../../utils/users';
+import CreateWorkPackageTemplate from '../WorkPackageTemplateForm/CreateWorkPackageTemplate';
+import EditWorkPackageTemplate from '../WorkPackageTemplateForm/EditWorkPackageTemplate';
+import EditProjectTemplate from '../ProjectTemplateForm/EditProjectTemplate';
+import CreateProjectTemplate from '../ProjectTemplateForm/CreateProjectTemplate';
 
 const AdminTools: React.FC = () => {
   const auth = useAuth();
@@ -22,6 +26,10 @@ const AdminTools: React.FC = () => {
 
   return (
     <Switch>
+      <Route path={routes.WORK_PACKAGE_TEMPLATE_NEW} component={CreateWorkPackageTemplate} />
+      <Route path={routes.WORK_PACKAGE_TEMPLATE_EDIT} component={EditWorkPackageTemplate} />
+      <Route path={routes.PROJECT_TEMPLATE_NEW} component={CreateProjectTemplate} />
+      <Route path={routes.PROJECT_TEMPLATE_EDIT} component={EditProjectTemplate} />
       <Route path={routes.ADMIN_TOOLS} component={AdminToolsPage} />
     </Switch>
   );

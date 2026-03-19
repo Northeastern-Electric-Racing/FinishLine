@@ -1,14 +1,16 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { JwtPayload, VerifyErrors } from 'jsonwebtoken';
-import prisma from '../prisma/prisma';
-import { HttpException, NotFoundException } from './errors.utils';
-import { User, User_Secure_Settings, User_Settings } from '@prisma/client';
+import prisma from '../prisma/prisma.js';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils.js';
+import { Organization, User_Secure_Settings, User_Settings } from '@prisma/client';
+import { IncomingHttpHeaders } from 'http';
+import { User } from 'shared';
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
 // generate a jwt using the user's first and last name
-export const generateAccessToken = (user: { userId: number; firstName: string; lastName: string }) => {
+export const generateAccessToken = (user: { userId: string; firstName: string; lastName: string }) => {
   return jwt.sign(user, TOKEN_SECRET, { expiresIn: '12h' });
 };
 
@@ -21,7 +23,8 @@ export const prodHeaders = [
   'Authorization',
   'XMLHttpRequest',
   'X-Auth-Token',
-  'Client-Security-Token'
+  'Client-Security-Token',
+  'organizationId'
 ];
 
 // middleware function for production that will enforce jwt authorization
@@ -29,9 +32,10 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
   if (
     req.path === '/users/auth/login' || // logins dont have cookies yet
     req.path === '/' || // base route is available so aws can listen and check the health
-    req.method === 'OPTIONS' // this is a pre-flight request and those don't send cookies
+    req.method === 'OPTIONS' || // this is a pre-flight request and those don't send cookies
+    req.path.startsWith('/slack') // slack endpoints (events and interactions) are only used from slack api
   ) {
-    next();
+    return next();
   } else if (
     req.path.startsWith('/notifications') // task deadline notification endpoint
   ) {
@@ -39,18 +43,18 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
   } else {
     const { token } = req.cookies;
 
-    if (!token) return res.status(401).json({ message: 'Authentication Failed: Cookie not found!' });
-
-    jwt.verify(token, TOKEN_SECRET, (err: VerifyErrors | null, decoded: string | JwtPayload | undefined) => {
-      if (err) return res.status(401).json({ message: 'Authentication Failed: Invalid JWT!' });
-
-      if (!decoded || typeof decoded === 'string') {
-        return res.status(401).json({ message: 'Authentication Failed: Invalid JWT payload!' });
-      }
-      res.locals.userId = parseInt(decoded.userId);
-
-      next();
-    });
+    if (!token) res.status(401).json({ message: 'Authentication Failed: Cookie not found!' });
+    else {
+      jwt.verify(token, TOKEN_SECRET, (err: VerifyErrors | null, decoded: string | JwtPayload | undefined) => {
+        if (err) res.status(401).json({ message: 'Authentication Failed: Invalid JWT!' });
+        else if (!decoded || typeof decoded === 'string') {
+          res.status(401).json({ message: 'Authentication Failed: Invalid JWT payload!' });
+        } else {
+          res.locals.userId = decoded.userId;
+          next();
+        }
+      });
+    }
   }
 };
 
@@ -60,7 +64,8 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
     req.path === '/users/auth/login/dev' || // logins dont have cookies yet
     req.path === '/' || // base route is available so aws can listen and check the health
     req.method === 'OPTIONS' || // this is a pre-flight request and those don't send cookies
-    req.path === '/users' // dev login needs the list of users to log in
+    req.path === '/users' || // dev login needs the list of users to log in
+    req.path.startsWith('/slack') // slack endpoints (events and interactions) are only used from slack api
   ) {
     next();
   } else if (
@@ -70,11 +75,12 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
   } else {
     const devUserId = req.headers.authorization;
 
-    if (!devUserId) return res.status(401).json({ message: 'Authentication Failed: Not logged in (dev)!' });
+    if (!devUserId) res.status(401).json({ message: 'Authentication Failed: Not logged in (dev)!' });
+    else {
+      res.locals.userId = devUserId;
 
-    res.locals.userId = parseInt(devUserId);
-
-    next();
+      next();
+    }
   }
 };
 
@@ -89,7 +95,7 @@ const notificationEndpointAuth = (req: Request, res: Response, next: NextFunctio
   if (authorization !== NOTIFICATION_ENDPOINT_SECRET)
     return res.status(401).json({ message: 'Authentication Failed: Invalid secret!' });
 
-  next();
+  return next();
 };
 
 /**
@@ -100,7 +106,9 @@ const notificationEndpointAuth = (req: Request, res: Response, next: NextFunctio
  */
 export const getCurrentUser = async (res: Response): Promise<User> => {
   const { userId } = res.locals;
-  const user = await prisma.user.findUnique({ where: { userId } });
+  const user = await prisma.user.findUnique({
+    where: { userId }
+  });
   if (!user) throw new NotFoundException('User', userId);
   return user;
 };
@@ -111,6 +119,47 @@ export type UserWithSettings = User & {
 
 export type UserWithSecureSettings = UserWithSettings & {
   userSecureSettings: User_Secure_Settings | null;
+};
+
+export const getOrganization = async (headers: IncomingHttpHeaders, currentUser: User): Promise<Organization> => {
+  let { organizationid } = headers;
+
+  const isProd = process.env.NODE_ENV === 'production';
+
+  if (organizationid === undefined && !isProd) {
+    organizationid = process.env.DEV_ORGANIZATION_ID;
+  }
+
+  if (organizationid === undefined) {
+    throw new AccessDeniedException('Organization not provided');
+  }
+
+  if (typeof organizationid !== 'string') {
+    throw new AccessDeniedException('Invalid organization ID');
+  }
+
+  const organization = await prisma.organization.findUnique({
+    where: { organizationId: organizationid },
+    include: {
+      advisor: true,
+      usefulLinks: true,
+      users: true
+    }
+  });
+
+  if (!organization) {
+    throw new NotFoundException('Organization', organizationid);
+  }
+
+  if (organization.dateDeleted) {
+    throw new DeletedException('Organization', organization.organizationId);
+  }
+
+  if (!organization.users.some((user) => user.userId === currentUser.userId)) {
+    throw new AccessDeniedException('Cannot access this organization');
+  }
+
+  return organization;
 };
 
 /**
@@ -127,4 +176,27 @@ export const getCurrentUserWithUserSettings = async (res: Response): Promise<Use
   });
   if (!user) throw new NotFoundException('User', userId);
   return user;
+};
+
+export const getUserAndOrganization = async (req: Request, res: Response, next: NextFunction) => {
+  if (
+    req.path === '/users/auth/login' || // logins dont have cookies yet
+    req.path === '/users/auth/login/dev' ||
+    req.path === '/' || // base route is available so aws can listen and check the health
+    req.method === 'OPTIONS' || // this is a pre-flight request and those don't send cookies
+    req.path === '/users' || // dev login needs the list of users to log in
+    req.path.startsWith('/slack') || // slack endpoints (events and interactions) are only used from slack api
+    req.path.startsWith('/notifications') // Notifications route has its own auth, only called from gh
+  ) {
+    return next();
+  }
+  try {
+    const user = await getCurrentUser(res);
+    const organization = await getOrganization(req.headers, user);
+    req.currentUser = user;
+    req.organization = organization;
+    return next();
+  } catch (error) {
+    return next(error);
+  }
 };

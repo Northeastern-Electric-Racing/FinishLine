@@ -15,8 +15,8 @@ import {
   DialogActions,
   Typography
 } from '@mui/material';
-import NERSuccessButton from '../components/NERSuccessButton';
-import NERFailButton from '../components/NERFailButton';
+import NERSuccessButton from './NERSuccessButton';
+import NERFailButton from './NERFailButton';
 import { Close } from '@mui/icons-material';
 
 interface BlockerWarningModalProps {

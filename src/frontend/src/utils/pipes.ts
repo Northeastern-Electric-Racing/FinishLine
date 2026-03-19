@@ -5,15 +5,19 @@
 
 import {
   WbsNumber,
-  User,
   wbsPipe,
-  WbsElement,
   isProject,
-  WorkPackage,
-  ClubAccount,
-  ExpenseType,
-  DesignReview
+  IndexCode,
+  AccountCode,
+  WorkPackagePreview,
+  WbsElementPreview,
+  UserPreview,
+  ScheduleSlot,
+  Event,
+  formatEventTime,
+  formatEventDate
 } from 'shared';
+import dayjs from 'dayjs';
 
 /**
  * Pipes:
@@ -26,6 +30,10 @@ import {
 /** Display number as "4 weeks" or "1 week" */
 export const weeksPipe = (weeks: number) => {
   return `${weeks} week${weeks === 1 ? '' : 's'}`;
+};
+
+export const blobPipe = (blob: Blob, fileName: string) => {
+  return new File([blob], fileName, { type: blob.type });
 };
 
 /** Display number as "$535" */
@@ -42,7 +50,7 @@ export const projectWbsPipe = (wbsNum: WbsNumber) => {
 };
 
 /** Display user by their name "Joe Shmoe" */
-export const fullNamePipe = (user?: Pick<User, 'firstName' | 'lastName'>) => {
+export const fullNamePipe = (user?: UserPreview) => {
   return user ? `${user.firstName} ${user.lastName}` : emDashPipe('');
 };
 
@@ -62,22 +70,15 @@ export const emDashPipe = (str: string) => {
 };
 
 /**
- * Return a given date as a string in the local en-US format,
- * with single digit numbers starting with a zero.
- *
- * Prisma sends date in UTC but TypeScript assumes it's in your local time,
- * so to get around that we do the toDateString() of the time and pass it into the Date constructor
- * where the constructor assumes it's in UTC and makes the correct Date object finally
+ * Return a given date as a string in the local en-US format.
+ * @db.Date values should be normalized to local dates via dbDateToLocalDate in transformers
+ * before reaching this function, so local formatting is correct for all inputs.
  */
-export const datePipe = (date?: Date) => {
+export const datePipe = (date?: Date | string, includeYear = true) => {
   if (!date) return '';
-  date = typeof date == 'string' ? new Date(date) : new Date(date.toDateString());
-  return date.toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'UTC'
-  });
+  date = typeof date === 'string' ? new Date(date) : date;
+  const format = includeYear ? 'MM/DD/YYYY' : 'MM/DD';
+  return dayjs(date).format(format);
 };
 
 /** returns a given number as a string with a percent sign */
@@ -95,8 +96,8 @@ export const numberParamPipe = (param: string | null) => {
   }
 };
 
-export const expenseTypePipe = (expenseType: ExpenseType) => {
-  return `${expenseType.code} - ${expenseType.name}`;
+export const accountCodePipe = (accountCode: AccountCode) => {
+  return `${accountCode.code} - ${accountCode.name}`;
 };
 
 /** Display timeline status in readable form
@@ -122,19 +123,22 @@ export const daysOrWeeksLeftOrLate = (daysLeft: number) => {
   return `${daysToDaysOrWeeksPipe(Math.abs(daysLeft))} ${daysLeft > 0 ? 'left' : 'late'}`;
 };
 
-/** Display WBS number as string "1.2.0 - Project Name" */
-export const wbsNamePipe = (wbsElement: WbsElement) => {
-  return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
-};
+export const eventNamePipe = (event: Event) => {
+  const [firstWorkPackage] = event.workPackages;
 
-export const designReviewNamePipe = (designReview: DesignReview) => {
-  return `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
+  if (firstWorkPackage) {
+    return `${wbsPipe({
+      carNumber: firstWorkPackage.wbsElement.carNumber,
+      projectNumber: firstWorkPackage.wbsElement.projectNumber,
+      workPackageNumber: firstWorkPackage.wbsElement.workPackageNumber
+    })} - ${firstWorkPackage.wbsElement.name}`;
+  }
+
+  return event.title;
 };
 
 export const dateRangePipe = (startDate: Date, endDate: Date) => {
-  return `${(startDate.getMonth() + 1).toString()}/${startDate.getDate().toString()} - ${(
-    endDate.getMonth() + 1
-  ).toString()}/${endDate.getDate().toString()}`;
+  return `${dayjs(startDate).format('M/D')} - ${dayjs(endDate).format('M/D')}`;
 };
 
 export const undefinedPipe = (element: any) => {
@@ -149,24 +153,17 @@ export const centsToDollar = (cents: number) => {
   return (cents / 100.0).toFixed(2);
 };
 
-export const projectNamePipe = (wbsElement: WbsElement) => {
-  return isProject(wbsElement.wbsNum) ? wbsElement.name : (wbsElement as WorkPackage).projectName;
+export const projectNamePipe = (wbsElement: WbsElementPreview) => {
+  return isProject(wbsElement) ? wbsElement.name : (wbsElement as WorkPackagePreview).projectName;
 };
 
-export const projectWbsNamePipe = (wbsElement: WbsElement) => {
+export const projectWbsNamePipe = (wbsElement: WbsElementPreview) => {
   return `${projectWbsPipe(wbsElement.wbsNum)} - ${projectNamePipe(wbsElement)}`;
 };
-/** Displays a refund source as a string "Code - Name" */
-export const codeAndRefundSourceName = (refundSource: ClubAccount) => {
-  const CASH_ACCOUNT_CODE = 830667;
-  const BUDGET_ACCOUNT_CODE = 800462;
 
-  switch (refundSource) {
-    case ClubAccount.CASH:
-      return `${CASH_ACCOUNT_CODE} - ${refundSource}`;
-    case ClubAccount.BUDGET:
-      return `${BUDGET_ACCOUNT_CODE} - ${refundSource}`;
-  }
+/** Displays a refund source as a string "Code - Name" */
+export const codeAndRefundSourceName = (refundSource?: IndexCode) => {
+  return refundSource ? `${refundSource.code} - ${refundSource.name}` : '-';
 };
 
 // Takes in an enum string to capitalize first letter of each word and gets rid of underscore
@@ -183,22 +180,19 @@ export const displayEnum = (enumString: string) => {
   return enumString;
 };
 
-export const meetingStartTimePipe = (times: number[]) => {
-  const time = (times[0] % 12) + 10;
+export const meetingStartTimePipeScheduleSlot = (scheduledTimes: ScheduleSlot[]): string => {
+  if (scheduledTimes.length === 0) return '';
 
-  return time <= 12 ? time + 'am' : time - 12 + 'pm';
+  const firstTime = scheduledTimes[0].startTime;
+  if (!firstTime) return '';
+
+  return formatEventTime(new Date(firstTime));
 };
 
-// takes in a Date and returns it as a string in the form mm/dd/yy
+// takes in a Date and returns it as a string in the form mm/dd/yyyy
 export const meetingDatePipe = (date?: Date) => {
   if (!date) return '';
-  date = new Date(date.toDateString());
-  return date.toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-    timeZone: 'UTC'
-  });
+  return formatEventDate(new Date(date));
 };
 
 export const labelPipe = (label: string) => {

@@ -3,84 +3,126 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { expenseTypePipe } from '../../../utils/pipes';
-import { Assignment, Edit } from '@mui/icons-material';
+import { accountCodePipe, displayEnum } from '../../../utils/pipes';
+import { Assignment, ChangeCircle, Edit, Pending } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { Grid, Typography, useTheme, Link, IconButton } from '@mui/material';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import SpeedIcon from '@mui/icons-material/Speed';
+import LocalAtmIcon from '@mui/icons-material/LocalAtm';
+import StoreIcon from '@mui/icons-material/Store';
+import SellIcon from '@mui/icons-material/Sell';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+import Description from '@mui/icons-material/Description';
+
+import { Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
-import { useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { ReimbursementRequest } from 'shared';
+import React, { useState } from 'react';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
+import { ReimbursementRequest, isAdmin, isHead } from 'shared';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
 import PageLayout from '../../../components/PageLayout';
-import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import {
   useDeleteReimbursementRequest,
   useDenyReimbursementRequest,
-  useMarkReimbursementRequestAsDelivered,
-  useMarkReimbursementRequestAsReimbursed
+  useEditReimbursementRequest,
+  useLeadershipApproveReimbursementRequest,
+  useMarkPendingFinance,
+  useMarkReimbursementRequestAsReimbursed,
+  useRequestReimbursementRequestChanges,
+  useUploadManyReceipts
 } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import {
-  centsToDollar,
-  codeAndRefundSourceName,
-  datePipe,
-  dateUndefinedPipe,
-  fullNamePipe,
-  undefinedPipe
-} from '../../../utils/pipes';
+import { centsToDollar, fullNamePipe } from '../../../utils/pipes';
 import {
   imageDownloadUrl,
   imageFileUrl,
   isReimbursementRequestAdvisorApproved,
   isReimbursementRequestReimbursed,
   isReimbursementRequestSaboSubmitted,
-  isReimbursementRequestDenied
+  isReimbursementRequestPendingSaboSubmission,
+  isReimbursementRequestDenied,
+  isReimbursementRequestLeadershipApproved,
+  isReimbursementRequestPendingFinance,
+  getUniqueWbsElementsWithProductsFromReimbursementRequest,
+  getCurrentReimbursementStatus
 } from '../../../utils/reimbursement-request.utils';
 import { routes } from '../../../utils/routes';
 import AddSABONumberModal from './AddSABONumberModal';
 import ReimbursementProductsView from './ReimbursementProductsView';
 import SubmitToSaboModal from './SubmitToSaboModal';
+import MarkSubmittedToSaboModal from './MarkSubmittedToSaboModal';
 import DownloadIcon from '@mui/icons-material/Download';
+import CheckList from '../../../components/CheckList';
+import MarkDeliveredModal from './MarkDeliveredModal';
+import ReimbursementRequestTimeline from '../FinanceComponents/ReimbursementRequestTimeline';
 import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
+import { useGetFinanceDelegates } from '../../../hooks/organizations.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import AssignFinanceMemberModal from './AssignFinanceMemberModal';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
+  onCloseSidePage: () => void;
 }
 
-const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
+const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({
+  reimbursementRequest,
+  onCloseSidePage
+}) => {
   const theme = useTheme();
-  const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
   const history = useHistory();
   const [addSaboNumberModalShow, setAddSaboNumberModalShow] = useState<boolean>(false);
   const toast = useToast();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDenyModal, setShowDenyModal] = useState(false);
+  const [showLeadershipApproveModal, setShowLeadershipApproveModal] = useState(false);
   const [showMarkDelivered, setShowMarkDelivered] = useState(false);
   const [showMarkReimbursed, setShowMarkReimbursed] = useState(false);
   const [showSubmitToSaboModal, setShowSubmitToSaboModal] = useState(false);
+  const [showMarkSubmittedToSaboModal, setShowMarkSubmittedToSaboModal] = useState(false);
+  const [showMarkPendingFinanceModal, setShowMarkPendingFinanceModal] = useState(false);
+  const [showRequestChangesModal, setShowRequestChangesModal] = useState(false);
+  const [showAssignUserModal, setShowAssignUserModal] = useState(false);
   const { mutateAsync: deleteReimbursementRequest } = useDeleteReimbursementRequest(
     reimbursementRequest.reimbursementRequestId
   );
   const { mutateAsync: denyReimbursementRequest } = useDenyReimbursementRequest(reimbursementRequest.reimbursementRequestId);
-  const { mutateAsync: markDelivered } = useMarkReimbursementRequestAsDelivered(reimbursementRequest.reimbursementRequestId);
   const { mutateAsync: markReimbursed } = useMarkReimbursementRequestAsReimbursed(
     reimbursementRequest.reimbursementRequestId
   );
-  const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
+  const { mutateAsync: leadershipApproveReimbursementRequest } = useLeadershipApproveReimbursementRequest(
+    reimbursementRequest.reimbursementRequestId
+  );
+  const { mutateAsync: requestReimbursementRequestChanges } = useRequestReimbursementRequestChanges(
+    reimbursementRequest.reimbursementRequestId
+  );
 
-  const handleDelete = () => {
+  const { mutateAsync: markPendingFinance } = useMarkPendingFinance(reimbursementRequest.reimbursementRequestId);
+
+  const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
+  const isPendingSaboSubmission = isReimbursementRequestPendingSaboSubmission(reimbursementRequest);
+  const isLeadershipApproved = isReimbursementRequestLeadershipApproved(reimbursementRequest);
+  const isPendingFinance = isReimbursementRequestPendingFinance(reimbursementRequest);
+
+  const closeSidePage = () => {
+    onCloseSidePage();
+  };
+
+  const handleDelete = async () => {
     try {
-      deleteReimbursementRequest();
-      history.push(routes.FINANCE);
+      await deleteReimbursementRequest();
+      closeSidePage();
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -88,9 +130,9 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   };
 
-  const handleDeny = () => {
+  const handleDeny = async () => {
     try {
-      denyReimbursementRequest();
+      await denyReimbursementRequest();
       setShowDenyModal(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -99,10 +141,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   };
 
-  const handleMarkDelivered = () => {
+  const handleMarkReimbursed = async () => {
     try {
-      markDelivered();
-      setShowMarkDelivered(false);
+      await markReimbursed();
+      setShowMarkReimbursed(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -110,10 +152,38 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   };
 
-  const handleMarkReimbursed = () => {
+  const handleLeadershipApprove = async () => {
     try {
-      markReimbursed();
-      setShowMarkReimbursed(false);
+      await leadershipApproveReimbursementRequest();
+      setShowLeadershipApproveModal(false);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
+  const handleRequestChanges = async () => {
+    try {
+      await requestReimbursementRequestChanges();
+      setShowRequestChangesModal(false);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
+  const handleMarkPendingFinance = async () => {
+    try {
+      if (reimbursementRequest.receiptPictures.length === 0) {
+        throw new Error('Please upload at least one receipt before marking as pending finance');
+      }
+      if (!reimbursementRequest.dateOfExpense) {
+        throw new Error('Please enter a date of expense before marking as pending finance');
+      }
+      await markPendingFinance();
+      setShowMarkPendingFinanceModal(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -151,18 +221,20 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     );
   };
 
-  const MarkDeliveredModal = () => (
-    <NERModal
-      open={showMarkDelivered}
-      onHide={() => setShowMarkDelivered(false)}
-      title="Warning!"
-      cancelText="No"
-      submitText="Yes"
-      onSubmit={handleMarkDelivered}
-    >
-      <Typography>Are you sure the items in this reimbursement request have all been delivered?</Typography>
-    </NERModal>
-  );
+  const LeadershipApproveModal = () => {
+    return (
+      <NERModal
+        open={showLeadershipApproveModal}
+        onHide={() => setShowLeadershipApproveModal(false)}
+        title="Warning!"
+        cancelText="No"
+        submitText="Yes"
+        onSubmit={handleLeadershipApprove}
+      >
+        <Typography>Are you sure you want to approve this reimbursement request?</Typography>
+      </NERModal>
+    );
+  };
 
   const MarkReimbursedModal = () => (
     <NERModal
@@ -177,66 +249,18 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     </NERModal>
   );
 
-  const BasicInformationView = () => {
-    return (
-      <>
-        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: '5px' }}>
-          <Typography variant="h5">Details</Typography>
-          <Typography variant="h5" fontSize={24}>{`${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}</Typography>
-        </Box>
-        <Grid container spacing={2}>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="SABO Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.account)} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Expense Type" content={expenseTypePipe(reimbursementRequest.expenseType)} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay
-              label="Date Item Delivered"
-              content={dateUndefinedPipe(reimbursementRequest.dateDelivered)}
-            />
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            container
-            mt={2}
-            ml={2}
-            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', boxShadow: 1 }}
-          >
-            <Grid item xs={6} textAlign={'center'} mt={-2}>
-              <Typography fontSize={50}>Total Cost</Typography>
-            </Grid>
-            <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography fontSize={50}>{`$${centsToDollar(reimbursementRequest.totalCost)}`}</Typography>
-            </Grid>
-          </Grid>
-        </Grid>
-      </>
-    );
-  };
-
-  const GridDivider = () => {
-    return (
-      <Box
-        sx={{
-          height: '100%',
-          borderColor: theme.palette.divider,
-          borderWidth: '2px',
-          borderStyle: 'solid',
-          width: '0px',
-          textAlign: 'center'
-        }}
-      />
-    );
-  };
+  const RequestChangesModal = () => (
+    <NERModal
+      open={showRequestChangesModal}
+      onHide={() => setShowRequestChangesModal(false)}
+      title="Warning!"
+      cancelText="No"
+      submitText="Yes"
+      onSubmit={handleRequestChanges}
+    >
+      <Typography>Are you sure you want to request changes on this reimbursement request?</Typography>
+    </NERModal>
+  );
 
   const ReceiptsView = () => {
     return (
@@ -247,8 +271,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         {reimbursementRequest.receiptPictures.map((receipt) => {
           return (
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Link href={imageFileUrl(receipt.googleFileId)} target="_blank" underline="hover" sx={{ mr: 1, fontSize: 30 }}>
-                {receipt.name}
+              <Link href={imageFileUrl(receipt.googleFileId)} target="_blank" underline="hover" sx={{ mr: 1, fontSize: 20 }}>
+                {receipt.name.length > 20 ? receipt.name.slice(0, 30) + '...' : receipt.name}
               </Link>
               <IconButton href={imageDownloadUrl(receipt.googleFileId)}>
                 <DownloadIcon sx={{ fontSize: 30 }} />
@@ -261,109 +285,354 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   };
 
   const allowEdit =
-    user.userId === reimbursementRequest.recipient.userId && !isReimbursementRequestAdvisorApproved(reimbursementRequest);
+    user.userId === reimbursementRequest.recipient.userId &&
+    !isReimbursementRequestAdvisorApproved(reimbursementRequest) &&
+    !isPendingFinance &&
+    !isSaboSubmitted &&
+    !isReimbursementRequestReimbursed(reimbursementRequest);
 
-  const buttons: ButtonInfo[] = [
+  const { pathname } = useLocation();
+  const urlTabInsert = pathname.includes('/all-requests') ? 'all-requests' : 'my-requests';
+
+  // Check if the RR has purchase details (receipts and date of expense)
+  const hasPurchaseDetails = reimbursementRequest.receiptPictures.length > 0 && !!reimbursementRequest.dateOfExpense;
+
+  type ButtonInfoWithShow = ButtonInfo & { show?: boolean };
+
+  const allButtons: ButtonInfoWithShow[] = [
     {
       title: 'Edit',
-      onClick: () => history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`),
+      onClick: () => {
+        history.push(`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${reimbursementRequest.reimbursementRequestId}/edit`);
+      },
       icon: <Edit />,
+      // Only show Edit if: not leadership approved yet OR already has purchase details
+      show: !isLeadershipApproved || hasPurchaseDetails,
       disabled: !allowEdit && !user.isFinance
     },
     {
-      title: 'Delete',
-      onClick: () => setShowDeleteModal(true),
-      icon: <DeleteIcon />,
-      disabled: !allowEdit
+      title: 'Add Purchase Details',
+      onClick: () => {
+        history.push(`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${reimbursementRequest.reimbursementRequestId}/edit`);
+      },
+      icon: <Edit />,
+      // Only show if leadership approved and NO purchase details yet
+      show:
+        isLeadershipApproved &&
+        !hasPurchaseDetails &&
+        !isPendingFinance &&
+        user.userId === reimbursementRequest.recipient.userId &&
+        !isReimbursementRequestReimbursed(reimbursementRequest) &&
+        !isReimbursementRequestDenied(reimbursementRequest)
     },
     {
       title: 'Mark Delivered',
       onClick: () => setShowMarkDelivered(true),
       icon: <LocalShippingIcon />,
-      disabled: !!reimbursementRequest.dateDelivered
+      // Only show if has purchase details
+      show:
+        hasPurchaseDetails && !reimbursementRequest.dateDelivered && user.userId === reimbursementRequest.recipient.userId
     },
     {
       title: 'Add SABO #',
       onClick: () => setAddSaboNumberModalShow(true),
       icon: <ConfirmationNumberIcon />,
-      disabled: !user.isFinance
+      show: user.isFinance
     },
     {
       title: 'Mark Reimbursed',
       onClick: () => setShowMarkReimbursed(true),
       icon: <AttachMoneyIcon />,
-      disabled:
-        !user.isFinance ||
-        isReimbursementRequestReimbursed(reimbursementRequest) ||
-        isReimbursementRequestDenied(reimbursementRequest)
+      show:
+        user.isFinance &&
+        isReimbursementRequestSaboSubmitted(reimbursementRequest) &&
+        !isReimbursementRequestReimbursed(reimbursementRequest) &&
+        !isReimbursementRequestDenied(reimbursementRequest)
     },
     {
-      title: isSaboSubmitted ? 'SABO Info' : 'Submit to SABO',
+      title: isPendingSaboSubmission || isSaboSubmitted ? 'SABO Info' : 'Input in SABO',
       onClick: () => setShowSubmitToSaboModal(true),
-      icon: isSaboSubmitted ? <Assignment /> : <CheckIcon />,
-      disabled: !user.isFinance
+      icon: isPendingSaboSubmission || isSaboSubmitted ? <Assignment /> : <CheckIcon />,
+      show: user.isFinance && isPendingFinance
+    },
+    {
+      title: 'Mark Submitted To SABO',
+      onClick: () => setShowMarkSubmittedToSaboModal(true),
+      icon: <CheckIcon />,
+      show: user.userId === reimbursementRequest.recipient.userId && isPendingSaboSubmission && !isSaboSubmitted
+    },
+    {
+      title: 'Leadership Approve',
+      onClick: () => setShowLeadershipApproveModal(true),
+      icon: <CheckIcon />,
+      show:
+        isHead(user.role) &&
+        !isReimbursementRequestDenied(reimbursementRequest) &&
+        !isReimbursementRequestReimbursed(reimbursementRequest) &&
+        !isLeadershipApproved &&
+        !isPendingFinance
+    },
+    {
+      title: 'Mark Pending Finance',
+      onClick: () => setShowMarkPendingFinanceModal(true),
+      icon: <Pending />,
+      // Only show if has purchase details
+      show:
+        hasPurchaseDetails &&
+        !isPendingFinance &&
+        isLeadershipApproved &&
+        (isAdmin(user.role) || user.userId === reimbursementRequest.recipient.userId)
+    },
+    {
+      title: 'Assign Finance Member',
+      onClick: () => setShowAssignUserModal(true),
+      icon: <AssignmentIndIcon />,
+      show: user.isFinance
+    },
+    {
+      title: 'Request Changes',
+      onClick: () => setShowRequestChangesModal(true),
+      icon: <ChangeCircle />,
+      show:
+        user.isFinance &&
+        !isReimbursementRequestReimbursed(reimbursementRequest) &&
+        !isReimbursementRequestDenied(reimbursementRequest)
     },
     {
       title: 'Deny',
       onClick: () => setShowDenyModal(true),
       icon: <CloseIcon />,
-      disabled:
-        !user.isFinance ||
-        isReimbursementRequestReimbursed(reimbursementRequest) ||
-        isReimbursementRequestDenied(reimbursementRequest)
+      show:
+        (isAdmin(user.role) || user.isFinance || user.userId === reimbursementRequest.recipient.userId) &&
+        !isReimbursementRequestReimbursed(reimbursementRequest) &&
+        !isReimbursementRequestDenied(reimbursementRequest)
+    },
+    {
+      title: 'Delete',
+      onClick: () => setShowDeleteModal(true),
+      icon: <DeleteIcon />,
+      show: allowEdit,
+      dividerTop: true
     }
   ];
 
+  const buttons: ButtonInfo[] = allButtons.filter((button) => button.show !== false).map(({ show, ...button }) => button);
+
   const sortedStatus = reimbursementRequest.reimbursementStatuses.sort((a) => a.dateCreated.getDate());
   const statusTypes = sortedStatus.map((status) => status.type);
-  const recentStatus = statusTypes[statusTypes.length - 1];
-  return (
-    <PageLayout
-      title={`Reimbursement Request #${reimbursementRequest.identifier} (${fullNamePipe(reimbursementRequest.recipient)})`}
-      chips={
+
+  const uniqueWbsElementsWithProducts = getUniqueWbsElementsWithProductsFromReimbursementRequest(reimbursementRequest);
+  const keys: string[] = [];
+  for (const key of uniqueWbsElementsWithProducts.keys()) {
+    keys.push(key);
+  }
+
+  const detailItems = [
+    { label: 'Status', icon: <SpeedIcon fontSize="small" /> },
+    { label: 'Created by', icon: <PersonOutlineIcon fontSize="small" /> },
+    { label: 'Project/Category', icon: <FolderOpenIcon fontSize="small" /> },
+    { label: 'Total Cost', icon: <LocalAtmIcon fontSize="small" /> },
+    { label: 'Purchased From', icon: <StoreIcon fontSize="small" /> },
+    { label: 'SABO Number', icon: <SellIcon fontSize="small" /> },
+    { label: 'Refund Source', icon: <CurrencyExchangeIcon fontSize="small" /> },
+    { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> },
+    { label: 'Assigned To', icon: <PersonOutlineIcon fontSize="small" /> },
+    { label: 'Description', icon: <Description fontSize="small" /> }
+  ];
+
+  // grab all unique refund source names
+  const refundSourceNames: string[] = Array.from(
+    new Set(
+      reimbursementRequest.reimbursementProducts.flatMap((product) =>
+        product.refundSources.map((rs) => rs.indexCode.code + '-' + rs.indexCode.name)
+      )
+    )
+  );
+
+  const contentItems = [
+    {
+      content: statusTypes.length > 0 && (
         <Box id="status" display="flex">
-          {statusTypes.length > 0 && <ReimbursementRequestStatusPill status={recentStatus} />}
+          {reimbursementRequest.reimbursementStatuses.length > 0 && (
+            <ReimbursementRequestStatusPill
+              status={getCurrentReimbursementStatus(reimbursementRequest.reimbursementStatuses).type}
+            />
+          )}
         </Box>
-      }
-      previousPages={[
-        {
-          name: 'Finance',
-          route: routes.FINANCE
-        }
-      ]}
-      headerRight={<ActionsMenu buttons={buttons} />}
+      )
+    },
+    { content: fullNamePipe(reimbursementRequest.recipient) },
+    {
+      content: keys.map((key) => displayEnum(key)).join(', ')
+    },
+    { content: `$${centsToDollar(reimbursementRequest.totalCost)}` },
+    { content: reimbursementRequest.vendor.name },
+    { content: `${reimbursementRequest.saboId}` },
+    {
+      content: refundSourceNames.join(', ')
+    },
+    { content: accountCodePipe(reimbursementRequest.accountCode) },
+    { content: fullNamePipe(reimbursementRequest.assignee) },
+    { content: reimbursementRequest.description }
+  ];
+
+  const { id } = useParams<{ id: string }>();
+
+  const { isLoading: editReimbursementRequestIsLoading } = useEditReimbursementRequest(id);
+  const { isLoading: uploadReceiptsIsLoading } = useUploadManyReceipts();
+  const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();
+
+  if (editReimbursementRequestIsLoading || uploadReceiptsIsLoading || !reimbursementRequest) return <LoadingIndicator />;
+
+  if (isLoading || !financeDelegates) {
+    return <LoadingIndicator />;
+  }
+
+  if (isError) {
+    return <ErrorPage message={error.message} />;
+  }
+
+  const MarkPendingFinanceModal = () => (
+    <NERModal
+      open={showMarkPendingFinanceModal}
+      onHide={() => setShowMarkPendingFinanceModal(false)}
+      title="Warning!"
+      cancelText="No"
+      submitText="Yes"
+      onSubmit={handleMarkPendingFinance}
     >
-      <DeleteModal />
-      <DenyModal />
-      <MarkDeliveredModal />
-      <MarkReimbursedModal />
-      <SubmitToSaboModal
-        open={showSubmitToSaboModal}
-        setOpen={setShowSubmitToSaboModal}
-        reimbursementRequest={reimbursementRequest}
+      <CheckList
+        title="Finance Checklist"
+        items={[
+          {
+            resolved: false,
+            detail: `I certify that I have a Concur account${financeDelegates.length > 0 ? ', and have assigned ' + financeDelegates.map(fullNamePipe).join(', ') + ' as delegate(s) to prepare this reimbursement request on my behalf.' : '.'}`,
+            id: '1'
+          },
+          {
+            resolved: false,
+            detail:
+              'I certify my receipts with expenses greater than $75 include an itemixed description of goods or service purchased.',
+            id: '2'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include the vendor's name (for ex. Amazon, stop and shop, Target).`,
+            id: '3'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts includes a Transaction Date for each expense.`,
+            id: '4'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include the amount paid for each expense.`,
+            id: '5'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include the form of payment for each expense (Cash, check or last four digits of credit card).`,
+            id: '6'
+          },
+          {
+            resolved: false,
+            detail: `This reimbursement request is "NOT" for a faculty or full-time staff member.`,
+            id: '7'
+          },
+          {
+            resolved: false,
+            detail: `The reimbursement does not include sales tax unless it is for a prepared meal or hotel.`,
+            id: '8'
+          }
+        ]}
+        isDisabled={false}
+        checkDescriptionBullets={false}
       />
-      <AddSABONumberModal
-        modalShow={addSaboNumberModalShow}
-        onHide={() => setAddSaboNumberModalShow(false)}
-        reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
-      />
-      <Grid container spacing={2} mt={2}>
-        <Grid item lg={6} xs={12}>
-          <BasicInformationView />
-        </Grid>
-        <Grid item lg={1} xs={0} justifyContent={'center'} display={'flex'}>
-          <GridDivider />
-        </Grid>
-        <Grid item lg={5} xs={12} rowSpacing={5} container>
-          <Grid item xs={12}>
-            <ReceiptsView />
-          </Grid>
-          <Grid item xs={12}>
+
+      <Typography>Are you sure you want to mark this reimbursement request as pending finance?</Typography>
+    </NERModal>
+  );
+
+  return (
+    <Box sx={{ ml: 2 }}>
+      <PageLayout
+        title={`Reimbursement Request #${reimbursementRequest.identifier}`}
+        headerRight={
+          <Box sx={{ mr: 6 }}>
+            <ActionsMenu buttons={buttons} />
+          </Box>
+        }
+      >
+        <DeleteModal />
+        <DenyModal />
+        <MarkDeliveredModal
+          modalShow={showMarkDelivered}
+          onHide={() => setShowMarkDelivered(false)}
+          reimbursementRequest={reimbursementRequest}
+        />
+        <AssignFinanceMemberModal
+          modalShow={showAssignUserModal}
+          onHide={() => setShowAssignUserModal(false)}
+          reimbursementRequest={reimbursementRequest}
+        />
+        <MarkReimbursedModal />
+        <LeadershipApproveModal />
+        <MarkPendingFinanceModal />
+        <RequestChangesModal />
+        <SubmitToSaboModal
+          open={showSubmitToSaboModal}
+          setOpen={setShowSubmitToSaboModal}
+          reimbursementRequest={reimbursementRequest}
+        />
+        <MarkSubmittedToSaboModal
+          open={showMarkSubmittedToSaboModal}
+          setOpen={setShowMarkSubmittedToSaboModal}
+          reimbursementRequest={reimbursementRequest}
+        />
+        <AddSABONumberModal
+          modalShow={addSaboNumberModalShow}
+          onHide={() => setAddSaboNumberModalShow(false)}
+          reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+        />
+        <Box sx={{ display: 'flex', mt: 2 }}>
+          <Box>
+            {detailItems.map(({ label, icon }) => (
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, fontWeight: 'bold' }}>
+                <Box sx={{ display: 'flex', mr: 2 }}>{icon}</Box> {label}
+              </Box>
+            ))}
+          </Box>
+          <Box sx={{ ml: 16 }}>
+            {contentItems.map(({ content }) => (
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, fontWeight: 'bold' }}>{content}</Box>
+            ))}
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            borderBottom: '2px solid white',
+            mt: 2,
+            mb: 2,
+            width: 'calc(100% - 40px)'
+          }}
+        />
+        <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+          <Box sx={{ mt: -3 }}>
+            <ReimbursementRequestTimeline
+              reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+              reimbursementRequestComments={reimbursementRequest.comments}
+            />
+          </Box>
+          <Box sx={{ mt: 2, ml: 2, whiteSpace: 'nowrap' }}>
             <ReimbursementProductsView reimbursementRequest={reimbursementRequest} />
-          </Grid>
-        </Grid>
-      </Grid>
-    </PageLayout>
+            <Box sx={{ mt: 2 }}>
+              <ReceiptsView />
+            </Box>
+          </Box>
+        </Box>
+      </PageLayout>
+    </Box>
   );
 };
 

@@ -12,10 +12,6 @@ import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContai
 import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
-import { NERButton } from '../../../components/NERButton';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Box, Menu, MenuItem } from '@mui/material';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import EditIcon from '@mui/icons-material/Edit';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
@@ -27,9 +23,9 @@ import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import ScopeTab from './ScopeTab';
-import NERTabs from '../../../components/Tabs';
-import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
-import ChangeRequestsTab from './ChangeRequestsTab';
+import FullPageTabs from '../../../components/FullPageTabs';
+import ChangeRequestTab from '../../../components/ChangeRequestTab';
+import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -53,19 +49,14 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [, setAnchorEl] = useState<null | HTMLElement>(null);
   const { data: dependencies, isError, isLoading, error } = useGetManyWorkPackages(workPackage.blockedBy);
-  const dropdownOpen = Boolean(anchorEl);
   const wbsNum = wbsPipe(workPackage.wbsNum);
 
   const [tabValue, setTabValue] = useState<number>(0);
 
   if (!dependencies || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
 
   const handleDropdownClose = () => {
     setAnchorEl(null);
@@ -91,138 +82,108 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
     handleDropdownClose();
   };
 
-  const editButton = (
-    <MenuItem onClick={handleClickEdit} disabled={!allowEdit}>
-      <ListItemIcon>
-        <EditIcon fontSize="small" />
-      </ListItemIcon>
-      Edit
-    </MenuItem>
-  );
-  const activateButton = (
-    <MenuItem onClick={handleClickActivate} disabled={!allowActivate}>
-      <ListItemIcon>
-        <KeyboardDoubleArrowUpIcon fontSize="small" />
-      </ListItemIcon>
-      Activate
-    </MenuItem>
-  );
-  const stageGateButton = (
-    <MenuItem onClick={handleClickStageGate} disabled={!allowStageGate}>
-      <ListItemIcon>
-        <DoneOutlineIcon fontSize="small" />
-      </ListItemIcon>
-      Stage Gate
-    </MenuItem>
-  );
-  const deleteButton = (
-    <MenuItem onClick={handleClickDelete} disabled={!allowDelete}>
-      <ListItemIcon>
-        <Delete fontSize="small" />
-      </ListItemIcon>
-      Delete
-    </MenuItem>
-  );
-  const createCRButton = (
-    <MenuItem
-      component={RouterLink}
-      to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(workPackage.wbsNum)}
-      disabled={!allowRequestChange}
-      onClick={handleDropdownClose}
-    >
-      <ListItemIcon>
-        <SyncAltIcon fontSize="small" />
-      </ListItemIcon>
-      Request Change
-    </MenuItem>
-  );
+  const stageGateButton: ButtonInfo = {
+    title: 'Stage Gate',
+    onClick: handleClickStageGate,
+    disabled: !allowStageGate,
+    icon: <DoneOutlineIcon fontSize="small" />
+  };
+
+  const activateButton: ButtonInfo = {
+    title: 'Activate',
+    onClick: handleClickActivate,
+    disabled: !allowActivate,
+    icon: <KeyboardDoubleArrowUpIcon fontSize="small" />
+  };
+
   const projectActionsDropdown = (
-    <div>
-      <NERButton
-        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
-        variant="contained"
-        id="work-package-actions-dropdown"
-        onClick={handleClick}
-      >
-        Actions
-      </NERButton>
-      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        {editButton}
-        {workPackage.status === WbsElementStatus.Inactive ? activateButton : ''}
-        {workPackage.status === WbsElementStatus.Active ? stageGateButton : ''}
-        {createCRButton}
-        {deleteButton}
-      </Menu>
+    <div style={{ marginTop: '10px' }}>
+      <ActionsMenu
+        buttons={[
+          {
+            title: 'Edit',
+            onClick: handleClickEdit,
+            disabled: !allowEdit,
+            icon: <EditIcon fontSize="small" />
+          },
+          ...(workPackage.status === WbsElementStatus.Inactive ? [activateButton] : []),
+          ...(workPackage.status === WbsElementStatus.Active ? [stageGateButton] : []),
+          {
+            title: 'Request Change',
+            component: RouterLink,
+            to: routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(workPackage.wbsNum),
+            onClick: handleDropdownClose,
+            disabled: !allowRequestChange,
+            icon: <SyncAltIcon fontSize="small" />
+          },
+          {
+            title: 'Delete',
+            onClick: handleClickDelete,
+            disabled: !allowDelete,
+            icon: <Delete fontSize="small" />,
+            dividerTop: true
+          }
+        ]}
+      />
     </div>
   );
 
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
   return (
-    <>
-      <Box mb={-1}>
-        <PageBreadcrumbs
-          currentPageTitle={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
-          previousPages={[
-            { name: 'Projects', route: routes.PROJECTS },
-            { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
+    <PageLayout
+      title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
+      previousPages={[
+        { name: 'Projects', route: routes.PROJECTS },
+        { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
+      ]}
+      headerRight={projectActionsDropdown}
+      tabs={
+        <FullPageTabs
+          setTab={setTabValue}
+          tabsLabels={[
+            { tabUrlValue: 'overview', tabName: 'Overview' },
+            { tabUrlValue: 'scope', tabName: 'Scope' },
+            { tabUrlValue: 'changes', tabName: 'Changes' },
+            { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
           ]}
+          baseUrl={`${routes.PROJECTS}/${wbsNum}`}
+          defaultTab="overview"
+          id="wp-detail-tabs"
         />
-      </Box>
-      <PageLayout
-        title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
-        previousPages={[
-          { name: 'Projects', route: routes.PROJECTS },
-          { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
-        ]}
-        headerRight={projectActionsDropdown}
-        tabs={
-          <NERTabs
-            setTab={setTabValue}
-            tabsLabels={[
-              { tabUrlValue: 'overview', tabName: 'Overview' },
-              { tabUrlValue: 'scope', tabName: 'Scope' },
-              { tabUrlValue: 'changes', tabName: 'Changes' },
-              { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
-            ]}
-            baseUrl={`${routes.PROJECTS}/${wbsNum}`}
-            defaultTab="overview"
-            id="wp-detail-tabs"
-          />
-        }
-      >
-        {tabValue === 0 ? (
-          <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
-        ) : tabValue === 1 ? (
-          <ScopeTab workPackage={workPackage} />
-        ) : tabValue === 2 ? (
-          <ChangesList changes={workPackage.changes} />
-        ) : (
-          <ChangeRequestsTab workPackage={workPackage} />
-        )}
-        {showActivateModal && (
-          <ActivateWorkPackageModalContainer
-            wbsNum={workPackage.wbsNum}
-            modalShow={showActivateModal}
-            handleClose={() => setShowActivateModal(false)}
-          />
-        )}
-        {showStageGateModal && (
-          <StageGateWorkPackageModalContainer
-            wbsNum={workPackage.wbsNum}
-            modalShow={showStageGateModal}
-            handleClose={() => setShowStageGateModal(false)}
-          />
-        )}
-        {showDeleteModal && (
-          <DeleteWorkPackage
-            wbsNum={workPackage.wbsNum}
-            modalShow={showDeleteModal}
-            handleClose={() => setShowDeleteModal(false)}
-          />
-        )}
-      </PageLayout>
-    </>
+      }
+    >
+      {tabValue === 0 ? (
+        <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
+      ) : tabValue === 1 ? (
+        <ScopeTab workPackage={workPackage} />
+      ) : tabValue === 2 ? (
+        <ChangesList changes={workPackage.changes} />
+      ) : (
+        <ChangeRequestTab wbsElement={workPackage} />
+      )}
+      {showActivateModal && (
+        <ActivateWorkPackageModalContainer
+          wbsNum={workPackage.wbsNum}
+          modalShow={showActivateModal}
+          handleClose={() => setShowActivateModal(false)}
+        />
+      )}
+      {showStageGateModal && (
+        <StageGateWorkPackageModalContainer
+          wbsNum={workPackage.wbsNum}
+          modalShow={showStageGateModal}
+          handleClose={() => setShowStageGateModal(false)}
+        />
+      )}
+      {showDeleteModal && (
+        <DeleteWorkPackage
+          wbsNum={workPackage.wbsNum}
+          modalShow={showDeleteModal}
+          handleClose={() => setShowDeleteModal(false)}
+        />
+      )}
+    </PageLayout>
   );
 };
 

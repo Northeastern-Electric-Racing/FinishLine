@@ -3,36 +3,68 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useMutation, useQueryClient } from 'react-query';
-import { WbsNumber, TaskPriority, TaskStatus } from 'shared';
-import { createSingleTask, deleteSingleTask, editSingleTaskStatus, editTask, editTaskAssignees } from '../apis/tasks.api';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { CalendarTask, FilterTaskArgs, WbsNumber, TaskPriority, TaskStatus, Task, TaskCardPreview } from 'shared';
+import {
+  createSingleTask,
+  deleteSingleTask,
+  editSingleTaskStatus,
+  editTask,
+  editTaskAssignees,
+  getOverdueTasksByTeamLeader,
+  getFilterTasks
+} from '../apis/tasks.api';
 
 export interface CreateTaskPayload {
+  wbsNum: WbsNumber;
   title: string;
-  deadline: string;
+  startDate?: string;
+  deadline?: string;
   priority: TaskPriority;
   status: TaskStatus;
-  assignees: number[];
+  notes?: string;
+  assignees: string[];
 }
 
-export const useCreateTask = (wbsNum: WbsNumber) => {
+/**
+ * Custom React Hook for filtering tasks based on various criteria
+ * @returns the filtered tasks query
+ */
+export const useFilterTasks = (filterArgs: FilterTaskArgs | null) => {
+  return useQuery<CalendarTask[], Error>(
+    ['filter-tasks', filterArgs],
+    async () => {
+      const { data } = await getFilterTasks(filterArgs!);
+      return data;
+    },
+    {
+      keepPreviousData: true,
+      enabled: filterArgs !== null
+    }
+  );
+};
+
+export const useCreateTask = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, CreateTaskPayload>(
-    ['tasks'],
+  return useMutation<Task, Error, CreateTaskPayload>(
+    ['tasks', 'create'],
     async (createTaskPayload: CreateTaskPayload) => {
       const { data } = await createSingleTask(
-        wbsNum,
+        createTaskPayload.wbsNum,
         createTaskPayload.title,
-        createTaskPayload.deadline,
         createTaskPayload.priority,
         createTaskPayload.status,
-        createTaskPayload.assignees
+        createTaskPayload.assignees,
+        createTaskPayload.notes ?? '',
+        createTaskPayload.deadline,
+        createTaskPayload.startDate
       );
       return data;
     },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
       }
     }
   );
@@ -40,9 +72,10 @@ export const useCreateTask = (wbsNum: WbsNumber) => {
 
 export interface TaskPayload {
   taskId: string;
-  notes: string;
+  notes?: string;
   title: string;
-  deadline: Date;
+  startDate?: Date;
+  deadline?: Date;
   priority: TaskPriority;
 }
 
@@ -58,9 +91,10 @@ export const useEditTask = () => {
       const { data } = await editTask(
         taskPayload.taskId,
         taskPayload.title,
-        taskPayload.notes,
+        taskPayload.notes ?? '',
         taskPayload.priority,
-        taskPayload.deadline
+        taskPayload.deadline,
+        taskPayload.startDate
       );
 
       return data;
@@ -68,6 +102,7 @@ export const useEditTask = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
       }
     }
   );
@@ -79,15 +114,16 @@ export const useEditTask = () => {
  */
 export const useEditTaskAssignees = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, { taskId: string; assignees: number[] }>(
+  return useMutation<Task, Error, { taskId: string; assignees: string[] }>(
     ['tasks', 'edit-assignees'],
-    async (editAssigneesTaskPayload: { taskId: string; assignees: number[] }) => {
+    async (editAssigneesTaskPayload: { taskId: string; assignees: string[] }) => {
       const { data } = await editTaskAssignees(editAssigneesTaskPayload.taskId, editAssigneesTaskPayload.assignees);
       return data;
     },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
       }
     }
   );
@@ -98,18 +134,18 @@ export const useEditTaskAssignees = () => {
  * @returns the edit task status mutation
  */
 export const useSetTaskStatus = () => {
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, { taskId: string; status: TaskStatus }>(
     ['tasks', 'edit-status'],
     async (editStatusTaskPayload: { taskId: string; status: TaskStatus }) => {
       const { data } = await editSingleTaskStatus(editStatusTaskPayload.taskId, editStatusTaskPayload.status);
       return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
-      }
     }
+    // {
+    //   onSuccess: () => {
+    //     queryClient.invalidateQueries(['projects']);
+    //   }
+    // }
   );
 };
 
@@ -128,7 +164,15 @@ export const useDeleteTask = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
       }
     }
   );
+};
+
+export const useOverdueTasksByTeamLeader = (userId: string) => {
+  return useQuery<TaskCardPreview[], Error>([userId, 'tasks'], async () => {
+    const { data } = await getOverdueTasksByTeamLeader(userId);
+    return data;
+  });
 };

@@ -1,27 +1,43 @@
-import { WbsElement } from 'shared';
+import { WbsElementPreview } from 'shared';
 import MaterialForm, { MaterialDataSubmission } from './MaterialForm';
-import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import { useToast } from '../../../../../hooks/toasts.hooks';
-import { useCreateMaterial } from '../../../../../hooks/bom.hooks';
+import { useCreateMaterial, useGetAssembliesForWbsElement } from '../../../../../hooks/bom.hooks';
 import ErrorPage from '../../../../ErrorPage';
 
 export interface CreateMaterialModalProps {
   open: boolean;
   onHide: () => void;
-  wbsElement: WbsElement;
+  wbsElement: WbsElementPreview;
+  onSuccess?: (materialName: string) => void;
+  fromRRForm?: boolean;
 }
 
-const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide, wbsElement }) => {
-  const { mutateAsync: createMaterial, isLoading, isError, error } = useCreateMaterial(wbsElement.wbsNum);
+const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({
+  open,
+  onHide,
+  wbsElement,
+  onSuccess,
+  fromRRForm = false
+}) => {
+  const { mutateAsync: createMaterial } = useCreateMaterial(wbsElement.wbsNum);
+  const {
+    data: assemblies,
+    isError: assembliesIsError,
+    error: assembliesError
+  } = useGetAssembliesForWbsElement(wbsElement.wbsNum);
   const toast = useToast();
 
-  if (isLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (assembliesIsError) return <ErrorPage message={assembliesError?.message} />;
 
   const onSubmit = async (data: MaterialDataSubmission): Promise<void> => {
     try {
       await createMaterial(data);
       toast.success('Material Created Successfully');
+
+      if (onSuccess) {
+        onSuccess(data.name);
+      }
+
       onHide();
     } catch (error) {
       if (error instanceof Error) {
@@ -30,7 +46,16 @@ const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide,
     }
   };
 
-  return <MaterialForm submitText="Add" onSubmit={onSubmit} wbsElement={wbsElement} onHide={onHide} open={open} />;
+  return (
+    <MaterialForm
+      submitText="Add"
+      onSubmit={onSubmit}
+      assemblies={assemblies}
+      onHide={onHide}
+      open={open}
+      fromRRForm={fromRRForm}
+    />
+  );
 };
 
 export default CreateMaterialModal;

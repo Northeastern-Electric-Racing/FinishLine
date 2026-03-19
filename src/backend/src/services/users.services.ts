@@ -1,54 +1,122 @@
-import { User_Settings, User as PrismaUser } from '@prisma/client';
-import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
+import { User_Settings, Organization, Role_Type } from '@prisma/client';
+import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client.js';
 import {
-  AuthenticatedUser,
   Role,
   ThemeName,
-  User,
   rankUserRole,
-  Project,
+  User,
   RoleEnum,
-  isHead,
   UserSecureSettings,
   UserScheduleSettings,
-  UserWithScheduleSettings
+  AuthenticatedUser,
+  AvailabilityCreateArgs,
+  UserWithScheduleSettings,
+  ProjectOverview,
+  isAtLeastRank
 } from 'shared';
-import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
-import prisma from '../prisma/prisma';
-import authenticatedUserTransformer from '../transformers/auth-user.transformer';
-import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
-import { generateAccessToken } from '../utils/auth.utils';
-import projectTransformer from '../transformers/projects.transformer';
-import projectQueryArgs from '../prisma-query-args/projects.query-args';
-import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
-import { validateUserIsPartOfFinanceTeam } from '../utils/reimbursement-requests.utils';
-import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer';
-import { userTransformer, userWithScheduleSettingsTransformer } from '../transformers/user.transformer';
+import prisma from '../prisma/prisma.js';
+import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
+import { generateAccessToken } from '../utils/auth.utils.js';
+import { projectOverviewTransformer } from '../transformers/projects.transformer.js';
+import { getProjectOverviewQueryArgs } from '../prisma-query-args/projects.query-args.js';
+import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer.js';
+import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer.js';
+import { userTransformer, userWithScheduleSettingsTransformer } from '../transformers/user.transformer.js';
+import { getUserRole, updateUserAvailability } from '../utils/users.utils.js';
+import { getUserQueryArgs, getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args.js';
+import authenticatedUserTransformer from '../transformers/auth-user.transformer.js';
+import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
+import taskTransformer from '../transformers/tasks.transformer.js';
+import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
 
 export default class UsersService {
   /**
    * Gets all of the users from the database
    * @returns a list of all the users
    */
-  static async getAllUsers(): Promise<UserWithScheduleSettings[]> {
+  static async getAllUsers(): Promise<User[]> {
     const users = await prisma.user.findMany({
-      include: {
-        drScheduleSettings: true
-      }
+      ...getUserQueryArgs(),
+      orderBy: { firstName: 'asc' }
     });
-    users.sort((a, b) => a.firstName.localeCompare(b.firstName));
 
-    return users.map(userWithScheduleSettingsTransformer);
+    return users.map(userTransformer);
+  }
+
+  /**
+   * Gets all of the users in the current organization
+   * @param organization the organization to get the users from
+   * @returns a list of all the users in the current organization
+   */
+  static async getAllOrgUsers(organizationId: string): Promise<User[]> {
+    const users = await prisma.user.findMany({
+      where: { organizations: { some: { organizationId } } },
+      ...getUserQueryArgs(organizationId),
+      orderBy: { firstName: 'asc' }
+    });
+
+    return users.map(userTransformer);
+  }
+
+  static async getAllOrgMembers(organizationId: string): Promise<User[]> {
+    const users = await prisma.user.findMany({
+      where: {
+        organizations: {
+          some: {
+            organizationId,
+            roles: {}
+          }
+        },
+        roles: {
+          some: {
+            AND: [{ NOT: { roleType: Role_Type.GUEST } }, { organizationId }]
+          }
+        }
+      },
+      ...getUserQueryArgs(organizationId),
+      orderBy: { lastName: 'asc' }
+    });
+
+    return users.map(userTransformer);
+  }
+
+  static async getCurrentUser(user: User): Promise<AuthenticatedUser> {
+    const userWithOrgs = await prisma.user.findUnique({ where: { userId: user.userId }, include: { organizations: true } });
+
+    if (!userWithOrgs) {
+      throw new NotFoundException('User', user.userId);
+    }
+
+    const [organization] = userWithOrgs.organizations;
+
+    if (!organization) throw new HttpException(500, 'User is not apart of any organizations');
+
+    const currentUser = await prisma.user.findUnique({
+      where: { userId: user.userId },
+      ...getAuthUserQueryArgs(organization.organizationId)
+    });
+
+    if (!currentUser) {
+      throw new NotFoundException('User', user.userId);
+    }
+
+    return authenticatedUserTransformer(currentUser);
   }
 
   /**
    * Gets the user with the specified id
    * @param userId the id of the user that's returned
+   * @param organizationId the id of the organization the current user is in
    * @returns the user with the specified id
    * @throws if the given user doesn't exist
    */
-  static async getSingleUser(userId: number): Promise<User> {
-    const requestedUser = await prisma.user.findUnique({ where: { userId } });
+  static async getSingleUser(userId: string, organization: Organization): Promise<User> {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId, organizations: { some: { organizationId: organization.organizationId } } },
+      ...getUserQueryArgs(organization.organizationId)
+    });
+
     if (!requestedUser) throw new NotFoundException('User', userId);
 
     return userTransformer(requestedUser);
@@ -60,7 +128,7 @@ export default class UsersService {
    * @returns the user settings object
    * @throws if the given user doesn't exist, or the given user's settings don't exist
    */
-  static async getUserSettings(userId: number): Promise<User_Settings> {
+  static async getUserSettings(userId: string): Promise<User_Settings> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
 
     if (!requestedUser) throw new NotFoundException('User', userId);
@@ -78,7 +146,7 @@ export default class UsersService {
    * @param user the id of the user who's secure settings are requested
    * @returns the user's secure settings object
    */
-  static async getCurrentUserSecureSettings(user: PrismaUser): Promise<UserSecureSettings> {
+  static async getCurrentUserSecureSettings(user: User): Promise<UserSecureSettings> {
     const secureSettings = await prisma.user_Secure_Settings.findUnique({
       where: { userId: user.userId }
     });
@@ -88,11 +156,12 @@ export default class UsersService {
   }
 
   /**
-   * Get the given user's favorite projects.
+   * Get the given user's favorite projects for the current organization.
    * @param userId the user to get the projects for
+   * @param organizationId the id of the organization the user is in
    * @returns the user's favorite projects
    */
-  static async getUsersFavoriteProjects(userId: number): Promise<Project[]> {
+  static async getUsersFavoriteProjects(userId: string, organization: Organization): Promise<ProjectOverview[]> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
     if (!requestedUser) throw new NotFoundException('User', userId);
 
@@ -102,12 +171,16 @@ export default class UsersService {
           some: {
             userId
           }
+        },
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null
         }
       },
-      ...projectQueryArgs
+      ...getProjectOverviewQueryArgs(organization.organizationId)
     });
 
-    return projects.map(projectTransformer);
+    return projects.map(projectOverviewTransformer);
   }
 
   /**
@@ -118,7 +191,7 @@ export default class UsersService {
    * @returns the updated settings
    * @throws if the user does not exist
    */
-  static async updateUserSettings(user: PrismaUser, defaultTheme: ThemeName, slackId: string): Promise<User_Settings> {
+  static async updateUserSettings(user: User, defaultTheme: ThemeName, slackId: string): Promise<User_Settings> {
     const { userId } = user;
 
     const updatedSettings = await prisma.user_Settings.upsert({
@@ -150,16 +223,11 @@ export default class UsersService {
     // check if user is already in the database via Google ID
     let user = await prisma.user.findUnique({
       where: { googleAuthId: userId },
-      ...authUserQueryArgs
+      include: {
+        organizations: true,
+        userSettings: true
+      }
     });
-
-    if (!payload['given_name']) {
-      throw new HttpException(400, 'First Name was not Found on Google Account');
-    }
-
-    if (!payload['family_name']) {
-      throw new HttpException(400, 'Last Name was not Found on Google Account');
-    }
 
     if (!payload['email']) {
       throw new HttpException(400, 'Email was not Found on Google Account');
@@ -168,18 +236,50 @@ export default class UsersService {
     // if not in database, create user in database
     if (!user) {
       const emailId = payload['email']!.includes('@husky.neu.edu') ? payload['email']!.split('@')[0] : null;
+      const organization = await prisma.organization.findFirst();
+
+      const firstName = payload['given_name'] ?? payload['email']!.split('@')[0]; // Defaults to id of email
+      const lastName = payload['family_name'] ?? ''; // Defaults to no last name
+
+      const nonHuskyEmail = payload['email']!.includes('@husky.neu.edu')
+        ? payload['email'].replace(/@husky\.neu\.edu/i, '@northeastern.edu')
+        : payload['email'];
+
       const createdUser = await prisma.user.create({
         data: {
-          firstName: payload['given_name'],
-          lastName: payload['family_name'],
+          firstName,
+          lastName,
           googleAuthId: userId,
-          email: payload['email'],
+          email: nonHuskyEmail,
           emailId,
           userSettings: { create: {} }
         },
-        ...authUserQueryArgs
+        include: {
+          organizations: true,
+          userSettings: true
+        }
       });
       user = createdUser;
+
+      if (organization) {
+        await prisma.organization.update({
+          where: { organizationId: organization.organizationId },
+          data: {
+            users: {
+              connect: {
+                userId: createdUser.userId
+              }
+            }
+          }
+        });
+        await prisma.role.create({
+          data: {
+            userId: createdUser.userId,
+            organizationId: organization!.organizationId,
+            roleType: RoleEnum.GUEST
+          }
+        });
+      }
     }
 
     // register a login
@@ -192,7 +292,31 @@ export default class UsersService {
 
     const token = generateAccessToken({ userId: user.userId, firstName: user.firstName, lastName: user.lastName });
 
-    return { user: authenticatedUserTransformer(user), token };
+    if (user.organizations.length > 0) {
+      const [defaultOrganization] = user.organizations;
+      const authenticatedUser = await prisma.user.findUnique({
+        where: { userId: user.userId },
+        ...getAuthUserQueryArgs(defaultOrganization.organizationId)
+      });
+
+      if (!authenticatedUser) throw new NotFoundException('User', userId);
+
+      return { user: authenticatedUserTransformer(authenticatedUser), token };
+    }
+
+    return {
+      user: authenticatedUserTransformer({
+        ...user,
+        organizations: [],
+        roles: [],
+        onboardingTeamTypes: [],
+        onboardedTeamTypes: [],
+        teamsAsHead: [],
+        teamsAsLead: [],
+        teamsAsMember: []
+      }),
+      token
+    };
   }
 
   /**
@@ -202,10 +326,13 @@ export default class UsersService {
    * @returns the user that has been logged in
    * @throws if the user with the specified id doesn't exist in the database
    */
-  static async logUserInDev(userId: number, header: string): Promise<AuthenticatedUser> {
+  static async logUserInDev(userId: string, header: string): Promise<AuthenticatedUser> {
     const user = await prisma.user.findUnique({
       where: { userId },
-      ...authUserQueryArgs
+      include: {
+        organizations: true,
+        userSettings: true
+      }
     });
 
     if (!user) throw new NotFoundException('User', userId);
@@ -218,7 +345,28 @@ export default class UsersService {
       }
     });
 
-    return authenticatedUserTransformer(user);
+    if (user.organizations.length > 0) {
+      const [defaultOrganization] = user.organizations;
+      const authenticatedUser = await prisma.user.findUnique({
+        where: { userId },
+        ...getAuthUserQueryArgs(defaultOrganization.organizationId)
+      });
+
+      if (!authenticatedUser) throw new NotFoundException('User', userId);
+
+      return authenticatedUserTransformer(authenticatedUser);
+    }
+
+    return authenticatedUserTransformer({
+      ...user,
+      organizations: [],
+      roles: [],
+      onboardingTeamTypes: [],
+      onboardedTeamTypes: [],
+      teamsAsHead: [],
+      teamsAsLead: [],
+      teamsAsMember: []
+    });
   }
 
   /**
@@ -226,53 +374,75 @@ export default class UsersService {
    * @param targetUserId the user who's role is being changed
    * @param user the user who is changing the role
    * @param role the role that the user is being updated to
+   * @param organizationId the id of the organization the user is in
    * @returns the user whose role has been updated
    * @throws if the targeted user doesn't exist, the user who's changing the role doesn't exist,
    *         a user is trying to change the role of a user with an equal or higher role, or a user is trying to
    *         promote a user to higher role than themself
    */
-  static async updateUserRole(targetUserId: number, user: PrismaUser, role: Role): Promise<User> {
-    let targetUser = await prisma.user.findUnique({ where: { userId: targetUserId } });
+  static async updateUserRole(targetUserId: string, user: User, role: Role, organization: Organization): Promise<User> {
+    const targetUser = await prisma.user.findUnique({
+      where: { userId: targetUserId, organizations: { some: { organizationId: organization.organizationId } } },
+      ...getUserQueryArgs(organization.organizationId)
+    });
 
     if (!targetUser) throw new NotFoundException('User', targetUserId);
 
-    const userRole = rankUserRole(user.role);
-    const targetUserRole = rankUserRole(targetUser.role);
+    const userRole = await getUserRole(user.userId, organization.organizationId);
+    const targetUserRole = await getUserRole(targetUserId, organization.organizationId);
+    const userRankedRole = rankUserRole(userRole);
+    const targetUserRankedRole = rankUserRole(targetUserRole);
 
-    if (!isHead(user.role)) {
-      throw new AccessDeniedException('Guests, members, and leadership cannot update user roles!');
+    if (!isAtLeastRank(RoleEnum.LEADERSHIP, userRole)) {
+      throw new AccessDeniedException('Guests and members cannot update user roles!');
     }
 
-    if (targetUserRole >= userRole) {
+    if (targetUserRankedRole >= userRankedRole) {
       throw new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you');
     }
 
-    if (user.role === RoleEnum.HEAD && rankUserRole(role) >= userRole) {
-      throw new AccessDeniedException('Heads can only promote to leadership or below');
-    } else {
-      if (rankUserRole(role) > userRole) {
-        throw new AccessDeniedException('Cannot promote user to a higher role than yourself');
-      }
-      targetUser = await prisma.user.update({
-        where: { userId: targetUserId },
-        data: { role }
-      });
+    if (rankUserRole(role) >= userRankedRole && role !== RoleEnum.APP_ADMIN) {
+      throw new AccessDeniedException('Cannot promote someone to your own role or higher');
     }
 
-    return userTransformer(targetUser);
+    await prisma.role.upsert({
+      where: { uniqueRole: { userId: targetUserId, organizationId: organization.organizationId } },
+      update: { roleType: role },
+      create: { userId: targetUserId, organizationId: organization.organizationId, roleType: role }
+    });
+
+    return userTransformer({ ...targetUser, roles: [{ ...targetUser.roles[0], roleType: role }] });
   }
 
   /**
    * Gets a user's secure settings
    * @param userId the id of user who's secure settings are being returned
    * @param submitter the user who is requesting the user's secure settings
+   * @param organizationId the id of the organization the user is in
    */
-  static async getUserSecureSetting(userId: number, submitter: PrismaUser): Promise<UserSecureSettings> {
-    await validateUserIsPartOfFinanceTeam(submitter);
+  static async getUserSecureSetting(
+    userId: string,
+    submitter: User,
+    organization: Organization
+  ): Promise<UserSecureSettings> {
+    await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
     const secureSettings = await prisma.user_Secure_Settings.findUnique({
-      where: { userId }
+      where: { userId },
+      include: {
+        user: {
+          include: {
+            organizations: true
+          }
+        }
+      }
     });
+
     if (!secureSettings) throw new HttpException(404, 'User Secure Settings Not Found');
+    const { user } = secureSettings;
+
+    if (!user) throw new NotFoundException('User', userId);
+    if (!user.organizations.map((org) => org.organizationId).includes(organization.organizationId))
+      throw new AccessDeniedException('This user is not in your organization!');
 
     return userSecureSettingsTransformer(secureSettings);
   }
@@ -296,14 +466,6 @@ export default class UsersService {
     zipcode: string,
     phoneNumber: string
   ): Promise<string> {
-    const existingUser = await prisma.user_Secure_Settings.findFirst({
-      where: { phoneNumber, userId: { not: user.userId } } // excludes the current user from check
-    });
-
-    if (existingUser) {
-      throw new HttpException(400, 'Phone number already in use');
-    }
-
     const newUserSecureSettings = await prisma.user_Secure_Settings.upsert({
       where: { userId: user.userId },
       update: {
@@ -335,10 +497,11 @@ export default class UsersService {
    * @returns the user's schedule settings
    * @throws if the user doesn't have schedule settings
    */
-  static async getUserScheduleSettings(userId: number, submitter: PrismaUser): Promise<UserScheduleSettings> {
+  static async getUserScheduleSettings(userId: string, submitter: User): Promise<UserScheduleSettings> {
     if (submitter.userId !== userId) throw new AccessDeniedException('You can only access your own schedule settings');
     const scheduleSettings = await prisma.schedule_Settings.findUnique({
-      where: { userId }
+      where: { userId },
+      ...getUserScheduleSettingsQueryArgs()
     });
     if (!scheduleSettings) throw new HttpException(404, 'User Schedule Settings Not Found');
 
@@ -350,37 +513,108 @@ export default class UsersService {
    * @param user the user to set the schedule settings for
    * @param personalGmail the user's personal gmail
    * @param personalZoomLink the user's personal zoom link
-   * @param availability the user's availibility
+   * @param availabilities the user's availibility
    * @returns the id of the user's schedule settings
    */
   static async setUserScheduleSettings(
     user: User,
     personalGmail: string,
     personalZoomLink: string,
-    availability: number[]
+    availabilities: AvailabilityCreateArgs[]
   ): Promise<UserScheduleSettings> {
-    const existingUser = await prisma.schedule_Settings.findFirst({
-      where: { personalGmail, userId: { not: user.userId } } // excludes the current user from check
-    });
+    if (personalGmail !== '') {
+      const existingUser = await prisma.schedule_Settings.findFirst({
+        where: { personalGmail, userId: { not: user.userId } } // excludes the current user from check
+      });
 
-    if (existingUser) {
-      throw new HttpException(400, 'Email already in use');
+      if (existingUser) {
+        throw new HttpException(400, 'Email already in use');
+      }
     }
 
     const newUserScheduleSettings = await prisma.schedule_Settings.upsert({
       where: { userId: user.userId },
       update: {
         personalGmail,
-        personalZoomLink,
-        availability
+        personalZoomLink
       },
       create: {
         userId: user.userId,
         personalGmail,
-        personalZoomLink,
-        availability
+        personalZoomLink
+      },
+      ...getUserScheduleSettingsQueryArgs()
+    });
+
+    await updateUserAvailability(availabilities, newUserScheduleSettings, user);
+
+    return userScheduleSettingsTransformer(newUserScheduleSettings);
+  }
+
+  /**
+   * Get's a user's assigned tasks
+   * @param userId the id of the user who's tasks are being returned
+   * @param organization the user's organization
+   * @returns a list of the user's assigned tasks
+   */
+  static async getUserTasks(userId: string, organization: Organization) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId },
+      include: {
+        assignedTasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organization.organizationId) },
+        organizations: true
       }
     });
-    return userScheduleSettingsTransformer(newUserScheduleSettings);
+    if (!requestedUser) throw new NotFoundException('User', userId);
+    if (!requestedUser.organizations.map((org) => org.organizationId).includes(organization.organizationId))
+      throw new HttpException(400, `User ${userId} is not apart of the current organization`);
+
+    return requestedUser.assignedTasks.map(taskTransformer);
+  }
+
+  /**
+   * Get all tasks from a list of userIds
+   * @param userIds list of users to get the tasks from
+   * @param organization the users' organization
+   * @returns a list of tasks of the given users
+   */
+  static async getManyUserTasks(userIds: string[], organization: Organization) {
+    const tasksPromises = userIds.map(async (userId) => {
+      return UsersService.getUserTasks(userId, organization);
+    });
+
+    const resolvedTasks = await Promise.all(tasksPromises);
+    return resolvedTasks.flat();
+  }
+
+  /**
+   * Gets many users with their schedule settings
+   * @param userIds list of userIds to get the users and their schedule settings from
+   * @param organization the users' organization
+   * @returns a list of users with their schedule settings
+   */
+  static async getManyUsersWithScheduleSettings(
+    userIds: string[],
+    organization: Organization
+  ): Promise<UserWithScheduleSettings[]> {
+    const users = await prisma.user.findMany({
+      where: {
+        userId: { in: userIds },
+        organizations: { some: { organizationId: organization.organizationId } }
+      },
+      include: {
+        drScheduleSettings: getUserScheduleSettingsQueryArgs(),
+        roles: true,
+        organizations: true,
+        userSettings: true
+      }
+    });
+
+    const missingUserIds = userIds.filter((id) => !users.some((user) => user.userId === id));
+    if (missingUserIds.length > 0) {
+      throw new NotFoundException('User', missingUserIds.join(', '));
+    }
+
+    return users.map(userWithScheduleSettingsTransformer);
   }
 }

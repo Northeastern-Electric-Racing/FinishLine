@@ -4,16 +4,13 @@
  */
 
 import { Link, useHistory } from 'react-router-dom';
-import { Project, isGuest, isAdmin, isLeadership } from 'shared';
+import { Project, isGuest, isAdmin, isLeadership, RoleEnum } from 'shared';
 import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
 import ProjectDetails from './ProjectDetails';
 import { routes } from '../../../utils/routes';
-import { NERButton } from '../../../components/NERButton';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import EditIcon from '@mui/icons-material/Edit';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
-import { Box, Menu, MenuItem } from '@mui/material';
+import { Box } from '@mui/material';
 import { useState } from 'react';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -23,17 +20,22 @@ import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ScopeTab } from './ScopeTab';
 import ProjectGantt from './ProjectGantt';
-import TaskList from './TaskList/TaskList';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 import PageLayout from '../../../components/PageLayout';
-import NERTabs from '../../../components/Tabs';
+import FullPageTabs from '../../../components/FullPageTabs';
 import ChangesList from '../../../components/ChangesList';
 import BOMTab, { addMaterialCosts } from './BOMTab';
 import SavingsIcon from '@mui/icons-material/Savings';
-import ChangeRequestTab from './ChangeRequestTab';
+import { TaskList } from './TaskList/v2';
+import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
+import ChangeRequestTab from '../../../components/ChangeRequestTab';
+import PartsReviewPage from './PartReview/PartsReviewPage';
+import ActionsMenu from '../../../components/ActionsMenu';
+import ProjectSpendingHistory from '../../ProjectPage/ProjectSpendingHistory';
+import { useMyTeamAsHead } from '../../../hooks/teams.hooks';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -45,26 +47,42 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const toast = useToast();
   const history = useHistory();
   const { mutateAsync: mutateAsyncSetProjectTeam } = useSetProjectTeam(project.wbsNum);
-  const { data: favoriteProjects, isLoading, isError, error } = useUsersFavoriteProjects(user.userId);
+  const {
+    data: favoriteProjects,
+    isLoading: favoriteProjectsIsLoading,
+    isError: favoriteProjectsIsError,
+    error: favoriteProjectsError
+  } = useUsersFavoriteProjects(user.userId);
+  const {
+    data: materials,
+    isLoading: materialsIsLoading,
+    isError: materialsIsError,
+    error: materialsError
+  } = useGetMaterialsForWbsElement(project.wbsNum);
+  const {
+    data: teamAsHeadId,
+    isLoading: teamAsHeadIdIsLoading,
+    isError: teamAsHeadIdIsError,
+    error: teamAsHeadIdError
+  } = useMyTeamAsHead();
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleClickDelete = () => {
     setDeleteModalShow(true);
   };
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tab, setTab] = useState(0);
-  const dropdownOpen = Boolean(anchorEl);
 
-  if (isLoading || !favoriteProjects) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (favoriteProjectsIsError) return <ErrorPage message={favoriteProjectsError.message} />;
+  if (materialsIsError) return <ErrorPage message={materialsError.message} />;
+  if (teamAsHeadIdIsError) return <ErrorPage message={teamAsHeadIdError.message} />;
+
+  if (favoriteProjectsIsLoading || teamAsHeadIdIsLoading || !favoriteProjects || !materials || materialsIsLoading)
+    return <LoadingIndicator />;
 
   project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-  const { teamAsHeadId } = user;
-  const projectIsFavorited = favoriteProjects.map((favoriteProject) => favoriteProject.id).includes(project.id);
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const projectIsFavorited = favoriteProjects.map((favoriteProject) => favoriteProject.id).includes(project.id);
 
   const handleDropdownClose = () => {
     setAnchorEl(null);
@@ -87,124 +105,73 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     }
   };
 
-  const EditButton = () => (
-    <MenuItem onClick={handleClickEdit} disabled={isGuest(user.role)}>
-      <ListItemIcon>
-        <EditIcon fontSize="small" />
-      </ListItemIcon>
-      Edit
-    </MenuItem>
-  );
-
-  const CreateChangeRequestButton = () => (
-    <MenuItem
-      component={Link}
-      to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(project.wbsNum)}
-      disabled={isGuest(user.role)}
-      onClick={handleDropdownClose}
-    >
-      <ListItemIcon>
-        <SyncAltIcon fontSize="small" />
-      </ListItemIcon>
-      Request Change
-    </MenuItem>
-  );
-
-  const SuggestBudgetIncreaseButton = () => {
-    const budgetIncrease = project.materials.reduce(addMaterialCosts, 0) - project.budget;
-    return (
-      <MenuItem
-        onClick={() =>
-          history.push(
-            `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&budgetChange=${budgetIncrease}`
-          )
-        }
-        disabled={!isLeadership(user.role) || budgetIncrease <= 0}
-      >
-        <ListItemIcon>
-          <SavingsIcon fontSize="small" />
-        </ListItemIcon>
-        Suggest Budget Increase
-      </MenuItem>
-    );
-  };
-
-  const AssignToMyTeamButton = () => {
-    const assignToTeamText = project.teams.map((team) => team.teamId).includes(teamAsHeadId!)
-      ? 'Unassign from My Team'
-      : 'Assign to My Team';
-
-    return (
-      <MenuItem onClick={handleAssignToMyTeam}>
-        <ListItemIcon>
-          <GroupIcon fontSize="small" />
-        </ListItemIcon>
-        {assignToTeamText}
-      </MenuItem>
-    );
-  };
-
-  const buildURLForCreateWorkPackage = () => {
-    return `${routes.WORK_PACKAGE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}&crId=null`;
-  };
-  const CreateWorkPackageButton = () => {
-    return (
-      <MenuItem onClick={() => history.push(buildURLForCreateWorkPackage())} disabled={isGuest(user.role)}>
-        <ListItemIcon>
-          <ContentPasteIcon fontSize="small" />
-        </ListItemIcon>
-        Create New Work Package
-      </MenuItem>
-    );
-  };
-
-  const DeleteButton = () => (
-    <MenuItem onClick={handleClickDelete} disabled={!isAdmin(user.role)}>
-      <ListItemIcon>
-        <DeleteIcon fontSize="small" />
-      </ListItemIcon>
-      Delete
-    </MenuItem>
-  );
+  const budgetIncrease = materials.reduce(addMaterialCosts, 0) - project.budget;
+  const assignToTeamText = project.teams.map((team) => team.teamId).includes(teamAsHeadId!)
+    ? 'Unassign from My Team'
+    : 'Assign to My Team';
 
   const projectActionsDropdown = (
-    <Box ml={2}>
-      <NERButton
-        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
-        variant="contained"
-        id="project-actions-dropdown"
-        onClick={handleClick}
-        disabled={isGuest(user.role)}
-      >
-        Actions
-      </NERButton>
-      <Menu
-        open={dropdownOpen}
-        anchorEl={anchorEl}
-        onClose={handleDropdownClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-      >
-        <EditButton />
-        <CreateChangeRequestButton />
-        <SuggestBudgetIncreaseButton />
-        {teamAsHeadId && <AssignToMyTeamButton />}
-        <CreateWorkPackageButton />
-        <DeleteButton />
-      </Menu>
-    </Box>
+    <div style={{ marginTop: '10px' }}>
+      <ActionsMenu
+        buttons={[
+          {
+            title: 'Edit',
+            onClick: handleClickEdit,
+            disabled: isGuest(user.role),
+            icon: <EditIcon fontSize="small" />
+          },
+          {
+            title: 'Request Change',
+            onClick: handleDropdownClose,
+            disabled: isGuest(user.role),
+            icon: <SyncAltIcon fontSize="small" />,
+            component: Link,
+            to: routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(project.wbsNum)
+          },
+          {
+            title: 'Suggest Budget Increase',
+            onClick: () => {
+              history.push(
+                `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&budgetChange=${budgetIncrease}`
+              );
+            },
+            disabled: !isLeadership(user.role) || budgetIncrease <= 0,
+            icon: <SavingsIcon fontSize="small" />
+          },
+          ...(teamAsHeadId
+            ? [
+                {
+                  title: assignToTeamText,
+                  onClick: handleAssignToMyTeam,
+                  disabled: false,
+                  icon: <GroupIcon fontSize="small" />
+                }
+              ]
+            : []),
+          {
+            title: 'Create New Work Package',
+            onClick: () => {
+              history.push(`${routes.WORK_PACKAGE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}&crId=null`);
+            },
+            disabled: isGuest(user.role),
+            icon: <ContentPasteIcon fontSize="small" />
+          },
+          {
+            title: 'Delete',
+            onClick: handleClickDelete,
+            disabled: !isAdmin(user.role),
+            icon: <DeleteIcon fontSize="small" />,
+            dividerTop: true
+          }
+        ]}
+      />
+    </div>
   );
 
   const pageTitle = `${wbsPipe(project.wbsNum)} - ${project.name}`;
 
   const headerRight = (
-    <Box display="flex" justifyContent="flex-end">
+    <Box display="flex" justifyContent="flex-end" alignItems="Center">
       <FavoriteProjectButton wbsNum={project.wbsNum} projectIsFavorited={projectIsFavorited} />
       {projectActionsDropdown}
     </Box>
@@ -217,7 +184,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       title={pageTitle}
       headerRight={headerRight}
       tabs={
-        <NERTabs
+        <FullPageTabs
           setTab={setTab}
           tabsLabels={[
             { tabUrlValue: 'overview', tabName: 'Overview' },
@@ -226,7 +193,9 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             { tabUrlValue: 'scope', tabName: 'Scope' },
             { tabUrlValue: 'changes', tabName: 'Changes' },
             { tabUrlValue: 'gantt', tabName: 'Gantt' },
-            { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
+            { tabUrlValue: 'change-requests', tabName: 'Change Requests' },
+            { tabUrlValue: 'parts-review', tabName: 'Parts Review' },
+            { tabUrlValue: 'spending', tabName: 'Budget' }
           ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
@@ -238,7 +207,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       {tab === 0 ? (
         <ProjectDetails project={project} />
       ) : tab === 1 ? (
-        <TaskList project={project} />
+        <TaskList project={project} isGuest={user.role === RoleEnum.GUEST} />
       ) : tab === 2 ? (
         <BOMTab project={project} />
       ) : tab === 3 ? (
@@ -247,8 +216,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <ChangesList changes={project.changes} />
       ) : tab === 5 ? (
         <ProjectGantt workPackages={project.workPackages} />
+      ) : tab === 6 ? (
+        <ChangeRequestTab wbsElement={project} />
+      ) : tab === 7 ? (
+        <PartsReviewPage project={project} />
       ) : (
-        <ChangeRequestTab project={project} />
+        <ProjectSpendingHistory wbsNum={project.wbsNum} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />

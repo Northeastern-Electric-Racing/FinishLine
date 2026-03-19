@@ -38,11 +38,11 @@ const renderComponent = (modalShow: boolean) => {
 describe('delete change request page test suite', () => {
   it('renders text correctly', () => {
     renderComponent(true);
-    expect(screen.queryByText(`Delete Change Request #${exampleStandardChangeRequest.crId}`)).toBeInTheDocument();
+    expect(screen.getByText(`Delete Change Request #${exampleStandardChangeRequest.crId}`)).toBeInTheDocument();
     expect(
-      screen.queryByText(`Are you sure you want to delete Change Request #${exampleStandardChangeRequest.crId}?`)
+      screen.getByText(`Are you sure you want to delete Change Request #${exampleStandardChangeRequest.crId}?`)
     ).toBeInTheDocument();
-    expect(screen.queryByText(`This action cannot be undone!`)).toBeInTheDocument();
+    expect(screen.getByText(`This action cannot be undone!`)).toBeInTheDocument();
   });
 
   it("doesn't display modal", () => {

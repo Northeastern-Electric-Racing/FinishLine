@@ -15,11 +15,7 @@ const CreditsPage: React.FC = () => {
   // 'name' and 'color', and optionally 'sx' if you want to use a special style
   // the type notation tells us that name is a string and color is a string
   // think of JSON like a map with keys and values
-  const names: {
-    name: string;
-    color: string;
-    sx?: {};
-  }[] = [
+  const names: { name: string; color: string; sx?: {} }[] = [
     { name: 'Anthony Bernardi', color: '#566bd4' },
     { name: 'Reid Chandler', color: '#e53774' },
     {
@@ -114,7 +110,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Sharon Yang', color: '#ed8a5f' },
     { name: 'Jonah Chang', color: '#9AAB89' },
     { name: 'Ha Nguyen', color: '#ff9812' },
-    { name: 'Sathvik Charugundla', color: '#ff0000' },
+    { name: 'Sathvik Charugundla', color: '#00fff2ff' },
     { name: 'Samantha Moy', color: '#d287fa' },
     { name: 'Benjamin Zhu', color: '#ccccff' },
     { name: 'Stephanie Xu', color: '#ffcd42' },
@@ -178,13 +174,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Jesse Garcia', color: '#3BB143' },
     { name: 'Emma Shum', color: '#d4878f' },
     { name: 'Matthew Egg', color: '#7E1B2F' },
-    {
-      name: 'Wyatt Bracy',
-      color: '#080808',
-      sx: {
-        textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
-      }
-    },
+    { name: 'Wyatt Bracy', color: '#080808', sx: { textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)' } },
     { name: 'Xavier Galanes', color: '#6c25be' },
     { name: 'Jaden Zhou', color: '#34568B' },
     { name: 'Alexander Kylander-Kreiner', color: '#82EEFD' },
@@ -207,10 +197,13 @@ const CreditsPage: React.FC = () => {
     { name: 'Rup Jaisinghani', color: '#065535' },
     { name: 'Jack Dreifus', color: '#014421' },
     { name: 'Vinay Pillai', color: '#42458e' },
+    { name: 'Aaron Zhou', color: '#BAB86C' },
     { name: 'Benjamin Kataoka', color: '#38FF87' },
     { name: 'Meggan Shvartsberg', color: '#00DBFF' },
     { name: 'Visisht Kamalapuram', color: '#3083AA' },
     { name: 'Jay Jung', color: '##344739' },
+    { name: 'Elton Yu', color: '#f202a2' },
+    { name: 'Raphael Bessin', color: '#14855fff' },
     { name: 'Will Anderson', color: '#ebb145' },
     { name: 'Alex Park', color: '#CCCCFF' },
     {
@@ -229,9 +222,7 @@ const CreditsPage: React.FC = () => {
     {
       name: 'Tanisha Rajgor',
       color: '#e3ddfb',
-      sx: {
-        textShadow: '0 0 2px rgba(0, 0, 0, 0.4), 0 0 5px rgba(180, 160, 255, 0.8)'
-      }
+      sx: { textShadow: '0 0 2px rgba(0, 0, 0, 0.4), 0 0 5px rgba(180, 160, 255, 0.8)' }
     },
     { name: 'Jhonyel Galvis', color: '#00FFF' },
     { name: 'Arav Goyal', color: '#6223de' },
@@ -242,7 +233,144 @@ const CreditsPage: React.FC = () => {
     { name: 'Alex Dong', color: '#5d42f5' },
     { name: 'Chris Li', color: '#5d42f5' },
     { name: 'Kenneth Aldridge', color: '#E70D0D' },
-    { name: 'Nishanth Chinnadurai', color: '#8E6B9F' }
+    { name: 'Nishanth Chinnadurai', color: '#8E6B9F' },
+    { name: 'Nicholas Yokaitis', color: '#475380' },
+    { name: 'Eric Yao', color: '#a5ff38' },
+    { name: 'Haylie Pedersen', color: '#368048' },
+    { name: 'Kinsey Bellerose', color: '#3281a8' },
+    { name: 'Tyler Morrill', color: '#4a881b' },
+    { name: 'Kyan Barker', color: '#5d42f5' },
+    { name: 'Haiden Busick-Warner', color: '#FF33FD' },
+    { name: 'Jason Kuo', color: '#a200ff' },
+    { name: 'Wilson Wei', color: '#008000' },
+    { name: 'Thanin Kongkiatsophon', color: '#15B392' },
+    { name: 'Abhinav Gonthina', color: '#6495ED' },
+    { name: 'Aryan Gupta', color: '#5a4094' },
+    { name: 'Lisa Wan', color: '#CCCCFF' },
+    { name: 'Aidan Wong', color: '#4284f5' },
+    { name: 'Joshua Sharma', color: '#50C878' },
+    { name: 'Sarah Taylor', color: '#278f4b' },
+    { name: 'Shrey Agarwal', color: '#800080' },
+    { name: 'Amber Friar', color: '#F5A9B8' },
+    { name: 'Kaung Mo', color: '#9a1115' },
+    { name: 'Mae Balesterri', color: '#7fb2bc' },
+    {
+      name: 'Joshua Goldberg',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet, red)',
+        '-webkit-background-clip': 'text',
+        backgroundSize: '400% 400%',
+        animation: 'rainbowGradient 12s infinite linear',
+        '@keyframes rainbowGradient': {
+          '0%': { backgroundPosition: '400% 200%' },
+          '100%': { backgroundPosition: '0% 200%' }
+        }
+      }
+    },
+    {
+      name: 'Christopher DiCono',
+      color: '#00FF00',
+      sx: { textShadow: '0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00' }
+    },
+    { name: 'Ricardo Landeros', color: '#3221ed' },
+    { name: 'Mihika Chalasani', color: '#a2d2ff' },
+    {
+      name: 'Edison Kwok',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(45deg,rgb(115, 255, 232) 0%,rgb(45, 94, 255) 11%,rgb(211, 89, 255) 80%)',
+        '-webkit-background-clip': 'text'
+      }
+    },
+    { name: 'Maddy Nenninger', color: '#70d489' },
+    { name: 'Gauri Rajesh', color: '#94C973' },
+    { name: 'Steph Sayegh', color: '#006400' },
+    {
+      name: 'Mardan Mahmut',
+      color: 'transparent',
+      sx: {
+        textShadow: '0 0 5px rgba(255, 60, 255, 1), 0 0 10px rgb(25, 169, 202), 0 0 20px rgba(60, 255, 255, 1)',
+        background: 'linear-gradient(90deg, white, pink, red, violet, blue, violet, red, pink, white)',
+        '-webkit-background-clip': 'text',
+        backgroundSize: '400% 400%',
+        animation: 'gradient 10s infinite linear',
+        '@keyframes gradient': {
+          '0%': { backgroundPosition: '400% 200%' },
+          '100%': { backgroundPosition: '0% 200%' }
+        }
+      }
+    },
+    { name: 'Edgar Buttner', color: '#9E9764' },
+    {
+      name: 'John Cassidy',
+      color: '#8378ffff',
+      sx: {
+        textShadow: '0px 0px 10px rgba(195, 165, 193, 1)'
+      }
+    },
+    { name: 'Gahan Patel', color: '#0000FF' },
+    { name: 'Mimo Olowu', color: 'white', sx: { px: 1, backgroundColor: '#ac59eb', borderRadius: 2 } },
+    { name: 'Saul Manzanares', color: '#AF34FA' },
+    { name: 'Richard Feng', color: '#FFFF', sx: { textShadow: '0 0 2px rgba(0,26,255), 0 0 5px rgba(255,255,255)' } },
+    {
+      name: 'Samuel Shrestha',
+      color: '#be0000',
+      sx: {
+        textShadow: '0 0 6px rgba(190, 0, 0, 0.9), 0 0 14px rgba(190, 0, 0, 0.6)',
+        animation: 'sam-glow 2.6s ease-in-out infinite',
+        '@keyframes sam-glow': {
+          '0%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' },
+          '50%': { textShadow: '0 0 10px rgba(190, 0, 0, 1), 0 0 22px rgba(190, 0, 0, 0.95)' },
+          '100%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' }
+        }
+      }
+    },
+    {
+      name: 'Anthony Basko',
+      color: '#c0aed0ff',
+      sx: {
+        textShadow: '0px 0px 3px rgba(152, 119, 233, 1), 0px .5px rgba(53, 37, 66, 1)'
+      }
+    },
+    {
+      name: 'Santiago Ordonez Merizalde',
+      color: 'transparent',
+      sx: {
+        textShadow: `
+          0 0 8px rgba(180, 0, 255, 0.8),
+          0 0 15px rgba(140, 0, 255, 0.6),
+          0 0 25px rgba(200, 100, 255, 0.5)
+        `,
+        background: 'linear-gradient(90deg, #d9a7ff, #b58eff, #7f6fff, #b58eff, #d9a7ff)',
+        '-webkit-background-clip': 'text',
+        backgroundSize: '300% 300%',
+        animation: 'purpleFlow 6s ease-in-out infinite',
+        '@keyframes purpleFlow': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' }
+        },
+        filter: 'drop-shadow(0 0 4px rgba(190, 80, 255, 0.6))'
+      }
+    },
+    {
+      name: 'Tony Feng',
+      color: 'transparent',
+      sx: {
+        textShadow: '0 0 5px #a7f3eaff, 0 0 10px #fb99e9ff, 0 0 30px #97eb97ff',
+        background: 'linear-gradient(90deg, white, violet, blue, red, white)',
+        '-webkit-background-clip': 'text',
+        backgroundSize: '800% 800%',
+        animation: 'gradient 30s infinite linear',
+        '@keyframes gradient': {
+          '0%': { backgroundPosition: '400% 200%' },
+          '100%': { backgroundPosition: '0% 200%' }
+        }
+      }
+    },
+    { name: 'Josh Len', color: '#000000ff' },
+    { name: 'Grace Theobald', color: '#537c2c' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];

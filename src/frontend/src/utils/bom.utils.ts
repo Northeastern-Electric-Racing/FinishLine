@@ -1,10 +1,11 @@
-import { Material } from 'shared';
+import { Material, MaterialReimbursementRequest } from 'shared';
 import { GridColDefStyle } from './tables';
 import { centsToDollar } from './pipes';
 import { DataGrid, GridValidRowModel } from '@mui/x-data-grid';
 import { styled } from '@mui/system';
 
 export interface BomRow extends GridValidRowModel {
+  reimbursementRequests: MaterialReimbursementRequest[];
   id: string;
   materialId: string;
   status: string;
@@ -23,17 +24,18 @@ export interface BomRow extends GridValidRowModel {
 
 export const materialToRow = (material: Material, idx: number): BomRow => {
   return {
+    reimbursementRequests: material.reimbursementRequests,
     id: idx + (material.assemblyId ?? ''),
     materialId: material.materialId,
     status: material.status,
     type: material.materialTypeName,
     name: material.name,
-    manufacturer: material.manufacturerName,
-    manufacturerPN: material.manufacturerPartNumber,
+    manufacturer: material.manufacturerName ?? '',
+    manufacturerPN: material.manufacturerPartNumber ?? '',
     pdmFileName: material.pdmFileName ?? 'None',
     quantity: material.quantity + (material.unitName ? ' ' + material.unitName : ''),
-    price: `$${centsToDollar(material.price)}`,
-    subtotal: `$${centsToDollar(material.subtotal)}`,
+    price: material.price !== undefined ? `$${centsToDollar(material.price)}` : '',
+    subtotal: material.subtotal !== undefined ? `$${centsToDollar(material.subtotal)}` : '',
     link: material.linkUrl,
     notes: material.notes,
     assemblyId: material.assemblyId ?? 'assembly-misc'

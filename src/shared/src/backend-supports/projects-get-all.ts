@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsElementStatus } from '../types/project-types';
-import { TimelineStatus } from '../types/work-package-types';
+import { WbsElementStatus } from '../types/project-types.js';
+import { TimelineStatus } from '../types/work-package-types.js';
 
 interface WorkPackageDurationProps {
   startDate: Date;
@@ -13,7 +13,7 @@ interface WorkPackageDurationProps {
 
 const calculateEndDate = (start: Date, weeks: number) => {
   const end = new Date(start);
-  end.setDate(start.getDate() + weeks * 7);
+  end.setUTCDate(start.getUTCDate() + weeks * 7);
   return end;
 };
 

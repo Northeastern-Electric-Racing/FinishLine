@@ -4,11 +4,22 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { LinkType, Project, WbsNumber, WorkPackageTemplate } from 'shared';
+import {
+  Link,
+  LinkCreateArgs,
+  LinkType,
+  LinkTypeCreatePayload,
+  Project,
+  ProjectOverview,
+  ProjectGantt,
+  ProjectPreview,
+  WbsNumber,
+  WorkPackageTemplate
+} from 'shared';
 import {
   editSingleProject,
   createSingleProject,
-  getAllProjects,
+  getAllProjectsGantt,
   getSingleProject,
   setProjectTeam,
   deleteProject,
@@ -16,17 +27,65 @@ import {
   getAllLinkTypes,
   createLinkType,
   getAllWorkPackageTemplates,
-  editLinkType
+  editLinkType,
+  getAllUsefulLinks,
+  setUsefulLinks,
+  getUsersTeamsProjects,
+  getUsersLeadingProjects,
+  setAbbreviation,
+  deleteAbbreviation,
+  getTeamsProjects,
+  getAllProjects
 } from '../apis/projects.api';
-import { CreateSingleProjectPayload, EditSingleProjectPayload, LinkTypeCreatePayload } from '../utils/types';
+import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
 
 /**
- * Custom React Hook to supply all projects.
+ * Custom React Hook to supply all projects with Gantt querry args
+ */
+export const useAllProjectsGantt = () => {
+  return useQuery<ProjectGantt[], Error>(['projects'], async () => {
+    const { data } = await getAllProjectsGantt();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply all projects
  */
 export const useAllProjects = () => {
-  return useQuery<Project[], Error>(['projects'], async () => {
+  return useQuery<ProjectPreview[], Error>(['projects', 'previews'], async () => {
     const { data } = await getAllProjects();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply all of the projects that are on the users teams
+ */
+export const useGetUsersTeamsProjects = () => {
+  return useQuery<ProjectOverview[], Error>(['projects', 'teams'], async () => {
+    const { data } = await getUsersTeamsProjects();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply all of the projects that the user is the manager or lead of
+ */
+export const useGetUsersLeadingProjects = () => {
+  return useQuery<ProjectOverview[], Error>(['projects', 'leading'], async () => {
+    const { data } = await getUsersLeadingProjects();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply all of the projects for a given team
+ */
+export const useGetTeamsProjects = (teamId: string) => {
+  return useQuery<Project[], Error>(['projects', 'teams'], async () => {
+    const { data } = await getTeamsProjects(teamId);
     return data;
   });
 };
@@ -48,11 +107,18 @@ export const useSingleProject = (wbsNum: WbsNumber) => {
  *
  */
 export const useCreateSingleProject = () => {
-  return useMutation<{ message: string }, Error, CreateSingleProjectPayload>(
+  const queryClient = useQueryClient();
+  return useMutation<Project, Error, CreateSingleProjectPayload>(
     ['projects', 'create'],
     async (projectPayload: CreateSingleProjectPayload) => {
       const { data } = await createSingleProject(projectPayload);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams', false]); //invalidations for gantt chart
+        queryClient.invalidateQueries(['projects']);
+      }
     }
   );
 };
@@ -196,6 +262,76 @@ export const useEditLinkType = (linkTypeName: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['linkTypes']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get all useful links
+ */
+export const useAllUsefulLinks = () => {
+  return useQuery<Link[], Error>(['useful links'], async () => {
+    const { data } = await getAllUsefulLinks();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to set all useful links.
+ *
+ * @param links All the links to be set
+ * @returns all the links
+ */
+export const useSetUsefulLinks = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Link[], Error, LinkCreateArgs[]>(
+    ['useful links'],
+    async (links: LinkCreateArgs[]) => {
+      const { data } = await setUsefulLinks({ links });
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['useful links']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to set the abbreviation of a project
+ */
+export const useSetProjectAbbreviation = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Project, Error, any>(
+    ['projects', 'abbreviation', 'set'],
+    async (payload: { wbsNum: string; abbreviation: string }) => {
+      const { data } = await setAbbreviation(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to delete the abbreviation of a project
+ */
+export const useDeleteProjectAbbreviation = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['projects', 'abbreviation', 'delete'],
+    async (wbsNumber: string) => {
+      const { data } = await deleteAbbreviation(wbsNumber);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );

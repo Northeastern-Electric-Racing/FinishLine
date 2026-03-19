@@ -4,10 +4,10 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { ChangeRequestType, isGuest, WbsNumber } from 'shared';
+import { ChangeRequestType, dateToMidnightUTC, WbsNumber } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { useCreateActivationChangeRequest } from '../../../hooks/change-requests.hooks';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import { routes } from '../../../utils/routes';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -21,8 +21,8 @@ interface ActivateWorkPackageModalContainerProps {
 }
 
 export interface FormInput {
-  projectLeadId?: number;
-  projectManagerId?: number;
+  leadId?: string;
+  managerId?: string;
   startDate: Date;
   confirmDetails: boolean;
 }
@@ -33,18 +33,18 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
   handleClose
 }) => {
   const auth = useAuth();
-  const users = useAllUsers();
+  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const history = useHistory();
   const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useCreateActivationChangeRequest();
 
-  const handleConfirm = async ({ projectLeadId, projectManagerId, startDate, confirmDetails }: FormInput) => {
+  const handleConfirm = async ({ leadId, managerId, startDate, confirmDetails }: FormInput) => {
     handleClose();
     if (auth.user?.userId === undefined) throw new Error('Cannot create activation change request without being logged in');
-    if (!projectLeadId) {
+    if (!leadId) {
       throw new Error('Project Lead Id must be defined to create an activation change request');
     }
-    if (!projectManagerId) {
+    if (!managerId) {
       throw new Error('Project Manager Id must be defined to create an activation change request');
     }
     try {
@@ -52,9 +52,9 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
         submitterId: auth.user?.userId,
         wbsNum,
         type: ChangeRequestType.Activation,
-        projectLeadId,
-        projectManagerId,
-        startDate: startDate.toISOString(),
+        leadId,
+        managerId,
+        startDate: dateToMidnightUTC(startDate).toISOString(),
         confirmDetails
       });
       history.push(routes.CHANGE_REQUESTS);
@@ -65,9 +65,11 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
     }
   };
 
-  if (isLoading || users.isLoading) return <LoadingIndicator />;
+  if (isLoading || usersIsLoading || !users) return <LoadingIndicator />;
 
-  if (isError || users.isError) return <ErrorPage message={error?.message} />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
+  if (usersIsError) return <ErrorPage message={usersError?.message} />;
 
   return (
     <ActivateWorkPackageModal
@@ -75,7 +77,7 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
       modalShow={modalShow}
       onHide={handleClose}
       onSubmit={handleConfirm}
-      allUsers={users.data!.filter((u) => !isGuest(u.role))}
+      allUsers={users}
     />
   );
 };

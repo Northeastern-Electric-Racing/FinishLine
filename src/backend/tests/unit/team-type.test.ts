@@ -1,0 +1,131 @@
+import { Organization } from '@prisma/client';
+import TeamsService from '../../src/services/teams.services.js';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
+import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data.js';
+import { createTestOrganization, createTestTeam, createTestTeamType, createTestUser, resetUsers } from '../test-utils.js';
+
+describe('Team Type Tests', () => {
+  let orgId: string;
+  let organization: Organization;
+  beforeEach(async () => {
+    organization = await createTestOrganization();
+    orgId = organization.organizationId;
+  });
+
+  afterEach(async () => {
+    await resetUsers();
+  });
+
+  describe('Create Team Type', () => {
+    it('Create team type fails if user is not an admin', async () => {
+      await expect(
+        async () =>
+          await TeamsService.createTeamType(
+            await createTestUser(wonderwomanGuest, orgId),
+            'Team 2',
+            'Warning icon',
+            'team2 Description',
+            organization
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a team type'));
+    });
+
+    it('Create team type fails if there is already another team type with the same name', async () => {
+      await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        'YouTubeIcon',
+        'teamType1 Description',
+        organization
+      );
+      await expect(
+        async () =>
+          await TeamsService.createTeamType(
+            await createTestUser(batmanAppAdmin, orgId),
+            'teamType1',
+            'Warning icon',
+            'teamType1 Description',
+            organization
+          )
+      ).rejects.toThrow(new HttpException(400, 'Cannot create a teamType with a name that already exists'));
+    });
+
+    it('Create team type works', async () => {
+      const result = await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType3',
+        'YouTubeIcon',
+        'teamType3 Description',
+        organization
+      );
+
+      expect(result).toMatchObject({
+        name: 'teamType3',
+        iconName: 'YouTubeIcon',
+        organizationId: orgId,
+        teamTypeId: result.teamTypeId,
+        calendarId: null,
+        dateDeleted: undefined,
+        deletedById: undefined,
+        description: 'teamType3 Description',
+        imageFileId: null
+      });
+    });
+  });
+
+  describe('Get all team types works', () => {
+    it('Get all team types works', async () => {
+      const teamType1 = await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        'YouTubeIcon',
+        'teamType1 Description',
+        organization
+      );
+      const teamType2 = await TeamsService.createTeamType(
+        await createTestUser(batmanAppAdmin, orgId),
+        'teamType2',
+        'WarningIcon',
+        'teamType1 Description',
+        organization
+      );
+      const result = await TeamsService.getAllTeamTypes(organization);
+      expect(result).toStrictEqual([teamType1, teamType2]);
+    });
+  });
+
+  describe('Get a single team type', () => {
+    it('Get a single team type works', async () => {
+      const teamType1 = await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        'YouTubeIcon',
+        'teamType1 Description',
+        organization
+      );
+      const result = await TeamsService.getSingleTeamType(teamType1.teamTypeId, organization);
+      expect(result).toStrictEqual(teamType1);
+    });
+
+    it('Get a single team type fails', async () => {
+      const nonExistingTeamTypeId = 'nonExistingId';
+      await expect(async () => TeamsService.getSingleTeamType(nonExistingTeamTypeId, organization)).rejects.toThrow(
+        new NotFoundException('Team Type', nonExistingTeamTypeId)
+      );
+    });
+  });
+
+  describe('Get users teams', () => {
+    it('Get users teams works', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const superman = await createTestUser(supermanAdmin, orgId);
+      const teamType = await createTestTeamType('electrical', organization.organizationId);
+      await createTestTeam(batman.userId, teamType.teamTypeId, organization.organizationId);
+      await createTestTeam(superman.userId, teamType.teamTypeId, organization.organizationId);
+      const resultBat = await TeamsService.getUsersTeams(batman, organization);
+      const resultSuper = await TeamsService.getUsersTeams(superman, organization);
+      expect(resultBat.length).toStrictEqual(1);
+      expect(resultSuper.length).toStrictEqual(1);
+    });
+  });
+});

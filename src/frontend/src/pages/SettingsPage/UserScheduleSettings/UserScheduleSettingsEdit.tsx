@@ -4,41 +4,68 @@
  */
 
 import * as yup from 'yup';
-import { FormControl, FormLabel, Grid, TextField, Typography } from '@mui/material';
+import { FormControl, FormLabel, Grid, TextField, Typography, Tooltip } from '@mui/material';
+import HelpIcon from '@mui/icons-material/Help';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { NERButton } from '../../../components/NERButton';
 import { ScheduleSettingsFormInput, ScheduleSettingsPayload } from './UserScheduleSettings';
 import AvailabilityEditModal from './Availability/AvailabilityEditModal';
-import { useState } from 'react';
-import { UserScheduleSettings } from 'shared';
+import { useEffect, useState } from 'react';
+import { Availability, SetUserScheduleSettingsArgs } from 'shared';
 import ExternalLink from '../../../components/ExternalLink';
+import { useToast } from '../../../hooks/toasts.hooks';
+import { deeplyCopy } from 'shared';
+import { availabilityTransformer } from '../../../apis/transformers/users.transformers';
 
 interface UserScheduleSettingsEditProps {
   onSubmit: (data: ScheduleSettingsPayload) => Promise<void>;
-  defaultValues?: UserScheduleSettings;
+  totalAvailabilities: Availability[];
+  defaultValues?: SetUserScheduleSettingsArgs;
 }
 
 const schema = yup.object().shape({
-  personalGmail: yup.string().email('Must be an email address').required('Personal Gmail is required'),
-  personalZoomLink: yup
-    .string()
-    .required('Personal Zoom Link is required')
-    .test('zoom-link', 'Must be a valid zoom link', (value) => value!.includes('zoom.us/'))
+  personalGmail: yup.string().email('Must be an email address').optional(),
+  personalZoomLink: yup.string().optional()
 });
 
-const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onSubmit, defaultValues }) => {
+const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
+  onSubmit,
+  defaultValues,
+  totalAvailabilities
+}) => {
   const [editAvailabilityOpen, setEditAvailability] = useState(false);
-  const [availabilities, setAvailabilities] = useState<number[]>(defaultValues?.availability || []);
+  const [availabilities, setAvailabilities] = useState<Map<number, Availability>>(new Map());
+  const toast = useToast();
 
   const onFormSubmit = (data: ScheduleSettingsFormInput) => {
-    onSubmit({ availability: availabilities, ...data });
+    if (data.personalZoomLink && data.personalZoomLink.trim()) {
+      if (!data.personalZoomLink.startsWith('https://')) {
+        toast.error('Invalid Meeting Link Format. Link must start with "https://".');
+        return;
+      }
+    }
+    onSubmit({ availability: Array.from(availabilities.values()), ...data });
   };
+
+  useEffect(() => {
+    if (defaultValues?.availability && availabilities.size === 0) {
+      const availabilityMap = new Map<number, Availability>();
+      defaultValues.availability.forEach((availability) => {
+        availabilityMap.set(
+          availability.dateSet.getTime(),
+          deeplyCopy(availability, availabilityTransformer) as Availability
+        );
+      });
+      setAvailabilities(availabilityMap);
+    }
+  }, [defaultValues?.availability, availabilities]);
 
   const {
     handleSubmit,
     control,
-    formState: { errors }
+    formState: { errors },
+    watch
   } = useForm<ScheduleSettingsFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -47,16 +74,27 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
     }
   });
 
+  const onAvailabilitySave = () => {
+    onSubmit({
+      availability: Array.from(availabilities.values()),
+      personalGmail: watch('personalGmail'),
+      personalZoomLink: watch('personalZoomLink')
+    });
+    setEditAvailability(false);
+  };
+
   return (
     <form id={'update-user-schedule-settings'} onSubmit={handleSubmit(onFormSubmit)}>
       <Grid container spacing={2}>
         <AvailabilityEditModal
           open={editAvailabilityOpen}
           onHide={() => setEditAvailability(false)}
-          onSubmit={() => setEditAvailability(false)}
+          onSubmit={onAvailabilitySave}
           header="Edit Availability"
-          availabilites={availabilities}
-          setAvailabilities={setAvailabilities}
+          confirmedAvailabilities={availabilities}
+          totalAvailabilities={totalAvailabilities}
+          setConfirmedAvailabilities={setAvailabilities}
+          initialDate={new Date()}
         />
         <Grid item sx={{ mb: 1 }} xs={12} sm={4}>
           <FormControl fullWidth>
@@ -66,10 +104,8 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
             <Controller
               name="personalGmail"
               control={control}
-              rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <TextField
-                  required
                   id="email-input"
                   autoComplete="off"
                   onChange={onChange}
@@ -84,20 +120,24 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
             <FormLabel sx={{ display: 'flex' }}>
-              <Typography sx={{ whiteSpace: 'nowrap' }}>Personal Zoom Link</Typography>
+              <Typography sx={{ whiteSpace: 'nowrap' }}>Personal Meeting Link</Typography>
+              <Tooltip
+                title="Ensure your Meeting Link is Publicly Accessible and Does Not Require a Password."
+                placement="right"
+              >
+                <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px', marginTop: '3px' }} />
+              </Tooltip>
               <ExternalLink
-                link="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0065760#:~:text=Sign%20in%20to%20the%20Zoom,Click%20Copy%20Invitation."
-                description="(Find your Personal Zoom Link)"
+                link="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0066271"
+                description="(Find your Personal Meeting Link)"
               />
             </FormLabel>
             <Controller
               name="personalZoomLink"
               control={control}
-              rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <TextField
-                  required
-                  id="zoom-link-input"
+                  id="meeting-link-input"
                   autoComplete="off"
                   onChange={onChange}
                   value={value}
@@ -109,7 +149,12 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
           </FormControl>
         </Grid>
         <Grid item xs={12} sm={2} display={'flex'} alignItems={'center'} justifyContent={'end'}>
-          <NERButton variant="contained" onClick={() => setEditAvailability(true)}>
+          <NERButton
+            variant="contained"
+            onClick={() => {
+              setEditAvailability(true);
+            }}
+          >
             Edit Availability
           </NERButton>
         </Grid>

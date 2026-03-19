@@ -2,24 +2,32 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import { Project, ProjectProposedChangesCreateArgs } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, Project, ProjectProposedChangesCreateArgs } from 'shared';
 import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.hooks';
-import { bulletsToObject, mapBulletsToPayload, rulesToObject } from '../../../utils/form';
+import { bulletsToObject, wbsTester } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
-import ProjectFormContainer from './ProjectForm';
 import { ProjectFormInput } from './ProjectForm';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import { useQuery } from '../../../hooks/utils.hooks';
 import * as yup from 'yup';
-import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
-import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
+import { StandardChangeRequestType } from '../../CreateChangeRequestPage/CreateChangeRequestView';
+import { FormInput, FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequestView';
+import {
+  CreateStandardChangeRequestPayload,
+  useCreateLeadershipChangeRequest,
+  useCreateStandardChangeRequest
+} from '../../../hooks/change-requests.hooks';
 import { routes } from '../../../utils/routes';
 import { useHistory } from 'react-router-dom';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useForm } from 'react-hook-form';
+import ProjectFormContainer from './ProjectForm';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useQueryClient } from 'react-query';
 
 interface ProjectEditContainerProps {
   project: Project;
@@ -32,17 +40,19 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const toast = useToast();
   const query = useQuery();
   const history = useHistory();
-
-  const { name, budget, summary } = project;
-  const [projectManagerId, setProjectManagerId] = useState<string | undefined>(project.manager?.userId.toString());
-  const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.lead?.userId.toString());
-  const goals = bulletsToObject(project.goals);
-  const features = bulletsToObject(project.features);
-  const constraints = bulletsToObject(project.otherConstraints);
-  const rules = rulesToObject(project.rules);
+  const user = useCurrentUser();
+  const queryClient = useQueryClient();
+  const { name, budget, summary, workPackages } = project;
+  const [managerId, setManagerId] = useState<string | undefined>(project.manager?.userId.toString());
+  const [leadId, setLeadId] = useState<string | undefined>(project.lead?.userId.toString());
+  const [carNumber, setCarNumber] = useState<number | undefined>(project.wbsNum.carNumber);
+  const descriptionBullets = bulletsToObject(project.descriptionBullets);
 
   const { mutateAsync, isLoading } = useEditSingleProject(project.wbsNum);
   const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
+
+  const { mutateAsync: mutateLeadershipCR, isLoading: isLeadershipCRLoading } = useCreateLeadershipChangeRequest();
+
   const {
     data: allLinkTypes,
     isLoading: allLinkTypesIsLoading,
@@ -58,7 +68,56 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     };
   });
 
-  if (isLoading || isCRHookLoading) return <LoadingIndicator />;
+  const changeRequestSchema = yup.object().shape({
+    type: yup.mixed<StandardChangeRequestType>().required('Type is required'),
+    what: yup.string().required('What is required'),
+    why: yup
+      .array()
+      .min(1, 'At least one Why is required')
+      .required('Why is required')
+      .of(
+        yup.object().shape({
+          type: yup.mixed<ChangeRequestReason>().required('Why Type is required'),
+          explain: yup
+            .string()
+            .required('Why Explain is required')
+            .when('type', ([type], schema) =>
+              type === ChangeRequestReason.OtherProject
+                ? schema.required().test('wbs-num-valid', 'WBS Number is not valid', wbsTester)
+                : yup.string()
+            )
+        })
+      )
+  });
+
+  const { reset: resetChangeRequestForm, ...changeRequestFormMethods } = useForm<FormInput>({
+    resolver: yupResolver(changeRequestSchema),
+    defaultValues: query.get('budgetChange')
+      ? {
+          what: 'Increase the budget to account for the cost of materials',
+          why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
+          type: ChangeRequestType.Issue
+        }
+      : query.get('timelineDelay')
+        ? {
+            what: 'Timeline delay',
+            why: [{ type: ChangeRequestReason.Other, explain: 'Decided to extend timeline after design review' }],
+            type: ChangeRequestType.Redefinition
+          }
+        : query.get('createWP')
+          ? {
+              what: '',
+              why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
+              type: ChangeRequestType.Redefinition
+            }
+          : {
+              what: '',
+              why: [{ type: ChangeRequestReason.Other, explain: '' }],
+              type: ChangeRequestType.Issue
+            }
+  });
+
+  if (isLoading || isCRHookLoading || isLeadershipCRLoading) return <LoadingIndicator />;
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
 
@@ -82,23 +141,31 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     summary,
     // teamId and carNumber aren't used for projectEdit
     teamIds: [],
-    carNumber: 0,
+    carNumber,
     links,
     crId: query.get('crId') || '',
-    goals,
-    features,
-    constraints,
-    rules,
-    projectLeadId,
-    projectManagerId
+    descriptionBullets,
+    leadId,
+    managerId,
+    workPackages: workPackages.map((wp) => {
+      return {
+        workPackageId: wp.id,
+        name: wp.name,
+        startDate: wp.startDate,
+        duration: wp.duration,
+        blockedBy: wp.blockedBy.map((id) => id.toString()),
+        descriptionBullets: bulletsToObject(wp.descriptionBullets),
+        stage: wp.stage ?? 'NONE'
+      };
+    })
   };
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
     budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
     summary: yup.string().required('Summary is required!'),
-    projectLeadId: yup.number().optional(),
-    projectManagerId: yup.number().optional(),
+    leadId: yup.string().optional(),
+    managerId: yup.string().optional(),
     links: yup.array().of(
       yup.object().shape({
         linkTypeName: yup.string().required('Link Type is required!'),
@@ -107,10 +174,27 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     )
   });
 
-  const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
-    const { name, budget, summary, links, goals, features, constraints, type, what, why } = data;
+  // Check if only lead/manager changed
+  const checkOnlyLeadershipChanged = (
+    formName: string,
+    formBudget: number,
+    formSummary: string,
+    formLinks: any[],
+    formDescriptionBullets: any[]
+  ) => {
+    return (
+      formName === project.name &&
+      formBudget === project.budget &&
+      formSummary === project.summary &&
+      JSON.stringify(formLinks.map((l) => `${l.linkTypeName}:${l.url}`).sort()) ===
+        JSON.stringify(project.links.map((l) => `${l.linkType.name}:${l.url}`).sort()) &&
+      JSON.stringify(formDescriptionBullets) === JSON.stringify(bulletsToObject(project.descriptionBullets)) &&
+      (leadId !== project.lead?.userId.toString() || managerId !== project.manager?.userId.toString())
+    );
+  };
 
-    const rules = data.rules.map((rule) => rule.detail);
+  const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
+    const { name, budget, summary, links, type, what, why, descriptionBullets } = data;
 
     try {
       const projectPayload: ProjectProposedChangesCreateArgs = {
@@ -118,17 +202,15 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         summary,
         teamIds: project.teams.map((team) => team.teamId),
         budget,
-        rules,
-        goals: goals.map((g) => g.detail),
-        features: features.map((f) => f.detail),
-        otherConstraints: constraints.map((c) => c.detail),
+        descriptionBullets,
         links,
-        leadId: projectLeadId ? parseInt(projectLeadId) : undefined,
-        managerId: projectManagerId ? parseInt(projectManagerId) : undefined
+        leadId,
+        managerId,
+        workPackageProposedChanges: []
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: project.wbsNum,
-        type: type,
+        type,
         what,
         why,
         proposedSolutions: [],
@@ -144,28 +226,37 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   };
 
   const onSubmit = async (data: ProjectFormInput) => {
-    const { name, budget, summary, links } = data;
-    const rules = data.rules.map((rule) => rule.detail);
-    const crId = data.crId;
-
-    const goals = mapBulletsToPayload(data.goals);
-    const features = mapBulletsToPayload(data.features);
-    const otherConstraints = mapBulletsToPayload(data.constraints);
+    const { name, budget, summary, links, descriptionBullets, crId } = data;
 
     try {
+      const onlyLeadershipChanged = checkOnlyLeadershipChanged(name, budget, summary, links, descriptionBullets);
+
+      if (onlyLeadershipChanged) {
+        const autoCRPayload = {
+          submitterId: user.userId,
+          wbsNum: project.wbsNum,
+          leadId,
+          managerId
+        };
+        await mutateLeadershipCR(autoCRPayload);
+        // fixes cache issue
+        await queryClient.refetchQueries(['projects']);
+        exitEditMode();
+        return;
+      }
+
+      if (!crId) throw new Error('Change request id is required for editing project');
+
       const payload: EditSingleProjectPayload = {
         name,
         budget,
         summary,
         links,
         projectId: project.id,
-        crId: Number(crId),
-        rules,
-        goals,
-        features,
-        otherConstraints,
-        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
-        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
+        crId,
+        descriptionBullets,
+        leadId,
+        managerId
       };
       await mutateAsync(payload);
       exitEditMode();
@@ -176,19 +267,31 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     }
   };
 
+  // calculate for submit button status
+  const onlyLeadershipChanged = checkOnlyLeadershipChanged(
+    defaultValues.name,
+    defaultValues.budget,
+    defaultValues.summary,
+    defaultValues.links,
+    defaultValues.descriptionBullets
+  );
+
   return (
     <ProjectFormContainer
       requiredLinkTypeNames={requiredLinkTypeNames}
       exitEditMode={exitEditMode}
       project={project}
       onSubmit={onSubmit}
-      setProjectManagerId={setProjectManagerId}
-      setProjectLeadId={setProjectLeadId}
-      schema={schema}
+      setManagerId={setManagerId}
+      setLeadId={setLeadId}
       defaultValues={defaultValues}
-      projectLeadId={projectLeadId}
-      projectManagerId={projectManagerId}
+      schema={schema}
+      changeRequestFormReturn={changeRequestFormMethods}
+      leadId={leadId}
+      managerId={managerId}
       onSubmitChangeRequest={onSubmitChangeRequest}
+      setCarNumber={setCarNumber}
+      onlyLeadershipChanged={onlyLeadershipChanged}
     />
   );
 };

@@ -1,32 +1,41 @@
 import { Prisma } from '@prisma/client';
 import {
   Project,
-  WbsElementStatus,
-  calculateEndDate,
   calculateProjectEndDate,
-  calculatePercentExpectedProgress,
-  calculateTimelineStatus,
   calculateDuration,
   calculateProjectStartDate,
-  WorkPackageStage
+  ProjectGantt,
+  RetrospectiveProjectPreview,
+  calculateProjectOriginalEndDate,
+  calculateProjectOriginalStartDate,
+  ProjectPreview,
+  calculateEndDate,
+  WorkPackageStage,
+  ProjectOverview
 } from 'shared';
-import { wbsNumOf } from '../utils/utils';
-import taskTransformer from './tasks.transformer';
-import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
-import projectQueryArgs from '../prisma-query-args/projects.query-args';
-import { calculateProjectStatus } from '../utils/projects.utils';
-import { linkTransformer } from './links.transformer';
-import { descBulletConverter } from '../utils/description-bullets.utils';
-import { assemblyTransformer, materialTransformer } from './material.transformer';
-import { userTransformer } from './user.transformer';
+import { convertStatus, wbsNumOf } from '../utils/utils.js';
+import taskTransformer from './tasks.transformer.js';
+import { calculateProjectStatus } from '../utils/projects.utils.js';
+import { descBulletConverter } from '../utils/description-bullets.utils.js';
+import { userTransformer } from './user.transformer.js';
+import {
+  ProjectGanttQueryArgs,
+  ProjectOverviewQueryArgs,
+  ProjectPreviewQueryArgs,
+  ProjectQueryArgs
+} from '../prisma-query-args/projects.query-args.js';
+import { teamPreviewTransformer } from './teams.transformer.js';
+import workPackageTransformer, { retrospectiveWorkPackageTransformer } from './work-packages.transformer.js';
+import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 
-const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQueryArgs>): Project => {
+const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>): Project => {
   const { wbsElement } = project;
   const wbsNum = wbsNumOf(wbsElement);
 
   const { lead, manager } = wbsElement;
 
   return {
+    wbsElementId: wbsElement.wbsElementId,
     id: project.projectId,
     wbsNum,
     dateCreated: wbsElement.dateCreated,
@@ -37,69 +46,123 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
     changes: wbsElement.changes.map((change) => ({
       changeId: change.changeId,
       changeRequestId: change.changeRequestId,
+      changeRequestIdentifier: change.changeRequest.identifier,
       wbsNum,
       implementer: userTransformer(change.implementer),
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
-    teams: project.teams.map((team) => {
-      return { ...team, teamType: team.teamType ? team.teamType : undefined };
-    }),
+    deleted: wbsElement.dateDeleted !== null,
+    favoritedBy: project.favoritedBy.map(userTransformer),
+    teams: project.teams.map(teamPreviewTransformer),
     summary: project.summary,
     budget: project.budget,
-    links: project.wbsElement.links.map(linkTransformer),
-    rules: project.rules,
+    links: project.wbsElement.links,
     duration: calculateDuration(project.workPackages),
     startDate: calculateProjectStartDate(project.workPackages),
     endDate: calculateProjectEndDate(project.workPackages),
-    goals: project.goals.map(descBulletConverter),
-    features: project.features.map(descBulletConverter),
-    otherConstraints: project.otherConstraints.map(descBulletConverter),
+    descriptionBullets: wbsElement.descriptionBullets.map(descBulletConverter),
     tasks: wbsElement.tasks.map(taskTransformer),
-    materials: wbsElement.materials.map(materialTransformer),
-    assemblies: wbsElement.assemblies.map(assemblyTransformer),
-    workPackages: project.workPackages.map((workPackage) => {
-      const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
-      const progress = calculateWorkPackageProgress(workPackage.deliverables, workPackage.expectedActivities);
-      const expectedProgress = calculatePercentExpectedProgress(
-        workPackage.startDate,
-        workPackage.duration,
-        workPackage.wbsElement.status
-      );
+    workPackages: project.workPackages.map(workPackageTransformer),
+    abbreviation: project.abbreviation ?? undefined
+  };
+};
 
-      return {
-        id: workPackage.workPackageId,
-        wbsNum: wbsNumOf(workPackage.wbsElement),
-        dateCreated: workPackage.wbsElement.dateCreated,
-        name: workPackage.wbsElement.name,
-        links: workPackage.wbsElement.links.map(linkTransformer),
-        status: workPackage.wbsElement.status as WbsElementStatus,
-        projectLead: workPackage.wbsElement.lead ? userTransformer(workPackage.wbsElement.lead) : undefined,
-        projectManager: workPackage.wbsElement.manager ? userTransformer(workPackage.wbsElement.manager) : undefined,
-        changes: workPackage.wbsElement.changes.map((change) => ({
-          changeId: change.changeId,
-          changeRequestId: change.changeRequestId,
-          wbsNum: wbsNumOf(workPackage.wbsElement),
-          implementer: userTransformer(change.implementer),
-          detail: change.detail,
-          dateImplemented: change.dateImplemented
-        })),
-        orderInProject: workPackage.orderInProject,
-        progress,
-        startDate: workPackage.startDate,
-        endDate,
-        duration: workPackage.duration,
-        expectedProgress,
-        timelineStatus: calculateTimelineStatus(progress, expectedProgress),
-        blockedBy: workPackage.blockedBy.map(wbsNumOf),
-        expectedActivities: workPackage.expectedActivities.map(descBulletConverter),
-        deliverables: workPackage.deliverables.map(descBulletConverter),
-        projectName: wbsElement.name,
-        stage: (workPackage.stage || undefined) as WorkPackageStage,
-        materials: workPackage.wbsElement?.materials.map(materialTransformer),
-        assemblies: workPackage.wbsElement?.assemblies.map(assemblyTransformer)
-      };
-    })
+export const projectGanttTransformer = (project: Prisma.ProjectGetPayload<ProjectGanttQueryArgs>): ProjectGantt => {
+  const { wbsElement } = project;
+  const wbsNum = wbsNumOf(wbsElement);
+
+  const { lead, manager } = wbsElement;
+
+  return {
+    id: project.projectId,
+    wbsElementId: project.wbsElementId,
+    dateCreated: project.wbsElement.dateCreated,
+    name: project.wbsElement.name,
+    status: calculateProjectStatus(project),
+    wbsNum,
+    deleted: !!project.wbsElement.dateDeleted,
+    lead: lead ? userTransformer(lead) : undefined,
+    manager: manager ? userTransformer(manager) : undefined,
+    budget: project.budget,
+    teams: project.teams.map((team) => ({
+      teamId: team.teamId,
+      teamName: team.teamName
+    })),
+    duration: calculateDuration(project.workPackages),
+    startDate: calculateProjectStartDate(project.workPackages),
+    tasks: project.wbsElement.tasks.map(taskTransformer),
+    workPackages: project.workPackages.map(workPackageTransformer),
+    abbreviation: project.abbreviation ?? undefined
+  };
+};
+
+export const projectPreviewTransformer = (project: Prisma.ProjectGetPayload<ProjectPreviewQueryArgs>): ProjectPreview => {
+  const { wbsElement } = project;
+  const wbsNum = wbsNumOf(wbsElement);
+
+  const { lead, manager } = wbsElement;
+
+  return {
+    id: project.projectId,
+    wbsElementId: wbsElement.wbsElementId,
+    dateCreated: project.wbsElement.dateCreated,
+    name: project.wbsElement.name,
+    status: calculateProjectStatus(project),
+    wbsNum,
+    deleted: !!project.wbsElement.dateDeleted,
+    lead: lead ? userTransformer(lead) : undefined,
+    manager: manager ? userTransformer(manager) : undefined,
+    budget: project.budget,
+    duration: calculateDuration(project.workPackages),
+    startDate: calculateProjectStartDate(project.workPackages),
+    abbreviation: project.abbreviation ?? undefined,
+    teams: project.teams,
+    workPackages: project.workPackages.map((wp) => ({
+      ...wp,
+      status: convertStatus(wp.wbsElement.status),
+      name: wp.wbsElement.name,
+      wbsElementId: wp.wbsElement.wbsElementId,
+      workPackageNumber: wp.wbsElement.workPackageNumber,
+      id: wp.workPackageId,
+      wbsNum: wbsNumOf(wp.wbsElement),
+      dateCreated: wp.wbsElement.dateCreated,
+      deleted: !!wp.wbsElement.dateDeleted,
+      duration: wp.duration,
+      startDate: wp.startDate,
+      endDate: calculateEndDate(wp.startDate, wp.duration),
+      stage: (wp.stage as WorkPackageStage) || undefined,
+      projectName: project.wbsElement.name,
+      projectId: project.projectId
+    }))
+  };
+};
+
+export const projectOverviewTransformer = (project: Prisma.ProjectGetPayload<ProjectOverviewQueryArgs>): ProjectOverview => {
+  return {
+    ...projectPreviewTransformer(project),
+    tasks: project.wbsElement.tasks.map(taskTransformer),
+    links: project.wbsElement.links
+  };
+};
+
+export type RetrospectiveWorkPackageQueryArgs = Prisma.Work_PackageGetPayload<WorkPackageQueryArgs> & {
+  originalStartDate: Date;
+  originalDuration: number;
+};
+
+export type RetrospectiveProjectPreviewQueryArgs = Omit<Prisma.ProjectGetPayload<ProjectGanttQueryArgs>, 'workPackages'> & {
+  workPackages: RetrospectiveWorkPackageQueryArgs[];
+};
+
+export const retrospectiveProjectPreviewTransformer = (
+  project: RetrospectiveProjectPreviewQueryArgs
+): RetrospectiveProjectPreview => {
+  return {
+    ...projectGanttTransformer(project),
+    workPackages: project.workPackages.map(retrospectiveWorkPackageTransformer),
+    originalStartDate: calculateProjectOriginalStartDate(project.workPackages),
+    originalEndDate: calculateProjectOriginalEndDate(project.workPackages)
   };
 };
 

@@ -5,7 +5,7 @@
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import ProposedSolutionForm from '../../../pages/ChangeRequestDetailPage/ProposedSolutionForm';
-import { batman } from '../../../../../backend/tests/test-data/users.test-data';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting
@@ -28,7 +28,7 @@ const renderComponent = (readOnly: boolean, description = '', budgetImpact = 0, 
           timelineImpact,
           scopeImpact,
           id: '',
-          createdBy: batman,
+          createdBy: exampleAdminUser,
           dateCreated: new Date(),
           approved: false
         }}

@@ -5,9 +5,15 @@
 
 import { ReactElement, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { ActivationChangeRequest, ChangeRequest, ChangeRequestType, StandardChangeRequest, isProject } from 'shared';
+import {
+  ActivationChangeRequest,
+  BudgetChangeRequest,
+  ChangeRequest,
+  ChangeRequestType,
+  StandardChangeRequest
+} from 'shared';
 import { routes } from '../../utils/routes';
-import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
+import { datePipe, displayEnum, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
 import ImplementedChangesList from './ImplementedChangesList';
 import StandardDetails from './StandardDetails';
@@ -16,9 +22,6 @@ import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { Grid, Typography, Link, Box } from '@mui/material';
 import DeleteChangeRequest from './DeleteChangeRequest';
-import { useSingleProject } from '../../hooks/projects.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import ChangeRequestActionMenu from './ChangeRequestActionMenu';
 import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
@@ -26,6 +29,7 @@ import ChangeRequestTypePill from '../../components/ChangeRequestTypePill';
 import ChangeRequestStatusPill from '../../components/ChangeRequestStatusPill';
 import DiffSection from './DiffSection/DiffSection';
 import { hasProposedChanges } from '../../utils/change-request.utils';
+import BudgetDetails from './BudgetDetails';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -33,12 +37,17 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
       return <ActivationDetails cr={cr as ActivationChangeRequest} />;
     case ChangeRequestType.StageGate:
       return <></>;
+    case ChangeRequestType.Budget:
+      return <BudgetDetails budgetChangeRequest={cr as BudgetChangeRequest} />;
+    case ChangeRequestType.Leadership:
+      return <></>;
     default:
       return <StandardDetails cr={cr as StandardChangeRequest} />;
   }
 };
 interface ChangeRequestDetailsProps {
   isUserAllowedToReview: boolean;
+  reviewDisabledTooltip?: string;
   isUserAllowedToImplement: boolean;
   isUserAllowedToDelete: boolean;
   changeRequest: ChangeRequest;
@@ -46,6 +55,7 @@ interface ChangeRequestDetailsProps {
 
 const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   isUserAllowedToReview,
+  reviewDisabledTooltip,
   isUserAllowedToImplement,
   isUserAllowedToDelete,
   changeRequest
@@ -57,29 +67,17 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleDeleteOpen = () => setDeleteModalShow(true);
 
-  const {
-    data: project,
-    isLoading,
-    isError,
-    error
-  } = useSingleProject({
-    carNumber: changeRequest.wbsNum.carNumber,
-    projectNumber: changeRequest.wbsNum.projectNumber,
-    workPackageNumber: 0
-  });
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (!project || isLoading) return <LoadingIndicator />;
-
-  const { name: projectName } = project;
-
   const isStandard =
-    changeRequest.type !== ChangeRequestType.Activation && changeRequest.type !== ChangeRequestType.StageGate;
+    changeRequest.type !== ChangeRequestType.Activation &&
+    changeRequest.type !== ChangeRequestType.StageGate &&
+    changeRequest.type !== ChangeRequestType.Budget &&
+    changeRequest.type !== ChangeRequestType.Leadership;
 
   const isActivation = changeRequest.type === ChangeRequestType.Activation;
 
   return (
     <PageLayout
-      title={`Change Request #${changeRequest.crId}`}
+      title={`Change Request #${changeRequest.identifier}`}
       chips={
         <Box display="flex" gap="20px">
           <ChangeRequestTypePill type={changeRequest.type} />
@@ -90,6 +88,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       headerRight={
         <ChangeRequestActionMenu
           isUserAllowedToReview={isUserAllowedToReview}
+          reviewDisabledTooltip={reviewDisabledTooltip}
           isUserAllowedToImplement={isUserAllowedToImplement}
           isUserAllowedToDelete={isUserAllowedToDelete}
           changeRequest={changeRequest}
@@ -101,13 +100,26 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       <Grid container rowGap={3}>
         <Grid container columnSpacing={3}>
           <Grid item xs={'auto'}>
-            <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
-              <b>WBS: </b>
-              <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-                {wbsPipe(changeRequest.wbsNum)} - {projectName}
-                {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
-              </Link>
-            </Typography>
+            {changeRequest.wbsNum && (
+              <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
+                <b>WBS: </b>
+                <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+                  {changeRequest.wbsName}
+                </Link>
+              </Typography>
+            )}
+            {changeRequest.category && (
+              <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
+                <b>Category: </b>
+                {displayEnum(changeRequest.category.name)}
+              </Typography>
+            )}
+            {changeRequest.accountCode && (
+              <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
+                <b>Account Code: </b>
+                {`${changeRequest.accountCode.code} - ${changeRequest.accountCode.name}`}
+              </Typography>
+            )}
           </Grid>
           <Grid item xs={'auto'}>
             <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>

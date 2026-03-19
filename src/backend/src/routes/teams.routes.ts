@@ -1,24 +1,31 @@
 import express from 'express';
-import TeamsController from '../controllers/teams.controllers';
+import TeamsController from '../controllers/teams.controllers.js';
 import { body } from 'express-validator';
-import { validateInputs } from '../utils/utils';
-import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
+import multer, { memoryStorage } from 'multer';
+import { MAX_FILE_SIZE } from 'shared';
 
 const teamsRouter = express.Router();
+const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 teamsRouter.get('/', TeamsController.getAllTeams);
+teamsRouter.get('/previews/', TeamsController.getAllTeamPreviews);
+teamsRouter.get('/archive', TeamsController.getAllArchivedTeams);
+teamsRouter.get('/users-teams', TeamsController.getUsersTeams);
+teamsRouter.get('/my-team-as-head', TeamsController.getMyTeamAsHead);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
+
 teamsRouter.post(
   '/:teamId/set-members',
   body('userIds').isArray(),
-  intMinZero(body('userIds.*')),
+  nonEmptyString(body('userIds.*')),
   validateInputs,
   TeamsController.setTeamMembers
 );
 teamsRouter.post(
   '/:teamId/set-leads',
   body('userIds').isArray(),
-  intMinZero(body('userIds.*')),
+  nonEmptyString(body('userIds.*')),
   validateInputs,
   TeamsController.setTeamLeads
 );
@@ -28,17 +35,22 @@ teamsRouter.post(
   validateInputs,
   TeamsController.editDescription
 );
-teamsRouter.post('/:teamId/set-head', intMinZero(body('userId')), validateInputs, TeamsController.setTeamHead);
+
+teamsRouter.post('/:teamId/edit-slackid', nonEmptyString(body('slackId')), validateInputs, TeamsController.editSlackId);
+
+teamsRouter.post('/:teamId/set-head', nonEmptyString(body('userId')), validateInputs, TeamsController.setTeamHead);
 teamsRouter.post('/:teamId/delete', TeamsController.deleteTeam);
 teamsRouter.post(
   '/create',
   nonEmptyString(body('teamName')),
-  intMinZero(body('headId')),
+  nonEmptyString(body('headId')),
   nonEmptyString(body('slackId')),
   nonEmptyString(body('description')),
+  body('isFinanceTeam').isBoolean(),
+  validateInputs,
   TeamsController.createTeam
 );
-teamsRouter.post('/:teamId/archive');
+teamsRouter.post('/:teamId/archive', TeamsController.archiveTeam);
 
 /**************** Team Type Section ****************/
 
@@ -46,13 +58,37 @@ teamsRouter.get('/teamType/all', TeamsController.getAllTeamTypes);
 
 teamsRouter.get('/teamType/:teamTypeId/single', TeamsController.getSingleTeamType);
 
+teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);
+
+teamsRouter.post('/teamType/:teamTypeId/set-onboarding-user', TeamsController.setOnboardingUser);
+
+teamsRouter.post('/teamType/complete-onboarding', TeamsController.completeOnboarding);
+
 teamsRouter.post(
   '/teamType/create',
   nonEmptyString(body('name')),
   nonEmptyString(body('iconName')),
+  nonEmptyString(body('description')),
   validateInputs,
   TeamsController.createTeamType
 );
 
-teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);
+teamsRouter.post(
+  '/teamType/:teamTypeId/edit',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('iconName')),
+  nonEmptyString(body('description')),
+  validateInputs,
+  TeamsController.editTeamType
+);
+
+teamsRouter.post(
+  '/teamType/:teamTypeId/set-image',
+  upload.single('image'),
+  validateInputs,
+  TeamsController.setTeamTypeImage
+);
+
+teamsRouter.delete('teamType/:teamTypeId/delete', TeamsController.deleteTeamType);
+
 export default teamsRouter;

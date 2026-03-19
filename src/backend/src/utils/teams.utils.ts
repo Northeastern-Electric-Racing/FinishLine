@@ -1,13 +1,20 @@
-import { Prisma, User, Team } from '@prisma/client';
-import { UserWithSettings } from './auth.utils';
+import { Prisma, Team, Project } from '@prisma/client';
+import prisma from '../prisma/prisma.js';
+import { UserWithSettings } from './auth.utils.js';
+import { NotFoundException } from './errors.utils.js';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { User } from 'shared';
 
-const teamQueryArgsMembersOnly = Prisma.validator<Prisma.TeamArgs>()({
-  include: {
-    members: true,
-    head: true,
-    leads: true
-  }
-});
+type TeamQueryArgsMembersOnly = ReturnType<typeof teamQueryArgsMembersOnly>;
+
+const teamQueryArgsMembersOnly = (orgainzationId: string) =>
+  Prisma.validator<Prisma.TeamDefaultArgs>()({
+    include: {
+      members: getUserQueryArgs(orgainzationId),
+      head: getUserQueryArgs(orgainzationId),
+      leads: getUserQueryArgs(orgainzationId)
+    }
+  });
 
 /**
  * Returns true if every given user is on the given team (either a member, head, or lead)
@@ -15,14 +22,14 @@ const teamQueryArgsMembersOnly = Prisma.validator<Prisma.TeamArgs>()({
  * @param users the given users
  * @returns true or false
  */
-export const allUsersOnTeam = (team: Prisma.TeamGetPayload<typeof teamQueryArgsMembersOnly>, users: User[]): boolean => {
+export const allUsersOnTeam = (team: Prisma.TeamGetPayload<TeamQueryArgsMembersOnly>, users: User[]): boolean => {
   return users.every((user) => isUserOnTeam(team, user));
 };
 
 /**
  * Returns true if the user is a member, head, or lead of a team
  */
-export const isUserOnTeam = (team: Prisma.TeamGetPayload<typeof teamQueryArgsMembersOnly>, user: User): boolean => {
+export const isUserOnTeam = (team: Prisma.TeamGetPayload<TeamQueryArgsMembersOnly>, user: User): boolean => {
   return (
     team.headId === user.userId ||
     team.leads.map((lead) => lead.userId).includes(user.userId) ||
@@ -37,7 +44,7 @@ export const isUserOnTeam = (team: Prisma.TeamGetPayload<typeof teamQueryArgsMem
  * @param users the users to check are on at least one of the teams
  * @returns if all of the users are part of at least one of ther teams
  */
-export const areUsersPartOfTeams = (teams: Prisma.TeamGetPayload<typeof teamQueryArgsMembersOnly>[], users: User[]) => {
+export const areUsersPartOfTeams = (teams: Prisma.TeamGetPayload<TeamQueryArgsMembersOnly>[], users: User[]) => {
   return users.every((user) => teams.some((team) => isUserOnTeam(team, user)));
 };
 
@@ -48,12 +55,12 @@ export const areUsersPartOfTeams = (teams: Prisma.TeamGetPayload<typeof teamQuer
  * @param user the user to check
  * @returns if all of the users are part of at least one of ther teams
  */
-export const isUserPartOfTeams = (teams: Prisma.TeamGetPayload<typeof teamQueryArgsMembersOnly>[], user: User) => {
+export const isUserPartOfTeams = (teams: Prisma.TeamGetPayload<TeamQueryArgsMembersOnly>[], user: User) => {
   return teams.some((team) => isUserOnTeam(team, user));
 };
 
 export type UserWithTeams = UserWithSettings & {
-  teamAsHead: Team | null;
+  teamsAsHead: Team[] | null;
   teamsAsLead: Team[] | null;
   teamsAsMember: Team[] | null;
 };
@@ -66,11 +73,15 @@ export type UserWithTeams = UserWithSettings & {
 export const getTeamsFromUsers = (users: UserWithTeams[]): Team[][] => {
   return users.map((user) => {
     const teams = [];
-    if (user.teamAsHead) teams.push(user.teamAsHead);
+    if (user.teamsAsHead) teams.push(...user.teamsAsHead);
     if (user.teamsAsLead) teams.push(...user.teamsAsLead);
     if (user.teamsAsMember) teams.push(...user.teamsAsMember);
     return teams;
   });
+};
+
+export type UserWithId = {
+  userId: string;
 };
 
 /**
@@ -80,7 +91,27 @@ export const getTeamsFromUsers = (users: UserWithTeams[]): Team[][] => {
  * @param usersToRemove the list of users to remove from currentUsers
  * @returns all users in currentUsers that aren't in usersToRemove
  */
-export const removeUsersFromList = (currentUsers: User[], usersToRemove: User[]): User[] => {
+export const removeUsersFromList = (currentUsers: UserWithId[], usersToRemove: UserWithId[]): UserWithId[] => {
   const userIdsToRemove = usersToRemove.map((user) => user.userId);
   return currentUsers.filter((user) => !userIdsToRemove.includes(user.userId));
+};
+
+/**
+ * Given a team id, produces all of the projects assigned to that team
+ * @param teamId the id of the team
+ * @returns array of projects currently assigned to the given team (errors if no team is found)
+ */
+export const getTeamProjects = async (teamId: string): Promise<Project[]> => {
+  const team = await prisma.team.findUnique({
+    where: {
+      teamId
+    },
+    include: {
+      projects: true
+    }
+  });
+  if (!team) {
+    throw new NotFoundException('Team', teamId);
+  }
+  return team.projects;
 };

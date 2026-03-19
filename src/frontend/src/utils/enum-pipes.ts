@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { yellow, green, blue, purple, grey, orange } from '@mui/material/colors';
-import { ChangeRequestStatus, ChangeRequestType, WbsElementStatus, WorkPackageStage } from 'shared';
+import { ChangeRequestStatus, ChangeRequestType, EventStatus, TaskStatus, WbsElementStatus, WorkPackageStage } from 'shared';
 
 // maps stage to the desired color
 export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
@@ -53,6 +53,10 @@ export const ChangeRequestTypeTextPipe: (type: ChangeRequestType) => string = (t
       return 'Issue';
     case ChangeRequestType.Other:
       return 'Other';
+    case ChangeRequestType.Budget:
+      return 'Budget';
+    case ChangeRequestType.Leadership:
+      return 'Leadership';
   }
 };
 
@@ -77,5 +81,29 @@ export const WbsElementStatusTextPipe: (status: WbsElementStatus) => string = (s
       return 'Active';
     case WbsElementStatus.Complete:
       return 'Complete';
+  }
+};
+
+export const DesignReviewEventStatusTextPipe: (status: EventStatus) => string = (status) => {
+  switch (status) {
+    case EventStatus.UNCONFIRMED:
+      return 'Unconfirmed';
+    case EventStatus.CONFIRMED:
+      return 'Confirmed';
+    case EventStatus.DONE:
+      return 'Done';
+    case EventStatus.SCHEDULED:
+      return 'Scheduled';
+  }
+};
+
+export const TaskStatusTextPipe: (status: TaskStatus) => string = (status) => {
+  switch (status) {
+    case TaskStatus.IN_BACKLOG:
+      return 'In Backlog';
+    case TaskStatus.IN_PROGRESS:
+      return 'In Progress';
+    case TaskStatus.DONE:
+      return 'Done';
   }
 };

@@ -1,0 +1,17 @@
+FROM node:25
+
+COPY package.json tsconfig.build.json ./
+COPY ./src/backend/package.json ./src/backend/tsconfig.json src/backend/
+COPY ./src/shared/package.json ./src/shared/tsconfig.json src/shared/
+
+# Install dependencies
+RUN yarn install;
+
+COPY ./src/backend src/backend
+COPY ./src/shared src/shared
+
+# Run all build and preparation steps in a single RUN command
+RUN yarn prisma:generate
+
+EXPOSE 3001
+CMD [ "sh", "-c", "yarn workspace backend dev" ]

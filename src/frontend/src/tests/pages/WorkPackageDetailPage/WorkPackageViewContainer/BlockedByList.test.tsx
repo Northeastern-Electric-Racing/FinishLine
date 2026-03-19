@@ -10,7 +10,7 @@ import { wbsPipe } from '../../../../utils/pipes';
 // import { FormContext } from '../../work-package-container';
 
 // Sets up the component under test with the desired values and renders it
-const renderComponent = (editMode?: boolean, path?: string, route?: string) => {
+const renderComponent = (_editMode?: boolean, path?: string, route?: string) => {
   // TODO: Cleanup
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const RouterWrapper = routerWrapperBuilder({ path, route });

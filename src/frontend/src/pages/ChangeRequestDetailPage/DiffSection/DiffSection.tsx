@@ -1,79 +1,41 @@
 import { Box } from '@mui/system';
 import InfoBlock from '../../../components/InfoBlock';
-import { ProjectProposedChangesPreview, StandardChangeRequest, WorkPackageProposedChangesPreview, isProject } from 'shared';
-import { displayEnum } from '../../../utils/pipes';
-import DiffSectionCreate from './DiffSectionCreate';
+import { isProjectWbs, StandardChangeRequest } from 'shared';
+import ProjectDiffSection from './ProjectDiffSection';
+import WorkPackageDiffSection from './WorkPackageDiffSection';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import DiffSectionEdit from './DiffSectionEdit';
+import { getChangesForWorkPackage } from '../../../utils/diff-page.utils';
+import NewProjectDiffSection from './NewProjectDiffSection';
 
 interface DiffSectionProps {
   changeRequest: StandardChangeRequest;
 }
 
-enum ChangeRequestAction {
-  CREATE_PROJECT = 'CREATE_PROJECT',
-  CREATE_WORK_PACKAGE = 'CREATE_WORK_PACKAGE',
-  EDIT_PROJECT = 'EDIT_PROJECT',
-  EDIT_WORK_PACKAGE = 'EDIT_WORK_PACKAGE'
-}
-
 const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
   const { wbsNum, projectProposedChanges, workPackageProposedChanges } = changeRequest;
-  const isOnProject = isProject(wbsNum);
-
-  const changeRequestAction: ChangeRequestAction =
-    projectProposedChanges && projectProposedChanges.carNumber !== undefined
-      ? ChangeRequestAction.CREATE_PROJECT
-      : isOnProject && workPackageProposedChanges
-      ? ChangeRequestAction.CREATE_WORK_PACKAGE
-      : isOnProject
-      ? ChangeRequestAction.EDIT_PROJECT
-      : ChangeRequestAction.EDIT_WORK_PACKAGE;
-
-  const projectProposedChangesPreview: ProjectProposedChangesPreview | undefined = projectProposedChanges
-    ? {
-        name: projectProposedChanges.name,
-        summary: projectProposedChanges.summary,
-        lead: projectProposedChanges.lead,
-        manager: projectProposedChanges.manager,
-        teams: projectProposedChanges.teams,
-        budget: projectProposedChanges.budget,
-        goals: projectProposedChanges.goals,
-        features: projectProposedChanges.features,
-        rules: projectProposedChanges.rules,
-        otherConstraints: projectProposedChanges.otherConstraints,
-        links: projectProposedChanges.links
-      }
-    : undefined;
-
-  const workPackageProposedChangesPreview: WorkPackageProposedChangesPreview | undefined = workPackageProposedChanges
-    ? {
-        name: workPackageProposedChanges.name,
-        stage: workPackageProposedChanges.stage,
-        lead: workPackageProposedChanges.lead,
-        manager: workPackageProposedChanges.manager,
-        startDate: workPackageProposedChanges.startDate,
-        duration: workPackageProposedChanges.duration,
-        blockedBy: workPackageProposedChanges.blockedBy,
-        expectedActivities: workPackageProposedChanges.expectedActivities,
-        deliverables: workPackageProposedChanges.deliverables
-      }
-    : undefined;
 
   return (
     <Box>
-      <InfoBlock title={`Proposed Changes - ${displayEnum(changeRequestAction)}`} />
-      {changeRequestAction === ChangeRequestAction.CREATE_PROJECT ||
-      changeRequestAction === ChangeRequestAction.CREATE_WORK_PACKAGE ? (
-        <DiffSectionCreate
-          projectProposedChanges={projectProposedChangesPreview}
-          workPackageProposedChanges={workPackageProposedChangesPreview}
-        />
+      <InfoBlock title={`Proposed Changes`} />
+      {wbsNum ? (
+        projectProposedChanges ? (
+          isProjectWbs(wbsNum) ? (
+            <ProjectDiffSection projectProposedChanges={projectProposedChanges} wbsNum={wbsNum} />
+          ) : (
+            <NewProjectDiffSection projectProposedChanges={projectProposedChanges} />
+          )
+        ) : workPackageProposedChanges ? (
+          wbsNum.workPackageNumber === 0 ? (
+            <DiffSectionEdit collections={[getChangesForWorkPackage(undefined, workPackageProposedChanges)]} />
+          ) : (
+            <WorkPackageDiffSection workPackageProposedChanges={workPackageProposedChanges} wbsNum={wbsNum} />
+          )
+        ) : (
+          <></>
+        )
       ) : (
-        <DiffSectionEdit
-          projectProposedChanges={projectProposedChangesPreview}
-          workPackageProposedChanges={workPackageProposedChangesPreview}
-          wbsNum={wbsNum}
-        />
+        <LoadingIndicator />
       )}
     </Box>
   );

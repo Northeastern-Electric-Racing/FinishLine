@@ -3,13 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
+import { render, routerWrapperBuilder, screen, waitFor } from '../../test-support/test-utils';
 import CreateProposedSolutionsList from '../../../pages/CreateChangeRequestPage/CreateProposedSolutionsList';
 import * as authHooks from '../../../hooks/auth.hooks';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
-import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import * as userHooks from '../../../hooks/users.hooks';
-import AppContextUser from '../../../app/AppContextUser';
+import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -17,18 +16,16 @@ import AppContextUser from '../../../app/AppContextUser';
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <AppContextUser>
-      <RouterWrapper>
-        <CreateProposedSolutionsList proposedSolutions={[]} setProposedSolutions={() => {}} />
-      </RouterWrapper>
-    </AppContextUser>
+    <RouterWrapper>
+      <CreateProposedSolutionsList proposedSolutions={[]} setProposedSolutions={() => {}} />
+    </RouterWrapper>
   );
 };
 
 describe('Proposed Solutions List Test Suite', () => {
   beforeEach(() => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
   });
 
   it('Renders correctly when empty', () => {
@@ -40,7 +37,7 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.queryAllByText('Timeline Impact').length).toBe(0);
   });
 
-  it('Fires Modal correctly', () => {
+  it('Fires Modal correctly', async () => {
     renderComponent();
     expect(screen.queryByText('Description')).not.toBeInTheDocument();
     expect(screen.queryByText('Scope Impact')).not.toBeInTheDocument();
@@ -48,6 +45,9 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.queryByText('Timeline Impact')).not.toBeInTheDocument();
     expect(screen.queryByText('Add')).not.toBeInTheDocument();
     screen.getByText('+ Add Solution').click();
+    await waitFor(() => {
+      return screen.getByText('Description');
+    });
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact')).toBeInTheDocument();
     expect(screen.getByText('Budget Impact')).toBeInTheDocument();

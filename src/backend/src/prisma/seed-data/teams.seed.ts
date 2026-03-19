@@ -19,89 +19,98 @@ The Ravens played the Super Bowl XLVII against the San Francisco 49ers. Baltimor
 const meanGirlsDescription = `
 Mean Girls is a 2004 American teen comedy film. This team helps test slackbot stuff through the #slackbot_land channel.`;
 
-const ravens = (headId: number): Prisma.TeamCreateArgs => {
+const ravens = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Ravens',
-      slackId: 'asdf',
+      slackId: 'C06HR7WTTKM',
       description: ravensDescription,
-      headId
+      headId,
+      organizationId
     }
   };
 };
 
-const orioles = (headId: number): Prisma.TeamCreateArgs => {
+const orioles = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Orioles',
-      slackId: 'jkl;',
+      slackId: 'C06HR7WTTKM',
       description: oriolesDescription,
-      headId
+      headId,
+      organizationId
     }
   };
 };
 
-const justiceLeague = (headId: number): Prisma.TeamCreateArgs => {
+const justiceLeague = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Justice League',
-      slackId: 'dc',
-      headId
+      slackId: 'C06HR7WTTKM',
+      headId,
+      organizationId
     }
   };
 };
 
-const avatarBenders = (headId: number, teamTypeId: string): Prisma.TeamCreateArgs => {
+const avatarBenders = (headId: string, teamTypeId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Avatar: The Last Airbender',
-      slackId: 'avatar',
+      slackId: 'C06HR7WTTKM',
       headId,
-      teamTypeId
+      teamTypeId,
+      organizationId
     }
   };
 };
 
-const plLegends = (headId: number): Prisma.TeamCreateArgs => {
+const plLegends = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'PlTeams',
-      slackId: 'Pl',
-      headId
+      slackId: 'C06HR7WTTKM',
+      headId,
+      organizationId
     }
   };
 };
 
-const huskies = (headId: number, teamTypeId: string): Prisma.TeamCreateArgs => {
+const huskies = (headId: string, teamTypeId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Huskies',
-      slackId: 'neu',
+      slackId: 'C06HR7WTTKM',
       headId,
       description:
         '# Welcome!\nThanks for joining our team! Here are some onboarding docs or something idk:\n\n[very important please read](https://crouton.net)',
-      teamTypeId
+      teamTypeId,
+      organizationId
     }
   };
 };
 
-const financeTeam = (headId: number): Prisma.TeamCreateArgs => {
+const financeTeam = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'financeTeam',
-      slackId: 'finance',
-      headId
+      slackId: 'C06HR7WTTKM',
+      headId,
+      organizationId,
+      financeTeam: true
     }
   };
 };
 
-const meanGirls = (headId: number): Prisma.TeamCreateArgs => {
+const meanGirls = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Slack Bot Testing',
       slackId: 'C06HR7WTTKM',
       description: meanGirlsDescription,
-      headId
+      headId,
+      organizationId
     }
   };
 };

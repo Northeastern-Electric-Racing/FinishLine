@@ -4,23 +4,40 @@
  */
 
 import axios from '../utils/axios';
-import { Team } from 'shared';
+import { Team, TeamBase, TeamPreview } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateTeamPayload } from '../hooks/teams.hooks';
+import { teamPreviewTransformer, teamTransformer } from './transformers/teams.transformers';
+
+export const getAllTeamPreviews = () => {
+  return axios.get<TeamBase[]>(apiUrls.teamPreviews(), {
+    transformResponse: (data) => JSON.parse(data).map(teamPreviewTransformer)
+  });
+};
 
 export const getAllTeams = () => {
-  return axios.get<Team[]>(apiUrls.teams(), {
-    transformResponse: (data) => JSON.parse(data)
+  return axios.get<TeamPreview[]>(apiUrls.teams(), {
+    transformResponse: (data) => JSON.parse(data).map(teamPreviewTransformer)
+  });
+};
+
+export const getAllArchivedTeams = () => {
+  return axios.get<TeamPreview[]>(apiUrls.teams() + '/archive', {
+    transformResponse: (data) => JSON.parse(data).map(teamPreviewTransformer)
   });
 };
 
 export const getSingleTeam = (id: string) => {
   return axios.get<Team>(apiUrls.teamsById(id), {
-    transformResponse: (data) => JSON.parse(data)
+    transformResponse: (data) => teamTransformer(JSON.parse(data))
   });
 };
 
-export const setTeamMembers = (id: string, userIds: number[]) => {
+export const getUsersTeams = () => {
+  return axios.get<Team[]>(apiUrls.usersTeams());
+};
+
+export const setTeamMembers = (id: string, userIds: string[]) => {
   return axios.post<{ message: string }>(apiUrls.teamsSetMembers(id), {
     userIds
   });
@@ -32,10 +49,20 @@ export const setTeamDescription = (id: string, description: string) => {
   });
 };
 
-export const setTeamHead = (id: string, userId: number) => {
+export const setTeamSlackId = (id: string, slackId: string) => {
+  return axios.post<TeamPreview>(apiUrls.teamsSetSlackId(id), {
+    slackId
+  });
+};
+
+export const setTeamHead = (id: string, userId: string) => {
   return axios.post<Team>(apiUrls.teamsSetHead(id), {
     userId
   });
+};
+
+export const archiveTeam = (id: string) => {
+  return axios.post<Team>(apiUrls.teamsArchive(id));
 };
 
 export const deleteTeam = (id: string) => {
@@ -46,8 +73,12 @@ export const createTeam = (payload: CreateTeamPayload) => {
   return axios.post<Team>(apiUrls.teamsCreate(), payload);
 };
 
-export const setTeamLeads = (id: string, userIds: number[]) => {
+export const setTeamLeads = (id: string, userIds: string[]) => {
   return axios.post<Team>(apiUrls.teamsSetLeads(id), {
     userIds
   });
+};
+
+export const getMyTeamAsHead = () => {
+  return axios.get<string>(apiUrls.myTeamAsHead());
 };

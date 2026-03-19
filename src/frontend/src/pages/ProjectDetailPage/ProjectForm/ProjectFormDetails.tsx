@@ -1,25 +1,28 @@
 import { Project, User } from 'shared';
-import { Box, FormControl, FormLabel, Grid, Typography } from '@mui/material';
+import { Box, FormControl, FormLabel, Grid, MenuItem, Select, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { ProjectFormInput } from './ProjectForm';
-import { Control, FieldErrorsImpl } from 'react-hook-form';
+import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { AttachMoney } from '@mui/icons-material';
 import TeamDropdown from '../../../components/TeamsDropdown';
 import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
+import { useGetAllCars } from '../../../hooks/cars.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 interface ProjectEditDetailsProps {
   users: User[];
   control: Control<ProjectFormInput>;
   errors: FieldErrorsImpl<ProjectFormInput>;
   project?: Project;
-  projectManager?: string;
-  projectLead?: string;
-  setProjectManagerId: (projectManager?: string) => void;
-  setProjectLeadId: (projectLead?: string) => void;
+  managerId?: string;
+  leadId?: string;
+  setManagerId: (id?: string) => void;
+  setLeadId: (id?: string) => void;
   setcrId?: (crId?: number) => void;
-  setCarNumber?: (carNumber?: number) => void;
+  setCarNumber: (carNumber: number) => void;
 }
 
 const userToAutocompleteOption = (user?: User): { label: string; id: string } => {
@@ -32,11 +35,22 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
   control,
   errors,
   project,
-  projectManager,
-  projectLead,
-  setProjectLeadId,
-  setProjectManagerId
+  managerId,
+  leadId,
+  setLeadId,
+  setManagerId,
+  setCarNumber
 }) => {
+  const { data: cars, isLoading, isError, error } = useGetAllCars();
+
+  if (isLoading || !cars) {
+    return <LoadingIndicator />;
+  }
+
+  if (isError) {
+    return <ErrorPage message={error.message} />;
+  }
+
   return (
     <Box>
       <Typography variant="h5" sx={{ marginBottom: '10px' }}>
@@ -58,13 +72,31 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
           <>
             <Grid item lg={2.4} md={6} xs={12} sx={{ display: 'flex' }}>
               <FormControl fullWidth>
-                <FormLabel>Car Number</FormLabel>
-                <ReactHookTextField
+                <FormLabel>Car</FormLabel>
+                <Controller
                   name="carNumber"
                   control={control}
-                  placeholder="Enter a car number..."
-                  errorMessage={errors.crId}
-                />
+                  defaultValue={cars.length - 1}
+                  render={({ field: { onChange, value } }) => (
+                    <Select
+                      error={!!errors.carNumber}
+                      value={value}
+                      onChange={(e) => {
+                        setCarNumber(e.target.value as number);
+                        onChange(e);
+                      }}
+                    >
+                      {
+                        // reverse to show most recent cars first
+                        cars.toReversed().map((car) => (
+                          <MenuItem key={car.wbsElementId} value={car.wbsNum.carNumber}>
+                            {car.name}
+                          </MenuItem>
+                        ))
+                      }
+                    </Select>
+                  )}
+                ></Controller>
               </FormControl>
             </Grid>
             <Grid item lg={2.4} md={6} xs={12}>
@@ -89,7 +121,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
         </Grid>
         <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
           <FormControl fullWidth>
-            <ChangeRequestDropdown control={control} name="crId" errors={errors} />
+            <ChangeRequestDropdown control={control} name="crId" />
           </FormControl>
         </Grid>
       </Grid>
@@ -98,22 +130,22 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
           <FormLabel>{!project ? 'Project Lead (optional)' : 'Project Lead'}</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
-            onChange={(_event, value) => setProjectLeadId(value?.id)}
+            onChange={(_event, value) => setLeadId(value?.id)}
             options={users.map(userToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Lead"
-            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectLead))}
+            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === leadId))}
           />
         </Grid>
         <Grid item lg={6} md={12} xs={12} mt={{ xs: 0, md: 0, lg: 2 }}>
           <FormLabel>{!project ? 'Project Manager (optional)' : 'Project Manager'}</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
-            onChange={(_event, value) => setProjectManagerId(value?.id)}
+            onChange={(_event, value) => setManagerId(value?.id)}
             options={users.map(userToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Manager"
-            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectManager))}
+            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === managerId))}
           />
         </Grid>
         <Grid item lg={12} md={12} xs={12}>
@@ -123,7 +155,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
               name="summary"
               control={control}
               type="number"
-              placeholder="Enter a summmary..."
+              placeholder="Enter a summary..."
               multiline={true}
               rows={5}
               errorMessage={errors.summary}

@@ -4,16 +4,13 @@
  */
 
 import { WorkPackage, wbsPipe } from 'shared';
-import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
+import { fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
 import { Box, Divider, Grid, Link, Stack, Typography } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
-import { timelinePipe } from '../../../utils/pipes';
 import { Construction, Work } from '@mui/icons-material';
 import ScheduleIcon from '@mui/icons-material/Schedule';
-import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
-import DoneAllIcon from '@mui/icons-material/DoneAll';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 
@@ -45,11 +42,6 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
         </Grid>
 
         <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
-          <StackedLineChartIcon sx={{ mr: 2 }} />
-          <DetailDisplay label="Progress" content={percentPipe(workPackage.progress)} paddingRight={1} />
-        </Grid>
-
-        <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
           <ScheduleIcon sx={{ mr: 2 }} />
           <DetailDisplay label="Duration" content={weeksPipe(workPackage.duration)} paddingRight={1} />
         </Grid>
@@ -62,16 +54,6 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
         <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
           <ScheduleIcon sx={{ mr: 2 }} />
           <DetailDisplay label="End Date" content={datePipe(workPackage.endDate)} paddingRight={1} />
-        </Grid>
-
-        <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
-          <DoneAllIcon sx={{ mr: 2 }} />
-          <DetailDisplay label="Expected Progress" content={percentPipe(workPackage.expectedProgress)} paddingRight={1} />
-        </Grid>
-
-        <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
-          <ScheduleIcon sx={{ mr: 2 }} />
-          <DetailDisplay label="Timeline Status" content={timelinePipe(workPackage.timelineStatus)} paddingRight={1} />
         </Grid>
       </Grid>
 

@@ -3,7 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from './user-types';
+import { DescriptionBullet } from './project-types.js';
+import { DescriptionBulletPreview } from './change-request-types.js';
+import { TeamPreview } from './team-types.js';
+import { User } from './user-types.js';
 
 export enum TimelineStatus {
   Ahead = 'AHEAD',
@@ -20,32 +23,51 @@ export enum WorkPackageStage {
   Testing = 'TESTING'
 }
 
-export interface BlockedByInfo {
-  blockedByInfoId: string;
-  stage?: WorkPackageStage;
-  name: string;
-}
-
-export interface WorkPackageTemplate {
-  workPackageTemplateId: string;
+export interface WbsElementTemplate {
   templateName: string;
   templateNotes: string;
+  descriptionBullets: DescriptionBullet[];
+}
+
+export type WorkPackageTemplatePreview = Pick<
+  WorkPackageTemplate,
+  'workPackageTemplateId' | 'templateName' | 'stage' | 'templateNotes'
+>;
+
+export interface WorkPackageTemplate extends WbsElementTemplate {
+  workPackageTemplateId: string;
   workPackageName?: string;
   stage?: WorkPackageStage;
   duration?: number;
-  blockedBy: BlockedByInfo[];
-  expectedActivities: String[];
-  deliverables: String[];
+  blockedBy: WorkPackageTemplatePreview[];
   dateCreated: Date;
   userCreated: User;
-  userCreatedId: Number;
   dateDeleted?: Date;
   userDeleted?: User;
-  userDeletedId?: Number;
 }
 
-export interface BlockedByCreateArgs {
-  blockedByInfoId?: string;
-  stage?: WorkPackageStage;
-  name: string;
+export interface WorkPackageTemplateApiInputs {
+  templateName: string;
+  templateNotes: string;
+  duration: number | undefined;
+  stage?: WorkPackageStage | 'NONE';
+  blockedBy: string[];
+  descriptionBullets: DescriptionBulletPreview[];
+  workPackageName?: string;
+  workPackageTemplateId?: string;
+}
+
+export interface ProjectTemplate extends WbsElementTemplate {
+  projectTemplateId: string;
+  projectName?: string;
+  workPackageTemplates: WorkPackageTemplate[];
+  budget?: number;
+  teams: TeamPreview[];
+  summary?: string;
+}
+
+export enum WorkPackageSelection {
+  ALL_OVERDUE = 'allOverdue',
+  LEADING = 'leading',
+  MEMBER = 'member'
 }

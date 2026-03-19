@@ -1,44 +1,80 @@
 import { Prisma } from '@prisma/client';
-import { calculateEndDate, calculatePercentExpectedProgress, calculateTimelineStatus, WorkPackage } from 'shared';
-import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
-import descriptionBulletTransformer from '../transformers/description-bullets.transformer';
-import { convertStatus, wbsNumOf } from '../utils/utils';
-import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
-import { userTransformer } from './user.transformer';
+import { calculateEndDate, RetrospectiveWorkPackage, WorkPackage, WorkPackagePreview, WorkPackageStage } from 'shared';
+import descriptionBulletTransformer from '../transformers/description-bullets.transformer.js';
+import { convertStatus, wbsNumOf } from '../utils/utils.js';
+import { userTransformer } from './user.transformer.js';
+import { WorkPackageQueryArgs, WorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+import { teamTypeTransformer } from './team-types.transformer.js';
+import { eventPreviewTransformer } from './calendar.transformer.js';
 
-const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>): WorkPackage => {
-  const expectedProgress = calculatePercentExpectedProgress(wpInput.startDate, wpInput.duration, wpInput.wbsElement.status);
+const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
   const wbsNum = wbsNumOf(wpInput.wbsElement);
-  const progress = calculateWorkPackageProgress(wpInput.deliverables, wpInput.expectedActivities);
   return {
+    wbsElementId: wpInput.wbsElementId,
+    links: [],
+    projectId: wpInput.projectId,
     id: wpInput.workPackageId,
     dateCreated: wpInput.wbsElement.dateCreated,
     name: wpInput.wbsElement.name,
     orderInProject: wpInput.orderInProject,
-    progress,
     startDate: wpInput.startDate,
     duration: wpInput.duration,
-    expectedActivities: wpInput.expectedActivities.map(descriptionBulletTransformer),
-    deliverables: wpInput.deliverables.map(descriptionBulletTransformer),
+    descriptionBullets: wpInput.wbsElement.descriptionBullets.map(descriptionBulletTransformer),
     blockedBy: wpInput.blockedBy.map(wbsNumOf),
     manager: wpInput.wbsElement.manager ? userTransformer(wpInput.wbsElement.manager) : undefined,
     lead: wpInput.wbsElement.lead ? userTransformer(wpInput.wbsElement.lead) : undefined,
     status: convertStatus(wpInput.wbsElement.status),
     wbsNum,
     endDate: calculateEndDate(wpInput.startDate, wpInput.duration),
-    expectedProgress,
-    timelineStatus: calculateTimelineStatus(progress, expectedProgress),
     changes: wpInput.wbsElement.changes.map((change) => ({
       wbsNum,
       changeId: change.changeId,
+      changeRequestIdentifier: change.changeRequest.identifier,
       changeRequestId: change.changeRequestId,
       implementer: userTransformer(change.implementer),
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
+    teamTypes: wpInput.project.teams.flatMap((team) => team.teamType ?? []).map(teamTypeTransformer),
     projectName: wpInput.project.wbsElement.name,
-    stage: wpInput.stage || undefined
-  } as WorkPackage;
+    stage: (wpInput.stage as WorkPackageStage) || undefined,
+    blocking: wpInput.wbsElement.blocking.map((wp) => wbsNumOf(wp.wbsElement)),
+    events: wpInput.events.map((event) =>
+      eventPreviewTransformer(event, `${wpInput.project.wbsElement.name} - ${wpInput.wbsElement.name}`)
+    ),
+    deleted: wpInput.wbsElement.dateDeleted !== null
+  };
+};
+
+export const workPackagePreviewTransformer = (
+  wpInput: Prisma.Work_PackageGetPayload<WorkPackagePreviewQueryArgs>
+): WorkPackagePreview => {
+  return {
+    ...wpInput,
+    stage: (wpInput.stage as WorkPackageStage) ?? undefined,
+    id: wpInput.workPackageId,
+    status: convertStatus(wpInput.wbsElement.status),
+    projectName: wpInput.project.wbsElement.name,
+    dateCreated: wpInput.wbsElement.dateCreated,
+    name: wpInput.wbsElement.name,
+    wbsNum: { ...wpInput.wbsElement },
+    deleted: wpInput.wbsElement.dateDeleted === null,
+    endDate: calculateEndDate(wpInput.startDate, wpInput.duration),
+    lead: wpInput.wbsElement.lead ?? undefined,
+    manager: wpInput.wbsElement.manager ?? undefined,
+    projectId: wpInput.project.projectId,
+    wbsElementId: wpInput.wbsElement.wbsElementId
+  };
+};
+
+export const retrospectiveWorkPackageTransformer = (
+  wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs> & { originalStartDate: Date; originalDuration: number }
+): RetrospectiveWorkPackage => {
+  return {
+    ...workPackageTransformer(wpInput),
+    originalStartDate: wpInput.originalStartDate,
+    originalDuration: wpInput.originalDuration
+  };
 };
 
 export default workPackageTransformer;

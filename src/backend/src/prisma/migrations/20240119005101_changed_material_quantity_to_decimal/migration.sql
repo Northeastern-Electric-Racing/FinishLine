@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Material" ALTER COLUMN "quantity" SET DATA TYPE DECIMAL(65,30);

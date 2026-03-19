@@ -1,0 +1,14 @@
+FROM node:25-alpine
+
+COPY package.json tsconfig.build.json ./
+COPY ./src/frontend/package.json ./src/frontend/tsconfig.json src/frontend/
+COPY ./src/shared/package.json ./src/shared/tsconfig.json src/shared/
+
+# Install dependencies
+RUN yarn install;
+
+COPY ./src/frontend src/frontend
+COPY ./src/shared src/shared
+
+EXPOSE 3000
+CMD [ "yarn", "workspace", "frontend", "vite", "--force", "--host" ]

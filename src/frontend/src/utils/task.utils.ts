@@ -4,10 +4,10 @@
  */
 
 import { Dispatch, MouseEventHandler, SetStateAction } from 'react';
-import { Project, Task, TaskPriority, TaskStatus, TeamPreview, User, UserPreview } from 'shared';
-import { FormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskListNotesModal';
+import { Project, Task, TaskPriority, TaskStatus, TeamPreview, User } from 'shared';
+import { EditTaskFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskFormModal';
 import { fullNamePipe } from './pipes';
-import { makeTeamList } from './teams.utils';
+import { daysOverdue } from './datetime.utils';
 
 //this is needed to fix some weird bug with getActions()
 //see comment by michaldudak commented on Dec 5, 2022
@@ -25,9 +25,9 @@ declare global {
 export type Row = {
   id: number;
   title: string;
-  deadline: Date;
+  deadline?: Date;
   priority: TaskPriority;
-  assignees: UserPreview[];
+  assignees: User[];
   taskId: string;
   notes: string;
   task: Task;
@@ -49,22 +49,35 @@ export interface TaskListDataGridProps {
   tableRowCount: string;
   setSelectedTask: Dispatch<SetStateAction<Task | undefined>>;
   setModalShow: Dispatch<SetStateAction<boolean>>;
-  createTask: (title: string, deadline: Date, priority: TaskPriority, assignees: UserPreview[]) => Promise<void>;
+  createTask: (title: string, priority: TaskPriority, assignees: User[], deadline?: Date) => Promise<void>;
   status: TaskStatus;
   addTask: boolean;
   onAddCancel: () => void;
   deleteRow: (taskId: string) => MouseEventHandler<HTMLLIElement>;
-  moveToInProgress: (taskId: string) => MouseEventHandler<HTMLLIElement>;
+  moveToInProgress: (taskId: string, assignees: string, deadline: Date | undefined) => MouseEventHandler<HTMLLIElement>;
   moveToDone: (taskId: string) => MouseEventHandler<HTMLLIElement>;
   moveToBacklog: (taskId: string) => MouseEventHandler<HTMLLIElement>;
-  editTask: (editInfo: FormInput) => Promise<void>;
+  editTask: (editInfo: EditTaskFormInput) => Promise<void>;
   setDisabled: Dispatch<SetStateAction<boolean>>;
 }
 
-export const taskUserToAutocompleteOption = (user: User): { label: string; id: number } => {
+export const taskUserToAutocompleteOption = (user: User): { label: string; id: string } => {
   return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
 };
 
-export const getTaskAssigneeOptions = (teams: TeamPreview[]): User[] => {
-  return teams.map((team) => makeTeamList(team)).flat();
+export const taskPriorityColor = (task: Task) => {
+  return task.priority === TaskPriority.Low
+    ? '#1CAC19'
+    : task.priority === TaskPriority.Medium
+      ? '#ffc700'
+      : task.priority === TaskPriority.High
+        ? '#EF4345'
+        : '';
+};
+
+export const getOverdueTasks = (tasks: Task[]) => {
+  const overdueTasks = new Set(
+    tasks.filter((task) => task.status !== TaskStatus.DONE && (task.deadline ? daysOverdue(new Date(task.deadline)) : 0) > 0)
+  );
+  return [...overdueTasks];
 };

@@ -3,16 +3,19 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import type { AvailabilityCreateArgs } from './calendar-types.js';
+
 export interface User {
-  userId: number;
+  userId: string;
   firstName: string;
   lastName: string;
   email: string;
-  emailId: string | null;
-  role: Role;
+  role?: Role;
 }
 
-export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'role'>;
+export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName'>;
+
+export type UserWithRole = User & { role: Role };
 
 export type Role = 'APP_ADMIN' | 'ADMIN' | 'HEAD' | 'LEADERSHIP' | 'MEMBER' | 'GUEST';
 export enum RoleEnum {
@@ -24,25 +27,68 @@ export enum RoleEnum {
   GUEST = 'GUEST'
 }
 
+export enum Permission {
+  EDIT_GRAPH = 'EDIT_GRAPH',
+  CREATE_GRAPH = 'CREATE_GRAPH',
+  VIEW_GRAPH = 'VIEW_GRAPH',
+  DELETE_GRAPH = 'DELETE_GRAPH',
+  EDIT_GRAPH_COLLECTION = 'EDIT_GRAPH_COLLECTION',
+  CREATE_GRAPH_COLLECTION = 'CREATE_GRAPH_COLLECTION',
+  VIEW_GRAPH_COLLECTION = 'VIEW_GRAPH_COLLECTION',
+  DELETE_GRAPH_COLLECTION = 'DELETE_GRAPH_COLLECTION'
+}
+
 export type ThemeName = 'DARK' | 'LIGHT';
 
+export type OrganizationPreview = Pick<
+  Organization,
+  | 'organizationId'
+  | 'name'
+  | 'dateCreated'
+  | 'dateDeleted'
+  | 'description'
+  | 'applicationLink'
+  | 'newMemberImageId'
+  | 'platformDescription'
+  | 'platformLogoImageId'
+>;
+
+export interface Organization {
+  organizationId: string;
+  name: string;
+  dateCreated: Date | null;
+  userCreated: User;
+  dateDeleted?: Date | null;
+  userDeleted?: User;
+  treasurer?: User;
+  advisor?: User;
+  description: string;
+  newMemberImageId?: string;
+  applicationLink?: string;
+  onboardingText?: string;
+  contacts: Contact[];
+  slackWorkspaceId?: string;
+  partReviewGuideLink?: string;
+  sponsorshipNotificationsSlackChannelId?: string;
+  platformDescription: string;
+  platformLogoImageId?: string;
+}
+
 /**
- * User object used purely for authentication purposes.
+ * Type for the current user
  */
 export interface AuthenticatedUser {
-  userId: number;
+  userId: string;
   firstName: string;
   lastName: string;
   email: string;
-  emailId: string | null;
   role: Role;
   defaultTheme?: ThemeName;
   isFinance?: boolean;
-  teamAsHeadId?: string;
-  favoritedProjectsId: number[];
-  changeRequestsToReviewId: number[];
-  isHeadOfFinance?: boolean;
   isAtLeastFinanceLead?: boolean;
+  organizations: string[];
+  onboardingTeamTypeIds: string[];
+  onboardedTeamTypeIds: string[];
 }
 
 export interface UserSettings {
@@ -62,7 +108,7 @@ export interface UserSecureSettings {
 }
 
 export interface UpdateUserRolePayload {
-  userId: number;
+  userId: string;
   role: string;
 }
 
@@ -70,15 +116,29 @@ export interface UserScheduleSettings {
   drScheduleSettingsId: string;
   personalGmail: string;
   personalZoomLink: string;
+  availabilities: Availability[];
+}
+
+export interface Availability {
+  dateSet: Date;
   availability: number[];
 }
 
-export interface UserWithScheduleSettings {
-  userId: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  emailId: string | null;
-  role: Role;
+export interface UserWithScheduleSettings extends User {
   scheduleSettings?: UserScheduleSettings;
+}
+
+export interface SetUserScheduleSettingsArgs {
+  personalGmail?: string;
+  personalZoomLink?: string;
+  availability: AvailabilityCreateArgs[];
+}
+
+export interface SetUserScheduleSettingsPayload extends SetUserScheduleSettingsArgs {
+  drScheduleSettingsId: string;
+}
+
+export interface Contact {
+  user: User;
+  title: string;
 }

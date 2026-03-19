@@ -1,28 +1,57 @@
-import { Club_Accounts, Project, Reimbursement_Request, Role, User, WBS_Element_Status } from '@prisma/client';
-import prisma from '../src/prisma/prisma';
-import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
-import TeamsService from '../src/services/teams.services';
-import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
-import { ClubAccount } from 'shared';
+/* eslint-disable prefer-destructuring */
+import {
+  Organization,
+  Part,
+  Part_Review,
+  Part_Submission,
+  Part_Review_Popup,
+  Project,
+  Schedule_Settings,
+  Task_Priority,
+  Task_Status,
+  User,
+  User_Secure_Settings,
+  User_Settings,
+  WBS_Element_Status
+} from '@prisma/client';
+import prisma from '../src/prisma/prisma.js';
+import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed.js';
+import TeamsService from '../src/services/teams.services.js';
+import ReimbursementRequestService from '../src/services/reimbursement-requests.services.js';
+import { Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
+import {
+  batmanAppAdmin,
+  batmanScheduleSettings,
+  batmanSecureSettings,
+  batmanSettings,
+  supermanAdmin
+} from './test-data/users.test-data.js';
+import {
+  getProjectTemplateQueryArgs,
+  getWorkPackageTemplateQueryArgs
+} from '../src/prisma-query-args/wbs-element-template.query-args.js';
+import TasksService from '../src/services/tasks.services.js';
+import ProjectsService from '../src/services/projects.services.js';
+import { SlackMessage } from '../src/services/slack.services.js';
+import CalendarService from '../src/services/calendar.services.js';
 
-interface CreateTestUserParams {
-  userId?: number;
+export interface CreateTestUserParams {
   firstName: string;
   lastName: string;
   email: string;
   emailId?: string | null;
   googleAuthId: string;
-  role: Role;
+  role: RoleEnum;
+  permissions?: string[];
 }
 
-export const createTestUser = async ({
-  firstName,
-  lastName,
-  email,
-  emailId,
-  googleAuthId,
-  role
-}: CreateTestUserParams): Promise<User> => {
+export const createTestUser = async (
+  { firstName, lastName, email, emailId, googleAuthId, role, permissions }: CreateTestUserParams,
+  organizationId: string,
+  userSettings?: User_Settings,
+  userSecureSettings?: User_Secure_Settings,
+  scheduleSettings?: Schedule_Settings
+): Promise<User> => {
   const createdUser = await prisma.user.create({
     data: {
       firstName,
@@ -30,28 +59,80 @@ export const createTestUser = async ({
       email,
       emailId,
       googleAuthId,
-      role
+      roles: {
+        create: {
+          roleType: role,
+          organizationId
+        }
+      },
+      additionalPermissions: permissions,
+      organizations: { connect: { organizationId } }
     }
   });
+
+  if (userSettings) {
+    await prisma.user_Settings.create({
+      data: {
+        ...userSettings,
+        userId: createdUser.userId
+      }
+    });
+  }
+
+  if (userSecureSettings) {
+    await prisma.user_Secure_Settings.create({
+      data: {
+        ...userSecureSettings,
+        userId: createdUser.userId
+      }
+    });
+  }
+
+  if (scheduleSettings) {
+    await prisma.schedule_Settings.create({
+      data: {
+        ...scheduleSettings,
+        userId: createdUser.userId
+      }
+    });
+  }
+
   return createdUser;
 };
 
 export const resetUsers = async () => {
-  await prisma.project.deleteMany();
+  await prisma.guest_Definition.deleteMany();
+  await prisma.part_Review_Popup.deleteMany();
+  await prisma.part_Review_Request.deleteMany();
+  await prisma.part_Review.deleteMany();
+  await prisma.part_Submission.deleteMany();
+  await prisma.part_Review_Common_Mistake.deleteMany();
+  await prisma.part_Tag.deleteMany();
+  await prisma.part.deleteMany();
   await prisma.work_Package.deleteMany();
-
-  await prisma.teamType.deleteMany();
+  await prisma.part_Review_Common_Mistake.deleteMany();
+  await prisma.part_Tag.deleteMany();
+  await prisma.part_Review_Popup.deleteMany();
+  await prisma.part_Review.deleteMany();
+  await prisma.part_Submission.deleteMany();
+  await prisma.part.deleteMany();
+  await prisma.project.deleteMany();
+  await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.material.deleteMany();
   await prisma.manufacturer.deleteMany();
   await prisma.material_Type.deleteMany();
   await prisma.assembly.deleteMany();
+  await prisma.meeting_Attendance.deleteMany();
   await prisma.team.deleteMany();
   await prisma.user_Secure_Settings.deleteMany();
+  await prisma.receipt.deleteMany();
   await prisma.reimbursement_Product.deleteMany();
   await prisma.reimbursement_Status.deleteMany();
+  await prisma.reimbursement_Request_Comment.deleteMany();
   await prisma.reimbursement_Request.deleteMany();
   await prisma.vendor.deleteMany();
-  await prisma.wBS_Element.deleteMany();
+  await prisma.account_Code.deleteMany();
+  await prisma.car.deleteMany();
   await prisma.task.deleteMany();
   await prisma.stage_Gate_CR.deleteMany();
   await prisma.activation_CR.deleteMany();
@@ -59,44 +140,268 @@ export const resetUsers = async () => {
   await prisma.proposed_Solution.deleteMany();
   await prisma.scope_CR_Why.deleteMany();
   await prisma.scope_CR.deleteMany();
+  await prisma.budget_CR.deleteMany();
   await prisma.change_Request.deleteMany();
   await prisma.link.deleteMany();
-  await prisma.linkType.deleteMany();
+  await prisma.link_Type.deleteMany();
   await prisma.work_Package_Template.deleteMany();
+  await prisma.project_Template.deleteMany();
+  await prisma.wBS_Element_Template.deleteMany();
   await prisma.user_Settings.deleteMany();
   await prisma.session.deleteMany();
+  await prisma.availability.deleteMany();
   await prisma.user_Secure_Settings.deleteMany();
+  await prisma.schedule_Settings.deleteMany();
+  await prisma.role.deleteMany();
+  await prisma.team_Type.deleteMany();
+  await prisma.wBS_Element.deleteMany();
+  await prisma.milestone.deleteMany();
+  await prisma.checklist.deleteMany();
+  await prisma.contact.deleteMany();
+  await prisma.graph.deleteMany();
+  await prisma.graph_Collection.deleteMany();
+  await prisma.announcement.deleteMany();
+  await prisma.popUp.deleteMany();
+  await prisma.sponsor_Task.deleteMany();
+  await prisma.prospective_Sponsor.deleteMany();
+  await prisma.sponsor.deleteMany();
+  await prisma.sponsor_Tier.deleteMany();
+  await prisma.reimbursement_Product_Other_Reason.deleteMany();
+  await prisma.account_Code.deleteMany();
+  await prisma.refund_Source.deleteMany();
+  await prisma.index_Code.deleteMany();
+  await prisma.document.deleteMany();
+  await prisma.schedule_Slot.deleteMany();
+  await prisma.event.deleteMany();
+  await prisma.event_Type.deleteMany();
+  await prisma.calendar.deleteMany();
+  await prisma.shop_Machinery.deleteMany();
+  await prisma.machinery.deleteMany();
+  await prisma.shop.deleteMany();
+  await prisma.description_Bullet.deleteMany();
+  await prisma.description_Bullet_Type.deleteMany();
+  await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
 
-export const createFinanceTeamAndLead = async () => {
-  const head = await prisma.user.create({
-    data: dbSeedAllUsers.thomasEmrax
-  });
+export const createFinanceTeamAndLead = async (organization?: Organization) => {
+  if (!organization) organization = await createTestOrganization();
+  const head = await createTestUser(
+    { ...batmanAppAdmin, googleAuthId: 'financeHead', role: RoleEnum.APP_ADMIN },
+    organization.organizationId,
+    batmanSettings,
+    batmanSecureSettings,
+    batmanScheduleSettings
+  );
 
-  const lead = await prisma.user.create({
-    data: dbSeedAllUsers.joeBlow
-  });
+  const lead = await createTestUser(
+    {
+      ...dbSeedAllUsers.aang,
+      googleAuthId: 'financeLead',
+      role: RoleEnum.LEADERSHIP,
+      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
+    },
+    organization.organizationId
+  );
 
-  const financeMember = await prisma.user.create({
-    data: dbSeedAllUsers.johnBoddy
-  });
+  const financeMember = await createTestUser(
+    {
+      ...dbSeedAllUsers.johnBoddy,
+      googleAuthId: 'financeMember',
+      role: RoleEnum.MEMBER,
+      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
+    },
+    organization.organizationId
+  );
 
-  const team = await TeamsService.createTeam(head, 'Finance Team', head.userId, 'Finance Team', '');
-  setFinanceTeamId(team.teamId);
+  const team = await TeamsService.createTeam(head, 'Finance Team', head.userId, 'Finance Team', '', true, organization);
 
-  await TeamsService.setTeamLeads(head, team.teamId, [lead.userId]);
+  await TeamsService.setTeamLeads(head, team.teamId, [lead.userId], organization);
 
-  await TeamsService.setTeamMembers(head, team.teamId, [financeMember.userId]);
+  await TeamsService.setTeamMembers(head, team.teamId, [financeMember.userId], organization);
 };
 
-const setFinanceTeamId = (id: string) => {
-  // Check if the last line matches the lineToAdd
-  process.env['FINANCE_TEAM_ID'] = id;
+export const createTestFAQ = async (orgId: string, faqId: string) => {
+  const user = await prisma.user.create({
+    data: {
+      firstName: 'ADMIN',
+      lastName: 'FAQ',
+      email: 'FAQCREATOR@gmail.com',
+      googleAuthId: 'FAQCREATOR'
+    }
+  });
+
+  return await prisma.frequentlyAskedQuestion.create({
+    data: {
+      faqId,
+      question: 'Joe mama',
+      answer: 'Joe mama`s organization',
+      userCreated: {
+        connect: {
+          userId: user.userId
+        }
+      },
+      regularFaqOrg: {
+        connect: {
+          organizationId: orgId
+        }
+      }
+    }
+  });
 };
 
-const createTestProject = async (user: User): Promise<Project> => {
-  const genesisProject = await prisma.project.create({
+export const createTestOrganization = async () => {
+  const user = await prisma.user.create({
+    data: {
+      firstName: 'Admin',
+      lastName: 'User',
+      email: '',
+      googleAuthId: 'organizationCreator'
+    }
+  });
+
+  return await prisma.organization.create({
+    data: {
+      name: 'Joe mama',
+      description: 'Joe mama`s organization',
+      applicationLink: '',
+      userCreated: {
+        connect: {
+          userId: user.userId
+        }
+      }
+    }
+  });
+};
+
+export const createTestWorkPackageTemplate = async (user: User, organizationId?: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const workPackageTemplate = await prisma.work_Package_Template.create({
+    data: {
+      wbsElementTemplate: {
+        create: {
+          templateName: 'Template 1',
+          templateNotes: 'This is a new work package template',
+          organization: { connect: { organizationId } },
+          userCreated: { connect: { userId: user.userId } },
+          wbsElementName: 'Work Package 1',
+          dateCreated: new Date('03/25/2024')
+        }
+      }
+    },
+    ...getWorkPackageTemplateQueryArgs(organizationId)
+  });
+
+  return workPackageTemplate;
+};
+
+export const createTestProjectTemplate = async (user: User, organizationId?: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const projectTemplate = await prisma.project_Template.create({
+    data: {
+      wbsElementTemplate: {
+        create: {
+          templateName: 'Template 1',
+          templateNotes: 'This is a new project template',
+          organization: { connect: { organizationId } },
+          userCreated: { connect: { userId: user.userId } }
+        }
+      }
+    },
+    ...getProjectTemplateQueryArgs(organizationId)
+  });
+
+  return projectTemplate;
+};
+
+export const createTestFaq = async (user: User, organizationId: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const faq = await prisma.frequentlyAskedQuestion.create({
+    data: {
+      question: 'Who is Chief Software Engineer of NER?',
+      answer: 'Peyton McKee!',
+      regularFaqOrgId: organizationId,
+      userCreatedId: user.userId
+    }
+  });
+  return faq;
+};
+
+export const createTestMilestone = async (user: User, organizationId: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const milestone = await prisma.milestone.create({
+    data: {
+      name: 'Milestone 1',
+      description: 'Description',
+      dateOfEvent: new Date('03/03/2024'),
+      organizationId,
+      userCreatedId: user.userId
+    }
+  });
+  return milestone;
+};
+
+export const createTestChecklist = async (
+  user: User,
+  organizationId: string,
+  content: string,
+  teamTypeId?: string,
+  teamId?: string,
+  parentChecklistId?: string
+) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create checklist');
+
+  const checklist = await prisma.checklist.create({
+    data: {
+      content,
+      organizationId,
+      userCreatedId: user.userId,
+      teamTypeId,
+      teamId,
+      parentChecklistId
+    },
+    include: {
+      subtasks: true,
+      teamType: true,
+      usersChecked: true
+    }
+  });
+
+  return checklist;
+};
+
+export const createTestLinkType = async (user: User, organizationId?: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const linkType = await prisma.link_Type.create({
+    data: {
+      name: 'Link type 1',
+      dateCreated: new Date('03/25/2024'),
+      iconName: 'youtube icon',
+      required: true,
+      creatorId: user.userId,
+      organizationId
+    }
+  });
+
+  return linkType;
+};
+
+export const createTestCar = async (orgId?: string, userIdentification?: string) => {
+  if (!orgId) orgId = (await createTestOrganization()).organizationId;
+  if (!userIdentification) userIdentification = (await createTestUser(supermanAdmin, orgId)).userId;
+
+  const car = await prisma.car.create({
     data: {
       wbsElement: {
         create: {
@@ -104,25 +409,80 @@ const createTestProject = async (user: User): Promise<Project> => {
           projectNumber: 0,
           workPackageNumber: 0,
           dateCreated: new Date('01/01/2023'),
+          name: 'Car',
+          status: WBS_Element_Status.INACTIVE,
+          leadId: userIdentification,
+          managerId: userIdentification,
+          organizationId: orgId
+        }
+      }
+    }
+  });
+
+  return car;
+};
+
+export const createTestProject = async (
+  user: User,
+  organizationId?: string,
+  teamId?: string,
+  carId?: string,
+  projectNumber: number = 1,
+  dateDeleted?: Date
+): Promise<Project> => {
+  if (!organizationId) organizationId = (await createTestOrganization()).organizationId as string;
+  if (!carId) carId = (await createTestCar(organizationId, user.userId)).carId;
+
+  const genesisProject = await prisma.project.create({
+    data: {
+      wbsElement: {
+        create: {
+          carNumber: 0,
+          projectNumber,
+          workPackageNumber: 0,
+          dateCreated: new Date('01/01/2023'),
           name: 'Genesis',
           status: WBS_Element_Status.INACTIVE,
           leadId: user.userId,
-          managerId: user.userId
+          managerId: user.userId,
+          organizationId,
+          dateDeleted: dateDeleted ?? null
+        }
+      },
+      car: {
+        connect: {
+          carId
         }
       },
       summary: 'Initial Car so that we can make change requests and projects and other stuff',
-      budget: 1000,
-      rules: []
+      budget: 1000
     }
   });
+
+  if (teamId) {
+    await prisma.project.update({
+      where: {
+        projectId: genesisProject.projectId
+      },
+      data: {
+        teams: {
+          connect: {
+            teamId
+          }
+        }
+      }
+    });
+  }
 
   return genesisProject;
 };
 
-export const createTestReimbursementRequest = async (): Promise<Reimbursement_Request | undefined> => {
+export const createTestReimbursementRequest = async () => {
+  const organization = await createTestOrganization();
+  await createFinanceTeamAndLead(organization);
   const user = await prisma.user.findUnique({
     where: {
-      googleAuthId: '1'
+      googleAuthId: 'financeHead'
     },
     include: {
       userSettings: true,
@@ -130,22 +490,37 @@ export const createTestReimbursementRequest = async (): Promise<Reimbursement_Re
     }
   });
 
-  if (!user || !user.userSecureSettings || !user.userSettings) return undefined;
+  if (!user || !user.userSecureSettings || !user.userSettings) throw new Error('Failed to find user');
 
-  await createTestProject(user);
+  const project = await createTestProject(user, organization.organizationId);
 
-  const vendor = await ReimbursementRequestService.createVendor(user, 'Tesla');
+  const vendor = await ReimbursementRequestService.createVendor(
+    user,
+    'Tesla',
+    organization,
+    true,
+    [user.userId],
+    'Tax exemption status?',
+    'nershipping@gmail.com',
+    'racecar228!',
+    'SAVE50!'
+  );
 
-  const expenseType = await ReimbursementRequestService.createExpenseType(user, 'Equipment', 123, true, [
-    Club_Accounts.CASH,
-    Club_Accounts.BUDGET
-  ]);
+  const indexCode = await ReimbursementRequestService.createIndexCode('CASH', '830667', user, organization);
+
+  const accountCode = await ReimbursementRequestService.createAccountCode(
+    user,
+    'Equipment',
+    123,
+    true,
+    [indexCode.indexCodeId],
+    organization
+  );
 
   const rr = await ReimbursementRequestService.createReimbursementRequest(
     user,
-    new Date(),
     vendor.vendorId,
-    ClubAccount.CASH,
+    indexCode.indexCodeId,
     [],
     [
       {
@@ -155,12 +530,418 @@ export const createTestReimbursementRequest = async (): Promise<Reimbursement_Re
           projectNumber: 0,
           workPackageNumber: 0
         },
-        cost: 200000
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode,
+            amount: 200
+          }
+        ]
       }
     ],
-    expenseType.expenseTypeId,
-    100
+    accountCode.accountCodeId,
+    100,
+    organization,
+    new Date()
   );
 
-  return rr;
+  if (!rr) throw new Error('Failed to create reimbursement request');
+
+  return { rr, organization, vendor, indexCode, accountCode, project, user };
+};
+
+// Always creates a new design review
+export const createTestDesignReviewEvent = async () => {
+  const organization = await createTestOrganization();
+  const head = await createTestUser(
+    { ...batmanAppAdmin, googleAuthId: 'financeHead', role: RoleEnum.APP_ADMIN },
+    organization.organizationId
+  );
+  const lead = await createTestUser(
+    {
+      ...dbSeedAllUsers.aang,
+      googleAuthId: 'financeLead',
+      role: RoleEnum.LEADERSHIP,
+      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
+    },
+    organization.organizationId
+  );
+  if (!head) throw new Error('Failed to find user');
+  if (!lead) throw new Error('Failed to find user');
+  await createTestProject(head, organization.organizationId);
+
+  const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', 'Software team', organization);
+
+  const designReviewEventType = await CalendarService.createEventType(
+    lead,
+    'Design Review',
+    [], // No calendar IDs for now
+    organization,
+    true, // schedule
+    true, // requiredMembers
+    true, // optionalMembers
+    false, // teams
+    true, // team type
+    true, // location
+    true, // zoomLink
+    false, // shop
+    false, // machinery
+    true, // workPackage
+    true, // questionDocument
+    true, // documents
+    false, // description
+    true, // onlyHeadsOrAbove
+    true // requiresConfirmation
+  );
+
+  const testWorkPackage = await prisma.work_Package.findFirst({
+    where: {
+      wbsElement: {
+        carNumber: 1,
+        projectNumber: 1,
+        workPackageNumber: 1,
+        organizationId: organization.organizationId
+      }
+    }
+  });
+
+  if (!testWorkPackage) {
+    throw new Error('Test work package not found');
+  }
+
+  const { eventId } = await CalendarService.createEvent(
+    lead,
+    'Design Review - Impact Attenuator',
+    designReviewEventType.eventTypeId,
+    organization,
+    [lead.userId], // requiredMemberIds
+    [], // optionalMemberIds
+    [], // teamIds
+    [], // shopIds
+    [], // machineryIds
+    [testWorkPackage.workPackageId], // workPackageIds
+    [], // scheduleSlots - empty for confirmation events
+    new Date('2027-03-25T10:00:00'), // initialDateScheduled - required for requiresConfirmation events
+    teamType.teamTypeId, // team type id
+    'https://docs.google.com/document/d/test-design-review-questions', // questionDocument
+    'Campus Center Room 101', // location
+    'https://zoom.us/j/123456789', // zoomLink
+    undefined // description
+  );
+
+  const event = await prisma.event.findUnique({
+    where: {
+      eventId
+    },
+    include: {
+      userCreated: true
+    }
+  });
+
+  if (!event) throw new Error('Failed to create design review');
+
+  const orgId = organization.organizationId;
+  return { event, organization, orgId };
+};
+
+export const createTestTeamType = async (name: string = 'aTeam', organizationId?: string) => {
+  let orgId = organizationId;
+  if (!organizationId) {
+    orgId = (await createTestOrganization()).organizationId;
+  }
+
+  return await prisma.team_Type.create({
+    data: {
+      name,
+      description: 'aDescription',
+      iconName: 'gear',
+      organizationId: orgId!
+    }
+  });
+};
+
+export const createTestTeam = async (headId?: string, divId?: string, orgId?: string) => {
+  if (!divId) {
+    const division = await createTestTeamType(orgId);
+    divId = division.teamTypeId;
+    orgId = division.organizationId;
+  } else if (!orgId) {
+    orgId = (await createTestOrganization()).organizationId;
+  }
+
+  if (!headId) {
+    headId = (await createTestUser(supermanAdmin, orgId)).userId;
+  }
+
+  const team = await prisma.team.create({
+    data: {
+      teamName: 'aTeamName',
+      slackId: 'aSlackId',
+      description: 'aDescription',
+      financeTeam: false,
+      headId: headId!,
+      teamTypeId: divId,
+      organizationId: orgId
+    }
+  });
+
+  return team;
+};
+
+export const createTestTask = async (
+  user: User,
+  title: string,
+  notes: string,
+  assignees: User[],
+  priority: Task_Priority,
+  status: Task_Status,
+  organizationId?: string,
+  deadline?: Date
+) => {
+  if (!organizationId) organizationId = (await createTestOrganization().then((org) => org.organizationId)) as string;
+  const task = await prisma.task.create({
+    data: {
+      taskId: '0000000001',
+      title,
+      notes,
+      deadline,
+      assignees: {
+        connect: assignees.map((user) => ({ userId: user.userId }))
+      },
+      priority,
+      status,
+      dateCreated: new Date(),
+      createdBy: {
+        connect: { userId: user.userId }
+      },
+      wbsElement: {
+        create: {
+          carNumber: 0,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          dateCreated: new Date('01/01/2023'),
+          name: 'Car',
+          status: WBS_Element_Status.INACTIVE,
+          leadId: user.userId,
+          managerId: user.userId,
+          organizationId
+        }
+      }
+    }
+  });
+  return task;
+};
+
+export const createTestTaskWithOrganization = async (user: User, organization?: Organization) => {
+  if (!organization) organization = await createTestOrganization();
+  const orgId = organization.organizationId;
+  const team = await TeamsService.createTeam(user, 'Test team', user.userId, 'Test', '', false, organization);
+  if (!team) throw new Error('Failed to create team');
+  const project = await createTestProject(user, organization.organizationId);
+  if (!project) throw new Error('Failed to create project');
+  await ProjectsService.setProjectTeam(
+    user,
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    team.teamId,
+    organization
+  );
+
+  const task = await TasksService.createTask(
+    user,
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    'Test task',
+    'Test',
+    TaskPriority.High,
+    TaskStatus.IN_PROGRESS,
+    [user.userId],
+    organization,
+    undefined,
+    new Date()
+  );
+
+  if (!task) throw new Error('Failed to create task');
+  return { task, organization, orgId };
+};
+
+export const createSlackMessageEvent = (
+  channel: string,
+  event_ts: string,
+  user: string,
+  client_msg_id: string,
+  elements: any[]
+): SlackMessage => {
+  return {
+    type: 'message',
+    channel,
+    event_ts,
+    channel_type: 'channel',
+    user,
+    client_msg_id,
+    text: 'sample text',
+    blocks: [
+      {
+        type: 'rich_text',
+        block_id: 'block id',
+        elements: [
+          {
+            type: 'rich_text_section',
+            elements
+          }
+        ]
+      }
+    ]
+  };
+};
+
+export const createTestPart = async (
+  user: User,
+  name: string,
+  partId: string,
+  index: number,
+  projectId?: string,
+  dateDeleted?: Date
+): Promise<Part> => {
+  const part = await prisma.part.create({
+    data: {
+      partId,
+      index,
+      commonName: name,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: user.userId }
+      },
+      dateDeleted: dateDeleted ?? null
+    }
+  });
+
+  return part;
+};
+
+export const createTestPartReview = async (
+  partReviewId: string,
+  fileIds: string[],
+  notes: string,
+  submission: Part_Submission,
+  popUps: Part_Review_Popup[],
+  userCreatedId: string
+) => {
+  const partReview = await prisma.part_Review.create({
+    data: {
+      partReviewId,
+      fileIds,
+      notes,
+      submission: {
+        connect: {
+          partSubmissionId: submission.partSubmissionId
+        }
+      },
+      popUps: {
+        connect: popUps.map((popup) => ({ partReviewPopupId: popup.partReviewPopupId }))
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      }
+    }
+  });
+  return partReview;
+};
+
+export const createTestPartSubmission = async (
+  id: string,
+  fileIds: string[],
+  name: string,
+  notes: string,
+  partId: string,
+  userCreatedId: string,
+  reviews: Part_Review[]
+) => {
+  const partSubmission = await prisma.part_Submission.create({
+    data: {
+      partSubmissionId: id,
+      fileIds,
+      name,
+      notes,
+      part: {
+        connect: { partId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
+      reviews: {
+        connect: reviews.map((review) => ({ partReviewId: review.partReviewId }))
+      }
+    }
+  });
+  return partSubmission;
+};
+
+export const createMinimalPartReview = async (user: User, orgId: string): Promise<Part_Review> => {
+  const car = await createTestCar(orgId, user.userId);
+  const project = await createTestProject(user, orgId, undefined, car.carId);
+
+  const part = await prisma.part.create({
+    data: {
+      index: 1,
+      commonName: 'Test Part',
+      description: 'For testing popups',
+      projectId: project.projectId,
+      userCreatedId: user.userId
+    }
+  });
+
+  const submission = await createTestPartSubmission(
+    'sub-id',
+    [],
+    'Submission Name',
+    'Some notes',
+    part.partId,
+    user.userId,
+    []
+  );
+
+  const review = await createTestPartReview('review-id', [], 'Review notes', submission, [], user.userId);
+
+  return review;
+};
+
+export const createMinimalPartReviewForReview = async (
+  user: User,
+  orgId: string
+): Promise<{ review: Part_Review; partId: string }> => {
+  const car = await createTestCar(orgId, user.userId);
+  const project = await createTestProject(user, orgId, undefined, car.carId);
+
+  const part = await prisma.part.create({
+    data: {
+      index: 1,
+      commonName: 'Test Part',
+      description: 'For testing popups',
+      projectId: project.projectId,
+      userCreatedId: user.userId
+    }
+  });
+
+  const submission = await createTestPartSubmission(
+    'sub-id',
+    [],
+    'Submission Name',
+    'Some notes',
+    part.partId,
+    user.userId,
+    []
+  );
+
+  const review = await createTestPartReview('review-id', [], 'Review notes', submission, [], user.userId);
+
+  return { review, partId: part.partId };
 };

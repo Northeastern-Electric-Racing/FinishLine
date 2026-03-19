@@ -4,47 +4,71 @@
  */
 
 import { NextFunction, Request, Response } from 'express';
-import { getCurrentUser, getCurrentUserWithUserSettings } from '../utils/auth.utils';
-import ReimbursementRequestService from '../services/reimbursement-requests.services';
-import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
+import { getCurrentUserWithUserSettings } from '../utils/auth.utils.js';
+import ReimbursementRequestService from '../services/reimbursement-requests.services.js';
+import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types.js';
 import { Vendor } from 'shared';
-import { HttpException } from '../utils/errors.utils';
+import { HttpException } from '../utils/errors.utils.js';
 
 export default class ReimbursementRequestsController {
-  static async getCurrentUserReimbursementRequests(_req: Request, res: Response, next: NextFunction) {
+  static async getCurrentUserReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      const userReimbursementRequests = await ReimbursementRequestService.getUserReimbursementRequests(user);
+      const userReimbursementRequests = await ReimbursementRequestService.getUserReimbursementRequests(
+        req.currentUser,
+        req.organization
+      );
       res.status(200).json(userReimbursementRequests);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async getCurrentUserReimbursements(_req: Request, res: Response, next: NextFunction) {
+  static async getCurrentUserAssignedReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      const userReimbursements = await ReimbursementRequestService.getUserReimbursements(user);
+      const assignedReimbursementRequests = await ReimbursementRequestService.getUserAssignedReimbursementRequests(
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(assignedReimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getCurrentUserReimbursements(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userReimbursements = await ReimbursementRequestService.getUserReimbursements(req.currentUser, req.organization);
       res.status(200).json(userReimbursements);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async getAllReimbursements(_req: Request, res: Response, next: NextFunction) {
+  static async getCurrentUsersTeamsReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      const reimbursements = await ReimbursementRequestService.getAllReimbursements(user);
+      const userTeamsReimbursementRequests = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(userTeamsReimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllReimbursements(req: Request, res: Response, next: NextFunction) {
+    try {
+      const reimbursements = await ReimbursementRequestService.getAllReimbursements(req.currentUser, req.organization);
       res.status(200).json(reimbursements);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async getAllVendors(_req: Request, res: Response, next: NextFunction) {
+  static async getAllVendors(req: Request, res: Response, next: NextFunction) {
     try {
-      const vendors: Vendor[] = await ReimbursementRequestService.getAllVendors();
-      return res.status(200).json(vendors);
+      const vendors: Vendor[] = await ReimbursementRequestService.getAllVendors(req.organization);
+      res.status(200).json(vendors);
     } catch (error: unknown) {
       next(error);
     }
@@ -55,22 +79,26 @@ export default class ReimbursementRequestsController {
       const {
         dateOfExpense,
         vendorId,
-        account,
+        indexCodeId,
         otherReimbursementProducts,
         wbsReimbursementProducts,
-        expenseTypeId,
-        totalCost
+        accountCodeId,
+        totalCost,
+        description
       } = req.body;
       const user = await getCurrentUserWithUserSettings(res);
+
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
-        dateOfExpense,
         vendorId,
-        account,
+        indexCodeId,
         otherReimbursementProducts,
         wbsReimbursementProducts,
-        expenseTypeId,
-        totalCost
+        accountCodeId,
+        totalCost,
+        req.organization,
+        dateOfExpense,
+        description
       );
       res.status(200).json(createdReimbursementRequest);
     } catch (error: unknown) {
@@ -80,10 +108,13 @@ export default class ReimbursementRequestsController {
 
   static async reimburseUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const { amount, dateReceived } = req.body;
-
-      const reimbursement = await ReimbursementRequestService.reimburseUser(amount, dateReceived, user);
+      const reimbursement = await ReimbursementRequestService.reimburseUser(
+        amount,
+        dateReceived,
+        req.currentUser,
+        req.organization
+      );
       res.status(200).json(reimbursement);
     } catch (error: unknown) {
       next(error);
@@ -92,29 +123,32 @@ export default class ReimbursementRequestsController {
 
   static async editReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const { requestId } = req.params as Record<string, string>;
       const {
         dateOfExpense,
         vendorId,
-        account,
-        expenseTypeId,
-        totalCost,
-        otherReimbursementProducts,
-        wbsReimbursementProducts,
-        receiptPictures
-      } = req.body;
-      const user = await getCurrentUser(res);
-      const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
-        requestId,
-        dateOfExpense,
-        vendorId,
-        account,
-        expenseTypeId,
+        indexCodeId,
+        accountCodeId,
         totalCost,
         otherReimbursementProducts,
         wbsReimbursementProducts,
         receiptPictures,
-        user
+        description
+      } = req.body;
+
+      const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
+        requestId,
+        vendorId,
+        indexCodeId,
+        accountCodeId,
+        totalCost,
+        otherReimbursementProducts,
+        wbsReimbursementProducts,
+        receiptPictures,
+        req.currentUser,
+        req.organization,
+        dateOfExpense,
+        description
       );
       res.status(200).json(updatedReimbursementRequestId);
     } catch (error: unknown) {
@@ -122,16 +156,34 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async assignFinanceMember(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params as Record<string, string>;
+      const { assigneeId } = req.body;
+
+      const updatedReimbursementRequest = await ReimbursementRequestService.assignFinanceMember(
+        req.currentUser,
+        req.organization,
+        requestId,
+        assigneeId
+      );
+      res.status(200).json(updatedReimbursementRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async editReimbursement(req: Request, res: Response, next: NextFunction) {
     try {
-      const { reimbursementId } = req.params;
+      const { reimbursementId } = req.params as Record<string, string>;
       const { amount, dateReceived } = req.body;
-      const editor = await getCurrentUser(res);
+
       const updatedReimbursement = await ReimbursementRequestService.editReimbursement(
         reimbursementId,
-        editor,
+        req.currentUser,
         amount,
-        dateReceived
+        dateReceived,
+        req.organization
       );
       res.status(200).json(updatedReimbursement);
     } catch (error: unknown) {
@@ -141,21 +193,26 @@ export default class ReimbursementRequestsController {
 
   static async deleteReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
-      const user = await getCurrentUser(res);
-      const deletedReimbursementRequest = await ReimbursementRequestService.deleteReimbursementRequest(requestId, user);
+      const { requestId } = req.params as Record<string, string>;
+
+      const deletedReimbursementRequest = await ReimbursementRequestService.deleteReimbursementRequest(
+        requestId,
+        req.currentUser,
+        req.organization
+      );
       res.status(200).json(deletedReimbursementRequest);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async getPendingAdvisorList(_req: Request, res: Response, next: NextFunction) {
-    const user = await getCurrentUser(res);
-
+  static async getPendingAdvisorList(req: Request, res: Response, next: NextFunction) {
     try {
-      const requestsPendingAdvisors: ReimbursementRequest[] = await ReimbursementRequestService.getPendingAdvisorList(user);
-      return res.status(200).json(requestsPendingAdvisors);
+      const requestsPendingAdvisors: ReimbursementRequest[] = await ReimbursementRequestService.getPendingAdvisorList(
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(requestsPendingAdvisors);
     } catch (error: unknown) {
       next(error);
     }
@@ -164,8 +221,11 @@ export default class ReimbursementRequestsController {
   static async sendPendingAdvisorList(req: Request, res: Response, next: NextFunction) {
     try {
       const { saboNumbers } = req.body;
-      const user = await getCurrentUser(res);
-      await ReimbursementRequestService.sendPendingAdvisorList(user, saboNumbers);
+      await ReimbursementRequestService.sendPendingAdvisorList(
+        req.currentUser,
+        saboNumbers,
+        req.organization.organizationId
+      );
       res.status(200).json({ message: 'Successfully sent pending advisor list' });
     } catch (error: unknown) {
       next(error);
@@ -174,10 +234,9 @@ export default class ReimbursementRequestsController {
 
   static async setSaboNumber(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
+      const { requestId } = req.params as Record<string, string>;
       const { saboNumber } = req.body;
-      const user = await getCurrentUser(res);
-      await ReimbursementRequestService.setSaboNumber(requestId, saboNumber, user);
+      await ReimbursementRequestService.setSaboNumber(requestId, saboNumber, req.currentUser, req.organization);
       res.status(200).json({ message: 'Successfully set sabo number' });
     } catch (error: unknown) {
       next(error);
@@ -186,27 +245,37 @@ export default class ReimbursementRequestsController {
 
   static async createVendor(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name } = req.body;
-      const user = await getCurrentUser(res);
-      const createdVendor = await ReimbursementRequestService.createVendor(user, name);
+      const { name, username, password, discountCode, taxExempt, twoFactorContacts, notes } = req.body;
+      const createdVendor = await ReimbursementRequestService.createVendor(
+        req.currentUser,
+        name,
+        req.organization,
+        taxExempt ?? false,
+        twoFactorContacts ?? [],
+        notes,
+        username,
+        password,
+        discountCode
+      );
       res.status(200).json(createdVendor);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async createExpenseType(req: Request, res: Response, next: NextFunction) {
+  static async createAccountCode(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, code, allowed, allowedRefundSources } = req.body;
-      const user = await getCurrentUser(res);
-      const createdExpenseType = await ReimbursementRequestService.createExpenseType(
-        user,
+      const { name, code, allowed, amount, indexCodeIds } = req.body;
+      const createdAccountCode = await ReimbursementRequestService.createAccountCode(
+        req.currentUser,
         name,
         code,
         allowed,
-        allowedRefundSources
+        indexCodeIds,
+        req.organization,
+        amount
       );
-      res.status(200).json(createdExpenseType);
+      res.status(200).json(createdAccountCode);
     } catch (error: unknown) {
       next(error);
     }
@@ -215,14 +284,9 @@ export default class ReimbursementRequestsController {
   static async uploadReceipt(req: Request, res: Response, next: NextFunction) {
     try {
       const { file } = req;
-      const { requestId } = req.params;
-
+      const { requestId } = req.params as Record<string, string>;
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
-
-      const user = await getCurrentUser(res);
-
-      const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, user);
-
+      const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, req.currentUser, req.organization);
       const isProd = process.env.NODE_ENV === 'production';
       const origin = isProd ? 'https://finishlinebyner.com' : 'http://localhost:3000';
 
@@ -233,10 +297,10 @@ export default class ReimbursementRequestsController {
     }
   }
 
-  static async getAllExpenseTypes(_req: Request, res: Response, next: NextFunction) {
+  static async getAllAccountCodes(req: Request, res: Response, next: NextFunction) {
     try {
-      const expenseTypes = await ReimbursementRequestService.getAllExpenseTypes();
-      res.status(200).json(expenseTypes);
+      const accountCodes = await ReimbursementRequestService.getAllAccountCodes(req.organization);
+      res.status(200).json(accountCodes);
     } catch (error: unknown) {
       next(error);
     }
@@ -244,9 +308,9 @@ export default class ReimbursementRequestsController {
 
   static async getAllReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests(
-        user
+        req.currentUser,
+        req.organization
       );
       res.status(200).json(reimbursementRequests);
     } catch (error: unknown) {
@@ -254,11 +318,45 @@ export default class ReimbursementRequestsController {
     }
   }
 
-  static async approveReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+  static async leadershipApproveReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
-      const user = await getCurrentUser(res);
-      const reimbursementStatus = await ReimbursementRequestService.approveReimbursementRequest(requestId, user);
+      const { requestId } = req.params as Record<string, string>;
+
+      const reimbursementStatus = await ReimbursementRequestService.leadershipApproveReimbursementRequest(
+        requestId,
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(reimbursementStatus);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async inputReimbursementRequestInSabo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params as Record<string, string>;
+
+      const reimbursementStatus = await ReimbursementRequestService.inputReimbursementRequestInSabo(
+        requestId,
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(reimbursementStatus);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async markReimbursementRequestAsSaboSubmitted(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params as Record<string, string>;
+
+      const reimbursementStatus = await ReimbursementRequestService.markReimbursementRequestAsSaboSubmitted(
+        requestId,
+        req.currentUser,
+        req.organization
+      );
       res.status(200).json(reimbursementStatus);
     } catch (error: unknown) {
       next(error);
@@ -267,9 +365,13 @@ export default class ReimbursementRequestsController {
 
   static async denyReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
-      const user = await getCurrentUser(res);
-      const reimbursementStatus = await ReimbursementRequestService.denyReimbursementRequest(requestId, user);
+      const { requestId } = req.params as Record<string, string>;
+
+      const reimbursementStatus = await ReimbursementRequestService.denyReimbursementRequest(
+        requestId,
+        req.currentUser,
+        req.organization
+      );
       res.status(200).json(reimbursementStatus);
     } catch (error: unknown) {
       next(error);
@@ -278,9 +380,13 @@ export default class ReimbursementRequestsController {
 
   static async markReimbursementRequestAsReimbursed(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
-      const user = await getCurrentUser(res);
-      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsReimbursed(requestId, user);
+      const { requestId } = req.params as Record<string, string>;
+
+      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsReimbursed(
+        requestId,
+        req.currentUser,
+        req.organization
+      );
       res.status(200).json(updatedRequest);
     } catch (error: unknown) {
       next(error);
@@ -289,9 +395,15 @@ export default class ReimbursementRequestsController {
 
   static async markReimbursementRequestAsDelivered(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
-      const user = await getCurrentUser(res);
-      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(user, requestId);
+      const { requestId } = req.params as Record<string, string>;
+      const { dateDelivered } = req.body;
+
+      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
+        req.currentUser,
+        requestId,
+        req.organization,
+        dateDelivered
+      );
       res.status(200).json(updatedRequest);
     } catch (error: unknown) {
       next(error);
@@ -300,11 +412,12 @@ export default class ReimbursementRequestsController {
 
   static async getSingleReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
-      const user = await getCurrentUser(res);
+      const { requestId } = req.params as Record<string, string>;
+
       const reimbursementRequest: ReimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
-        user,
-        requestId
+        req.currentUser,
+        requestId,
+        req.organization
       );
       res.status(200).json(reimbursementRequest);
     } catch (error: unknown) {
@@ -314,35 +427,52 @@ export default class ReimbursementRequestsController {
 
   static async downloadReceiptImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { fileId } = req.params;
-      const user = await getCurrentUser(res);
-      const imageData = await ReimbursementRequestService.downloadReceiptImage(fileId, user);
+      const { fileId } = req.params as Record<string, string>;
+
+      const imageData = await ReimbursementRequestService.downloadReceiptImage(fileId, req.currentUser, req.organization);
 
       // Set the appropriate headers for the HTTP response
       res.setHeader('content-type', String(imageData.type));
       res.setHeader('content-length', imageData.buffer.length);
 
       // Send the Buffer as the response body
-      res.send(imageData.buffer);
+      res.status(200).send(imageData.buffer);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async editExpenseTypeCode(req: Request, res: Response, next: NextFunction) {
+  static async editAccountCode(req: Request, res: Response, next: NextFunction) {
     try {
-      const { expenseTypeId } = req.params;
-      const { name, code, allowed, allowedRefundSources } = req.body;
-      const submitter = await getCurrentUser(res);
-      const expenseTypeUpdated = await ReimbursementRequestService.editExpenseType(
-        expenseTypeId,
+      const { accountCodeId } = req.params as Record<string, string>;
+      const { name, code, allowed, amount, indexCodeIds } = req.body;
+
+      const accountCodeUpdated = await ReimbursementRequestService.editAccountCode(
+        accountCodeId,
         code,
         name,
         allowed,
-        submitter,
-        allowedRefundSources
+        req.currentUser,
+        indexCodeIds,
+        req.organization,
+        amount
       );
-      res.status(200).json(expenseTypeUpdated);
+      res.status(200).json(accountCodeUpdated);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteAccountCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { accountCodeId } = req.params as Record<string, string>;
+
+      const deletedAccountCode = await ReimbursementRequestService.deleteAccountCode(
+        accountCodeId,
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(deletedAccountCode);
     } catch (error: unknown) {
       next(error);
     }
@@ -350,22 +480,266 @@ export default class ReimbursementRequestsController {
 
   static async editVendor(req: Request, res: Response, next: NextFunction) {
     try {
-      const { vendorId } = req.params;
-      const { name } = req.body;
-      const submitter = await getCurrentUser(res);
-      const editedVendor = await ReimbursementRequestService.editVendor(name, vendorId, submitter);
+      const { vendorId } = req.params as Record<string, string>;
+      const { name, username, password, discountCode, taxExempt, twoFactorContacts, notes } = req.body;
+
+      const editedVendor = await ReimbursementRequestService.editVendor(
+        name,
+        vendorId,
+        username,
+        password,
+        discountCode,
+        taxExempt,
+        twoFactorContacts,
+        notes,
+        req.currentUser,
+        req.organization
+      );
       res.status(200).json(editedVendor);
     } catch (error: unknown) {
       next(error);
     }
   }
 
+  static async setVendorTaxExemptStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { vendorId } = req.params as Record<string, string>;
+
+      const { taxExempt } = req.body;
+
+      const updatedVendor = await ReimbursementRequestService.setVendorTaxExemptStatus(
+        vendorId,
+        taxExempt,
+        req.currentUser,
+        req.organization
+      );
+
+      res.status(200).json(updatedVendor);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async deleteVendor(req: Request, res: Response, next: NextFunction) {
     try {
-      const { vendorId } = req.params;
-      const submitter = await getCurrentUser(res);
-      const deletedVendor = await ReimbursementRequestService.deleteVendor(vendorId, submitter);
+      const { vendorId } = req.params as Record<string, string>;
+
+      const deletedVendor = await ReimbursementRequestService.deleteVendor(vendorId, req.currentUser, req.organization);
       res.status(200).json(deletedVendor);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async markReimbursementRequestAsPendingFinance(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params as Record<string, string>;
+
+      const updatedRequest = await ReimbursementRequestService.markPendingFinance(
+        req.currentUser,
+        requestId,
+        req.organization
+      );
+      res.status(200).json(updatedRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async requestReimbursementRequestChanges(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params as Record<string, string>;
+
+      const updatedRequest = await ReimbursementRequestService.financeRequestReimbursementRequestChanges(
+        req.currentUser,
+        requestId,
+        req.organization
+      );
+      res.status(200).json(updatedRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createIndexCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, code } = req.body;
+      const indexCode = await ReimbursementRequestService.createIndexCode(name, code, req.currentUser, req.organization);
+      res.status(200).json(indexCode);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSingleIndexCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { indexCodeId } = req.params as Record<string, string>;
+
+      const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, req.organization);
+
+      res.status(200).json(indexCode);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllIndexCodes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const indexCodes = await ReimbursementRequestService.getAllIndexCodes(req.organization);
+      res.status(200).json(indexCodes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editIndexCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, code } = req.body;
+      const { indexCodeId } = req.params as Record<string, string>;
+      const updatedIndexCode = await ReimbursementRequestService.editIndexCode(
+        req.currentUser,
+        req.organization,
+        indexCodeId,
+        name,
+        code
+      );
+      res.status(200).json(updatedIndexCode);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteIndexCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { indexCodeId } = req.params as Record<string, string>;
+
+      const deletedIndexCode = await ReimbursementRequestService.deleteIndexCode(
+        indexCodeId,
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(deletedIndexCode);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createOtherReasonReimbursementProduct(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, budget, indexCodeId, accountCodeIds } = req.body;
+      const otherReimbursementProductReason = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
+        name,
+        budget,
+        indexCodeId,
+        accountCodeIds,
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(otherReimbursementProductReason);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllOtherReimbursementProductReasons(req: Request, res: Response, next: NextFunction) {
+    try {
+      const otherReimbursementProductReasons = await ReimbursementRequestService.getAllOtherReimbursementProductReasons(
+        req.organization
+      );
+      res.status(200).json(otherReimbursementProductReasons);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSingleOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { otherReimbursementProductReasonId } = req.params as Record<string, string>;
+      const otherProductReason = await ReimbursementRequestService.getSingleOtherReimbursementProductReason(
+        otherReimbursementProductReasonId,
+        req.organization
+      );
+      res.status(200).json(otherProductReason);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { otherReimbursementProductReasonId } = req.params as Record<string, string>;
+
+      const deletedOtherProductReason = await ReimbursementRequestService.deleteOtherReimbursementProductReason(
+        otherReimbursementProductReasonId,
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(deletedOtherProductReason);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { comment } = req.body;
+      const { requestId: reimbursementRequestId } = req.params as Record<string, string>;
+
+      const createdComment = await ReimbursementRequestService.createReimbursementRequestComment(
+        req.currentUser,
+        req.organization,
+        comment,
+        reimbursementRequestId
+      );
+      res.status(200).json(createdComment);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { comment } = req.body;
+      const { commentId } = req.params as Record<string, string>;
+
+      const editedComment = await ReimbursementRequestService.editReimbursementRequestComment(
+        req.currentUser,
+        req.organization,
+        comment,
+        commentId
+      );
+      res.status(200).json(editedComment);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { commentId } = req.params as Record<string, string>;
+      await ReimbursementRequestService.deleteReimbursementRequestComment(req.currentUser, req.organization, commentId);
+      res.status(204).json({ message: `Successfully deleted Comment with id ${commentId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { otherReimbursementProductReasonId } = req.params as Record<string, string>;
+      const { name, budget, indexCodeId, accountCodeIds } = req.body;
+
+      const updatedReason = await ReimbursementRequestService.editOtherReimbursementProductReason(
+        otherReimbursementProductReasonId,
+        req.organization,
+        req.currentUser,
+        name,
+        budget,
+        indexCodeId,
+        accountCodeIds
+      );
+
+      res.status(200).json(updatedReason);
     } catch (error: unknown) {
       next(error);
     }

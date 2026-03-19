@@ -4,7 +4,7 @@
  */
 
 import { useParams } from 'react-router-dom';
-import { validateWBS, isProject } from 'shared';
+import { validateWBS, isProjectWbs } from 'shared';
 import WorkPackagePage from './WorkPackageDetailPage/WorkPackagePage';
 import ErrorPage from './ErrorPage';
 import ProjectPage from './ProjectDetailPage/ProjectPage';
@@ -21,7 +21,7 @@ const WBSDetails: React.FC = () => {
     return <ErrorPage message={error instanceof Error ? error.message : ''} />;
   }
 
-  if (isProject(wbsNumber)) {
+  if (isProjectWbs(wbsNumber)) {
     return <ProjectPage wbsNum={wbsNumber} />;
   }
   return <WorkPackagePage wbsNum={wbsNumber} />;

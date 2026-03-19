@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import ChangeRequestsService from '../services/change-requests.services';
-import { getCurrentUser } from '../utils/auth.utils';
-import { User } from '@prisma/client';
+import ChangeRequestsService from '../services/change-requests.services.js';
+import { validateWBS, WbsNumber } from 'shared';
 
 export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
     try {
-      const crId: number = parseInt(req.params.crId);
-      const cr = await ChangeRequestsService.getChangeRequestByID(crId);
-      return res.status(200).json(cr);
+      const { crId } = req.params as Record<string, string>;
+
+      const cr = await ChangeRequestsService.getChangeRequestByID(crId, req.organization);
+      res.status(200).json(cr);
     } catch (error: unknown) {
       next(error);
     }
@@ -16,8 +16,51 @@ export default class ChangeRequestsController {
 
   static async getAllChangeRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const changeRequests = await ChangeRequestsService.getAllChangeRequests();
-      return res.status(200).json(changeRequests);
+      const changeRequests = await ChangeRequestsService.getAllChangeRequests(req.organization);
+      res.status(200).json(changeRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getToReviewChangeRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const changeRequests = await ChangeRequestsService.getToReviewChangeRequests(req.currentUser, req.organization);
+      res.status(200).json(changeRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getUnreviewedChangeRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsnum } = req.query;
+      let validatedWbs: WbsNumber | undefined;
+      if (wbsnum) validatedWbs = validateWBS(wbsnum as string);
+
+      const changeRequests = await ChangeRequestsService.getUnreviewedChangeRequests(
+        req.currentUser,
+        validatedWbs,
+        req.organization
+      );
+      res.status(200).json(changeRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getApprovedChangeRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsnum } = req.query;
+      let validatedWbs: WbsNumber | undefined;
+      if (wbsnum) validatedWbs = validateWBS(wbsnum as string);
+
+      const changeRequests = await ChangeRequestsService.getApprovedChangeRequests(
+        req.currentUser,
+        validatedWbs,
+        req.organization
+      );
+      res.status(200).json(changeRequests);
     } catch (error: unknown) {
       next(error);
     }
@@ -26,9 +69,15 @@ export default class ChangeRequestsController {
   static async reviewChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { crId, reviewNotes, accepted, psId } = req.body;
-      const reviewer = await getCurrentUser(res);
-      const id = await ChangeRequestsService.reviewChangeRequest(reviewer, crId, reviewNotes, accepted, psId);
-      return res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
+      const id = await ChangeRequestsService.reviewChangeRequest(
+        req.currentUser,
+        crId,
+        reviewNotes,
+        accepted,
+        req.organization,
+        psId
+      );
+      res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
     } catch (error: unknown) {
       next(error);
     }
@@ -36,20 +85,21 @@ export default class ChangeRequestsController {
 
   static async createActivationChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, type, projectLeadId, projectManagerId, startDate, confirmDetails } = req.body;
-      const submitter = await getCurrentUser(res);
+      const { wbsNum, type, leadId, managerId, startDate, confirmDetails } = req.body;
+
       const id = await ChangeRequestsService.createActivationChangeRequest(
-        submitter,
+        req.currentUser,
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
         type,
-        projectLeadId,
-        projectManagerId,
+        leadId,
+        managerId,
         startDate,
-        confirmDetails
+        confirmDetails,
+        req.organization
       );
-      return res.status(200).json({ message: `Successfully created activation change request with id #${id}` });
+      res.status(200).json({ message: `Successfully created activation change request with id #${id}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -58,16 +108,52 @@ export default class ChangeRequestsController {
   static async createStageGateChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum, type, confirmDone } = req.body;
-      const submitter = await getCurrentUser(res);
       const id = await ChangeRequestsService.createStageGateChangeRequest(
-        submitter,
+        req.currentUser,
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
         type,
-        confirmDone
+        confirmDone,
+        req.organization
       );
-      return res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
+      res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createBudgetChangeRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { otherReasonId, accountCodeId, type, proposedBudget } = req.body;
+      const cr = await ChangeRequestsService.createBudgetChangeRequest(
+        req.currentUser,
+        type,
+        proposedBudget,
+        req.organization,
+        otherReasonId,
+        accountCodeId
+      );
+      res.status(200).json(cr);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createLeadershipChangeRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsNum, leadId, managerId } = req.body;
+
+      const cr = await ChangeRequestsService.createLeadershipChangeRequest(
+        req.currentUser,
+        wbsNum.carNumber,
+        wbsNum.projectNumber,
+        wbsNum.workPackageNumber,
+        leadId,
+        managerId,
+        req.organization
+      );
+      res.status(200).json(cr);
     } catch (error: unknown) {
       next(error);
     }
@@ -76,12 +162,12 @@ export default class ChangeRequestsController {
   static async createStandardChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum, type, what, why, proposedSolutions, projectProposedChanges, workPackageProposedChanges } = req.body;
-      const submitter = await getCurrentUser(res);
       if (workPackageProposedChanges && workPackageProposedChanges.stage === 'NONE') {
         workPackageProposedChanges.stage = null;
       }
+
       const createdCR = await ChangeRequestsService.createStandardChangeRequest(
-        submitter,
+        req.currentUser,
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
@@ -89,10 +175,11 @@ export default class ChangeRequestsController {
         what,
         why,
         proposedSolutions,
+        req.organization,
         projectProposedChanges,
         workPackageProposedChanges
       );
-      return res.status(200).json(createdCR);
+      res.status(200).json(createdCR);
     } catch (error: unknown) {
       next(error);
     }
@@ -101,16 +188,16 @@ export default class ChangeRequestsController {
   static async addProposedSolution(req: Request, res: Response, next: NextFunction) {
     try {
       const { crId, budgetImpact, description, timelineImpact, scopeImpact } = req.body;
-      const submitter = await getCurrentUser(res);
       const id = await ChangeRequestsService.addProposedSolution(
-        submitter,
+        req.currentUser,
         crId,
         budgetImpact,
         description,
         timelineImpact,
-        scopeImpact
+        scopeImpact,
+        req.organization
       );
-      return res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
+      res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -118,10 +205,10 @@ export default class ChangeRequestsController {
 
   static async deleteChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const crId: number = parseInt(req.params.crId);
-      const user: User = await getCurrentUser(res);
-      await ChangeRequestsService.deleteChangeRequest(user, crId);
-      return res.status(200).json({ message: `Successfully deleted change request #${crId}` });
+      const { crId } = req.params as Record<string, string>;
+
+      await ChangeRequestsService.deleteChangeRequest(req.currentUser, crId, req.organization);
+      res.status(200).json({ message: `Successfully deleted change request #${crId}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -130,10 +217,10 @@ export default class ChangeRequestsController {
   static async requestCRReview(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
-      const crId = parseInt(req.params.crId);
-      const submitter: User = await getCurrentUser(res);
-      await ChangeRequestsService.requestCRReview(submitter, userIds, crId);
-      return res.status(200).json({ message: `Successfully requested reviewer(s) to change request #${crId}` });
+      const { crId } = req.params as Record<string, string>;
+
+      await ChangeRequestsService.requestCRReview(req.currentUser, userIds, crId, req.organization);
+      res.status(200).json({ message: `Successfully requested reviewer(s) to change request #${crId}` });
     } catch (error: unknown) {
       next(error);
     }

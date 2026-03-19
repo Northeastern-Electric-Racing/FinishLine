@@ -1,13 +1,33 @@
 import { NextFunction, Request, Response } from 'express';
-import TeamsService from '../services/teams.services';
-import { getCurrentUser } from '../utils/auth.utils';
+import TeamsService from '../services/teams.services.js';
+import { HttpException } from '../utils/errors.utils.js';
 
 export default class TeamsController {
-  static async getAllTeams(_req: Request, res: Response, next: NextFunction) {
+  static async getAllTeamPreviews(req: Request, res: Response, next: NextFunction) {
     try {
-      const teams = await TeamsService.getAllTeams();
+      const teams = await TeamsService.getAllTeamPreviews(req.organization);
 
-      return res.status(200).json(teams);
+      res.status(200).json(teams);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllTeams(req: Request, res: Response, next: NextFunction) {
+    try {
+      const teams = await TeamsService.getAllTeams(req.organization);
+
+      res.status(200).json(teams);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllArchivedTeams(req: Request, res: Response, next: NextFunction) {
+    try {
+      const teams = await TeamsService.getAllArchivedTeams(req.organization);
+
+      res.status(200).json(teams);
     } catch (error: unknown) {
       next(error);
     }
@@ -15,11 +35,21 @@ export default class TeamsController {
 
   static async getSingleTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamId } = req.params;
+      const { teamId } = req.params as Record<string, string>;
 
-      const team = await TeamsService.getSingleTeam(teamId);
+      const team = await TeamsService.getSingleTeam(teamId, req.organization);
 
-      return res.status(200).json(team);
+      res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getUsersTeams(req: Request, res: Response, next: NextFunction) {
+    try {
+      const teams = await TeamsService.getUsersTeams(req.currentUser, req.organization);
+
+      res.status(200).json(teams);
     } catch (error: unknown) {
       next(error);
     }
@@ -28,13 +58,12 @@ export default class TeamsController {
   static async setTeamMembers(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
-      const submitter = await getCurrentUser(res);
-
+      const { teamId } = req.params as Record<string, string>;
       // update the team with the input fields
-      const updateTeam = await TeamsService.setTeamMembers(submitter, req.params.teamId, userIds);
+      const updateTeam = await TeamsService.setTeamMembers(req.currentUser, teamId, userIds, req.organization);
 
-      // return the updated team
-      return res.status(200).json(updateTeam);
+      //  the updated team
+      res.status(200).json(updateTeam);
     } catch (error: unknown) {
       next(error);
     }
@@ -43,9 +72,25 @@ export default class TeamsController {
   static async editDescription(req: Request, res: Response, next: NextFunction) {
     try {
       const { newDescription } = req.body;
-      const user = await getCurrentUser(res);
-      const team = await TeamsService.editDescription(user, req.params.teamId, newDescription);
-      return res.status(200).json(team);
+
+      const team = await TeamsService.editDescription(
+        req.currentUser,
+        req.params.teamId as string,
+        newDescription,
+        req.organization
+      );
+      res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editSlackId(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { slackId } = req.body;
+
+      const team = await TeamsService.editSlackId(req.currentUser, req.organization, req.params.teamId as string, slackId);
+      res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
     }
@@ -54,10 +99,10 @@ export default class TeamsController {
   static async setTeamHead(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.body;
-      const { teamId } = req.params;
-      const submitter = await getCurrentUser(res);
-      const team = await TeamsService.setTeamHead(submitter, teamId, userId);
-      return res.status(200).json(team);
+      const { teamId } = req.params as Record<string, string>;
+
+      const team = await TeamsService.setTeamHead(req.currentUser, teamId, userId, req.organization);
+      res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
     }
@@ -65,10 +110,18 @@ export default class TeamsController {
 
   static async createTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamName, headId, slackId, description } = req.body;
-      const submitter = await getCurrentUser(res);
-      const team = await TeamsService.createTeam(submitter, teamName, headId, slackId, description);
-      return res.status(200).json(team);
+      const { teamName, headId, slackId, description, isFinanceTeam } = req.body;
+
+      const team = await TeamsService.createTeam(
+        req.currentUser,
+        teamName,
+        headId,
+        slackId,
+        description,
+        isFinanceTeam,
+        req.organization
+      );
+      res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
     }
@@ -77,10 +130,10 @@ export default class TeamsController {
   static async setTeamLeads(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
-      const { teamId } = req.params;
-      const submitter = await getCurrentUser(res);
-      const team = await TeamsService.setTeamLeads(submitter, teamId, userIds);
-      return res.status(200).json(team);
+      const { teamId } = req.params as Record<string, string>;
+
+      const team = await TeamsService.setTeamLeads(req.currentUser, teamId, userIds, req.organization);
+      res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
     }
@@ -88,10 +141,10 @@ export default class TeamsController {
 
   static async deleteTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamId } = req.params;
-      const deleter = await getCurrentUser(res);
-      await TeamsService.deleteTeam(deleter, teamId);
-      return res.status(204).json({ message: `Successfully deleted team with id ${teamId}` });
+      const { teamId } = req.params as Record<string, string>;
+
+      await TeamsService.deleteTeam(req.currentUser, teamId, req.organization);
+      res.status(204).json({ message: `Successfully deleted team with id ${teamId}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -99,42 +152,10 @@ export default class TeamsController {
 
   static async archiveTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamId } = req.params;
-      const user = await getCurrentUser(res);
-      const archivedTeam = await TeamsService.archiveTeam(user, teamId);
-      return res.status(200).json(archivedTeam);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
+      const { teamId } = req.params as Record<string, string>;
 
-  static async createTeamType(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { name, iconName } = req.body;
-      const submitter = await getCurrentUser(res);
-      const createdTeamType = await TeamsService.createTeamType(submitter, name, iconName);
-      return res.status(200).json(createdTeamType);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getSingleTeamType(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { teamTypeId } = req.params;
-
-      const teamType = await TeamsService.getSingleTeamType(teamTypeId);
-
-      return res.status(200).json(teamType);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getAllTeamTypes(req: Request, res: Response, next: NextFunction) {
-    try {
-      const teamTypes = await TeamsService.getAllTeamTypes();
-      return res.status(200).json(teamTypes);
+      const archivedTeam = await TeamsService.archiveTeam(req.currentUser, teamId, req.organization);
+      res.status(200).json(archivedTeam);
     } catch (error: unknown) {
       next(error);
     }
@@ -143,13 +164,126 @@ export default class TeamsController {
   static async setTeamType(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamTypeId } = req.body;
-      const { teamId } = req.params;
-      const submitter = await getCurrentUser(res);
+      const { teamId } = req.params as Record<string, string>;
 
-      const updatedTeam = await TeamsService.setTeamType(submitter, teamId, teamTypeId);
+      const updatedTeam = await TeamsService.setTeamType(req.currentUser, teamId, teamTypeId, req.organization);
 
-      return res.status(200).json(updatedTeam);
+      res.status(200).json(updatedTeam);
     } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setOnboardingUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.params as Record<string, string>;
+
+      const updatedTeamType = await TeamsService.setOnboardingUser(req.currentUser, teamTypeId, req.organization);
+
+      res.status(200).json(updatedTeamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async completeOnboarding(req: Request, res: Response, next: NextFunction) {
+    try {
+      await TeamsService.completeOnboarding(req.currentUser);
+
+      res.status(200).json({ message: 'Successfully completed onboarding' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSingleTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.params as Record<string, string>;
+
+      const teamType = await TeamsService.getSingleTeamType(teamTypeId, req.organization);
+
+      res.status(200).json(teamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllTeamTypes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const teamTypes = await TeamsService.getAllTeamTypes(req.organization);
+      res.status(200).json(teamTypes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, iconName, description } = req.body;
+
+      const createdTeamType = await TeamsService.createTeamType(
+        req.currentUser,
+        name,
+        iconName,
+        description,
+        req.organization
+      );
+      res.status(200).json(createdTeamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, iconName, description } = req.body;
+
+      const teamType = await TeamsService.editTeamType(
+        req.currentUser,
+        req.params.teamTypeId as string,
+        name,
+        iconName,
+        description,
+        req.organization
+      );
+      res.status(200).json(teamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.params as Record<string, string>;
+      const deleter = req.currentUser;
+      await TeamsService.deleteTeamType(deleter, teamTypeId, req.organization);
+      res.status(200).json({ message: `Successfully deleted team type ${req.params.teamTypeId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setTeamTypeImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { file } = req;
+      if (!file) throw new HttpException(400, 'Invalid or undefined image data');
+      const teamType = await TeamsService.setTeamTypeImage(
+        req.currentUser,
+        req.params.teamTypeId as string,
+        file,
+        req.organization
+      );
+      res.status(200).json(teamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getMyTeamAsHead(req: Request, res: Response, next: NextFunction) {
+    try {
+      const team = await TeamsService.getMyTeamAsHead(req.currentUser, req.organization);
+      res.json(team);
+    } catch (error) {
       next(error);
     }
   }

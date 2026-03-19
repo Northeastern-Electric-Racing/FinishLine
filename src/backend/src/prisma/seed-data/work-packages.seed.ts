@@ -3,13 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Prisma, User } from '@prisma/client';
-import { validateWBS, WbsElementStatus, WbsNumber } from 'shared';
+import { Organization } from '@prisma/client';
+import { DescriptionBulletPreview, WbsElementStatus, WbsNumber, WorkPackage, User } from 'shared';
 import { WorkPackageStage } from 'shared';
-import workPackageQueryArgs from '../../prisma-query-args/work-packages.query-args';
-import WorkPackagesService from '../../services/work-packages.services';
-import prisma from '../prisma';
-import { descBulletConverter } from '../../utils/description-bullets.utils';
+import WorkPackagesService from '../../services/work-packages.services.js';
 
 /**
  * Creates a work package with the given data using service functions. This has to be done by:
@@ -19,22 +16,23 @@ import { descBulletConverter } from '../../utils/description-bullets.utils';
 export const seedWorkPackage = async (
   creator: User,
   name: string,
-  changeRequestId: number,
+  changeRequestId: string,
   stage: WorkPackageStage | null,
   startDate: string,
   duration: number,
   blockedBy: WbsNumber[],
-  expectedActivities: string[],
-  deliverables: string[],
+  descriptionBullets: DescriptionBulletPreview[],
   editor: User,
-  status: WbsElementStatus,
-  projectLead: number,
-  projectManager: number
+  _status: WbsElementStatus,
+  lead: string,
+  manager: string,
+  projectWbsNum: WbsNumber,
+  organization: Organization
 ): Promise<{
   workPackageWbsNumber: WbsNumber;
-  workPackage: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>;
+  workPackage: WorkPackage;
 }> => {
-  const workPackage1WbsString = await WorkPackagesService.createWorkPackage(
+  const workPackage = await WorkPackagesService.createWorkPackage(
     creator,
     name,
     changeRequestId,
@@ -42,37 +40,25 @@ export const seedWorkPackage = async (
     startDate,
     duration,
     blockedBy,
-    expectedActivities,
-    deliverables
+    descriptionBullets,
+    projectWbsNum,
+    organization
   );
-
-  const workPackageWbsNumber = validateWBS(workPackage1WbsString);
-
-  const workPackage = await prisma.work_Package.findFirstOrThrow({
-    where: {
-      wbsElement: {
-        carNumber: workPackageWbsNumber.carNumber,
-        projectNumber: workPackageWbsNumber.projectNumber,
-        workPackageNumber: workPackageWbsNumber.workPackageNumber
-      }
-    },
-    ...workPackageQueryArgs
-  });
 
   await WorkPackagesService.editWorkPackage(
     editor,
-    workPackage.workPackageId,
-    workPackage.wbsElement.name,
+    workPackage.id,
+    workPackage.name,
     changeRequestId,
     stage,
     workPackage.startDate.toString(),
     workPackage.duration,
     workPackage.blockedBy,
-    workPackage.expectedActivities.map(descBulletConverter),
-    workPackage.deliverables.map(descBulletConverter),
-    projectLead,
-    projectManager
+    descriptionBullets,
+    lead,
+    manager,
+    organization
   );
 
-  return { workPackageWbsNumber, workPackage };
+  return { workPackageWbsNumber: workPackage.wbsNum, workPackage };
 };

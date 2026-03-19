@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { routerWrapperBuilder, fireEvent, render, screen, act } from '../../test-support/test-utils';
+import { routerWrapperBuilder, fireEvent, render, screen } from '../../test-support/test-utils';
 import { ChangeRequest, Project, User } from 'shared';
 import { exampleStandardChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import ChangeRequestDetailsView from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetailsView';
@@ -13,11 +13,14 @@ import { mockAuth, mockUseMutationResult, mockUseQueryResult } from '../../test-
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { ToastProvider } from '../../../components/Toast/ToastProvider';
 import * as authHooks from '../../../hooks/auth.hooks';
-import { exampleAdminUser } from '../../test-support/test-data/users.stub';
-import AppContextUser from '../../../app/AppContextUser';
-import { useAllUsers, useLogUserIn } from '../../../hooks/users.hooks';
+import { useAllMembers, useLogUserIn } from '../../../hooks/users.hooks';
 import * as userHooks from '../../../hooks/users.hooks';
-import { mockLogUserInReturnValue, mockLogUserInDevReturnValue } from '../../test-support/mock-hooks';
+import {
+  mockLogUserInReturnValue,
+  mockLogUserInDevReturnValue,
+  mockGetCurrentUserValue
+} from '../../test-support/mock-hooks';
+import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../hooks/projects.hooks');
 vi.mock('../../../hooks/users.hooks');
@@ -27,9 +30,9 @@ const mockSingleProjectHook = (isLoading: boolean, isError: boolean, data?: Proj
   mockedUseSingleProject.mockReturnValue(mockUseQueryResult<Project>(isLoading, isError, data, error));
 };
 
-const mockedUseAllUsers = useAllUsers as jest.Mock<UseQueryResult<User[]>>;
-const mockAllUsersHook = (isLoading: boolean, isError: boolean, data?: User[], error?: Error) => {
-  mockedUseAllUsers.mockReturnValue(mockUseQueryResult<User[]>(isLoading, isError, data, error));
+const mockedUseAllMembers = useAllMembers as jest.Mock<UseQueryResult<User[]>>;
+const mockAllMembersHook = (isLoading: boolean, isError: boolean, data?: User[], error?: Error) => {
+  mockedUseAllMembers.mockReturnValue(mockUseQueryResult<User[]>(isLoading, isError, data, error));
 };
 
 const mockedUseLogUserIn = useLogUserIn as jest.Mock<UseMutationResult>;
@@ -43,18 +46,16 @@ const mockUseLogUserInHook = (isLoading: boolean, isError: boolean, error?: Erro
 const renderComponent = (cr: ChangeRequest, allowed: boolean = false) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <AppContextUser>
-      <ToastProvider>
-        <RouterWrapper>
-          <ChangeRequestDetailsView
-            changeRequest={cr}
-            isUserAllowedToReview={allowed}
-            isUserAllowedToImplement={allowed}
-            isUserAllowedToDelete={allowed}
-          />
-        </RouterWrapper>
-      </ToastProvider>
-    </AppContextUser>
+    <ToastProvider>
+      <RouterWrapper>
+        <ChangeRequestDetailsView
+          changeRequest={cr}
+          isUserAllowedToReview={allowed}
+          isUserAllowedToImplement={allowed}
+          isUserAllowedToDelete={allowed}
+        />
+      </RouterWrapper>
+    </ToastProvider>
   );
 };
 
@@ -62,8 +63,9 @@ describe('Implement change request permission tests', () => {
   beforeEach(() => {
     vi.spyOn(userHooks, 'useLogUserIn').mockReturnValue(mockLogUserInReturnValue);
     vi.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
+    vi.spyOn(userHooks, 'useGetCurrentUser').mockReturnValue(mockGetCurrentUserValue);
   });
 
   const actionBtnText = 'Implement Change Request';
@@ -72,24 +74,20 @@ describe('Implement change request permission tests', () => {
 
   it('Implementation actions disabled when not allowed', () => {
     mockSingleProjectHook(false, false, exampleProject1);
-    mockAllUsersHook(false, false, []);
+    mockAllMembersHook(false, false, []);
     mockUseLogUserInHook(false, false);
     renderComponent(exampleStandardChangeRequest);
-    act(() => {
-      fireEvent.click(screen.getByText(actionBtnText));
-    });
+    fireEvent.click(screen.getByText(actionBtnText));
     expect(screen.getByText(newPrjBtnText)).toHaveAttribute('aria-disabled');
     expect(screen.getByText(newWPBtnText)).toHaveAttribute('aria-disabled');
   });
 
   it('Implementation actions enabled when allowed', () => {
     mockSingleProjectHook(false, false, exampleProject1);
-    mockAllUsersHook(false, false, []);
+    mockAllMembersHook(false, false, []);
     mockUseLogUserInHook(false, false);
     renderComponent(exampleStandardChangeRequest, true);
-    act(() => {
-      fireEvent.click(screen.getByText(actionBtnText));
-    });
+    fireEvent.click(screen.getByText(actionBtnText));
     expect(screen.getByText(newPrjBtnText)).not.toHaveAttribute('aria-disabled');
     expect(screen.getByText(newWPBtnText)).not.toHaveAttribute('aria-disabled');
   });

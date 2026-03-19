@@ -1,31 +1,75 @@
 import { Prisma } from '@prisma/client';
-import descriptionBulletQueryArgs from '../prisma-query-args/description-bullets.query-args';
-import taskQueryArgs from './tasks.query-args';
+import { getUserPreviewQueryArgs, getUserQueryArgs } from './user.query-args.js';
+import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.js';
+import { getLinkQueryArgs } from './links.query-args.js';
+import { getEventQueryArgs } from './event.query-args.js';
 
-const workPackageQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
-  include: {
-    project: {
-      include: {
-        wbsElement: true
-      }
-    },
-    wbsElement: {
-      include: {
-        lead: true,
-        manager: true,
-        changes: {
-          where: { changeRequest: { dateDeleted: null } },
-          include: { implementer: true },
-          orderBy: { dateImplemented: 'asc' }
-        },
-        blocking: true,
-        tasks: { where: { dateDeleted: null }, ...taskQueryArgs }
-      }
-    },
-    expectedActivities: { where: { dateDeleted: null }, ...descriptionBulletQueryArgs },
-    deliverables: { where: { dateDeleted: null }, ...descriptionBulletQueryArgs },
-    blockedBy: { where: { dateDeleted: null } }
-  }
-});
+export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
+export type WorkPackagePreviewQueryArgs = ReturnType<typeof getWorkPackagePreviewQueryArgs>;
 
-export default workPackageQueryArgs;
+export const getWorkPackageQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
+    include: {
+      project: {
+        include: {
+          wbsElement: true,
+          teams: {
+            include: {
+              teamType: true
+            }
+          }
+        }
+      },
+      wbsElement: {
+        include: {
+          lead: getUserQueryArgs(organizationId),
+          manager: getUserQueryArgs(organizationId),
+          changes: {
+            where: { changeRequest: { dateDeleted: null } },
+            include: { implementer: getUserQueryArgs(organizationId), changeRequest: true },
+            orderBy: { dateImplemented: 'asc' }
+          },
+          blocking: { where: { wbsElement: { dateDeleted: null } }, include: { wbsElement: true } },
+          descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) }
+        }
+      },
+      blockedBy: { where: { dateDeleted: null } },
+      events: { where: { dateDeleted: null }, ...getEventQueryArgs(organizationId) }
+    }
+  });
+
+export const getWorkPackagePreviewQueryArgs = () =>
+  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
+    select: {
+      blockedBy: true,
+      wbsElement: {
+        select: {
+          wbsElementId: true,
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          dateCreated: true,
+          dateDeleted: true,
+          name: true,
+          lead: getUserPreviewQueryArgs(),
+          manager: getUserPreviewQueryArgs(),
+          status: true
+        }
+      },
+      project: {
+        select: {
+          projectId: true,
+          wbsElement: {
+            select: {
+              name: true,
+              links: getLinkQueryArgs()
+            }
+          }
+        }
+      },
+      startDate: true,
+      duration: true,
+      workPackageId: true,
+      stage: true
+    }
+  });

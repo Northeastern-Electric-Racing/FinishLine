@@ -23,10 +23,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20.18.1
 
       - name: Install dependencies
         run: yarn install && yarn prisma:generate
+
+      - name: Build shared package
+        run: yarn build:shared
 
       - name: Run tsc check
         run: npm run tsc-check # You need to define this script in your package.json

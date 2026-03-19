@@ -10,28 +10,36 @@ import NERFailButton from '../../../components/NERFailButton';
 import { IconButton, Box, Grid, Typography } from '@mui/material';
 import UserScheduleSettingsView from './UserScheduleSettingsView';
 import UserScheduleSettingsEdit from './UserScheduleSettingsEdit';
-import { User } from 'shared';
+import {
+  AuthenticatedUser,
+  Availability,
+  AvailabilityCreateArgs,
+  getMostRecentAvailabilities,
+  SetUserScheduleSettingsArgs
+} from 'shared';
 import { useUpdateUserScheduleSettings, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useSingleDesignReview } from '../../../hooks/design-reviews.hooks';
+import { useSingleEvent } from '../../../hooks/calendar.hooks';
 import { useQuery } from '../../../hooks/utils.hooks';
+import { deeplyCopy } from 'shared';
+import { availabilityTransformer } from '../../../apis/transformers/users.transformers';
 
 export interface ScheduleSettingsFormInput {
-  personalGmail: string;
-  personalZoomLink: string;
+  personalGmail?: string;
+  personalZoomLink?: string;
 }
 
 export interface ScheduleSettingsPayload extends ScheduleSettingsFormInput {
-  availability: number[];
+  availability: AvailabilityCreateArgs[];
 }
 
-const UserScheduleSettings = ({ user }: { user: User }) => {
+const UserScheduleSettings = ({ user }: { user: AuthenticatedUser }) => {
   const [edit, setEdit] = useState(false);
   const toast = useToast();
   const query = useQuery();
-  const designReviewId = query.get('drId');
+  const eventId = query.get('eventId');
 
   const { data, isLoading, isError, error } = useUserScheduleSettings(user.userId);
   const {
@@ -41,22 +49,23 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
     error: updateUserScheduleSettingsError
   } = useUpdateUserScheduleSettings();
   const {
-    data: designReview,
-    isError: designReviewIsError,
-    error: designReviewError,
-    isLoading: designReviewIsLoading
-  } = useSingleDesignReview(designReviewId ?? undefined);
+    data: event,
+    isError: eventIsError,
+    error: eventError,
+    isLoading: eventIsLoading
+  } = useSingleEvent(eventId ?? undefined);
 
-  if (designReviewId && (!designReview || designReviewIsLoading)) return <LoadingIndicator />;
+  if (eventId && (!event || eventIsLoading)) return <LoadingIndicator />;
   if (!data || isLoading || updateUserScheduleSettingsIsLoading) return <LoadingIndicator />;
 
-  if (designReviewId && designReviewIsError) return <ErrorPage message={designReviewError.message} />;
+  if (eventId && eventIsError) return <ErrorPage message={eventError.message} />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
   if (updateUserScheduleSettingsIsError)
     return <ErrorPage error={updateUserScheduleSettingsError!} message={updateUserScheduleSettingsError?.message} />;
 
-  const handleConfirm = async (payload: ScheduleSettingsPayload) => {
+  const handleConfirm = async (payload: SetUserScheduleSettingsArgs) => {
     setEdit(false);
+
     try {
       await updateUserScheduleSettings({
         drScheduleSettingsId: data.drScheduleSettingsId,
@@ -67,6 +76,12 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
         toast.error(e.message);
       }
     }
+  };
+
+  const defaultValues: SetUserScheduleSettingsArgs = {
+    personalGmail: data.personalGmail,
+    personalZoomLink: data.personalZoomLink,
+    availability: getMostRecentAvailabilities(data.availabilities, new Date())
   };
 
   return (
@@ -106,9 +121,13 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
         </Grid>
       </Grid>
       {!edit ? (
-        <UserScheduleSettingsView scheduleSettings={data} designReview={designReview} />
+        <UserScheduleSettingsView scheduleSettings={data} event={event} />
       ) : (
-        <UserScheduleSettingsEdit onSubmit={handleConfirm} defaultValues={data} />
+        <UserScheduleSettingsEdit
+          onSubmit={handleConfirm}
+          totalAvailabilities={deeplyCopy(data.availabilities, availabilityTransformer) as Availability[]}
+          defaultValues={defaultValues}
+        />
       )}
       {edit && (
         <Box

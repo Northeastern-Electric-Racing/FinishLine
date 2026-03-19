@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Assembly, Manufacturer, Material, MaterialType, Unit, WbsNumber } from 'shared';
+import { Assembly, Manufacturer, Material, MaterialType, Unit, WbsNumber, wbsPipe } from 'shared';
+import { useToast } from '../hooks/toasts.hooks';
 import {
   assignMaterialToAssembly,
   createAssembly,
   createManufacturer,
   deleteManufacturer,
   createMaterial,
+  copyMaterialsToProject,
   createMaterialType,
   createUnit,
   deleteSingleAssembly,
@@ -14,7 +16,9 @@ import {
   editMaterial,
   getAllManufacturers,
   getAllMaterialTypes,
-  getAllUnits
+  getAllUnits,
+  getMaterialsForWbsElement,
+  getAssembliesForWbsElement
 } from '../apis/bom.api';
 import { MaterialDataSubmission } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
 import { AssemblyFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/AssemblyForm/AssemblyForm';
@@ -75,9 +79,10 @@ export const useDeleteUnit = () => {
 /**
  * Custom React hook to edit a material.
  * @param materialId The material to edit's id
+ * @param wbsNum The wbs element the material is apart of
  * @returns mutation function to edit a material
  */
-export const useEditMaterial = (materialId: string) => {
+export const useEditMaterial = (materialId: string, wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<Material, Error, MaterialDataSubmission>(
     ['materials', 'edit'],
@@ -87,7 +92,7 @@ export const useEditMaterial = (materialId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
       }
     }
   );
@@ -108,7 +113,7 @@ export const useCreateMaterial = (wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
       }
     }
   );
@@ -116,10 +121,11 @@ export const useCreateMaterial = (wbsNum: WbsNumber) => {
 
 /**
  * Custom React hook to delete a material.
+ * @param wbsNum The wbs element you are deleting the material from
  * @param materialId The material to delete's id
  * @returns mutation function to delete a material
  */
-export const useDeleteMaterial = () => {
+export const useDeleteMaterial = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<any, Error, { materialId: string }>(
     ['materials', 'delete'],
@@ -129,7 +135,33 @@ export const useDeleteMaterial = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to copy materials to a project.
+ * @returns the mutation function to copy materials
+ */
+export const useCopyMaterialsToProject = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<string[], Error, { materialIds: string[]; destinationWbsNum: string }>(
+    ['materials', 'copy'],
+    async ({ materialIds, destinationWbsNum }) => {
+      const data = await copyMaterialsToProject(materialIds, destinationWbsNum);
+      return data;
+    },
+    {
+      onSuccess: (newMaterialIds, variables) => {
+        queryClient.invalidateQueries(['materials', variables.destinationWbsNum]);
+        toast.success(`Successfully copied ${newMaterialIds.length} material${newMaterialIds.length !== 1 ? 's' : ''}!`);
+      },
+      onError: () => {
+        toast.error('Failed to copy materials');
       }
     }
   );
@@ -137,10 +169,11 @@ export const useDeleteMaterial = () => {
 
 /**
  * Custom React hook to delete a assembly.
+ * @param wbsNum The wbs element you are deleting the assembly from
  * @param assemblyId The assembly to delete's id
  * @returns mutation function to delete a assembly
  */
-export const useDeleteAssembly = () => {
+export const useDeleteAssembly = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<any, Error, { assemblyId: string }>(
     ['assembly', 'delete'],
@@ -150,7 +183,7 @@ export const useDeleteAssembly = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['assemblies', wbsPipe(wbsNum)]);
       }
     }
   );
@@ -171,7 +204,7 @@ export const useCreateAssembly = (wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['assemblies', wbsPipe(wbsNum)]);
       }
     }
   );
@@ -278,4 +311,18 @@ export const useCreateMaterialType = () => {
       }
     }
   );
+};
+
+export const useGetAssembliesForWbsElement = (wbsNum: WbsNumber) => {
+  return useQuery<Assembly[], Error>(['assemblies', wbsPipe(wbsNum)], async () => {
+    const { data } = await getAssembliesForWbsElement(wbsNum);
+    return data;
+  });
+};
+
+export const useGetMaterialsForWbsElement = (wbsNum: WbsNumber) => {
+  return useQuery<Material[], Error>(['materials', wbsPipe(wbsNum)], async () => {
+    const { data } = await getMaterialsForWbsElement(wbsNum);
+    return data;
+  });
 };

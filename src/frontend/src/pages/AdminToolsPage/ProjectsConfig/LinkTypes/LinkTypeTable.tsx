@@ -1,0 +1,92 @@
+import { TableRow, TableCell, Typography, Box, Icon } from '@mui/material';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
+import { useAllLinkTypes } from '../../../../hooks/projects.hooks';
+import ErrorPage from '../../../ErrorPage';
+import { NERButton } from '../../../../components/NERButton';
+import { useState } from 'react';
+import CreateLinkTypeModal from './CreateLinkTypeModal';
+import EditLinkTypeModal from './EditLinkTypeModal';
+import NERTable from '../../../../components/NERTable';
+import { isAdmin, LinkType } from 'shared';
+import { useCurrentUser } from '../../../../hooks/users.hooks';
+
+interface LinkTypeTableProps {
+  isOnGuestHomePage?: boolean;
+}
+
+const LinkTypeTable = ({ isOnGuestHomePage }: LinkTypeTableProps) => {
+  const currentUser = useCurrentUser();
+  const { data: links, isLoading: linkTypeIsLoading, isError: linkTypeIsError, error: linkTypeError } = useAllLinkTypes();
+  const [createModalShow, setCreateModalShow] = useState<boolean>(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [clickedLinkType, setClickedLinkType] = useState<LinkType>();
+
+  if (!links || linkTypeIsLoading) return <LoadingIndicator />;
+  if (linkTypeIsError) return <ErrorPage message={linkTypeError.message} />;
+  const linkTypes = links.filter((linkType) =>
+    isOnGuestHomePage ? linkType.isOnGuestHomePage : !linkType.isOnGuestHomePage
+  );
+
+  const linkTypeTableRows = linkTypes.map((linkType, index) => (
+    <TableRow
+      onClick={() => {
+        setClickedLinkType(linkType);
+        setShowEditModal(true);
+      }}
+      sx={{ cursor: 'pointer' }}
+    >
+      <TableCell align="left" sx={{ borderBottom: index === linkTypes.length - 1 ? 'none' : 'default' }}>
+        {linkType.name}
+      </TableCell>
+      <TableCell sx={{ borderBottom: index === linkTypes.length - 1 ? 'none' : 'default', verticalAlign: 'middle' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Icon>{linkType.iconName}</Icon>
+          <Typography variant="body1" sx={{ marginLeft: 1 }}>
+            {linkType.iconName}
+          </Typography>
+        </Box>
+      </TableCell>
+      <TableCell sx={{ borderBottom: index === linkTypes.length - 1 ? 'none' : 'default' }}>
+        {linkType.required ? 'Yes' : 'No'}
+      </TableCell>
+    </TableRow>
+  ));
+
+  return (
+    <Box>
+      <CreateLinkTypeModal
+        open={createModalShow}
+        handleClose={() => setCreateModalShow(false)}
+        linkTypes={linkTypes}
+        isOnGuestHomePage={isOnGuestHomePage}
+      />
+      {clickedLinkType && (
+        <EditLinkTypeModal
+          open={showEditModal}
+          handleClose={() => {
+            setShowEditModal(false);
+            setClickedLinkType(undefined);
+          }}
+          linkType={clickedLinkType}
+          linkTypes={linkTypes}
+        />
+      )}
+      <Typography variant="subtitle1">Registered LinkTypes</Typography>
+      <NERTable columns={[{ name: 'Name' }, { name: 'Icon Name' }, { name: 'Required' }]} rows={linkTypeTableRows} />
+      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
+        {isAdmin(currentUser.role) && (
+          <NERButton
+            variant="contained"
+            onClick={() => {
+              setCreateModalShow(true);
+            }}
+          >
+            New LinkType
+          </NERButton>
+        )}
+      </Box>
+    </Box>
+  );
+};
+
+export default LinkTypeTable;

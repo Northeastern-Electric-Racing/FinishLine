@@ -3,20 +3,44 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder, fireEvent, act } from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder, fireEvent, waitFor } from '../../test-support/test-utils';
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
-import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import ProjectViewContainer from '../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer';
-import { WorkPackageStage } from 'shared/src/types/work-package-types';
+import { WorkPackageStage } from 'shared';
 import * as userHooks from '../../../hooks/users.hooks';
+import * as financeHooks from '../../../hooks/finance.hooks';
 import * as authHooks from '../../../hooks/auth.hooks';
 import * as wpHooks from '../../../hooks/work-packages.hooks';
-import { mockManyWorkPackages, mockUseUsersFavoriteProjects } from '../../test-support/mock-hooks';
+import * as bomHooks from '../../../hooks/bom.hooks';
+import * as teamHooks from '../../../hooks/teams.hooks';
+import {
+  mockManyMaterials,
+  mockManyWorkPackages,
+  mockUseGetReimbursementRequestProjectData,
+  mockUseMyTeamAsHead
+} from '../../test-support/mock-hooks';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
+import { exampleRRData } from '../../test-support/test-data/finance.stubs';
+import {
+  exampleAuthenticatedAdminUser,
+  exampleAuthenticatedGuestUser
+} from '../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../utils/axios');
 vi.mock('../../../hooks/toasts.hooks');
+vi.mock('react-pdf', () => {
+  return {
+    __esModule: true,
+    Document: () => <div>Document Mock</div>,
+    Page: () => <div>Page Mock</div>,
+    pdfjs: {
+      GlobalWorkerOptions: {
+        workerSrc: ''
+      }
+    }
+  };
+});
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = () => {
@@ -30,46 +54,85 @@ const renderComponent = () => {
 
 describe('Rendering Project View Container', () => {
   beforeEach(() => {
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
-    vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue(mockUseUsersFavoriteProjects());
+    global.ResizeObserver = vi.fn().mockImplementation(() => ({
+      observe: vi.fn(),
+      unobserve: vi.fn(),
+      disconnect: vi.fn()
+    }));
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
+      ...exampleAuthenticatedAdminUser
+    });
     vi.spyOn(wpHooks, 'useGetManyWorkPackages').mockReturnValue(mockManyWorkPackages(exampleAllWorkPackages));
-    renderComponent();
+    vi.spyOn(bomHooks, 'useGetMaterialsForWbsElement').mockReturnValue(mockManyMaterials([]));
+    vi.spyOn(financeHooks, 'useGetReimbursementRequestProjectData').mockReturnValue(
+      mockUseGetReimbursementRequestProjectData(exampleRRData)
+    );
+    vi.spyOn(teamHooks, 'useMyTeamAsHead').mockReturnValue(mockUseMyTeamAsHead());
+    vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue({
+      data: [
+        {
+          ...exampleProject1,
+          workPackages: exampleProject1.workPackages,
+          teams: exampleProject1.teams
+        }
+      ],
+      isLoading: false,
+      isError: false,
+      error: undefined
+    } as any);
   });
 
-  it('renders the provided project', () => {
-    expect(screen.getAllByText('1.1.0 - Impact Attenuator').length).toEqual(1);
+  it('renders the provided project', async () => {
+    renderComponent();
+    await screen.findAllByText('1.1.0 - Impact Attenuator');
+    expect(screen.getAllByText('1.1.0 - Impact Attenuator').length).toEqual(2);
     expect(screen.getByText('Details')).toBeInTheDocument();
     expect(screen.getByText('Work Packages')).toBeInTheDocument();
     expect(screen.getByText('Bodywork Concept of Design')).toBeInTheDocument();
   });
 
   it('disables the buttons for guest users', () => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleGuestUser);
-
-    act(() => {
-      fireEvent.click(screen.getByText('Actions'));
+    renderComponent();
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
+      ...exampleAuthenticatedGuestUser
     });
-    expect(screen.getByText('Edit')).toHaveAttribute('aria-disabled', 'true');
-    expect(screen.getByText('Request Change')).toHaveAttribute('aria-disabled', 'true');
+
+    fireEvent.click(screen.getByText('Actions'));
+
+    const editMenuItem = screen.getByText('Edit').closest('li');
+    expect(editMenuItem).not.toBeNull();
+    expect(editMenuItem?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+
+    const reqChangeMenuItem = screen.getByText('Request Change');
+    expect(reqChangeMenuItem).not.toBeNull();
+    expect(reqChangeMenuItem?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('enables the buttons for admin users', () => {
-    act(() => {
-      fireEvent.click(screen.getByText('Actions'));
+  it('enables the buttons for admin users', async () => {
+    renderComponent();
+    await waitFor(() => {
+      return screen.getByText('Actions');
     });
+    fireEvent.click(screen.getByText('Actions'));
     expect(screen.getByText('Edit')).not.toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByText('Request Change')).not.toHaveAttribute('aria-disabled', 'true');
   });
 
   describe('Work Package Preview', () => {
     it('renders the work package names', () => {
-      exampleProject1.workPackages.forEach((wp) => {
-        expect(screen.getByText(wp.name)).toBeInTheDocument();
+      renderComponent();
+
+      exampleProject1.workPackages.forEach(async (wp) => {
+        await waitFor(() => {
+          return expect(screen.getByText(wp.name)).toBeInTheDocument();
+        });
       });
     });
 
     it('renders the work package statuses', () => {
+      renderComponent();
+
       // should be the same as textMap in the WorkPackageStageChip component
       const statusLabels: Record<WorkPackageStage, string> = {
         [WorkPackageStage.Research]: 'Research',
@@ -79,8 +142,11 @@ describe('Rendering Project View Container', () => {
         [WorkPackageStage.Testing]: 'Testing'
       };
 
-      exampleProject1.workPackages.forEach((wp) => {
-        if (wp.stage) expect(screen.getByText(statusLabels[wp.stage])).toBeInTheDocument();
+      exampleProject1.workPackages.forEach(async (wp) => {
+        await waitFor(() => {
+          if (!wp.stage) return;
+          return expect(screen.getByText(statusLabels[wp.stage])).toBeInTheDocument();
+        });
       });
     });
   });

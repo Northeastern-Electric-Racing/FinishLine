@@ -4,31 +4,35 @@
  */
 
 import axios from '../utils/axios';
-import { BlockedByInfo, WbsNumber, WorkPackage, WorkPackageStage, WorkPackageTemplate } from 'shared';
+import {
+  dateToMidnightUTC,
+  DescriptionBulletPreview,
+  WbsNumber,
+  WorkPackage,
+  WorkPackagePreview,
+  WorkPackageStage
+} from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
-import { workPackageTransformer } from './transformers/work-packages.transformers';
+import { workPackagePreviewTransformer, workPackageTransformer } from './transformers/work-packages.transformers';
+import { WorkPackageSelection } from 'shared';
 
 export interface WorkPackageApiInputs {
   name: string;
   startDate: string;
   duration: number;
-  crId: number | undefined;
-  stage?: WorkPackageStage;
+  stage: WorkPackageStage | 'NONE';
+  crId?: string;
   blockedBy: WbsNumber[];
-  deliverables: string[] | { id: number; detail: string }[];
-  expectedActivities: string[] | { id: number; detail: string }[];
+  descriptionBullets: DescriptionBulletPreview[];
 }
 
-export interface WorkPackageTemplateApiInputs {
-  templateName: string;
-  templateNotes: string;
-  duration: number | undefined;
-  stage?: WorkPackageStage;
-  blockedBy: BlockedByInfo[];
-  expectedActivities: string[];
-  deliverables: string[];
-  workPackageName?: string;
+export interface WorkPackageCreateArgs extends WorkPackageApiInputs {
+  projectWbsNum: WbsNumber;
+}
+
+export interface WorkPackageEditArgs extends WorkPackageApiInputs {
+  crId: string;
 }
 
 /**
@@ -56,8 +60,8 @@ export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
  *
  * @param payload Payload containing all the necessary data to create a work package.
  */
-export const createSingleWorkPackage = (payload: WorkPackageApiInputs) => {
-  return axios.post<{ message: string }>(apiUrls.workPackagesCreate(), {
+export const createSingleWorkPackage = (payload: WorkPackageCreateArgs) => {
+  return axios.post<WorkPackage>(apiUrls.workPackagesCreate(), {
     ...payload
   });
 };
@@ -68,20 +72,8 @@ export const createSingleWorkPackage = (payload: WorkPackageApiInputs) => {
  * @param payload Object containing required key-value pairs for backend function to edit work package
  * @returns Promise that will resolve to either a success status code or a fail status code.
  */
-export const editWorkPackage = (payload: WorkPackageApiInputs) => {
+export const editWorkPackage = (payload: WorkPackageEditArgs) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesEdit(), {
-    ...payload
-  });
-};
-
-/**
- * Edit a work package template.
- *
- * @param payload Object containing required key-value pairs for backend function to edit work package
- * @returns Promise that will resolve to either a success status code or a fail status code.
- */
-export const editWorkPackageTemplate = (workPackageTempateId: string, payload: WorkPackageTemplateApiInputs) => {
-  return axios.post<{ message: string }>(apiUrls.workPackageTemplatesEdit(workPackageTempateId), {
     ...payload
   });
 };
@@ -124,16 +116,21 @@ export const getManyWorkPackages = (wbsNums: WbsNumber[]) => {
  */
 export const slackUpcomingDeadlines = (deadline: Date) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
-    deadline
+    deadline: dateToMidnightUTC(deadline)
+  });
+};
+
+export const getHomePageWorkPackages = (selection: WorkPackageSelection) => {
+  return axios.get<WorkPackage[]>(apiUrls.homePageWorkPackages(selection), {
+    transformResponse: (data) => JSON.parse(data).map(workPackagePreviewTransformer)
   });
 };
 
 /**
- * Gets all the workpackage templates from the database
- * @returns gets all the workpackage templates
+ * Fetch all work packages in preview format (minimal data for dropdowns/lists).
  */
-export const getAllWorkPackageTemplates = () => {
-  return axios.get<WorkPackageTemplate[]>(apiUrls.workPackageTemplates(), {
-    transformResponse: (data) => JSON.parse(data)
+export const getAllWorkPackagesPreview = (status?: string) => {
+  return axios.get<WorkPackagePreview[]>(apiUrls.workPackagesAllPreview(status), {
+    transformResponse: (data) => JSON.parse(data).map(workPackagePreviewTransformer)
   });
 };

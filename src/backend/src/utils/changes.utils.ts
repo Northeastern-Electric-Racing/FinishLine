@@ -1,3 +1,13 @@
+import { WBS_Element } from '@prisma/client';
+import { DescriptionBulletPreview, WorkPackageStage, wbsPipe, formatDateOnly } from 'shared';
+import { getUserFullName } from './users.utils.js';
+import {
+  DescriptionBulletWithType,
+  descriptionBulletToChangeListValue,
+  descriptionBulletsToChangeListValues,
+  separateDescriptionBulletsByType
+} from './description-bullets.utils.js';
+
 export enum ChangeType {
   ADDED = 'Added new',
   REMOVED = 'Removed',
@@ -5,9 +15,11 @@ export enum ChangeType {
 }
 
 export interface ChangeCreateArgs {
-  changeRequestId: number;
-  implementerId: number;
-  wbsElementId: number;
+  changeRequestId: string;
+  implementerId: string;
+  wbsElementId?: string;
+  categoryId?: string;
+  accountCodeId?: string;
   detail: string;
 }
 
@@ -16,6 +28,14 @@ export interface ChangeListValue<T> {
   comparator: string;
   displayValue: string;
 }
+
+export const transformBlockedByToChangeListValue = (blockedBy: WBS_Element): ChangeListValue<WBS_Element> => {
+  return {
+    element: blockedBy,
+    comparator: `${blockedBy.wbsElementId}`,
+    displayValue: `${wbsPipe(blockedBy)}`
+  };
+};
 
 export const buildChangeDetail = (itemChanged: string, oldValue: string, newValue: string): string => {
   return `Changed ${itemChanged} from "${oldValue}" to "${newValue}"`;
@@ -35,29 +55,74 @@ export const createChange = (
   nameOfField: string,
   oldValue: string | number | null,
   newValue: string | number | null,
-  crId: number,
-  implementerId: number,
-  wbsElementId: number
+  crId: string | null,
+  implementerId: string,
+  wbsElementId: string | null,
+  categoryId: string | null,
+  accountCodeId: string | null
 ): ChangeCreateArgs | undefined => {
-  if (oldValue == null && newValue !== null) {
+  if (!crId) return undefined;
+  if (oldValue == null && newValue !== null && wbsElementId !== null) {
     return {
       changeRequestId: crId,
       implementerId,
       wbsElementId,
       detail: `Added ${nameOfField} "${newValue}"`
     };
-  } else if (oldValue !== null && newValue == null) {
+  } else if (oldValue == null && newValue !== null && categoryId !== null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      categoryId,
+      detail: `Added ${nameOfField} "${newValue}"`
+    };
+  } else if (oldValue == null && newValue !== null && accountCodeId !== null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      accountCodeId,
+      detail: `Added ${nameOfField} "${newValue}"`
+    };
+  } else if (oldValue !== null && newValue == null && wbsElementId !== null) {
     return {
       changeRequestId: crId,
       implementerId,
       wbsElementId,
       detail: `Deleted ${nameOfField} "${oldValue}"`
     };
-  } else if (oldValue !== newValue) {
+  } else if (oldValue !== null && newValue == null && categoryId !== null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      categoryId,
+      detail: `Deleted ${nameOfField} "${oldValue}"`
+    };
+  } else if (oldValue !== null && newValue == null && accountCodeId !== null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      accountCodeId,
+      detail: `Deleted ${nameOfField} "${oldValue}"`
+    };
+  } else if (oldValue !== newValue && wbsElementId !== null) {
     return {
       changeRequestId: crId,
       implementerId,
       wbsElementId,
+      detail: buildChangeDetail(nameOfField, `${oldValue}`, `${newValue}`)
+    };
+  } else if (oldValue !== newValue && categoryId !== null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      categoryId,
+      detail: buildChangeDetail(nameOfField, `${oldValue}`, `${newValue}`)
+    };
+  } else if (oldValue !== newValue && accountCodeId !== null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      accountCodeId,
       detail: buildChangeDetail(nameOfField, `${oldValue}`, `${newValue}`)
     };
   }
@@ -78,9 +143,9 @@ export const createListChanges = <T>(
   nameOfField: string,
   oldArray: ChangeListValue<T>[],
   newArray: ChangeListValue<T>[],
-  crId: number,
-  implementerId: number,
-  wbsElementId: number
+  crId: string | null,
+  implementerId: string,
+  wbsElementId: string
 ): {
   deletedElements: T[];
   addedElements: T[];
@@ -120,16 +185,153 @@ export const createListChanges = <T>(
     editedElements: changes
       .filter((change) => change.type === ChangeType.EDITED)
       .map((edited) => edited.changeListValue.element),
-    changes: changes.map((change) => {
-      const detail =
-        change.type === ChangeType.EDITED
-          ? buildChangeDetail(
-              nameOfField,
-              seenOld.get(change.changeListValue.comparator) || 'null',
-              seenNew.get(change.changeListValue.comparator) || 'null'
-            )
-          : `${change.type} ${nameOfField} "${change.changeListValue.displayValue}"`;
-      return { changeRequestId: crId, implementerId, wbsElementId, detail };
-    })
+    changes: crId
+      ? changes.map((change) => {
+          const detail =
+            change.type === ChangeType.EDITED
+              ? buildChangeDetail(
+                  nameOfField,
+                  seenOld.get(change.changeListValue.comparator) || 'null',
+                  seenNew.get(change.changeListValue.comparator) || 'null'
+                )
+              : `${change.type} ${nameOfField} "${change.changeListValue.displayValue}"`;
+          return { changeRequestId: crId, implementerId, wbsElementId, detail };
+        })
+      : [] // if no crId dont create the changes
+  };
+};
+
+export const getWorkPackageChanges = async (
+  oldName: string | null,
+  newName: string,
+  oldStage: string | null,
+  newStage: WorkPackageStage | null,
+  oldStartDate: Date | null,
+  newStartDate: Date,
+  oldDuration: number | null,
+  newDuration: number,
+  oldBlockedBy: WBS_Element[],
+  newBlockedBy: WBS_Element[],
+  oldLeadId: string | null,
+  newLeadId: string | null,
+  oldManagerId: string | null,
+  newManagerId: string | null,
+  oldDescriptionBullets: DescriptionBulletWithType[],
+  newDescriptionBullets: DescriptionBulletPreview[],
+  crId: string | null,
+  wbsElementId: string,
+  submitterId: string
+) => {
+  let changes: ChangeCreateArgs[] = [];
+  const nameChangeJson = createChange('name', oldName, newName, crId, submitterId, wbsElementId, null, null);
+  const stageChangeJson = createChange('stage', oldStage, newStage, crId, submitterId, wbsElementId, null, null);
+  const startDateChangeJson = createChange(
+    'start date',
+    oldStartDate ? formatDateOnly(oldStartDate) : null,
+    formatDateOnly(new Date(newStartDate)),
+    crId,
+    submitterId,
+    wbsElementId,
+    null,
+    null
+  );
+  const durationChangeJson = createChange('duration', oldDuration, newDuration, crId, submitterId, wbsElementId, null, null);
+  const blockedByChangeJson = createListChanges(
+    'blocked by',
+    oldBlockedBy.map(transformBlockedByToChangeListValue),
+    newBlockedBy.map(transformBlockedByToChangeListValue),
+    crId,
+    submitterId,
+    wbsElementId
+  );
+
+  const managerChange = createChange(
+    'manager',
+    await getUserFullName(oldManagerId),
+    await getUserFullName(newManagerId),
+    crId,
+    submitterId,
+    wbsElementId,
+    null,
+    null
+  );
+
+  const leadChange = createChange(
+    'lead',
+    await getUserFullName(oldLeadId),
+    await getUserFullName(newLeadId),
+    crId,
+    submitterId,
+    wbsElementId,
+    null,
+    null
+  );
+
+  const descriptionBulletChanges = await getDescriptionBulletChanges(
+    oldDescriptionBullets,
+    newDescriptionBullets,
+    crId,
+    wbsElementId,
+    submitterId
+  );
+
+  // add to changes if not undefined
+  if (nameChangeJson) changes.push(nameChangeJson);
+  if (startDateChangeJson) changes.push(startDateChangeJson);
+  if (durationChangeJson) changes.push(durationChangeJson);
+  if (stageChangeJson) changes.push(stageChangeJson);
+  if (leadChange) changes.push(leadChange);
+  if (managerChange) changes.push(managerChange);
+
+  // add the changes for each of blockers, expected activities, and deliverables
+  changes = changes.concat(blockedByChangeJson.changes).concat(descriptionBulletChanges.changes);
+
+  return {
+    changes,
+    deletedBlockedBy: blockedByChangeJson.deletedElements,
+    addedBlockedBy: blockedByChangeJson.addedElements,
+    editedBlockedBy: blockedByChangeJson.editedElements,
+    deletedDescriptionBullets: descriptionBulletChanges.deleted,
+    addedDescriptionBullets: descriptionBulletChanges.added,
+    editedDescriptionBullets: descriptionBulletChanges.edited
+  };
+};
+
+export const getDescriptionBulletChanges = async (
+  oldDescriptionBullets: DescriptionBulletWithType[],
+  newDescriptionBullets: DescriptionBulletPreview[],
+  crId: string | null,
+  wbsElementId: string,
+  submitterId: string
+) => {
+  const descriptionBulletsSeparatedByType = separateDescriptionBulletsByType(newDescriptionBullets);
+  let descriptionBulletChanges: ChangeCreateArgs[] = [];
+  let descriptionBulletDeletions: DescriptionBulletPreview[] = [];
+  let descriptionBulletAdditions: DescriptionBulletPreview[] = [];
+  let descriptionBulletEdits: DescriptionBulletPreview[] = [];
+
+  for (const [type, descriptionBullets] of descriptionBulletsSeparatedByType) {
+    const descriptionBulletsChangeJson = createListChanges(
+      type,
+      descriptionBulletsToChangeListValues(
+        oldDescriptionBullets.filter((ele) => !ele.dateDeleted && ele.descriptionBulletType.name === type)
+      ),
+      descriptionBullets.map(descriptionBulletToChangeListValue),
+      crId,
+      submitterId,
+      wbsElementId
+    );
+
+    descriptionBulletChanges = descriptionBulletChanges.concat(descriptionBulletsChangeJson.changes);
+    descriptionBulletDeletions = descriptionBulletDeletions.concat(descriptionBulletsChangeJson.deletedElements);
+    descriptionBulletAdditions = descriptionBulletAdditions.concat(descriptionBulletsChangeJson.addedElements);
+    descriptionBulletEdits = descriptionBulletEdits.concat(descriptionBulletsChangeJson.editedElements);
+  }
+
+  return {
+    changes: descriptionBulletChanges,
+    deleted: descriptionBulletDeletions,
+    added: descriptionBulletAdditions,
+    edited: descriptionBulletEdits
   };
 };

@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { validateWBS, WbsNumber, WorkPackage, WorkPackageTemplate } from 'shared';
-import WorkPackagesService from '../services/work-packages.services';
-import { getCurrentUser } from '../utils/auth.utils';
+import { validateWBS, WbsNumber, WorkPackage, WorkPackagePreview, WorkPackageSelection } from 'shared';
+import WorkPackagesService from '../services/work-packages.services.js';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {
@@ -9,7 +8,24 @@ export default class WorkPackagesController {
   static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { query } = req;
-      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query);
+
+      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, req.organization);
+
+      res.status(200).json(outputWorkPackages);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  // Fetch all work packages in preview format (minimal data for dropdowns/lists)
+  static async getAllWorkPackagesPreview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { status } = req.query as { status?: string };
+
+      const outputWorkPackages: WorkPackagePreview[] = await WorkPackagesService.getAllWorkPackagesPreview(
+        status,
+        req.organization
+      );
 
       res.status(200).json(outputWorkPackages);
     } catch (error: unknown) {
@@ -20,8 +36,9 @@ export default class WorkPackagesController {
   // Fetch the work package for the specified WBS number
   static async getSingleWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum);
-      const wp: WorkPackage = await WorkPackagesService.getSingleWorkPackage(parsedWbs);
+      const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum as string);
+
+      const wp: WorkPackage = await WorkPackagesService.getSingleWorkPackage(parsedWbs, req.organization);
 
       res.status(200).json(wp);
     } catch (error: unknown) {
@@ -32,7 +49,8 @@ export default class WorkPackagesController {
   static async getManyWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNums } = req.body;
-      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums);
+
+      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization);
       res.status(200).json(workPackages);
     } catch (error: unknown) {
       next(error);
@@ -42,28 +60,25 @@ export default class WorkPackagesController {
   // Create a work package with the given details
   static async createWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, crId, startDate, duration, blockedBy, expectedActivities, deliverables } = req.body;
-
+      const { name, crId, startDate, duration, blockedBy, descriptionBullets, projectWbsNum } = req.body;
       let { stage } = req.body;
       if (stage === 'NONE') {
         stage = null;
       }
-
-      const user = await getCurrentUser(res);
-
-      const wbsString: string = await WorkPackagesService.createWorkPackage(
-        user,
+      const workPackage = await WorkPackagesService.createWorkPackage(
+        req.currentUser,
         name,
         crId,
         stage,
         startDate,
         duration,
         blockedBy,
-        expectedActivities,
-        deliverables
+        descriptionBullets,
+        projectWbsNum,
+        req.organization
       );
 
-      res.status(200).json(wbsString);
+      res.status(200).json(workPackage);
     } catch (error: unknown) {
       next(error);
     }
@@ -72,28 +87,13 @@ export default class WorkPackagesController {
   // Edit a work package to the given specifications
   static async editWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        workPackageId,
-        name,
-        crId,
-        startDate,
-        duration,
-        blockedBy,
-        expectedActivities,
-        deliverables,
-        projectLeadId,
-        projectManagerId
-      } = req.body;
-
+      const { workPackageId, name, crId, startDate, duration, blockedBy, descriptionBullets, leadId, managerId } = req.body;
       let { stage } = req.body;
       if (stage === 'NONE') {
         stage = null;
       }
-
-      const user = await getCurrentUser(res);
-
       await WorkPackagesService.editWorkPackage(
-        user,
+        req.currentUser,
         workPackageId,
         name,
         crId,
@@ -101,12 +101,12 @@ export default class WorkPackagesController {
         startDate,
         duration,
         blockedBy,
-        expectedActivities,
-        deliverables,
-        projectLeadId,
-        projectManagerId
+        descriptionBullets,
+        leadId,
+        managerId,
+        req.organization
       );
-      return res.status(200).json({ message: 'Work package updated successfully' });
+      res.status(200).json({ message: 'Work package updated successfully' });
     } catch (error: unknown) {
       next(error);
     }
@@ -115,11 +115,10 @@ export default class WorkPackagesController {
   // Delete a work package that corresponds to the given wbs number
   static async deleteWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      const wbsNum = validateWBS(req.params.wbsNum);
+      const wbsNum = validateWBS(req.params.wbsNum as string);
 
-      await WorkPackagesService.deleteWorkPackage(user, wbsNum);
-      return res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
+      await WorkPackagesService.deleteWorkPackage(req.currentUser, wbsNum, req.organization);
+      res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum as string}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -128,81 +127,41 @@ export default class WorkPackagesController {
   // Get all work packages that are blocked by the given work package
   static async getBlockingWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNum = validateWBS(req.params.wbsNum);
-      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(wbsNum);
+      const wbsNum = validateWBS(req.params.wbsNum as string);
 
-      return res.status(200).json(blockingWorkPackages);
+      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(
+        wbsNum,
+        req.organization
+      );
+
+      res.status(200).json(blockingWorkPackages);
     } catch (error: unknown) {
       next(error);
     }
   }
 
   // Send reminder message to project lead of every work package that is due before/on given deadline
-  static async slackMessageUpcomingDeadlines(req: Request, res: Response, next: NextFunction) {
+  static async slackMessageUpcomingDeadlines(req: Request, _res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const { deadline } = req.body;
 
-      await WorkPackagesService.slackMessageUpcomingDeadlines(user, new Date(deadline));
+      await WorkPackagesService.slackMessageUpcomingDeadlines(req.currentUser, new Date(deadline), req.organization);
     } catch (error: unknown) {
       next(error);
     }
   }
-  // Get a single work package template that corresponds to the given work package template id
-  static async getSingleWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
+
+  static async getHomePageWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      const { workPackageTemplateId } = req.params;
-      const workPackageTemplate: WorkPackageTemplate = await WorkPackagesService.getSingleWorkPackageTemplate(
-        user,
-        workPackageTemplateId
+      const { selection } = req.params as Record<string, string>;
+
+      const workPackages: WorkPackagePreview[] = await WorkPackagesService.getHomePageWorkPackages(
+        req.currentUser,
+        req.organization,
+        selection as WorkPackageSelection
       );
 
-      res.status(200).json(workPackageTemplate);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-  // Get all work package templates
-  static async getAllWorkPackageTemplates(req: Request, res: Response, next: NextFunction) {
-    try {
-      const submitter = await getCurrentUser(res);
-      const workPackageTemplates: WorkPackageTemplate[] = await WorkPackagesService.getAllWorkPackageTemplates(submitter);
-
-      res.status(200).json(workPackageTemplates);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async editWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { workpackageTemplateId } = req.params;
-
-      const { templateName, templateNotes, duration, blockedBy, expectedActivities, deliverables, workPackageName } =
-        req.body;
-
-      const user = await getCurrentUser(res);
-
-      let { stage } = req.body;
-      if (stage === 'NONE') {
-        stage = null;
-      }
-
-      const updatedWorkPackageTemplate = await WorkPackagesService.editWorkPackageTemplate(
-        user,
-        workpackageTemplateId,
-        templateName,
-        templateNotes,
-        duration,
-        stage,
-        blockedBy,
-        expectedActivities,
-        deliverables,
-        workPackageName
-      );
-
-      return res.status(200).json(updatedWorkPackageTemplate);
+      res.status(200).json(workPackages);
     } catch (error: unknown) {
       next(error);
     }

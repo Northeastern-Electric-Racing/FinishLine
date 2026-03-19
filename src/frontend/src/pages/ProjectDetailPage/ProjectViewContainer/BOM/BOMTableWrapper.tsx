@@ -1,7 +1,7 @@
 import { Box } from '@mui/system';
 import { GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
-import { Project, isLeadership } from 'shared';
+import { Assembly, Material, Project, isLeadership } from 'shared';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
@@ -11,24 +11,39 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useAssignMaterialToAssembly, useDeleteAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
-import { Typography } from '@mui/material';
+import { Button, Link, Typography } from '@mui/material';
 import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
 import { renderStatusBOM } from './BOMTableCustomCells';
 import LinkIcon from '@mui/icons-material/Link';
 import NotesIcon from '@mui/icons-material/Notes';
+import { routes } from '../../../../utils/routes';
+import { Link as RouterLink } from 'react-router-dom';
 
 interface BOMTableWrapperProps {
   project: Project;
+  hideColumn: boolean[];
+  setHideColumn: React.Dispatch<React.SetStateAction<boolean[]>>;
+  assemblies: Assembly[];
+  materials: Material[];
+  refetch: () => void;
 }
 
-const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
+const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
+  project,
+  hideColumn,
+  setHideColumn,
+  assemblies,
+  materials,
+  refetch
+}) => {
   const [showEditMaterial, setShowEditMaterial] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState('');
   const [modalShow, setModalShow] = useState(false);
-  const { mutateAsync: deleteMaterialMutateAsync, isLoading } = useDeleteMaterial();
-  const { mutateAsync: deleteAssemblyMutateAsync } = useDeleteAssembly();
+  const { mutateAsync: deleteMaterialMutateAsync, isLoading: deleteMaterialIsLoading } = useDeleteMaterial(project.wbsNum);
+  const { mutateAsync: deleteAssemblyMutateAsync, isLoading: deleteAssemblyIsLoading } = useDeleteAssembly(project.wbsNum);
   const { mutateAsync: assignMaterialToAssembly } = useAssignMaterialToAssembly();
+
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {
@@ -45,7 +60,19 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
   const user = useCurrentUser();
   const toast = useToast();
 
-  if (isLoading) return <LoadingIndicator />;
+  useEffect(() => {
+    const storedHideColumn = JSON.parse(localStorage.getItem('hideColumn') || 'false');
+    if (storedHideColumn === 'false') {
+      setHideColumn((prev) => {
+        const newHideColumn = new Array(12).fill(false);
+        return prev !== newHideColumn ? newHideColumn : prev;
+      });
+    } else {
+      setHideColumn((prev) => (prev !== storedHideColumn ? storedHideColumn : prev));
+    }
+  }, [setHideColumn]);
+
+  if (deleteMaterialIsLoading || deleteAssemblyIsLoading) return <LoadingIndicator />;
 
   const assignMaterial = (materialId: string, assemblyId?: string) => async () => {
     try {
@@ -56,6 +83,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
+    } finally {
+      refetch();
     }
   };
 
@@ -84,8 +113,6 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     project.teams.some((team) => team.head.userId === user.userId) ||
     project.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId)) ||
     project.teams.some((team) => team.members.map((member) => member.userId).includes(user.userId));
-
-  const { assemblies, materials } = project;
 
   const selectedMaterial = materials.find((material) => material.materialId === selectedMaterialId);
 
@@ -177,8 +204,75 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     }
     return actions;
   };
-
+  //Try to have the updated column created in BOMTable stored here, and then look at if the name of the column appears here, if it does then we dont hide, else we hide.
   const columns: GridColumns<any> = [
+    {
+      ...bomBaseColDef,
+      flex: 1,
+      field: 'reimbursementRequests',
+      headerName: 'RR#',
+      type: 'string',
+      sortable: false,
+      filterable: false,
+      hide: hideColumn[0],
+      renderCell: (params) => {
+        const material = materials.find((m) => m.materialId === params.row.materialId);
+        if (!material) return null;
+
+        const { reimbursementRequests } = material;
+
+        // case 1 (if linked reimbursement requests exist): show a list of links
+        if (reimbursementRequests.length > 0) {
+          return (
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+              {reimbursementRequests.map((rr) => (
+                <Link
+                  key={rr.reimbursementRequestId}
+                  component={RouterLink}
+                  to={`${routes.REIMBURSEMENT_REQUESTS}/view/${rr.reimbursementRequestId}`}
+                  underline="hover"
+                  sx={{ color: '#dd514c', fontWeight: 'bold', cursor: 'pointer' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {rr.identifier}
+                </Link>
+              ))}
+            </Box>
+          );
+        }
+
+        // case 2 (no linked reimbursement requests): link to the create reimbursement request page with pre-filled info
+        const { quantity, price } = material;
+
+        const prefillCost = quantity != null && price != null ? (Number(quantity) * Number(price)) / 100 : undefined;
+
+        return (
+          <Button
+            component={RouterLink}
+            to={{
+              pathname: routes.NEW_REIMBURSEMENT_REQUEST,
+              state: {
+                projectWbsNum: project.wbsNum,
+                materialId: material.materialId,
+                materialName: material.name,
+                prefillCost
+              }
+            }}
+            variant="contained"
+            size="small"
+            onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
+            sx={{
+              backgroundColor: '#dd514c',
+              textTransform: 'none',
+              fontWeight: 600,
+              '&:hover': { backgroundColor: '#c7443f' }
+            }}
+          >
+            Create RR
+          </Button>
+        );
+      }
+    },
     {
       ...bomBaseColDef,
       flex: 1.2,
@@ -186,7 +280,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Status',
       renderCell: renderStatusBOM,
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[1]
     },
     {
       ...bomBaseColDef,
@@ -194,7 +289,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Type',
       type: 'string',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[2]
     },
     {
       ...bomBaseColDef,
@@ -203,7 +299,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Name',
       type: 'string',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[3]
     },
     {
       ...bomBaseColDef,
@@ -212,7 +309,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Manufacturer',
       type: 'string',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[4]
     },
     {
       ...bomBaseColDef,
@@ -225,10 +323,10 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       colSpan: ({ row }) => {
         if (row.id.includes('assembly')) {
           return 2;
-        } else {
-          return 1;
         }
-      }
+        return 1;
+      },
+      hide: hideColumn[5]
     },
     {
       ...bomBaseColDef,
@@ -237,7 +335,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'PDM File Name',
       type: 'string',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[6]
     },
     {
       ...bomBaseColDef,
@@ -245,7 +344,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Quantity',
       type: 'number',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[7]
     },
     {
       ...bomBaseColDef,
@@ -253,7 +353,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Price per Unit',
       type: 'number',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[8]
     },
     {
       ...bomBaseColDef,
@@ -261,7 +362,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Subtotal',
       type: 'number',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[9]
     },
     {
       ...bomBaseColDef,
@@ -271,7 +373,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       type: 'actions',
       getActions,
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[12]
     }
   ];
 
@@ -282,7 +385,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
           open={showEditMaterial}
           onHide={() => setShowEditMaterial(false)}
           material={selectedMaterial!}
-          wbsElement={project}
+          assemblies={assemblies}
+          wbsNum={project.wbsNum}
         />
       )}
       {modalShow && (
@@ -298,7 +402,14 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
           </Box>
         </NERModal>
       )}
-      <BOMTable columns={columns} assemblies={project.assemblies} materials={project.materials} />
+
+      <BOMTable
+        setHideColumn={setHideColumn}
+        assignMaterial={assignMaterial}
+        columns={columns}
+        assemblies={assemblies}
+        materials={materials}
+      />
     </Box>
   );
 };

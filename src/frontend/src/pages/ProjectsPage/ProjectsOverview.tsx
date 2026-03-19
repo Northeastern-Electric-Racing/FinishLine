@@ -7,10 +7,9 @@ import { Box } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../hooks/users.hooks';
-import { useAllProjects } from '../../hooks/projects.hooks';
 import ProjectsOverviewCards from './ProjectsOverviewCards';
+import { useGetUsersLeadingProjects, useGetUsersTeamsProjects } from '../../hooks/projects.hooks';
 import { WbsElementStatus } from 'shared';
-import { isUserOnTeam } from '../../utils/teams.utils';
 
 /**
  * Cards of all projects this user has favorited
@@ -20,25 +19,41 @@ const ProjectsOverview: React.FC = () => {
 
   const { isLoading, data: favoriteProjects, isError, error } = useUsersFavoriteProjects(user.userId);
   const {
-    isLoading: useAllProjectsIsLoading,
-    data: projects,
-    isError: useAllProjectsIsError,
-    error: useAllProjectsError
-  } = useAllProjects();
+    isLoading: leadingProjectsIsLoading,
+    data: leadingProjects,
+    isError: leadingProjectsIsError,
+    error: leadingProjectsError
+  } = useGetUsersLeadingProjects();
 
-  if (isLoading || !favoriteProjects || useAllProjectsIsLoading || !projects) return <LoadingIndicator />;
+  const {
+    isLoading: teamsProjectsIsLoading,
+    data: teamsProjects,
+    isError: teamsProjectsIsError,
+    error: teamsProjectsError
+  } = useGetUsersTeamsProjects();
+
   if (isError) return <ErrorPage message={error?.message} />;
-  if (useAllProjectsIsError) return <ErrorPage message={useAllProjectsError?.message} />;
+  if (leadingProjectsIsError) return <ErrorPage message={leadingProjectsError?.message} />;
+  if (teamsProjectsIsError) return <ErrorPage message={teamsProjectsError?.message} />;
 
-  const favoriteProjectsSet: Set<number> = new Set(favoriteProjects.map((project) => project.id));
+  if (
+    isLoading ||
+    !favoriteProjects ||
+    leadingProjectsIsLoading ||
+    teamsProjectsIsLoading ||
+    !teamsProjects ||
+    !leadingProjects
+  )
+    return <LoadingIndicator />;
 
-  const projectsImLeading = projects.filter(
-    (project) =>
-      (project.status !== WbsElementStatus.Complete && project.lead?.userId === user.userId) ||
-      project.manager?.userId === user.userId
+  const favoriteProjectsSet: Set<string> = new Set(favoriteProjects.map((project) => project.id));
+
+  // Keeps only favorite team/leading projects (even when completed) or incomplete projects
+  const filteredTeamsProjects = teamsProjects.filter(
+    (project) => project.status !== WbsElementStatus.Complete || favoriteProjectsSet.has(project.id)
   );
-  const myTeamsProjects = projects.filter(
-    (project) => project.status !== WbsElementStatus.Complete && project.teams.some((team) => isUserOnTeam(team, user))
+  const filteredLeadingProjects = leadingProjects.filter(
+    (project) => project.status !== WbsElementStatus.Complete || favoriteProjectsSet.has(project.id)
   );
 
   return (
@@ -50,16 +65,16 @@ const ProjectsOverview: React.FC = () => {
         emptyMessage="You have no favorite projects. Click the star on a project's page to add one!"
       />
 
-      {myTeamsProjects.length > 0 && (
+      {filteredTeamsProjects.length > 0 && (
         <ProjectsOverviewCards
-          projects={myTeamsProjects}
+          projects={filteredTeamsProjects}
           title="My Team's Projects"
           favoriteProjectsSet={favoriteProjectsSet}
         />
       )}
-      {projectsImLeading.length > 0 && (
+      {filteredLeadingProjects.length > 0 && (
         <ProjectsOverviewCards
-          projects={projectsImLeading}
+          projects={filteredLeadingProjects}
           title="Projects I'm Leading"
           favoriteProjectsSet={favoriteProjectsSet}
         />

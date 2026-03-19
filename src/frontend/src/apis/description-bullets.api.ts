@@ -4,15 +4,27 @@
  */
 
 import axios from '../utils/axios';
-import { DescriptionBullet } from 'shared';
+import { DescriptionBullet, DescriptionBulletType, DescriptionBulletTypeCreatePayload } from 'shared';
 import { apiUrls } from '../utils/urls';
 
 /**
  * Check a single description bullet.
  */
-export const checkDescriptionBullet = (userId: number, descriptionId: number) => {
+export const checkDescriptionBullet = (userId: string, descriptionId: string) => {
   return axios.post<DescriptionBullet>(apiUrls.descriptionBulletsCheck(), {
     userId,
     descriptionId
   });
+};
+
+export const getAllDescriptionBulletTypes = () => {
+  return axios.get<DescriptionBulletType[]>(apiUrls.descriptionBulletTypes());
+};
+
+export const createDescriptionBulletType = (payload: DescriptionBulletTypeCreatePayload) => {
+  return axios.post<DescriptionBulletType>(apiUrls.createDescriptionBulletType(), payload);
+};
+
+export const editDescriptionBulletType = (payload: DescriptionBulletTypeCreatePayload) => {
+  return axios.post<DescriptionBulletType>(apiUrls.editDescriptionBulletType(), payload);
 };

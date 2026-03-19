@@ -4,18 +4,70 @@
  */
 
 import axios from '../utils/axios';
-import { LinkType, Project, WbsNumber, WorkPackageTemplate } from 'shared';
+import {
+  Link,
+  LinkType,
+  LinkCreateArgs,
+  LinkTypeCreatePayload,
+  Project,
+  WbsNumber,
+  WorkPackageTemplate,
+  ProjectGantt,
+  ProjectPreview,
+  ProjectOverview
+} from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
-import { linkTypeTransformer, projectTransformer } from './transformers/projects.transformers';
-import { CreateSingleProjectPayload, EditSingleProjectPayload, LinkTypeCreatePayload } from '../utils/types';
+import {
+  projectPreviewTransformer,
+  projectTransformer,
+  projectOverviewTransformer,
+  projectGanttTransformer
+} from './transformers/projects.transformers';
+import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 
 /**
- * Fetches all projects.
+ * Fetches all projects with querry args needed for Gantt chart
+ */
+export const getAllProjectsGantt = () => {
+  return axios.get<ProjectGantt[]>(apiUrls.allProjectsGantt(), {
+    transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer)
+  });
+};
+
+/**
+ * Fetches all projects with preview querry args
  */
 export const getAllProjects = () => {
-  return axios.get<Project[]>(apiUrls.projects(), {
-    transformResponse: (data) => JSON.parse(data).map(projectTransformer)
+  return axios.get<ProjectPreview[]>(apiUrls.allProjectPreviews(), {
+    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
+  });
+};
+
+/**
+ * Fetches all the projects that are on the users teams
+ */
+export const getUsersTeamsProjects = () => {
+  return axios.get<ProjectOverview[]>(apiUrls.usersTeamsProjects(), {
+    transformResponse: (data) => JSON.parse(data).map(projectOverviewTransformer)
+  });
+};
+
+/**
+ * Fetches all projects that the user is the manager or lead of.
+ */
+export const getUsersLeadingProjects = () => {
+  return axios.get<ProjectOverview[]>(apiUrls.usersLeadingProjects(), {
+    transformResponse: (data) => JSON.parse(data).map(projectOverviewTransformer)
+  });
+};
+
+/**
+ * Fetches all projects that are on that team.
+ */
+export const getTeamsProjects = (teamId: string) => {
+  return axios.get<Project[]>(apiUrls.teamsProjects(teamId), {
+    transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer)
   });
 };
 
@@ -36,7 +88,7 @@ export const getSingleProject = (wbsNum: WbsNumber) => {
  * @param payload Payload containing all information needed to create a project.
  */
 export const createSingleProject = (payload: CreateSingleProjectPayload) => {
-  return axios.post<{ message: string }>(apiUrls.projectsCreate(), {
+  return axios.post<Project>(apiUrls.projectsCreate(), {
     ...payload
   });
 };
@@ -86,7 +138,7 @@ export const toggleProjectFavorite = (wbsNum: WbsNumber) => {
  */
 export const getAllLinkTypes = () => {
   return axios.get<LinkType[]>(apiUrls.projectsLinkTypes(), {
-    transformResponse: (data) => JSON.parse(data).map(linkTypeTransformer)
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 
@@ -117,4 +169,38 @@ export const getAllWorkPackageTemplates = () => {
  */
 export const editLinkType = async (name: string, linkTypeData: LinkTypeCreatePayload) => {
   return axios.post(apiUrls.projectsEditLinkTypes(name), linkTypeData);
+};
+
+/**
+ * gets all the useful links from the database
+ * @returns gets all the useful links
+ */
+export const getAllUsefulLinks = () => {
+  return axios.get<Link[]>(apiUrls.organizationsUsefulLinks(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * sets all the useful links
+ * @returns gets all the link types
+ */
+export const setUsefulLinks = (linksObject: { links: LinkCreateArgs[] }) => {
+  return axios.post<Link[]>(apiUrls.organizationsSetUsefulLinks(), linksObject);
+};
+
+/**
+ * Set the abbreviation of a project
+ */
+export const setAbbreviation = (payload: { wbsNum: string; abbreviation: string }) => {
+  return axios.post<Project>(apiUrls.projectsSetAbbreviation(), {
+    ...payload
+  });
+};
+
+/**
+ * Delete the abbreviation of a project
+ */
+export const deleteAbbreviation = (wbsNum: string) => {
+  return axios.post<{ message: string }>(apiUrls.projectsDeleteAbbreviation(wbsNum));
 };

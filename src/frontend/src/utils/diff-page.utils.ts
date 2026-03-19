@@ -2,17 +2,20 @@ import {
   DescriptionBullet,
   Link,
   Project,
-  ProjectProposedChangesPreview,
+  ProjectProposedChanges,
   TeamPreview,
   User,
+  WbsElement,
   WbsElementStatus,
   WbsNumber,
   WorkPackage,
-  WorkPackageProposedChangesPreview,
+  WorkPackageProposedChanges,
   WorkPackageStage,
+  equalsWbsNumber,
   wbsPipe
 } from 'shared';
 import { datePipe, displayEnum, dollarsPipe, fullNamePipe } from './pipes';
+import { Theme } from '@mui/material';
 
 export type ProposedChangeValue =
   | string
@@ -30,6 +33,22 @@ export interface ChangeBullet {
   detail: ProposedChangeValue;
 }
 
+export interface ComparableObject {
+  key: string;
+  value: string | ComparableObject[];
+  changed: boolean;
+}
+
+export interface ComparableCollection {
+  lines: ComparableLine[];
+  label: string;
+}
+
+export interface ComparableLine {
+  original: ComparableObject;
+  new: ComparableObject;
+}
+
 export const changeBulletDetailText = (changeBullet: ChangeBullet): string | string[] => {
   const { label, detail } = changeBullet;
   if (detail === undefined) return 'None';
@@ -40,30 +59,30 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
       Object.values<string>(WbsElementStatus).includes(detail)
       ? displayEnum(detail)
       : new Date(detail).toString() !== 'Invalid Date'
-      ? datePipe(new Date(detail))
-      : detail;
+        ? datePipe(new Date(detail))
+        : detail;
   } else if (typeof detail === 'number') {
     return label === 'budget' ? dollarsPipe(detail) : detail.toString();
   } else if ('firstName' in detail) {
     return fullNamePipe(detail);
   } else if (detail.length === 0) {
     return 'None';
-  } else {
-    // detail is a non-empty array
-    const testVal = detail[0];
-
-    if (typeof testVal === 'string') {
-      return detail as string[];
-    } else if ('teamName' in testVal) {
-      return (detail as TeamPreview[]).map((team) => team.teamName);
-    } else if ('id' in testVal) {
-      return (detail as DescriptionBullet[]).map((bullet) => bullet.detail);
-    } else if ('carNumber' in testVal) {
-      return (detail as WbsNumber[]).map(wbsPipe);
-    } else {
-      return (detail as Link[]).map((link) => `${link.linkType.name}: ${link.url}`);
-    }
   }
+  // detail is a non-empty array
+  const [testVal] = detail;
+
+  if (typeof testVal === 'string') {
+    return detail as string[];
+  } else if ('teamName' in testVal) {
+    return (detail as TeamPreview[]).map((team) => team.teamName);
+  } else if ('detail' in testVal && 'type' in testVal) {
+    return (detail as DescriptionBullet[]).map((bullet) => bullet.detail);
+  } else if ('carNumber' in testVal) {
+    return (detail as WbsNumber[]).map(wbsPipe);
+  } else if ('linkType' in testVal) {
+    return (detail as Link[]).map((link) => `${link.linkType.name}: ${link.url}`);
+  }
+  return '';
 };
 
 export enum PotentialChangeType {
@@ -72,95 +91,237 @@ export enum PotentialChangeType {
   SAME = 'SAME'
 }
 
-export const potentialChangeBackgroundMap: Map<PotentialChangeType, string> = new Map([
-  [PotentialChangeType.ADDED, '#51915c'],
-  [PotentialChangeType.REMOVED, '#8a4e4e'],
-  [PotentialChangeType.SAME, '#2C2C2C']
-]);
-
-export const potentialChangeHighlightMap: Map<PotentialChangeType, string> = new Map([
-  [PotentialChangeType.ADDED, '#43a854'],
-  [PotentialChangeType.REMOVED, '#ba5050'],
-  [PotentialChangeType.SAME, '#2C2C2C']
-]);
-
-export const valueChanged = (original: ProposedChangeValue, proposed: ProposedChangeValue) => {
-  console.log(typeof original, typeof proposed, original, proposed);
-
-  if (typeof original === 'string' || typeof original === 'number') return original !== proposed;
-
-  if (original === undefined) return proposed !== undefined;
-  if (proposed === undefined) return original !== undefined;
-
-  if (original instanceof Date) return datePipe(original) !== datePipe(proposed as Date);
-
-  original = original as string[] | User | TeamPreview[] | DescriptionBullet[] | Link[] | WbsNumber[];
-  proposed = proposed as string[] | User | TeamPreview[] | DescriptionBullet[] | Link[] | WbsNumber[];
-
-  if ('firstName' in original) {
-    return original.userId !== (proposed as User).userId;
-  }
-
-  // they are arrays
-  proposed = proposed as string[] | TeamPreview[] | DescriptionBullet[] | Link[];
-
-  if (original.length === 0) return proposed.length !== 0;
-  if (proposed.length === 0) return original.length !== 0;
-
-  const testVal = original[0];
-
-  if (testVal === undefined) return proposed[0] !== undefined;
-  if (proposed[0] === undefined) return testVal !== undefined;
-
-  if (typeof testVal === 'string') {
-    return (original as string[]).join() !== (proposed as string[]).join();
-  } else if ('teamName' in testVal) {
-    return (
-      (original as TeamPreview[]).map((team) => team.teamId).join() !==
-      (proposed as TeamPreview[]).map((team) => team.teamId).join()
-    );
-  } else if ('id' in testVal) {
-    return (
-      (original as DescriptionBullet[]).map((bullet) => bullet.detail).join() !==
-      (proposed as DescriptionBullet[]).map((bullet) => bullet.detail).join()
-    );
-  } else {
-    return (original as Link[]).map((link) => link.url).join() !== (proposed as Link[]).map((link) => link.url).join();
+export const getPotentialChangeBackground = (potentialChangeType: PotentialChangeType, theme: Theme) => {
+  switch (potentialChangeType) {
+    case PotentialChangeType.ADDED:
+      return '#51915c';
+    case PotentialChangeType.REMOVED:
+      return '#8a4e4e';
+    case PotentialChangeType.SAME:
+      return theme.palette.background.paper;
   }
 };
 
-export const projectToProposedChangesPreview = (project: Project | undefined): ProjectProposedChangesPreview | undefined => {
-  if (!project) return undefined;
-
+const genChange = (key: string, changed: boolean, originalValue: string, newValue: string): ComparableLine => {
   return {
-    name: project.name,
-    summary: project.summary,
-    lead: project.lead,
-    manager: project.manager,
-    teams: project.teams,
-    budget: project.budget,
-    goals: project.goals,
-    features: project.features,
-    rules: project.rules,
-    otherConstraints: project.otherConstraints,
-    links: project.links
+    original: {
+      key,
+      changed,
+      value: originalValue
+    },
+    new: {
+      key,
+      changed,
+      value: newValue
+    }
   };
 };
 
-export const workPackageToProposedChangesPreview = (
-  workPackage: WorkPackage | undefined
-): WorkPackageProposedChangesPreview | undefined => {
-  if (!workPackage) return undefined;
+interface DisplayableObejct {
+  value: string;
+}
 
+export const genListChange = <T extends DisplayableObejct>(
+  key: string,
+  defaultValue: string,
+  originalValues: T[],
+  newValues: T[],
+  comparator: (a: T | undefined, b: T | undefined) => boolean
+): ComparableLine => {
   return {
-    name: workPackage.name,
-    stage: workPackage.stage,
-    lead: workPackage.lead,
-    manager: workPackage.manager,
-    startDate: workPackage.startDate,
-    duration: workPackage.duration,
-    blockedBy: workPackage.blockedBy,
-    expectedActivities: workPackage.expectedActivities,
-    deliverables: workPackage.deliverables
+    original: {
+      key,
+      changed: false,
+      value: originalValues.map((db, i) => ({
+        key,
+        changed: comparator(db, newValues[i]),
+        value: db.value ?? defaultValue
+      }))
+    },
+    new: {
+      key,
+      changed: false,
+      value: newValues.map((db, i) => ({
+        key,
+        changed: comparator(originalValues[i], db),
+        value: db.value ?? defaultValue
+      }))
+    }
   };
+};
+
+export const getWbsChanges = (
+  originalElement?: WbsElement,
+  proposedChanges?: ProjectProposedChanges | WorkPackageProposedChanges
+) => {
+  const lines: ComparableLine[] = [];
+
+  const namesChanged = originalElement?.name !== proposedChanges?.name;
+  lines.push(genChange('Title', namesChanged, originalElement?.name ?? '', proposedChanges?.name ?? ''));
+
+  const leadChanged = originalElement?.lead?.userId !== proposedChanges?.lead?.userId;
+  lines.push(genChange('Lead', leadChanged, fullNamePipe(originalElement?.lead), fullNamePipe(proposedChanges?.lead)));
+
+  const managerChanged = originalElement?.manager?.userId !== proposedChanges?.manager?.userId;
+  lines.push(
+    genChange('Manager', managerChanged, fullNamePipe(originalElement?.manager), fullNamePipe(proposedChanges?.manager))
+  );
+
+  lines.push(
+    genListChange(
+      'Links',
+      '',
+      (originalElement?.links.map((link) => ({ ...link, value: link.linkType.name + ' - ' + link.url })) ?? []).sort(
+        (a, b) => a.value.localeCompare(b.value)
+      ),
+      (proposedChanges?.links.map((link) => ({ ...link, value: link.linkType.name + ' - ' + link.url })) ?? []).sort(
+        (a, b) => a.value.localeCompare(b.value)
+      ),
+      (a, b) => a?.url !== b?.url || a?.linkType.name !== b?.linkType.name
+    )
+  );
+
+  lines.push(
+    genListChange(
+      'Description Bullets',
+      '',
+      (originalElement?.descriptionBullets.map((db) => ({ ...db, value: db.type + ' - ' + db.detail })) ?? []).sort((a, b) =>
+        a.value.localeCompare(b.value)
+      ),
+      (proposedChanges?.descriptionBullets.map((db) => ({ ...db, value: db.type + ' - ' + db.detail })) ?? []).sort((a, b) =>
+        a.value.localeCompare(b.value)
+      ),
+      (a, b) => a?.value !== b?.value
+    )
+  );
+
+  return lines;
+};
+
+export const getChangesForProject = (
+  proposedChanges: ProjectProposedChanges,
+  originalProject?: Project
+): ComparableCollection[] => {
+  const projectLines: ComparableLine[] = [...getWbsChanges(originalProject, proposedChanges)];
+
+  projectLines.push(
+    genChange(
+      'Summary',
+      originalProject?.summary !== proposedChanges.summary,
+      originalProject ? originalProject.summary : '',
+      proposedChanges.summary
+    )
+  );
+
+  projectLines.push(
+    genChange(
+      'Budget',
+      originalProject?.budget !== proposedChanges.budget,
+      originalProject ? `$${originalProject.budget}` : '',
+      `$${proposedChanges.budget}`
+    )
+  );
+
+  projectLines.push(
+    genListChange(
+      'Teams',
+      '',
+      originalProject
+        ? originalProject.teams
+            .map((team) => ({ ...team, value: team.teamName }))
+            .sort((a, b) => a.teamName.localeCompare(b.teamName))
+        : [],
+      proposedChanges.teams
+        .map((team) => ({ ...team, value: team.teamName }))
+        .sort((a, b) => a.teamName.localeCompare(b.teamName)),
+      (a, b) => a?.teamId !== b?.teamId
+    )
+  );
+
+  const workPackageCollections: ComparableCollection[] = [];
+
+  originalProject?.workPackages.forEach((workPackage) => {
+    const newWorkPackage = proposedChanges.workPackageProposedChanges.find((wp) => wp.name === workPackage.name); // TODO ideally do this based on something unique, maybe add a reference to original wbsElementid or something this also just doesnt work if the name has changed so... I dont see another way to identify them though
+    if (newWorkPackage) {
+      const workPackageLines = getChangesForWorkPackage(workPackage, newWorkPackage);
+      workPackageCollections.push(workPackageLines);
+      proposedChanges.workPackageProposedChanges = proposedChanges.workPackageProposedChanges.filter(
+        (wp) => wp.id !== newWorkPackage.id
+      );
+    }
+  });
+
+  proposedChanges.workPackageProposedChanges.forEach((wp) => {
+    workPackageCollections.push(getChangesForWorkPackage(undefined, wp));
+  });
+
+  return [{ label: originalProject ? originalProject.name : '', lines: projectLines }, ...workPackageCollections];
+};
+
+export const getChangesForWorkPackage = (
+  originalWorkPackage?: WorkPackage,
+  proposedChanges?: WorkPackageProposedChanges
+): ComparableCollection => {
+  const lines: ComparableLine[] = [];
+
+  lines.push(...getWbsChanges(originalWorkPackage, proposedChanges));
+  lines.push(
+    genChange(
+      'Start Date',
+      originalWorkPackage?.startDate.getTime() !== proposedChanges?.startDate.getTime(),
+      datePipe(originalWorkPackage?.startDate),
+      datePipe(proposedChanges?.startDate)
+    )
+  );
+
+  lines.push(
+    genChange(
+      'Duration',
+      originalWorkPackage?.duration !== proposedChanges?.duration,
+      originalWorkPackage ? `${originalWorkPackage.duration} weeks` : '',
+      proposedChanges ? `${proposedChanges.duration} weeks` : ''
+    )
+  );
+
+  const statusChanged = originalWorkPackage?.status !== proposedChanges?.status;
+  lines.push(genChange('Status', statusChanged, originalWorkPackage?.status ?? '', proposedChanges?.status ?? ''));
+
+  let proposedChangesEndDate;
+
+  if (proposedChanges) {
+    proposedChangesEndDate = new Date(proposedChanges.startDate);
+    proposedChangesEndDate.setDate(proposedChangesEndDate.getDate() + proposedChanges.duration * 7);
+  }
+
+  lines.push(
+    genChange(
+      'End Date',
+      originalWorkPackage?.endDate && proposedChangesEndDate
+        ? datePipe(originalWorkPackage.endDate) !== datePipe(proposedChangesEndDate)
+        : !!originalWorkPackage?.endDate !== !!proposedChangesEndDate,
+      datePipe(originalWorkPackage?.endDate),
+      datePipe(proposedChangesEndDate)
+    )
+  );
+
+  lines.push(
+    genListChange(
+      'Blocked By',
+      '',
+      originalWorkPackage?.blockedBy.map((wbsNum) => ({ ...wbsNum, value: wbsPipe(wbsNum) })) ?? [],
+      proposedChanges?.blockedBy.map((wbsNum) => ({ ...wbsNum, value: wbsPipe(wbsNum) })) ?? [],
+      (a, b) => a !== undefined && b !== undefined && equalsWbsNumber(a, b)
+    )
+  );
+
+  lines.push(
+    genChange(
+      'stage',
+      originalWorkPackage?.stage !== proposedChanges?.stage,
+      originalWorkPackage ? (originalWorkPackage.stage ?? 'NONE') : '',
+      proposedChanges ? (proposedChanges.stage ?? 'NONE') : ''
+    )
+  );
+
+  return { label: originalWorkPackage?.name ?? 'Work Package', lines };
 };

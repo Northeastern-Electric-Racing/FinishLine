@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
-import { Team } from 'shared';
+import { Team, TeamBase, TeamPreview } from 'shared';
 import {
   getAllTeams,
   getSingleTeam,
@@ -13,19 +13,40 @@ import {
   setTeamHead,
   deleteTeam,
   createTeam,
-  setTeamLeads
+  setTeamLeads,
+  archiveTeam,
+  getAllArchivedTeams,
+  getUsersTeams,
+  setTeamSlackId,
+  getMyTeamAsHead,
+  getAllTeamPreviews
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {
   teamName: string;
-  headId: number;
+  headId: string;
   slackId: string;
   description: string;
+  isFinanceTeam: boolean;
 }
 
+export const useAllTeamPreviews = () => {
+  return useQuery<TeamBase[], Error>(['teams'], async () => {
+    const { data } = await getAllTeamPreviews();
+    return data;
+  });
+};
+
 export const useAllTeams = () => {
-  return useQuery<Team[], Error>(['teams'], async () => {
+  return useQuery<TeamPreview[], Error>(['teams', false], async () => {
     const { data } = await getAllTeams();
+    return data;
+  });
+};
+
+export const useAllArchivedTeams = () => {
+  return useQuery<TeamPreview[], Error>(['teams', true], async () => {
+    const { data } = await getAllArchivedTeams();
     return data;
   });
 };
@@ -37,12 +58,35 @@ export const useSingleTeam = (teamId: string) => {
   });
 };
 
+export const useGetUsersTeams = () => {
+  return useQuery<Team[], Error>(['teams', true], async () => {
+    const { data } = await getUsersTeams();
+    return data;
+  });
+};
+
 export const useSetTeamMembers = (teamId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, number[]>(
+  return useMutation<{ message: string }, Error, string[]>(
     ['teams', 'edit'],
-    async (userIds: number[]) => {
+    async (userIds: string[]) => {
       const { data } = await setTeamMembers(teamId, userIds);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
+export const useArchiveTeam = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Team, Error, string>(
+    ['teams', 'edit'],
+    async () => {
+      const { data } = await archiveTeam(teamId);
       return data;
     },
     {
@@ -55,9 +99,9 @@ export const useSetTeamMembers = (teamId: string) => {
 
 export const useSetTeamHead = (teamId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Team, Error, number>(
+  return useMutation<Team, Error, string>(
     ['teams', 'edit'],
-    async (userId: number) => {
+    async (userId: string) => {
       const { data } = await setTeamHead(teamId, userId);
       return data;
     },
@@ -75,6 +119,22 @@ export const useEditTeamDescription = (teamId: string) => {
     ['teams', 'edit'],
     async (description: string) => {
       const { data } = await setTeamDescription(teamId, description);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
+export const useEditTeamSlackId = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<TeamPreview, Error, string>(
+    ['teams', 'edit'],
+    async (slackId: string) => {
+      const { data } = await setTeamSlackId(teamId, slackId);
       return data;
     },
     {
@@ -119,9 +179,9 @@ export const useCreateTeam = () => {
 
 export const useSetTeamLeads = (teamId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Team, Error, number[]>(
+  return useMutation<Team, Error, string[]>(
     ['teams', 'edit'],
-    async (userIds: number[]) => {
+    async (userIds: string[]) => {
       const { data } = await setTeamLeads(teamId, userIds);
       return data;
     },
@@ -131,4 +191,11 @@ export const useSetTeamLeads = (teamId: string) => {
       }
     }
   );
+};
+
+export const useMyTeamAsHead = () => {
+  return useQuery<string | undefined, Error>(['teams', 'as-head'], async () => {
+    const { data } = await getMyTeamAsHead();
+    return data;
+  });
 };

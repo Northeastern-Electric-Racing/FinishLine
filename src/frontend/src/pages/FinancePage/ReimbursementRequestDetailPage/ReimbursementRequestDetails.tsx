@@ -10,12 +10,27 @@ import ErrorPage from '../../ErrorPage';
 
 const ReimbursementRequestDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: reimbursementRequest, isError, error, isLoading } = useSingleReimbursementRequest(id);
+  const {
+    data: reimbursementRequest,
+    refetch: refetchSingleReimbursementRequest,
+    isError,
+    error,
+    isLoading
+  } = useSingleReimbursementRequest(id);
 
   if (isError) return <ErrorPage error={error} />;
   if (!reimbursementRequest || isLoading) return <LoadingIndicator />;
 
-  return <ReimbursementRequestDetailsView reimbursementRequest={reimbursementRequest} />;
+  return (
+    <ReimbursementRequestDetailsView
+      reimbursementRequest={reimbursementRequest}
+      onCloseSidePage={() => {
+        // refresh the single instance of the reimbursement request,
+        // not the entire dataset (seems better that way)
+        refetchSingleReimbursementRequest();
+      }}
+    />
+  );
 };
 
 export default ReimbursementRequestDetails;

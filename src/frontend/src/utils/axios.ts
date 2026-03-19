@@ -1,4 +1,4 @@
-import { default as axiosStatic } from 'axios';
+import axiosStatic from 'axios';
 
 const axios = axiosStatic.create({
   withCredentials: import.meta.env.MODE !== 'development' ? true : undefined
@@ -28,13 +28,15 @@ axios.interceptors.response.use(
       throw new Error(messages);
     }
 
-    throw new Error('Unknown Error!');
+    throw new Error('Unknown Error!' + error.message);
   }
 );
 
 axios.interceptors.request.use(
   (request) => {
     if (import.meta.env.MODE === 'development') request.headers!['Authorization'] = localStorage.getItem('devUserId') || '';
+    const organizationId = localStorage.getItem('organizationId');
+    request.headers!['organizationId'] = organizationId ?? '';
     return request;
   },
   (error) => {

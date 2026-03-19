@@ -1,5 +1,10 @@
 import { Decimal } from 'decimal.js';
-import { User, UserPreview } from './user-types';
+import { User } from './user-types.js';
+
+export interface MaterialReimbursementRequest {
+  reimbursementRequestId: string;
+  identifier: number;
+}
 
 export enum MaterialStatus {
   Ordered = 'ORDERED',
@@ -19,8 +24,7 @@ export type UnitPreview = Omit<Unit, 'materials'>;
 export interface MaterialType {
   name: string;
   dateCreated: Date;
-  userCreatedId: number;
-  userCreated: UserPreview;
+  userCreated: User;
   dateDeleted?: Date;
   materials: MaterialPreview[];
 }
@@ -31,11 +35,9 @@ export interface Assembly {
   name: string;
   pdmFileName?: string;
   dateDeleted?: Date;
-  userDeletedId?: number;
-  userDeleted?: UserPreview;
-  userCreatedId: number;
-  userCreated: UserPreview;
-  wbsElementId: number;
+  userDeleted?: User;
+  userCreated: User;
+  wbsElementId: string;
   materials: MaterialPreview[];
 }
 
@@ -45,7 +47,6 @@ export interface Manufacturer {
   name: string;
   dateCreated: Date;
   dateDeleted?: Date;
-  userCreatedId: number;
   userCreated: User;
   materials: MaterialPreview[];
 }
@@ -55,29 +56,27 @@ export type ManufacturerPreview = Omit<Manufacturer, 'materials' | 'userCreated'
 export interface Material {
   materialId: string;
   assemblyId?: string;
-  assembly?: AssemblyPreview;
   name: string;
-  wbsElementId: number;
+  wbsElementId: string;
   dateDeleted?: Date;
-  userDeletedId?: number;
-  userDeleted?: UserPreview;
+  userDeleted?: User;
   dateCreated: Date;
-  userCreatedId: number;
-  userCreated: UserPreview;
+  userCreated: User;
   status: MaterialStatus;
   materialTypeName: string;
   materialType: MaterialTypePreview;
-  manufacturerName: string;
-  manufacturer: ManufacturerPreview;
-  manufacturerPartNumber: string;
+  manufacturerName?: string;
+  manufacturer?: ManufacturerPreview;
+  manufacturerPartNumber?: string;
   pdmFileName?: string;
-  quantity: Decimal;
+  quantity?: Decimal;
   unitName?: string;
   quantityUnit?: UnitPreview;
-  price: number;
-  subtotal: number;
+  price?: number;
+  subtotal?: number;
   linkUrl: string;
   notes?: string;
+  reimbursementRequests: MaterialReimbursementRequest[];
 }
 
 export type MaterialPreview = Omit<

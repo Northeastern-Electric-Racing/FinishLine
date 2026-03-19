@@ -2,54 +2,46 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { LinkCreateArgs, Project } from 'shared';
+import { DescriptionBulletPreview, LinkCreateArgs, Project, ProjectTemplate } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
-import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import LinksEditView from './LinksEditView';
+import LinksEditView from '../../../components/LinksEditView';
 import PageLayout from '../../../components/PageLayout';
 import ProjectFormDetails from './ProjectFormDetails';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { ObjectShape } from 'yup/lib/object';
 import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
-import { useState } from 'react';
-import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
+import { useEffect, useState } from 'react';
+import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 import { NERButton } from '../../../components/NERButton';
 import HelpIcon from '@mui/icons-material/Help';
+import DescriptionBulletsEditView from '../../../components/DescriptionBulletEditView';
+import ProjectTemplateSection from './ProjectTemplateSection';
+import { WorkPackageFormViewPayload } from '../../WorkPackageForm/WorkPackageFormView';
+import ProjectFormWorkPackageSection from './ProjectFormWorkPackageSection';
+import { useToast } from '../../../hooks/toasts.hooks';
+import { generateUUID } from '../../../utils/form';
+import { getMonday } from '../../../utils/datetime.utils';
+import { ChangeRequestFormReturn } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 
 export interface ProjectFormInput {
   name: string;
   budget: number;
   summary: string;
   links: LinkCreateArgs[];
-  crId: string;
-  carNumber: number;
-  goals: {
-    bulletId: number;
-    detail: string;
-  }[];
-  features: {
-    bulletId: number;
-    detail: string;
-  }[];
-  constraints: {
-    bulletId: number;
-    detail: string;
-  }[];
-  rules: {
-    bulletId: number;
-    detail: string;
-  }[];
-  teamIds: number[];
+  crId?: string;
+  carNumber?: number;
+  teamIds: string[];
+  descriptionBullets: DescriptionBulletPreview[];
+  workPackages: WorkPackageFormViewPayload[];
 }
 
 interface ProjectFormContainerProps {
@@ -58,12 +50,16 @@ interface ProjectFormContainerProps {
   project?: Project;
   onSubmit: (data: ProjectFormInput) => void;
   defaultValues: ProjectFormInput;
-  setProjectManagerId: (id?: string) => void;
-  setProjectLeadId: (id?: string) => void;
-  schema: yup.ObjectSchema<ObjectShape>;
-  projectLeadId?: string;
-  projectManagerId?: string;
+  setManagerId: (id?: string) => void;
+  setLeadId: (id?: string) => void;
+  schema: yup.ObjectSchema<any>;
+  leadId?: string;
+  managerId?: string;
   onSubmitChangeRequest?: (data: ProjectCreateChangeRequestFormInput) => void;
+  setCarNumber: (carNumber: number) => void;
+  carNumber?: number;
+  changeRequestFormReturn: ChangeRequestFormReturn;
+  onlyLeadershipChanged?: boolean;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -71,24 +67,30 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   project,
   onSubmit,
   defaultValues,
-  setProjectManagerId,
-  setProjectLeadId,
+  setLeadId,
+  setManagerId,
   schema,
-  projectLeadId,
-  projectManagerId,
-  onSubmitChangeRequest
+  leadId,
+  managerId,
+  onSubmitChangeRequest,
+  setCarNumber,
+  changeRequestFormReturn,
+  onlyLeadershipChanged
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
 
-  const allUsers = useAllUsers();
+  const toast = useToast();
+
+  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const {
     register,
     handleSubmit,
     control,
     watch,
-    formState: { errors }
-  } = useForm({
+    formState: { errors },
+    setValue
+  } = useForm<ProjectFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.name,
@@ -96,42 +98,107 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       summary: defaultValues?.summary,
       crId: defaultValues?.crId,
       carNumber: defaultValues?.carNumber,
-      rules: defaultValues?.rules,
       links: defaultValues?.links,
-      goals: defaultValues?.goals,
-      features: defaultValues?.features,
-      constraints: defaultValues?.constraints,
+      descriptionBullets: defaultValues?.descriptionBullets ?? [],
       teamIds: defaultValues?.teamIds
     }
   });
 
-  const { fields: rules, append: appendRule, remove: removeRule } = useFieldArray({ control, name: 'rules' });
-  const { fields: goals, append: appendGoal, remove: removeGoal } = useFieldArray({ control, name: 'goals' });
-  const { fields: features, append: appendFeature, remove: removeFeature } = useFieldArray({ control, name: 'features' });
   const {
-    fields: constraints,
-    append: appendConstraint,
-    remove: removeConstraint
-  } = useFieldArray({ control, name: 'constraints' });
+    fields: descriptionBullets,
+    append: appendDescriptionBullet,
+    remove: removeDescriptionBullet
+  } = useFieldArray({ control, name: 'descriptionBullets' });
+
   const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
 
-  if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
-  if (allUsers.isError) {
-    return <ErrorPage message={allUsers.error?.message} />;
+  const {
+    fields: workPackages,
+    append: appendWorkPackage,
+    remove: removeWorkPackage
+  } = useFieldArray({ control, name: 'workPackages' });
+
+  const [selectedProjectTemplate, setSelectedProjectTemplate] = useState<ProjectTemplate>();
+
+  const watchedName = watch('name');
+  const watchedTeams = watch('teamIds');
+  const watchedBudget = watch('budget');
+  const watchedSummary = watch('summary');
+  const watchedDescriptionBullets = watch('descriptionBullets');
+
+  useEffect(() => {
+    if (selectedProjectTemplate) {
+      setValue('crId', '');
+
+      let { projectName, teams, budget, descriptionBullets, summary } = selectedProjectTemplate;
+
+      projectName = projectName || '';
+      budget = budget || 0;
+      teams = teams || [];
+      descriptionBullets = descriptionBullets || [];
+      summary = summary || '';
+
+      if (
+        watchedName !== projectName ||
+        watchedBudget !== budget ||
+        JSON.stringify(watchedTeams) !== JSON.stringify(teams.map((t) => t.teamId)) ||
+        watchedSummary !== summary ||
+        JSON.stringify(watchedDescriptionBullets) !== JSON.stringify(descriptionBullets)
+      ) {
+        setSelectedProjectTemplate(undefined);
+      }
+    }
+  }, [
+    selectedProjectTemplate,
+    watchedName,
+    watchedBudget,
+    watchedTeams,
+    watchedDescriptionBullets,
+    watchedSummary,
+    setValue
+  ]);
+
+  if (usersIsLoading || !users) return <LoadingIndicator />;
+  if (usersIsError) {
+    return <ErrorPage message={usersError?.message} />;
   }
 
   const crWatch = watch('crId');
-  const changeRequestInputExists = crWatch !== 'null' && crWatch !== '';
-
-  const users = allUsers.data.filter((u) => u.role !== 'GUEST');
+  const changeRequestInputExists = !!crWatch && crWatch !== 'null' && crWatch !== '';
 
   const handleCreateChangeRequest = async (data: ProjectFormInput) => {
     if (onSubmitChangeRequest && changeRequestFormInput) {
-      onSubmitChangeRequest({
-        ...changeRequestFormInput,
-        ...data
-      });
+      onSubmitChangeRequest({ ...changeRequestFormInput, ...data });
     }
+  };
+
+  const detectCycle = (workPackages: WorkPackageFormViewPayload[]): boolean => {
+    const visited = new Set<string>();
+    const stack = new Set<string>();
+
+    const hasCycle = (wpId: string): boolean => {
+      if (stack.has(wpId)) return true;
+      if (visited.has(wpId)) return false;
+
+      visited.add(wpId);
+      stack.add(wpId);
+
+      const workPackage = workPackages.find((wp) => wp.workPackageId === wpId);
+      if (workPackage) {
+        for (const blockedById of workPackage.blockedBy) {
+          if (hasCycle(blockedById)) return true;
+        }
+      }
+
+      stack.delete(wpId);
+      return false;
+    };
+
+    for (const wp of workPackages) {
+      if (hasCycle(wp.workPackageId)) return true;
+    }
+
+    return false;
   };
 
   return (
@@ -141,6 +208,10 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (detectCycle(watch('workPackages'))) {
+          toast.error('Error: Circular blocker relationship detected in work packages');
+          return;
+        }
         handleSubmit(onSubmit)(e);
       }}
       onKeyPress={(e) => {
@@ -170,7 +241,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                   variant="contained"
                   onClick={() => setIsModalOpen(true)}
                   sx={{ mx: 1 }}
-                  disabled={changeRequestInputExists}
+                  disabled={changeRequestInputExists || onlyLeadershipChanged}
                 >
                   Create Change Request
                 </NERButton>
@@ -179,73 +250,104 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
-            <NERSuccessButton disabled={!changeRequestInputExists} variant="contained" type="submit" sx={{ mx: 1 }}>
+            <NERSuccessButton
+              disabled={!changeRequestInputExists && !!project && !onlyLeadershipChanged}
+              variant="contained"
+              type="submit"
+              sx={{ mx: 1 }}
+            >
               Submit
             </NERSuccessButton>
           </Box>
         }
       >
+        {!project && (
+          <ProjectTemplateSection
+            selectedProjectTemplate={selectedProjectTemplate}
+            setSelectedProjectTemplate={(template) => {
+              setValue('name', template?.projectName || '');
+              setValue('budget', template?.budget || 0);
+              setValue('summary', template?.summary || '');
+              setValue('descriptionBullets', template?.descriptionBullets || []);
+              setValue(
+                'teamIds',
+                (template?.teams || []).map((t) => t.teamId)
+              );
+
+              const templateToIdMap = new Map<string, string>();
+              template?.workPackageTemplates?.forEach((wp) => {
+                const id = generateUUID();
+                templateToIdMap.set(wp.workPackageTemplateId, id);
+              });
+
+              const workPackages = (template?.workPackageTemplates || []).map((wp) => {
+                return {
+                  ...wp,
+                  name: wp.workPackageName ?? '',
+                  stage: wp.stage ?? 'NONE',
+                  startDate: getMonday(new Date()),
+                  workPackageId: templateToIdMap.get(wp.workPackageTemplateId)!,
+                  duration: wp.duration ?? 0,
+                  blockedBy: wp.blockedBy.map((blocker) => templateToIdMap.get(blocker.workPackageTemplateId)!)
+                };
+              });
+
+              setValue('workPackages', workPackages);
+
+              setSelectedProjectTemplate(template);
+            }}
+          />
+        )}
         <ProjectFormDetails
           users={users}
           control={control}
           errors={errors}
-          setProjectManagerId={setProjectManagerId}
-          setProjectLeadId={setProjectLeadId}
-          projectLead={projectLeadId}
-          projectManager={projectManagerId}
+          setManagerId={setManagerId}
+          setLeadId={setLeadId}
+          leadId={leadId}
+          managerId={managerId}
           project={project}
+          setCarNumber={setCarNumber}
         />
         <Stack spacing={4}>
           <Box>
             <Typography variant="h5" sx={{ mb: 2, mt: 2 }}>
-              {!project ? 'Links (optional)' : 'Links'}
+              {!!project ? 'Links' : 'Links (optional)'}
             </Typography>
-            <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
-          </Box>
-          <Box>
-            <Typography variant="h5">{!project ? 'Goals (optional)' : 'Goals'}</Typography>
-            <ReactHookEditableList
-              name="goals"
+            <LinksEditView
+              watch={watch}
+              control={control}
+              ls={links}
               register={register}
-              ls={goals}
-              append={appendGoal}
-              remove={removeGoal}
-              bulletName="Goal"
+              append={appendLink}
+              remove={removeLink}
+              enforceRequired={!!project}
+              errors={errors}
             />
           </Box>
           <Box>
-            <Typography variant="h5">{!project ? 'Features (optional)' : 'Features'}</Typography>
-            <ReactHookEditableList
-              name="features"
+            <DescriptionBulletsEditView
+              type="project"
+              watch={watch}
+              ls={descriptionBullets}
               register={register}
-              ls={features}
-              append={appendFeature}
-              remove={removeFeature}
-              bulletName="Feature"
+              append={appendDescriptionBullet}
+              remove={removeDescriptionBullet}
             />
           </Box>
-          <Box>
-            <Typography variant="h5">{!project ? 'Constraints (optional)' : 'Constraints'}</Typography>
-            <ReactHookEditableList
-              name="constraints"
-              register={register}
-              ls={constraints}
-              append={appendConstraint}
-              remove={removeConstraint}
-              bulletName="Constraint"
-            />
-          </Box>
-          <Box>
-            <Typography variant="h5">{!project ? 'Rules (optional)' : 'Rules'}</Typography>
-            <ReactHookEditableList
-              name="rules"
-              register={register}
-              ls={rules}
-              append={appendRule}
-              remove={removeRule}
-              bulletName="Rule"
-            />
-          </Box>
+          {!project && (
+            <Box>
+              <ProjectFormWorkPackageSection
+                workPackages={workPackages ?? []}
+                watch={watch}
+                register={register}
+                append={appendWorkPackage}
+                remove={removeWorkPackage}
+                control={control}
+                errors={errors}
+              />
+            </Box>
+          )}
         </Stack>
       </PageLayout>
       {onSubmitChangeRequest && (
@@ -257,6 +359,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           onHide={() => setIsModalOpen(false)}
           wbsNum={project ? wbsPipe(project!.wbsNum) : '0.0.0'}
           open={isModalOpen}
+          changeRequestFormReturn={changeRequestFormReturn}
         />
       )}
     </form>

@@ -1,44 +1,43 @@
-import { Blocked_By_Info, Role, User, WBS_Element_Status } from '@prisma/client';
+import { Organization, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
+  calculateEndDate,
+  DescriptionBulletPreview,
   getDay,
-  DescriptionBullet,
-  equalsWbsNumber,
   isAdmin,
   isGuest,
-  isProject,
-  TimelineStatus,
+  isWorkPackageWbs,
   WbsElementStatus,
   WbsNumber,
   wbsPipe,
   WorkPackage,
+  WorkPackagePreview,
   WorkPackageStage,
-  WorkPackageTemplate,
-  BlockedByCreateArgs
+  User,
+  WorkPackageSelection
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   NotFoundException,
   HttpException,
   AccessDeniedGuestException,
   AccessDeniedAdminOnlyException,
-  DeletedException
-} from '../utils/errors.utils';
-import { addDescriptionBullets, editDescriptionBullets, validateBlockedBys } from '../utils/projects.utils';
-import { wbsNumOf } from '../utils/utils';
-import { getUserFullName } from '../utils/users.utils';
-import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
-import workPackageTransformer from '../transformers/work-packages.transformer';
-import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
-import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
-import { createChange, createListChanges } from '../utils/changes.utils';
+  DeletedException,
+  InvalidOrganizationException
+} from '../utils/errors.utils.js';
+import { getWorkPackageQueryArgs, getWorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer.js';
+import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils.js';
+import { getWorkPackageChanges } from '../utils/changes.utils.js';
 import {
-  DescriptionBulletPreview,
-  descriptionBulletToChangeListValue,
-  descriptionBulletsToChangeListValues
-} from '../utils/description-bullets.utils';
-import { getBlockingWorkPackages } from '../utils/work-packages.utils';
-import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
-import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
+  DescriptionBulletDestination,
+  addRawDescriptionBullets,
+  editDescriptionBullets
+} from '../utils/description-bullets.utils.js';
+import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packages.utils.js';
+import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
+import { userHasPermission } from '../utils/users.utils.js';
+import { getUserPreviewQueryArgs } from '../prisma-query-args/user.query-args.js';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -46,22 +45,24 @@ export default class WorkPackagesService {
    * Retrieve all work packages, optionally filtered by query parameters.
    *
    * @param query the filters on the query
+   * @param organizationId the id of the organization that the user is currently in
    * @returns a list of work packages
    */
-  static async getAllWorkPackages(query: {
-    status?: WbsElementStatus;
-    timelineStatus?: TimelineStatus;
-    daysUntilDeadline?: string;
-  }): Promise<WorkPackage[]> {
+  static async getAllWorkPackages(
+    query: {
+      status?: WbsElementStatus;
+      daysUntilDeadline?: string;
+    },
+    organization: Organization
+  ): Promise<WorkPackage[]> {
     const workPackages = await prisma.work_Package.findMany({
-      where: { wbsElement: { dateDeleted: null } },
-      ...workPackageQueryArgs
+      where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
+      ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
     const outputWorkPackages = workPackages.map(workPackageTransformer).filter((wp) => {
       let passes = true;
       if (query.status) passes &&= wp.status === query.status;
-      if (query.timelineStatus) passes &&= wp.timelineStatus === query.timelineStatus;
       if (query.daysUntilDeadline) {
         const daysToDeadline = Math.round((wp.endDate.getTime() - new Date().getTime()) / 86400000);
         passes &&= daysToDeadline <= parseInt(query?.daysUntilDeadline as string);
@@ -75,20 +76,40 @@ export default class WorkPackagesService {
   }
 
   /**
-   * Retrieve the work package with the specified WBS number.
+   * Retrieve all work packages in preview format (minimal data for dropdowns/lists).
    *
-   * @param query the filters on the query
-   * @returns the desired work package
-   * @throws if the work package with the desired WBS number is not found
+   * @param status Optional status filter
+   * @param organization the organization
+   * @returns a list of work package previews
    */
-  static async getSingleWorkPackage(parsedWbs: WbsNumber): Promise<WorkPackage> {
-    if (isProject(parsedWbs)) {
-      throw new HttpException(
-        404,
-        'WBS Number ' +
-          `${parsedWbs.carNumber}.${parsedWbs.projectNumber}.${parsedWbs.workPackageNumber}` +
-          ' is a project WBS#, not a Work Package WBS#'
-      );
+  static async getAllWorkPackagesPreview(
+    status: WbsElementStatus | string | undefined,
+    organization: Organization
+  ): Promise<WorkPackagePreview[]> {
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        wbsElement: {
+          dateDeleted: null,
+          organizationId: organization.organizationId,
+          ...(status ? { status: status as WbsElementStatus } : {})
+        }
+      },
+      ...getWorkPackagePreviewQueryArgs()
+    });
+
+    return workPackages.map(workPackagePreviewTransformer);
+  }
+
+  /**
+   * Retrieve the work package with the specified WBS number.
+   * @param parsedWbs the WBS number of the desired work package
+   * @param organizationId the id of the organization that the user is currently in
+   * @returns the desired work package
+   * @throws if the work package with the desired WBS number is not found, is deleted or is not part of the given organization
+   */
+  static async getSingleWorkPackage(parsedWbs: WbsNumber, organization: Organization): Promise<WorkPackage> {
+    if (!isWorkPackageWbs(parsedWbs)) {
+      throw new HttpException(404, 'WBS Number ' + wbsPipe(parsedWbs) + ' is a not a work package WBS#');
     }
 
     const wp = await prisma.work_Package.findFirst({
@@ -100,7 +121,7 @@ export default class WorkPackagesService {
           workPackageNumber: parsedWbs.workPackageNumber
         }
       },
-      ...workPackageQueryArgs
+      ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
     if (!wp)
@@ -109,50 +130,32 @@ export default class WorkPackagesService {
         `${parsedWbs.carNumber}.${parsedWbs.projectNumber}.${parsedWbs.workPackageNumber}`
       );
 
+    if (wp.wbsElement.dateDeleted) throw new DeletedException('Work Package', wp.wbsElementId);
+
+    if (wp.wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Work Package');
+
     return workPackageTransformer(wp);
   }
 
   /**
    * Retrieve a subset of work packages.
    * @param wbsNums the WBS numbers of the work packages to retrieve
+   * @param organizationId the id of the organization that the user is currently in
    * @returns the work packages with the given WBS numbers
-   * @throws if any of the work packages are not found
+   * @throws if any of the work packages are not found or are not part of the organization
    */
-  static async getManyWorkPackages(wbsNums: WbsNumber[]): Promise<WorkPackage[]> {
+  static async getManyWorkPackages(wbsNums: WbsNumber[], organization: Organization): Promise<WorkPackage[]> {
     wbsNums.forEach((wbsNum) => {
-      if (isProject(wbsNum)) {
+      if (!isWorkPackageWbs(wbsNum)) {
         throw new HttpException(
           404,
-          `WBS Number ${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber} is a project WBS#, not a Work Package WBS#`
+          `WBS Number ${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber} is not a Work Package WBS#`
         );
       }
     });
 
     const workPackagePromises = wbsNums.map(async (wbsNum) => {
-      const workPackage = await prisma.work_Package.findFirst({
-        where: {
-          AND: [
-            {
-              wbsElement: {
-                dateDeleted: null
-              }
-            },
-            {
-              wbsElement: {
-                carNumber: wbsNum.carNumber,
-                projectNumber: wbsNum.projectNumber,
-                workPackageNumber: wbsNum.workPackageNumber
-              }
-            }
-          ]
-        },
-        ...workPackageQueryArgs
-      });
-
-      if (!workPackage) {
-        throw new NotFoundException('Work Package', wbsPipe(wbsNum));
-      }
-      return workPackageTransformer(workPackage);
+      return WorkPackagesService.getSingleWorkPackage(wbsNum, organization);
     });
 
     const resolvedWorkPackages = await Promise.all(workPackagePromises);
@@ -168,81 +171,77 @@ export default class WorkPackagesService {
    * @param startDate the date string representing the start date
    * @param duration the expected duration of this work package, in weeks
    * @param blockedBy the WBS elements that need to be completed before this WP
-   * @param expectedActivities the expected activities descriptions for this WP
-   * @param deliverables the expected deliverables descriptions for this WP
+   * @param descriptionBullets the description bullets associated with this WP
+   * @param organizationId the id of the organization that the user is currently in
    * @returns the WBS number of the successfully created work package
    * @throws if the work package could not be created
    */
   static async createWorkPackage(
     user: User,
     name: string,
-    crId: number,
+    crId: string | null,
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
     blockedBy: WbsNumber[],
-    expectedActivities: string[],
-    deliverables: string[]
-  ): Promise<string> {
-    if (isGuest(user.role)) throw new AccessDeniedGuestException('create work packages');
+    descriptionBullets: DescriptionBulletPreview[],
+    projectWbsNum: WbsNumber,
+    organization: Organization
+  ): Promise<WorkPackage> {
+    if (await userHasPermission(user.userId, organization.organizationId, isGuest))
+      throw new AccessDeniedGuestException('create work packages');
 
-    const changeRequest = await validateChangeRequestAccepted(crId);
+    if (crId) {
+      await validateChangeRequestAccepted(crId);
+    }
 
-    const wbsElem = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsElementId: changeRequest.wbsElementId
-      },
-      include: {
-        project: {
-          include: {
-            workPackages: { include: { wbsElement: true, blockedBy: true } }
-          }
-        }
-      }
-    });
-
-    if (!wbsElem) throw new NotFoundException('WBS Element', changeRequest.wbsElementId);
-
-    const blockedByIds: number[] = await validateBlockedBys(blockedBy);
+    const blockedByElements: WBS_Element[] = await validateBlockedBys(blockedBy, organization.organizationId);
 
     // get the corresponding project so we can find the next wbs number
     // and what number work package this should be
-    const { carNumber, projectNumber, workPackageNumber } = wbsElem;
+    const { carNumber, projectNumber } = projectWbsNum;
 
-    const projectWbsNum: WbsNumber = {
-      carNumber,
-      projectNumber,
-      workPackageNumber
-    };
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        }
+      },
+      include: {
+        workPackages: {
+          include: {
+            wbsElement: true
+          }
+        },
+        wbsElement: true
+      }
+    });
 
-    if (wbsElem.dateDeleted)
-      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
-
-    if (workPackageNumber !== 0) {
-      throw new HttpException(
-        400,
-        `Given WBS Number ${carNumber}.${projectNumber}.${workPackageNumber} is not for a project.`
-      );
+    if (!project) {
+      throw new NotFoundException('Project', `${carNumber}.${projectNumber}.0`);
     }
-
-    if (blockedBy.find((dep: WbsNumber) => equalsWbsNumber(dep, projectWbsNum))) {
-      throw new HttpException(400, 'A Work Package cannot have its own project as a blocker');
-    }
-
-    const { project } = wbsElem;
-
-    if (!project) throw new NotFoundException('Project', `${carNumber}.${projectNumber}.${workPackageNumber}`);
 
     const { projectId } = project;
+
+    const { leadId, managerId } = project.wbsElement;
 
     const newWorkPackageNumber: number =
       project.workPackages
         .map((element) => element.wbsElement.workPackageNumber)
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
-    // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-    const date = new Date(startDate.split('T')[0]);
-    date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
+    const changesToCreate = crId
+      ? [
+          {
+            changeRequestId: crId,
+            implementerId: user.userId,
+            detail: 'New Work Package Created'
+          }
+        ]
+      : [];
 
     // add to the database
     const created = await prisma.work_Package.create({
@@ -254,33 +253,60 @@ export default class WorkPackagesService {
             workPackageNumber: newWorkPackageNumber,
             name,
             changes: {
-              create: {
-                changeRequestId: crId,
-                implementerId: user.userId,
-                detail: 'New Work Package Created'
-              }
-            }
+              createMany: { data: changesToCreate }
+            },
+            organizationId: organization.organizationId,
+            leadId,
+            managerId
           }
         },
         stage,
         project: { connect: { projectId } },
-        startDate: date,
+        startDate: new Date(startDate),
         duration,
-        orderInProject: project.workPackages.length + 1,
-        blockedBy: { connect: blockedByIds.map((ele) => ({ wbsElementId: ele })) },
-        expectedActivities: { create: expectedActivities.map((ele: string) => ({ detail: ele })) },
-        deliverables: { create: deliverables.map((ele: string) => ({ detail: ele })) }
+        orderInProject: project.workPackages.filter((wp) => !wp.wbsElement.dateDeleted).length + 1,
+        blockedBy: { connect: blockedByElements.map((ele) => ({ wbsElementId: ele.wbsElementId })) }
       },
-      include: {
-        wbsElement: true
-      }
+      ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
-    return `${created.wbsElement.carNumber}.${created.wbsElement.projectNumber}.${created.wbsElement.workPackageNumber}`;
+    const changes = await getWorkPackageChanges(
+      null,
+      name,
+      null,
+      stage,
+      null,
+      new Date(startDate),
+      null,
+      duration,
+      [],
+      blockedByElements,
+      null,
+      leadId,
+      null,
+      managerId,
+      [],
+      descriptionBullets,
+      crId,
+      created.wbsElementId,
+      user.userId
+    );
+
+    // Add the description bullets to the workpackage
+    await addRawDescriptionBullets(
+      descriptionBullets,
+      DescriptionBulletDestination.WBS_ELEMENT,
+      created.wbsElement.wbsElementId,
+      created.wbsElement.organizationId
+    );
+
+    await prisma.change.createMany({ data: changes.changes });
+
+    return workPackageTransformer(created);
   }
 
   /**
-   * Edits a Work_Package in the database
+   * Edits a Work Package in the database
    * @param user the user editing the work package
    * @param workPackageId the id of the work package
    * @param name the new name of the work package
@@ -288,184 +314,76 @@ export default class WorkPackagesService {
    * @param startDate the date string representing the new start date
    * @param duration the new duration of this work package, in weeks
    * @param blockedBy the new WBS elements to be completed before this WP
-   * @param expectedActivities the new expected activities descriptions for this WP
-   * @param deliverables the new expected deliverables descriptions for this WP
-   * @param projectLeadId the new lead for this work package
-   * @param projectManagerId the new manager for this work package
+   * @param descriptionBullets the new description bullets associated with this WP
+   * @param leadId the new lead for this work package
+   * @param managerId the new manager for this work package
+   * @param organizationId the id of the organization that the user is currently in
    */
   static async editWorkPackage(
     user: User,
-    workPackageId: number,
+    workPackageId: string,
     name: string,
-    crId: number,
+    crId: string,
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
     blockedBy: WbsNumber[],
-    expectedActivities: DescriptionBullet[],
-    deliverables: DescriptionBullet[],
-    projectLeadId: number,
-    projectManagerId: number
-  ): Promise<void> {
-    // verify user is allowed to edit work packages
-    if (isGuest(user.role)) throw new AccessDeniedGuestException('edit work packages');
-
-    blockedBy.forEach((dep: WbsNumber) => {
-      if (dep.workPackageNumber === 0) {
-        throw new HttpException(400, 'A Project cannot be a Blocker');
-      }
-    });
-
+    descriptionBullets: DescriptionBulletPreview[],
+    leadId: string | null,
+    managerId: string | null,
+    organization: Organization
+  ): Promise<WorkPackage> {
     const { userId } = user;
+    // verify user is allowed to edit work packages
+    if (await userHasPermission(userId, organization.organizationId, isGuest))
+      throw new AccessDeniedGuestException('edit work packages');
 
     // get the original work package so we can compare things
     const originalWorkPackage = await prisma.work_Package.findUnique({
       where: { workPackageId },
       include: {
-        wbsElement: true,
-        blockedBy: true,
-        expectedActivities: true,
-        deliverables: true
+        wbsElement: {
+          include: {
+            descriptionBullets: getDescriptionBulletQueryArgs(organization.organizationId)
+          }
+        },
+        blockedBy: true
       }
     });
 
     if (!originalWorkPackage) throw new NotFoundException('Work Package', workPackageId);
     if (originalWorkPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackageId);
-
-    if (
-      blockedBy.find((dep: WbsNumber) =>
-        equalsWbsNumber(dep, {
-          carNumber: originalWorkPackage.wbsElement.carNumber,
-          projectNumber: originalWorkPackage.wbsElement.projectNumber,
-          workPackageNumber: 0
-        })
-      ) != null
-    ) {
-      throw new HttpException(400, 'A Work Package cannot have own project as a blocker');
-    }
-
-    if (
-      blockedBy.find((dep: WbsNumber) =>
-        equalsWbsNumber(dep, {
-          carNumber: originalWorkPackage.wbsElement.carNumber,
-          projectNumber: originalWorkPackage.wbsElement.projectNumber,
-          workPackageNumber: originalWorkPackage.wbsElement.workPackageNumber
-        })
-      ) != null
-    ) {
-      throw new HttpException(400, 'A Work Package cannot have own project as a blocker');
-    }
+    if (originalWorkPackage.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Work Package');
 
     // the crId must match a valid approved change request
     await validateChangeRequestAccepted(crId);
 
-    const updatedBlockedBys = await Promise.all(
-      blockedBy.map(async (wbsNum: WbsNumber) => {
-        const { carNumber, projectNumber, workPackageNumber } = wbsNum;
-        const wbsElem = await prisma.wBS_Element.findUnique({
-          where: {
-            wbsNumber: { carNumber, projectNumber, workPackageNumber }
-          }
-        });
-
-        if (!wbsElem) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-        if (wbsElem.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
-
-        return wbsElem;
-      })
-    );
-
     const { wbsElementId } = originalWorkPackage;
-    let changes = [];
-    // get the changes or undefined for each of the fields
-    const nameChangeJson = createChange('name', originalWorkPackage.wbsElement.name, name, crId, userId, wbsElementId!);
-    const stageChangeJson = createChange('stage', originalWorkPackage.stage, stage, crId, userId, wbsElementId!);
-    const startDateChangeJson = createChange(
-      'start date',
-      originalWorkPackage.startDate.toDateString(),
-      new Date(startDate).toDateString(),
-      crId,
-      userId,
-      wbsElementId!
-    );
-    const durationChangeJson = createChange('duration', originalWorkPackage.duration, duration, crId, userId, wbsElementId!);
-    const blockedByChangeJson = createListChanges(
-      'blocked by',
-      originalWorkPackage.blockedBy.map((element) => {
-        return {
-          element,
-          comparator: `${element.wbsElementId}`,
-          displayValue: wbsPipe(wbsNumOf(element))
-        };
-      }),
-      updatedBlockedBys.map((element) => {
-        return {
-          element,
-          comparator: `${element.wbsElementId}`,
-          displayValue: wbsPipe(wbsNumOf(element))
-        };
-      }),
-      crId,
-      userId,
-      wbsElementId!
-    );
-    const expectedActivitiesChangeJson = createListChanges(
-      'expected activity',
-      descriptionBulletsToChangeListValues(originalWorkPackage.expectedActivities.filter((ele) => !ele.dateDeleted)),
-      expectedActivities.map(descriptionBulletToChangeListValue),
-      crId,
-      userId,
-      wbsElementId!
-    );
-    const deliverablesChangeJson = createListChanges(
-      'deliverable',
 
-      descriptionBulletsToChangeListValues(originalWorkPackage.deliverables.filter((ele) => !ele.dateDeleted)),
-      deliverables.map(descriptionBulletToChangeListValue),
+    const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
+
+    const changes = await getWorkPackageChanges(
+      originalWorkPackage.wbsElement.name,
+      name,
+      originalWorkPackage.stage,
+      stage,
+      originalWorkPackage.startDate,
+      new Date(startDate),
+      originalWorkPackage.duration,
+      duration,
+      originalWorkPackage.blockedBy,
+      blockedByElems,
+      originalWorkPackage.wbsElement.managerId,
+      leadId,
+      originalWorkPackage.wbsElement.leadId,
+      managerId,
+      originalWorkPackage.wbsElement.descriptionBullets,
+      descriptionBullets,
       crId,
-      userId,
-      wbsElementId!
+      wbsElementId,
+      userId
     );
-
-    // add to changes if not undefined
-    if (nameChangeJson !== undefined) changes.push(nameChangeJson);
-    if (startDateChangeJson !== undefined) changes.push(startDateChangeJson);
-    if (durationChangeJson !== undefined) changes.push(durationChangeJson);
-    if (stageChangeJson !== undefined) changes.push(stageChangeJson);
-
-    const projectManagerChangeJson = createChange(
-      'project manager',
-      await getUserFullName(originalWorkPackage.wbsElement.managerId),
-      await getUserFullName(projectManagerId),
-      crId,
-      userId,
-      wbsElementId!
-    );
-    if (projectManagerChangeJson) {
-      changes.push(projectManagerChangeJson);
-    }
-
-    const projectLeadChangeJson = createChange(
-      'project lead',
-      await getUserFullName(originalWorkPackage.wbsElement.leadId),
-      await getUserFullName(projectLeadId),
-      crId,
-      userId,
-      wbsElementId!
-    );
-    if (projectLeadChangeJson) {
-      changes.push(projectLeadChangeJson);
-    }
-
-    // add the changes for each of blockers, expected activities, and deliverables
-    changes = changes
-      .concat(blockedByChangeJson.changes)
-      .concat(expectedActivitiesChangeJson.changes)
-      .concat(deliverablesChangeJson.changes);
-
-    // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-    const date = new Date(startDate);
-    date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
 
     // set the status of the wbs element to active if an edit is made to a completed version
     const status =
@@ -477,85 +395,72 @@ export default class WorkPackagesService {
     const updatedWorkPackage = await prisma.work_Package.update({
       where: { wbsElementId },
       data: {
-        startDate: date,
+        startDate: new Date(startDate),
         duration,
         wbsElement: {
           update: {
             name,
-            leadId: projectLeadId,
-            managerId: projectManagerId,
+            leadId,
+            managerId,
             status
           }
         },
         stage,
         blockedBy: {
           set: [], // remove all the connections then add all the given ones
-          connect: updatedBlockedBys.map((ele) => ({ wbsElementId: ele.wbsElementId }))
+          connect: blockedByElems.map((ele) => ({ wbsElementId: ele.wbsElementId }))
         }
-      }
+      },
+      ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
+    // Transform Milliseconds to weeks
+    const timelineImpact =
+      (updatedWorkPackage.startDate.getTime() - originalWorkPackage.startDate.getTime()) / 1000 / 60 / 60 / 24 / 7 +
+      updatedWorkPackage.duration -
+      originalWorkPackage.duration;
+
+    await updateBlocking(updatedWorkPackage, timelineImpact, crId, user);
+
     // Update any deleted description bullets to have their date deleted as right now
-    const deletedElements: DescriptionBulletPreview[] = expectedActivitiesChangeJson.deletedElements.concat(
-      deliverablesChangeJson.deletedElements
-    );
-    if (deletedElements.length > 0) {
+    if (changes.deletedDescriptionBullets.length > 0) {
       await prisma.description_Bullet.updateMany({
-        where: { descriptionId: { in: deletedElements.map((descriptionBullet) => descriptionBullet.id) } },
+        where: { descriptionId: { in: changes.deletedDescriptionBullets.map((descriptionBullet) => descriptionBullet.id) } },
         data: { dateDeleted: new Date() }
       });
     }
 
-    // Add the expected activities to the workpackage
-    await addDescriptionBullets(
-      expectedActivitiesChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      updatedWorkPackage.workPackageId,
-      'workPackageIdExpectedActivities'
-    );
-
-    // Add the deliverables to the workpackage
-    await addDescriptionBullets(
-      deliverablesChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      updatedWorkPackage.workPackageId,
-      'workPackageIdDeliverables'
+    // Add the new description bullets to the workpackage
+    await addRawDescriptionBullets(
+      changes.addedDescriptionBullets,
+      DescriptionBulletDestination.WBS_ELEMENT,
+      wbsElementId,
+      originalWorkPackage.wbsElement.organizationId
     );
 
     // edit the expected changes and deliverables
-    await editDescriptionBullets(expectedActivitiesChangeJson.editedElements.concat(deliverablesChangeJson.editedElements));
+    await editDescriptionBullets(changes.editedDescriptionBullets, originalWorkPackage.wbsElement.organizationId);
 
     // create the changes in prisma
-    await prisma.change.createMany({ data: changes });
+    await prisma.change.createMany({ data: changes.changes });
+
+    return workPackageTransformer(updatedWorkPackage);
   }
 
   /**
    * Deletes the Work Package
    * @param submitter The user who deleted the work package
    * @param wbsNum The work package number to be deleted
+   * @param organizationId The organization id that the user is in
    */
-  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber): Promise<void> {
+  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber, organization: Organization): Promise<void> {
     // Verify submitter is allowed to delete work packages
-    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('delete work packages');
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete work packages');
 
-    const { carNumber, projectNumber, workPackageNumber } = wbsNum;
+    const workPackage = await WorkPackagesService.getSingleWorkPackage(wbsNum, organization);
 
-    if (workPackageNumber === 0) throw new HttpException(400, `${wbsPipe(wbsNum)} is not a valid work package WBS!`);
-
-    // Verify if the work package to be deleted exist and if it already has been deleted
-    const workPackage = await prisma.work_Package.findFirst({
-      where: {
-        wbsElement: {
-          carNumber,
-          projectNumber,
-          workPackageNumber
-        }
-      },
-      ...workPackageQueryArgs
-    });
-
-    if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
-    if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', wbsPipe(wbsNum));
-
-    const { wbsElementId, workPackageId } = workPackage;
+    const { wbsElementId, id: workPackageId } = workPackage;
 
     const dateDeleted = new Date();
     const deletedByUserId = submitter.userId;
@@ -592,27 +497,16 @@ export default class WorkPackagesService {
               }
             },
             dateDeleted,
-            deletedByUserId
-          }
-        },
-        // Soft delete wp's related dsecription_bullet fields
-        deliverables: {
-          updateMany: {
-            where: {
-              workPackageIdDeliverables: workPackageId
-            },
-            data: {
-              dateDeleted
-            }
-          }
-        },
-        expectedActivities: {
-          updateMany: {
-            where: {
-              workPackageIdExpectedActivities: workPackageId
-            },
-            data: {
-              dateDeleted
+            deletedByUserId,
+            descriptionBullets: {
+              updateMany: {
+                where: {
+                  wbsElementId
+                },
+                data: {
+                  dateDeleted
+                }
+              }
             }
           }
         }
@@ -623,28 +517,35 @@ export default class WorkPackagesService {
   /**
    * Gets the work packages the given work package is blocking
    * @param wbsNum the wbs number of the work package to get the blocking work packages for
+   * @param organizationId the id of the organization that the user is currently in
    * @returns the blocking work packages for the given work package
    */
-  static async getBlockingWorkPackages(wbsNum: WbsNumber): Promise<WorkPackage[]> {
+  static async getBlockingWorkPackages(wbsNum: WbsNumber, organization: Organization): Promise<WorkPackage[]> {
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 
-    // is a project so just return empty array until we implement blocking projects
-    if (workPackageNumber === 0) return [];
+    // is a project or car so just return empty array until we implement blocking projects/cars
+    if (!isWorkPackageWbs(wbsNum)) return [];
 
-    const workPackage = await prisma.work_Package.findFirst({
+    const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
-        wbsElement: {
+        wbsNumber: {
           carNumber,
           projectNumber,
-          workPackageNumber
+          workPackageNumber,
+          organizationId: organization.organizationId
         }
       },
-      ...workPackageQueryArgs
+      include: {
+        workPackage: getWorkPackageQueryArgs(organization.organizationId)
+      }
     });
 
-    if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+    const workPackage = wbsElement?.workPackage;
 
+    if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
     if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackage.wbsElementId);
+    if (workPackage.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Work Package');
 
     const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
 
@@ -656,21 +557,25 @@ export default class WorkPackagesService {
    * Sends a message for every work package that is due before or on the given deadline (even before today)
    * @param user - the user doing the sending
    * @param deadline - the deadline
-   * @returns
+   * @param organizationId - the id of the organization that the user is currently in
+   * @returns void
    */
-  static async slackMessageUpcomingDeadlines(user: User, deadline: Date): Promise<void> {
-    if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN)
+  static async slackMessageUpcomingDeadlines(user: User, deadline: Date, organization: Organization): Promise<void> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages');
 
     const workPackages = await prisma.work_Package.findMany({
-      where: { wbsElement: { dateDeleted: null, status: WBS_Element_Status.ACTIVE } },
-      ...workPackageQueryArgs
+      where: {
+        wbsElement: { dateDeleted: null, status: WBS_Element_Status.ACTIVE, organizationId: organization.organizationId }
+      },
+      ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
     const upcomingWorkPackages = workPackages
-      .map(workPackageTransformer)
-      .filter((wp) => getDay(wp.endDate) <= getDay(deadline))
-      .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
+      .filter((wp) => getDay(calculateEndDate(wp.startDate, wp.duration)) <= getDay(deadline))
+      .sort(
+        (a, b) => calculateEndDate(a.startDate, a.duration).getTime() - calculateEndDate(b.startDate, b.duration).getTime()
+      );
 
     // have to do it like this so it goes sequentially and we can sleep between each because of rate limiting
     await upcomingWorkPackages.reduce(
@@ -681,160 +586,89 @@ export default class WorkPackagesService {
         }),
       Promise.resolve()
     );
-
-    return;
   }
 
   /**
-   * Gets a single requested work package template
-   * @param submitter - the user making the request to get the given work package template
-   * @param workPackageTemplateId - the id of the work package template to be returned
-   * @returns a single work package template
+   * Gets the current users teams workpackages
+   *
+   * @param user The current user
+   * @param organization The organization the current user is logged in for
+   * @param onlyOverdue Whether to only return overdue workpackages
    */
-  static async getSingleWorkPackageTemplate(submitter: User, workPackageTemplateId: string): Promise<WorkPackageTemplate> {
-    if (isGuest(submitter.role)) {
-      throw new AccessDeniedGuestException('get a work package template');
-    }
+  static async getHomePageWorkPackages(
+    user: User,
+    organization: Organization,
+    selection: WorkPackageSelection
+  ): Promise<WorkPackagePreview[]> {
+    const selectionArgs =
+      selection === WorkPackageSelection.ALL_OVERDUE
+        ? {}
+        : selection === WorkPackageSelection.LEADING
+          ? {
+              workPackage: {
+                project: {
+                  teams: { some: { OR: [{ headId: user.userId }, { leads: { some: { userId: user.userId } } }] } }
+                }
+              }
+            }
+          : {
+              workPackage: {
+                project: {
+                  teams: {
+                    some: {
+                      OR: [
+                        { headId: user.userId },
+                        { leads: { some: { userId: user.userId } } },
+                        { members: { some: { userId: user.userId } } }
+                      ]
+                    }
+                  }
+                }
+              }
+            };
 
-    const workPackage = await prisma.work_Package_Template.findFirst({
+    let workPackages = await prisma.work_Package.findMany({
       where: {
-        dateDeleted: null,
-        workPackageTemplateId
-      },
-      ...workPackageTemplateQueryArgs
-    });
-
-    if (!workPackage) throw new HttpException(400, `Work package template with id ${workPackageTemplateId} not found`);
-
-    return workPackageTemplateTransformer(workPackage);
-  }
-
-  /**
-   * Gets all work package templates
-   * @param submitter  - the user making the request to get all work package templates
-   * @returns an array of all work package templates
-   */
-  static async getAllWorkPackageTemplates(submitter: User): Promise<WorkPackageTemplate[]> {
-    if (isGuest(submitter.role)) {
-      throw new AccessDeniedGuestException('get all work package templates.');
-    }
-    const workPackageTemplates = await prisma.work_Package_Template.findMany({
-      where: { dateDeleted: null },
-      ...workPackageTemplateQueryArgs
-    });
-    return workPackageTemplates.map(workPackageTemplateTransformer);
-  }
-
-  /**
-   * Edits a work package template given the specified parameters
-   * @param submitter user who is submitting the edit
-   * @param workPackageTemplateId id of the work package template being edited
-   * @param templateName name of the work package template
-   * @param templateNotes notes about the work package template
-   * @param duration duration value on the template
-   * @param stage stage value on the template
-   * @param blockedByInfo array of info about the blocked by on the template
-   * @param expectedActivities array of expected activity values on the template
-   * @param deliverables array of deliverable values on the template
-   * @param workPackageName name value on the template
-   * @returns
-   */
-  static async editWorkPackageTemplate(
-    submitter: User,
-    workPackageTemplateId: string,
-    templateName: string,
-    templateNotes: string,
-    duration: number | undefined,
-    stage: WorkPackageStage | undefined,
-    blockedByInfo: BlockedByCreateArgs[],
-    expectedActivities: string[],
-    deliverables: string[],
-    workPackageName: string | undefined
-  ): Promise<WorkPackageTemplate> {
-    const originalWorkPackageTemplate = await prisma.work_Package_Template.findUnique({
-      where: { workPackageTemplateId },
-      include: { blockedBy: true }
-    });
-
-    if (!originalWorkPackageTemplate) throw new NotFoundException('Work Package Template', workPackageTemplateId);
-    if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package Template', workPackageTemplateId);
-    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('edit work package templates');
-
-    const updatedBlockedByIds = blockedByInfo.map((blockedBy) => blockedBy.blockedByInfoId);
-    const originalBlockedByIds = originalWorkPackageTemplate.blockedBy.map((blockedBy) => blockedBy.blockedByInfoId);
-
-    // A blocked by is deleted if the new list does not contain it
-    const deleteBlockedByIds = originalWorkPackageTemplate.blockedBy
-      .filter((blockedByItem: Blocked_By_Info) => {
-        return !updatedBlockedByIds.includes(blockedByItem.blockedByInfoId);
-      })
-      .map((item) => item.blockedByInfoId);
-
-    // A blocked by is updated if both the new and old list contain it
-    const updatedBlockedBy = blockedByInfo.filter((blockedByItem) => {
-      return blockedByItem.blockedByInfoId && originalBlockedByIds.includes(blockedByItem.blockedByInfoId);
-    });
-
-    // A blocked by is created if the old list does not contain it
-    const newBlockedBy = blockedByInfo.filter((blockedByItem: BlockedByCreateArgs) => {
-      return !originalWorkPackageTemplate.blockedBy.some(
-        (oldItem) => oldItem.blockedByInfoId === blockedByItem.blockedByInfoId
-      );
-    });
-
-    // deleting old blocked by
-    await prisma.blocked_By_Info.deleteMany({
-      where: {
-        blockedByInfoId: {
-          in: deleteBlockedByIds
+        wbsElement: {
+          ...selectionArgs,
+          dateDeleted: null,
+          organizationId: organization.organizationId,
+          status: { not: WBS_Element_Status.COMPLETE }
         }
+      },
+      select: {
+        project: { select: { projectId: true, wbsElement: { select: { name: true } } } },
+        wbsElement: {
+          select: {
+            dateCreated: true,
+            status: true,
+            name: true,
+            carNumber: true,
+            projectNumber: true,
+            workPackageNumber: true,
+            dateDeleted: true,
+            wbsElementId: true,
+            lead: getUserPreviewQueryArgs(),
+            manager: getUserPreviewQueryArgs()
+          }
+        },
+        blockedBy: true,
+        startDate: true,
+        duration: true,
+        workPackageId: true,
+        stage: true
       }
     });
 
-    // creating new blocked by
-    const createdBlockedByPromises = newBlockedBy.map((blockedBy) =>
-      prisma.blocked_By_Info.create({
-        data: {
-          workPackageTemplateId,
-          stage: blockedBy.stage,
-          name: blockedBy.name
-        }
-      })
-    );
+    if (selection === WorkPackageSelection.ALL_OVERDUE) {
+      workPackages = workPackages.filter((wp) => {
+        const endDate = new Date(wp.startDate);
+        endDate.setDate(endDate.getDate() + wp.duration * 7); // Add weeks as days
 
-    await Promise.all(createdBlockedByPromises);
-
-    // updating existing blocked by
-    const updatedBlockedByPromises = updatedBlockedBy.map((blockedBy) => {
-      return prisma.blocked_By_Info.update({
-        where: {
-          blockedByInfoId: blockedBy.blockedByInfoId
-        },
-        data: {
-          stage: blockedBy.stage ? blockedBy.stage : null,
-          name: blockedBy.name
-        }
+        return endDate < new Date();
       });
-    });
+    }
 
-    await Promise.all(updatedBlockedByPromises);
-
-    const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({
-      where: {
-        workPackageTemplateId
-      },
-      data: {
-        templateName,
-        templateNotes,
-        duration,
-        stage,
-        expectedActivities,
-        deliverables,
-        workPackageName
-      },
-      ...workPackageTemplateQueryArgs
-    });
-
-    return workPackageTemplateTransformer(updatedWorkPackageTemplate);
+    return workPackages.map(workPackagePreviewTransformer);
   }
 }
