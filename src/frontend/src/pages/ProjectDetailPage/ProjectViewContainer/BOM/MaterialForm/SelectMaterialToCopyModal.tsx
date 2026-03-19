@@ -82,7 +82,9 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
 
   const projectsForSelectedCar = useMemo(() => {
     if (!selectedCar) return [];
-    const carNumber = selectedCar.wbsNum.carNumber;
+    const {
+      wbsNum: { carNumber }
+    } = selectedCar;
     return projects.filter((p) => p.wbsNum.carNumber === carNumber);
   }, [projects, selectedCar]);
 
@@ -105,8 +107,9 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
     ['materials', 'car', selectedCar?.wbsNum.carNumber ?? 'none'],
     async () => {
       if (!selectedCar) return [];
-      const carNumber = selectedCar.wbsNum.carNumber;
-
+      const {
+        wbsNum: { carNumber }
+      } = selectedCar;
       const projectsInCar = projects.filter((p) => p.wbsNum.carNumber === carNumber);
       const results = await Promise.all(
         projectsInCar.map(async (p) => {
@@ -141,9 +144,7 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
   const searchOptions = useMemo(() => {
     const q = searchText.trim().toLowerCase();
     const filtered =
-      q.length === 0
-        ? carSearchResults
-        : carSearchResults.filter(({ material }) => material.name.toLowerCase().includes(q));
+      q.length === 0 ? carSearchResults : carSearchResults.filter(({ material }) => material.name.toLowerCase().includes(q));
 
     return filtered.map(searchResultToOption);
   }, [carSearchResults, searchText]);
@@ -175,10 +176,7 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
   }, [open, reset]);
 
   const anyLoading =
-    carsQuery.isLoading ||
-    projectsQuery.isLoading ||
-    projectMaterialsQuery.isLoading ||
-    carMaterialsQuery.isLoading;
+    carsQuery.isLoading || projectsQuery.isLoading || projectMaterialsQuery.isLoading || carMaterialsQuery.isLoading;
 
   const anyError =
     (carsQuery.error as Error | undefined) ||
@@ -277,7 +275,7 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
           options={carOptions}
           value={selectedCarOption}
           onChange={(_, value) => {
-            const next = value ? cars.find((c) => c.wbsElementId === value.id) ?? null : null;
+            const next = value ? (cars.find((c) => c.wbsElementId === value.id) ?? null) : null;
             setSelectedCar(next);
           }}
           required={true}
@@ -291,7 +289,7 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
           options={projectOptions}
           value={selectedProjectOption}
           onChange={(_, value) => {
-            const next = value ? projectsForSelectedCar.find((p) => p.wbsElementId === value.id) ?? null : null;
+            const next = value ? (projectsForSelectedCar.find((p) => p.wbsElementId === value.id) ?? null) : null;
             setSelectedProject(next);
           }}
           required={true}
@@ -305,7 +303,7 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
           options={projectMaterialOptions}
           value={selectedMaterialOption}
           onChange={(_, value) => {
-            const next = value ? projectMaterials.find((m) => m.materialId === value.id) ?? null : null;
+            const next = value ? (projectMaterials.find((m) => m.materialId === value.id) ?? null) : null;
             setSelectedMaterial(next);
           }}
           required={true}
