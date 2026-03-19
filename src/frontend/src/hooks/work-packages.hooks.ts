@@ -19,12 +19,14 @@ import {
   WorkPackageEditArgs,
   getHomePageWorkPackages
 } from '../apis/work-packages.api';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Custom React Hook to supply all work packages.
  */
 export const useAllWorkPackages = (queryParams?: { [field: string]: string }) => {
-  return useQuery<WorkPackage[], Error>(['work packages', queryParams], async () => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<WorkPackage[], Error>(['work packages', queryParams, selectedCar?.id], async () => {
     const { data } = await getAllWorkPackages(queryParams);
     return data;
   });
@@ -34,7 +36,8 @@ export const useAllWorkPackages = (queryParams?: { [field: string]: string }) =>
  * Custom React Hook to supply all work packages in preview format (minimal data).
  */
 export const useAllWorkPackagesPreview = (status?: string) => {
-  return useQuery<WorkPackagePreview[], Error>(['work packages', 'preview', status], async () => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<WorkPackagePreview[], Error>(['work packages', 'preview', status, selectedCar?.id], async () => {
     const { data } = await getAllWorkPackagesPreview(status);
     return data;
   });
@@ -145,7 +148,8 @@ export const useSlackUpcomingDeadlines = () => {
 };
 
 export const useHomeScreenWorkPackages = (selection: WorkPackageSelection) => {
-  return useQuery<WorkPackage[], Error>(['teams', 'work-packages', selection], async () => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<WorkPackage[], Error>(['teams', 'work-packages', selection, selectedCar?.id], async () => {
     const { data } = await getHomePageWorkPackages(selection);
     return data;
   });

@@ -53,18 +53,12 @@ const ProjectsOverview: React.FC = () => {
   const carFilteredFavorites = selectedCar
     ? favoriteProjects.filter((project) => project.wbsNum.carNumber === selectedCar.wbsNum.carNumber)
     : favoriteProjects;
-  const carFilteredTeams = selectedCar
-    ? teamsProjects.filter((project) => project.wbsNum.carNumber === selectedCar.wbsNum.carNumber)
-    : teamsProjects;
-  const carFilteredLeading = selectedCar
-    ? leadingProjects.filter((project) => project.wbsNum.carNumber === selectedCar.wbsNum.carNumber)
-    : leadingProjects;
 
   // Keeps only favorite team/leading projects (even when completed) or incomplete projects
-  const filteredTeamsProjects = carFilteredTeams.filter(
+  const filteredTeamsProjects = teamsProjects.filter(
     (project) => project.status !== WbsElementStatus.Complete || favoriteProjectsSet.has(project.id)
   );
-  const filteredLeadingProjects = carFilteredLeading.filter(
+  const filteredLeadingProjects = leadingProjects.filter(
     (project) => project.status !== WbsElementStatus.Complete || favoriteProjectsSet.has(project.id)
   );
 

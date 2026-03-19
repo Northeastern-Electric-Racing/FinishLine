@@ -55,7 +55,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { projectWbsPipe } from '../../../utils/pipes';
 import { projectGanttTransformer } from '../../../apis/transformers/projects.transformers';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { useGlobalCarFilter } from '../../../app/AppGlobalCarFilterContext';
 
 const getElementId = (element: WbsElementPreview | Task) => {
   return (element as WbsElementPreview).id ?? (element as Task).taskId;
@@ -64,7 +63,6 @@ const getElementId = (element: WbsElementPreview | Task) => {
 const ProjectGanttChartPage: FC = () => {
   const history = useHistory();
   const toast = useToast();
-  const { selectedCar } = useGlobalCarFilter();
 
   const {
     isLoading: projectsIsLoading,
@@ -114,11 +112,6 @@ const ProjectGanttChartPage: FC = () => {
         projectGanttTransformer
       );
 
-      // Filter by selected car from global filter
-      if (selectedCar) {
-        allProjects = allProjects.filter((project) => project.wbsNum.carNumber === selectedCar.wbsNum.carNumber);
-      }
-
       allProjects = allProjects.map((project) => {
         const editedProject = editedProjects.find((proj) => proj.id === project.id);
         return editedProject ? editedProject : project;
@@ -139,18 +132,7 @@ const ProjectGanttChartPage: FC = () => {
     if (projects && teams) {
       requestRefresh(projects, teams, editedProjects, addedProjects, filters, searchText);
     }
-  }, [
-    teams,
-    projects,
-    addedProjects,
-    setAllProjects,
-    setCollections,
-    editedProjects,
-    filters,
-    searchText,
-    history,
-    selectedCar
-  ]);
+  }, [teams, projects, addedProjects, setAllProjects, setCollections, editedProjects, filters, searchText, history]);
 
   const handleSetGanttFilters = (newFilters: GanttFilters) => {
     setFilters(newFilters);

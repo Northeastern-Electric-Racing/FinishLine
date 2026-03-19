@@ -14,17 +14,12 @@ import { routes } from '../../utils/routes';
 import { GridColDefStyle } from '../../utils/tables';
 import TableCustomToolbar from '../../components/TableCustomToolbar';
 import { getProjectTeamsName } from '../ProjectDetailPage/ProjectViewContainer/ProjectDetails';
-import { useGlobalCarFilter } from '../../app/AppGlobalCarFilterContext';
 
 /**
  * Table of all projects.
  */
 const ProjectsTable: React.FC = () => {
   const { isLoading, data, error } = useAllProjects();
-  const { selectedCar } = useGlobalCarFilter();
-
-  const filteredData =
-    selectedCar && data ? data.filter((project) => project.wbsNum.carNumber === selectedCar.wbsNum.carNumber) : data;
 
   if (!localStorage.getItem('projectsTableRowCount')) localStorage.setItem('projectsTableRowCount', '30');
   const [pageSize, setPageSize] = useState(localStorage.getItem('projectsTableRowCount'));
@@ -186,7 +181,7 @@ const ProjectsTable: React.FC = () => {
         error={error}
         rows={
           // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
-          filteredData?.map((v) => ({
+          data?.map((v) => ({
             ...v,
             carNumber: v.wbsNum.carNumber,
             lead: fullNamePipe(v.lead),
