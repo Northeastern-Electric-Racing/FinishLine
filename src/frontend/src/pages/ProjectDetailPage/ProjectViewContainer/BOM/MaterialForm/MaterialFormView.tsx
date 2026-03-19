@@ -2,6 +2,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Button,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -78,7 +79,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   const price = watch('price');
   const subtotal = quantity && price ? quantity * price : 0;
 
-<<<<<<< HEAD
   const [copyModalOpen, setCopyModalOpen] = React.useState(false);
 
   const handleCopySelect = (m: any) => {
@@ -98,7 +98,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
 
     setCopyModalOpen(false);
   };
-=======
   const optionalFields = (
     <Grid container spacing={2}>
       <Grid item xs={12}>
@@ -379,7 +378,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
       </Grid>
     </Grid>
   );
->>>>>>> origin/feature/bom-improvement-pt2
 
   return (
     <NERFormModal
@@ -527,7 +525,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           )}
         </Grid>
       </Grid>
-      {/*submitText === 'Add' && (
+      {submitText === 'Add' && (
         <Grid item xs={12} sx={{ pl: 0, pr: 0 }}>
           <Box
             sx={{
@@ -550,7 +548,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             </Button>
           </Box>
         </Grid>
-      )*/}
+      )}
     </NERFormModal>
   );
 };
