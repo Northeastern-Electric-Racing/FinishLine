@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
 
 interface ScrollablePageBlockProps {
@@ -9,10 +9,14 @@ interface ScrollablePageBlockProps {
 
 const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, title, horizontal }) => {
   const theme = useTheme();
+  const isMobilePortrait = useMediaQuery('(max-width:600px)');
+
   return (
     <Card
       sx={{
         height: '100%',
+        width: isMobilePortrait ? 'fit-content' : '100%',
+        maxWidth: '100%',
         background: theme.palette.background.paper
       }}
       variant="outlined"
@@ -35,6 +39,7 @@ const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, tit
             mt: 2,
             flexDirection: horizontal ? 'row' : 'column',
             flexWrap: 'nowrap',
+            display: 'flex',
             gap: 2,
             alignItems: 'start',
             overflowX: horizontal ? 'auto' : 'hidden',

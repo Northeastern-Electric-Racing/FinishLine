@@ -22,26 +22,16 @@ import { dbSeedAllTeams } from './seed-data/teams.seed.js';
 import { seedReimbursementRequests } from './seed-data/reimbursement-requests.seed.js';
 import ChangeRequestsService from '../services/change-requests.services.js';
 import TeamsService from '../services/teams.services.js';
-import {
-  DesignReviewStatus,
-  MaterialStatus,
-  RoleEnum,
-  SpecialPermission,
-  StandardChangeRequest,
-  User,
-  WbsElementStatus,
-  WorkPackageStage
-} from 'shared';
+import { DayOfWeek, MaterialStatus, RoleEnum, StandardChangeRequest, WbsElementStatus, WorkPackageStage } from 'shared';
 import TasksService from '../services/tasks.services.js';
 import { seedProject } from './seed-data/projects.seed.js';
 import { seedWorkPackage } from './seed-data/work-packages.seed.js';
 import ReimbursementRequestService from '../services/reimbursement-requests.services.js';
 import ProjectsService from '../services/projects.services.js';
 import { Decimal } from 'decimal.js';
-import DesignReviewsService from '../services/design-reviews.services.js';
 import BillOfMaterialsService from '../services/boms.services.js';
 import UsersService from '../services/users.services.js';
-import { transformDate } from '../utils/datetime.utils.js';
+import { toDateString } from 'shared';
 import { writeFileSync, readFileSync } from 'fs';
 import WbsElementTemplatesService from '../services/wbs-element-templates.services.js';
 import RecruitmentServices from '../services/recruitment.services.js';
@@ -50,6 +40,7 @@ import AnnouncementService from '../services/announcement.services.js';
 import OnboardingServices from '../services/onboarding.services.js';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed.js';
 import FinanceServices from '../services/finance.services.js';
+import CalendarService from '../services/calendar.services.js';
 
 const prisma = new PrismaClient();
 
@@ -134,10 +125,11 @@ const performSeed: () => Promise<void> = async () => {
       userCreatedId: thomasEmrax.userId,
       description:
         'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).',
-      applyInterestImageId: '1_iak6ord4JP9TcR1sOYopyEs6EjTKQpw',
-      exploreAsGuestImageId: '1wRes7V_bMm9W7_3JCIDXYkMUiy6B3wRI',
       applicationLink:
-        'https://docs.google.com/forms/d/e/1FAIpQLSeCvG7GqmZm_gmSZiahbVTW9ZFpEWG0YfGQbkSB_whhHzxXpA/closedform'
+        'https://docs.google.com/forms/d/e/1FAIpQLSeCvG7GqmZm_gmSZiahbVTW9ZFpEWG0YfGQbkSB_whhHzxXpA/closedform',
+      platformDescription:
+        'Finishline is a Project Management Dashboard developed by the Software Team at Northeastern Electric Racing.',
+      platformLogoImageId: '1auQO3GYydZOo1-vCn0D2iyCfaxaVFssx'
     }
   });
 
@@ -273,6 +265,7 @@ const performSeed: () => Promise<void> = async () => {
   const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.MEMBER, organizationId);
   const patrick = await createUser(dbSeedAllUsers.patrick, RoleEnum.MEMBER, organizationId);
   const spongebob = await createUser(dbSeedAllUsers.spongebob, RoleEnum.MEMBER, organizationId);
+  await createUser(dbSeedAllUsers.guestUser, RoleEnum.GUEST, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', ner);
 
@@ -282,6 +275,23 @@ const performSeed: () => Promise<void> = async () => {
         create: {
           name: 'Fergus',
           carNumber: 0,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          organizationId
+        }
+      }
+    },
+    include: {
+      wbsElement: true
+    }
+  });
+
+  const miles = await prisma.car.create({
+    data: {
+      wbsElement: {
+        create: {
+          name: 'Miles',
+          carNumber: 1,
           projectNumber: 0,
           workPackageNumber: 0,
           organizationId
@@ -359,21 +369,15 @@ const performSeed: () => Promise<void> = async () => {
   const mechanical = await TeamsService.createTeamType(
     batman,
     'Mechanical',
-    'YouTubeIcon',
+    'Construction',
     'This is the mechanical team',
     ner
   );
-  const software = await TeamsService.createTeamType(
-    thomasEmrax,
-    'Software',
-    'InstagramIcon',
-    'This is the software team',
-    ner
-  );
+  const software = await TeamsService.createTeamType(thomasEmrax, 'Software', 'Code', 'This is the software team', ner);
   const electrical = await TeamsService.createTeamType(
     cyborg,
     'Electrical',
-    'SettingsIcon',
+    'ElectricBolt',
     'This is the electrical team',
     ner
   );
@@ -543,15 +547,22 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Link Types */
-  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'description', true, ner);
+  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'description', true, ner, false);
 
-  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'bar_chart', true, ner);
+  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'bar_chart', true, ner, false);
 
-  const mainWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Website', 'bar_chart', true, ner);
+  const mainWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Website', 'bar_chart', true, ner, false);
 
-  const instagramWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Instagram', 'bar_chart', true, ner);
+  const instagramWebsiteLinkType = await ProjectsService.createLinkType(
+    batman,
+    'NER Instagram',
+    'bar_chart',
+    true,
+    ner,
+    false
+  );
 
-  await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, ner);
+  await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, ner, false);
 
   /**
    * Projects
@@ -1129,7 +1140,7 @@ const performSeed: () => Promise<void> = async () => {
     'Bodywork Concept of Design',
     changeRequestProject1Id,
     WorkPackageStage.Design,
-    weeksAgo(12).toISOString().split('T')[0],
+    toDateString(weeksAgo(12)),
     6,
     [],
     [],
@@ -1175,7 +1186,7 @@ const performSeed: () => Promise<void> = async () => {
     'Adhesive Shear Strength Test',
     changeRequestProject1Id,
     WorkPackageStage.Research,
-    weeksAgo(10).toISOString().split('T')[0],
+    toDateString(weeksAgo(10)),
     5,
     [],
     [],
@@ -1193,7 +1204,7 @@ const performSeed: () => Promise<void> = async () => {
     'Manufacture Wiring Harness',
     changeRequestProject5Id,
     WorkPackageStage.Manufacturing,
-    weeksAgo(9).toISOString().split('T')[0],
+    toDateString(weeksAgo(9)),
     4,
     [],
     [],
@@ -1226,7 +1237,7 @@ const performSeed: () => Promise<void> = async () => {
     'Install Wiring Harness',
     changeRequestProject5Id,
     WorkPackageStage.Install,
-    weeksAgo(5).toISOString().split('T')[0],
+    toDateString(weeksAgo(5)),
     6,
     [],
     [],
@@ -1259,7 +1270,7 @@ const performSeed: () => Promise<void> = async () => {
     'Design Plush',
     changeRequestProject6Id,
     WorkPackageStage.Design,
-    weeksAgo(16).toISOString().split('T')[0],
+    toDateString(weeksAgo(16)),
     7,
     [],
     [],
@@ -1292,7 +1303,7 @@ const performSeed: () => Promise<void> = async () => {
     'Put Plush Together',
     changeRequestProject6Id,
     WorkPackageStage.Manufacturing,
-    weeksAgo(9).toISOString().split('T')[0],
+    toDateString(weeksAgo(9)),
     5,
     [],
     [],
@@ -1325,7 +1336,7 @@ const performSeed: () => Promise<void> = async () => {
     'Plush Testing',
     changeRequestProject6Id,
     WorkPackageStage.Testing,
-    weeksAgo(4).toISOString().split('T')[0],
+    toDateString(weeksAgo(4)),
     4,
     [],
     [],
@@ -1359,7 +1370,7 @@ const performSeed: () => Promise<void> = async () => {
     'Design Laser Canon',
     changeRequestProject7Id,
     WorkPackageStage.Design,
-    weeksAgo(8).toISOString().split('T')[0],
+    toDateString(weeksAgo(8)),
     5,
     [],
     [],
@@ -1387,12 +1398,12 @@ const performSeed: () => Promise<void> = async () => {
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, project3WP1ActivationCrId, 'Approved!', true, ner, null);
 
   /** Work Package 2 */
-  await seedWorkPackage(
+  const { workPackage: project3WP2 } = await seedWorkPackage(
     lexLuther,
     'Laser Canon Research',
     changeRequestProject7Id,
     WorkPackageStage.Research,
-    weeksAgo(3).toISOString().split('T')[0],
+    toDateString(weeksAgo(3)),
     6,
     [],
     [],
@@ -1410,9 +1421,9 @@ const performSeed: () => Promise<void> = async () => {
     'Laser Canon Testing',
     changeRequestProject7Id,
     WorkPackageStage.Testing,
-    weeksFromNow(3).toISOString().split('T')[0],
+    toDateString(weeksFromNow(3)),
     4,
-    [],
+    [project3WP1.wbsNum, project3WP2.wbsNum],
     [],
     zatanna,
     WbsElementStatus.Active,
@@ -1429,7 +1440,7 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Research',
     changeRequestProject8Id,
     WorkPackageStage.Research,
-    weeksAgo(14).toISOString().split('T')[0],
+    toDateString(weeksAgo(14)),
     7,
     [],
     [],
@@ -1462,7 +1473,7 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Install',
     changeRequestProject8Id,
     WorkPackageStage.Install,
-    weeksAgo(7).toISOString().split('T')[0],
+    toDateString(weeksAgo(7)),
     6,
     [],
     [],
@@ -1480,7 +1491,7 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Testing',
     changeRequestProject8Id,
     WorkPackageStage.Testing,
-    weeksAgo(1).toISOString().split('T')[0],
+    toDateString(weeksAgo(1)),
     5,
     [],
     [],
@@ -2289,11 +2300,6 @@ const performSeed: () => Promise<void> = async () => {
     '10k Resistor',
     MaterialStatus.Ordered,
     'Resistor',
-    'Digikey',
-    'abcdef',
-    new Decimal(20),
-    30,
-    600,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
       carNumber: 0,
@@ -2301,7 +2307,15 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
-    'Here are some notes'
+    'Digikey',
+    'abcdef',
+    new Decimal(20),
+    30,
+    600,
+    'Here are some notes',
+    assembly1.assemblyId,
+    undefined,
+    undefined
   );
 
   await BillOfMaterialsService.createMaterial(
@@ -2309,11 +2323,6 @@ const performSeed: () => Promise<void> = async () => {
     '20k Resistor',
     MaterialStatus.Ordered,
     'Resistor',
-    'Digikey',
-    'bacfed',
-    new Decimal(10),
-    7,
-    70,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
       carNumber: 0,
@@ -2321,7 +2330,15 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
-    'Here are some more notes'
+    'Digikey',
+    'bacfed',
+    new Decimal(10),
+    7,
+    70,
+    'Here are some more notes',
+    undefined,
+    undefined,
+    undefined
   );
 
   await BillOfMaterialsService.createMaterial(
@@ -2329,11 +2346,6 @@ const performSeed: () => Promise<void> = async () => {
     '100k Resistor',
     MaterialStatus.ReadyToOrder,
     'Resistor',
-    'Digikey',
-    'lalsd',
-    new Decimal(5),
-    10,
-    50,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
       carNumber: 0,
@@ -2341,17 +2353,21 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
+    'Digikey',
+    'lalsd',
+    new Decimal(5),
+    10,
+    50,
     undefined,
     undefined,
-    undefined,
-    undefined,
-    seededReimbursementRequests[0]?.reimbursementRequestId
+    undefined
   );
 
   // Need to do this because the design review cannot be scheduled for a past day
   const nextDay = new Date();
   nextDay.setDate(nextDay.getDate() + 1);
 
+  /*
   const designReview1 = await DesignReviewsService.createDesignReview(
     batman,
     nextDay.toDateString(),
@@ -2384,6 +2400,7 @@ const performSeed: () => Promise<void> = async () => {
     [1, 2, 3, 4, 5, 6, 7],
     ner
   );
+  */
 
   const newWorkPackageChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
     batman,
@@ -2401,7 +2418,7 @@ const performSeed: () => Promise<void> = async () => {
       leadId: batman.userId,
       managerId: cyborg.userId,
       duration: 5,
-      startDate: transformDate(new Date()),
+      startDate: toDateString(new Date()),
       stage: WorkPackageStage.Design,
       blockedBy: [],
       descriptionBullets: [],
@@ -2415,7 +2432,7 @@ const performSeed: () => Promise<void> = async () => {
     'Slim and Light Car',
     newWorkPackageChangeRequest.crId,
     WorkPackageStage.Design,
-    weeksAgo(2).toISOString().split('T')[0],
+    toDateString(weeksAgo(2)),
     5,
     [],
     [],
@@ -2443,7 +2460,7 @@ const performSeed: () => Promise<void> = async () => {
       leadId: batman.userId,
       managerId: cyborg.userId,
       duration: 5,
-      startDate: transformDate(new Date()),
+      startDate: toDateString(new Date()),
       stage: WorkPackageStage.Design,
       blockedBy: [],
       descriptionBullets: [],
@@ -3034,14 +3051,15 @@ const performSeed: () => Promise<void> = async () => {
   });
 
   const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156', 3000);
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32', 10);
+  const silverSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);
+  const bronzeSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32', 10);
 
+  // Sponsors
   const sponsor = await FinanceServices.createSponsor(
     thomasEmrax,
     'Google',
     true,
-    5000,
+    ['MONETARY'],
     daysAgo(90),
     [2024, 2025],
     goldSponsorTier.sponsorTierId,
@@ -3049,17 +3067,828 @@ const performSeed: () => Promise<void> = async () => {
     'Bill Gates',
     [],
     ner,
-    'googlecode'
+    5000,
+    'googlecode',
+    undefined,
+    'bill@google.com'
   );
 
   await FinanceServices.createSponsorTask(
     thomasEmrax,
     ner,
     daysFromNow(30),
-    'notes...',
+    'Send Google mid-year impact report with project highlights',
     sponsor.sponsorId,
+    daysFromNow(20),
+    superman.userId
+  );
+
+  const altiumSponsor = await FinanceServices.createSponsor(
+    thomasEmrax,
+    'Altium',
+    true,
+    ['DISCOUNT'],
+    daysAgo(200),
+    [2024, 2025, 2026],
+    silverSponsorTier.sponsorTierId,
+    false,
+    'Rachel Park',
+    [],
+    ner,
+    undefined,
+    undefined,
+    undefined,
+    'rpark@altium.com',
+    undefined,
+    'Director of Academic Programs',
+    undefined,
+    'Free Altium Designer licenses for all team members'
+  );
+
+  const mcmasterSponsor = await FinanceServices.createSponsor(
+    thomasEmrax,
+    'McMaster-Carr',
+    true,
+    ['STOCK'],
     daysAgo(60),
+    [2025, 2026],
+    bronzeSponsorTier.sponsorTierId,
+    true,
+    'James Corrado',
+    [],
+    ner,
+    undefined,
+    undefined,
+    'Provides fasteners and raw materials at no cost',
+    'jcorrado@mcmaster.com',
+    '555-444-3333',
+    'Account Representative',
+    '$500 worth of stock hardware per semester'
+  );
+
+  const boseSponsor = await FinanceServices.createSponsor(
+    thomasEmrax,
+    'Bose Corporation',
+    true,
+    ['MONETARY', 'STOCK'],
+    daysAgo(150),
+    [2025, 2026],
+    goldSponsorTier.sponsorTierId,
+    true,
+    'Linda Morales',
+    [],
+    ner,
+    8000,
+    undefined,
+    undefined,
+    'lmorales@bose.com',
+    '555-222-1111',
+    'Engineering Partnerships',
+    'Donates sensors and audio components'
+  );
+
+  await FinanceServices.createSponsor(
+    thomasEmrax,
+    'ANSYS',
+    false,
+    ['DISCOUNT'],
+    daysAgo(400),
+    [2023, 2024],
+    silverSponsorTier.sponsorTierId,
+    false,
+    'Tom Bradley',
+    [],
+    ner,
+    undefined,
+    'ANSYS-NER-2024',
+    'Sponsorship ended after 2024 season',
+    'tbradley@ansys.com',
+    undefined,
+    'University Partnerships',
+    undefined,
+    '50% discount on simulation software suite'
+  );
+
+  const neuSponsor = await FinanceServices.createSponsor(
+    thomasEmrax,
+    'Northeastern University COE',
+    true,
+    ['MONETARY'],
+    daysAgo(365),
+    [2024, 2025, 2026],
+    goldSponsorTier.sponsorTierId,
+    true,
+    'Dr. Amy Sullivan',
+    [],
+    ner,
+    15000,
+    undefined,
+    'Annual funding from the College of Engineering',
+    'a.sullivan@northeastern.edu',
+    undefined,
+    'Associate Dean of Student Organizations'
+  );
+
+  // Prospective sponsors
+  const prospectiveContact1 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Sarah Johnson',
+      email: 'sarah.johnson@teslamotors.com',
+      phone: '555-123-4567',
+      position: 'Partnerships Manager'
+    }
+  });
+
+  const prospectiveContact2 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Mike Callahan',
+      email: 'mcallahan@boeingaero.com',
+      position: 'University Relations Lead'
+    }
+  });
+
+  const prospectiveContact3 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Emily Davis',
+      email: 'emily.d@solidworks.com',
+      phone: '555-987-6543',
+      position: 'Academic Sponsorships'
+    }
+  });
+
+  const prospectiveContact4 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Kevin Martinez',
+      email: 'kmartinez@ti.com',
+      phone: '555-321-7890',
+      position: 'University Programs Coordinator'
+    }
+  });
+
+  const prospectiveContact5 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Priya Patel',
+      email: 'priya.patel@3m.com',
+      position: 'Technical Sponsorships'
+    }
+  });
+
+  const prospectiveContact6 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'David Romano',
+      phone: '555-654-0987',
+      position: 'Owner'
+    }
+  });
+
+  const prospectiveContact7 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Amanda Foster',
+      email: 'afoster@shell.com',
+      phone: '555-111-2222',
+      position: 'STEM Outreach Manager'
+    }
+  });
+
+  const prospectiveContact8 = await prisma.sponsor_Contact.create({
+    data: {
+      name: 'Robert Whitfield',
+      email: 'rwhitfield@mathworks.com',
+      position: 'Academic Sales'
+    }
+  });
+
+  const teslaProsSpons = await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'Tesla Motors',
+      lastContactDate: daysAgo(5),
+      highlightThresholdDays: 14,
+      status: 'IN_PROGRESS',
+      firstContactMethod: 'OUTBOUND_EMAIL',
+      contactorUserId: lexLuther.userId,
+      contactId: prospectiveContact1.sponsorContactId,
+      notes: 'Reached out about potential parts sponsorship for battery systems'
+    }
+  });
+
+  await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'Boeing Aerospace',
+      lastContactDate: daysAgo(20),
+      highlightThresholdDays: 10,
+      status: 'NO_RESPONSE',
+      firstContactMethod: 'OUTBOUND_EMAIL',
+      contactorUserId: wonderwoman.userId,
+      contactId: prospectiveContact2.sponsorContactId,
+      notes: 'Sent initial sponsorship proposal, no reply yet'
+    }
+  });
+
+  const solidworksProsSpons = await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'SolidWorks',
+      lastContactDate: daysAgo(2),
+      highlightThresholdDays: 7,
+      status: 'IN_PROGRESS',
+      firstContactMethod: 'INBOUND_EMAIL',
+      contactorUserId: flash.userId,
+      contactId: prospectiveContact3.sponsorContactId,
+      notes: 'They reached out offering software licenses for the team'
+    }
+  });
+
+  const tiProsSpons = await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'Texas Instruments',
+      lastContactDate: daysAgo(3),
+      highlightThresholdDays: 10,
+      status: 'IN_PROGRESS',
+      firstContactMethod: 'INBOUND_FORM',
+      contactorUserId: aquaman.userId,
+      contactId: prospectiveContact4.sponsorContactId,
+      notes: 'Filled out our sponsorship interest form, interested in providing microcontrollers and dev boards'
+    }
+  });
+
+  await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: '3M',
+      lastContactDate: daysAgo(45),
+      highlightThresholdDays: 14,
+      status: 'NOT_IN_CONTACT',
+      firstContactMethod: 'OUTBOUND_EMAIL',
+      contactorUserId: thomasEmrax.userId,
+      contactId: prospectiveContact5.sponsorContactId,
+      notes: 'Initial contact went well but contact person changed roles, need to find new point of contact'
+    }
+  });
+
+  await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'Precision Machine Shop Boston',
+      lastContactDate: daysAgo(8),
+      highlightThresholdDays: 10,
+      status: 'IN_PROGRESS',
+      firstContactMethod: 'OTHER',
+      contactorUserId: batman.userId,
+      contactId: prospectiveContact6.sponsorContactId,
+      notes: 'Met at local manufacturing expo, interested in providing machining services at reduced cost'
+    }
+  });
+
+  await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'Shell Energy',
+      lastContactDate: daysAgo(30),
+      highlightThresholdDays: 14,
+      status: 'DECLINED',
+      firstContactMethod: 'OUTBOUND_EMAIL',
+      contactorUserId: superman.userId,
+      contactId: prospectiveContact7.sponsorContactId,
+      notes: 'Declined for this year, suggested we reapply next fiscal year in September'
+    }
+  });
+
+  const mathworksProsSpons = await prisma.prospective_Sponsor.create({
+    data: {
+      organizationId,
+      organizationName: 'MathWorks',
+      lastContactDate: daysAgo(1),
+      highlightThresholdDays: 7,
+      status: 'IN_PROGRESS',
+      firstContactMethod: 'INBOUND_EMAIL',
+      contactorUserId: lexLuther.userId,
+      contactId: prospectiveContact8.sponsorContactId,
+      notes: 'Interested in providing MATLAB/Simulink licenses, scheduling a call next week'
+    }
+  });
+
+  // Sponsor tasks
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    daysFromNow(14),
+    'Renew Altium license agreement for next academic year',
+    altiumSponsor.sponsorId,
+    daysFromNow(7),
     thomasEmrax.userId
+  );
+
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    daysFromNow(60),
+    'Send McMaster-Carr updated parts list for spring semester',
+    mcmasterSponsor.sponsorId,
+    daysFromNow(45),
+    lexLuther.userId
+  );
+
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    daysAgo(5),
+    'Submit Bose quarterly progress report',
+    boseSponsor.sponsorId,
+    daysAgo(10),
+    wonderwoman.userId
+  );
+
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    daysFromNow(90),
+    'Prepare annual sponsorship renewal presentation for NEU COE',
+    neuSponsor.sponsorId,
+    daysFromNow(60),
+    batman.userId
+  );
+
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    daysFromNow(7),
+    'Send thank-you letter and team photo to Bose',
+    boseSponsor.sponsorId,
+    undefined,
+    aquaman.userId
+  );
+
+  // Prospective sponsor tasks
+  await prisma.sponsor_Task.create({
+    data: {
+      dueDate: daysFromNow(3),
+      notes: 'Follow up email with Tesla partnership proposal PDF',
+      prospectiveSponsorId: teslaProsSpons.prospectiveSponsorId,
+      notifyDate: daysFromNow(1),
+      assigneeUserId: lexLuther.userId
+    }
+  });
+
+  await prisma.sponsor_Task.create({
+    data: {
+      dueDate: daysFromNow(10),
+      notes: 'Schedule demo call with SolidWorks academic team',
+      prospectiveSponsorId: solidworksProsSpons.prospectiveSponsorId,
+      assigneeUserId: flash.userId
+    }
+  });
+
+  await prisma.sponsor_Task.create({
+    data: {
+      dueDate: daysAgo(2),
+      notes: 'Send TI the team roster for university program enrollment',
+      prospectiveSponsorId: tiProsSpons.prospectiveSponsorId,
+      notifyDate: daysAgo(5),
+      assigneeUserId: aquaman.userId,
+      done: true
+    }
+  });
+
+  await prisma.sponsor_Task.create({
+    data: {
+      dueDate: daysFromNow(5),
+      notes: 'Prepare MathWorks sponsorship tier options document',
+      prospectiveSponsorId: mathworksProsSpons.prospectiveSponsorId,
+      notifyDate: daysFromNow(2),
+      assigneeUserId: lexLuther.userId
+    }
+  });
+
+  await prisma.sponsor_Task.create({
+    data: {
+      dueDate: daysFromNow(14),
+      notes: 'Draft MATLAB workshop proposal to show value of partnership',
+      prospectiveSponsorId: mathworksProsSpons.prospectiveSponsorId,
+      assigneeUserId: wonderwoman.userId
+    }
+  });
+
+  // Create shops for machinery
+  const advancedShop = await prisma.shop.create({
+    data: {
+      name: 'Advanced CNC Manufacturing Center',
+      description: 'CNC machining and precision manufacturing facility',
+      userCreatedId: thomasEmrax.userId,
+      organizationId
+    }
+  });
+
+  const electronicsLab = await prisma.shop.create({
+    data: {
+      name: 'Electronics Development Lab',
+      description: 'Electronics testing and development workspace',
+      userCreatedId: thomasEmrax.userId,
+      organizationId
+    }
+  });
+
+  const testingFacility = await prisma.shop.create({
+    data: {
+      name: 'Testing & Validation Facility',
+      description: 'Component and system testing laboratory',
+      userCreatedId: thomasEmrax.userId,
+      organizationId
+    }
+  });
+
+  // Create machineries and assign to shops
+  const ironMachineCreated = await CalendarService.createMachinery(thomasEmrax, 'Iron Man CNC Mill', ner);
+  const ironMachine = await CalendarService.addMachineryToShop(
+    thomasEmrax,
+    ironMachineCreated.machineryId,
+    advancedShop.shopId,
+    1,
+    ner
+  );
+  const hammerCreated = await CalendarService.createMachinery(thomasEmrax, 'Thor Hammer Lathe', ner);
+  const hammer = await CalendarService.addMachineryToShop(
+    thomasEmrax,
+    hammerCreated.machineryId,
+    advancedShop.shopId,
+    2,
+    ner
+  );
+  const printerCreated = await CalendarService.createMachinery(thomasEmrax, 'Spider-Man 3D Printer', ner);
+  const printer = await CalendarService.addMachineryToShop(
+    thomasEmrax,
+    printerCreated.machineryId,
+    electronicsLab.shopId,
+    1,
+    ner
+  );
+  const captainAmericaCreated = await CalendarService.createMachinery(thomasEmrax, 'Captain America Oscilloscope', ner);
+  await CalendarService.addMachineryToShop(thomasEmrax, captainAmericaCreated.machineryId, electronicsLab.shopId, 3, ner);
+  const hulkCreated = await CalendarService.createMachinery(thomasEmrax, 'Hulk Dynamometer', ner);
+  await CalendarService.addMachineryToShop(thomasEmrax, hulkCreated.machineryId, testingFacility.shopId, 1, ner);
+  const blackWidowCreated = await CalendarService.createMachinery(thomasEmrax, 'Black Widow Thermal Camera', ner);
+  await CalendarService.addMachineryToShop(thomasEmrax, blackWidowCreated.machineryId, testingFacility.shopId, 2, ner);
+
+  // various calendars for testing
+  const calendar = await CalendarService.createCalendar(
+    thomasEmrax,
+    'Engineering Team Calendar',
+    'Tracks all engineering team events, meetings, and deadlines.',
+    '#3498db',
+    ner
+  );
+
+  const calendarFinishline = await CalendarService.createCalendar(
+    thomasEmrax,
+    'Finishline Projects Calendar',
+    'Tracks all ongoing projects currently being developed for Finishline',
+    '#911111ff',
+    ner
+  );
+
+  const calendarMeta = await CalendarService.createCalendar(
+    thomasEmrax,
+    'Calendar Improvements Calendar',
+    'Tracks all current improvements and schedulings for the improvement of the Finishline Calendar',
+    '#bf40e6ff',
+    ner
+  );
+
+  // meeting event type
+  const meetingEventType = await CalendarService.createEventType(
+    thomasEmrax,
+    'Meeting',
+    [calendar.calendarId],
+    ner,
+    false,
+    false,
+    true,
+    false,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false
+  );
+
+  // design review event type
+  const designReviewEventType = await CalendarService.createEventType(
+    thomasEmrax,
+    'Design Review',
+    [calendar.calendarId],
+    ner,
+    true,
+    true,
+    true,
+    false,
+    true,
+    true,
+    true,
+    false,
+    true,
+    true,
+    true,
+    true,
+    false,
+    true,
+    true
+  );
+
+  // manufacturing event type
+  const manufacturingEventType = await CalendarService.createEventType(
+    thomasEmrax,
+    'Manufacturing',
+    [],
+    ner,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false
+  );
+
+  // bay time event type
+  const bayTimeEventType = await CalendarService.createEventType(
+    thomasEmrax,
+    'Bay Time',
+    [],
+    ner,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date(),
+        endTime: new Date(new Date().getTime() + 60 * 60 * 1000),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'Test meeting'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync Late',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date(new Date().getTime() + 105 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 106 * 60 * 60 * 1000),
+        allDay: false
+      },
+      {
+        startTime: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 25 * 60 * 60 * 1000),
+        allDay: false
+      },
+      {
+        startTime: new Date(new Date().getTime() + 50 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 51 * 60 * 60 * 1000),
+        allDay: false
+      },
+      {
+        startTime: new Date(new Date().getTime() + 85 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 87 * 60 * 60 * 1000),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'December Cheer'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 2',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'This is the second Weekly Sync in our database. Please come and join to get vital information! Thank you for reading.'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 3',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'This is the third test meeting! Glad to say hi.'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 4',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    'This is the fourth meeting! Please come anyway, we have a lot to say.'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync 5',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    "This one is optional, up to you if you want to show up, we won't judge"
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Impact Attenuator Design Review',
+    designReviewEventType.eventTypeId,
+    ner,
+    [joeShmoe.userId, joeBlow.userId],
+    [batman.userId],
+    [],
+    [],
+    [],
+    [workPackage1.id],
+    [],
+    weeksFromNow(1),
+    software.teamTypeId,
+    'https://docs.google.com/document/d/2_example',
+    'Conference Room B',
+    'https://zoom.us/j/987654321',
+    undefined
+  );
+
+  await CalendarService.createEvent(
+    batman,
+    'Wiring Harness Manufacturing',
+    manufacturingEventType.eventTypeId,
+    ner,
+    [regina.userId, janis.userId],
+    [cady.userId],
+    [],
+    [electronicsLab.shopId],
+    [printer.machineryId],
+    [workPackage3.id],
+    [
+      {
+        startTime: new Date('2025-10-23T09:00:00.000Z'),
+        endTime: new Date('2025-10-23T12:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    electrical.teamTypeId,
+    'https://docs.google.com/document/d/3_example',
+    undefined,
+    undefined,
+    undefined
+  );
+
+  await CalendarService.createEvent(
+    aang,
+    'Composite Layup Bay Time',
+    bayTimeEventType.eventTypeId,
+    ner,
+    [katara.userId, sokka.userId],
+    [],
+    [],
+    [],
+    [ironMachine.machineryId],
+    [],
+    [
+      {
+        startTime: new Date('2025-10-24T13:00:00.000Z'),
+        endTime: new Date('2025-10-24T17:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    undefined,
+    undefined,
+    undefined
   );
 };
 

@@ -106,6 +106,17 @@ export const editMaterial = async (materialId: string, material: MaterialDataSub
 };
 
 /**
+ * Requests to copy materials to a project.
+ * @param materialIds The IDs of materials to copy
+ * @param destinationWbsNum The destination project WBS number
+ * @returns Array of newly created material IDs
+ */
+export const copyMaterialsToProject = async (materialIds: string[], destinationWbsNum: string) => {
+  const { data } = await axios.post(apiUrls.bomCopyMaterials(), { materialIds, destinationWbsNum });
+  return data;
+};
+
+/**
  * Soft deletes a material.
  * @param materialId
  * @returns

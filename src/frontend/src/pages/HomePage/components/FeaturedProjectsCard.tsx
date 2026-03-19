@@ -1,9 +1,6 @@
-import { Construction, Work } from '@mui/icons-material';
-import { Box, Card, CardContent, Chip, Link, Stack, Typography, useTheme } from '@mui/material';
-import { wbsPipe, wbsNamePipe, ProjectPreview } from 'shared';
-import { datePipe, fullNamePipe } from '../../../utils/pipes';
-import { routes } from '../../../utils/routes';
-import { Link as RouterLink } from 'react-router-dom';
+import { alpha, Box, Card, CardContent, Chip, Stack, Typography, useTheme, useMediaQuery } from '@mui/material';
+import { wbsNamePipe, ProjectPreview } from 'shared';
+import { datePipe } from '../../../utils/pipes';
 
 interface ProjectCardProps {
   project: ProjectPreview;
@@ -11,42 +8,50 @@ interface ProjectCardProps {
 
 const FeaturedProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
   const theme = useTheme();
+  const isMobilePortrait = useMediaQuery('(max-width:600px)');
+
   return (
     <Card
       variant="outlined"
       sx={{
         minWidth: 'fit-content',
         minHeight: 'fit-content',
-        mr: 3,
-        background: theme.palette.background.default
+        width: isMobilePortrait ? '100%' : 'auto',
+        background: theme.palette.mode === 'dark' ? '#000000' : 'rgb(255, 255, 255)',
+        borderRadius: 2
       }}
     >
       <CardContent sx={{ padding: 2 }}>
         <Stack direction="row" justifyContent="space-between">
           <Box>
-            <Typography fontWeight={'regular'} variant="subtitle2" noWrap>
-              <Link color={'text.primary'} component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>
-                {wbsPipe(project.wbsNum)} - {wbsNamePipe(project)}
-              </Link>
+            <Typography
+              fontWeight={'regular'}
+              variant="h5"
+              sx={{ marginBottom: '0.3rem', fontSize: { xs: '1.15rem', sm: '1.5rem' } }}
+            >
+              {wbsNamePipe(project)}
             </Typography>
-            <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`} noWrap>
-              <Typography fontWeight={'regular'} variant="h5">
-                {wbsPipe(project.wbsNum)} - {project.name}
-              </Typography>
-            </Link>
-            <Typography fontWeight={'regular'} fontSize={20} variant="h6" noWrap>
+            <Typography fontWeight={'regular'} fontSize={{ xs: 14, sm: 16 }} noWrap>
+              Budget: ${project.budget}
+            </Typography>
+            <Typography fontWeight={'regular'} fontSize={{ xs: 14, sm: 16 }} noWrap>
               {datePipe(project.startDate) + ' ⟝ ' + project.duration + ' wks ⟞ ' + datePipe(project.endDate)}
             </Typography>
           </Box>
         </Stack>
         <Stack direction="row" sx={{ marginTop: 1 }}>
-          <Chip
-            sx={{ marginTop: 1, marginRight: 2 }}
-            icon={<Construction />}
-            label={fullNamePipe(project.lead)}
-            size="medium"
-          />
-          <Chip sx={{ marginTop: 1 }} icon={<Work />} label={fullNamePipe(project.manager)} size="medium" />
+          {project.teams.map((team) => (
+            <Chip
+              sx={{
+                marginTop: 1,
+                marginRight: 2,
+                bgcolor: alpha(theme.palette.primary.main, 0.45),
+                color: theme.palette.primary.light
+              }}
+              label={team.teamName}
+              size="medium"
+            />
+          ))}
         </Stack>
       </CardContent>
     </Card>

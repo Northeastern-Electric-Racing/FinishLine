@@ -1,7 +1,7 @@
 import { isAdmin, isHead, Team, TeamPreview, TeamType, User } from 'shared';
 import { Organization, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma.js';
-import teamTransformer, { teamPreviewTransformer } from '../transformers/teams.transformer.js';
+import teamTransformer, { teamBaseTransformer, teamPreviewTransformer } from '../transformers/teams.transformer.js';
 import {
   NotFoundException,
   AccessDeniedException,
@@ -13,11 +13,20 @@ import {
 import { getPrismaQueryUserIds, getUsers, userHasPermission } from '../utils/users.utils.js';
 import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils.js';
-import { getTeamPreviewQueryArgs, getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
+import { getTeamBaseQueryArgs, getTeamPreviewQueryArgs, getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
 import { uploadFile } from '../utils/google-integration.utils.js';
 import { teamTypeTransformer } from '../transformers/team-types.transformer.js';
+import { TeamBase } from '../../../shared/src/types/team-types.js';
 
 export default class TeamsService {
+  static async getAllTeamPreviews(organization: Organization): Promise<TeamBase[]> {
+    const teams = await prisma.team.findMany({
+      where: { dateArchived: null, organizationId: organization.organizationId },
+      ...getTeamBaseQueryArgs()
+    });
+    return teams.map(teamBaseTransformer);
+  }
+
   /**
    * Gets all teams (archived teams are not included)
    * @param organizationId The organization the user is currently in
