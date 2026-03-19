@@ -1,7 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args.js';
 import { getProjectGanttQueryArgs } from './projects.query-args.js';
-import { getTeamTypeQueryArgs } from './team-type.query-args.js';
 
 export type TeamQueryArgs = ReturnType<typeof getTeamQueryArgs>;
 
@@ -14,7 +13,7 @@ export const getTeamQueryArgs = (organizationId: string) =>
       head: getUserQueryArgs(organizationId),
       leads: getUserQueryArgs(organizationId),
       userArchived: getUserQueryArgs(organizationId),
-      teamType: true,
+      teamType: getTeamTypeQueryArgs(),
       projects: {
         where: {
           wbsElement: {
@@ -33,5 +32,12 @@ export const getTeamPreviewQueryArgs = (organizationId: string) =>
       head: getUserQueryArgs(organizationId),
       leads: getUserQueryArgs(organizationId),
       teamType: getTeamTypeQueryArgs()
+    }
+  });
+
+export const getTeamTypeQueryArgs = () =>
+  Prisma.validator<Prisma.Team_TypeDefaultArgs>()({
+    select: {
+      name: true
     }
   });
