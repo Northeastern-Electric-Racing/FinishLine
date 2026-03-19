@@ -132,6 +132,7 @@ export interface LinkType {
   name: string;
   required: boolean;
   iconName: string;
+  isOnGuestHomePage: boolean;
 }
 
 export interface Link {
@@ -186,6 +187,7 @@ export interface LinkTypeCreatePayload {
   name: string;
   iconName: string;
   required: boolean;
+  isOnGuestHomePage: boolean;
 }
 
 export interface DescriptionBulletTypeCreatePayload {

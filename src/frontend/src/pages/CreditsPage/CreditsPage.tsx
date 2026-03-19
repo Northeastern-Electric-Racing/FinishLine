@@ -370,6 +370,7 @@ const CreditsPage: React.FC = () => {
       }
     },
     { name: 'Josh Len', color: '#000000ff' },
+    { name: 'Grace Theobald', color: '#537c2c' },
     { name: 'Jasper Pinkus', color: '#276221' }
   ];
 
