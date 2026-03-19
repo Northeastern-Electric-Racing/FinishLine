@@ -17,9 +17,7 @@ import { getUserFullName } from '../utils/users.utils.js';
  */
 
 /** Execute all given prisma database interaction scripts written in this function */
-const executeScripts = async () => {
-  await downloadReimbursementDataByProject();
-};
+const executeScripts = async () => {};
 
 /**
  * Print metrics on accepted Change Requests with timeline impact
