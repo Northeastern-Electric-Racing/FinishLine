@@ -4,7 +4,7 @@
  */
 
 import { Link, useHistory } from 'react-router-dom';
-import { Project, isGuest, isAdmin, isLeadership } from 'shared';
+import { Project, isGuest, isAdmin, isLeadership, RoleEnum } from 'shared';
 import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
 import ProjectDetails from './ProjectDetails';
 import { routes } from '../../../utils/routes';
@@ -34,6 +34,7 @@ import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 import ChangeRequestTab from '../../../components/ChangeRequestTab';
 import PartsReviewPage from './PartReview/PartsReviewPage';
 import ActionsMenu from '../../../components/ActionsMenu';
+import ProjectSpendingHistory from '../../ProjectPage/ProjectSpendingHistory';
 import { useMyTeamAsHead } from '../../../hooks/teams.hooks';
 
 interface ProjectViewContainerProps {
@@ -193,7 +194,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             { tabUrlValue: 'changes', tabName: 'Changes' },
             { tabUrlValue: 'gantt', tabName: 'Gantt' },
             { tabUrlValue: 'change-requests', tabName: 'Change Requests' },
-            { tabUrlValue: 'parts-review', tabName: 'Parts Review' }
+            { tabUrlValue: 'parts-review', tabName: 'Parts Review' },
+            { tabUrlValue: 'spending', tabName: 'Budget' }
           ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
@@ -205,7 +207,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       {tab === 0 ? (
         <ProjectDetails project={project} />
       ) : tab === 1 ? (
-        <TaskList project={project} />
+        <TaskList project={project} isGuest={user.role === RoleEnum.GUEST} />
       ) : tab === 2 ? (
         <BOMTab project={project} />
       ) : tab === 3 ? (
@@ -216,8 +218,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <ProjectGantt workPackages={project.workPackages} />
       ) : tab === 6 ? (
         <ChangeRequestTab wbsElement={project} />
-      ) : (
+      ) : tab === 7 ? (
         <PartsReviewPage project={project} />
+      ) : (
+        <ProjectSpendingHistory wbsNum={project.wbsNum} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />

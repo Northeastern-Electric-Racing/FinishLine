@@ -24,6 +24,7 @@ const EditLinkTypeModal = ({ open, handleClose, linkType, linkTypes }: EditLinkT
       onSubmit={mutateAsync}
       defaultValues={linkType}
       linkTypes={linkTypes}
+      isOnGuestHomePage={linkType.isOnGuestHomePage}
     />
   );
 };

@@ -92,7 +92,10 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
           reset();
         }}
         onKeyPress={(e) => {
-          e.key === 'Enter' && e.preventDefault();
+          const target = e.target as HTMLElement;
+          if (e.key === 'Enter' && target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+          }
         }}
       >
         <Grid container spacing={2}>

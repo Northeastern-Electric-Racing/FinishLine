@@ -27,6 +27,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
   const theme = useTheme();
 
   const rows: BomRow[] = noAssemblyMaterials.map((material: Material, idx: number) => materialToRow(material, idx));
+
   const isAssemblyOpen = (row: BomRow) => {
     return !row.assemblyId || row.assemblyId === '' || openRows.includes(row.assemblyId) || row.id.startsWith('assembly');
   };
@@ -44,8 +45,9 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
 
   assemblies.forEach((assembly) => {
     const assemblyMaterials = materials.filter((material) => material.assemblyId === assembly.assemblyId);
+
     materialsWithAssemblies.push({
-      reimbursementRequestId: undefined,
+      reimbursementRequests: [],
       id: `assembly-${assembly.name}`,
       materialId: '',
       status: '',
@@ -61,13 +63,14 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
       subtotal: '',
       link: '',
       notes: '',
-      assemblyId: assembly.assemblyId
+      assemblyId: assembly.assemblyId,
+      isCopied: false
     });
+
     assemblyMaterials.forEach((material, indx) => materialsWithAssemblies.push(materialToRow(material, indx)));
   });
 
   // drag and drop mechanics
-
   const handleDragStart = (materialId: string) => {
     const material = materials.find((m) => m.materialId === materialId);
     if (material) {
@@ -82,6 +85,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
   const handleDrop = (event: React.DragEvent, targetAssemblyId?: string) => {
     event.preventDefault();
     if (!draggedMaterial) return;
+
     assignMaterial(draggedMaterial.materialId, targetAssemblyId)().finally(() => {
       setDraggedMaterial(null);
     });
@@ -92,13 +96,27 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
       sx={{
         height: 'calc(100vh - 200px)',
         width: '100%',
+
         '& .super-app-theme--header': {
           backgroundColor: '#ef4345'
         },
+
+        '& .super-app-theme--even': {
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+        },
+        '& .super-app-theme--odd': {
+          border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+        },
+
+        '& .MuiDataGrid-row:hover': {
+          backgroundColor: 'rgba(239, 67, 69, 0.6)'
+        },
+
         '& .super-app-theme--assembly': {
           backgroundColor: theme.palette.grey[600],
           '&:hover': {
-            backgroundColor: theme.palette.grey[700]
+            backgroundColor: 'rgba(239, 67, 69, 0.6)'
           },
           '&:focus': {
             backgroundColor: '#997570'
@@ -113,14 +131,17 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
           Object.keys(model).forEach((toDelete) => {
             tempColumns.push(!model[toDelete]);
           });
+
           setHideColumn(tempColumns);
           localStorage.setItem('hideColumn', JSON.stringify(tempColumns));
         }}
         columns={columns as GridColumns<GridValidRowModel>}
         rows={rows.concat(materialsWithAssemblies.filter(isAssemblyOpen))}
-        getRowClassName={(params) =>
-          `super-app-theme--${String(params.row.id).includes('assembly') ? 'assembly' : 'material'}`
-        }
+        getRowClassName={(params) => {
+          const stripe = params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd';
+          const isAssemblyRow = String(params.row.id).startsWith('assembly-');
+          return `super-app-theme--${stripe}${isAssemblyRow ? ' super-app-theme--assembly' : ''}`;
+        }}
         rowsPerPageOptions={[100]}
         sx={bomTableStyles.datagrid}
         disableSelectionOnClick
@@ -142,6 +163,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
               const rowIndex = parseInt(event.currentTarget.getAttribute('data-rowindex') || '0');
               const materials = rows.concat(materialsWithAssemblies.filter(isAssemblyOpen));
               const { assemblyId } = materials[rowIndex];
+
               if (assemblyId === 'assembly-misc') {
                 handleDrop(event);
               } else {
@@ -164,4 +186,5 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
     </Box>
   );
 };
+
 export default BOMTable;

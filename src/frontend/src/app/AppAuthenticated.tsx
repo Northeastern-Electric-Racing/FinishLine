@@ -26,7 +26,6 @@ import { Box } from '@mui/system';
 import { Container, IconButton, useTheme } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
-import Calendar from '../pages/CalendarPage/Calendar';
 import { useState } from 'react';
 import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
 import HiddenContentMargin from '../components/HiddenContentMargin';
@@ -34,6 +33,7 @@ import { useHomePageContext } from './HomePageContext';
 import { useCurrentOrganization } from '../hooks/organizations.hooks';
 import Statistics from '../pages/StatisticsPage/Statistics';
 import RetrospectiveGanttChartPage from '../pages/RetrospectivePage/Retrospective';
+import Calendar from '../pages/CalendarPage/Calendar';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -70,7 +70,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
 
   return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
-      {!onGuestHomePage && (
+      {
         <>
           <Box
             onMouseEnter={() => {
@@ -108,12 +108,12 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             setMoveContent={setMoveContent}
           />
         </>
-      )}
+      }
       <Box display={'flex'}>
-        <HiddenContentMargin open={!onGuestHomePage && moveContent} variant="permanent" />
+        <HiddenContentMargin open={moveContent} variant="permanent" />
         <Container
           maxWidth={false}
-          sx={{ width: !onGuestHomePage && moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}
+          sx={{ width: onGuestHomePage && moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}
         >
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />

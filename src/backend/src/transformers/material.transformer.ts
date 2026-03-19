@@ -2,7 +2,6 @@ import { Prisma } from '@prisma/client';
 import { Assembly, Material, MaterialPreview, MaterialStatus } from 'shared';
 import { AssemblyQueryArgs, MaterialPreviewQueryArgs, MaterialQueryArgs } from '../prisma-query-args/bom.query-args.js';
 import { userTransformer } from './user.transformer.js';
-import { reimbursementRequestTransformer } from './reimbursement-requests.transformer.js';
 
 export const assemblyTransformer = (assembly: Prisma.AssemblyGetPayload<AssemblyQueryArgs>): Assembly => {
   return {
@@ -43,9 +42,14 @@ export const materialTransformer = (material: Prisma.MaterialGetPayload<Material
         }
       : undefined,
     notes: material.notes ?? undefined,
-    reimbursementRequest: material.reimbursementRequest
-      ? reimbursementRequestTransformer(material.reimbursementRequest)
-      : undefined
+    reimbursementRequests: Array.from(
+      new Map(
+        material.reimbursementProducts
+          .filter((p) => p.reimbursementRequest && !p.reimbursementRequest.dateDeleted)
+          .map((p) => [p.reimbursementRequest!.reimbursementRequestId, p.reimbursementRequest!])
+      ).values()
+    ),
+    isCopied: material.isCopied
   };
 };
 
@@ -66,8 +70,12 @@ export const materialPreviewTransformer = (
     quantity: material.quantity ?? undefined,
     price: material.price ?? undefined,
     subtotal: material.subtotal ?? undefined,
-    reimbursementRequest: material.reimbursementRequest
-      ? reimbursementRequestTransformer(material.reimbursementRequest)
-      : undefined
+    reimbursementRequests: Array.from(
+      new Map(
+        material.reimbursementProducts
+          .filter((p) => p.reimbursementRequest && !p.reimbursementRequest.dateDeleted)
+          .map((p) => [p.reimbursementRequest!.reimbursementRequestId, p.reimbursementRequest!])
+      ).values()
+    )
   };
 };

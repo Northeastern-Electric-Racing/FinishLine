@@ -46,5 +46,8 @@ export type SubmitText =
   | 'Create Change Request'
   | 'Update'
   | 'Submit Vendor'
-  | 'Copy';
+  | 'Copy'
+  | 'Accept'
+  | 'Copy BOM';
+
 export type CancelText = 'Cancel' | 'Delete' | 'Exit' | 'No';

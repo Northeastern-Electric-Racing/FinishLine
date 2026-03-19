@@ -16,12 +16,18 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import * as yup from 'yup';
 import { StandardChangeRequestType } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 import { FormInput, FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequestView';
-import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
+import {
+  CreateStandardChangeRequestPayload,
+  useCreateLeadershipChangeRequest,
+  useCreateStandardChangeRequest
+} from '../../../hooks/change-requests.hooks';
 import { routes } from '../../../utils/routes';
 import { useHistory } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import ProjectFormContainer from './ProjectForm';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useQueryClient } from 'react-query';
 
 interface ProjectEditContainerProps {
   project: Project;
@@ -34,6 +40,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const toast = useToast();
   const query = useQuery();
   const history = useHistory();
+  const user = useCurrentUser();
+  const queryClient = useQueryClient();
   const { name, budget, summary, workPackages } = project;
   const [managerId, setManagerId] = useState<string | undefined>(project.manager?.userId.toString());
   const [leadId, setLeadId] = useState<string | undefined>(project.lead?.userId.toString());
@@ -42,6 +50,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
   const { mutateAsync, isLoading } = useEditSingleProject(project.wbsNum);
   const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
+
+  const { mutateAsync: mutateLeadershipCR, isLoading: isLeadershipCRLoading } = useCreateLeadershipChangeRequest();
+
   const {
     data: allLinkTypes,
     isLoading: allLinkTypesIsLoading,
@@ -106,7 +117,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             }
   });
 
-  if (isLoading || isCRHookLoading) return <LoadingIndicator />;
+  if (isLoading || isCRHookLoading || isLeadershipCRLoading) return <LoadingIndicator />;
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
 
@@ -163,6 +174,25 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     )
   });
 
+  // Check if only lead/manager changed
+  const checkOnlyLeadershipChanged = (
+    formName: string,
+    formBudget: number,
+    formSummary: string,
+    formLinks: any[],
+    formDescriptionBullets: any[]
+  ) => {
+    return (
+      formName === project.name &&
+      formBudget === project.budget &&
+      formSummary === project.summary &&
+      JSON.stringify(formLinks.map((l) => `${l.linkTypeName}:${l.url}`).sort()) ===
+        JSON.stringify(project.links.map((l) => `${l.linkType.name}:${l.url}`).sort()) &&
+      JSON.stringify(formDescriptionBullets) === JSON.stringify(bulletsToObject(project.descriptionBullets)) &&
+      (leadId !== project.lead?.userId.toString() || managerId !== project.manager?.userId.toString())
+    );
+  };
+
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
     const { name, budget, summary, links, type, what, why, descriptionBullets } = data;
 
@@ -199,6 +229,22 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     const { name, budget, summary, links, descriptionBullets, crId } = data;
 
     try {
+      const onlyLeadershipChanged = checkOnlyLeadershipChanged(name, budget, summary, links, descriptionBullets);
+
+      if (onlyLeadershipChanged) {
+        const autoCRPayload = {
+          submitterId: user.userId,
+          wbsNum: project.wbsNum,
+          leadId,
+          managerId
+        };
+        await mutateLeadershipCR(autoCRPayload);
+        // fixes cache issue
+        await queryClient.refetchQueries(['projects']);
+        exitEditMode();
+        return;
+      }
+
       if (!crId) throw new Error('Change request id is required for editing project');
 
       const payload: EditSingleProjectPayload = {
@@ -221,6 +267,15 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     }
   };
 
+  // calculate for submit button status
+  const onlyLeadershipChanged = checkOnlyLeadershipChanged(
+    defaultValues.name,
+    defaultValues.budget,
+    defaultValues.summary,
+    defaultValues.links,
+    defaultValues.descriptionBullets
+  );
+
   return (
     <ProjectFormContainer
       requiredLinkTypeNames={requiredLinkTypeNames}
@@ -236,6 +291,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       managerId={managerId}
       onSubmitChangeRequest={onSubmitChangeRequest}
       setCarNumber={setCarNumber}
+      onlyLeadershipChanged={onlyLeadershipChanged}
     />
   );
 };

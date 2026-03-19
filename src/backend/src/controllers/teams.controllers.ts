@@ -3,6 +3,16 @@ import TeamsService from '../services/teams.services.js';
 import { HttpException } from '../utils/errors.utils.js';
 
 export default class TeamsController {
+  static async getAllTeamPreviews(req: Request, res: Response, next: NextFunction) {
+    try {
+      const teams = await TeamsService.getAllTeamPreviews(req.organization);
+
+      res.status(200).json(teams);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllTeams(req: Request, res: Response, next: NextFunction) {
     try {
       const teams = await TeamsService.getAllTeams(req.organization);

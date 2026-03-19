@@ -67,7 +67,18 @@ import {
   editIndexCode,
   getCurrentUserAssignedReimbursementRequests,
   assignMemberToRR,
-  setTaxExemptStatus
+  setTaxExemptStatus,
+  toggleSponsorTaskDone,
+  getAllProspectiveSponsors,
+  createProspectiveSponsor,
+  editProspectiveSponsor,
+  deleteProspectiveSponsor,
+  getProspectiveSponsorTasks,
+  createProspectiveSponsorTask,
+  acceptProspectiveSponsor,
+  CreateProspectiveSponsorPayload,
+  EditProspectiveSponsorPayload,
+  AcceptProspectiveSponsorPayload
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -87,7 +98,8 @@ import {
   ReimbursementRequestComment,
   ReimbursementRequestData,
   SpendingBarData,
-  CreateSponsorTask
+  CreateSponsorTask,
+  ProspectiveSponsor
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 
@@ -158,14 +170,21 @@ export interface MarkDeliveredRequestPayload {
 export interface SponsorPayload {
   name: string;
   activeStatus: boolean;
-  sponsorValue: number;
+  valueTypes: string[];
+  sponsorValue?: number;
   joinDate: Date;
   activeYears: number[];
-  sponsorTierId: string;
+  sponsorTierId?: string;
   taxExempt: boolean;
-  sponsorContact: string;
+  contactName: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactPosition?: string;
   sponsorTasks: CreateSponsorTask[];
   discountCode?: string;
+  sponsorNotes?: string;
+  stockDescription?: string;
+  discountDescription?: string;
 }
 
 interface EditSponsorPayload extends SponsorPayload {
@@ -183,6 +202,7 @@ export interface SponsorTaskPayload {
   notes: string;
   notifyDate?: Date;
   assigneeUserId?: string;
+  done?: boolean;
 }
 
 export interface EditSponsorTaskPayload {
@@ -774,9 +794,9 @@ export const useGetPendingAdvisorList = () => {
  * @returns the mutation to send the pending advisor list
  */
 export const useSendPendingAdvisorList = () => {
-  return useMutation<{ message: string }, Error, number[]>(
+  return useMutation<{ message: string }, Error, string[]>(
     ['reimbursement-requests', 'send-pending-advisor'],
-    async (saboNumbers: number[]) => {
+    async (saboNumbers: string[]) => {
       const { data } = await sendPendingAdvisorList(saboNumbers);
       return data;
     }
@@ -826,9 +846,9 @@ export const useEditRefund = (id: string) => {
  */
 export const useSetSaboNumber = (reimbursementRequestId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<void, Error, { saboNumber: number }>(
+  return useMutation<void, Error, { saboNumber: string }>(
     ['reimbursement-requests', reimbursementRequestId],
-    async (formData: { saboNumber: number }) => {
+    async (formData: { saboNumber: string }) => {
       await setSaboNumber(reimbursementRequestId, formData.saboNumber);
     },
     {
@@ -1340,6 +1360,159 @@ export const useEditSponsorTier = (sponsorTierId: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['sponsor-tiers']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to toggle a sponsor task done status
+ *
+ * @returns the updated sponsor task
+ */
+export const useToggleSponsorTaskDone = () => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTask, Error, string>(
+    ['sponsor-task', 'toggle-done'],
+    async (sponsorTaskId: string) => {
+      const { data } = await toggleSponsorTaskDone(sponsorTaskId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor-task']);
+        queryClient.invalidateQueries(['prospective-sponsor']);
+      }
+    }
+  );
+};
+
+/**************** Prospective Sponsors Hooks ****************/
+
+/**
+ * Custom React Hook to get all prospective sponsors
+ */
+export const useAllProspectiveSponsors = () => {
+  return useQuery<ProspectiveSponsor[], Error>(['prospective-sponsors'], async () => {
+    const { data } = await getAllProspectiveSponsors();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to create a prospective sponsor
+ */
+export const useCreateProspectiveSponsor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ProspectiveSponsor, Error, CreateProspectiveSponsorPayload>(
+    ['prospective-sponsor', 'create'],
+    async (payload: CreateProspectiveSponsorPayload) => {
+      const { data } = await createProspectiveSponsor(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['prospective-sponsors']);
+      }
+    }
+  );
+};
+
+interface EditProspectiveSponsorMutationPayload extends EditProspectiveSponsorPayload {
+  prospectiveSponsorId: string;
+}
+
+/**
+ * Custom React Hook to edit a prospective sponsor
+ */
+export const useEditProspectiveSponsor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ProspectiveSponsor, Error, EditProspectiveSponsorMutationPayload>(
+    ['prospective-sponsor', 'edit'],
+    async ({ prospectiveSponsorId, ...payload }) => {
+      const { data } = await editProspectiveSponsor(prospectiveSponsorId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['prospective-sponsors']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a prospective sponsor
+ */
+export const useDeleteProspectiveSponsor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ProspectiveSponsor, Error, string>(
+    ['prospective-sponsor', 'delete'],
+    async (prospectiveSponsorId: string) => {
+      const { data } = await deleteProspectiveSponsor(prospectiveSponsorId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['prospective-sponsors']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get tasks for a prospective sponsor
+ */
+export const useProspectiveSponsorTasks = (prospectiveSponsorId: string) => {
+  return useQuery<SponsorTask[], Error>(
+    ['prospective-sponsor-tasks', prospectiveSponsorId],
+    async () => {
+      const { data } = await getProspectiveSponsorTasks(prospectiveSponsorId);
+      return data;
+    },
+    { enabled: !!prospectiveSponsorId }
+  );
+};
+
+/**
+ * Custom React Hook to create a task for a prospective sponsor
+ */
+export const useCreateProspectiveSponsorTask = (prospectiveSponsorId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTask, Error, SponsorTaskPayload>(
+    ['prospective-sponsor-task', 'create'],
+    async (payload: SponsorTaskPayload) => {
+      const { data } = await createProspectiveSponsorTask(prospectiveSponsorId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['prospective-sponsor-tasks', prospectiveSponsorId]);
+        queryClient.invalidateQueries(['prospective-sponsors']);
+      }
+    }
+  );
+};
+
+interface AcceptProspectiveSponsorMutationPayload extends AcceptProspectiveSponsorPayload {
+  prospectiveSponsorId: string;
+}
+
+/**
+ * Custom React Hook to accept a prospective sponsor (convert to full sponsor)
+ */
+export const useAcceptProspectiveSponsor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ProspectiveSponsor, Error, AcceptProspectiveSponsorMutationPayload>(
+    ['prospective-sponsor', 'accept'],
+    async ({ prospectiveSponsorId, ...payload }) => {
+      const { data } = await acceptProspectiveSponsor(prospectiveSponsorId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['prospective-sponsors']);
+        queryClient.invalidateQueries(['sponsor']);
       }
     }
   );

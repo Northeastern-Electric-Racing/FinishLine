@@ -166,9 +166,16 @@ export default class ProjectsController {
 
   static async createLinkType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, iconName, required } = req.body;
+      const { name, iconName, required, isOnGuestHomePage } = req.body;
 
-      const newLinkType = await ProjectsService.createLinkType(req.currentUser, name, iconName, required, req.organization);
+      const newLinkType = await ProjectsService.createLinkType(
+        req.currentUser,
+        name,
+        iconName,
+        required,
+        req.organization,
+        isOnGuestHomePage
+      );
       res.status(200).json(newLinkType);
     } catch (error: unknown) {
       next(error);
@@ -207,8 +214,7 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes,
-        reimbursementRequestId
+        notes
       } = req.body;
       const wbsNum = validateWBS(req.params.wbsNum as string);
       const material = await BillOfMaterialsService.createMaterial(
@@ -227,10 +233,25 @@ export default class ProjectsController {
         notes,
         assemblyId,
         pdmFileName,
-        unitName,
-        reimbursementRequestId
+        unitName
       );
       res.status(200).json(material);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async copyMaterialsToProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { materialIds, destinationWbsNum } = req.body;
+
+      const newMaterialIds = await BillOfMaterialsService.copyMaterialsToProject(
+        req.currentUser,
+        materialIds,
+        destinationWbsNum,
+        req.organization
+      );
+      res.status(200).json(newMaterialIds);
     } catch (error: unknown) {
       next(error);
     }
@@ -370,8 +391,7 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes,
-        reimbursementRequestId
+        notes
       } = req.body;
       const updatedMaterial = await BillOfMaterialsService.editMaterial(
         req.currentUser,
@@ -389,8 +409,7 @@ export default class ProjectsController {
         notes,
         unitName,
         assemblyId,
-        pdmFileName,
-        reimbursementRequestId
+        pdmFileName
       );
       res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
@@ -437,13 +456,14 @@ export default class ProjectsController {
   static async editLinkType(req: Request, res: Response, next: NextFunction) {
     try {
       const { linkTypeName } = req.params as Record<string, string>;
-      const { name: newName, iconName, required } = req.body;
+      const { name: newName, iconName, required, isOnGuestHomePage } = req.body;
       const linkTypeUpdated = await ProjectsService.editLinkType(
         linkTypeName,
         iconName,
         required,
         req.currentUser,
         req.organization,
+        isOnGuestHomePage,
         newName
       );
       res.status(200).json(linkTypeUpdated);
