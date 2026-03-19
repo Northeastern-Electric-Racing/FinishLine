@@ -10,7 +10,7 @@ interface CopyBOMViewProps {
   onHide: () => void;
   cars: Car[];
   projects: ProjectPreview[];
-  onCopy: (materialIds: string[]) => Promise<void>;
+  onCopy: (materialIds: string[], sourceProjectName: string) => void;
 }
 
 const CopyBOMView: React.FC<CopyBOMViewProps> = ({ open, onHide, cars, projects, onCopy }) => {
@@ -34,7 +34,9 @@ const CopyBOMView: React.FC<CopyBOMViewProps> = ({ open, onHide, cars, projects,
   }));
 
   const handleSubmit = async () => {
-    await onCopy(selectedMaterialIdsRef.current);
+    if (!selectedProject) return;
+    const sourceProjectName = `${wbsPipe(selectedProject.wbsNum)} - ${selectedProject.name}`;
+    onCopy(selectedMaterialIdsRef.current, sourceProjectName);
   };
 
   return (

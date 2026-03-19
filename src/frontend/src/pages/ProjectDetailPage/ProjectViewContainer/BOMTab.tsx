@@ -2,8 +2,8 @@ import { Box } from '@mui/system';
 import { MaterialPreview, Project, isGuest } from 'shared';
 import { NERButton } from '../../../components/NERButton';
 import WarningIcon from '@mui/icons-material/Warning';
+import React, { useState } from 'react';
 import { Tooltip, useTheme } from '@mui/material';
-import { useState } from 'react';
 import BOMTableWrapper from './BOM/BOMTableWrapper';
 import CreateMaterialModal from './BOM/MaterialForm/CreateMaterialModal';
 import CreateAssemblyModal from './BOM/AssemblyForm/CreateAssemblyModal';
@@ -31,8 +31,8 @@ const BOMTab = ({ project }: { project: Project }) => {
   const [showAddAssembly, setShowAddAssembly] = useState(false);
   const [showCopyBOM, setShowCopyBOM] = useState(false);
   const [showImportBOM, setShowImportBOM] = useState(false);
-  const theme = useTheme();
 
+  const theme = useTheme();
   const user = useCurrentUser();
 
   const {
@@ -99,7 +99,12 @@ const BOMTab = ({ project }: { project: Project }) => {
         allUnits={units}
         assemblies={assemblies}
       />
-      <CopyBOMModal open={showCopyBOM} onHide={() => setShowCopyBOM(false)} destinationWbsNum={project.wbsNum} />
+      <CopyBOMModal
+        open={showCopyBOM}
+        onHide={() => setShowCopyBOM(false)}
+        destinationWbsNum={project.wbsNum}
+        currentProjectName={project.name}
+      />
       <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <BOMTableWrapper
           project={project}
