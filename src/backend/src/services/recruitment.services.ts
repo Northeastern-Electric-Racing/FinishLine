@@ -253,4 +253,12 @@ export default class RecruitmentServices {
 
     return definition;
   }
+
+  static async getAllGuestDefinitions(organization: Organization) {
+    const allGuestDefintions = await prisma.guest_Definition.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null }
+    });
+
+    return allGuestDefintions;
+  }
 }

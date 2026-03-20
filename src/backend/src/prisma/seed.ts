@@ -41,6 +41,7 @@ import OnboardingServices from '../services/onboarding.services.js';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed.js';
 import FinanceServices from '../services/finance.services.js';
 import CalendarService from '../services/calendar.services.js';
+import { allChangeRequestsReviewed } from '../utils/change-requests.utils.js';
 
 const prisma = new PrismaClient();
 
@@ -3889,6 +3890,50 @@ const performSeed: () => Promise<void> = async () => {
     undefined,
     undefined,
     undefined
+  );
+
+  await RecruitmentServices.createGuestDefinition(
+    thomasEmrax,
+    ner,
+    'Projects',
+    'This is the definition of a project. Projects are blah blah blah',
+    0,
+    'bar_chart',
+    'Click here to view all our projects!',
+    '/projects'
+  );
+
+  await RecruitmentServices.createGuestDefinition(
+    thomasEmrax,
+    ner,
+    'Change Requests',
+    'This is the definiton for a change request. Changes requests are blah blah blah',
+    0,
+    'bar_chart',
+    'Click here to view all our change requests!',
+    '/change-requests'
+  );
+
+  await RecruitmentServices.createGuestDefinition(
+    thomasEmrax,
+    ner,
+    'Gantt Chart',
+    'This is the definiton for a change request. Changes requests are blah blah blah',
+    0,
+    'bar_chart',
+    'Click here to view all our projects!',
+    '/gantt'
+  );
+
+  await RecruitmentServices.createGuestDefinition(
+    thomasEmrax,
+    ner,
+    'Design Reviews',
+    'This is the definiton for a design review. Design reviews are blah blah blah',
+    0,
+    'bar_chart',
+    'Click here to view all our design reviews!',
+    '/design-reviews'
   );
 };
 
