@@ -53,9 +53,8 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
 
   const reimbursementRequests = useMemo(() => {
     if (!allReimbursementRequests || !project) return [];
-    return allReimbursementRequests.filter((rr) => {
-      if (getCurrentReimbursementStatus(rr.reimbursementStatuses).type == 'DENIED') return false; // exclude denied requests
-      return rr.reimbursementProducts.some((product) => {
+    return allReimbursementRequests.filter((rr) =>
+      rr.reimbursementProducts.some((product) => {
         const reason = product.reimbursementProductReason;
         if ((reason as WBSElementData).wbsNum) {
           return equalsWbsNumber(
@@ -64,14 +63,17 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
           );
         }
         return false;
-      });
-    });
+      })
+    );
   }, [allReimbursementRequests, project, wbsNum]);
 
   const budgetInfo = useMemo(() => {
     if (!project) return null;
     const totalBudget = project.budget; // already in dollars
-    const totalSpent = reimbursementRequests.reduce((sum, rr) => sum + getProjectCost(rr, wbsNum), 0) / 100; // cents → dollars
+    const nonDeniedRequests = reimbursementRequests.filter(
+      (rr) => getCurrentReimbursementStatus(rr.reimbursementStatuses).type !== 'DENIED'
+    );
+    const totalSpent = nonDeniedRequests.reduce((sum, rr) => sum + getProjectCost(rr, wbsNum), 0) / 100; // cents → dollars
     const budgetRemaining = totalBudget - totalSpent;
     const budgetUsedPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
     return {
