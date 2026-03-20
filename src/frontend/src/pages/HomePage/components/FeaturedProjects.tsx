@@ -50,7 +50,11 @@ const FeaturedProjects: React.FC = () => {
         {featuredProjects.length === 0 ? (
           <NoFeaturedProjectsDisplay />
         ) : (
-          featuredProjects.map((p) => <GuestProjectsCard project={p} />)
+          featuredProjects.map((p) => (
+            <Box key={p.wbsNum.projectNumber} sx={{ width: isMobilePortrait ? '100%' : 300, flexShrink: 0 }}>
+              <GuestProjectsCard project={p} />
+            </Box>
+          ))
         )}
       </Stack>
     </ScrollablePageBlock>

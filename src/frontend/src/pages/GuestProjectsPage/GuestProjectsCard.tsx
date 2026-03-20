@@ -1,4 +1,4 @@
-import { alpha, Box, Card, CardContent, Chip, Stack, Typography, useTheme, useMediaQuery, Link } from '@mui/material';
+import { alpha, Box, Card, CardContent, Chip, Stack, Typography, useTheme, Link } from '@mui/material';
 import { wbsNamePipe, ProjectPreview, wbsPipe, WbsElementStatus } from 'shared';
 import { datePipe } from '../../utils/pipes';
 import { NERButton } from '../../components/NERButton';
@@ -13,7 +13,6 @@ interface ProjectCardProps {
 
 const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
   const theme = useTheme();
-  const isMobilePortrait = useMediaQuery('(max-width:600px)');
   const { data: singleProject, isLoading, isError, error } = useSingleProject(project.wbsNum);
   if (isLoading || !singleProject) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
@@ -24,14 +23,15 @@ const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
     <Card
       variant="outlined"
       sx={{
-        minWidth: 'fit-content',
-        minHeight: 'fit-content',
-        width: isMobilePortrait ? '100%' : 'auto',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         background: theme.palette.background.paper,
         borderRadius: 2
       }}
     >
-      <CardContent sx={{ padding: 2 }}>
+      <CardContent sx={{ padding: 2, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
         <Stack direction="row" justifyContent="space-between">
           <Box width={'100%'}>
             <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -67,7 +67,7 @@ const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
                 ? `${singleProject.manager.firstName} ${singleProject.manager.lastName}`
                 : 'N/A'}
             </Typography>
-            <Typography fontWeight={'regular'} fontSize={{ xs: 14, sm: 16 }} noWrap>
+            <Typography fontWeight={'regular'} fontSize={{ xs: 14, sm: 16 }}>
               {datePipe(singleProject.startDate) +
                 ' ⟝ ' +
                 singleProject.duration +
@@ -76,7 +76,18 @@ const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
             </Typography>
           </Box>
         </Stack>
-        <Typography>{singleProject.summary}</Typography>
+        <Typography
+          sx={{
+            flexGrow: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical'
+          }}
+        >
+          {singleProject.summary}
+        </Typography>
         <Link
           component={RouterLink}
           to={`/projects/${wbsPipe(project.wbsNum)}`}

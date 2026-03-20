@@ -36,7 +36,6 @@ const PROJECTS_BY_WBS = PROJECTS + `/:wbsNum`;
 const PROJECTS_NEW = PROJECTS + `/new`;
 const WORK_PACKAGE_NEW = PROJECTS + `/work-package/new`;
 const PROJECT_PART = PROJECTS_BY_WBS + '/part/:indexNum';
-const GUEST_PROJECTS = PROJECTS + '/guest';
 
 /**************** Teams Section ****************/
 const TEAMS = `/teams`;
@@ -106,7 +105,6 @@ export const routes = {
   PROJECTS_NEW,
   WORK_PACKAGE_NEW,
   PROJECT_PART,
-  GUEST_PROJECTS,
 
   CHANGE_REQUESTS,
   ALL_CHANGE_REQUESTS,

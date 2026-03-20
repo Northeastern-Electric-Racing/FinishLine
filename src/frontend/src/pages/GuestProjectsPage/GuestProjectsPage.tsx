@@ -33,12 +33,14 @@ const GuestProjectsPage: React.FC = () => {
     <PageLayout title="Projects">
       <Box
         width={'100%'}
-        alignContent={'center'}
         display={'flex'}
         justifyContent={'center'}
         gap={2}
-        flexWrap={'wrap'}
         mb={3}
+        sx={{
+          overflowX: 'auto',
+          pb: 1
+        }}
       >
         {teamTypes.map((team) => (
           <Chip
@@ -51,6 +53,7 @@ const GuestProjectsPage: React.FC = () => {
             }
             clickable
             color={selectedTeamTypes?.includes(team.name) ? 'primary' : 'default'}
+            sx={{ flexShrink: 0 }}
           />
         ))}
       </Box>
