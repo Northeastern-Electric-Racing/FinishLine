@@ -183,7 +183,7 @@ describe('useGlobalCarFilter', () => {
     expect(result.current.isLoading).toBe(false);
   });
 
-  it('should clear session storage when setting car to null', async () => {
+  it('should update session storage when switching cars', async () => {
     mockUseGetCurrentCar.mockReturnValue({
       data: exampleCurrentCar,
       isLoading: false,
@@ -204,12 +204,12 @@ describe('useGlobalCarFilter', () => {
       expect(result.current.selectedCar).toBeTruthy();
     });
 
-    // Clear selection
-    result.current.setSelectedCar(null);
+    // Switch to a different car
+    result.current.setSelectedCar(exampleAllCars[0]);
 
+    expect(sessionStorage.getItem('selectedCarId')).toBe(exampleAllCars[0].id);
     await waitFor(() => {
-      expect(sessionStorage.getItem('selectedCarId')).toBeNull();
+      expect(result.current.selectedCar).toEqual(exampleAllCars[0]);
     });
-    expect(result.current.selectedCar).toBeNull();
   });
 });

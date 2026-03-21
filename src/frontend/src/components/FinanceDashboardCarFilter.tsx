@@ -36,9 +36,7 @@ const FinanceDashboardCarFilterComponent: React.FC<FinanceDashboardCarFilterProp
   const handleCarChange = (_event: any, newValue: any) => {
     if (newValue) {
       const car = allCars.find((c) => c.id === newValue.id);
-      setSelectedCar(car || null);
-    } else {
-      setSelectedCar(null);
+      if (car) setSelectedCar(car);
     }
   };
 

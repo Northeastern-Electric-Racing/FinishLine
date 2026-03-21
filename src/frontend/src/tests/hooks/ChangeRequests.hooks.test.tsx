@@ -13,6 +13,9 @@ import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/change-
 import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/change-requests.hooks';
 
 vi.mock('../../apis/change-requests.api');
+vi.mock('../../app/AppGlobalCarFilterContext', () => ({
+  useGlobalCarFilter: () => ({ selectedCar: null, allCars: [], setSelectedCar: vi.fn(), isLoading: false, error: null })
+}));
 
 describe('change request hooks', () => {
   it('handles getting a list of change requests', async () => {

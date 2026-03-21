@@ -7,6 +7,10 @@ import { render, screen } from '@testing-library/react'; // avoid circular depen
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import AppContextQuery from '../../app/AppContextQuery';
 
+vi.mock('../../app/AppGlobalCarFilterContext', () => ({
+  useGlobalCarFilter: () => ({ selectedCar: null, allCars: [], setSelectedCar: vi.fn(), isLoading: false, error: null })
+}));
+
 describe('app context', () => {
   it('renders simple text as children', () => {
     render(<AppContextQuery>hello</AppContextQuery>);

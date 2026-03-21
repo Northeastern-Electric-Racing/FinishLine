@@ -13,7 +13,7 @@ export interface FinanceDashboardCarFilter {
   startDate: Date | undefined;
   endDate: Date | undefined;
   carNumber: number | undefined;
-  setSelectedCar: (car: Car | null) => void;
+  setSelectedCar: (car: Car) => void;
   setStartDate: (date: Date | undefined) => void;
   setEndDate: (date: Date | undefined) => void;
   isLoading: boolean;
@@ -62,7 +62,7 @@ export const useFinanceDashboardCarFilter = (
     }
   }, [selectedCar, allCars]);
 
-  const setSelectedCar = (car: Car | null) => {
+  const setSelectedCar = (car: Car) => {
     setGlobalSelectedCar(car);
   };
 
