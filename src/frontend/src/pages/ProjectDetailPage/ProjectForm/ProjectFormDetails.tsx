@@ -9,6 +9,7 @@ import { AttachMoney } from '@mui/icons-material';
 import TeamDropdown from '../../../components/TeamsDropdown';
 import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
 import { useGetAllCars } from '../../../hooks/cars.hooks';
+import { useGlobalCarFilter } from '../../../app/AppGlobalCarFilterContext';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
@@ -42,6 +43,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
   setCarNumber
 }) => {
   const { data: cars, isLoading, isError, error } = useGetAllCars();
+  const { selectedCar } = useGlobalCarFilter();
 
   if (isLoading || !cars) {
     return <LoadingIndicator />;
@@ -76,7 +78,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
                 <Controller
                   name="carNumber"
                   control={control}
-                  defaultValue={cars.length - 1}
+                  defaultValue={selectedCar?.wbsNum.carNumber ?? cars[0]?.wbsNum.carNumber}
                   render={({ field: { onChange, value } }) => (
                     <Select
                       error={!!errors.carNumber}
