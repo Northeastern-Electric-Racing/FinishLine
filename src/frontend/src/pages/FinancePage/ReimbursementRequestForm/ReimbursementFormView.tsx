@@ -71,7 +71,7 @@ interface ReimbursementRequestFormViewProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
   receiptPrepend: (args: ReimbursementReceiptUploadArgs) => void;
   receiptRemove: (index: number) => void;
-  reimbursementProductAppend: (args: ReimbursementProductFormArgs) => void;
+  reimbursementProductPrepend: (args: ReimbursementProductFormArgs) => void;
   reimbursementProductRemove: (index: number) => void;
   onSubmit: (data: ReimbursementRequestFormInput) => void;
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
