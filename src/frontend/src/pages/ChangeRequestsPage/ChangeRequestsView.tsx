@@ -5,6 +5,7 @@ import { routes } from '../../utils/routes';
 import { isGuest } from 'shared';
 import { Add } from '@mui/icons-material';
 import { useCurrentUser } from '../../hooks/users.hooks';
+import { useGlobalCarFilter } from '../../app/AppGlobalCarFilterContext';
 import ChangeRequestsOverview from './ChangeRequestsOverview';
 import ChangeRequestsTable from './ChangeRequestsTable';
 import PageLayout from '../../components/PageLayout';
@@ -13,6 +14,7 @@ import FullPageTabs from '../../components/FullPageTabs';
 const ChangeRequestsView: React.FC = () => {
   const history = useHistory();
   const user = useCurrentUser();
+  const { selectedCar } = useGlobalCarFilter();
 
   // Default to the "overview" tab
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -30,7 +32,7 @@ const ChangeRequestsView: React.FC = () => {
 
   return (
     <PageLayout
-      title="Change Requests"
+      title={selectedCar ? `Change Requests For ${selectedCar.name}` : 'Change Requests'}
       tabs={
         <FullPageTabs
           setTab={setTabIndex}
