@@ -93,7 +93,7 @@ export default class ChangeRequestsService {
       where: {
         dateDeleted: null,
         organizationId: organization.organizationId,
-        ...(carId && { wbsElement: { project: { carId } } })
+        ...(carId && { wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } })
       },
       ...getManyChangeRequestQueryArgs(organization.organizationId)
     });
@@ -153,7 +153,7 @@ export default class ChangeRequestsService {
           {
             NOT: [{ scopeChangeRequest: null }, { submitterId: user.userId }]
           },
-          ...(carId ? [{ wbsElement: { project: { carId } } }] : [])
+          ...(carId ? [{ wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } }] : [])
         ],
         organizationId: organization.organizationId,
         OR: queryOr
@@ -191,7 +191,11 @@ export default class ChangeRequestsService {
     if (wbsnum) queryAnd.push({ wbsElementId: (await validateWbsElement(wbsnum, organization)).wbsElementId });
     else {
       queryAnd.push({ submitterId: user.userId });
-      queryAnd.push(...(carId ? [{ wbsElement: { project: { carId } } }] : []));
+      queryAnd.push(
+        ...(carId
+          ? [{ wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } }]
+          : [])
+      );
     }
 
     const changeRequests = await prisma.change_Request.findMany({
@@ -224,7 +228,12 @@ export default class ChangeRequestsService {
     const fiveDaysAgo = new Date(currentDate.getTime() - 1000 * 60 * 60 * 24 * 5); // Change requests that were reviewed less than five days ago
     const queryAnd = wbsnum
       ? [{ wbsElementId: (await validateWbsElement(wbsnum, organization)).wbsElementId }]
-      : [{ submitterId: user.userId }, ...(carId ? [{ wbsElement: { project: { carId } } }] : [])];
+      : [
+          { submitterId: user.userId },
+          ...(carId
+            ? [{ wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } }]
+            : [])
+        ];
 
     const changeRequests = await prisma.change_Request.findMany({
       where: {

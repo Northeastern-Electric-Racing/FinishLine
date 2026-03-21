@@ -32,7 +32,7 @@ const createProposedSolution = ({
 };
 
 export const createChangeRequest = ({
-  wbsTitle = '0.1.0 - Impact Attenuator',
+  wbsTitle = '25.1.0 - Impact Attenuator',
   what = 'test what',
   type = 'ISSUE',
   whys = [
