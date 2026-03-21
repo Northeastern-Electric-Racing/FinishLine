@@ -192,9 +192,7 @@ export default class ChangeRequestsService {
     else {
       queryAnd.push({ submitterId: user.userId });
       queryAnd.push(
-        ...(carId
-          ? [{ wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } }]
-          : [])
+        ...(carId ? [{ wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } }] : [])
       );
     }
 
@@ -230,9 +228,7 @@ export default class ChangeRequestsService {
       ? [{ wbsElementId: (await validateWbsElement(wbsnum, organization)).wbsElementId }]
       : [
           { submitterId: user.userId },
-          ...(carId
-            ? [{ wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } }]
-            : [])
+          ...(carId ? [{ wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } }] : [])
         ];
 
     const changeRequests = await prisma.change_Request.findMany({
