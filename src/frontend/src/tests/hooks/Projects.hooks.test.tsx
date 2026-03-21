@@ -13,6 +13,8 @@ import { exampleAllProjects, exampleProject1 } from '../test-support/test-data/p
 import { exampleWbsProject1 } from '../test-support/test-data/wbs-numbers.stub';
 import { getAllProjectsGantt, getSingleProject } from '../../apis/projects.api';
 import { useAllProjectsGantt, useSingleProject } from '../../hooks/projects.hooks';
+import * as carsHooks from '../../hooks/cars.hooks';
+import { exampleAllCars, exampleCurrentCar } from '../test-support/test-data/cars.stub';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AppContextQuery>
@@ -21,6 +23,12 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 vi.mock('../../apis/projects.api');
+vi.mock('../../hooks/cars.hooks');
+
+beforeEach(() => {
+  vi.mocked(carsHooks.useGetCurrentCar).mockReturnValue({ data: exampleCurrentCar, isLoading: false, error: null } as any);
+  vi.mocked(carsHooks.useGetAllCars).mockReturnValue({ data: exampleAllCars, isLoading: false, error: null } as any);
+});
 
 describe('project hooks', () => {
   it('handles getting a list of projects', async () => {

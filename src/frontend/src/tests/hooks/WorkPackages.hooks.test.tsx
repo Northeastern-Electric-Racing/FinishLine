@@ -13,6 +13,8 @@ import { exampleAllWorkPackages, exampleResearchWorkPackage } from '../test-supp
 import { exampleWbsWorkPackage1 } from '../test-support/test-data/wbs-numbers.stub';
 import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
 import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/work-packages.hooks';
+import * as carsHooks from '../../hooks/cars.hooks';
+import { exampleAllCars, exampleCurrentCar } from '../test-support/test-data/cars.stub';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AppContextQuery>
@@ -21,6 +23,12 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 vi.mock('../../apis/work-packages.api');
+vi.mock('../../hooks/cars.hooks');
+
+beforeEach(() => {
+  vi.mocked(carsHooks.useGetCurrentCar).mockReturnValue({ data: exampleCurrentCar, isLoading: false, error: null } as any);
+  vi.mocked(carsHooks.useGetAllCars).mockReturnValue({ data: exampleAllCars, isLoading: false, error: null } as any);
+});
 
 describe('work package hooks', () => {
   it('handles getting a list of work packages', async () => {
