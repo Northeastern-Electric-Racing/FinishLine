@@ -303,6 +303,8 @@ model User {
   leadershipCrAsLead                      Leadership_CR[]                      @relation(name: "leadershipCrLead")
   leadershipCrAsManager                   Leadership_CR[]                      @relation(name: "leadershipCrManager")
   prospectiveSponsorsContacted            Prospective_Sponsor[]                @relation(name: "prospectiveSponsorContactor")
+  createdMeetingAttendances               Meeting_Attendance[]                 @relation(name: "meetingAttendanceCreated")
+  attendedMeetingAttendances              Meeting_Attendance[]                 @relation(name: "meetingAttendees")
 }
 
 model Role {
@@ -339,6 +341,7 @@ model Team {
   organization           Organization               @relation(fields: [organizationId], references: [organizationId])
   checklists             Checklist[]
   projectTemplates       Project_Template[]
+  meetingAttendances     Meeting_Attendance[]
 
   @@index([headId])
   @@index([organizationId])
@@ -599,16 +602,17 @@ model Work_Package {
 }
 
 model Link_Type {
-  id             String       @id @default(uuid())
-  name           String
-  dateCreated    DateTime     @default(now())
-  iconName       String
-  required       Boolean
-  creatorId      String
-  creator        User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links          Link[]       @relation(name: "linkTypes")
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  id                String       @id @default(uuid())
+  name              String
+  dateCreated       DateTime     @default(now())
+  iconName          String
+  required          Boolean
+  creatorId         String
+  creator           User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links             Link[]       @relation(name: "linkTypes")
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [organizationId])
+  isOnGuestHomePage Boolean      @default(false)
 
   @@unique([name, organizationId], name: "uniqueLinkType")
   @@index([organizationId])
@@ -1392,8 +1396,6 @@ model Organization {
   advisor                                User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
   advisorId                              String?
   description                            String    @default("")
-  applyInterestImageId                   String?
-  exploreAsGuestImageId                  String?
   newMemberImageId                       String?
   logoImageId                            String?
   slackWorkspaceId                       String?
@@ -1402,6 +1404,8 @@ model Organization {
   partReviewSampleImageId                String?
   partReviewGuideLink                    String?
   sponsorshipNotificationsSlackChannelId String?
+  platformDescription                    String    @default("")
+  platformLogoImageId                    String?
 
   // Relation references
   wbsElements              WBS_Element[]
@@ -1443,6 +1447,7 @@ model Organization {
   machineries              Machinery[]
   calendars                Calendar[]
   eventTypes               Event_Type[]
+  meetingAttendances       Meeting_Attendance[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1799,4 +1804,22 @@ model Guest_Definition {
   organizationId String
 
   @@index([organizationId])
+}
+
+model Meeting_Attendance {
+  meetingAttendanceId   String       @id @default(uuid())
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [organizationId])
+  teamId                String
+  team                  Team         @relation(fields: [teamId], references: [teamId])
+  userCreatedId         String
+  userCreated           User         @relation(name: "meetingAttendanceCreated", fields: [userCreatedId], references: [userId])
+  openedAt              DateTime     @default(now())
+  closedAt              DateTime?
+  slackChannelId        String
+  slackMessageTimestamp String
+  attendees             User[]       @relation(name: "meetingAttendees")
+
+  @@index([organizationId])
+  @@index([teamId])
 }

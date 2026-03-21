@@ -1,4 +1,4 @@
-import { Task as Prisma_Task, WBS_Element, Event, Work_Package } from '@prisma/client';
+import { Task as Prisma_Task, WBS_Element, Event, Work_Package, Team, Event_Type } from '@prisma/client';
 import { UserWithSettings } from './auth.utils.js';
 import { ScheduleSlot } from 'shared';
 
@@ -10,6 +10,8 @@ export type TaskWithAssignees = Prisma_Task & {
 export type EventWithAttendees = Event & {
   attendees: UserWithSettings[];
   scheduledTimes: ScheduleSlot[];
+  teams: Team[];
+  eventType: Event_Type;
   workPackages: (Work_Package & {
     wbsElement: WBS_Element;
   })[];
@@ -29,7 +31,10 @@ export const userToSlackPing = (user: UserWithSettings) => {
  * @returns the beginning of the day tomorrow (at 12am)
  */
 export const startOfDayTomorrow = () => {
-  return new Date(new Date().setHours(24, 0, 0, 0));
+  const tomorrow = new Date();
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+  tomorrow.setUTCHours(0, 0, 0, 0);
+  return tomorrow;
 };
 
 /**
@@ -39,6 +44,36 @@ export const startOfDayTomorrow = () => {
 export const endOfDayTomorrow = () => {
   const startOfDay = startOfDayTomorrow();
   const endOfDay = new Date(startOfDay);
-  endOfDay.setDate(startOfDay.getDate() + 1);
+  endOfDay.setUTCDate(startOfDay.getUTCDate() + 1);
   return endOfDay;
+};
+
+const EST_OFFSET_MS = 5 * 60 * 60 * 1000;
+
+/**
+ * Given a UTC Date, returns the start of that calendar day in EST (UTC-5), expressed as a UTC Date.
+ * EST is always treated as UTC-5 (no DST adjustment).
+ * @returns midnight EST of the given date as a UTC Date
+ */
+export const startOfDateEST = (date: Date): Date => {
+  const dateInEST = new Date(date.getTime() - EST_OFFSET_MS);
+  return new Date(Date.UTC(dateInEST.getUTCFullYear(), dateInEST.getUTCMonth(), dateInEST.getUTCDate(), 5, 0, 0, 0));
+};
+
+/**
+ * Gets the start of today in EST (UTC-5), expressed as a UTC Date.
+ * EST is always treated as UTC-5 (no DST adjustment).
+ * @returns midnight EST today as a UTC Date
+ */
+export const startOfTodayEST = (): Date => startOfDateEST(new Date());
+
+/**
+ * Gets the start of tomorrow in EST (UTC-5), expressed as a UTC Date.
+ * EST is always treated as UTC-5 (no DST adjustment).
+ * @returns midnight EST tomorrow as a UTC Date
+ */
+export const startOfTomorrowEST = (): Date => {
+  const start = startOfTodayEST();
+  start.setUTCDate(start.getUTCDate() + 1);
+  return start;
 };
