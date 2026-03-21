@@ -23,7 +23,7 @@ import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
 import { dateToMidnightUTC, ProjectProposedChangesCreateArgs, WbsNumber, WorkPackageStage } from 'shared';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useCreateSingleWorkPackage } from '../../../hooks/work-packages.hooks';
-import { useGetAllCars } from '../../../hooks/cars.hooks';
+import { useGlobalCarFilter } from '../../../app/AppGlobalCarFilterContext';
 import { ChangeRequestReason } from 'shared';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ChangeRequestType } from 'shared';
@@ -35,8 +35,7 @@ const ProjectCreateContainer: React.FC = () => {
 
   const [managerId, setManagerId] = useState<string | undefined>();
   const [leadId, setLeadId] = useState<string | undefined>();
-  const [carNumber, setCarNumber] = useState<number | undefined>();
-  const { data: cars, isLoading: carsIsLoading, isError: carsIsError, error: carsError } = useGetAllCars();
+  const { selectedCar, isLoading: carFilterIsLoading } = useGlobalCarFilter();
 
   const { mutateAsync: createProjectMutateAsync, isLoading: createProjectIsLoading } = useCreateSingleProject();
   const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
@@ -47,7 +46,7 @@ const ProjectCreateContainer: React.FC = () => {
     budget: 0,
     summary: '',
     teamIds: [],
-    carNumber,
+    carNumber: selectedCar?.wbsNum.carNumber,
     links: [],
     crId: query.get('crId') || undefined,
     descriptionBullets: [],
@@ -133,13 +132,10 @@ const ProjectCreateContainer: React.FC = () => {
     createWpIsLoading ||
     !allLinkTypes ||
     allLinkTypesIsLoading ||
-    carsIsLoading ||
-    !cars
+    carFilterIsLoading
   )
     return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
-
-  if (carsIsError) return <ErrorPage message={carsError.message} />;
 
   const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
 
@@ -280,7 +276,6 @@ const ProjectCreateContainer: React.FC = () => {
       leadId={leadId}
       managerId={managerId}
       onSubmitChangeRequest={onSubmitChangeRequest}
-      setCarNumber={setCarNumber}
       changeRequestFormReturn={changeRequestFormMethods}
     />
   );
