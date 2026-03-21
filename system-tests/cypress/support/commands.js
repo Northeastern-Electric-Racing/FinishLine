@@ -21,7 +21,7 @@ Cypress.Commands.add('login', (username = 'Thomas Emrax', redirect = '/home') =>
 
   // set the car filter to Fergus (carNumber 0) where all seed data lives,
   // so GlobalCarFilterProvider grabs it from sessionStorage on first mount
-  cy.request(Cypress.env('base_url') + '/cars').then((response) => {
+  cy.request(Cypress.env('backend_url') + '/cars').then((response) => {
     const fergus = response.body.find((car) => car.wbsNum.carNumber === 0);
     if (fergus) {
       cy.window().then((win) => win.sessionStorage.setItem('selectedCarId', fergus.id));
