@@ -18,6 +18,16 @@ Cypress.Commands.add('login', (username = 'Thomas Emrax', redirect = '/home') =>
   cy.contains(username).click();
   cy.get(LOGIN_ICON).click();
   cy.waitForLoading();
+
+  // set the car filter to Fergus (carNumber 0) where all seed data lives,
+  // so GlobalCarFilterProvider grabs it from sessionStorage on first mount
+  cy.request(Cypress.env('base_url') + '/cars').then((response) => {
+    const fergus = response.body.find((car) => car.wbsNum.carNumber === 0);
+    if (fergus) {
+      cy.window().then((win) => win.sessionStorage.setItem('selectedCarId', fergus.id));
+    }
+  });
+
   cy.visit(Cypress.env('base_url') + redirect);
   cy.waitForLoading();
 });
