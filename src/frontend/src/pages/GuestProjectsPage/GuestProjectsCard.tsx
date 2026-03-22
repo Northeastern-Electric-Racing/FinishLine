@@ -14,8 +14,8 @@ interface ProjectCardProps {
 const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
   const theme = useTheme();
   const { data: singleProject, isLoading, isError, error } = useSingleProject(project.wbsNum);
-  if (isLoading || !singleProject) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
+  if (isLoading || !singleProject) return <LoadingIndicator />;
 
   const activeWorkPackages = project.workPackages.filter((wp) => wp.status === WbsElementStatus.Active);
 
