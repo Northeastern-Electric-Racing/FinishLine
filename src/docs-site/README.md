@@ -246,7 +246,7 @@ If your changes aren't appearing:
 
 Common issues:
 
-- **Node version**: Ensure you're running Node.js 18 or higher
+- **Node version**: Ensure you're running Node.js 18 or higher (although you should be running node 25 for the main site development)
 - **Dependencies**: From the root directory, try `rm -rf docs-site/node_modules && yarn install`
 - **Port conflict**: Docs run on port 3002. If it's in use, Docusaurus will try another port or you can stop the conflicting process
 
