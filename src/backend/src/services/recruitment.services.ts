@@ -251,7 +251,7 @@ export default class RecruitmentServices {
       }
     });
 
-    return definition;
+    return guestDefinitionTransformer(definition);
   }
 
   static async getAllGuestDefinitions(organization: Organization) {
