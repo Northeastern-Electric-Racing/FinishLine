@@ -5,7 +5,7 @@
 
 // Inspired by https://github.com/ryohey/use-toast-mui
 
-import { createContext, FC, ReactNode, useState } from 'react';
+import { createContext, FC, ReactNode, useCallback, useMemo, useState } from 'react';
 import Toast from './Toast';
 import { AlertColor } from '@mui/material';
 
@@ -22,15 +22,11 @@ export const ToastContext = createContext<{
 
 export const ToastProvider: FC<{ children: ReactNode }> = ({ children, ...props }) => {
   const [toasts, setToasts] = useState<ToastInputs[]>([]);
-  const removeToast = (key: number) => setToasts((toastList) => toastList.filter((t) => t.key !== key));
+  const removeToast = useCallback((key: number) => setToasts((toastList) => toastList.filter((t) => t.key !== key)), []);
+  const addToast = useCallback((toast: ToastInputs) => setToasts((toastList) => [...toastList, toast]), []);
+  const contextValue = useMemo(() => ({ addToast }), [addToast]);
   return (
-    <ToastContext.Provider
-      value={{
-        addToast(toast) {
-          setToasts((toastList) => [...toastList, toast]);
-        }
-      }}
-    >
+    <ToastContext.Provider value={contextValue}>
       {children}
       {toasts.map((t) => (
         <Toast toast={t} key={t.key} onExited={() => removeToast(t.key)} {...props} />

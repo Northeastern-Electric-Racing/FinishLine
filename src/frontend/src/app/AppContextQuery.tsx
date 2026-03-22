@@ -5,8 +5,15 @@
 
 import { QueryClient, QueryClientProvider } from 'react-query';
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false
+    }
+  }
+});
+
 const AppContextQuery: React.FC = (props) => {
-  const queryClient = new QueryClient();
   return <QueryClientProvider client={queryClient}>{props.children}</QueryClientProvider>;
 };
 
