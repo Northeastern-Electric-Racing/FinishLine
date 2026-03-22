@@ -1,10 +1,10 @@
 import { Project, User } from 'shared';
-import { Box, FormControl, FormLabel, Grid, Typography } from '@mui/material';
+import { Box, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { ProjectFormInput } from './ProjectForm';
-import { Control, FieldErrorsImpl } from 'react-hook-form';
+import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { AttachMoney } from '@mui/icons-material';
 import TeamDropdown from '../../../components/TeamsDropdown';
 import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
@@ -38,11 +38,13 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
   setLeadId,
   setManagerId
 }) => {
-  const { isLoading: carFilterIsLoading } = useGlobalCarFilter();
+  const { selectedCar, allCars, isLoading: carFilterIsLoading } = useGlobalCarFilter();
 
   if (carFilterIsLoading) {
     return <LoadingIndicator />;
   }
+
+  const sortedCars = [...allCars].sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber);
 
   return (
     <Box>
@@ -61,6 +63,27 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
+        {!project && !selectedCar && (
+          <Grid item lg={2.4} md={6} xs={12}>
+            <FormControl fullWidth>
+              <FormLabel>Car</FormLabel>
+              <Controller
+                name="carNumber"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <TextField select onChange={onChange} value={value ?? ''} fullWidth size="small">
+                    {sortedCars.map((car) => (
+                      <MenuItem key={car.id} value={car.wbsNum.carNumber}>
+                        {car.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+              <FormHelperText error>{errors.carNumber?.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+        )}
         {!project && (
           <Grid item lg={2.4} md={6} xs={12}>
             <FormControl fullWidth>
