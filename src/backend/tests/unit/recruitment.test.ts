@@ -19,6 +19,7 @@ import {
   flashAdmin,
   alfred
 } from '../test-data/users.test-data.js';
+import { guestDefinitionTransformer } from '../../src/transformers/recruitment-transformer.js';
 
 describe('Recruitment Tests', () => {
   let orgId: string;
@@ -403,7 +404,7 @@ describe('Recruitment Tests', () => {
       );
 
       const result = await RecruitmentServices.getAllGuestDefinitions(organization);
-      expect(result).toStrictEqual([def, def2]);
+      expect(result).toStrictEqual([guestDefinitionTransformer(def), guestDefinitionTransformer(def2)]);
     });
   });
 });
