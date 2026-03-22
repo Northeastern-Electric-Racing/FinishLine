@@ -19,7 +19,6 @@ import {
   flashAdmin,
   alfred
 } from '../test-data/users.test-data.js';
-import { guestDefinitionTransformer } from '../../src/transformers/recruitment-transformer.js';
 
 describe('Recruitment Tests', () => {
   let orgId: string;
