@@ -10,7 +10,7 @@ import { wbsPipe } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
-import { Box } from '@mui/material';
+import { Box, Stack, useMediaQuery } from '@mui/material';
 import { Error } from '@mui/icons-material';
 
 const NoFeaturedProjectsDisplay: React.FC = () => {
@@ -36,17 +36,24 @@ const NoFeaturedProjectsDisplay: React.FC = () => {
 
 const FeaturedProjects: React.FC = () => {
   const { data: featuredProjects, isLoading, isError, error } = useFeaturedProjects();
+  const isMobilePortrait = useMediaQuery('(max-width:480px)');
 
   if (isLoading || !featuredProjects) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   const fullDisplay = (
-    <ScrollablePageBlock title={`Featured Projects`} horizontal>
-      {featuredProjects.length === 0 ? (
-        <NoFeaturedProjectsDisplay />
-      ) : (
-        featuredProjects.map((p) => <FeaturedProjectsCard key={wbsPipe(p.wbsNum)} project={p} />)
-      )}
+    <ScrollablePageBlock title={`What We're Working On`} horizontal={!isMobilePortrait}>
+      <Stack
+        direction={isMobilePortrait ? 'column' : 'row'}
+        spacing={isMobilePortrait ? 2 : 3}
+        sx={{ width: '100%', px: isMobilePortrait ? 1 : 0 }}
+      >
+        {featuredProjects.length === 0 ? (
+          <NoFeaturedProjectsDisplay />
+        ) : (
+          featuredProjects.map((p) => <FeaturedProjectsCard key={wbsPipe(p.wbsNum)} project={p} />)
+        )}
+      </Stack>
     </ScrollablePageBlock>
   );
 

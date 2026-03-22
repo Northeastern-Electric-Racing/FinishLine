@@ -62,6 +62,20 @@ const joeBlow: Prisma.UserCreateInput = {
   }
 };
 
+const guestUser: Prisma.UserCreateInput = {
+  firstName: 'Guest',
+  lastName: 'User',
+  googleAuthId: 'guest-google-id',
+  email: 'guest@husky.neu.edu',
+  emailId: 'guest',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: SLACK_ID ? SLACK_ID : 'guest'
+    }
+  }
+};
+
 const wonderwoman: Prisma.UserCreateInput = {
   firstName: 'Diana',
   lastName: 'Prince',
@@ -1121,6 +1135,7 @@ export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
   joeBlow,
+  guestUser,
   wonderwoman,
   flash,
   aquaman,

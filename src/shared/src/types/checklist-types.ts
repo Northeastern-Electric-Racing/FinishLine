@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamType } from './design-review-types.js';
+import { TeamType } from './calendar-types.js';
 import { Team } from './team-types.js';
 import { User } from './user-types.js';
 

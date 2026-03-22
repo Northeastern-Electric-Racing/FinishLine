@@ -4,6 +4,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { SponsorTask } from 'shared';
 import NERModal from '../../../components/NERModal';
 import { Typography } from '@mui/material';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface DeleteSponsorTaskModalProps {
   handleClose: () => void;
@@ -11,6 +12,7 @@ interface DeleteSponsorTaskModalProps {
 }
 
 const DeleteSponsorModal = ({ handleClose, sponsorTask }: DeleteSponsorTaskModalProps) => {
+  const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useDeleteSponsorTask();
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -22,9 +24,16 @@ const DeleteSponsorModal = ({ handleClose, sponsorTask }: DeleteSponsorTaskModal
       title="Warning!"
       onHide={handleClose}
       submitText="Delete"
-      onSubmit={() => {
-        mutateAsync({ sponsorTaskId: sponsorTask.sponsorTaskId });
-        handleClose();
+      onSubmit={async () => {
+        try {
+          await mutateAsync({ sponsorTaskId: sponsorTask.sponsorTaskId });
+          toast.success('Task deleted successfully!');
+          handleClose();
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            toast.error(err.message);
+          }
+        }
       }}
     >
       <Typography gutterBottom>Are you sure you want to delete this sponsor task?</Typography>

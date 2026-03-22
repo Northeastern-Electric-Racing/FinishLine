@@ -26,6 +26,7 @@ import {
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+import { dateToMidnightUTC } from 'shared';
 import {
   reimbursementRequestDataTransformer,
   reimbursementRequestTransformer,
@@ -44,8 +45,13 @@ import {
   SponsorTask,
   ReimbursementRequestData,
   SpendingBarData,
-  SponsorTier
+  SponsorTier,
+  ProspectiveSponsor,
+  FirstContactMethod,
+  ProspectiveSponsorStatus,
+  CreateSponsorTask
 } from 'shared';
+import { prospectiveSponsorTransformer } from './transformers/prospective-sponsor.transformer';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -71,7 +77,10 @@ export const uploadSingleReceipt = (file: File, id: string) => {
  * @returns the created reimbursement request
  */
 export const createReimbursementRequest = (formData: CreateReimbursementRequestPayload) => {
-  return axios.post(apiUrls.financeCreateReimbursementRequest(), formData);
+  return axios.post(apiUrls.financeCreateReimbursementRequest(), {
+    ...formData,
+    dateOfExpense: formData.dateOfExpense ? dateToMidnightUTC(formData.dateOfExpense) : undefined
+  });
 };
 
 /**
@@ -102,7 +111,10 @@ export const markReimbursementRequestAsReimbursed = (id: string) => {
  * @returns the edited reimbursement request
  */
 export const editReimbursementRequest = (id: string, formData: EditReimbursementRequestPayload) => {
-  return axios.post(apiUrls.financeEditReimbursementRequest(id), formData);
+  return axios.post(apiUrls.financeEditReimbursementRequest(id), {
+    ...formData,
+    dateOfExpense: formData.dateOfExpense ? dateToMidnightUTC(formData.dateOfExpense) : undefined
+  });
 };
 
 /**
@@ -350,7 +362,7 @@ export const getPendingAdvisorList = () => {
  * @param requestId the request ID
  * @param saboNumber the SABO number to set
  */
-export const setSaboNumber = async (requestId: string, saboNumber: number) => {
+export const setSaboNumber = async (requestId: string, saboNumber: string) => {
   axios.post(apiUrls.financeSetSaboNumber(requestId), {
     saboNumber
   });
@@ -362,7 +374,7 @@ export const setSaboNumber = async (requestId: string, saboNumber: number) => {
  * @param saboNumbers The sabo numbers of the reimbursement requests to request approval for
  * @returns the response from the backend
  */
-export const sendPendingAdvisorList = (saboNumbers: number[]) => {
+export const sendPendingAdvisorList = (saboNumbers: string[]) => {
   return axios.post(apiUrls.financeSendPendingAdvisorList(), {
     saboNumbers
   });
@@ -768,4 +780,124 @@ export const deleteSponsorTier = (sponsorTierId: string) => {
 
 export const editSponsorTier = (sponsorTierId: string, formData: SponsorTierPayload) => {
   return axios.post(apiUrls.editSponsorTier(sponsorTierId), formData);
+};
+
+/**
+ * Toggles the done status of a sponsor task
+ *
+ * @param sponsorTaskId the id of the sponsor task to toggle
+ * @returns the updated sponsor task
+ */
+export const toggleSponsorTaskDone = (sponsorTaskId: string) => {
+  return axios.post<SponsorTask>(apiUrls.toggleSponsorTaskDone(sponsorTaskId), {
+    transformResponse: (data: string) => JSON.parse(data)
+  });
+};
+
+/**************** Prospective Sponsors API ****************/
+
+export interface CreateProspectiveSponsorPayload {
+  organizationName: string;
+  status: ProspectiveSponsorStatus;
+  lastContactDate?: Date;
+  firstContactMethod?: FirstContactMethod;
+  contactName?: string;
+  contactorUserId?: string;
+  highlightThresholdDays?: number;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactPosition?: string;
+  notes?: string;
+  tasks?: CreateSponsorTask[];
+}
+
+export interface EditProspectiveSponsorPayload {
+  organizationName: string;
+  status: ProspectiveSponsorStatus;
+  lastContactDate?: Date;
+  firstContactMethod?: FirstContactMethod;
+  contactName?: string;
+  contactorUserId?: string;
+  highlightThresholdDays?: number;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactPosition?: string;
+  notes?: string;
+  tasks?: CreateSponsorTask[];
+}
+
+export interface AcceptProspectiveSponsorPayload {
+  sponsorTierId?: string;
+  valueTypes: string[];
+  sponsorValue?: number;
+  joinDate: Date;
+  activeYears: number[];
+  taxExempt: boolean;
+  discountCode?: string;
+  sponsorNotes?: string;
+  stockDescription?: string;
+  discountDescription?: string;
+}
+
+/**
+ * Get all prospective sponsors
+ */
+export const getAllProspectiveSponsors = () => {
+  return axios.get<ProspectiveSponsor[]>(apiUrls.getAllProspectiveSponsors(), {
+    transformResponse: (data: string) => JSON.parse(data).map(prospectiveSponsorTransformer)
+  });
+};
+
+/**
+ * Create a new prospective sponsor
+ */
+export const createProspectiveSponsor = (payload: CreateProspectiveSponsorPayload) => {
+  return axios.post<ProspectiveSponsor>(apiUrls.createProspectiveSponsor(), payload, {
+    transformResponse: (data: string) => prospectiveSponsorTransformer(JSON.parse(data))
+  });
+};
+
+/**
+ * Edit a prospective sponsor
+ */
+export const editProspectiveSponsor = (prospectiveSponsorId: string, payload: EditProspectiveSponsorPayload) => {
+  return axios.post<ProspectiveSponsor>(apiUrls.editProspectiveSponsor(prospectiveSponsorId), payload, {
+    transformResponse: (data: string) => prospectiveSponsorTransformer(JSON.parse(data))
+  });
+};
+
+/**
+ * Delete a prospective sponsor
+ */
+export const deleteProspectiveSponsor = (prospectiveSponsorId: string) => {
+  return axios.post<ProspectiveSponsor>(apiUrls.deleteProspectiveSponsor(prospectiveSponsorId), {
+    transformResponse: (data: string) => prospectiveSponsorTransformer(JSON.parse(data))
+  });
+};
+
+/**
+ * Get tasks for a prospective sponsor
+ */
+export const getProspectiveSponsorTasks = (prospectiveSponsorId: string) => {
+  return axios.get<SponsorTask[]>(apiUrls.getProspectiveSponsorTasks(prospectiveSponsorId), {
+    transformResponse: (data: string) => JSON.parse(data)
+  });
+};
+
+/**
+ * Create a task for a prospective sponsor
+ */
+export const createProspectiveSponsorTask = (prospectiveSponsorId: string, payload: SponsorTaskPayload) => {
+  return axios.post<SponsorTask>(apiUrls.createProspectiveSponsorTask(prospectiveSponsorId), payload, {
+    transformResponse: (data: string) => JSON.parse(data)
+  });
+};
+
+/**
+ * Accept a prospective sponsor (convert to full sponsor)
+ */
+export const acceptProspectiveSponsor = (prospectiveSponsorId: string, payload: AcceptProspectiveSponsorPayload) => {
+  return axios.post<ProspectiveSponsor>(apiUrls.acceptProspectiveSponsor(prospectiveSponsorId), payload, {
+    transformResponse: (data: string) => prospectiveSponsorTransformer(JSON.parse(data))
+  });
 };

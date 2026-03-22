@@ -55,7 +55,7 @@ export const exampleResearchWorkPackage: WorkPackage = {
   stage: WorkPackageStage.Research,
   blocking: [],
   teamTypes: [],
-  designReviews: []
+  events: []
 };
 
 export const exampleDesignWorkPackage: WorkPackage = {
@@ -101,7 +101,7 @@ export const exampleDesignWorkPackage: WorkPackage = {
   stage: WorkPackageStage.Design,
   blocking: [],
   teamTypes: [],
-  designReviews: []
+  events: []
 };
 
 export const exampleManufacturingWorkPackage: WorkPackage = {
@@ -137,7 +137,7 @@ export const exampleManufacturingWorkPackage: WorkPackage = {
   stage: WorkPackageStage.Manufacturing,
   blocking: [],
   teamTypes: [],
-  designReviews: []
+  events: []
 };
 
 export const exampleInstallWorkPackage: WorkPackage = {
@@ -172,7 +172,7 @@ export const exampleInstallWorkPackage: WorkPackage = {
   stage: WorkPackageStage.Install,
   blocking: [],
   teamTypes: [],
-  designReviews: [],
+  events: [],
   deleted: false
 };
 
@@ -208,7 +208,7 @@ export const exampleWorkPackage5: WorkPackage = {
   projectName: 'project3',
   blocking: [],
   teamTypes: [],
-  designReviews: []
+  events: []
 };
 
 export const exampleAllWorkPackages: WorkPackage[] = [

@@ -1,7 +1,7 @@
 import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Milestone } from 'shared';
+import { Milestone, formatDateOnly } from 'shared';
 import CreateMilestoneFormModal from './CreateMilestoneFormModal';
 import EditMilestoneFormModal from './EditMilestoneFormModal';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -46,7 +46,7 @@ const MilestoneTable = () => {
   const milestoneRows = sortedMilestones.map((milestone, index) => (
     <TableRow>
       <TableCell align="left" sx={{ borderBottom: index === sortedMilestones.length - 1 ? 'none' : 'default' }}>
-        <Typography>{new Date(milestone.dateOfEvent).toDateString()}</Typography>
+        <Typography>{formatDateOnly(new Date(milestone.dateOfEvent))}</Typography>
       </TableCell>
       <TableCell sx={{ borderBottom: index === sortedMilestones.length - 1 ? 'none' : 'default' }}>
         <Typography>{milestone.name}</Typography>

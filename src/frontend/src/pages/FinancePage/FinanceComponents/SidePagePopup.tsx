@@ -27,7 +27,7 @@ const SidePage: React.FC<SidePageProps> = ({ showPage, handleClose, title, compo
         <Typography variant="h6" gutterBottom sx={{ fontSize: '32px', ml: 1, mb: 2, mt: 1 }}>
           {title}
         </Typography>
-        <Box sx={{ ml: 1, flexGrow: 1, width: '100%', overflow: 'auto' }}>{component}</Box>
+        <Box sx={{ ml: 1, pr: 2, flexGrow: 1, overflow: 'auto' }}>{component}</Box>
       </Box>
     </Drawer>
   );
