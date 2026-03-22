@@ -76,6 +76,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Martin Hema', color: '#9125cc' },
     { name: 'Shree Singhal', color: '#ff7ca4' },
     { name: 'Isaac Levine', color: '#6a3941' },
+    { name: 'Pooja Ramakrishnan', color: '#9125cc' },
     { name: 'Andrew Tsai', color: '#3281a8' },
     { name: 'Ahnaf Inkiad', color: '#ab38b5' },
     { name: 'Aaryan Jain', color: '#e53774' },
@@ -371,7 +372,8 @@ const CreditsPage: React.FC = () => {
     },
     { name: 'Josh Len', color: '#000000ff' },
     { name: 'Grace Theobald', color: '#537c2c' },
-    { name: 'Hamilton LaPides', color: '#55a50a' }
+    { name: 'Hamilton LaPides', color: '#55a50a' },
+    { name: 'Sara Johnson', color: '#ffff99' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
