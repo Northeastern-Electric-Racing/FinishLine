@@ -18,6 +18,9 @@ Cypress.Commands.add('login', (username = 'Thomas Emrax', redirect = '/home') =>
   cy.contains(username).click();
   cy.get(LOGIN_ICON).click();
   cy.waitForLoading();
+  // Set the car filter by name before the redirect so GlobalCarFilterProvider
+  // restores it from sessionStorage on first mount (name is stable across re-seeds)
+  cy.window().then((win) => win.sessionStorage.setItem('selectedCarName', 'NER-25'));
   cy.visit(Cypress.env('base_url') + redirect);
   cy.waitForLoading();
 });

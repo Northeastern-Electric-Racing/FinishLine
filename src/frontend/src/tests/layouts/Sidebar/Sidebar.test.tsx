@@ -11,6 +11,16 @@ import Sidebar from '../../../layouts/Sidebar/Sidebar';
 import { ToastContext, ToastInputs } from '../../../components/Toast/ToastProvider';
 import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
+vi.mock('../../../app/AppGlobalCarFilterContext', () => ({
+  useGlobalCarFilter: () => ({
+    selectedCar: null,
+    allCars: [],
+    setSelectedCar: vi.fn(),
+    isLoading: false,
+    error: null
+  })
+}));
+
 const addToast = (message: ToastInputs) => {
   console.log(message);
 };
