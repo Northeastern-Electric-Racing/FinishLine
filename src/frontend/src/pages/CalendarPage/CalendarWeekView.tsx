@@ -405,7 +405,11 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
         enterDelay={0}
         leaveDelay={200}
         title={
-          <Box onMouseEnter={() => setTooltipHovered(true)} onMouseLeave={() => setTooltipHovered(false)}>
+          <Box
+            onMouseEnter={() => setTooltipHovered(true)}
+            onMouseLeave={() => setTooltipHovered(false)}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <EventClickContent
               event={event}
               eventTypes={allEventTypes}
@@ -513,7 +517,11 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
         enterDelay={0}
         leaveDelay={200}
         title={
-          <Box onMouseEnter={() => setTooltipHovered(true)} onMouseLeave={() => setTooltipHovered(false)}>
+          <Box
+            onMouseEnter={() => setTooltipHovered(true)}
+            onMouseLeave={() => setTooltipHovered(false)}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <EventClickContent
               event={event}
               eventTypes={allEventTypes}
@@ -590,7 +598,11 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
         enterDelay={0}
         leaveDelay={200}
         title={
-          <Box onMouseEnter={() => setTooltipHovered(true)} onMouseLeave={() => setTooltipHovered(false)}>
+          <Box
+            onMouseEnter={() => setTooltipHovered(true)}
+            onMouseLeave={() => setTooltipHovered(false)}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <TaskClickContent task={task} onClose={() => setLockedTooltipEventId(null)} />
           </Box>
         }
