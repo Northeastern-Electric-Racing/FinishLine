@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Box, Typography, Chip, Collapse, IconButton } from '@mui/material';
 import { ExpandMore as ExpandMoreIcon, DirectionsCar as CarIcon } from '@mui/icons-material';
+import { Car } from 'shared';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 import LoadingIndicator from './LoadingIndicator';
 
@@ -22,7 +23,7 @@ const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compa
     setExpanded(!expanded);
   };
 
-  const handleCarSelect = (car: any) => {
+  const handleCarSelect = (car: Car | null) => {
     setSelectedCar(car);
     setExpanded(false);
   };
@@ -53,7 +54,7 @@ const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compa
 
   const sortedCars = [...allCars].sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber);
 
-  const currentCarLabel = selectedCar ? selectedCar.name : 'Select Car';
+  const currentCarLabel = selectedCar ? selectedCar.name : 'All Cars';
 
   if (compact) {
     return (
@@ -102,13 +103,26 @@ const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compa
               }
             }}
           >
+            <Chip
+              label="All Cars"
+              onClick={() => handleCarSelect(null)}
+              variant="outlined"
+              sx={{
+                borderColor: 'white',
+                color: 'white',
+                backgroundColor: 'transparent',
+                fontWeight: !selectedCar ? 'bold' : 'normal',
+                borderWidth: !selectedCar ? 2 : 1,
+                '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
+                whiteSpace: 'nowrap'
+              }}
+            />
             {sortedCars.map((car) => {
-              const carLabel = car.name;
               const isSelected = selectedCar ? car.id === selectedCar.id : false;
               return (
                 <Chip
                   key={car.id}
-                  label={carLabel}
+                  label={car.name}
                   onClick={() => handleCarSelect(car)}
                   variant="outlined"
                   sx={{
@@ -117,9 +131,7 @@ const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compa
                     backgroundColor: 'transparent',
                     fontWeight: isSelected ? 'bold' : 'normal',
                     borderWidth: isSelected ? 2 : 1,
-                    '&:hover': {
-                      backgroundColor: 'rgba(255,255,255,0.1)'
-                    },
+                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
                     whiteSpace: 'nowrap'
                   }}
                 />

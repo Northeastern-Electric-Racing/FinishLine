@@ -31,6 +31,7 @@ import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwo
 import HiddenContentMargin from '../components/HiddenContentMargin';
 import { useHomePageContext } from './HomePageContext';
 import { useCurrentOrganization } from '../hooks/organizations.hooks';
+import { GlobalCarFilterProvider } from './AppGlobalCarFilterContext';
 import Statistics from '../pages/StatisticsPage/Statistics';
 import RetrospectiveGanttChartPage from '../pages/RetrospectivePage/Retrospective';
 import Calendar from '../pages/CalendarPage/Calendar';
@@ -68,7 +69,9 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
     return <ErrorPage error={error as Error} message={(error as Error).message} />;
   }
 
-  return userSettingsData.slackId || isGuest(userRole) ? (
+  return (
+    <GlobalCarFilterProvider>
+      {userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
       {
         <>
@@ -136,8 +139,10 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
         </Container>
       </Box>
     </AppContextUser>
-  ) : (
-    <SetUserPreferences userSettings={userSettingsData} />
+      ) : (
+        <SetUserPreferences userSettings={userSettingsData} />
+      )}
+    </GlobalCarFilterProvider>
   );
 };
 

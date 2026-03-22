@@ -8,7 +8,6 @@ import AppContextQuery from './AppContextQuery';
 import AppContextTheme from './AppContextTheme';
 import AppContextOrganization from './AppOrganizationContext';
 import { HomePageProvider } from './HomePageContext';
-import { GlobalCarFilterProvider } from './AppGlobalCarFilterContext';
 
 const AppContext: React.FC = (props) => {
   return (
@@ -16,9 +15,7 @@ const AppContext: React.FC = (props) => {
       <AppContextOrganization>
         <AppContextAuth>
           <AppContextTheme>
-            <GlobalCarFilterProvider>
-              <HomePageProvider>{props.children}</HomePageProvider>
-            </GlobalCarFilterProvider>
+            <HomePageProvider>{props.children}</HomePageProvider>
           </AppContextTheme>
         </AppContextAuth>
       </AppContextOrganization>

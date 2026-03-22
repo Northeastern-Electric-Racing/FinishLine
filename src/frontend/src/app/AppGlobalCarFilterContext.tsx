@@ -5,12 +5,13 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { Car } from 'shared';
-import { useGetCurrentCar, useGetAllCars } from '../hooks/cars.hooks';
+import { useGetAllCars } from '../hooks/cars.hooks';
+import { setCurrentCarId } from '../utils/axios';
 
 interface GlobalCarFilterContextType {
   selectedCar: Car | null;
   allCars: Car[];
-  setSelectedCar: (car: Car) => void;
+  setSelectedCar: (car: Car | null) => void;
   isLoading: boolean;
   error: Error | null;
 }
@@ -25,39 +26,34 @@ export const GlobalCarFilterProvider: React.FC<GlobalCarFilterProviderProps> = (
   const [selectedCar, setSelectedCarState] = useState<Car | null>(null);
   const hasInitialized = useRef(false);
 
-  const { data: currentCar, isLoading: currentCarLoading, error: currentCarError } = useGetCurrentCar();
-  const { data: allCars = [], isLoading: allCarsLoading, error: allCarsError } = useGetAllCars();
-
-  const isLoading = currentCarLoading || allCarsLoading;
-  const error = currentCarError || allCarsError;
+  const { data: allCars = [], isLoading, error } = useGetAllCars();
 
   useEffect(() => {
-    if (!isLoading && allCars.length > 0 && !hasInitialized.current) {
+    if (!isLoading && !hasInitialized.current) {
       hasInitialized.current = true;
 
-      const savedCarId = sessionStorage.getItem('selectedCarId');
-      if (savedCarId) {
-        const savedCar = allCars.find((car) => car.id === savedCarId);
+      const savedCarName = sessionStorage.getItem('selectedCarName');
+      if (savedCarName) {
+        const savedCar = allCars.find((car) => car.name === savedCarName);
         if (savedCar) {
           setSelectedCar(savedCar);
           return;
         }
       }
 
-      if (currentCar) {
-        setSelectedCar(currentCar);
-      } else {
-        const mostRecentCar = allCars.reduce((latest, car) =>
-          car.wbsNum.carNumber > latest.wbsNum.carNumber ? car : latest
-        );
-        setSelectedCar(mostRecentCar);
-      }
+      // Default to null (all cars)
+      setSelectedCarState(null);
     }
-  }, [currentCar, allCars, isLoading]);
+  }, [allCars, isLoading]);
 
-  const setSelectedCar = (car: Car) => {
+  const setSelectedCar = (car: Car | null) => {
     setSelectedCarState(car);
-    sessionStorage.setItem('selectedCarId', car.id);
+    setCurrentCarId(car ? car.id : null);
+    if (car) {
+      sessionStorage.setItem('selectedCarName', car.name);
+    } else {
+      sessionStorage.removeItem('selectedCarName');
+    }
   };
 
   const value: GlobalCarFilterContextType = {
