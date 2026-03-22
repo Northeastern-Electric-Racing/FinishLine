@@ -2,7 +2,6 @@ import { Prisma } from '@prisma/client';
 import { Team, TeamPreview, TeamBase } from 'shared';
 import { getTeamBaseQueryArgs, TeamPreviewQueryArgs, TeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
 import { userTransformer } from './user.transformer.js';
-import { teamTypeTransformer } from './team-types.transformer.js';
 import { projectGanttTransformer } from './projects.transformer.js';
 
 const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
@@ -17,7 +16,7 @@ const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
     leads: team.leads.map(userTransformer),
     userArchived: team.userArchived ? userTransformer(team.userArchived) : undefined,
     dateArchived: team.dateArchived ?? undefined,
-    teamType: team.teamType ? teamTypeTransformer(team.teamType) : undefined
+    teamType: team.teamType ?? undefined
   };
 };
 
@@ -28,7 +27,7 @@ export const teamBaseTransformer = (team: Prisma.TeamGetPayload<ReturnType<typeo
     slackId: team.slackId,
     description: team.description,
     dateArchived: team.dateArchived ?? undefined,
-    teamType: team.teamType ? teamTypeTransformer(team.teamType) : undefined
+    teamType: team.teamType ?? undefined
   };
 };
 
@@ -39,7 +38,7 @@ export const teamPreviewTransformer = (team: Prisma.TeamGetPayload<TeamPreviewQu
     members: team.members.map(userTransformer),
     head: userTransformer(team.head),
     dateArchived: team.dateArchived ?? undefined,
-    teamType: team.teamType ? teamTypeTransformer(team.teamType) : undefined
+    teamType: team.teamType ?? undefined
   };
 };
 
