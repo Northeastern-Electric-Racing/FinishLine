@@ -374,6 +374,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Josh Len', color: '#000000ff' },
     { name: 'Deepika Arulselvan', color: '#ad56fe' },
     { name: 'Grace Theobald', color: '#537c2c' },
+    { name: 'Jasper Pinkus', color: '#276221' },
     { name: 'Hamilton LaPides', color: '#55a50a' },
     { name: 'Sara Johnson', color: '#ffff99' }
   ];
