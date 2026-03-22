@@ -5,7 +5,7 @@
 
 // Inspired by https://github.com/ryohey/use-toast-mui
 
-import { useCallback, useContext, useMemo } from 'react';
+import { useContext } from 'react';
 import { AlertColor } from '@mui/material';
 import { ToastContext } from '../components/Toast/ToastProvider';
 
@@ -19,20 +19,22 @@ import { ToastContext } from '../components/Toast/ToastProvider';
  */
 export const useToast = () => {
   const { addToast } = useContext(ToastContext);
-  const fire = useCallback(
-    (message: string, options: { type: AlertColor; autoHideDuration?: number }) => {
-      addToast({ message, ...options, key: new Date().getTime() });
+  const fire = (message: string, options: { type: AlertColor; autoHideDuration?: number }) => {
+    addToast({ message, ...options, key: new Date().getTime() });
+  };
+  return {
+    fire,
+    info(message: string, autoHideDuration?: number) {
+      fire(message, { type: 'info', autoHideDuration });
     },
-    [addToast]
-  );
-  return useMemo(
-    () => ({
-      fire,
-      info: (message: string, autoHideDuration?: number) => fire(message, { type: 'info', autoHideDuration }),
-      success: (message: string, autoHideDuration?: number) => fire(message, { type: 'success', autoHideDuration }),
-      warning: (message: string, autoHideDuration?: number) => fire(message, { type: 'warning', autoHideDuration }),
-      error: (message: string, autoHideDuration?: number) => fire(message, { type: 'error', autoHideDuration })
-    }),
-    [fire]
-  );
+    success(message: string, autoHideDuration?: number) {
+      fire(message, { type: 'success', autoHideDuration });
+    },
+    warning(message: string, autoHideDuration?: number) {
+      fire(message, { type: 'warning', autoHideDuration });
+    },
+    error(message: string, autoHideDuration?: number) {
+      fire(message, { type: 'error', autoHideDuration });
+    }
+  };
 };
