@@ -404,7 +404,7 @@ describe('Recruitment Tests', () => {
       );
 
       const result = await RecruitmentServices.getAllGuestDefinitions(organization);
-      expect(result).toStrictEqual([guestDefinitionTransformer(def), guestDefinitionTransformer(def2)]);
+      expect(result).toStrictEqual([def, def2]);
     });
   });
 });
