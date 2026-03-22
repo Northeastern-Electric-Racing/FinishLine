@@ -24,8 +24,6 @@ interface GanttChartSectionProps<T> {
   isEditMode: boolean;
   createChange: (change: GanttChange<T>) => void;
   highlightedChange?: RequestEventChange<T>;
-  onShowChildrenToggle: (task: GanttTask<T>) => void;
-  shouldShowChildren: (task: GanttTask<T>) => boolean;
   onAddTaskPressed: (parentTask: GanttTask<T>) => void;
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
@@ -67,9 +65,7 @@ const GanttChartSection = <T,>({
   isEditMode,
   createChange,
   highlightedChange,
-  onShowChildrenToggle,
   onAddTaskPressed,
-  shouldShowChildren,
   highlightSubtaskComparator,
   highlightTaskComparator
 }: GanttChartSectionProps<T>) => {
@@ -111,9 +107,7 @@ const GanttChartSection = <T,>({
                   createChange={handleCreateProjectChange}
                   handleOnMouseOver={handleOnMouseOver}
                   handleOnMouseLeave={handleOnMouseLeave}
-                  onShowChildrenToggle={() => onShowChildrenToggle(task)}
                   onAddTaskPressed={onAddTaskPressed}
-                  showChildren={shouldShowChildren(task)}
                   highlightedChange={highlightedChange}
                   highlightSubtaskComparator={highlightSubtaskComparator}
                   highlightTaskComparator={highlightTaskComparator}

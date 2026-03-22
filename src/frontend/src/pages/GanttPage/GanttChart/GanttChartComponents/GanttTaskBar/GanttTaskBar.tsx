@@ -22,8 +22,6 @@ interface GanttTaskBarProps<T> {
   isEditMode: boolean;
   handleOnMouseOver: (e: React.MouseEvent, task: OnMouseOverOptions) => void;
   handleOnMouseLeave: () => void;
-  onShowChildrenToggle: () => void;
-  showChildren?: boolean;
   highlightedChange?: RequestEventChange<T>;
   onAddTaskPressed: (parent: GanttTask<T>) => void;
   highlightTaskComparator: HighlightTaskComparator<T>;
@@ -36,9 +34,7 @@ const GanttTaskBar = <T,>({
   createChange,
   isEditMode,
   handleOnMouseOver,
-  onShowChildrenToggle,
   handleOnMouseLeave,
-  showChildren = false,
   highlightedChange,
   onAddTaskPressed,
   highlightSubtaskComparator,
@@ -76,8 +72,6 @@ const GanttTaskBar = <T,>({
           getEndCol={getEndCol}
           handleOnMouseOver={handleOnMouseOver}
           handleOnMouseLeave={handleOnMouseLeave}
-          showChildren={showChildren}
-          onShowChildrenToggle={onShowChildrenToggle}
           highlightedChange={highlightedChange}
           onAddTaskPressed={onAddTaskPressed}
           highlightSubtaskComparator={highlightSubtaskComparator}

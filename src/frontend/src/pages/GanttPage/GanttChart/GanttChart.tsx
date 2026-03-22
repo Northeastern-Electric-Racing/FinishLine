@@ -2,7 +2,6 @@ import { Box, useTheme } from '@mui/material';
 import {
   GanttChange,
   GanttCollection,
-  GanttTask,
   HighlightTaskComparator,
   RequestEventChange
 } from '../../../utils/gantt.utils';
@@ -29,9 +28,6 @@ interface GanttChartProps<E, T> {
   startDate: Date;
   endDate: Date;
   collections: GanttCollection<E, T>[];
-  shouldShowChildren: (task: GanttTask<T>) => boolean;
-  onShowChildrenToggle: (task: GanttTask<T>) => void;
-
   editability?: GanttEditability<E, T>;
 }
 
@@ -39,8 +35,6 @@ const GanttChart = <E, T>({
   startDate,
   endDate,
   collections,
-  shouldShowChildren,
-  onShowChildrenToggle,
   editability
 }: GanttChartProps<E, T>) => {
   const theme = useTheme();
@@ -74,8 +68,6 @@ const GanttChart = <E, T>({
               startDate={startDate}
               endDate={endDate}
               collection={collection}
-              shouldShowChildren={shouldShowChildren}
-              onShowChildrenToggle={onShowChildrenToggle}
               editability={editability}
             />
           ) : (
