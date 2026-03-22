@@ -112,6 +112,7 @@ interface GanttTaskData<T> {
   retro?: GanttRetroProps;
   onClick?: () => void;
   root?: boolean;
+  loadChildren?: () => GanttTaskData<T>[];
 }
 
 export type Date_Event = { id: string; start: Date; end: Date; title: string };
@@ -484,10 +485,12 @@ export const transformProjectToGanttTask = (
     start: startDate,
     end: endDate,
     blocking: [],
-    children: [
-      ...project.workPackages.map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
-      ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
-    ],
+    children: [],
+    loadChildren: () =>
+      [
+        ...project.workPackages.map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
+        ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
+      ].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()),
     overlays: [
       ...project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, project.workPackages)),
       ...taskList.map((task) => transformTaskToGanttTask(task, endDate))

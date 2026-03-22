@@ -7,6 +7,7 @@ import {
 import { Collapse } from '@mui/material';
 import GanttTaskBar from './GanttTaskBar';
 import GanttTaskBarDisplay from './GanttTaskBarDisplay';
+import { useEffect, useState } from 'react';
 
 interface GanttTaskBarViewProps<T> {
   days: Date[];
@@ -37,6 +38,18 @@ const GanttTaskBarView = <T,>({
   highlightSubtaskComparator,
   highlightTaskComparator
 }: GanttTaskBarViewProps<T>) => {
+  const [loadedChildren, setLoadedChildren] = useState<GanttTask<T>[]>(task.children);
+  const [hasLoaded, setHasLoaded] = useState(task.children.length > 0);
+
+  useEffect(() => {
+    if (showChildren && !hasLoaded && task.loadChildren) {
+      setLoadedChildren(task.loadChildren());
+      setHasLoaded(true);
+    }
+  }, [showChildren, hasLoaded, task]);
+
+  console.log('I Rerender!');
+
   return (
     <>
       <GanttTaskBarDisplay
@@ -54,7 +67,7 @@ const GanttTaskBarView = <T,>({
       />
 
       <Collapse in={showChildren} unmountOnExit>
-        {task.children.map((child) => {
+        {loadedChildren.map((child) => {
           return (
             <GanttTaskBar
               key={child.id}

@@ -1967,24 +1967,6 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  /** Work Package 3 */
-  await seedWorkPackage(
-    lexLuther,
-    'Laser Canon Testing',
-    changeRequestProjectJustice1Id,
-    WorkPackageStage.Testing,
-    toDateString(weeksFromNow(3)),
-    4,
-    [project3WP1.wbsNum, project3WP2.wbsNum],
-    [],
-    zatanna,
-    WbsElementStatus.Active,
-    zatanna.userId,
-    lexLuther.userId,
-    projectJustice1WbsNumber,
-    ner
-  );
-
   /** Project 1 */
   /** Work Package 1 */
   const { workPackage: projectJustice2WP1 } = await seedWorkPackage(
