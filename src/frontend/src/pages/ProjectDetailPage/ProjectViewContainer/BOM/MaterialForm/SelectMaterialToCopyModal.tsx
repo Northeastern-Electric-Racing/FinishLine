@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Autocomplete, Box, CircularProgress, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useQuery } from 'react-query';
@@ -88,17 +88,20 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
     [assemblies]
   );
 
-  const materialToOption = (material: Material): AutocompleteOption => ({
-    label: [
-      material.name,
-      material.manufacturerName,
-      material.materialTypeName,
-      material.assemblyId ? `Assembly: ${assemblyNameById.get(material.assemblyId) ?? material.assemblyId}` : undefined
-    ]
-      .filter(Boolean)
-      .join(' – '),
-    id: material.materialId
-  });
+  const materialToOption = useCallback(
+    (material: Material): AutocompleteOption => ({
+        label: [
+        material.name,
+        material.manufacturerName,
+        material.materialTypeName,
+        material.assemblyId ? `Assembly: ${assemblyNameById.get(material.assemblyId) ?? material.assemblyId}` : undefined
+        ]
+        .filter(Boolean)
+        .join(' – '),
+        id: material.materialId
+    }),
+    [assemblyNameById]
+  );
 
   const projectMaterialsQuery = useQuery<Material[], Error>(
     ['materials', 'project', selectedProject?.wbsElementId ?? 'none'],
@@ -146,7 +149,7 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
 
   const carOptions = useMemo(() => cars.map(carToOption), [cars]);
   const projectOptions = useMemo(() => projectsForSelectedCar.map(projectToOption), [projectsForSelectedCar]);
-  const projectMaterialOptions = useMemo(() => projectMaterials.map(materialToOption), [projectMaterials]);
+  const projectMaterialOptions = useMemo(() => projectMaterials.map(materialToOption), [projectMaterials, materialToOption]);
 
   const searchOptions = useMemo(() => {
     const q = searchText.trim().toLowerCase();
