@@ -237,14 +237,16 @@ const ProjectGanttChartPage: FC = () => {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
     defaultChecked: boolean;
-  }[] = [...allCars].sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber).map((car) => {
-    const carNum = car.wbsNum.carNumber;
-    return {
-      filterLabel: car.name,
-      handler: carFilterHandler(carNum),
-      defaultChecked: showCars.includes(carNum)
-    };
-  });
+  }[] = [...allCars]
+    .sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber)
+    .map((car) => {
+      const carNum = car.wbsNum.carNumber;
+      return {
+        filterLabel: car.name,
+        handler: carFilterHandler(carNum),
+        defaultChecked: showCars.includes(carNum)
+      };
+    });
 
   const resetHandler = () => {
     history.push(routes.GANTT);
