@@ -7,31 +7,43 @@ export default class FinanceController {
       const {
         name,
         activeStatus,
+        valueTypes,
         sponsorValue,
         joinDate,
         activeYears,
         sponsorTierId,
         taxExempt,
-        sponsorContact,
+        contactName,
+        contactEmail,
+        contactPhone,
+        contactPosition,
         sponsorTasks,
         discountCode,
-        sponsorNotes
+        sponsorNotes,
+        stockDescription,
+        discountDescription
       } = req.body;
 
       const sponsor = await FinanceServices.createSponsor(
         req.currentUser,
         name,
         activeStatus,
-        sponsorValue,
+        valueTypes,
         joinDate,
         activeYears,
-        sponsorTierId,
+        sponsorTierId || undefined,
         taxExempt,
-        sponsorContact,
+        contactName,
         sponsorTasks,
         req.organization,
+        sponsorValue,
         discountCode,
-        sponsorNotes
+        sponsorNotes,
+        contactEmail,
+        contactPhone,
+        contactPosition,
+        stockDescription,
+        discountDescription
       );
       res.status(200).json(sponsor);
     } catch (error: unknown) {
@@ -73,7 +85,7 @@ export default class FinanceController {
   static async editSponsorTask(req: Request, res: Response, next: NextFunction) {
     try {
       const { sponsorTaskId } = req.params as Record<string, string>;
-      const { dueDate, notes, notifyDate, assigneeUserId } = req.body;
+      const { dueDate, notes, notifyDate, assigneeUserId, done } = req.body;
 
       const updatedSponsorTask = await FinanceServices.editSponsorTask(
         req.currentUser,
@@ -82,7 +94,8 @@ export default class FinanceController {
         dueDate,
         notes,
         notifyDate,
-        assigneeUserId
+        assigneeUserId,
+        done
       );
       res.status(200).json(updatedSponsorTask);
     } catch (error: unknown) {
@@ -323,15 +336,21 @@ export default class FinanceController {
       const {
         name,
         activeStatus,
+        valueTypes,
         sponsorValue,
         joinDate,
         activeYears,
         sponsorTierId,
-        sponsorContact,
+        contactName,
+        contactEmail,
+        contactPhone,
+        contactPosition,
         taxExempt,
         sponsorTasks,
         discountCode,
-        sponsorNotes
+        sponsorNotes,
+        stockDescription,
+        discountDescription
       } = req.body;
 
       const updatedSponsor = await FinanceServices.editSponsor(
@@ -340,15 +359,21 @@ export default class FinanceController {
         sponsorId,
         name,
         activeStatus,
-        sponsorValue,
+        valueTypes,
         joinDate,
         activeYears,
-        sponsorTierId,
-        sponsorContact,
+        sponsorTierId || undefined,
+        contactName,
         taxExempt,
         sponsorTasks,
+        sponsorValue,
         discountCode,
-        sponsorNotes
+        sponsorNotes,
+        contactEmail,
+        contactPhone,
+        contactPosition,
+        stockDescription,
+        discountDescription
       );
 
       res.status(200).json(updatedSponsor);
@@ -381,6 +406,16 @@ export default class FinanceController {
         minSupportValue
       );
       res.status(200).json(updatedSponsorTier);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async toggleSponsorTaskDone(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { sponsorTaskId } = req.params as Record<string, string>;
+      const updatedTask = await FinanceServices.toggleSponsorTaskDone(req.currentUser, req.organization, sponsorTaskId);
+      res.status(200).json(updatedTask);
     } catch (error: unknown) {
       next(error);
     }

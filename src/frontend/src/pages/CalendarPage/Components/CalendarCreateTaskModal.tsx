@@ -3,7 +3,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isUnderWordCount, ProjectPreview, TaskPriority, TaskStatus, wbsPipe } from 'shared';
+import { countWords, dateToMidnightUTC, isUnderWordCount, ProjectPreview, TaskPriority, TaskStatus, wbsPipe } from 'shared';
 import { useAllMembers } from '../../../hooks/users.hooks';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import { useCreateTask } from '../../../hooks/tasks.hooks';
@@ -85,8 +85,8 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
         status: data.status,
         assignees: data.assignees,
         notes: data.notes,
-        deadline: data.deadline?.toISOString(),
-        startDate: data.startDate?.toISOString()
+        deadline: data.deadline ? dateToMidnightUTC(data.deadline).toISOString() : undefined,
+        startDate: data.startDate ? dateToMidnightUTC(data.startDate).toISOString() : undefined
       });
       toast.success('Task created successfully!');
       onClose();

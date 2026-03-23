@@ -10,7 +10,7 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useScheduleEvent } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { formatTime } from '../../../utils/datetime.utils';
+import { formatEventTime } from 'shared';
 import { datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 
@@ -70,7 +70,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
           >
             <Typography variant="h6">{datePipe(selectedDay)}</Typography>
             <Typography variant="body1" color="text.secondary">
-              {formatTime(startTime)} - {formatTime(endTime)}
+              {formatEventTime(startTime)} - {formatEventTime(endTime)}
             </Typography>
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>

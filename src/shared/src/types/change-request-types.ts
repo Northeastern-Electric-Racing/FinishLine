@@ -34,7 +34,8 @@ export const ChangeRequestType = {
   Other: 'OTHER',
   StageGate: 'STAGE_GATE',
   Activation: 'ACTIVATION',
-  Budget: 'BUDGET'
+  Budget: 'BUDGET',
+  Leadership: 'LEADERSHIP'
 } as const;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type ChangeRequestType = (typeof ChangeRequestType)[keyof typeof ChangeRequestType];
@@ -77,6 +78,11 @@ export interface StageGateChangeRequest extends ChangeRequest {
 
 export interface BudgetChangeRequest extends ChangeRequest {
   proposedBudget: number;
+}
+
+export interface LeadershipChangeRequest extends ChangeRequest {
+  lead?: User;
+  manager?: User;
 }
 
 export interface ChangeRequestExplanation {
@@ -154,4 +160,11 @@ export interface WorkPackageProposedChangesCreateArgs extends WBSProposedChanges
   startDate: string;
   stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
+}
+
+export interface LeadershipChangeCreateArgs {
+  submitterId: string;
+  wbsNum: WbsNumber;
+  leadId?: string;
+  managerId?: string;
 }

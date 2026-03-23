@@ -105,37 +105,6 @@ export default class OrganizationsService {
   }
 
   /**
-   * sets an organizations images
-   * @param submitter the user who is setting the images
-   * @param organizationId the organization which the images will be set up
-   * @param images the images which are being set
-   */
-  static async setImages(
-    applyInterestImage: Express.Multer.File | null,
-    exploreAsGuestImage: Express.Multer.File | null,
-    submitter: User,
-    organization: Organization
-  ) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('update images');
-    }
-
-    const applyInterestImageData = applyInterestImage ? await uploadFile(applyInterestImage) : null;
-    const exploreAsGuestImageData = exploreAsGuestImage ? await uploadFile(exploreAsGuestImage) : null;
-    const updateData = {
-      ...(applyInterestImageData && { applyInterestImageId: applyInterestImageData.id }),
-      ...(exploreAsGuestImageData && { exploreAsGuestImageId: exploreAsGuestImageData.id })
-    };
-
-    const newImages = await prisma.organization.update({
-      where: { organizationId: organization.organizationId },
-      data: updateData
-    });
-
-    return newImages;
-  }
-
-  /**
     Gets all the useful links for an organization
     @param organizationId the organization to get the links for
     @returns the useful links for the organization
@@ -253,26 +222,6 @@ export default class OrganizationsService {
     });
 
     return updatedOrganization;
-  }
-
-  /**
-   * Gets all organization Images for the given organization Id
-   * @param organizationId organization Id of the milestone
-   * @returns all the milestones from the given organization
-   */
-  static async getOrganizationImages(organizationId: string) {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    return {
-      applyInterestImage: organization.applyInterestImageId,
-      exploreAsGuestImage: organization.exploreAsGuestImageId
-    };
   }
 
   /**
@@ -430,6 +379,23 @@ export default class OrganizationsService {
   }
 
   /**
+   * Sets the platform description of a given organization.
+   * @param platformDescription the new platform description
+   * @param submitter the user making the change
+   * @param organization the organization whose platform description is changing
+   * @throws if the user is not an admin
+   */
+  static async setPlatformDescription(platformDescription: string, submitter: User, organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set platform description');
+    }
+    return prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: { platformDescription }
+    });
+  }
+
+  /**
    * Gets the featured projects for the given organization Id
    * @param organizationId the organization to get the projects for
    * @returns all the featured projects for the organization
@@ -444,7 +410,7 @@ export default class OrganizationsService {
       throw new NotFoundException('Organization', organizationId);
     }
 
-    return organization.featuredProjects.map(projectPreviewTransformer);
+    return organization.featuredProjects.filter((p) => !p.wbsElement.dateDeleted).map(projectPreviewTransformer);
   }
 
   /**
@@ -595,5 +561,32 @@ export default class OrganizationsService {
     });
 
     return updatedOrg.financeDelegates.map(userTransformer);
+  }
+
+  /**
+   * sets an organizations platform image
+   * @param submitter the user who is setting the images
+   * @param organizationId the organization which the images will be set up
+   * @param images the images which are being set
+   */
+  static async setPlatformLogoImage(platformLogoImage: Express.Multer.File, submitter: User, organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update platform logo');
+    }
+
+    const platformLogoImageData = await uploadFile(platformLogoImage);
+
+    if (!platformLogoImageData?.id || !platformLogoImageData?.name) {
+      throw new HttpException(500, 'Platform logo upload failed');
+    }
+
+    const newImages = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: {
+        platformLogoImageId: platformLogoImageData.id
+      }
+    });
+
+    return newImages;
   }
 }

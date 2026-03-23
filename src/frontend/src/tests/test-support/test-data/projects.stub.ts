@@ -13,19 +13,22 @@ import { exampleResearchWorkPackage, exampleDesignWorkPackage, exampleManufactur
 const exampleConfluenceLinkType: LinkType = {
   name: 'Confluence',
   iconName: 'confluence',
-  required: true
+  required: true,
+  isOnGuestHomePage: false
 };
 
 const exampleBomLinkType: LinkType = {
   name: 'BOM',
   iconName: 'bom',
-  required: true
+  required: true,
+  isOnGuestHomePage: false
 };
 
 const exampleGDriveLinkType: LinkType = {
   name: 'Google Drive',
   iconName: 'google-drive',
-  required: true
+  required: true,
+  isOnGuestHomePage: false
 };
 
 const exampleLinks: Link[] = [

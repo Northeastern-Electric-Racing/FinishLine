@@ -7,7 +7,7 @@ import {
   CreateSponsorTask,
   User,
   Event,
-  meetingStartTimePipeNumbers
+  formatForSlack
 } from 'shared';
 import { Account_Code, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
 import {
@@ -127,18 +127,37 @@ export const sendSlackTaskAssignedNotification = async (
 
 /**
  * Send a notification to users that a reimbursement request is created on Slack
- * @param requestId the id if the reimbursement request
+ * @param requestId the id of the reimbursement request
  * @param submitterId the id of the user who created the reimbursement request
+ * @param organizationId the organization id of the current user
  */
 export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = async (
   requestId: string,
-  requestIdentifier: number,
   submitterId: string,
   organizationId: string
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
 
-  const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request (ID#: ${requestIdentifier}) 💲`;
+  const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+    where: { reimbursementRequestId: requestId },
+    select: {
+      identifier: true,
+      totalCost: true,
+      description: true,
+      vendor: {
+        select: {
+          name: true
+        }
+      }
+    }
+  });
+
+  if (!reimbursementRequest) throw new HttpException(500, 'Reimbursement request does not exist!');
+
+  const { identifier, totalCost, description, vendor } = reimbursementRequest;
+  const formattedCost = `$${(totalCost / 100).toFixed(2)}`; // convert from cents to dollars and cents
+
+  const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request for ${formattedCost} at ${vendor.name} (ID#: ${identifier}) 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
@@ -151,13 +170,23 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
   const messageInfo = await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
   if (!messageInfo) return;
 
-  await prisma.message_Info.create({
+  const createdMessageInfo = await prisma.message_Info.create({
     data: {
       reimbursementRequestId: requestId,
       channelId: messageInfo.channelId,
       timestamp: messageInfo.ts
     }
   });
+
+  const { messageInfoId, channelId, timestamp } = createdMessageInfo;
+
+  // send reimbursement request description in slack thread
+  if (description) {
+    await sendThreadResponse(
+      [{ messageInfoId, channelId, timestamp, changeRequestId: null }],
+      `Description: ${description}`
+    );
+  }
 };
 
 /**
@@ -225,7 +254,7 @@ export const sendPendingSaboSubmissionNotification = async (
     threads,
     `${await getUserSlackMentionOrName(financeUserId)} has added this reimbursement request to Concur. ${await getUserSlackMentionOrName(pendingSubmissionFromId)}, please check your email to approve the request in Concur and mark it as submitted on Finishline.`
   );
-  const userId = await getUserSlackId(financeUserId);
+  const userId = await getUserSlackId(pendingSubmissionFromId);
   if (threads && threads.length !== 0 && userId) {
     const msgs = threads.map((thread) =>
       sendEphemeralMessage(
@@ -437,6 +466,7 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
   const drName = event.title + (wpNames ? ` (${wpNames})` : '');
 
   // Get the first scheduled time
+  // Fine as temporary fix because only DRs with single slots are sending notifications
   const [firstScheduledTime] = event.scheduledTimes;
   if (!firstScheduledTime) {
     throw new HttpException(400, 'Event has no scheduled times');
@@ -448,13 +478,7 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
     throw new HttpException(400, 'Event scheduled time has no start time');
   }
 
-  // Extract meeting times from scheduled slots
-  const meetingTimes = event.scheduledTimes
-    .map((slot) => (slot.startTime ? new Date(slot.startTime).getHours() : null))
-    .filter((hour): hour is number => hour !== null)
-    .sort((a, b) => a - b);
-
-  const drTime = `${dateScheduled.toLocaleDateString()} at ${meetingStartTimePipeNumbers(meetingTimes)}`;
+  const drTime = formatForSlack(dateScheduled);
   const drSubmitter = `${event.userCreated.firstName} ${event.userCreated.lastName}`;
 
   // Check for online/in-person location

@@ -211,4 +211,6 @@ export type ExceptionObjectNames =
   | 'Event Type'
   | 'Event'
   | 'Schedule Slot'
-  | 'Guest Definition';
+  | 'Guest Definition'
+  | 'ProspectiveSponsor'
+  | 'SponsorTier';

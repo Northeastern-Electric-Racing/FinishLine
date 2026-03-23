@@ -34,7 +34,8 @@ import {
   validateUserEditRRPermissions,
   validateRefund,
   validateUserIsPartOfFinanceTeamOrHead,
-  isUserOnFinanceTeam
+  isUserFinanceTeamOrHead,
+  updateMaterialStatusesOnPayment
 } from '../utils/reimbursement-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
@@ -188,10 +189,7 @@ export default class ReimbursementRequestService {
    * @returns All the reimbursements in the database
    */
   static async getAllReimbursements(user: User, organization: Organization): Promise<Reimbursement[]> {
-    const isUserAuthorized =
-      (await isUserOnFinanceTeam(user, organization.organizationId)) ||
-      (await userHasPermission(user.userId, organization.organizationId, isHead));
-    if (!isUserAuthorized) {
+    if (!(await isUserFinanceTeamOrHead(user, organization.organizationId))) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
 
@@ -228,6 +226,7 @@ export default class ReimbursementRequestService {
    * @param accountCodeId the id of the account code the user made
    * @param totalCost the total cost of the reimbursement with tax
    * @param organizationId the organization the user is currently in
+   * @param description the description of the reimbursement request
    * @returns the created reimbursement request
    */
   static async createReimbursementRequest(
@@ -239,7 +238,8 @@ export default class ReimbursementRequestService {
     acccountCodeId: string,
     totalCost: number,
     organization: Organization,
-    dateOfExpense?: Date
+    dateOfExpense?: Date,
+    description?: string
   ): Promise<ReimbursementRequest> {
     if (await userHasPermission(recipient.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create a reimbursement request');
@@ -280,7 +280,8 @@ export default class ReimbursementRequestService {
           }
         },
         identifier: numReimbursementRequests + 1,
-        organization: { connect: { organizationId: organization.organizationId } }
+        organization: { connect: { organizationId: organization.organizationId } },
+        description
       }
     });
 
@@ -292,7 +293,6 @@ export default class ReimbursementRequestService {
 
     await sendReimbursementRequestCreatedNotificationAndCreateMessageInfo(
       createdReimbursementRequest.reimbursementRequestId,
-      createdReimbursementRequest.identifier,
       recipient.userId,
       organization.organizationId
     );
@@ -330,10 +330,6 @@ export default class ReimbursementRequestService {
 
     await validateRefund(submitter, amount, organization.organizationId);
 
-    // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-    const dateCreated = new Date(dateReceived.split('T')[0]);
-    dateCreated.setTime(dateCreated.getTime() + 12 * 60 * 60 * 1000);
-
     const newReimbursement = await prisma.reimbursement.create({
       data: {
         purchaserId: submitter.userId,
@@ -362,6 +358,7 @@ export default class ReimbursementRequestService {
    * @param receiptPictures the old receipts that haven't been deleted (new receipts must be separately uploaded)
    * @param submitter the person editing the reimbursement request
    * @param organizationId the organization the user is currently in
+   * @param description the updated description of the reimbursement request
    * @returns the edited reimbursement request
    */
   static async editReimbursementRequest(
@@ -375,7 +372,8 @@ export default class ReimbursementRequestService {
     receiptPictures: ReimbursementReceiptCreateArgs[],
     submitter: User,
     organization: Organization,
-    dateOfExpense?: Date
+    dateOfExpense?: Date,
+    description?: string
   ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
@@ -414,6 +412,7 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
         dateOfExpense: dateOfExpense ?? null,
+        description,
         indexCodeId,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
@@ -504,6 +503,7 @@ export default class ReimbursementRequestService {
    * @param reimbursementId The id of the reimbursement to be edited
    * @param editor The user editing the reimbursement
    * @param amount The new amount of the reimbursement
+   * @param description The new description of the reimbursement
    * @param dateCreated The new date the reimbursement was created
    * @param organizationId The organization the user is currently in
    * @returns The updated reimbursement
@@ -618,7 +618,7 @@ export default class ReimbursementRequestService {
    * @param saboNumbers the sabo numbers of the reimbursement requests to send
    * @param organizationId the organization the user is currently in
    */
-  static async sendPendingAdvisorList(sender: User, saboNumbers: number[], organizationId: string) {
+  static async sendPendingAdvisorList(sender: User, saboNumbers: string[], organizationId: string) {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
       include: { advisor: true }
@@ -694,7 +694,7 @@ export default class ReimbursementRequestService {
 
   static async setSaboNumber(
     reimbursementRequestId: string,
-    saboNumber: number,
+    saboNumber: string,
     submitter: User,
     organization: Organization
   ) {
@@ -883,10 +883,7 @@ export default class ReimbursementRequestService {
    * @returns the 'deleted' account code
    */
   static async deleteAccountCode(accountCodeId: string, submitter: User, organization: Organization) {
-    const isUserAuthorized =
-      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
-      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
-    if (!isUserAuthorized) {
+    if (!(await isUserFinanceTeamOrHead(submitter, organization.organizationId))) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
 
@@ -995,10 +992,7 @@ export default class ReimbursementRequestService {
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
   static async getAllReimbursementRequests(user: User, organization: Organization): Promise<ReimbursementRequest[]> {
-    const isUserAuthorized =
-      (await isUserOnFinanceTeam(user, organization.organizationId)) ||
-      (await userHasPermission(user.userId, organization.organizationId, isHead));
-    if (!isUserAuthorized) {
+    if (!(await isUserFinanceTeamOrHead(user, organization.organizationId))) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
 
@@ -1514,8 +1508,7 @@ export default class ReimbursementRequestService {
 
     const isUserAuthorized =
       existingVendor.addedByUserId === submitter.userId ||
-      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
-      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
+      (await isUserFinanceTeamOrHead(submitter, organization.organizationId));
     if (!isUserAuthorized) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
@@ -1568,8 +1561,7 @@ export default class ReimbursementRequestService {
 
     const isUserAuthorized =
       existingVendor.addedByUserId === submitter.userId ||
-      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
-      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
+      (await isUserFinanceTeamOrHead(submitter, organization.organizationId));
     if (!isUserAuthorized) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
@@ -1606,8 +1598,7 @@ export default class ReimbursementRequestService {
 
     const isUserAuthorized =
       existingVendor.addedByUserId === submitter.userId ||
-      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
-      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
+      (await isUserFinanceTeamOrHead(submitter, organization.organizationId));
     if (!isUserAuthorized) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
@@ -1736,6 +1727,8 @@ export default class ReimbursementRequestService {
       },
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
+
+    await updateMaterialStatusesOnPayment(reimbursementRequestId);
 
     await sendReimbursementRequestPendingFinanceNotification(
       reimbursementRequest.notificationSlackThreads,

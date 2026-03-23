@@ -1,7 +1,7 @@
 import axios from '../utils/axios';
 import { MilestonePayload, FaqPayload } from '../hooks/recruitment.hooks';
 import { apiUrls } from '../utils/urls';
-import { Milestone } from 'shared';
+import { dateToMidnightUTC, Milestone } from 'shared';
 import { FrequentlyAskedQuestion } from 'shared';
 
 export const getAllMilestones = () => {
@@ -12,13 +12,15 @@ export const getAllMilestones = () => {
 
 export const createMilestone = (payload: MilestonePayload) => {
   return axios.post(apiUrls.milestoneCreate(), {
-    ...payload
+    ...payload,
+    dateOfEvent: dateToMidnightUTC(payload.dateOfEvent)
   });
 };
 
 export const editMilestone = (payload: MilestonePayload, id: string) => {
   return axios.post(apiUrls.milestoneEdit(id), {
-    ...payload
+    ...payload,
+    dateOfEvent: dateToMidnightUTC(payload.dateOfEvent)
   });
 };
 

@@ -59,6 +59,7 @@ interface ProjectFormContainerProps {
   setCarNumber: (carNumber: number) => void;
   carNumber?: number;
   changeRequestFormReturn: ChangeRequestFormReturn;
+  onlyLeadershipChanged?: boolean;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -73,7 +74,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   managerId,
   onSubmitChangeRequest,
   setCarNumber,
-  changeRequestFormReturn
+  changeRequestFormReturn,
+  onlyLeadershipChanged
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
@@ -239,7 +241,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                   variant="contained"
                   onClick={() => setIsModalOpen(true)}
                   sx={{ mx: 1 }}
-                  disabled={changeRequestInputExists}
+                  disabled={changeRequestInputExists || onlyLeadershipChanged}
                 >
                   Create Change Request
                 </NERButton>
@@ -249,7 +251,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               Cancel
             </NERFailButton>
             <NERSuccessButton
-              disabled={!changeRequestInputExists && !!project}
+              disabled={!changeRequestInputExists && !!project && !onlyLeadershipChanged}
               variant="contained"
               type="submit"
               sx={{ mx: 1 }}

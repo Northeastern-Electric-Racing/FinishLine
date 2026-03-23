@@ -97,6 +97,25 @@ export default class RecruitmentController {
     }
   }
 
+  static async createGuestDefinition(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { term, description, order, icon, buttonText, buttonLink } = req.body;
+      const definition = await RecruitmentServices.createGuestDefinition(
+        req.currentUser,
+        req.organization,
+        term,
+        description,
+        order,
+        icon,
+        buttonText,
+        buttonLink
+      );
+      res.status(200).json(definition);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteGuestDefinition(req: Request, res: Response, next: NextFunction) {
     try {
       const { definitionId } = req.params as Record<string, string>;
