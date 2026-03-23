@@ -29,7 +29,6 @@ interface GanttChartSectionProps<T> {
   highlightSubtaskComparator: HighlightTaskComparator<T>;
 }
 
-// Isolated tooltip component — only this re-renders on hover, not the task bars
 interface GanttTooltipLayerProps {
   updateRef: React.MutableRefObject<(options: OnMouseOverOptions | undefined, y?: number) => void>;
 }
@@ -71,7 +70,6 @@ const GanttChartSection = <T,>({
 }: GanttChartSectionProps<T>) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
 
-  // Stable ref to tooltip updater — avoids re-rendering task bars on hover
   const updateTooltip = useRef<(options: OnMouseOverOptions | undefined, y?: number) => void>(() => {});
 
   const handleOnMouseOver = useCallback(
