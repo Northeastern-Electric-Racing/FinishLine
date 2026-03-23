@@ -26,6 +26,7 @@ interface GanttTaskBarProps<T> {
   onAddTaskPressed: (parent: GanttTask<T>) => void;
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
+  onToggle?: () => void;
 }
 
 const GanttTaskBar = <T,>({
@@ -38,7 +39,8 @@ const GanttTaskBar = <T,>({
   highlightedChange,
   onAddTaskPressed,
   highlightSubtaskComparator,
-  highlightTaskComparator
+  highlightTaskComparator,
+  onToggle
 }: GanttTaskBarProps<T>) => {
   const getStartCol = (start: Date) => {
     const startCol = days.findIndex((day) => toDateString(day) === toDateString(getMonday(start))) + 1;
@@ -76,6 +78,7 @@ const GanttTaskBar = <T,>({
           onAddTaskPressed={onAddTaskPressed}
           highlightSubtaskComparator={highlightSubtaskComparator}
           highlightTaskComparator={highlightTaskComparator}
+          onToggle={onToggle}
         />
       )}
     </div>

@@ -15,7 +15,7 @@ import { Box, Typography } from '@mui/material';
 import { MutableRefObject, useCallback, useRef, useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
-import { ArcherContainer } from 'react-archer';
+import { ArcherContainer, ArcherContainerRef } from 'react-archer';
 
 interface GanttChartSectionProps<T> {
   start: Date;
@@ -70,6 +70,9 @@ const GanttChartSection = <T,>({
 }: GanttChartSectionProps<T>) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
 
+  const archerRef = useRef<ArcherContainerRef>(null);
+  const handleToggle = useCallback(() => archerRef.current?.refreshScreen(), []);
+
   const updateTooltip = useRef<(options: OnMouseOverOptions | undefined, y?: number) => void>(() => {});
 
   const handleOnMouseOver = useCallback(
@@ -92,7 +95,7 @@ const GanttChartSection = <T,>({
   );
 
   return tasks.length > 0 ? (
-    <ArcherContainer strokeColor="#ef4545">
+    <ArcherContainer strokeColor="#ef4545" ref={archerRef}>
       <Box sx={{ width: 'fit-content' }}>
         <Box sx={{ mt: '1rem', width: 'fit-content' }}>
           {tasks.map((task) => {
@@ -109,6 +112,7 @@ const GanttChartSection = <T,>({
                   highlightedChange={highlightedChange}
                   highlightSubtaskComparator={highlightSubtaskComparator}
                   highlightTaskComparator={highlightTaskComparator}
+                  onToggle={handleToggle}
                 />
               </Box>
             );

@@ -20,6 +20,7 @@ interface GanttTaskBarViewProps<T> {
   onAddTaskPressed: (parent: GanttTask<T>) => void;
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
+  onToggle?: () => void;
 }
 
 const GanttTaskBarView = <T,>({
@@ -32,7 +33,8 @@ const GanttTaskBarView = <T,>({
   highlightedChange,
   onAddTaskPressed,
   highlightSubtaskComparator,
-  highlightTaskComparator
+  highlightTaskComparator,
+  onToggle
 }: GanttTaskBarViewProps<T>) => {
   const [showChildren, setShowChildren] = useState(false);
   const [loadedChildren, setLoadedChildren] = useState<GanttTask<T>[]>(task.children);
@@ -64,7 +66,7 @@ const GanttTaskBarView = <T,>({
         highlightTaskComparator={highlightTaskComparator}
       />
 
-      <Collapse in={showChildren} unmountOnExit>
+      <Collapse in={showChildren} unmountOnExit onEntered={onToggle} onExited={onToggle}>
         {loadedChildren.map((child) => (
           <GanttTaskBar
             key={child.id}
@@ -78,6 +80,7 @@ const GanttTaskBarView = <T,>({
             onAddTaskPressed={onAddTaskPressed}
             highlightSubtaskComparator={highlightSubtaskComparator}
             highlightTaskComparator={highlightTaskComparator}
+            onToggle={onToggle}
           />
         ))}
       </Collapse>
