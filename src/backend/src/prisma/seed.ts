@@ -3491,6 +3491,17 @@ const performSeed: () => Promise<void> = async () => {
     undefined,
     undefined
   );
+
+  /* Guest Definitions */
+  const guestDef1 = await prisma.guest_Definition.create({
+    data: {
+      term: 'NER',
+      description: 'A really awesome organization!',
+      order: 0,
+      organizationId,
+      userCreatedId: batman.userId
+    }
+  });
 };
 
 performSeed()
