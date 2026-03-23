@@ -5,7 +5,13 @@ import { AccessDeniedException, HttpException, NotFoundException } from '../../s
 import { batmanAppAdmin, supermanAdmin, greenlanternHead, wonderwomanGuest, member } from '../test-data/users.test-data.js';
 import { createTestOrganization, createTestTeam, createTestTeamType, createTestUser, resetUsers } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
-import { sendMessage, editMessage, replyToMessageInThread, getChannelName, checkBotInChannel } from '../../src/integrations/slack.js';
+import {
+  sendMessage,
+  editMessage,
+  replyToMessageInThread,
+  getChannelName,
+  checkBotInChannel
+} from '../../src/integrations/slack.js';
 import { Mock } from 'vitest';
 
 vi.mock('../../src/integrations/slack.js', () => ({

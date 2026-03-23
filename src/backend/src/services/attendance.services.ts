@@ -10,7 +10,13 @@ import {
   meetingAttendanceTransformer,
   meetingAttendanceWithAttendeesTransformer
 } from '../transformers/attendance.transformer.js';
-import { checkBotInChannel, editMessage, getChannelName, replyToMessageInThread, sendMessage } from '../integrations/slack.js';
+import {
+  checkBotInChannel,
+  editMessage,
+  getChannelName,
+  replyToMessageInThread,
+  sendMessage
+} from '../integrations/slack.js';
 import { userHasPermission } from '../utils/users.utils.js';
 
 export default class AttendanceService {
