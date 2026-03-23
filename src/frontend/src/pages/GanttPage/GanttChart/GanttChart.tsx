@@ -2,6 +2,7 @@ import { Box, useTheme } from '@mui/material';
 import {
   GanttChange,
   GanttCollection,
+  GanttTask,
   HighlightTaskComparator,
   RequestEventChange
 } from '../../../utils/gantt.utils';
@@ -31,12 +32,7 @@ interface GanttChartProps<E, T> {
   editability?: GanttEditability<E, T>;
 }
 
-const GanttChart = <E, T>({
-  startDate,
-  endDate,
-  collections,
-  editability
-}: GanttChartProps<E, T>) => {
+const GanttChart = <E, T>({ startDate, endDate, collections, editability }: GanttChartProps<E, T>) => {
   const theme = useTheme();
   const days = eachDayOfInterval({ start: startDate, end: endDate }).filter((day) => isMonday(day));
 
