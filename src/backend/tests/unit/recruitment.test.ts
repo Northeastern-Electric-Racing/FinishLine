@@ -3,6 +3,7 @@ import { Organization } from '@prisma/client';
 import RecruitmentServices from '../../src/services/recruitment.services.js';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../../src/utils/errors.utils.js';
 import {
+  createTestGuestDefinition,
   createTestMilestone,
   createTestFaq,
   createTestFAQ,
@@ -347,9 +348,45 @@ describe('Recruitment Tests', () => {
   });
 
   describe('Delete Guest Definition', () => {
-    // Fail if not admin
-    // Fail if does not exist
-    // Fail if already deleted
-    // Otherwise, succeeds!
+    it('Fails if user is not an admin', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+      const testDef = await createTestGuestDefinition(admin, orgId);
+
+      await expect(
+        async () => await RecruitmentServices.deleteGuestDefinition(guest, testDef.definitionId, organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete a guestDefinition'));
+    });
+
+    it('Fails if definition does not exist', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+
+      await expect(
+        async () => await RecruitmentServices.deleteGuestDefinition(admin, 'fake-id', organization)
+      ).rejects.toThrow(new NotFoundException('Guest Definition', 'fake-id'));
+    });
+
+    it('Fails if definition is already deleted', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const testDef = await createTestGuestDefinition(admin, orgId);
+      await RecruitmentServices.deleteGuestDefinition(admin, testDef.definitionId, organization);
+
+      await expect(
+        async () => await RecruitmentServices.deleteGuestDefinition(admin, testDef.definitionId, organization)
+      ).rejects.toThrow(new DeletedException('Guest Definition', testDef.definitionId));
+    });
+
+    it('Successfully deletes a guest definition', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const testDef = await createTestGuestDefinition(admin, orgId);
+
+      await RecruitmentServices.deleteGuestDefinition(admin, testDef.definitionId, organization);
+
+      const deletedTestDef = await prisma.guest_Definition.findUnique({
+        where: { definitionId: testDef.definitionId }
+      });
+
+      expect(deletedTestDef?.dateDeleted).not.toBe(null);
+    });
   });
 });
