@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
+import { Assembly, Manufacturer, Material, MaterialType, Unit } from 'shared';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
@@ -44,7 +44,6 @@ export interface MaterialFormViewProps {
   watch: UseFormWatch<MaterialFormInput>;
   createManufacturer: (name: string) => void;
   setValue: UseFormSetValue<MaterialFormInput>;
-  copyFromExistingBomAction?: React.ReactNode;
   fromRRForm?: boolean;
 }
 
@@ -81,19 +80,19 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
 
   const [copyModalOpen, setCopyModalOpen] = React.useState(false);
 
-  const handleCopySelect = (m: any) => {
+  const handleCopySelect = (m: Material) => {
     setValue('name', m.name ?? '');
-    setValue('status', m.status ?? MaterialStatus.Ordered);
     setValue('materialTypeName', m.materialTypeName ?? '');
     setValue('manufacturerName', m.manufacturerName ?? '');
     setValue('manufacturerPartNumber', m.manufacturerPartNumber ?? '');
     setValue('pdmFileName', m.pdmFileName ?? '');
     setValue('linkUrl', m.linkUrl ?? '');
-    setValue('quantity', m.quantity ?? undefined);
+    setValue('quantity', m.quantity != null ? Number(m.quantity) : undefined);
     setValue('unitName', m.unitName ?? undefined);
     setValue('price', m.price != null ? m.price / 100 : undefined);
     setValue('notes', m.notes ?? '');
     setValue('assemblyId', undefined);
+    setValue('reimbursementRequestId', undefined);
 
     setCopyModalOpen(false);
   };
@@ -548,7 +547,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           </Box>
         </Grid>
       )}
-      <SelectMaterialToCopyModal open={copyModalOpen} onHide={() => setCopyModalOpen(false)} onSelect={handleCopySelect} />
+      <SelectMaterialToCopyModal 
+        open={copyModalOpen} 
+        onHide={() => setCopyModalOpen(false)} 
+        onSelect={handleCopySelect} 
+        assemblies={assemblies ?? []}
+      />
     </NERFormModal>
   );
 };
