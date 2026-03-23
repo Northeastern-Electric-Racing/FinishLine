@@ -547,10 +547,10 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           </Box>
         </Grid>
       )}
-      <SelectMaterialToCopyModal 
-        open={copyModalOpen} 
-        onHide={() => setCopyModalOpen(false)} 
-        onSelect={handleCopySelect} 
+      <SelectMaterialToCopyModal
+        open={copyModalOpen}
+        onHide={() => setCopyModalOpen(false)}
+        onSelect={handleCopySelect}
         assemblies={assemblies ?? []}
       />
     </NERFormModal>

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Autocomplete, Box, CircularProgress, Stack, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, CircularProgress, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useQuery } from 'react-query';
-import { Car, Material, ProjectPreview, WbsNumber } from 'shared';
+import { Assembly, Car, Material, ProjectPreview, WbsNumber } from 'shared';
 
 import NERFormModal from '../../../../../components/NERFormModal';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
@@ -10,6 +10,7 @@ import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { useGetAllCars } from '../../../../../hooks/cars.hooks';
 import { useAllProjects } from '../../../../../hooks/projects.hooks';
 import { getMaterialsForWbsElement } from '../../../../../apis/bom.api';
+import SearchIcon from '@mui/icons-material/Search';
 
 type AutocompleteOption = { label: string; id: string };
 
@@ -22,30 +23,19 @@ interface SelectMaterialToCopyModalProps {
   open: boolean;
   onHide: () => void;
   onSelect: (material: Material) => void;
+  assemblies: Assembly[];
 }
 
 type FormValues = Record<string, never>;
 
 const carToOption = (car: Car): AutocompleteOption => ({
-  label: String(car.wbsNum.carNumber),
+  label: `Car ${car.wbsNum.carNumber} - ${car.name}`,
   id: car.wbsElementId
 });
 
 const projectToOption = (project: ProjectPreview): AutocompleteOption => ({
   label: `${project.wbsNum.carNumber}.${project.wbsNum.projectNumber} - ${project.name}`,
   id: project.wbsElementId
-});
-
-const materialToOption = (material: Material): AutocompleteOption => ({
-  label: [
-    material.name,
-    material.manufacturerName,
-    material.materialTypeName,
-    material.assemblyId ? `Assembly: ${material.assemblyId}` : undefined
-  ]
-    .filter(Boolean)
-    .join(' – '),
-  id: material.materialId
 });
 
 const searchResultToOption = ({ material, project }: SearchResult): AutocompleteOption => ({
@@ -64,7 +54,7 @@ const getLatestCar = (cars: Car[]): Car | null => {
   return [...cars].sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber)[0];
 };
 
-const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ open, onHide, onSelect }) => {
+const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ open, onHide, onSelect, assemblies }) => {
   const { reset, handleSubmit } = useForm<FormValues>();
 
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
@@ -92,6 +82,23 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
     if (!selectedProject) return null;
     return projectToProjectWbs(selectedProject);
   }, [selectedProject]);
+
+  const assemblyNameById = useMemo(
+    () => new Map(assemblies.map((assembly) => [assembly.assemblyId, assembly.name])),
+    [assemblies]
+  );
+
+  const materialToOption = (material: Material): AutocompleteOption => ({
+    label: [
+      material.name,
+      material.manufacturerName,
+      material.materialTypeName,
+      material.assemblyId ? `Assembly: ${assemblyNameById.get(material.assemblyId) ?? material.assemblyId}` : undefined
+    ]
+      .filter(Boolean)
+      .join(' – '),
+    id: material.materialId
+  });
 
   const projectMaterialsQuery = useQuery<Material[], Error>(
     ['materials', 'project', selectedProject?.wbsElementId ?? 'none'],
@@ -263,6 +270,17 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
                 {...params}
                 placeholder={selectedCar ? 'Search materials by name…' : 'Select a car first'}
                 fullWidth
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <>
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                      {params.InputProps.startAdornment}
+                    </>
+                  )
+                }}
               />
             )}
           />
