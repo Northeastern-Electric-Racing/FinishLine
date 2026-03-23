@@ -106,6 +106,7 @@ export interface WorkPackage extends WbsElement {
   teamTypes: TeamType[];
   projectId: string;
   events: EventPreview[];
+  tasks: Task[];
 }
 
 export interface WorkPackagePreview extends WbsElementPreview {

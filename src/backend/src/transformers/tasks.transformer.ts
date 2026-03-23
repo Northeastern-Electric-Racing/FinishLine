@@ -10,6 +10,7 @@ const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
   return {
     taskId: task.taskId,
     wbsNum,
+    wbsName: task.wbsElement.name,
     title: task.title,
     notes: task.notes,
     deadline: task.deadline ?? undefined,
@@ -45,6 +46,7 @@ export const calendarTaskTransformer = (task: Prisma.TaskGetPayload<CalendarTask
   return {
     taskId: task.taskId,
     wbsNum,
+    wbsName: task.wbsElement.name,
     title: task.title,
     notes: task.notes,
     deadline: task.deadline ?? undefined,
