@@ -12,7 +12,7 @@ import {
   RequestEventChange
 } from '../../../utils/gantt.utils';
 import { Box, Typography } from '@mui/material';
-import { useCallback, useRef, useState } from 'react';
+import { RefObject, useCallback, useRef, useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
 import { ArcherContainer } from 'react-archer';
@@ -30,7 +30,7 @@ interface GanttChartSectionProps<T> {
 }
 
 interface GanttTooltipLayerProps {
-  updateRef: React.MutableRefObject<(options: OnMouseOverOptions | undefined, y?: number) => void>;
+  updateRef: RefObject<(options: OnMouseOverOptions | undefined, y?: number) => void>;
 }
 
 const GanttTooltipLayer: React.FC<GanttTooltipLayerProps> = ({ updateRef }) => {
