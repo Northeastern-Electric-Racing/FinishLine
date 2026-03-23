@@ -3,6 +3,7 @@ import { getUserPreviewQueryArgs, getUserQueryArgs } from './user.query-args.js'
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.js';
 import { getLinkQueryArgs } from './links.query-args.js';
 import { getEventQueryArgs } from './event.query-args.js';
+import { getTaskQueryArgs } from './tasks.query-args.js';
 
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
 export type WorkPackagePreviewQueryArgs = ReturnType<typeof getWorkPackagePreviewQueryArgs>;
@@ -30,7 +31,8 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
             orderBy: { dateImplemented: 'asc' }
           },
           blocking: { where: { wbsElement: { dateDeleted: null } }, include: { wbsElement: true } },
-          descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) }
+          descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) },
+          tasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organizationId) }
         }
       },
       blockedBy: { where: { dateDeleted: null } },
