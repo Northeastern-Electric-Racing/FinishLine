@@ -26,7 +26,7 @@ const GanttTaskBarEdit = <T,>({
         getEndCol={getEndCol}
         onAddTaskPressed={onAddTaskPressed}
       />
-      {task.children.map((child) => {
+      {(task.children.length > 0 ? task.children : (task.loadChildren?.() ?? [])).map((child) => {
         return (
           <GanttTaskBarEdit
             key={child.id}
