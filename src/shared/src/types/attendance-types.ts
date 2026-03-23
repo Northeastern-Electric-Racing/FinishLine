@@ -10,3 +10,7 @@ export interface MeetingAttendance {
   attendeesCount: number;
   teamMemberAttendancePercent: number;
 }
+
+export interface MeetingAttendanceWithAttendees extends MeetingAttendance {
+  attendees: User[];
+}

@@ -14,9 +14,9 @@ attendanceRouter.post(
 );
 
 attendanceRouter.get('/', AttendanceController.getAllAttendances);
-
 attendanceRouter.get('/ongoing/:teamId', AttendanceController.getOngoingAttendance);
 attendanceRouter.post('/close/:teamId', AttendanceController.closeOngoingAttendance);
 attendanceRouter.get('/check-channel/:teamId', AttendanceController.checkChannel);
+attendanceRouter.get('/:meetingAttendanceId', AttendanceController.getAttendanceById);
 
 export default attendanceRouter;

@@ -505,6 +505,7 @@ const attendanceGetAll = () => `${attendance()}/`;
 const attendanceCheckChannel = (teamId: string) => `${attendance()}/check-channel/${teamId}`;
 const attendanceGetOngoing = (teamId: string) => `${attendance()}/ongoing/${teamId}`;
 const attendanceCloseOngoing = (teamId: string) => `${attendance()}/close/${teamId}`;
+const attendanceGetById = (meetingAttendanceId: string) => `${attendance()}/${meetingAttendanceId}`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -870,6 +871,7 @@ export const apiUrls = {
   attendanceCheckChannel,
   attendanceGetOngoing,
   attendanceCloseOngoing,
+  attendanceGetById,
 
   version
 };

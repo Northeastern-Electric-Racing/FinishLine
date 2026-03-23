@@ -1,9 +1,15 @@
 import { Organization } from '@prisma/client';
-import { MeetingAttendance, RoleEnum, User, isAtLeastRank } from 'shared';
+import { MeetingAttendance, MeetingAttendanceWithAttendees, RoleEnum, User, isAtLeastRank } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
-import { getMeetingAttendanceQueryArgs } from '../prisma-query-args/attendance.query-args.js';
-import { meetingAttendanceTransformer } from '../transformers/attendance.transformer.js';
+import {
+  getMeetingAttendanceQueryArgs,
+  getMeetingAttendanceWithAttendeesQueryArgs
+} from '../prisma-query-args/attendance.query-args.js';
+import {
+  meetingAttendanceTransformer,
+  meetingAttendanceWithAttendeesTransformer
+} from '../transformers/attendance.transformer.js';
 import { editMessage, getChannelName, replyToMessageInThread, sendMessage } from '../integrations/slack.js';
 import { userHasPermission } from '../utils/users.utils.js';
 
@@ -61,6 +67,22 @@ export default class AttendanceService {
     setTimeout(() => AttendanceService.closeAttendance(attendance.meetingAttendanceId), 3600000);
 
     return meetingAttendanceTransformer(attendance);
+  }
+
+  static async getAttendanceById(
+    meetingAttendanceId: string,
+    organization: Organization
+  ): Promise<MeetingAttendanceWithAttendees> {
+    const attendance = await prisma.meeting_Attendance.findUnique({
+      where: { meetingAttendanceId },
+      ...getMeetingAttendanceWithAttendeesQueryArgs(organization.organizationId)
+    });
+
+    if (!attendance || attendance.organizationId !== organization.organizationId) {
+      throw new NotFoundException('Meeting Attendance', meetingAttendanceId);
+    }
+
+    return meetingAttendanceWithAttendeesTransformer(attendance);
   }
 
   static async getAllAttendances(organization: Organization): Promise<MeetingAttendance[]> {
