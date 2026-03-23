@@ -1,5 +1,11 @@
 import axiosStatic from 'axios';
 
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    skipCarFilter?: boolean;
+  }
+}
+
 const axios = axiosStatic.create({
   withCredentials: import.meta.env.MODE !== 'development' ? true : undefined
 });
@@ -45,7 +51,7 @@ axios.interceptors.request.use(
     if (import.meta.env.MODE === 'development') request.headers!['Authorization'] = localStorage.getItem('devUserId') || '';
     const organizationId = localStorage.getItem('organizationId');
     request.headers!['organizationId'] = organizationId ?? '';
-    if (currentCarId) request.headers!['carId'] = currentCarId;
+    if (currentCarId && !request.skipCarFilter) request.headers!['carId'] = currentCarId;
     return request;
   },
   (error) => {

@@ -31,7 +31,8 @@ import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/t
  */
 export const getAllProjectsGantt = () => {
   return axios.get<ProjectGantt[]>(apiUrls.allProjectsGantt(), {
-    transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer)
+    transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer),
+    skipCarFilter: true
   });
 };
 

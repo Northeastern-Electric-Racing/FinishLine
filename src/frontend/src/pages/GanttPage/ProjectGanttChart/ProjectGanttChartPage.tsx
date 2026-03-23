@@ -43,8 +43,8 @@ import {
   WorkPackageStage
 } from 'shared';
 import { useAllTeams } from '../../../hooks/teams.hooks';
-import { useGetAllCars } from '../../../hooks/cars.hooks';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
+import { useGlobalCarFilter } from '../../../app/AppGlobalCarFilterContext';
 import AddGanttProjectModal from './AddGanttProjectModal';
 import AddGanttWorkPackageModal from './AddGanttWorkPackageModal';
 import AddGanttSelectionModal from './AddGanttSelectionModal';
@@ -78,7 +78,7 @@ const ProjectGanttChartPage: FC = () => {
     error: teamTypesError
   } = useAllTeamTypes();
 
-  const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
+  const { selectedCar, allCars, isLoading: carFilterLoading } = useGlobalCarFilter();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
@@ -98,6 +98,13 @@ const ProjectGanttChartPage: FC = () => {
 
   /******************** Filters ***************************/
   const { filters, setFilters } = useGanttFilters('project-gantt');
+
+  // Local car filter state — resets to global selection whenever global car filter changes
+  const [showCars, setShowCars] = useState<number[]>([]);
+  useEffect(() => {
+    if (carFilterLoading) return;
+    setShowCars(selectedCar ? [selectedCar.wbsNum.carNumber] : allCars.map((car) => car.wbsNum.carNumber));
+  }, [carFilterLoading, selectedCar, allCars]);
 
   useEffect(() => {
     const requestRefresh = (
@@ -130,37 +137,34 @@ const ProjectGanttChartPage: FC = () => {
     };
 
     if (projects && teams) {
-      requestRefresh(projects, teams, editedProjects, addedProjects, filters, searchText);
+      requestRefresh(projects, teams, editedProjects, addedProjects, { ...filters, showCars }, searchText);
     }
-  }, [teams, projects, addedProjects, setAllProjects, setCollections, editedProjects, filters, searchText, history]);
+  }, [
+    teams,
+    projects,
+    addedProjects,
+    setAllProjects,
+    setCollections,
+    editedProjects,
+    filters,
+    showCars,
+    searchText,
+    history
+  ]);
 
   const handleSetGanttFilters = (newFilters: GanttFilters) => {
     setFilters(newFilters);
   };
 
-  if (
-    projectsIsLoading ||
-    teamTypesIsLoading ||
-    teamsIsLoading ||
-    !teams ||
-    !projects ||
-    !teamTypes ||
-    carsIsLoading ||
-    !cars
-  )
+  if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || carFilterLoading || !teams || !projects || !teamTypes)
     return <LoadingIndicator />;
   if (projectsIsError) return <ErrorPage message={projectsError.message} />;
   if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;
-  if (carsIsError) return <ErrorPage message={carsError.message} />;
 
   const carFilterHandler = (car: number) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
-      handleSetGanttFilters(
-        event.target.checked
-          ? { ...filters, showCars: Array.from(new Set([...filters.showCars, car])) }
-          : { ...filters, showCars: filters.showCars.filter((c) => c !== car) }
-      );
+      setShowCars((prev) => (event.target.checked ? Array.from(new Set([...prev, car])) : prev.filter((c) => c !== car)));
     };
   };
 
@@ -233,12 +237,12 @@ const ProjectGanttChartPage: FC = () => {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
     defaultChecked: boolean;
-  }[] = cars.map((car) => {
+  }[] = [...allCars].sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber).map((car) => {
     const carNum = car.wbsNum.carNumber;
     return {
-      filterLabel: carNum === 0 ? 'None' : `Car ${carNum}`,
+      filterLabel: car.name,
       handler: carFilterHandler(carNum),
-      defaultChecked: filters.showCars.includes(carNum)
+      defaultChecked: showCars.includes(carNum)
     };
   });
 
@@ -246,6 +250,7 @@ const ProjectGanttChartPage: FC = () => {
     history.push(routes.GANTT);
     localStorage.removeItem('ganttURL');
     showWorkPackagesMap.clear();
+    setShowCars(selectedCar ? [selectedCar.wbsNum.carNumber] : allCars.map((car) => car.wbsNum.carNumber));
   };
 
   /* **************************************************** */
@@ -466,7 +471,7 @@ const ProjectGanttChartPage: FC = () => {
             toast.error('No Team Selected');
           }
         }}
-        cars={cars}
+        cars={allCars}
       />
     );
   };
