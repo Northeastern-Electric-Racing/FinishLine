@@ -90,15 +90,15 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
 
   const materialToOption = useCallback(
     (material: Material): AutocompleteOption => ({
-        label: [
+      label: [
         material.name,
         material.manufacturerName,
         material.materialTypeName,
         material.assemblyId ? `Assembly: ${assemblyNameById.get(material.assemblyId) ?? material.assemblyId}` : undefined
-        ]
+      ]
         .filter(Boolean)
         .join(' – '),
-        id: material.materialId
+      id: material.materialId
     }),
     [assemblyNameById]
   );
