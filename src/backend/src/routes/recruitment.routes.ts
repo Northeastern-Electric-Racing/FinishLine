@@ -62,4 +62,6 @@ recruitmentRouter.post(
   RecruitmentController.createGuestDefinition
 );
 
+recruitmentRouter.get('/guestDefinitions', RecruitmentController.getAllGuestDefintions);
+
 export default recruitmentRouter;
