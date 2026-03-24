@@ -42,6 +42,12 @@ export const setOrganizationDescription = async (description: string) => {
   });
 };
 
+export const setPlatformDescription = async (platformDescription: string) => {
+  return axios.post<Organization>(apiUrls.organizationsSetPlatformDescription(), {
+    platformDescription
+  });
+};
+
 export const getOrganizationLogo = async () => {
   return axios.get<string>(apiUrls.organizationsLogoImage(), {
     transformResponse: (data) => JSON.parse(data)
@@ -64,6 +70,12 @@ export const getOrganizationNewMemberImage = async () => {
   return axios.get<string>(apiUrls.organizationsNewMemberImage(), {
     transformResponse: (data) => JSON.parse(data)
   });
+};
+
+export const setOrganizationPlatformLogoImage = async (file: File) => {
+  const formData = new FormData();
+  formData.append('platformLogo', file);
+  return axios.post<Organization>(apiUrls.organizationsSetPlatformLogoImage(), formData);
 };
 
 export const setOrganizationFeaturedProjects = async (featuredProjectIds: string[]) => {
@@ -91,15 +103,6 @@ export const downloadGoogleImage = async (fileId: string): Promise<Blob> => {
   const imageBuffer = new Uint8Array(response.data);
   const imageBlob = new Blob([imageBuffer], { type: response.headers['content-type'] });
   return imageBlob;
-};
-
-export const setOrganizationImages = (images: File[]) => {
-  const formData = new FormData();
-
-  formData.append('applyInterestImage', images[0]);
-  formData.append('exploreAsGuestImage', images[1]);
-
-  return axios.post<{ message: string }>(apiUrls.organizationsSetImages(), formData, {});
 };
 
 /**

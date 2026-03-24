@@ -378,16 +378,18 @@ const organizations = () => `${API_URL}/organizations`;
 const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
-const organizationsSetImages = () => `${organizations()}/images/update`;
 const organizationsUpdateContacts = () => `${organizations()}/contacts/set`;
 const organizationsSetOnboardingText = () => `${organizations()}/onboardingText/set`;
 const organizationsUpdateApplicationLink = () => `${organizations()}/application-link/update`;
 const organizationsSetDescription = () => `${organizations()}/description/set`;
+const organizationsSetPlatformDescription = () => `${organizations()}/platform-description/set`;
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
 const organizationsNewMemberImage = () => `${organizations()}/new-member-image`;
 const organizationsSetNewMemberImage = () => `${organizations()}/new-member-image/update`;
+const organizationsPlatformLogoImage = () => `${organizations()}/platform-logo`;
+const organizationsSetPlatformLogoImage = () => `${organizationsPlatformLogoImage()}/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
@@ -495,6 +497,15 @@ const calendarDeleteScheduleSlot = (eventId: string, scheduleSlotId: string) =>
 const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
 const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 const calendarScheduleEvent = (eventId: string) => `${calendar()}/event/${eventId}/schedule`;
+
+/**************** Attendance Endpoints ****************/
+const attendance = () => `${API_URL}/attendance`;
+const attendanceTakeAttendance = () => `${attendance()}/`;
+const attendanceGetAll = () => `${attendance()}/`;
+const attendanceCheckChannel = (teamId: string) => `${attendance()}/check-channel/${teamId}`;
+const attendanceGetOngoing = (teamId: string) => `${attendance()}/ongoing/${teamId}`;
+const attendanceCloseOngoing = (teamId: string) => `${attendance()}/close/${teamId}`;
+const attendanceGetById = (meetingAttendanceId: string) => `${attendance()}/${meetingAttendanceId}`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -751,16 +762,18 @@ export const apiUrls = {
   currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
-  organizationsSetImages,
   organizationsUpdateContacts,
   organizationsSetOnboardingText,
   organizationsUpdateApplicationLink,
   organizationsFeaturedProjects,
   organizationsSetDescription,
+  organizationsSetPlatformDescription,
   organizationsLogoImage,
   organizationsSetLogoImage,
   organizationsNewMemberImage,
   organizationsSetNewMemberImage,
+  organizationsPlatformLogoImage,
+  organizationsSetPlatformLogoImage,
   organizationsSetFeaturedProjects,
   organizationsSetWorkspaceId,
   organizationsGetPartReviewGuideLink,
@@ -852,6 +865,13 @@ export const apiUrls = {
   calendarPreviewScheduleSlotRecurringEdits,
   calendarDeleteScheduleSlot,
   calendarScheduleEvent,
+
+  attendanceTakeAttendance,
+  attendanceGetAll,
+  attendanceCheckChannel,
+  attendanceGetOngoing,
+  attendanceCloseOngoing,
+  attendanceGetById,
 
   version
 };

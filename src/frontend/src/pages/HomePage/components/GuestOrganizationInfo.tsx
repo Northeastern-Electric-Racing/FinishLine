@@ -30,7 +30,7 @@ const GuestOrganizationInfo = () => {
   const theme = useTheme();
   const { data: organization, isLoading, isError, error } = useCurrentOrganization();
   const {
-    data: usefulLinks,
+    data: links,
     isLoading: usefulLinksIsLoading,
     isError: usefulLinksIsError,
     error: usefulLinksError
@@ -40,8 +40,10 @@ const GuestOrganizationInfo = () => {
   if (isLoading || !organization) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  if (!usefulLinks || usefulLinksIsLoading || !linkTypes || linkTypesIsLoading) return <LoadingIndicator />;
+  if (!links || usefulLinksIsLoading || !linkTypes || linkTypesIsLoading) return <LoadingIndicator />;
   if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
+
+  const usefulLinks = links?.filter((link) => !link.linkType.isOnGuestHomePage);
 
   return (
     <Card

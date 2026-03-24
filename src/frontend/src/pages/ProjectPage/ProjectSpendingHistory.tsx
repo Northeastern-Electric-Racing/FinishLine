@@ -5,7 +5,11 @@ import { useAllReimbursementRequests } from '../../hooks/finance.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { WbsNumber, ReimbursementRequest, WBSElementData, equalsWbsNumber, ReimbursementStatusType } from 'shared';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { createReimbursementRequestRowData, cleanReimbursementRequestStatus } from '../../utils/reimbursement-request.utils';
+import {
+  createReimbursementRequestRowData,
+  cleanReimbursementRequestStatus,
+  getCurrentReimbursementStatus
+} from '../../utils/reimbursement-request.utils';
 import NERDataGrid, { MapRowResult } from '../../components/NERDataGrid';
 import { routes } from '../../utils/routes';
 import { fullNamePipe, centsToDollar, datePipe } from '../../utils/pipes';
@@ -32,72 +36,16 @@ const getStatusColor = (status: ReimbursementStatusType): string => {
   }
 };
 
-const columns: GridColDef[] = [
-  {
-    field: 'identifier',
-    headerName: 'RR #',
-    flex: 0.4,
-    minWidth: 80,
-    renderCell: (params: GridRenderCellParams) => (
-      <Link
-        href={`${routes.REIMBURSEMENT_REQUESTS}/all-requests/${(params.row as any).reimbursementRequestId}`}
-        underline="hover"
-        color="primary"
-        onClick={(e) => e.stopPropagation()}
-      >
-        #{params.value}
-      </Link>
-    )
-  },
-  {
-    field: 'submitter',
-    headerName: 'Submitter',
-    flex: 1,
-    minWidth: 150,
-    valueGetter: (params: any) => fullNamePipe(params.row.submitter)
-  },
-  {
-    field: 'products',
-    headerName: 'Products',
-    flex: 2,
-    minWidth: 250,
-    valueGetter: (params: any) => params.row.reimbursementProducts?.map((p: any) => p.name).join(', ') || 'No products'
-  },
-  {
-    field: 'dateSubmitted',
-    headerName: 'Date Submitted',
-    flex: 0.7,
-    minWidth: 130,
-    valueGetter: (params: any) => datePipe(params.row.dateSubmitted)
-  },
-  {
-    field: 'status',
-    headerName: 'Status',
-    flex: 1,
-    minWidth: 220,
-    renderCell: (params: GridRenderCellParams) => (
-      <Box
-        sx={{
-          padding: '3px 8px',
-          display: 'inline-flex',
-          borderRadius: '8px',
-          backgroundColor: getStatusColor(params.value as ReimbursementStatusType),
-          fontWeight: 700,
-          whiteSpace: 'nowrap'
-        }}
-      >
-        {cleanReimbursementRequestStatus(params.value as ReimbursementStatusType)}
-      </Box>
-    )
-  },
-  {
-    field: 'amount',
-    headerName: 'Total Amount',
-    flex: 0.5,
-    minWidth: 110,
-    valueGetter: (params: any) => `$${centsToDollar(params.row.amount as number)}`
-  }
-];
+const getProjectCost = (rr: ReimbursementRequest, wbsNum: WbsNumber): number =>
+  rr.reimbursementProducts
+    .filter((product) => {
+      const reason = product.reimbursementProductReason;
+      return (
+        (reason as WBSElementData).wbsNum &&
+        equalsWbsNumber({ ...(reason as WBSElementData).wbsNum, workPackageNumber: 0 }, { ...wbsNum, workPackageNumber: 0 })
+      );
+    })
+    .reduce((sum, product) => sum + (product.cost || 0), 0);
 
 const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum }) => {
   const { data: allReimbursementRequests, isLoading: rrLoading, isError: rrError } = useAllReimbursementRequests();
@@ -109,7 +57,10 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
       rr.reimbursementProducts.some((product) => {
         const reason = product.reimbursementProductReason;
         if ((reason as WBSElementData).wbsNum) {
-          return equalsWbsNumber((reason as WBSElementData).wbsNum, { ...wbsNum, workPackageNumber: 0 });
+          return equalsWbsNumber(
+            { ...(reason as WBSElementData).wbsNum, workPackageNumber: 0 },
+            { ...wbsNum, workPackageNumber: 0 }
+          );
         }
         return false;
       })
@@ -119,7 +70,10 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
   const budgetInfo = useMemo(() => {
     if (!project) return null;
     const totalBudget = project.budget; // already in dollars
-    const totalSpent = reimbursementRequests.reduce((sum, rr) => sum + (rr.totalCost || 0), 0) / 100; // cents → dollars
+    const nonDeniedRequests = reimbursementRequests.filter(
+      (rr) => getCurrentReimbursementStatus(rr.reimbursementStatuses).type !== 'DENIED'
+    );
+    const totalSpent = nonDeniedRequests.reduce((sum, rr) => sum + getProjectCost(rr, wbsNum), 0) / 100; // cents → dollars
     const budgetRemaining = totalBudget - totalSpent;
     const budgetUsedPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
     return {
@@ -128,7 +82,81 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
       budgetRemaining,
       budgetUsedPercentage
     };
-  }, [project, reimbursementRequests]);
+  }, [project, reimbursementRequests, wbsNum]);
+
+  const columns: GridColDef[] = [
+    {
+      field: 'identifier',
+      headerName: 'RR #',
+      flex: 0.4,
+      minWidth: 80,
+      renderCell: (params: GridRenderCellParams) => (
+        <Link
+          href={`${routes.REIMBURSEMENT_REQUESTS}/all-requests/${(params.row as any).reimbursementRequestId}`}
+          underline="hover"
+          color="primary"
+          onClick={(e) => e.stopPropagation()}
+        >
+          #{params.value}
+        </Link>
+      )
+    },
+    {
+      field: 'submitter',
+      headerName: 'Submitter',
+      flex: 1,
+      minWidth: 150,
+      valueGetter: (params: any) => fullNamePipe(params.row.submitter)
+    },
+    {
+      field: 'products',
+      headerName: 'Products',
+      flex: 2,
+      minWidth: 250,
+      valueGetter: (params: any) => params.row.reimbursementProducts?.map((p: any) => p.name).join(', ') || 'No products'
+    },
+    {
+      field: 'dateSubmitted',
+      headerName: 'Date Submitted',
+      flex: 0.7,
+      minWidth: 130,
+      valueGetter: (params: any) => datePipe(params.row.dateSubmitted)
+    },
+    {
+      field: 'status',
+      headerName: 'Status',
+      flex: 1,
+      minWidth: 220,
+      renderCell: (params: GridRenderCellParams) => (
+        <Box
+          sx={{
+            padding: '3px 8px',
+            display: 'inline-flex',
+            borderRadius: '8px',
+            backgroundColor: getStatusColor(params.value as ReimbursementStatusType),
+            fontWeight: 700,
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {cleanReimbursementRequestStatus(params.value as ReimbursementStatusType)}
+        </Box>
+      )
+    },
+    {
+      field: 'projectCost',
+      headerName: 'Project Cost',
+      flex: 0.5,
+      minWidth: 110,
+      valueGetter: (params: any) => `$${centsToDollar(getProjectCost(params.row.raw ?? params.row, wbsNum))}`
+    },
+    {
+      field: 'amount',
+      headerName: 'Total Amount',
+      flex: 0.5,
+      minWidth: 110,
+      valueGetter: (params: any) => `$${centsToDollar(params.row.amount as number)}`
+    }
+  ];
 
   const mapRow = (rr: ReimbursementRequest): MapRowResult<ReimbursementRequest> => {
     const row = createReimbursementRequestRowData(rr);

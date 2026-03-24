@@ -293,7 +293,6 @@ export default class ReimbursementRequestService {
 
     await sendReimbursementRequestCreatedNotificationAndCreateMessageInfo(
       createdReimbursementRequest.reimbursementRequestId,
-      createdReimbursementRequest.identifier,
       recipient.userId,
       organization.organizationId
     );
