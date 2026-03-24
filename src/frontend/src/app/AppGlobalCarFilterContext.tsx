@@ -32,13 +32,15 @@ export const GlobalCarFilterProvider: React.FC<GlobalCarFilterProviderProps> = (
     if (!isLoading && !hasInitialized.current) {
       hasInitialized.current = true;
 
-      const savedCarName = sessionStorage.getItem('selectedCarName');
-      if (savedCarName) {
-        const savedCar = allCars.find((car) => car.name === savedCarName);
+      const savedCarId = localStorage.getItem('selectedCarId');
+      if (savedCarId) {
+        const savedCar = allCars.find((car) => car.id === savedCarId);
         if (savedCar) {
           setSelectedCar(savedCar);
           return;
         }
+        // Stored ID not found in car list (stale or invalid) — clear it
+        localStorage.removeItem('selectedCarId');
       }
 
       // Default to null (all cars)
@@ -50,9 +52,9 @@ export const GlobalCarFilterProvider: React.FC<GlobalCarFilterProviderProps> = (
     setSelectedCarState(car);
     setCurrentCarId(car ? car.id : null);
     if (car) {
-      sessionStorage.setItem('selectedCarName', car.name);
+      localStorage.setItem('selectedCarId', car.id);
     } else {
-      sessionStorage.removeItem('selectedCarName');
+      localStorage.removeItem('selectedCarId');
     }
   };
 
