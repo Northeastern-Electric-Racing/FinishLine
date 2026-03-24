@@ -225,16 +225,16 @@ const financeEditOtherReimbursementProductReason = (id: String) =>
 const getReimbursementRequestProjectData = (projectId: string, startDate?: Date, endDate?: Date): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-project-data/${projectId}`);
   const params = new URLSearchParams();
-  if (startDate) params.set('startDate', startDate.toISOString());
-  if (endDate) params.set('endDate', endDate.toISOString());
+  if (startDate) params.set('startDate', new Date(startDate).toISOString());
+  if (endDate) params.set('endDate', new Date(endDate).toISOString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
 const getReimbursementRequestTeamData = (teamId: string, startDate?: Date, endDate?: Date, carNumber?: number): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-team-data/${teamId}`);
   const params = new URLSearchParams();
-  if (startDate) params.set('startDate', startDate.toISOString());
-  if (endDate) params.set('endDate', endDate.toISOString());
+  if (startDate) params.set('startDate', new Date(startDate).toISOString());
+  if (endDate) params.set('endDate', new Date(endDate).toISOString());
   if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
@@ -247,8 +247,8 @@ const getReimbursementRequestCategoryData = (
 ): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-category-data/${otherReasonId}`);
   const params = new URLSearchParams();
-  if (startDate) params.set('startDate', startDate.toISOString());
-  if (endDate) params.set('endDate', endDate.toISOString());
+  if (startDate) params.set('startDate', new Date(startDate).toISOString());
+  if (endDate) params.set('endDate', new Date(endDate).toISOString());
   if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
@@ -454,8 +454,8 @@ const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete
 /************** Retrospective Endpoints ***************/
 const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
   `${API_URL}/retrospective/timelines?` +
-  (startDate ? `start=${encodeURIComponent(startDate.toISOString())}` : '') +
-  (endDate ? `end=${encodeURIComponent(endDate.toISOString())}` : '');
+  (startDate ? `start=${encodeURIComponent(new Date(startDate).toISOString())}` : '') +
+  (endDate ? `end=${encodeURIComponent(new Date(endDate).toISOString())}` : '');
 const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 
 /**************** Calendar Endpoints ****************/
