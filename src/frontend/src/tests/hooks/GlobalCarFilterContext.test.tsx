@@ -31,11 +31,11 @@ const createWrapper = () => {
 
 describe('useGlobalCarFilter', () => {
   beforeEach(() => {
-    sessionStorage.clear();
+    localStorage.clear();
     vi.clearAllMocks();
   });
 
-  it('should initialize with null when no saved car name in session storage', async () => {
+  it('should initialize with null when no saved car id in local storage', async () => {
     mockUseGetAllCars.mockReturnValue({
       data: exampleAllCars,
       isLoading: false,
@@ -54,8 +54,8 @@ describe('useGlobalCarFilter', () => {
     expect(result.current.allCars).toEqual(exampleAllCars);
   });
 
-  it('should restore car from session storage by name', async () => {
-    sessionStorage.setItem('selectedCarName', exampleAllCars[0].name);
+  it('should restore car from local storage by id', async () => {
+    localStorage.setItem('selectedCarId', exampleAllCars[0].id);
 
     mockUseGetAllCars.mockReturnValue({
       data: exampleAllCars,
@@ -72,8 +72,8 @@ describe('useGlobalCarFilter', () => {
     });
   });
 
-  it('should default to null when saved car name does not match any car', async () => {
-    sessionStorage.setItem('selectedCarName', 'NER-Nonexistent');
+  it('should default to null when saved car id does not match any car', async () => {
+    localStorage.setItem('selectedCarId', 'nonexistent-id');
 
     mockUseGetAllCars.mockReturnValue({
       data: exampleAllCars,
@@ -92,7 +92,7 @@ describe('useGlobalCarFilter', () => {
     expect(result.current.selectedCar).toBeNull();
   });
 
-  it('should persist car name to session storage when selecting a car', async () => {
+  it('should persist car id to local storage when selecting a car', async () => {
     mockUseGetAllCars.mockReturnValue({
       data: exampleAllCars,
       isLoading: false,
@@ -111,12 +111,12 @@ describe('useGlobalCarFilter', () => {
       result.current.setSelectedCar(exampleAllCars[1]);
     });
 
-    expect(sessionStorage.getItem('selectedCarName')).toBe(exampleAllCars[1].name);
+    expect(localStorage.getItem('selectedCarId')).toBe(exampleAllCars[1].id);
     expect(result.current.selectedCar).toEqual(exampleAllCars[1]);
   });
 
-  it('should clear session storage when selecting null (all cars)', async () => {
-    sessionStorage.setItem('selectedCarName', exampleAllCars[0].name);
+  it('should clear local storage when selecting null (all cars)', async () => {
+    localStorage.setItem('selectedCarId', exampleAllCars[0].id);
 
     mockUseGetAllCars.mockReturnValue({
       data: exampleAllCars,
@@ -136,7 +136,7 @@ describe('useGlobalCarFilter', () => {
       result.current.setSelectedCar(null);
     });
 
-    expect(sessionStorage.getItem('selectedCarName')).toBeNull();
+    expect(localStorage.getItem('selectedCarId')).toBeNull();
     expect(result.current.selectedCar).toBeNull();
   });
 
@@ -172,7 +172,7 @@ describe('useGlobalCarFilter', () => {
     expect(result.current.isLoading).toBe(false);
   });
 
-  it('should update session storage when switching between cars', async () => {
+  it('should update local storage when switching between cars', async () => {
     mockUseGetAllCars.mockReturnValue({
       data: exampleAllCars,
       isLoading: false,
@@ -191,13 +191,13 @@ describe('useGlobalCarFilter', () => {
       result.current.setSelectedCar(exampleAllCars[0]);
     });
 
-    expect(sessionStorage.getItem('selectedCarName')).toBe(exampleAllCars[0].name);
+    expect(localStorage.getItem('selectedCarId')).toBe(exampleAllCars[0].id);
 
     act(() => {
       result.current.setSelectedCar(exampleAllCars[2]);
     });
 
-    expect(sessionStorage.getItem('selectedCarName')).toBe(exampleAllCars[2].name);
+    expect(localStorage.getItem('selectedCarId')).toBe(exampleAllCars[2].id);
     expect(result.current.selectedCar).toEqual(exampleAllCars[2]);
   });
 });
