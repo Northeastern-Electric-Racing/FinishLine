@@ -256,6 +256,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Amber Friar', color: '#F5A9B8' },
     { name: 'Kaung Mo', color: '#9a1115' },
     { name: 'Mae Balesterri', color: '#7fb2bc' },
+    { name: 'Nigel Purvis', color: '#E2725B' },
     {
       name: 'Joshua Goldberg',
       color: 'transparent',
