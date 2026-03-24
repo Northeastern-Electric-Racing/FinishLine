@@ -5,6 +5,7 @@ import ArrowDropUp from '@mui/icons-material/ArrowDropUp';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { Box } from '@mui/system';
 import { Button, List, ListItem, Typography } from '@mui/material';
+import zIndex from '@mui/material/styles/zIndex';
 
 interface FinancePieChartProps {
   totalBalance: number;
@@ -231,6 +232,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
                 />
               </Pie>
               <Tooltip
+                wrapperStyle={{ zIndex: 10 }}
                 contentStyle={{
                   backgroundColor: '#333',
                   color: '#fff',
