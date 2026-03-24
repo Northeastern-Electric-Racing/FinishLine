@@ -3,7 +3,7 @@ import { isAdmin, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
-import { faqTransformer } from '../transformers/faq.transformer.js';
+import { faqTransformer, guestDefinitionTransformer } from '../transformers/recruitment-transformer.js';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args.js';
 
 export default class RecruitmentServices {
@@ -251,6 +251,14 @@ export default class RecruitmentServices {
       }
     });
 
-    return definition;
+    return guestDefinitionTransformer(definition);
+  }
+
+  static async getAllGuestDefinitions(organization: Organization) {
+    const allGuestDefintions = await prisma.guest_Definition.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null }
+    });
+
+    return allGuestDefintions.map(guestDefinitionTransformer);
   }
 }
