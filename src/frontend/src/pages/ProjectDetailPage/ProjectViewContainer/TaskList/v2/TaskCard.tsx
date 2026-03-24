@@ -16,13 +16,15 @@ export const TaskCard = ({
   index,
   project,
   onDeleteTask,
-  onEditTask
+  onEditTask,
+  showWpChip = true
 }: {
   task: Task;
   index: number;
   project: Project;
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
+  showWpChip?: boolean;
 }) => {
   const { mutateAsync: deleteTask } = useDeleteTask();
   const { mutateAsync: editTask } = useEditTask();
@@ -78,6 +80,7 @@ export const TaskCard = ({
 
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const isOverdue = task.deadline != null && new Date(task.deadline) < new Date() && task.status !== 'DONE';
+  const isWpTask = task.wbsNum.workPackageNumber !== 0;
 
   return (
     <>
@@ -141,6 +144,18 @@ export const TaskCard = ({
                         }
                         size="medium"
                       />
+                      {isWpTask && showWpChip && (
+                        <Chip
+                          label={task.wbsName}
+                          size="medium"
+                          sx={{
+                            backgroundColor: 'rgba(55, 138, 221, 0.15)',
+                            color: '#7dbef4',
+                            border: '1px solid rgba(55, 138, 221, 0.4)',
+                            fontWeight: 500
+                          }}
+                        />
+                      )}
                     </Grid>
                     <Grid item xs={12} lg={4} justifyContent={'right'}>
                       <Box alignItems={'center'} mt={1} justifyContent={'right'} display={'flex'} flexDirection={'column'}>

@@ -17,7 +17,8 @@ const schema = yup.object().shape({
   priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
   assignees: yup.array().required(),
   title: yup.string().required(),
-  taskId: yup.string().required()
+  taskId: yup.string().required(),
+  wpWbsNum: yup.object().optional()
 });
 
 export interface EditTaskFormInput {
@@ -28,6 +29,7 @@ export interface EditTaskFormInput {
   startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
+  wpWbsNum?: WbsNumber;
 }
 
 interface TaskFormModalProps {
@@ -37,9 +39,19 @@ interface TaskFormModalProps {
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
   onReset?: () => void;
+  workPackages?: WorkPackage[];
+  lockedWorkPackage?: WorkPackage;
 }
 
-const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow, onHide, onReset }) => {
+const TaskFormModal: React.FC<TaskFormModalProps> = ({
+  task,
+  onSubmit,
+  modalShow,
+  onHide,
+  onReset,
+  workPackages,
+  lockedWorkPackage
+}) => {
   const user = useCurrentUser();
 
   const { data: users, isLoading, isError, error } = useAllUsers();
@@ -58,14 +70,19 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
       startDate: task?.startDate ?? undefined,
       deadline: task?.deadline ?? undefined,
       priority: task?.priority ?? TaskPriority.Low,
-      assignees: task?.assignees.map((assignee) => assignee.userId) ?? []
+      assignees: task?.assignees.map((assignee) => assignee.userId) ?? [],
+      wpWbsNum: lockedWorkPackage?.wbsNum ?? undefined
     }
   });
 
   if (isError) return <ErrorPage error={error} />;
   if (isLoading || !users) return <LoadingIndicator />;
 
-  const options: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
+  const userOptions: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
+  const wpOptions: { label: string; wbsNum: WbsNumber }[] = (workPackages ?? []).map((wp) => ({
+    label: wp.name,
+    wbsNum: wp.wbsNum
+  }));
 
   const unUpperCase = (str: string) => str.charAt(0) + str.slice(1).toLowerCase();
 
@@ -140,6 +157,32 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
               />
             </FormControl>
           </Grid>
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <FormLabel>Work Package</FormLabel>
+              <Controller
+                name="wpWbsNum"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Autocomplete
+                    disabled={!!lockedWorkPackage}
+                    options={wpOptions}
+                    isOptionEqualToValue={(option, val) => option.wbsNum.workPackageNumber === val.wbsNum.workPackageNumber}
+                    getOptionLabel={(option) => option.label}
+                    onChange={(_, val) => onChange(val?.wbsNum ?? undefined)}
+                    value={wpOptions.find((o) => o.wbsNum.workPackageNumber === value?.workPackageNumber) ?? null}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="standard"
+                        placeholder={lockedWorkPackage ? '' : 'Select a work package'}
+                      />
+                    )}
+                  />
+                )}
+              />
+            </FormControl>
+          </Grid>
           <Grid item md={12}>
             <FormControl fullWidth>
               <FormLabel>Assignees</FormLabel>
@@ -152,12 +195,12 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
                     filterSelectedOptions
                     multiple
                     id="tags-standard"
-                    options={options}
+                    options={userOptions}
                     getOptionLabel={(option) => option.label}
                     onChange={(_, value) => onChange(value.map((v) => v.id))}
-                    value={value.map((v) => options.find((o) => o.id === v)!)}
+                    value={value.map((v) => userOptions.find((o) => o.id === v)!)}
                     renderInput={(params) => (
-                      <TextField {...params} variant="standard" placeholder="Select A User" error={!!errors.assignees} />
+                      <TextField {...params} variant="standard" placeholder="Select a user" error={!!errors.assignees} />
                     )}
                   />
                 )}

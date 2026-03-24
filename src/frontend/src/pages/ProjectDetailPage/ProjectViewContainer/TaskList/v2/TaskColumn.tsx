@@ -46,10 +46,18 @@ export const TaskColumn = ({
     return () => observer.disconnect();
   }, [status, onHeightChange]);
 
-  const handleCreateTask = async ({ notes, title, deadline, assignees, priority, startDate }: EditTaskFormInput) => {
+  const handleCreateTask = async ({
+    notes,
+    title,
+    deadline,
+    assignees,
+    priority,
+    startDate,
+    wpWbsNum
+  }: EditTaskFormInput) => {
     try {
       const task = await createTask({
-        wbsNum: project.wbsNum,
+        wbsNum: wpWbsNum ?? project.wbsNum,
         title,
         deadline: deadline ? toDateString(deadline) : undefined,
         startDate: startDate ? toDateString(startDate) : undefined,
@@ -75,6 +83,7 @@ export const TaskColumn = ({
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
         teams={project.teams}
+        workPackages={project.workPackages}
       />
       <Box
         sx={{

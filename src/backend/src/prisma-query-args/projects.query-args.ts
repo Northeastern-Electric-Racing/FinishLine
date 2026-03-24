@@ -130,7 +130,7 @@ export const getProjectOverviewQueryArgs = (organizationId: string) =>
           tasks: getTaskQueryArgs(organizationId)
         }
       },
-      workPackages: getWorkPackagePreviewQueryArgs(),
+      workPackages: getWorkPackagePreviewWithTasksQueryArgs(),
       projectId: true,
       budget: true,
       abbreviation: true,
