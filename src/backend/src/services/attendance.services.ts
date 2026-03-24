@@ -10,7 +10,13 @@ import {
   meetingAttendanceTransformer,
   meetingAttendanceWithAttendeesTransformer
 } from '../transformers/attendance.transformer.js';
-import { editMessage, getChannelName, replyToMessageInThread, sendMessage } from '../integrations/slack.js';
+import {
+  checkBotInChannel,
+  editMessage,
+  getChannelName,
+  replyToMessageInThread,
+  sendMessage
+} from '../integrations/slack.js';
 import { userHasPermission } from '../utils/users.utils.js';
 
 export default class AttendanceService {
@@ -215,6 +221,7 @@ export default class AttendanceService {
     }
 
     const channelName = await getChannelName(team.slackId);
-    return { channelName, valid: !!channelName };
+    const botInChannel = channelName ? await checkBotInChannel(team.slackId) : false;
+    return { channelName, valid: !!channelName && botInChannel };
   }
 }
