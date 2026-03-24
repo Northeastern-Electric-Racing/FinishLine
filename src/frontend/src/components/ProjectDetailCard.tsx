@@ -8,7 +8,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import { Box, Card, CardContent, Link, Typography, Grid } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { calculateDaysLeftInProject, daysBetween, ProjectOverview, TaskStatus, WbsElementStatus, wbsPipe } from 'shared';
+import { calculateDaysLeftInProject, daysBetween, ProjectOverview, WbsElementStatus, wbsPipe } from 'shared';
 import { daysOrWeeksLeftOrLate, emDashPipe, fullNamePipe } from '../utils/pipes';
 import WorkPackageStageChip from './WorkPackageStageChip';
 import FavoriteProjectButton from './FavoriteProjectButton';
@@ -23,7 +23,6 @@ interface ProjectDetailCardProps {
 
 const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectIsFavorited }) => {
   const containsActiveWorkPackages = project.workPackages.filter((wp) => wp.status === WbsElementStatus.Active).length;
-  const tasksLeft: number = project.tasks.filter((task) => !task.dateDeleted && task.status !== TaskStatus.DONE).length;
 
   const ProjectDetailCardTitle = () => (
     <Grid container alignItems="center">
@@ -63,7 +62,8 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
         )}
       </Grid>
       <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={4}>
-        <TaskIcon sx={{ mr: 1 }} /> <Typography>{`${tasksLeft} task${tasksLeft === 1 ? '' : 's'} left`}</Typography>
+        <TaskIcon sx={{ mr: 1 }} />{' '}
+        <Typography>{`${project.tasksRemaining} task${project.tasksRemaining === 1 ? '' : 's'} left`}</Typography>
       </Grid>
       <Grid item display="flex" xs={4}>
         <Work sx={{ mr: 1 }} /> <Typography>{fullNamePipe(project.manager)}</Typography>

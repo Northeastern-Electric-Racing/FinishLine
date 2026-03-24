@@ -86,7 +86,7 @@ export interface ProjectPreview extends WbsElementPreview {
 
 export interface ProjectOverview extends ProjectPreview {
   links: Link[];
-  tasks: Task[];
+  tasksRemaining: number;
 }
 
 export interface RetrospectiveWorkPackage extends WorkPackage {

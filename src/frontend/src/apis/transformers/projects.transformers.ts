@@ -99,8 +99,7 @@ export const projectOverviewTransformer = (project: ProjectOverview): ProjectOve
       startDate: new Date(wp.startDate),
       endDate: new Date(wp.endDate)
     })),
-    links: project.links,
-    tasks: project.tasks.map(taskTransformer)
+    links: project.links
   };
 };
 
