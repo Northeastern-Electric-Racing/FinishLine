@@ -26,6 +26,7 @@ export interface ChangeRequest {
   implementedChanges?: ImplementedChange[];
   status: ChangeRequestStatus;
   requestedReviewers: User[];
+  teamTypeNames: string[];
 }
 
 export const ChangeRequestType = {

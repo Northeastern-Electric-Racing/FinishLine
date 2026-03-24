@@ -133,7 +133,14 @@ export const changeRequestManyTransformer = (
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
     requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? [],
     //budget cr fields
-    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined
+    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined,
+    teamTypeNames: [
+      ...new Set(
+        (changeRequest.wbsElement?.project ?? changeRequest.wbsElement?.workPackage?.project)?.teams
+          .map((t) => t.teamType?.name)
+          .filter((name): name is string => name != null) ?? []
+      )
+    ]
   };
 };
 
@@ -224,7 +231,14 @@ const changeRequestTransformer = (
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
     requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? [],
     //budget cr fields
-    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined
+    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined,
+    teamTypeNames: [
+      ...new Set(
+        (changeRequest.wbsElement?.project ?? changeRequest.wbsElement?.workPackage?.project)?.teams
+          .map((t) => t.teamType?.name)
+          .filter((name): name is string => name != null) ?? []
+      )
+    ]
   };
 };
 

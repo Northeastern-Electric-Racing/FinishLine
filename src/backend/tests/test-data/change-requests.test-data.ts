@@ -59,5 +59,6 @@ export const sharedChangeRequest: SharedChangeRequest = {
   type: ChangeRequestType.Redefinition,
   status: ChangeRequestStatus.Open,
   requestedReviewers: [],
-  identifier: 1
+  identifier: 1,
+  teamTypeNames: []
 };

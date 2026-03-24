@@ -61,7 +61,8 @@ export const exampleStandardChangeRequest: StandardChangeRequest = {
   budgetImpact: 75,
   timelineImpact: 2,
   proposedSolutions: [],
-  requestedReviewers: []
+  requestedReviewers: [],
+  teamTypeNames: []
 };
 
 export const exampleActivationChangeRequest: ActivationChangeRequest = {
@@ -77,7 +78,8 @@ export const exampleActivationChangeRequest: ActivationChangeRequest = {
   startDate: new Date('03/01/21'),
   confirmDetails: true,
   status: ChangeRequestStatus.Accepted,
-  requestedReviewers: []
+  requestedReviewers: [],
+  teamTypeNames: []
 };
 
 export const exampleStageGateChangeRequest: StageGateChangeRequest = {
@@ -91,7 +93,8 @@ export const exampleStageGateChangeRequest: StageGateChangeRequest = {
   leftoverBudget: 26,
   confirmDone: true,
   status: ChangeRequestStatus.Implemented,
-  requestedReviewers: []
+  requestedReviewers: [],
+  teamTypeNames: []
 };
 
 export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
@@ -197,7 +200,8 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
     }
   ],
   proposedSolutions: [],
-  requestedReviewers: []
+  requestedReviewers: [],
+  teamTypeNames: []
 };
 
 export const exampleAllChangeRequests: ChangeRequest[] = [

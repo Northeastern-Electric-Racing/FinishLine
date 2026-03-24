@@ -50,7 +50,28 @@ export const getManyChangeRequestQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Change_RequestDefaultArgs>()({
     include: {
       submitter: getUserQueryArgs(organizationId),
-      wbsElement: true,
+      wbsElement: {
+        include: {
+          project: {
+            include: {
+              teams: {
+                include: { teamType: true }
+              }
+            }
+          },
+          workPackage: {
+            include: {
+              project: {
+                include: {
+                  teams: {
+                    include: { teamType: true }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       category: getReimbursementProductOtherReasonQueryArgs(organizationId),
       accountCode: getAccountCodeQueryArgs(organizationId),
       reviewer: getUserQueryArgs(organizationId),
@@ -77,7 +98,9 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
           workPackage: getWorkPackageQueryArgs(organizationId),
           project: {
             include: {
-              teams: true
+              teams: {
+                include: { teamType: true }
+              }
             }
           },
           descriptionBullets: { where: { dateDeleted: null } },
