@@ -6,10 +6,10 @@ import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import { Chip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useAllGuestChangeRequests } from '../../hooks/change-requests.hooks';
-import { ChangeRequest, wbsPipe } from 'shared';
+import { GuestChangeRequest, wbsPipe } from 'shared';
 import { ChangeRequestTypeTextPipe, ChangeRequestStatusTextPipe } from '../../utils/enum-pipes';
 
-const CrCard = ({ cr }: { cr: ChangeRequest }) => {
+const CrCard = ({ cr }: { cr: GuestChangeRequest }) => {
   const theme = useTheme();
 
   const submitterName =
@@ -95,11 +95,11 @@ const GuestChangeRequestsPage: React.FC = () => {
             label={team.name}
             onClick={() =>
               setSelectedTeamTypes((prev) =>
-                prev?.includes(team.name) ? prev.filter((t: string) => t !== team.name) : [...(prev || []), team.name]
+                prev.includes(team.name) ? prev.filter((t: string) => t !== team.name) : [...(prev || []), team.name]
               )
             }
             clickable
-            color={selectedTeamTypes?.includes(team.name) ? 'primary' : 'default'}
+            color={selectedTeamTypes.includes(team.name) ? 'primary' : 'default'}
             sx={{ flexShrink: 0 }}
           />
         ))}
