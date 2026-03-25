@@ -224,12 +224,12 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       }}
     >
       <DrawerHeader>
+        <Box sx={{ maxWidth: 150, minWidth: 0, maxHeight: 70, minHeight: 70 }}>
+          <GlobalCarFilterDropdown compact />
+        </Box>
         <IconButton onClick={() => handleMoveContent()}>{moveContent ? <ChevronLeft /> : <ChevronRight />}</IconButton>
       </DrawerHeader>
-      <Divider />
-      <Box sx={{ px: 2, py: 2 }}>
-        <GlobalCarFilterDropdown compact />
-      </Box>
+      <Box sx={{ py: 2.5 }}></Box>
       <Divider />
       <Box
         overflow={'auto'}

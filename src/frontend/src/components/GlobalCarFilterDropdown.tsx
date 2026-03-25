@@ -17,7 +17,7 @@ interface GlobalCarFilterDropdownProps {
 
 const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compact = false, sx = {} }) => {
   const { selectedCar, allCars, setSelectedCar, isLoading, error } = useGlobalCarFilter();
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   const handleToggle = () => {
     setExpanded(!expanded);
