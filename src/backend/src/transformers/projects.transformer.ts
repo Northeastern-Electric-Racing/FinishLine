@@ -123,6 +123,19 @@ export const projectPreviewTransformer = (project: Prisma.ProjectGetPayload<Proj
     duration: calculateDuration(project.workPackages),
     startDate: calculateProjectStartDate(project.workPackages),
     abbreviation: project.abbreviation ?? undefined,
+    teamTypes: Array.from(
+      project.teams
+        .reduce((acc, team) => {
+          if (team.teamType) {
+            acc.set(team.teamType.teamTypeId, {
+              name: team.teamType.name,
+              teamTypeId: team.teamType.teamTypeId
+            });
+          }
+          return acc;
+        }, new Map<string, { name: string; teamTypeId: string }>())
+        .values()
+    ),
     teams: project.teams,
     workPackages: project.workPackages.map((wp) => ({
       ...wp,
@@ -151,6 +164,7 @@ export const projectOverviewTransformer = (project: Prisma.ProjectGetPayload<Pro
       ...project.wbsElement.tasks.map(taskTransformer), // this project's tasks
       ...project.workPackages.flatMap((wp) => wp.wbsElement.tasks.map(taskTransformer)) // all of this project's work packages' tasks, flattened to one array
     ],
+    tasksRemaining: project.wbsElement._count.tasks,
     links: project.wbsElement.links
   };
 };

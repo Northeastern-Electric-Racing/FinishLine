@@ -21,6 +21,16 @@ export default class AttendanceController {
     }
   }
 
+  static async getAttendanceById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { meetingAttendanceId } = req.params as Record<string, string>;
+      const attendance = await AttendanceService.getAttendanceById(meetingAttendanceId, req.organization);
+      res.status(200).json(attendance);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getOngoingAttendance(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamId } = req.params as Record<string, string>;
