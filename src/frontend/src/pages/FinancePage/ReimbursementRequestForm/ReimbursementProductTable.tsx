@@ -61,6 +61,7 @@ interface ReimbursementProductTableProps {
   firstRefundSourceName?: string;
   secondRefundSourceName?: string;
   allProjects: ProjectPreview[];
+  applySplitShippingToProducts: (totalShipping?: number) => void;
 }
 
 const ListItem = styled('li')(({ theme }) => ({
@@ -156,7 +157,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   firstRefundSourceName,
   secondRefundSourceName,
   watch,
-  allProjects
+  allProjects,
+  applySplitShippingToProducts
 }) => {
   const uniqueWbsElementsWithProducts = new Map<
     string,
@@ -181,6 +183,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       setValue(`reimbursementProducts.${index}.refundSources`, [{ indexCode: firstRefundSourceIndexCode, amount: value }]);
     }
   };
+  const totalShipping = watch('splitShipping');
 
   const userTheme = useTheme();
   const hoverColor = userTheme.palette.action.hover;
@@ -409,6 +412,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                           cost: 0,
                           refundSources: []
                         });
+                        setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
                       }
                     }}
                     value={null}
@@ -434,6 +438,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                           cost: 0,
                           refundSources: []
                         });
+                        setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
                       }
                     }}
                     value={null}
@@ -805,7 +810,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                     backgroundColor: hoverColor
                                   }
                                 }}
-                                onClick={() => removeProduct(product.index)}
+                                onClick={() => {
+                                  removeProduct(product.index);
+                                  setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
+                                }}
                               >
                                 <RemoveCircleOutline />
                               </IconButton>
@@ -840,6 +848,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                             cost: 0,
                             refundSources: []
                           });
+                          setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
                         }
                         e.currentTarget.blur();
                       }}

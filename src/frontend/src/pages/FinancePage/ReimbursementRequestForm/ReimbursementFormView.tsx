@@ -86,6 +86,7 @@ interface ReimbursementRequestFormViewProps {
   isLeadershipApproved?: boolean;
   onSubmitToFinance?: (data: ReimbursementRequestFormInput) => void;
   isSubmitting?: boolean;
+  applySplitShippingToProducts: (totalShipping?: number) => void;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -112,7 +113,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   isEditing = false,
   isLeadershipApproved = false,
   onSubmitToFinance,
-  isSubmitting = false
+  isSubmitting = false,
+  applySplitShippingToProducts
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [showAddRefundSourceModal, setShowAddRefundSourceModal] = useState(false);
@@ -682,6 +684,55 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   <FormHelperText error>{errors.accountCodeId?.message}</FormHelperText>
                 </FormControl>
 
+                {/* Total Shipping */}
+                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                  <FormLabel
+                    sx={{
+                      color: '#dd524c',
+                      textShadow: '1.5px 0 #dd524c',
+                      letterSpacing: '0.5px',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3.5px',
+                      textDecorationThickness: '0.6px',
+                      paddingBottom: '2px',
+                      fontSize: 'x-large',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Total Shipping
+                  </FormLabel>
+
+                  <Controller
+                    name="splitShipping"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <TextField
+                        value={value ?? ''}
+                        onChange={(e) => {
+                          onChange(e);
+                        }}
+                        onBlur={() => applySplitShippingToProducts(Number(value))}
+                        placeholder="Enter total shipping cost"
+                        type="number"
+                        inputProps={{ min: 0, step: 0.01 }}
+                        size="small"
+                        fullWidth
+                        sx={{
+                          '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                            WebkitAppearance: 'none',
+                            margin: 0
+                          },
+                          '& input[type=number]': {
+                            MozAppearance: 'textfield'
+                          }
+                        }}
+                      />
+                    )}
+                  />
+
+                  <FormHelperText error>{errors.splitShipping?.message}</FormHelperText>
+                </FormControl>
+
                 {/* Upload Receipts */}
                 <FormControl sx={{ display: 'flex', borderRadius: '25px', width: '100%' }}>
                   <FormLabel
@@ -913,6 +964,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               firstRefundSourceName={firstRefundSource.name}
               secondRefundSourceName={secondRefundSource.name}
               allProjects={allProjects}
+              applySplitShippingToProducts={applySplitShippingToProducts}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>
