@@ -92,7 +92,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
     setValue('price', m.price != null ? m.price / 100 : undefined);
     setValue('notes', m.notes ?? '');
     setValue('assemblyId', undefined);
-    setValue('reimbursementRequestId', undefined);
 
     setCopyModalOpen(false);
   };

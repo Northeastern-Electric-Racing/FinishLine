@@ -271,7 +271,7 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
             renderInput={(params) => (
               <TextField
                 {...params}
-                placeholder={selectedCar ? 'Search materials by name…' : 'Select a car first'}
+                placeholder={selectedCar ? 'Search' : 'Select a car first'}
                 fullWidth
                 InputProps={{
                   ...params.InputProps,
