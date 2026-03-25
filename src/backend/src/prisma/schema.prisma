@@ -739,11 +739,11 @@ model Receipt {
 model Reimbursement_Request {
   reimbursementRequestId   String                          @id @default(uuid())
   identifier               Int
-  saboId                   String?                            @unique
+  saboId                   String?                         @unique
   dateCreated              DateTime                        @default(now())
   dateDeleted              DateTime?
   dateOfExpense            DateTime?
-  description              String @default("")
+  description              String                          @default("")
   reimbursementStatuses    Reimbursement_Status[]
   recipientId              String
   recipient                User                            @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])

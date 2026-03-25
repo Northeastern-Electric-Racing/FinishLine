@@ -120,6 +120,7 @@ const homePageWorkPackages = (selection: WorkPackageSelection) => `${workPackage
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
+const guestChangeRequests = () => `${API_URL}/change-requests/guest`;
 const toReviewChangeRequests = () => `${API_URL}/change-requests/to-review`;
 const unreviewedChangeRequests = (wbsNum?: WbsNumber) =>
   `${API_URL}/change-requests/unreviewed` + (wbsNum ? `?wbsnum=${wbsPipe(wbsNum)}` : '');
@@ -605,6 +606,7 @@ export const apiUrls = {
   homePageWorkPackages,
 
   changeRequests,
+  guestChangeRequests,
   changeRequestsById,
   changeRequestsReview,
   changeRequestDelete,
