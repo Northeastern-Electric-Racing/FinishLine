@@ -74,7 +74,11 @@ export default class UsersController {
 
   static async getUsersFavoriteProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects = await UsersService.getUsersFavoriteProjects(req.currentUser.userId, req.organization);
+      const projects = await UsersService.getUsersFavoriteProjects(
+        req.currentUser.userId,
+        req.organization,
+        req.currentCar?.carId
+      );
 
       res.status(200).json(projects);
     } catch (error: unknown) {

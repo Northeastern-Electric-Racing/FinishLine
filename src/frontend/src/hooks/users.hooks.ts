@@ -42,6 +42,7 @@ import {
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
 import { UserContext } from '../app/AppContextUser';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Custom React Hook to supply the current user
@@ -188,7 +189,8 @@ export const useUserScheduleSettings = (id: string) => {
  * @param id User ID of the requested user's settings.
  */
 export const useUsersFavoriteProjects = (id: string) => {
-  return useQuery<ProjectOverview[], Error>(['users', id, 'favorite projects'], async () => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ProjectOverview[], Error>(['users', id, 'favorite projects', selectedCar?.id], async () => {
     const { data } = await getUsersFavoriteProjects(id);
     return data;
   });
