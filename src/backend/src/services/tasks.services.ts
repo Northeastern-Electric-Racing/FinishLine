@@ -73,15 +73,25 @@ export default class TasksService {
             wbsElement: true,
             workPackages: { include: { wbsElement: true } }
           }
+        },
+        workPackage: {
+          include: {
+            project: {
+              include: {
+                teams: getTeamQueryArgs(organization.organizationId)
+              }
+            }
+          }
         }
       }
     });
     if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
     if (requestedWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
-    const { project } = requestedWbsElement;
-    if (!project) throw new HttpException(400, "This task's wbs element is not linked to a project!");
 
-    const { teams } = project;
+    if (!requestedWbsElement.project && !requestedWbsElement.workPackage)
+      throw new HttpException(400, "This task's wbs element is not linked to a project or work package!");
+
+    const teams = requestedWbsElement.project?.teams ?? requestedWbsElement.workPackage?.project?.teams;
     if (!teams || teams.length === 0)
       throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
 

@@ -91,6 +91,7 @@ export const TaskCard = ({
         onHide={() => setShowModal(false)}
         onSubmit={handleEditTask}
         hasEditPermissions={notGuest(user.role)}
+        workPackages={project.workPackages}
       />
       <NERModal
         open={showDeleteConfirm}
@@ -149,6 +150,7 @@ export const TaskCard = ({
                           label={task.wbsName}
                           size="medium"
                           sx={{
+                            marginTop: 1,
                             backgroundColor: 'rgba(55, 138, 221, 0.15)',
                             color: '#7dbef4',
                             border: '1px solid rgba(55, 138, 221, 0.4)',

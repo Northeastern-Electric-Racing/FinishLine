@@ -18,11 +18,22 @@ interface TaskModalProps {
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
   hasEditPermissions: boolean;
+  workPackages?: WorkPackage[];
 }
 
-const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, onSubmit, hasEditPermissions }) => {
+const TaskModal: React.FC<TaskModalProps> = ({
+  task,
+  teams,
+  modalShow,
+  onHide,
+  onSubmit,
+  hasEditPermissions,
+  workPackages
+}) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
+  const isWpTask = task.wbsNum.workPackageNumber !== 0;
+
   const ViewModal: React.FC = () => {
     return (
       <NERModal
@@ -70,6 +81,14 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
               <Typography display={'inline'}> {task.assignees.map((user) => fullNamePipe(user)).join(', ')}</Typography>
             </Typography>
           </Grid>
+          {isWpTask && (
+            <Grid item xs={12} md={6}>
+              <Typography fontWeight={'bold'}>
+                Work Package:
+                <Typography display={'inline'}> {task.wbsName}</Typography>
+              </Typography>
+            </Grid>
+          )}
           <Grid item xs={12} md={6}>
             <Typography fontWeight={'bold'}>Notes:</Typography>
             <Box sx={{ height: 'auto', overflow: 'auto' }}>
@@ -96,6 +115,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
       onReset={() => {
         setIsEditMode(false);
       }}
+      workPackages={workPackages}
     />
   ) : (
     <ViewModal />
