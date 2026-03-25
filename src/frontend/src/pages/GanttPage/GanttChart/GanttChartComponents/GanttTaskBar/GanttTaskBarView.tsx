@@ -37,18 +37,10 @@ const GanttTaskBarView = <T,>({
   onToggle
 }: GanttTaskBarViewProps<T>) => {
   const [showChildren, setShowChildren] = useState(false);
-  const [loadedChildren, setLoadedChildren] = useState<GanttTask<T>[]>(task.children);
-  const [hasLoaded, setHasLoaded] = useState(task.children.length > 0);
 
   const handleToggle = () => {
-    if (!hasLoaded && task.loadChildren) {
-      setLoadedChildren(task.loadChildren());
-      setHasLoaded(true);
-    }
     setShowChildren((prev) => !prev);
   };
-
-  console.log('I Rerender!');
 
   return (
     <>
@@ -67,7 +59,7 @@ const GanttTaskBarView = <T,>({
       />
 
       <Collapse in={showChildren} unmountOnExit onEntered={onToggle} onExited={onToggle}>
-        {loadedChildren.map((child) => (
+        {task.children.map((child) => (
           <GanttTaskBar
             key={child.id}
             days={days}

@@ -194,7 +194,7 @@ const GanttTaskBarDisplay = <T,>({
                 </Typography>
               </div>
               {hasOverlays &&
-                task.overlays.map((childTask) => {
+                task.children.map((childTask) => {
                   return (
                     <div
                       style={ganttTaskBarChildOverlayStyles(childTask)}
