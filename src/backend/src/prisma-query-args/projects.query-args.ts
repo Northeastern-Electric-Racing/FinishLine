@@ -4,11 +4,7 @@ import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.
 import { getTeamPreviewQueryArgs } from './teams.query-args.js';
 import { getTaskQueryArgs } from './tasks.query-args.js';
 import { getLinkQueryArgs } from './links.query-args.js';
-import {
-  getWorkPackagePreviewQueryArgs,
-  getWorkPackageQueryArgs,
-  getWorkPackagePreviewWithTasksQueryArgs
-} from './work-packages.query-args.js';
+import { getWorkPackageQueryArgs } from './work-packages.query-args.js';
 
 export type ProjectQueryArgs = ReturnType<typeof getProjectQueryArgs>;
 
@@ -98,7 +94,7 @@ export const getProjectPreviewQueryArgs = (organizationId: string) =>
           status: true
         }
       },
-      workPackages: getWorkPackagePreviewWithTasksQueryArgs(organizationId),
+      workPackages: getWorkPackagePreviewQueryArgs(),
       projectId: true,
       budget: true,
       abbreviation: true,
@@ -142,7 +138,7 @@ export const getProjectOverviewQueryArgs = (organizationId: string) =>
           }
         }
       },
-      workPackages: getWorkPackagePreviewWithTasksQueryArgs(organizationId),
+      workPackages: getWorkPackagePreviewQueryArgs(),
       projectId: true,
       budget: true,
       abbreviation: true,

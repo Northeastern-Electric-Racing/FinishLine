@@ -1677,7 +1677,7 @@ const performSeed: () => Promise<void> = async () => {
       "of the wheel and put pedal to the metal. Accelerating down straightaways and taking corners with finesse, it's " +
       'easy to forget McCauley, in his blue racing jacket and jet black helmet, is racing laps around the roof of ' +
       "Columbus Parking Garage on Northeastern's Boston campus. But that's the reality of Northeastern Electric " +
-      'Racing, a student club that has made due and found massive success in the world of electric racing despite its ' +
+      'Racing, a student club that has made do and found massive success in the world of electric racing despite its ' +
       "relative rookie status. McCauley, NER's chief electrical engineer, has seen the club's car, Cinnamon, go from " +
       'a 5-foot drive test to hitting 60 miles per hour in competitions. "It\'s a go-kart that has 110 kilowatts of ' +
       'power, 109 kilowatts of power," says McCauley, a fourth-year electrical and computer engineering student. ' +

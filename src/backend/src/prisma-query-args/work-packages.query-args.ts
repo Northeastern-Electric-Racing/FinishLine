@@ -7,7 +7,6 @@ import { getTaskQueryArgs } from './tasks.query-args.js';
 
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
 export type WorkPackagePreviewQueryArgs = ReturnType<typeof getWorkPackagePreviewQueryArgs>;
-export type WorkPackagePreviewWithTasksQueryArgs = ReturnType<typeof getWorkPackagePreviewWithTasksQueryArgs>;
 
 export const getWorkPackageQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
@@ -74,18 +73,5 @@ export const getWorkPackagePreviewQueryArgs = () =>
       duration: true,
       workPackageId: true,
       stage: true
-    }
-  });
-
-export const getWorkPackagePreviewWithTasksQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
-    select: {
-      ...getWorkPackagePreviewQueryArgs().select,
-      wbsElement: {
-        select: {
-          ...getWorkPackagePreviewQueryArgs().select.wbsElement.select,
-          tasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organizationId) }
-        }
-      }
     }
   });
