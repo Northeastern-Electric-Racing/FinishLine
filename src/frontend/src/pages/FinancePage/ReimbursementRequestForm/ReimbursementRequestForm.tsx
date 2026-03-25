@@ -189,10 +189,9 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   });
   const {
     fields: reimbursementProducts,
-    append: reimbursementProductAppend,
+    prepend: reimbursementProductPrepend,
     remove: reimbursementProductRemove,
-    replace: reimbursementProductReplace,
-    prepend: reimbursementProductPrepend
+    replace: reimbursementProductReplace
   } = useFieldArray({
     control,
     name: 'reimbursementProducts'
