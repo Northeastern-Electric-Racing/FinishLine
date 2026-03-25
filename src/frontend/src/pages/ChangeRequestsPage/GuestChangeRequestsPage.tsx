@@ -5,7 +5,7 @@ import PageLayout from '../../components/PageLayout';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import { Chip, Typography } from '@mui/material';
 import { useState } from 'react';
-import { useAllChangeRequests, useAllGuestChangeRequests } from '../../hooks/change-requests.hooks';
+import { useAllGuestChangeRequests } from '../../hooks/change-requests.hooks';
 import { ChangeRequest, wbsPipe } from 'shared';
 import { ChangeRequestTypeTextPipe, ChangeRequestStatusTextPipe } from '../../utils/enum-pipes';
 
