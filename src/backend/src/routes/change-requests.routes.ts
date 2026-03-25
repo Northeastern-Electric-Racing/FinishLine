@@ -14,6 +14,7 @@ import {
 const changeRequestsRouter = express.Router();
 
 changeRequestsRouter.get('/', ChangeRequestsController.getAllChangeRequests);
+changeRequestsRouter.get('/guest', ChangeRequestsController.getAllGuestChangeRequests);
 
 changeRequestsRouter.get('/to-review', ChangeRequestsController.getToReviewChangeRequests);
 changeRequestsRouter.get('/unreviewed', ChangeRequestsController.getUnreviewedChangeRequests);

@@ -50,28 +50,7 @@ export const getManyChangeRequestQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Change_RequestDefaultArgs>()({
     include: {
       submitter: getUserQueryArgs(organizationId),
-      wbsElement: {
-        include: {
-          project: {
-            include: {
-              teams: {
-                include: { teamType: true }
-              }
-            }
-          },
-          workPackage: {
-            include: {
-              project: {
-                include: {
-                  teams: {
-                    include: { teamType: true }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
+      wbsElement: true,
       category: getReimbursementProductOtherReasonQueryArgs(organizationId),
       accountCode: getAccountCodeQueryArgs(organizationId),
       reviewer: getUserQueryArgs(organizationId),
@@ -89,6 +68,51 @@ export const getManyChangeRequestQueryArgs = (organizationId: string) =>
     }
   });
 
+export type ChangeRequestGuestQueryArgs = ReturnType<typeof getGuestChangeRequestQueryArgs>;
+
+export const getGuestChangeRequestQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Change_RequestDefaultArgs>()({
+    select: {
+      crId: true,
+      identifier: true,
+      dateSubmitted: true,
+      type: true,
+      accepted: true,
+      dateReviewed: true,
+      submitter: getUserQueryArgs(organizationId),
+      reviewer: getUserQueryArgs(organizationId),
+      changes: { select: { changeId: true } },
+      wbsElement: {
+        select: {
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          name: true,
+          project: {
+            select: {
+              wbsElement: { select: { name: true } },
+              teams: {
+                select: { teamType: { select: { name: true } } }
+              }
+            }
+          },
+          workPackage: {
+            select: {
+              project: {
+                select: {
+                  wbsElement: { select: { name: true } },
+                  teams: {
+                    select: { teamType: { select: { name: true } } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
 export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Change_RequestDefaultArgs>()({
     include: {
@@ -98,9 +122,7 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
           workPackage: getWorkPackageQueryArgs(organizationId),
           project: {
             include: {
-              teams: {
-                include: { teamType: true }
-              }
+              teams: true
             }
           },
           descriptionBullets: { where: { dateDeleted: null } },

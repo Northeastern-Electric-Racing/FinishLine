@@ -5,7 +5,7 @@ import PageLayout from '../../components/PageLayout';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import { Chip, Typography } from '@mui/material';
 import { useState } from 'react';
-import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
+import { useAllChangeRequests, useAllGuestChangeRequests } from '../../hooks/change-requests.hooks';
 import { ChangeRequest, wbsPipe } from 'shared';
 import { ChangeRequestTypeTextPipe, ChangeRequestStatusTextPipe } from '../../utils/enum-pipes';
 
@@ -58,7 +58,7 @@ const CrCard = ({ cr }: { cr: ChangeRequest }) => {
 };
 
 const GuestChangeRequestsPage: React.FC = () => {
-  const { data: allCrs, isLoading, isError, error } = useAllChangeRequests();
+  const { data: allCrs, isLoading, isError, error } = useAllGuestChangeRequests();
   const [selectedTeamTypes, setSelectedTeamTypes] = useState<string[]>([]);
   const isMobilePortrait = useMediaQuery('(max-width:480px)');
   const {

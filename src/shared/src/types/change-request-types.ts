@@ -26,7 +26,6 @@ export interface ChangeRequest {
   implementedChanges?: ImplementedChange[];
   status: ChangeRequestStatus;
   requestedReviewers: User[];
-  teamTypeNames: string[];
 }
 
 export const ChangeRequestType = {
@@ -63,6 +62,19 @@ export interface ProposedSolution {
   createdBy: User;
   dateCreated: Date;
   approved: boolean;
+}
+
+export interface GuestChangeRequest {
+  crId: string;
+  submitter: User;
+  identifier: number;
+  type: ChangeRequestType;
+  status: ChangeRequestStatus;
+  teamTypeNames: string[];
+  accepted?: boolean;
+  reviewer?: User;
+  wbsNum?: WbsNumber;
+  wbsName?: string;
 }
 
 export interface ActivationChangeRequest extends ChangeRequest {
