@@ -76,6 +76,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Martin Hema', color: '#9125cc' },
     { name: 'Shree Singhal', color: '#ff7ca4' },
     { name: 'Isaac Levine', color: '#6a3941' },
+    { name: 'Pooja Ramakrishnan', color: '#9125cc' },
     { name: 'Andrew Tsai', color: '#3281a8' },
     { name: 'Ahnaf Inkiad', color: '#ab38b5' },
     { name: 'Aaryan Jain', color: '#e53774' },
@@ -122,6 +123,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Raghav Mathur', color: '#009933' },
     { name: 'Anika Sharma', color: '#ff0000' },
     { name: 'William (Jack) Turner', color: '#ff5733' },
+    { name: 'Natasha Joshi', color: '#00f7ffff' },
     {
       name: 'Samson Ajayi',
       color: '6a0dad',
@@ -254,6 +256,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Amber Friar', color: '#F5A9B8' },
     { name: 'Kaung Mo', color: '#9a1115' },
     { name: 'Mae Balesterri', color: '#7fb2bc' },
+    { name: 'Nigel Purvis', color: '#E2725B' },
     {
       name: 'Joshua Goldberg',
       color: 'transparent',
@@ -370,7 +373,11 @@ const CreditsPage: React.FC = () => {
       }
     },
     { name: 'Josh Len', color: '#000000ff' },
-    { name: 'Grace Theobald', color: '#537c2c' }
+    { name: 'Deepika Arulselvan', color: '#ad56fe' },
+    { name: 'Grace Theobald', color: '#537c2c' },
+    { name: 'Jasper Pinkus', color: '#276221' },
+    { name: 'Hamilton LaPides', color: '#55a50a' },
+    { name: 'Sara Johnson', color: '#ffff99' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];

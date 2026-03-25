@@ -71,7 +71,7 @@ interface ReimbursementRequestFormViewProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
   receiptPrepend: (args: ReimbursementReceiptUploadArgs) => void;
   receiptRemove: (index: number) => void;
-  reimbursementProductAppend: (args: ReimbursementProductFormArgs) => void;
+  reimbursementProductPrepend: (args: ReimbursementProductFormArgs) => void;
   reimbursementProductRemove: (index: number) => void;
   onSubmit: (data: ReimbursementRequestFormInput) => void;
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
@@ -99,7 +99,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   control,
   receiptPrepend,
   receiptRemove,
-  reimbursementProductAppend,
+  reimbursementProductPrepend,
   reimbursementProductRemove,
   onSubmit,
   handleSubmit,
@@ -951,7 +951,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             <ReimbursementProductTable
               errors={errors}
               reimbursementProducts={reimbursementProducts}
-              appendProduct={reimbursementProductAppend}
+              prependProduct={reimbursementProductPrepend}
               removeProduct={reimbursementProductRemove}
               projectAutocompleteOptions={projectAutocompleteOptions}
               watch={watch}
