@@ -26,6 +26,8 @@ import ScopeTab from './ScopeTab';
 import FullPageTabs from '../../../components/FullPageTabs';
 import ChangeRequestTab from '../../../components/ChangeRequestTab';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
+import { TaskList } from '../../ProjectDetailPage/ProjectViewContainer/TaskList/v2/TaskList';
+import { useSingleProject } from '../../../hooks/projects.hooks';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -52,6 +54,8 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const [, setAnchorEl] = useState<null | HTMLElement>(null);
   const { data: dependencies, isError, isLoading, error } = useGetManyWorkPackages(workPackage.blockedBy);
   const wbsNum = wbsPipe(workPackage.wbsNum);
+  const projectWbsNum = { ...workPackage.wbsNum, workPackageNumber: 0 };
+  const { data: project } = useSingleProject(projectWbsNum);
 
   const [tabValue, setTabValue] = useState<number>(0);
 
@@ -143,6 +147,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           setTab={setTabValue}
           tabsLabels={[
             { tabUrlValue: 'overview', tabName: 'Overview' },
+            { tabUrlValue: 'tasks', tabName: 'Tasks' },
             { tabUrlValue: 'scope', tabName: 'Scope' },
             { tabUrlValue: 'changes', tabName: 'Changes' },
             { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
@@ -156,8 +161,18 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       {tabValue === 0 ? (
         <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
       ) : tabValue === 1 ? (
-        <ScopeTab workPackage={workPackage} />
+        project && (
+          <TaskList
+            project={{
+              ...project,
+              tasks: project.tasks.filter((t) => t.wbsNum.workPackageNumber === workPackage.wbsNum.workPackageNumber)
+            }}
+            isGuest={!allowEdit}
+          />
+        )
       ) : tabValue === 2 ? (
+        <ScopeTab workPackage={workPackage} />
+      ) : tabValue === 3 ? (
         <ChangesList changes={workPackage.changes} />
       ) : (
         <ChangeRequestTab wbsElement={workPackage} />

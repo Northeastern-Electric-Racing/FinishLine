@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamPreview } from 'shared';
+import { TeamPreview, WorkPackage } from 'shared';
 import { fullNamePipe, datePipe } from '../../../../utils/pipes';
 import { Task } from 'shared';
 import { Box, Grid, Typography } from '@mui/material';
