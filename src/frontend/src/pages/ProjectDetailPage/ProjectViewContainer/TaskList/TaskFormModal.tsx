@@ -34,7 +34,6 @@ export interface EditTaskFormInput {
 
 interface TaskFormModalProps {
   task?: Task;
-  teams: TeamPreview[];
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;

@@ -86,7 +86,6 @@ export const TaskColumn = ({
         onSubmit={handleCreateTask}
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
-        teams={[]}
         workPackages={workPackages}
       />
       <Box

@@ -17,8 +17,7 @@ export const TaskCard = ({
   wbsElementId,
   workPackages,
   onDeleteTask,
-  onEditTask,
-  showWpChip = true
+  onEditTask
 }: {
   task: Task;
   index: number;
@@ -26,7 +25,6 @@ export const TaskCard = ({
   workPackages?: WorkPackage[];
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
-  showWpChip?: boolean;
 }) => {
   const { mutateAsync: deleteTask } = useDeleteTask();
   const { mutateAsync: editTask } = useEditTask();
@@ -112,7 +110,6 @@ export const TaskCard = ({
       <TaskModal
         modalShow={showModal}
         task={task}
-        teams={[]}
         onHide={() => setShowModal(false)}
         onSubmit={handleEditTask}
         hasEditPermissions={notGuest(user.role)}

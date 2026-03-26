@@ -13,7 +13,6 @@ import NERModal from '../../../../components/NERModal';
 
 interface TaskModalProps {
   task: Task;
-  teams: TeamPreview[];
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
@@ -21,15 +20,7 @@ interface TaskModalProps {
   workPackages?: WorkPackage[];
 }
 
-const TaskModal: React.FC<TaskModalProps> = ({
-  task,
-  teams,
-  modalShow,
-  onHide,
-  onSubmit,
-  hasEditPermissions,
-  workPackages
-}) => {
+const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit, hasEditPermissions, workPackages }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const isWpTask = task.wbsNum.workPackageNumber !== 0;
@@ -108,7 +99,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
   return isEditMode ? (
     <TaskFormModal
       task={task}
-      teams={teams}
       onHide={onHide}
       modalShow={modalShow}
       onSubmit={handleEditSubmit}
