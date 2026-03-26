@@ -39,7 +39,7 @@ const GanttTooltipLayer: React.FC<GanttTooltipLayerProps> = ({ updateRef }) => {
 
   updateRef.current = (options, y = 0) => {
     setTooltipOptions(options);
-    if (options && y) setCursorY(y);
+    if (options && y !== undefined && y !== null) setCursorY(y);
   };
 
   if (!tooltipOptions) return null;
