@@ -48,16 +48,24 @@ tasksRouter.post(
   TasksController.editTask
 );
 
-tasksRouter.post('/:taskId/edit-status', isTaskStatus(body('status')), TasksController.editTaskStatus);
+tasksRouter.post('/:taskId/edit-status', isTaskStatus(body('status')), validateInputs, TasksController.editTaskStatus);
 
 tasksRouter.post(
   '/:taskId/edit-assignees',
   body('assignees').isArray(),
   nonEmptyString(body('assignees.*')),
+  validateInputs,
   TasksController.editTaskAssignees
 );
 
-tasksRouter.post('/:taskId/delete', TasksController.deleteTask);
+tasksRouter.post(
+  '/:taskId/edit-wbs-element',
+  nonEmptyString(body('wbsElementId')),
+  validateInputs,
+  TasksController.editTaskWbsElement
+);
+
+tasksRouter.post('/:taskId/delete', validateInputs, TasksController.deleteTask);
 
 tasksRouter.get('/overdue-by-team-member/:userId', TasksController.getOverdueTasksByTeamLeadership);
 

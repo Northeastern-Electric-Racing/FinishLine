@@ -3,7 +3,7 @@ import { Construction, Delete, Schedule } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Grid, Typography, IconButton } from '@mui/material';
 import { useState } from 'react';
 import { notGuest, Project, Task } from 'shared';
-import { useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../../../hooks/tasks.hooks';
+import { useDeleteTask, useEditTask, useEditTaskAssignees, useEditTaskWbsElement } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
 import { datePipe, fullNamePipe } from '../../../../../utils/pipes';
@@ -29,6 +29,7 @@ export const TaskCard = ({
   const { mutateAsync: deleteTask } = useDeleteTask();
   const { mutateAsync: editTask } = useEditTask();
   const { mutateAsync: editTaskAssignees } = useEditTaskAssignees();
+  const { mutateAsync: editTaskWbsElement } = useEditTaskWbsElement();
 
   const user = useCurrentUser();
 
@@ -54,7 +55,16 @@ export const TaskCard = ({
     setShowDeleteConfirm(false);
   };
 
-  const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority, startDate }: EditTaskFormInput) => {
+  const handleEditTask = async ({
+    taskId,
+    notes,
+    title,
+    deadline,
+    assignees,
+    priority,
+    startDate,
+    wpWbsNum
+  }: EditTaskFormInput) => {
     try {
       await editTask({
         taskId,
@@ -64,10 +74,23 @@ export const TaskCard = ({
         startDate,
         priority
       });
-      const newTask = await editTaskAssignees({
+
+      let newTask = await editTaskAssignees({
         taskId,
         assignees
       });
+
+      // check if wp changed first to avoid unnecessary api call
+      const wpChanged = (wpWbsNum?.workPackageNumber ?? 0) !== task.wbsNum.workPackageNumber;
+      if (wpChanged) {
+        const targetWbsElementId = wpWbsNum
+          ? project.workPackages.find((wp) => wp.wbsNum.workPackageNumber === wpWbsNum.workPackageNumber)?.wbsElementId
+          : project.wbsElementId;
+        if (targetWbsElementId) {
+          newTask = await editTaskWbsElement({ taskId, wbsElementId: targetWbsElementId });
+        }
+      }
+
       onEditTask(newTask);
       toast.success('Task edited successfully!');
     } catch (error: unknown) {

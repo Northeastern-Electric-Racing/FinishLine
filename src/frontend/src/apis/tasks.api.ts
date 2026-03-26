@@ -103,6 +103,24 @@ export const editTaskAssignees = (taskId: string, assignees: string[]) => {
 };
 
 /**
+ * Sets the task's wbs element.
+ * @param taskId the id of the task
+ * @param wbsElementId the id of the new wbs element
+ * @returns the edited task
+ */
+export const editTaskWbsElement = (taskId: string, wbsElementId: string) => {
+  return axios.post<Task>(
+    apiUrls.editTaskWbsElement(taskId),
+    {
+      wbsElementId
+    },
+    {
+      transformResponse: (data) => taskTransformer(JSON.parse(data))
+    }
+  );
+};
+
+/**
  * Sets the task's status.
  * @param id the id of the task
  * @param status the Task_Status that the task is being set to

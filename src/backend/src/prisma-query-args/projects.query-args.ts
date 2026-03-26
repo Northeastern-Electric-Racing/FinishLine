@@ -4,7 +4,7 @@ import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.
 import { getTeamPreviewQueryArgs } from './teams.query-args.js';
 import { getTaskQueryArgs } from './tasks.query-args.js';
 import { getLinkQueryArgs } from './links.query-args.js';
-import { getWorkPackageQueryArgs } from './work-packages.query-args.js';
+import { getWorkPackageQueryArgs, getWorkPackagePreviewQueryArgs } from './work-packages.query-args.js';
 
 export type ProjectQueryArgs = ReturnType<typeof getProjectQueryArgs>;
 

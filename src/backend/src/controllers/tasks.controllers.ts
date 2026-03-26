@@ -80,6 +80,19 @@ export default class TasksController {
     }
   }
 
+  static async editTaskWbsElement(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsElementId } = req.body;
+      const { taskId } = req.params as Record<string, string>;
+
+      const updatedTask = await TasksService.editTaskWbsElement(req.currentUser, taskId, wbsElementId, req.organization);
+
+      res.status(200).json(updatedTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteTask(req: Request, res: Response, next: NextFunction) {
     try {
       const { taskId } = req.params as Record<string, string>;

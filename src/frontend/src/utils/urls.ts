@@ -94,6 +94,7 @@ const tasksCreate = (wbsNum: string) => `${tasks()}/${wbsNum}`;
 const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
 const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
+const editTaskWbsElement = (taskId: string) => `${tasks()}/${taskId}/edit-wbs-element`;
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
@@ -591,6 +592,7 @@ export const apiUrls = {
   editTaskById,
   taskEditStatus,
   editTaskAssignees,
+  editTaskWbsElement,
   deleteTask,
   overdueTasksByTeamLeadership,
 

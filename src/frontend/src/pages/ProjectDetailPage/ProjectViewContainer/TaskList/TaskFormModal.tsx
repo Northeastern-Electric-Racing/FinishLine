@@ -71,7 +71,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       deadline: task?.deadline ?? undefined,
       priority: task?.priority ?? TaskPriority.Low,
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? [],
-      wpWbsNum: lockedWorkPackage?.wbsNum ?? undefined
+      wpWbsNum: task?.wbsNum.workPackageNumber !== 0 ? task?.wbsNum : undefined
     }
   });
 

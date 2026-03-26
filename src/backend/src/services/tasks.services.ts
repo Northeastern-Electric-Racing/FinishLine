@@ -183,13 +183,16 @@ export default class TasksService {
   /**
    * Edits the status of a task in the database
    * @param user the user editing the task
-   * @param organizationId the organizqtion Id
+   * @param organizationId the organization Id
    * @param taskId the id of the task
    * @param status the new status
    * @returns the updated task
    * @throws if the task does not exist, the task is already deleted, or if the user does not have permissions
    */
   static async editTaskStatus(user: User, organizationId: string, taskId: string, status: Task_Status) {
+    const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
+
     // Get the original task and check if it exists
     const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { assignees: true, wbsElement: true } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
@@ -199,9 +202,6 @@ export default class TasksService {
     if (status === 'IN_PROGRESS' && (!originalTask.deadline || originalTask.assignees.length === 0)) {
       throw new HttpException(400, 'A task in progress must have a deadline and assignees!');
     }
-
-    const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
-    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
 
     const updatedTask = await prisma.task.update({
       where: { taskId },
@@ -226,6 +226,9 @@ export default class TasksService {
     assignees: string[],
     organization: Organization
   ): Promise<Task> {
+    const hasPermission = await userHasPermission(user.userId, organization.organizationId, notGuest);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
+
     // Get the original task and check if it exists
     const originalTask = await prisma.task.findUnique({
       where: { taskId },
@@ -239,9 +242,6 @@ export default class TasksService {
 
     const originalAssigneeIds = originalTask.assignees.map((assignee) => assignee.userId);
     const newAssigneeIds = assignees.filter((userId) => !originalAssigneeIds.includes(userId));
-
-    const hasPermission = await userHasPermission(user.userId, organization.organizationId, notGuest);
-    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
 
     // this throws if any of the users aren't found
     const assigneeUsers = await getUsers(assignees);
@@ -269,6 +269,53 @@ export default class TasksService {
     await sendSlackTaskAssignedNotificationToUsers(updatedTask, nonSelfAssigneeIds, organization.organizationId);
 
     return updatedTask;
+  }
+
+  /**
+   * Edits the wbs element of a task in the database
+   * @param user the user editing the task
+   * @param taskId the id of the task
+   * @param wbsElementId the id of the new wbs element
+   * @param organization the organization that the user is currently in
+   * @returns the updated task
+   * @throws if the task does not exist, the task is already deleted, the wbs element doesn't exist, or if the user does not have permissions
+   */
+  static async editTaskWbsElement(
+    user: User,
+    taskId: string,
+    wbsElementId: string,
+    organization: Organization
+  ): Promise<Task> {
+    const hasPermission = await userHasPermission(user.userId, organization.organizationId, notGuest);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
+
+    // get the original task and check if it exists
+    const originalTask = await prisma.task.findUnique({
+      where: { taskId },
+      include: { wbsElement: true }
+    });
+
+    // throw error if there are issues with the task
+    if (!originalTask) throw new NotFoundException('Task', taskId);
+    if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
+    if (originalTask.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Task');
+
+    const newWbsElement = await prisma.wBS_Element.findUnique({
+      where: { wbsElementId }
+    });
+
+    // throw error if there are issues with the wbs element
+    if (!newWbsElement) throw new NotFoundException('WBS Element', wbsElementId);
+    if (newWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsElementId);
+
+    const updatedTask = await prisma.task.update({
+      where: { taskId },
+      data: { wbsElement: { connect: { wbsElementId } } },
+      ...getTaskQueryArgs(organization.organizationId)
+    });
+
+    return taskTransformer(updatedTask);
   }
 
   /**
