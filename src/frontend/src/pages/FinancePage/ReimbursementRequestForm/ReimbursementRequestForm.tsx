@@ -207,20 +207,37 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       return;
     }
 
+    const groupedProducts = new Map<string, ReimbursementProductFormArgs[]>();
+
+    nonShippingProducts.forEach((product) => {
+      const key =
+        'otherProductReasonId' in product.reason
+          ? `other-${product.reason.otherProductReasonId}`
+          : `wbs-${product.reason.carNumber}-${product.reason.projectNumber}`;
+
+      if (!groupedProducts.has(key)) {
+        groupedProducts.set(key, []);
+      }
+
+      groupedProducts.get(key)!.push(product);
+    });
+
+    const groupedEntries = Array.from(groupedProducts.values());
+
     const totalShippingCents = Math.round(totalShipping * 100);
-    const baseShippingCents = Math.floor(totalShippingCents / nonShippingProducts.length);
-    const remainderCents = totalShippingCents % nonShippingProducts.length;
+    const baseShippingCents = Math.floor(totalShippingCents / groupedEntries.length);
+    const remainderCents = totalShippingCents % groupedEntries.length;
 
     const updatedProducts: ReimbursementProductFormArgs[] = [];
 
-    nonShippingProducts.forEach((product, index) => {
-      updatedProducts.push(product);
+    groupedEntries.forEach((productsInGroup, index) => {
+      productsInGroup.forEach((product) => updatedProducts.push(product));
 
       const shippingCents = baseShippingCents + (index < remainderCents ? 1 : 0);
 
       updatedProducts.push({
         name: 'Split Shipping',
-        reason: product.reason,
+        reason: productsInGroup[0].reason,
         cost: shippingCents / 100,
         refundSources: []
       });
@@ -229,6 +246,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     reimbursementProductReplace(updatedProducts);
   };
 
+  
   const {
     isLoading: allVendorsIsLoading,
     isError: allVendorsIsError,

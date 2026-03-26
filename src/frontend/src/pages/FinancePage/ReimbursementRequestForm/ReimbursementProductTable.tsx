@@ -811,8 +811,13 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                   }
                                 }}
                                 onClick={() => {
+                                  const isShippingProduct = product.name === 'Split Shipping';
+
                                   removeProduct(product.index);
-                                  setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
+
+                                  if (!isShippingProduct) {
+                                    setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
+                                  }
                                 }}
                               >
                                 <RemoveCircleOutline />
