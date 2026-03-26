@@ -26,8 +26,7 @@ import ScopeTab from './ScopeTab';
 import FullPageTabs from '../../../components/FullPageTabs';
 import ChangeRequestTab from '../../../components/ChangeRequestTab';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
-import { TaskList } from '../../ProjectDetailPage/ProjectViewContainer/TaskList/v2/TaskList';
-import { useSingleProject } from '../../../hooks/projects.hooks';
+import { TaskListContent } from '../../ProjectDetailPage/ProjectViewContainer/TaskList/v2/TaskListContent';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -54,9 +53,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const [, setAnchorEl] = useState<null | HTMLElement>(null);
   const { data: dependencies, isError, isLoading, error } = useGetManyWorkPackages(workPackage.blockedBy);
   const wbsNum = wbsPipe(workPackage.wbsNum);
-  const projectWbsNum = { ...workPackage.wbsNum, workPackageNumber: 0 };
-  const { data: project } = useSingleProject(projectWbsNum);
-
   const [tabValue, setTabValue] = useState<number>(0);
 
   if (!dependencies || isLoading) return <LoadingIndicator />;
@@ -161,14 +157,8 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       {tabValue === 0 ? (
         <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
       ) : tabValue === 1 ? (
-        project && (
-          <TaskList
-            project={{
-              ...project,
-              tasks: project.tasks.filter((t) => t.wbsNum.workPackageNumber === workPackage.wbsNum.workPackageNumber)
-            }}
-            isGuest={!allowEdit}
-          />
+        !allowEdit ? null : (
+          <TaskListContent tasks={workPackage.tasks} wbsNum={workPackage.wbsNum} wbsElementId={workPackage.wbsElementId} />
         )
       ) : tabValue === 2 ? (
         <ScopeTab workPackage={workPackage} />
