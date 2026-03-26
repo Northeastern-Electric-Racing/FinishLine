@@ -4,10 +4,10 @@ import {
   HighlightTaskComparator,
   OnMouseOverOptions
 } from '../../../../../utils/gantt.utils';
-import { Collapse } from '@mui/material';
+import { Box } from '@mui/material';
 import GanttTaskBar from './GanttTaskBar';
 import GanttTaskBarDisplay from './GanttTaskBarDisplay';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface GanttTaskBarViewProps<T> {
   days: Date[];
@@ -37,10 +37,18 @@ const GanttTaskBarView = <T,>({
   onToggle
 }: GanttTaskBarViewProps<T>) => {
   const [showChildren, setShowChildren] = useState(false);
+  const animationRef = useRef<number | null>(null);
 
   const handleToggle = () => {
     setShowChildren((prev) => !prev);
   };
+
+  // Fire onToggle after the grid animation completes (200ms matches transition below)
+  useEffect(() => {
+    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    const timeout = setTimeout(() => onToggle?.(), 200);
+    return () => clearTimeout(timeout);
+  }, [showChildren, onToggle]);
 
   return (
     <>
@@ -58,24 +66,40 @@ const GanttTaskBarView = <T,>({
         highlightTaskComparator={highlightTaskComparator}
       />
 
-      <Collapse in={showChildren} unmountOnExit onEntered={onToggle} onExited={onToggle}>
-        {task.children.map((child) => (
-          <GanttTaskBar
-            key={child.id}
-            days={days}
-            task={child}
-            isEditMode={false}
-            createChange={() => {}}
-            handleOnMouseOver={handleOnMouseOver}
-            handleOnMouseLeave={handleOnMouseLeave}
-            highlightedChange={highlightedChange}
-            onAddTaskPressed={onAddTaskPressed}
-            highlightSubtaskComparator={highlightSubtaskComparator}
-            highlightTaskComparator={highlightTaskComparator}
-            onToggle={onToggle}
-          />
-        ))}
-      </Collapse>
+      {/*
+        The grid trick: animate grid-template-rows from 0fr to 1fr.
+        The inner div needs to be a single grid child — its natural height
+        determines the expanded size, so no explicit height is ever needed.
+        This never triggers layout reflow unlike height/max-height transitions.
+      */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateRows: showChildren ? '1fr' : '0fr',
+          transition: 'grid-template-rows 200ms ease',
+          overflow: 'hidden'
+        }}
+      >
+        {/* This inner div must have no min-height so it can collapse to 0 */}
+        <Box sx={{ minHeight: 0 }}>
+          {task.children.map((child) => (
+            <GanttTaskBar
+              key={child.id}
+              days={days}
+              task={child}
+              isEditMode={false}
+              createChange={() => {}}
+              handleOnMouseOver={handleOnMouseOver}
+              handleOnMouseLeave={handleOnMouseLeave}
+              highlightedChange={highlightedChange}
+              onAddTaskPressed={onAddTaskPressed}
+              highlightSubtaskComparator={highlightSubtaskComparator}
+              highlightTaskComparator={highlightTaskComparator}
+              onToggle={onToggle}
+            />
+          ))}
+        </Box>
+      </Box>
     </>
   );
 };

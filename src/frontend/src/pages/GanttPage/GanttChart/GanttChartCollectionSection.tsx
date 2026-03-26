@@ -2,7 +2,7 @@ import { Edit } from '@mui/icons-material';
 import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import GanttChartSection from './GanttChartSection';
 import { GanttCollection } from '../../../utils/gantt.utils';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GanttEditability } from './GanttChart';
 
 interface GanttChartCollectionSectionProps<E, T> {
@@ -10,16 +10,19 @@ interface GanttChartCollectionSectionProps<E, T> {
   endDate: Date;
   collection: GanttCollection<E, T>;
   editability?: GanttEditability<E, T>;
+  onHeightChange?: (height: number) => void;
 }
 
 const GanttChartCollectionSection = <E, T>({
   startDate,
   endDate,
   collection,
-  editability
+  editability,
+  onHeightChange
 }: GanttChartCollectionSectionProps<E, T>) => {
   const theme = useTheme();
   const [isEditMode, setIsEditMode] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   const collectionSectionBackgroundStyle = {
     mt: 1,
@@ -61,8 +64,21 @@ const GanttChartCollectionSection = <E, T>({
 
   const ignoreBool = () => false;
 
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || !onHeightChange) return;
+
+    const ro = new ResizeObserver(() => {
+      onHeightChange(el.getBoundingClientRect().height);
+    });
+    ro.observe(el);
+    // Fire once immediately so the parent has a height before the first scroll
+    onHeightChange(el.getBoundingClientRect().height);
+    return () => ro.disconnect();
+  }, [onHeightChange]);
+
   return (
-    <Box sx={collectionSectionBackgroundStyle}>
+    <Box ref={sectionRef} sx={collectionSectionBackgroundStyle}>
       <Box sx={collectionDescriptionContainerStyle}>
         <Typography variant="h6" fontWeight={400}>
           {collection.title}
