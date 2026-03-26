@@ -1,19 +1,21 @@
 import { DragDropContext, OnDragEndResponder, OnDragStartResponder } from '@hello-pangea/dnd';
 import { Box } from '@mui/material';
 import { useCallback, useState } from 'react';
-import { Project, Task, TaskStatus, TaskWithIndex } from 'shared';
+import { Task, TaskStatus, TaskWithIndex, WbsNumber, WorkPackage } from 'shared';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
 import { useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { TaskColumn } from './TaskColumn';
 import confetti from 'canvas-confetti';
 
-interface TaskListProps {
-  project: Project;
+interface TaskListContentProps {
+  tasks: Task[];
+  wbsNum: WbsNumber;
+  wbsElementId: string;
+  workPackages?: WorkPackage[];
 }
 
-export const TaskListContent = ({ project }: TaskListProps) => {
-  const { tasks } = project;
+export const TaskListContent = ({ tasks, wbsNum, wbsElementId, workPackages }: TaskListContentProps) => {
   const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus>(getTasksByStatus(tasks));
   const { mutateAsync: setTaskStatus } = useSetTaskStatus();
 
@@ -134,7 +136,9 @@ export const TaskListContent = ({ project }: TaskListProps) => {
             status={status}
             tasks={tasksByStatus[status]}
             key={status}
-            project={project}
+            wbsNum={wbsNum}
+            wbsElementId={wbsElementId}
+            workPackages={workPackages}
             equalizedHeight={equalizedHeight}
             isDragging={isDragging}
           />

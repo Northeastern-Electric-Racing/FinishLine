@@ -2,7 +2,7 @@ import { Draggable } from '@hello-pangea/dnd';
 import { Construction, Delete, Schedule } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Grid, Typography, IconButton } from '@mui/material';
 import { useState } from 'react';
-import { notGuest, Project, Task } from 'shared';
+import { notGuest, Task, WorkPackage } from 'shared';
 import { useDeleteTask, useEditTask, useEditTaskAssignees, useEditTaskWbsElement } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
@@ -14,14 +14,16 @@ import NERModal from '../../../../../components/NERModal';
 export const TaskCard = ({
   task,
   index,
-  project,
+  wbsElementId,
+  workPackages,
   onDeleteTask,
   onEditTask,
   showWpChip = true
 }: {
   task: Task;
   index: number;
-  project: Project;
+  wbsElementId: string;
+  workPackages?: WorkPackage[];
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
   showWpChip?: boolean;
@@ -84,8 +86,8 @@ export const TaskCard = ({
       const wpChanged = (wpWbsNum?.workPackageNumber ?? 0) !== task.wbsNum.workPackageNumber;
       if (wpChanged) {
         const targetWbsElementId = wpWbsNum
-          ? project.workPackages.find((wp) => wp.wbsNum.workPackageNumber === wpWbsNum.workPackageNumber)?.wbsElementId
-          : project.wbsElementId;
+          ? workPackages?.find((wp) => wp.wbsNum.workPackageNumber === wpWbsNum.workPackageNumber)?.wbsElementId
+          : wbsElementId;
         if (targetWbsElementId) {
           newTask = await editTaskWbsElement({ taskId, wbsElementId: targetWbsElementId });
         }
@@ -110,11 +112,11 @@ export const TaskCard = ({
       <TaskModal
         modalShow={showModal}
         task={task}
-        teams={project.teams}
+        teams={[]}
         onHide={() => setShowModal(false)}
         onSubmit={handleEditTask}
         hasEditPermissions={notGuest(user.role)}
-        workPackages={project.workPackages}
+        workPackages={workPackages}
       />
       <NERModal
         open={showDeleteConfirm}

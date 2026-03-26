@@ -1,7 +1,7 @@
 import { Droppable } from '@hello-pangea/dnd';
 import { Box, Typography, useTheme } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-import { Project, Task, TaskStatus, TaskWithIndex } from 'shared';
+import { Project, Task, TaskStatus, TaskWithIndex, WbsNumber, WorkPackage } from 'shared';
 import { statusNames, TaskCard } from '.';
 import { NERButton } from '../../../../../components/NERButton';
 import { useCreateTask } from '../../../../../hooks/tasks.hooks';
@@ -12,7 +12,9 @@ import TaskFormModal, { EditTaskFormInput } from '../TaskFormModal';
 export const TaskColumn = ({
   status,
   tasks,
-  project,
+  wbsNum,
+  wbsElementId,
+  workPackages,
   equalizedHeight,
   isDragging,
   onEditTask,
@@ -22,7 +24,9 @@ export const TaskColumn = ({
 }: {
   status: TaskStatus;
   tasks: TaskWithIndex[];
-  project: Project;
+  wbsNum: WbsNumber;
+  wbsElementId: string;
+  workPackages?: WorkPackage[];
   equalizedHeight: number;
   isDragging: boolean;
   onEditTask: (task: Task) => void;
@@ -57,7 +61,7 @@ export const TaskColumn = ({
   }: EditTaskFormInput) => {
     try {
       const task = await createTask({
-        wbsNum: wpWbsNum ?? project.wbsNum,
+        wbsNum: wpWbsNum ?? wbsNum,
         title,
         deadline: deadline ? toDateString(deadline) : undefined,
         startDate: startDate ? toDateString(startDate) : undefined,
@@ -82,8 +86,8 @@ export const TaskColumn = ({
         onSubmit={handleCreateTask}
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
-        teams={project.teams}
-        workPackages={project.workPackages}
+        teams={[]}
+        workPackages={workPackages}
       />
       <Box
         sx={{
@@ -139,7 +143,8 @@ export const TaskColumn = ({
                   key={task.taskId}
                   task={task}
                   index={index}
-                  project={project}
+                  wbsElementId={wbsElementId}
+                  workPackages={workPackages}
                 />
               ))}
               {droppableProvided.placeholder}
