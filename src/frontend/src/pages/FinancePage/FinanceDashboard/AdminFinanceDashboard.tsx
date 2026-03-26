@@ -350,7 +350,11 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
         />
       )}
       {tabIndex === 0 ? (
-        <FinanceDashboardAllView startDate={filter.startDate} endDate={filter.endDate} overrideCarId={filter.selectedCar?.id ?? null} />
+        <FinanceDashboardAllView
+          startDate={filter.startDate}
+          endDate={filter.endDate}
+          overrideCarId={filter.selectedCar?.id ?? null}
+        />
       ) : tabIndex === tabs.length - 1 ? (
         <FinanceDashboardCategoriesView
           startDate={filter.startDate}

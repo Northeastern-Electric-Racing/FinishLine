@@ -12,7 +12,12 @@ interface FinanceDashboardTeamViewProps {
   overrideCarId?: string | null;
 }
 
-const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamViewProps> = ({ teamId, startDate, endDate, overrideCarId }) => {
+const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamViewProps> = ({
+  teamId,
+  startDate,
+  endDate,
+  overrideCarId
+}) => {
   const {
     data: rrData,
     isLoading: rrDataIsLoading,
