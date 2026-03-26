@@ -72,7 +72,6 @@ const GanttChartCollectionSection = <E, T>({
       onHeightChange(el.getBoundingClientRect().height);
     });
     ro.observe(el);
-    // Fire once immediately so the parent has a height before the first scroll
     onHeightChange(el.getBoundingClientRect().height);
     return () => ro.disconnect();
   }, [onHeightChange]);

@@ -65,13 +65,6 @@ const GanttTaskBarView = <T,>({
         highlightSubtaskComparator={highlightSubtaskComparator}
         highlightTaskComparator={highlightTaskComparator}
       />
-
-      {/*
-        The grid trick: animate grid-template-rows from 0fr to 1fr.
-        The inner div needs to be a single grid child — its natural height
-        determines the expanded size, so no explicit height is ever needed.
-        This never triggers layout reflow unlike height/max-height transitions.
-      */}
       <Box
         sx={{
           display: 'grid',
@@ -80,7 +73,6 @@ const GanttTaskBarView = <T,>({
           overflow: 'hidden'
         }}
       >
-        {/* This inner div must have no min-height so it can collapse to 0 */}
         <Box sx={{ minHeight: 0 }}>
           {task.children.map((child) => (
             <GanttTaskBar
