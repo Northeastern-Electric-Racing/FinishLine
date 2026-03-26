@@ -1,7 +1,7 @@
 import { Droppable } from '@hello-pangea/dnd';
 import { Box, Typography, useTheme } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-import { Project, Task, TaskStatus, TaskWithIndex, WbsNumber, WorkPackage } from 'shared';
+import { Task, TaskStatus, TaskWithIndex, WbsNumber, WorkPackage } from 'shared';
 import { statusNames, TaskCard } from '.';
 import { NERButton } from '../../../../../components/NERButton';
 import { useCreateTask } from '../../../../../hooks/tasks.hooks';
