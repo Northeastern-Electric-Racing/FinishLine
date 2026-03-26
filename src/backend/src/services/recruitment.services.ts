@@ -259,7 +259,7 @@ export default class RecruitmentServices {
    * @param deleter the user requesting to delete the guestDefinition
    * @param organizationId the organization ID of the deleter
    */
-  static async deleteGuestDefinition(deleter: User, definitionId: string, organization: Organization) {
+  static async deleteGuestDefinition(deleter: User, definitionId: string, organization: Organization): Promise<void> {
     if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('delete a guestDefinition');
     }
@@ -273,7 +273,5 @@ export default class RecruitmentServices {
       where: { definitionId },
       data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
     });
-
-    return def;
   }
 }

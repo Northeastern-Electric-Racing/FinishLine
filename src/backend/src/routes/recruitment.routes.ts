@@ -64,6 +64,6 @@ recruitmentRouter.post(
   RecruitmentController.createGuestDefinition
 );
 
-recruitmentRouter.delete('/guestDefinition/:definitionId/delete', RecruitmentController.deleteGuestDefinition);
+recruitmentRouter.delete('/guestdefinition/:definitionId/delete', RecruitmentController.deleteGuestDefinition);
 
 export default recruitmentRouter;
