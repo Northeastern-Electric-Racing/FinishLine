@@ -4,8 +4,6 @@
  */
 
 import { Box, Checkbox, Chip, IconButton, Typography, useTheme } from '@mui/material';
-import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
-import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ChangeEvent } from 'react';
 
@@ -90,8 +88,6 @@ interface GanttChartFiltersProps {
     defaultChecked?: boolean;
   }[];
   resetHandler: () => void;
-  collapseHandler: () => void;
-  expandHandler: () => void;
 }
 
 const GanttChartFilters = ({
@@ -100,25 +96,11 @@ const GanttChartFilters = ({
   teamHandlers,
   overdueHandler,
   hideTasksHandler,
-  resetHandler,
-  collapseHandler,
-  expandHandler
+  resetHandler
 }: GanttChartFiltersProps) => {
   const FilterButtons = () => {
     return (
       <Box display={'flex'} flexDirection={'column'} alignItems={'center'} mt={-1} mb={1}>
-        <IconButton onClick={expandHandler}>
-          <UnfoldMoreIcon sx={{ color: '#ef4345' }} />
-        </IconButton>
-        <Typography fontSize={'10px'} sx={{ color: '#ef4345' }}>
-          Expand
-        </Typography>
-        <IconButton onClick={collapseHandler}>
-          <UnfoldLessIcon sx={{ color: '#ef4345' }} />
-        </IconButton>
-        <Typography fontSize={'10px'} sx={{ color: '#ef4345' }}>
-          Collapse
-        </Typography>
         <IconButton onClick={resetHandler}>
           <RestartAltIcon sx={{ color: '#ef4345' }} />
         </IconButton>
