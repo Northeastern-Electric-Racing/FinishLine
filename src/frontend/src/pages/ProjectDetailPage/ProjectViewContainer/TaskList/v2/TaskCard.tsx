@@ -170,7 +170,7 @@ export const TaskCard = ({
                         }
                         size="medium"
                       />
-                      {isWpTask && showWpChip && (
+                      {isWpTask && workPackages && (
                         <Chip
                           label={task.wbsName}
                           size="medium"
@@ -179,7 +179,8 @@ export const TaskCard = ({
                             backgroundColor: 'rgba(55, 138, 221, 0.15)',
                             color: '#7dbef4',
                             border: '1px solid rgba(55, 138, 221, 0.4)',
-                            fontWeight: 500
+                            fontWeight: 500,
+                            maxWidth: 300 // truncates wtih ellipses if it gets too long
                           }}
                         />
                       )}

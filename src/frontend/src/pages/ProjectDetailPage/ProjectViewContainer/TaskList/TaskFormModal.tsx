@@ -157,32 +157,37 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <FormControl fullWidth>
-              <FormLabel>Work Package</FormLabel>
-              <Controller
-                name="wpWbsNum"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Autocomplete
-                    disabled={!!lockedWorkPackage}
-                    options={wpOptions}
-                    isOptionEqualToValue={(option, val) => option.wbsNum.workPackageNumber === val.wbsNum.workPackageNumber}
-                    getOptionLabel={(option) => option.label}
-                    onChange={(_, val) => onChange(val?.wbsNum ?? undefined)}
-                    value={wpOptions.find((o) => o.wbsNum.workPackageNumber === value?.workPackageNumber) ?? null}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        variant="standard"
-                        placeholder={lockedWorkPackage ? '' : 'Select a work package'}
-                      />
-                    )}
-                  />
-                )}
-              />
-            </FormControl>
-          </Grid>
+          {/* wrap with WP check so dropdown doesn't render if within WP tasks tab*/}
+          {workPackages && (
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <FormLabel>Work Package</FormLabel>
+                <Controller
+                  name="wpWbsNum"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <Autocomplete
+                      disabled={!!lockedWorkPackage}
+                      options={wpOptions}
+                      isOptionEqualToValue={(option, val) =>
+                        option.wbsNum.workPackageNumber === val.wbsNum.workPackageNumber
+                      }
+                      getOptionLabel={(option) => option.label}
+                      onChange={(_, val) => onChange(val?.wbsNum ?? undefined)}
+                      value={wpOptions.find((o) => o.wbsNum.workPackageNumber === value?.workPackageNumber) ?? null}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="standard"
+                          placeholder={lockedWorkPackage ? '' : 'Select a work package'}
+                        />
+                      )}
+                    />
+                  )}
+                />
+              </FormControl>
+            </Grid>
+          )}
           <Grid item md={12}>
             <FormControl fullWidth>
               <FormLabel>Assignees</FormLabel>
