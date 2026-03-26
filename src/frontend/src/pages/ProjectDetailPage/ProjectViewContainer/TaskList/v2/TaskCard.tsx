@@ -10,6 +10,9 @@ import { datePipe, fullNamePipe } from '../../../../../utils/pipes';
 import { EditTaskFormInput } from '../TaskFormModal';
 import TaskModal from '../TaskModal';
 import NERModal from '../../../../../components/NERModal';
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../../../../../utils/routes';
+import { wbsPipe } from '../../../../../utils/pipes';
 
 export const TaskCard = ({
   task,
@@ -167,20 +170,24 @@ export const TaskCard = ({
                         }
                         size="medium"
                       />
-                      {isWpTask && workPackages && (
-                        <Chip
-                          label={task.wbsName}
-                          size="medium"
-                          sx={{
-                            marginTop: 1,
-                            backgroundColor: 'rgba(55, 138, 221, 0.15)',
-                            color: '#7dbef4',
-                            border: '1px solid rgba(55, 138, 221, 0.4)',
-                            fontWeight: 500,
-                            maxWidth: 300 // truncates wtih ellipses if it gets too long
-                          }}
-                        />
-                      )}
+                      {isWpTask && // render iff task does have associated wp
+                        workPackages && ( // and if on project's task page, not wp's
+                          <Chip
+                            label={task.wbsName}
+                            size="medium"
+                            component={RouterLink}
+                            to={`${routes.PROJECTS}/${wbsPipe(task.wbsNum)}`}
+                            clickable
+                            sx={{
+                              marginTop: 1,
+                              backgroundColor: 'rgba(55, 138, 221, 0.15)',
+                              color: '#7dbef4',
+                              border: '1px solid rgba(55, 138, 221, 0.4)',
+                              fontWeight: 500,
+                              maxWidth: 300 // truncates wtih ellipses if it gets too long
+                            }}
+                          />
+                        )}
                     </Grid>
                     <Grid item xs={12} lg={4} justifyContent={'right'}>
                       <Box alignItems={'center'} mt={1} justifyContent={'right'} display={'flex'} flexDirection={'column'}>
