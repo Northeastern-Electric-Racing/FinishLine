@@ -12,8 +12,8 @@ export interface FinanceDashboardCarFilter {
   allCars: Car[];
   startDate: Date | undefined;
   endDate: Date | undefined;
-  carNumber: number | undefined;
-  setSelectedCar: (car: Car) => void;
+  setSelectedCar: (car: Car | null) => void;
+  clearLocalSelection: () => void;
   setStartDate: (date: Date | undefined) => void;
   setEndDate: (date: Date | undefined) => void;
   isLoading: boolean;
@@ -21,58 +21,58 @@ export interface FinanceDashboardCarFilter {
 }
 
 /**
- * Hook for Finance Dashboard car filtering with automatic date population
- * When a car is selected, it populates:
+ * Hook for Finance Dashboard car filtering with automatic date population.
+ * Uses local state only; does not mutate the global car selection.
+ *
+ * selectedCar is the resolved car (local override if set, otherwise global) and can be used
+ * directly as overrideCarId using selectedCar?.id ?? null, keeping query keys reactive to both.
+ *
+ * When a specific car is selected, dates auto-populate:
  * - Start date: When the car was initialized (car.dateCreated)
- * - End date: Today (if current car) or end date of that car (if previous car)
+ * - End date: Today (if current car) or start date of the next car (if previous car)
  */
-export const useFinanceDashboardCarFilter = (
-  initialStartDate?: Date,
-  initialEndDate?: Date,
-  initialCarNumber?: number
-): FinanceDashboardCarFilter => {
-  const { selectedCar, allCars, setSelectedCar: setGlobalSelectedCar, isLoading, error } = useGlobalCarFilter();
+export const useFinanceDashboardCarFilter = (initialStartDate?: Date, initialEndDate?: Date): FinanceDashboardCarFilter => {
+  const { selectedCar: globalSelectedCar, allCars, isLoading, error } = useGlobalCarFilter();
 
+  const [localSelectedCar, setLocalSelectedCar] = useState<Car | null | undefined>(undefined);
   const [startDate, setStartDate] = useState<Date | undefined>(initialStartDate);
   const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate);
 
-  useEffect(() => {
-    if (initialCarNumber !== undefined && allCars.length > 0 && !selectedCar) {
-      const initialCar = allCars.find((car) => car.wbsNum.carNumber === initialCarNumber);
-      if (initialCar) {
-        setGlobalSelectedCar(initialCar);
-      }
-    }
-  }, [initialCarNumber, allCars, selectedCar, setGlobalSelectedCar]);
-  useEffect(() => {
-    if (selectedCar && allCars.length > 0) {
-      setStartDate(selectedCar.dateCreated);
+  const setSelectedCar = (car: Car | null) => {
+    setLocalSelectedCar(car);
+  };
 
+  const clearLocalSelection = () => {
+    setLocalSelectedCar(undefined);
+  };
+
+  // Resolved car: local override if set, otherwise mirrors the global car.
+  const selectedCar = localSelectedCar !== undefined ? localSelectedCar : globalSelectedCar;
+
+  // Auto-populate dates from the resolved car.
+  useEffect(() => {
+    if (selectedCar === null) {
+      setStartDate(undefined);
+      setEndDate(undefined);
+    } else if (allCars.length > 0) {
+      setStartDate(new Date(selectedCar.dateCreated));
       const isCurrentCar = isCarCurrent(selectedCar, allCars);
       if (isCurrentCar) {
         setEndDate(new Date());
       } else {
         const nextCar = findNextCar(selectedCar, allCars);
-        if (nextCar) {
-          setEndDate(nextCar.dateCreated);
-        } else {
-          setEndDate(new Date());
-        }
+        setEndDate(nextCar ? new Date(nextCar.dateCreated) : new Date());
       }
     }
   }, [selectedCar, allCars]);
-
-  const setSelectedCar = (car: Car) => {
-    setGlobalSelectedCar(car);
-  };
 
   return {
     selectedCar,
     allCars,
     startDate,
     endDate,
-    carNumber: selectedCar?.wbsNum.carNumber,
     setSelectedCar,
+    clearLocalSelection,
     setStartDate,
     setEndDate,
     isLoading,

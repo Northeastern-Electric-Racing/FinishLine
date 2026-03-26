@@ -326,47 +326,47 @@ export interface ReimbursementRequestTeamDataPayload {
   teamId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | null;
 }
 
 export interface ReimbursementRequestDataPayload {
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | null;
 }
 
 export interface ReimbursementRequestCategoryDataPayload {
   otherReasonId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | null;
 }
 
 export interface ReimbursementRequestTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | null;
 }
 
 export interface SpendingBarTeamDataPayload {
   teamId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | null;
 }
 
 export interface SpendingBarTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | null;
 }
 
 export interface SpendingBarDataPayload {
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | null;
 }
 
 /**
@@ -1160,7 +1160,7 @@ export const useGetReimbursementRequestTeamData = (reimbursementRequestData: Rei
       'reimbursement-request-team-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
-      reimbursementRequestData.carNumber,
+      reimbursementRequestData.overrideCarId,
       reimbursementRequestData.teamId
     ],
     async () => {
@@ -1175,7 +1175,7 @@ export const useGetReimbursementRequestTeamTypeData = (reimbursementRequestData:
       'reimbursement-request-team-type-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
-      reimbursementRequestData.carNumber,
+      reimbursementRequestData.overrideCarId,
       reimbursementRequestData.teamTypeId
     ],
     async () => {
@@ -1204,7 +1204,7 @@ export const useGetReimbursementRequestCategoryData = (reimbursementRequestData:
       'reimbursement-request-category-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
-      reimbursementRequestData.carNumber,
+      reimbursementRequestData.overrideCarId,
       reimbursementRequestData.otherReasonId
     ],
     async () => {
@@ -1219,7 +1219,7 @@ export const useGetAllReimbursementRequestData = (reimbursementRequestData: Reim
       'reimbursement-request-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
-      reimbursementRequestData.carNumber
+      reimbursementRequestData.overrideCarId
     ],
     async () => {
       const { data } = await getAllReimbursementRequestData(reimbursementRequestData);
@@ -1233,7 +1233,7 @@ export const useGetSpendingBarTeamData = (spendingBarData: SpendingBarTeamDataPa
       'spending-bar-team-data',
       spendingBarData.endDate,
       spendingBarData.startDate,
-      spendingBarData.carNumber,
+      spendingBarData.overrideCarId,
       spendingBarData.teamId
     ],
     async () => {
@@ -1248,7 +1248,7 @@ export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTy
       'spending-bar-team-type-data',
       spendingBarData.endDate,
       spendingBarData.startDate,
-      spendingBarData.carNumber,
+      spendingBarData.overrideCarId,
       spendingBarData.teamTypeId
     ],
     async () => {
@@ -1259,7 +1259,7 @@ export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTy
 
 export const useGetSpendingBarCategoryData = (spendingBarData: SpendingBarDataPayload) =>
   useQuery<SpendingBarData, Error>(
-    ['spending-bar-category-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.carNumber],
+    ['spending-bar-category-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.overrideCarId],
     async () => {
       const { data } = await getSpendingBarCategoryData(spendingBarData);
       return data;
@@ -1268,7 +1268,7 @@ export const useGetSpendingBarCategoryData = (spendingBarData: SpendingBarDataPa
 
 export const useGetAllSpendingBarData = (spendingBarData: SpendingBarDataPayload) =>
   useQuery<SpendingBarData[], Error>(
-    ['spending-bar-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.carNumber],
+    ['spending-bar-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.overrideCarId],
     async () => {
       const { data } = await getAllSpendingBarData(spendingBarData);
       return data;

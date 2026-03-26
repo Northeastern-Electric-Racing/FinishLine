@@ -13,13 +13,12 @@ import { useFinanceDashboardCarFilter } from '../../../hooks/finance-car-filter.
 interface GeneralFinanceDashboardProps {
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
 }
 
-const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ startDate, endDate, carNumber }) => {
+const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ startDate, endDate }) => {
   const [tabIndex, setTabIndex] = useState<number>(0);
 
-  const filter = useFinanceDashboardCarFilter(startDate, endDate, carNumber);
+  const filter = useFinanceDashboardCarFilter(startDate, endDate);
 
   const {
     data: allTeams,
@@ -69,7 +68,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
           teamId={allTeams[0].teamId}
           startDate={filter.startDate}
           endDate={filter.endDate}
-          carNumber={filter.carNumber}
+          overrideCarId={filter.selectedCar?.id ?? null}
         />
       </PageLayout>
     );
@@ -106,7 +105,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
           teamId={selectedTab.tabUrlValue}
           startDate={filter.startDate}
           endDate={filter.endDate}
-          carNumber={filter.carNumber}
+          overrideCarId={filter.selectedCar?.id ?? null}
         />
       )}
     </PageLayout>

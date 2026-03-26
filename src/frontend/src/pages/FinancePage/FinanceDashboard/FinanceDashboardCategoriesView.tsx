@@ -8,24 +8,28 @@ import AdminBalance from './AdminBalance';
 interface FinanceDashboardCategoryViewProps {
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | null;
 }
 
-const FinanceDashboardCategoriesView: React.FC<FinanceDashboardCategoryViewProps> = ({ startDate, endDate, carNumber }) => {
+const FinanceDashboardCategoriesView: React.FC<FinanceDashboardCategoryViewProps> = ({
+  startDate,
+  endDate,
+  overrideCarId
+}) => {
   // this hook returns the all data then budget data then cash data
   const {
     data: rrData,
     isLoading: rrDataIsLoading,
     isError: rrDataIsError,
     error: rrDataError
-  } = useGetAllReimbursementRequestData({ startDate, endDate, carNumber });
+  } = useGetAllReimbursementRequestData({ startDate, endDate, overrideCarId });
 
   const {
     data: spendingBarData,
     isLoading: spendingBarDataIsLoading,
     isError: spendingBarDataIsError,
     error: spendingBarDataError
-  } = useGetSpendingBarCategoryData({ startDate, endDate, carNumber });
+  } = useGetSpendingBarCategoryData({ startDate, endDate, overrideCarId });
 
   if (rrDataIsError) {
     return <ErrorPage error={rrDataError} />;
