@@ -154,7 +154,7 @@ export const projectPreviewTransformer = (project: Prisma.ProjectGetPayload<Proj
 export const projectOverviewTransformer = (project: Prisma.ProjectGetPayload<ProjectOverviewQueryArgs>): ProjectOverview => {
   return {
     ...projectPreviewTransformer(project),
-    tasks: project.wbsElement.tasks.map(taskTransformer),
+    tasksRemaining: project.wbsElement._count.tasks,
     links: project.wbsElement.links
   };
 };

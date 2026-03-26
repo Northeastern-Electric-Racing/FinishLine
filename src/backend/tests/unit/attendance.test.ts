@@ -5,14 +5,21 @@ import { AccessDeniedException, HttpException, NotFoundException } from '../../s
 import { batmanAppAdmin, supermanAdmin, greenlanternHead, wonderwomanGuest, member } from '../test-data/users.test-data.js';
 import { createTestOrganization, createTestTeam, createTestTeamType, createTestUser, resetUsers } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
-import { sendMessage, editMessage, replyToMessageInThread, getChannelName } from '../../src/integrations/slack.js';
+import {
+  sendMessage,
+  editMessage,
+  replyToMessageInThread,
+  getChannelName,
+  checkBotInChannel
+} from '../../src/integrations/slack.js';
 import { Mock } from 'vitest';
 
 vi.mock('../../src/integrations/slack.js', () => ({
   sendMessage: vi.fn(),
   editMessage: vi.fn(),
   replyToMessageInThread: vi.fn(),
-  getChannelName: vi.fn()
+  getChannelName: vi.fn(),
+  checkBotInChannel: vi.fn()
 }));
 
 // Creates a second test org with distinct credentials (since createTestOrganization uses a hardcoded empty email)
@@ -531,11 +538,25 @@ describe('Attendance Tests', () => {
       expect(result.channelName).toBeUndefined();
     });
 
-    it('returns valid: true with channel name if Slack channel is found', async () => {
+    it('returns valid: false if Slack channel is found but bot is not a member', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
       const team = await createTeamInOrg(head.userId, orgId);
 
       (getChannelName as Mock).mockResolvedValue('ner-software');
+      (checkBotInChannel as Mock).mockResolvedValue(false);
+
+      const result = await AttendanceService.checkTeamChannel(team.teamId, organization);
+
+      expect(result.valid).toBe(false);
+      expect(result.channelName).toBe('ner-software');
+    });
+
+    it('returns valid: true with channel name if Slack channel is found and bot is a member', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const team = await createTeamInOrg(head.userId, orgId);
+
+      (getChannelName as Mock).mockResolvedValue('ner-software');
+      (checkBotInChannel as Mock).mockResolvedValue(true);
 
       const result = await AttendanceService.checkTeamChannel(team.teamId, organization);
 

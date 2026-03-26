@@ -422,4 +422,33 @@ describe('Recruitment Tests', () => {
       expect(deletedTestDef?.dateDeleted).not.toBe(null);
     });
   });
+
+  describe('Get All Guest Definitions', () => {
+    it('Succeeds and gets all the guest definitions', async () => {
+      const def = await RecruitmentServices.createGuestDefinition(
+        superman,
+        organization,
+        'test term',
+        'test description',
+        2,
+        'iconname',
+        'buttonTxt',
+        'buttonLink'
+      );
+
+      const def2 = await RecruitmentServices.createGuestDefinition(
+        superman,
+        organization,
+        'test term',
+        'test description',
+        2,
+        'iconname',
+        'buttonTxt',
+        'buttonLink'
+      );
+
+      const result = await RecruitmentServices.getAllGuestDefinitions(organization);
+      expect(result).toStrictEqual([def, def2]);
+    });
+  });
 });
