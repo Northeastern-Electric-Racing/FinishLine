@@ -684,8 +684,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   <FormHelperText error>{errors.accountCodeId?.message}</FormHelperText>
                 </FormControl>
 
-                
-
                 {/* Upload Receipts */}
                 <FormControl sx={{ display: 'flex', borderRadius: '25px', width: '100%' }}>
                   <FormLabel
