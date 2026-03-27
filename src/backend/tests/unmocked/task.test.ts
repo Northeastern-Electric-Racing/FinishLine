@@ -4,7 +4,6 @@ import {
   HttpException,
   NotFoundException,
   DeletedException,
-  InvalidOrganizationException
 } from '../../src/utils/errors.utils.js';
 import { createTestOrganization, createTestTask, createTestUser, resetUsers } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
@@ -88,12 +87,21 @@ describe('Task Test', () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
 
-      // create a second wbs element to move the task to
-      const newWbsElement = await prisma.wBS_Element.findUnique({
-        where: { wbsElementId: task.wbsElementId }
+      const newWbsElement = await prisma.wBS_Element.create({
+        data: {
+          name: 'New WBS',
+          status: 'INACTIVE',
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 0,
+          dateCreated: new Date('01/01/2023'),
+          leadId: user.userId,
+          managerId: user.userId,
+          organizationId
+        }
       });
-      // reassign to the same wbs element to make sure it updates without error
-      const updatedTask = await TasksService.editTaskWbsElement(user, task.taskId, task.wbsElementId, {
+
+      const updatedTask = await TasksService.editTaskWbsElement(user, task.taskId, newWbsElement.wbsElementId, {
         organizationId
       } as any);
 
