@@ -15,6 +15,7 @@ import { Box } from '@mui/material';
 import { useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
+import { ArcherContainer } from 'react-archer';
 
 interface GanttChartSectionProps<T> {
   start: Date;
@@ -63,14 +64,15 @@ const GanttChartSection = <T,>({
     setCurrentTooltipOptions(undefined);
   };
 
-  return tasks.length > 0 ? (
+  return (
     <ArcherContainer strokeColor="#ef4545">
       <Box sx={{ width: 'fit-content' }}>
         <Box sx={{ mt: '1rem', width: 'fit-content' }}>
           {tasks.map((task) => {
             return (
-              <Box key={task.id} display="flex" alignItems="center">
+              <Box display="flex" alignItems="center">
                 <GanttTaskBar
+                  key={task.id}
                   days={days}
                   task={task}
                   isEditMode={isEditMode}
@@ -101,8 +103,6 @@ const GanttChartSection = <T,>({
         )}
       </Box>
     </ArcherContainer>
-  ) : (
-    <Typography sx={{ marginTop: 5 }}>No Projects to Display</Typography>
   );
 };
 
