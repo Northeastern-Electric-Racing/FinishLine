@@ -63,7 +63,7 @@ const GanttChartSection = <T,>({
     setCurrentTooltipOptions(undefined);
   };
 
-  return tasks.length > 0 ? (
+  return (
     <Box sx={{ width: 'fit-content' }}>
       <Box sx={{ mt: '1rem', width: 'fit-content' }}>
         {tasks.map((task) => {
@@ -100,8 +100,6 @@ const GanttChartSection = <T,>({
         />
       )}
     </Box>
-  ) : (
-    <Typography sx={{ marginTop: 5 }}>No Projects to Display</Typography>
   );
 };
 

@@ -179,4 +179,5 @@ const GanttChartFilters = ({
     </Box>
   );
 };
+
 export default GanttChartFilters;
