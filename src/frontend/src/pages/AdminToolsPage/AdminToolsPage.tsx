@@ -21,6 +21,8 @@ import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitme
 import GuestViewConfig from './EditGuestView/GuestViewConfig';
 import AdminToolsSlackIds from './AdminToolsSlackIds';
 import AdminToolsOnboardingConfig from './OnboardingConfig/AdminToolsOnboardingConfig';
+import AdminToolsScheduleConfig from './ScheduleConfig/AdminToolsScheduleConfig';
+import AdminToolsAttendanceConfig from './AdminToolsAttendanceConfig';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -37,6 +39,7 @@ const AdminToolsPage: React.FC = () => {
   if (isUserHead || isUserAdmin) {
     tabs.push({ tabUrlValue: 'user-management', tabName: 'User Management' });
     tabs.push({ tabUrlValue: 'project-configuration', tabName: 'Project Configuration' });
+    tabs.push({ tabUrlValue: 'schedule', tabName: 'Schedule' });
   }
   if (isUserAdmin || isUserFinanceLead) {
     tabs.push({ tabUrlValue: 'finance-configuration', tabName: 'Finance Configuration' });
@@ -45,6 +48,7 @@ const AdminToolsPage: React.FC = () => {
     tabs.push({ tabUrlValue: 'recruitment', tabName: 'Recruitment' });
     tabs.push({ tabUrlValue: 'guest-view', tabName: 'Guest View' });
     tabs.push({ tabUrlValue: 'onboarding', tabName: 'Onboarding' });
+    tabs.push({ tabUrlValue: 'attendance', tabName: 'Attendance' });
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
 
@@ -55,6 +59,7 @@ const AdminToolsPage: React.FC = () => {
         <Box borderBottom={1} borderColor={'divider'} width={'100%'}>
           <FullPageTabs
             noUnderline
+            scrollable
             setTab={setTabIndex}
             tabsLabels={tabs}
             baseUrl={routes.ADMIN_TOOLS}
@@ -75,13 +80,17 @@ const AdminToolsPage: React.FC = () => {
           {isUserAdmin && <AdminToolsBOMConfig />}
         </Box>
       ) : tabIndex === 2 ? (
-        <AdminToolsFinanceConfig />
+        <AdminToolsScheduleConfig />
       ) : tabIndex === 3 ? (
-        <AdminToolsRecruitmentConfig />
+        <AdminToolsFinanceConfig />
       ) : tabIndex === 4 ? (
-        <GuestViewConfig />
+        <AdminToolsRecruitmentConfig />
       ) : tabIndex === 5 ? (
+        <GuestViewConfig />
+      ) : tabIndex === 6 ? (
         <AdminToolsOnboardingConfig />
+      ) : tabIndex === 7 ? (
+        <AdminToolsAttendanceConfig />
       ) : (
         <Box>
           <Box pb={2}>

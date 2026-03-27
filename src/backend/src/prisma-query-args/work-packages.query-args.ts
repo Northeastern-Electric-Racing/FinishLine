@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
-import { getUserPreviewQueryArgs, getUserQueryArgs } from './user.query-args';
-import { getDescriptionBulletQueryArgs } from './description-bullets.query-args';
-import { getDesignReviewPreviewQueryArgs } from './design-reviews.query-args';
-import { getLinkQueryArgs } from './links.query-args';
+import { getUserPreviewQueryArgs, getUserQueryArgs } from './user.query-args.js';
+import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.js';
+import { getLinkQueryArgs } from './links.query-args.js';
+import { getEventQueryArgs } from './event.query-args.js';
 
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
 export type WorkPackagePreviewQueryArgs = ReturnType<typeof getWorkPackagePreviewQueryArgs>;
@@ -30,11 +30,11 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
             orderBy: { dateImplemented: 'asc' }
           },
           blocking: { where: { wbsElement: { dateDeleted: null } }, include: { wbsElement: true } },
-          descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) },
-          designReviews: { where: { dateDeleted: null }, ...getDesignReviewPreviewQueryArgs(organizationId) }
+          descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) }
         }
       },
-      blockedBy: { where: { dateDeleted: null } }
+      blockedBy: { where: { dateDeleted: null } },
+      events: { where: { dateDeleted: null }, ...getEventQueryArgs(organizationId) }
     }
   });
 

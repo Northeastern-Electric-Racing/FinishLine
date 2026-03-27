@@ -2,33 +2,34 @@ import * as yup from 'yup';
 import { SponsorPayload, useGetAllSponsorTiers } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { Control, Controller, FieldErrors, useFieldArray } from 'react-hook-form';
+import { Control, Controller, FieldErrors, FieldValues, UseFormSetValue, useFieldArray, useWatch } from 'react-hook-form';
 import {
   FormControl,
   Grid,
   FormHelperText,
-  IconButton,
+  Button,
   MenuItem,
   Select,
   Typography,
   Checkbox,
   Autocomplete,
-  TextField
+  TextField,
+  Chip
 } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useAllUsers } from '../../../hooks/users.hooks';
-import React, { useState } from 'react';
-import { Box, useTheme } from '@mui/system';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { useAllMembers } from '../../../hooks/users.hooks';
+import React, { useEffect, useRef, useState } from 'react';
+import { Box } from '@mui/system';
+import { AddCircle } from '@mui/icons-material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import NERAutocomplete from '../../../components/NERAutocomplete';
-import { Sponsor } from 'shared';
+import SponsorTaskCard from './SponsorTaskCard';
+import { Sponsor, SponsorValueType } from 'shared';
 
 interface SponsorFormProps {
   control: Control<SponsorPayload>;
   errors: FieldErrors<SponsorPayload>;
+  setValue: UseFormSetValue<SponsorPayload>;
   defaultValues?: Sponsor;
 }
 
@@ -41,41 +42,78 @@ const getYears = (startYear = 1950) => {
   return years;
 };
 
-const sponsorSchema = yup.object().shape({
-  name: yup.string().required('Name is required'),
-  activeStatus: yup.boolean().required('Sponsor status is required'),
-  sponsorValue: yup.number().typeError('Sponsor value must be a number').required('Sponsor value is required'),
-  joinDate: yup.date().required('Join date is required'),
-  activeYears: yup
-    .array()
-    .of(yup.number().typeError('Active year must be a number').required('Active year is required'))
-    .required('Active years are required'),
-  sponsorTierId: yup.string().required('Sponsor tier is required'),
-  sponsorContact: yup.string().required('Sponsor contact is required'),
-  taxExempt: yup.boolean().required('Tax exempt is required'),
-  discountCode: yup.string().trim().optional(),
-  sponsorTasks: yup
-    .array()
-    .of(
-      yup.object().shape({
-        dueDate: yup.date().required('Due date is required'),
-        notifyDate: yup.date(),
-        assigneeUserId: yup.string(),
-        notes: yup.string().required('Notes are required')
-      })
-    )
-    .required('Sponsor Tasks are Required')
-});
+const VALUE_TYPE_OPTIONS = [
+  { value: SponsorValueType.MONETARY, label: 'Monetary' },
+  { value: SponsorValueType.STOCK, label: 'Stock/Parts/Services' },
+  { value: SponsorValueType.DISCOUNT, label: 'Discount' }
+];
 
-export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defaultValues }: SponsorFormProps) => {
-  const theme = useTheme();
+const sponsorSchema = yup.object().shape(
+  {
+    name: yup.string().required('Name is required'),
+    activeStatus: yup.boolean().required('Sponsor status is required'),
+    valueTypes: yup
+      .array()
+      .of(yup.string().required())
+      .min(1, 'At least one value type is required')
+      .required('Value types are required'),
+    sponsorValue: yup
+      .number()
+      .typeError('Sponsor value must be a number')
+      .when('valueTypes', {
+        is: (types: string[]) => types?.includes(SponsorValueType.MONETARY),
+        then: (schema) => schema.required('Sponsor value is required for monetary sponsors'),
+        otherwise: (schema) => schema.optional().nullable()
+      }),
+    stockDescription: yup.string().trim().optional(),
+    discountDescription: yup.string().trim().optional(),
+    joinDate: yup.date().required('Join date is required'),
+    activeYears: yup
+      .array()
+      .of(yup.number().typeError('Active year must be a number').required('Active year is required'))
+      .required('Active years are required'),
+    sponsorTierId: yup.string().optional(),
+    contactName: yup.string().required('Contact name is required'),
+    contactEmail: yup
+      .string()
+      .email('Invalid email')
+      .when('contactPhone', {
+        is: (phone: string | undefined) => !phone,
+        then: (schema) => schema.required('Email or phone is required'),
+        otherwise: (schema) => schema.optional()
+      }),
+    contactPhone: yup.string().when('contactEmail', {
+      is: (email: string | undefined) => !email,
+      then: (schema) => schema.required('Email or phone is required'),
+      otherwise: (schema) => schema.optional()
+    }),
+    contactPosition: yup.string().optional(),
+    taxExempt: yup.boolean().required('Tax exempt is required'),
+    discountCode: yup.string().trim().optional(),
+    sponsorNotes: yup.string().trim().optional(),
+    sponsorTasks: yup
+      .array()
+      .of(
+        yup.object().shape({
+          sponsorTaskId: yup.string().optional(),
+          dueDate: yup.date().required('Due date is required'),
+          notifyDate: yup.date().optional(),
+          assigneeUserId: yup.string().optional(),
+          notes: yup.string().required('Notes are required'),
+          done: yup.boolean().optional()
+        })
+      )
+      .required('Sponsor Tasks are Required')
+  },
+  [['contactEmail', 'contactPhone']]
+);
+
+export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, setValue, defaultValues }: SponsorFormProps) => {
   const yearsOptions = getYears();
 
-  const [datePickerOpenNotify, setDatePickerOpenNotify] = useState(false);
   const [datePickerOpenJoin, setDatePickerOpenJoin] = useState(false);
-  const [datePickerOpenDue, setDatePickerOpenDue] = useState(false);
 
-  const { isLoading: membersLoading, isError: membersIsError, error: membersError, data: members } = useAllUsers();
+  const { isLoading: membersLoading, isError: membersIsError, error: membersError, data: members } = useAllMembers();
 
   const {
     isLoading: sponsorTierIsLoading,
@@ -83,6 +121,24 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
     error: sponsorTierError,
     data: allSponsorTiers
   } = useGetAllSponsorTiers();
+
+  const watchedValueTypes: string[] = useWatch({ control, name: 'valueTypes' }) ?? [];
+  const isMonetary = watchedValueTypes.includes(SponsorValueType.MONETARY);
+  const isStock = watchedValueTypes.includes(SponsorValueType.STOCK);
+  const isDiscount = watchedValueTypes.includes(SponsorValueType.DISCOUNT);
+
+  const watchedSponsorValue: number | undefined = useWatch({ control, name: 'sponsorValue' });
+  const tierManuallySet = useRef(!!defaultValues);
+
+  useEffect(() => {
+    if (tierManuallySet.current || !allSponsorTiers || allSponsorTiers.length === 0) return;
+    const value = watchedSponsorValue ?? 0;
+    const sorted = [...allSponsorTiers].sort((a, b) => b.minSupportValue - a.minSupportValue);
+    const bestTier = sorted.find((t) => value >= t.minSupportValue);
+    if (bestTier) {
+      setValue('sponsorTierId', bestTier.sponsorTierId);
+    }
+  }, [watchedSponsorValue, allSponsorTiers, setValue]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -134,10 +190,40 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
           </Typography>
         </FormControl>
       </Grid>
+
       <Grid item xs={12} sm={4}>
         <FormControl fullWidth>
           <Typography variant="h5" color="#EF4345">
-            Sponsor Value:*
+            Value Types:*
+          </Typography>
+          <Controller
+            control={control}
+            name="valueTypes"
+            render={({ field: { onChange, value } }) => (
+              <Autocomplete
+                multiple
+                options={VALUE_TYPE_OPTIONS}
+                getOptionLabel={(option) => option.label}
+                value={VALUE_TYPE_OPTIONS.filter((opt) => value?.includes(opt.value))}
+                onChange={(_, data) => onChange(data.map((d) => d.value))}
+                renderInput={(params) => (
+                  <TextField {...params} placeholder="Select Value Types" error={!!errors.valueTypes} />
+                )}
+                renderTags={(tagValue, getTagProps) =>
+                  tagValue.map((option, index) => <Chip label={option.label} {...getTagProps({ index })} size="small" />)
+                }
+                isOptionEqualToValue={(option, val) => option.value === val.value}
+                disableCloseOnSelect
+              />
+            )}
+          />
+          <FormHelperText error>{errors.valueTypes?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <FormControl fullWidth>
+          <Typography variant="h5" color="#EF4345">
+            Sponsor Value:{isMonetary ? '*' : ''}
           </Typography>
           <ReactHookTextField
             placeholder={'Enter Value'}
@@ -150,6 +236,38 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
           />
         </FormControl>
       </Grid>
+      {isStock && (
+        <Grid item xs={12}>
+          <FormControl fullWidth>
+            <Typography variant="h5" color="#EF4345">
+              Stock/Parts/Services Description:
+            </Typography>
+            <ReactHookTextField
+              name="stockDescription"
+              control={control}
+              placeholder="Describe stock/parts/services provided"
+              multiline
+              rows={2}
+            />
+          </FormControl>
+        </Grid>
+      )}
+      {isDiscount && (
+        <Grid item xs={12} sm={isMonetary || isStock ? 12 : 8}>
+          <FormControl fullWidth>
+            <Typography variant="h5" color="#EF4345">
+              Discount Description:
+            </Typography>
+            <ReactHookTextField
+              name="discountDescription"
+              control={control}
+              placeholder="Describe discount terms"
+              multiline
+              rows={2}
+            />
+          </FormControl>
+        </Grid>
+      )}
       <Grid item xs={12} sm={4}>
         <FormControl fullWidth>
           <Typography variant="h5" color="#EF4345">
@@ -210,7 +328,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
       <Grid item xs={12} sm={6}>
         <FormControl sx={{ width: '75%' }}>
           <Typography variant="h5" color="#EF4345">
-            Sponsor Tier:*
+            Sponsor Tier:
           </Typography>
           <Controller
             control={control}
@@ -219,7 +337,10 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
               <Select
                 displayEmpty
                 value={value !== undefined ? value : ''}
-                onChange={onChange}
+                onChange={(e) => {
+                  tierManuallySet.current = true;
+                  onChange(e);
+                }}
                 renderValue={(selected) => {
                   const tier = allSponsorTiers.find((t) => t.sponsorTierId === selected);
                   return tier ? tier.name : <Typography sx={{ color: 'gray' }}>Select Sponsor Tier</Typography>;
@@ -251,15 +372,42 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
       <Grid item xs={12} sm={6}>
         <FormControl fullWidth>
           <Typography variant="h5" color="#EF4345">
-            Sponsor Contact:*
+            Contact Name:*
+          </Typography>
+          <ReactHookTextField name="contactName" control={control} sx={{ width: 1 }} placeholder="Enter Contact Name" />
+          <FormHelperText error> {errors.contactName?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <FormControl fullWidth>
+          <Typography variant="h5" color="#EF4345">
+            Contact Email:
+          </Typography>
+          <ReactHookTextField name="contactEmail" control={control} sx={{ width: 1 }} placeholder="Enter Contact Email" />
+          <FormHelperText error> {errors.contactEmail?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <FormControl fullWidth>
+          <Typography variant="h5" color="#EF4345">
+            Contact Phone:
+          </Typography>
+          <ReactHookTextField name="contactPhone" control={control} sx={{ width: 1 }} placeholder="Enter Contact Phone" />
+          <FormHelperText error> {errors.contactPhone?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <FormControl fullWidth>
+          <Typography variant="h5" color="#EF4345">
+            Contact Position:
           </Typography>
           <ReactHookTextField
-            name="sponsorContact"
+            name="contactPosition"
             control={control}
             sx={{ width: 1 }}
-            placeholder="Enter Sponsor Contact"
+            placeholder="Enter Contact Position"
           />
-          <FormHelperText error> {errors.sponsorContact?.message}</FormHelperText>
+          <FormHelperText error> {errors.contactPosition?.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={6}>
@@ -296,141 +444,60 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
           <FormHelperText error> {errors.discountCode?.message}</FormHelperText>
         </FormControl>
       </Grid>
+      <Grid item xs={12}>
+        <FormControl fullWidth>
+          <Typography variant="h5" color="#EF4345">
+            Sponsor Notes:
+          </Typography>
+          <ReactHookTextField
+            name="sponsorNotes"
+            control={control}
+            placeholder="Enter Additional Information"
+            multiline
+            rows={4}
+          />
+          <FormHelperText error> {errors.sponsorNotes?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
       <Grid item xs={12} sm={12}>
         <FormControl fullWidth>
           <Typography variant="h5" color="#EF4345" sx={{ mb: 1 }}>
             Sponsor Tasks:
           </Typography>
           {fields.map((item, index) => (
-            <Box key={item.id} sx={{ display: 'flex', mt: 1, flexWrap: 'wrap', gap: 0.5 }}>
-              <Grid xs={12} sm={2.6}>
-                <FormControl fullWidth>
-                  <Typography variant="h6" color="#EF4345">
-                    Due Date:*
-                  </Typography>
-                  <Controller
-                    name={`sponsorTasks.${index}.dueDate`}
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <DatePicker
-                        value={value ? new Date(value) : null}
-                        open={datePickerOpenDue}
-                        onClose={() => setDatePickerOpenDue(false)}
-                        onOpen={() => setDatePickerOpenDue(true)}
-                        onChange={(newValue) => {
-                          onChange(newValue ?? new Date());
-                        }}
-                        slotProps={{
-                          textField: {
-                            error: !!errors.sponsorTasks?.[index]?.dueDate,
-                            helperText: errors.sponsorTasks?.[index]?.dueDate?.message,
-                            onClick: () => setDatePickerOpenDue(true)
-                          }
-                        }}
-                      />
-                    )}
-                  />
-                  <FormHelperText error>{errors.sponsorTasks?.[index]?.dueDate?.message}</FormHelperText>
-                </FormControl>
-              </Grid>
-              <Grid xs={12} sm={2.6}>
-                <FormControl fullWidth>
-                  <Typography variant="h6" color="#EF4345">
-                    Notify Date:
-                  </Typography>
-                  <Controller
-                    name={`sponsorTasks.${index}.notifyDate`}
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <DatePicker
-                        value={value ? new Date(value) : null}
-                        open={datePickerOpenNotify}
-                        onClose={() => setDatePickerOpenNotify(false)}
-                        onOpen={() => setDatePickerOpenNotify(true)}
-                        onChange={(newValue) => {
-                          onChange(newValue ?? new Date());
-                        }}
-                        slotProps={{
-                          textField: {
-                            error: !!errors.sponsorTasks?.[index]?.notifyDate,
-                            helperText: errors.sponsorTasks?.[index]?.notifyDate?.message,
-                            onClick: () => setDatePickerOpenNotify(true)
-                          }
-                        }}
-                      />
-                    )}
-                  />
-                  <FormHelperText error>{errors.sponsorTasks?.[index]?.notifyDate?.message}</FormHelperText>
-                </FormControl>
-              </Grid>
-              <Grid xs={12} sm={2.75}>
-                <FormControl fullWidth>
-                  <Typography variant="h6" color="#EF4345">
-                    Assign To:
-                  </Typography>
-                  <Controller
-                    control={control}
-                    name={`sponsorTasks.${index}.assigneeUserId`}
-                    render={({ field: { onChange } }) => (
-                      <NERAutocomplete
-                        sx={{ width: '100%', backgroundColor: theme.palette.grey[750] }}
-                        id="sponsor-task-assignee-name-autocomplete"
-                        onChange={(_event, newValue) => onChange(newValue ? newValue.id : undefined)}
-                        options={members.map((m) => ({ label: m.firstName + ' ' + m.lastName, id: m.userId }))}
-                        size="small"
-                        placeholder={
-                          !!defaultValues?.sponsorTasks?.[index]?.assignee
-                            ? defaultValues.sponsorTasks[index].assignee.firstName +
-                              ' ' +
-                              defaultValues.sponsorTasks[index].assignee.lastName
-                            : 'Select Member'
-                        }
-                      ></NERAutocomplete>
-                    )}
-                  ></Controller>
-
-                  <FormHelperText error>{errors.sponsorTasks?.[index]?.assigneeUserId?.message}</FormHelperText>
-                </FormControl>
-              </Grid>
-
-              <Grid xs={12} sm={3.84}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <FormControl fullWidth>
-                    <Typography variant="h6" color="#EF4345">
-                      Notes:*
-                    </Typography>
-                    <ReactHookTextField
-                      name={`sponsorTasks.${index}.notes`}
-                      control={control}
-                      sx={{ width: 1 }}
-                      placeholder="Enter notes"
-                    />
-                    <FormHelperText error> {errors.sponsorTasks?.[index]?.notes?.message}</FormHelperText>
-                  </FormControl>
-                  <Box sx={{ height: 17 }}>
-                    <IconButton onClick={() => remove(index)}>
-                      <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
-                    </IconButton>
-                  </Box>
-                </Box>
-              </Grid>
+            <Box key={item.id} sx={{ mt: 1 }}>
+              <SponsorTaskCard
+                // react-hook-form Control is invariant, so widening requires casting through unknown
+                control={control as unknown as Control<FieldValues>}
+                errors={errors as unknown as FieldErrors<FieldValues>}
+                fieldPrefix={`sponsorTasks.${index}`}
+                members={members}
+                onRemove={() => remove(index)}
+                showDoneCheckbox
+                isExistingTask={!!defaultValues?.sponsorTasks?.[index]?.sponsorTaskId}
+                defaultAssigneeName={
+                  defaultValues?.sponsorTasks?.[index]?.assignee
+                    ? `${defaultValues.sponsorTasks[index].assignee.firstName} ${defaultValues.sponsorTasks[index].assignee.lastName}`
+                    : undefined
+                }
+              />
             </Box>
           ))}
-          <Box sx={{ mt: 2 }}>
-            <IconButton
-              onClick={() =>
-                append({
-                  dueDate: new Date(),
-                  notifyDate: undefined,
-                  assigneeUserId: undefined,
-                  notes: ''
-                })
-              }
-            >
-              <AddCircleOutlineIcon />
-              <Typography>Add Sponsor Task</Typography>
-            </IconButton>
-          </Box>
+          <Button
+            startIcon={<AddCircle />}
+            onClick={() =>
+              append({
+                dueDate: new Date(),
+                notifyDate: undefined,
+                assigneeUserId: undefined,
+                notes: '',
+                done: false
+              })
+            }
+            sx={{ mt: 2 }}
+          >
+            Add Sponsor Task
+          </Button>
         </FormControl>
       </Grid>
     </Grid>

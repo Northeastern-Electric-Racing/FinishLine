@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { ChangeRequest, WbsNumber, ChangeRequestType } from 'shared';
+import { ChangeRequest, WbsNumber, ChangeRequestType, GuestChangeRequest } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { changeRequestTransformer } from './transformers/change-requests.transformers';
 import { CreateStandardChangeRequestPayload } from '../hooks/change-requests.hooks';
@@ -15,6 +15,12 @@ import { CreateStandardChangeRequestPayload } from '../hooks/change-requests.hoo
 export const getAllChangeRequests = () => {
   return axios.get<ChangeRequest[]>(apiUrls.changeRequests(), {
     transformResponse: (data) => JSON.parse(data).map(changeRequestTransformer)
+  });
+};
+
+export const getAllGuestChangeRequests = () => {
+  return axios.get<GuestChangeRequest[]>(apiUrls.guestChangeRequests(), {
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 
@@ -151,6 +157,29 @@ export const createBudgetChangeRequest = (
     accountCodeId,
     type: ChangeRequestType.Budget,
     proposedBudget
+  });
+};
+
+/**
+ * Create a leadership change request
+ * Updating the lead and/or manager of a project or work package does not require review
+ * @param submitterId The id of the user creating the change request
+ * @param wbsNum The WBS number of the project or work package being updated
+ * @param leadId The id of the new lead
+ * @param managerId The id of the new manager
+ */
+export const createLeadershipChangeRequest = (
+  submitterId: string,
+  wbsNum: WbsNumber,
+  leadId?: string,
+  managerId?: string
+) => {
+  return axios.post<{ message: string }>(apiUrls.changeRequestsCreateLeadership(), {
+    submitterId,
+    wbsNum,
+    leadId,
+    managerId,
+    type: ChangeRequestType.Leadership
   });
 };
 

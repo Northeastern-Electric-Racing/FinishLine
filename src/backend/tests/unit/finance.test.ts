@@ -1,9 +1,11 @@
 import { Organization } from '@prisma/client';
-import FinanceServices from '../../src/services/finance.services';
-import { AccessDeniedException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import prisma from '../../src/prisma/prisma';
+import FinanceServices from '../../src/services/finance.services.js';
+import { AccessDeniedException, DeletedException, NotFoundException } from '../../src/utils/errors.utils.js';
+import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data.js';
+import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
+import prisma from '../../src/prisma/prisma.js';
+
+const TEST_EMAIL = 'test@test.com';
 
 describe('Finance Tests', () => {
   let orgId: string;
@@ -35,7 +37,7 @@ describe('Finance Tests', () => {
             await createTestUser(wonderwomanGuest, orgId),
             'Google',
             true,
-            5000,
+            ['MONETARY'],
             new Date(12, 1, 24),
             [2024, 2025],
             sponsorTierId,
@@ -43,7 +45,10 @@ describe('Finance Tests', () => {
             'Bill Gates',
             [],
             organization,
-            'googlecode'
+            5000,
+            'googlecode',
+            undefined,
+            TEST_EMAIL
           )
       ).rejects.toThrow(new AccessDeniedException('Only heads can create a sponsor'));
     });
@@ -53,7 +58,7 @@ describe('Finance Tests', () => {
         await createTestUser(batmanAppAdmin, orgId),
         'Google',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024, 2025],
         sponsorTierId,
@@ -61,7 +66,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'googlecode'
+        5000,
+        'googlecode',
+        undefined,
+        TEST_EMAIL
       );
 
       expect(result.name).toEqual('Google');
@@ -69,10 +77,10 @@ describe('Finance Tests', () => {
       expect(result.sponsorValue).toBe(5000);
       expect(result.joinDate).toEqual(new Date(12, 1, 24));
       expect(result.activeYears).toEqual([2024, 2025]);
-      expect(result.tier.sponsorTierId).toEqual(sponsorTierId);
+      expect(result.tier!.sponsorTierId).toEqual(sponsorTierId);
       expect(result.taxExempt).toBe(true);
       expect(result.discountCode).toEqual('googlecode');
-      expect(result.sponsorContact).toEqual('Bill Gates');
+      expect(result.contact.name).toEqual('Bill Gates');
       expect(result.sponsorTasks).toEqual([]);
     });
   });
@@ -83,7 +91,7 @@ describe('Finance Tests', () => {
         await createTestUser(batmanAppAdmin, orgId),
         'Google',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024, 2025],
         sponsorTierId,
@@ -91,13 +99,16 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'googlecode'
+        5000,
+        'googlecode',
+        undefined,
+        TEST_EMAIL
       );
       const spon2 = await FinanceServices.createSponsor(
         await createTestUser(supermanAdmin, orgId),
         'Apple',
         true,
-        2000,
+        ['MONETARY'],
         new Date(11, 23, 24),
         [2024, 2025],
         sponsorTierId,
@@ -105,7 +116,10 @@ describe('Finance Tests', () => {
         'Tim Cook',
         [],
         organization,
-        'applecode'
+        2000,
+        'applecode',
+        undefined,
+        TEST_EMAIL
       );
       const result = await FinanceServices.getAllSponsors(organization);
       expect(result).toStrictEqual([spon1, spon2]);
@@ -117,7 +131,7 @@ describe('Finance Tests', () => {
         await createTestUser(supermanAdmin, orgId),
         'Google',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024, 2025],
         sponsorTierId,
@@ -125,7 +139,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'googlecode'
+        5000,
+        'googlecode',
+        undefined,
+        TEST_EMAIL
       );
 
       const deletedSponsor = await FinanceServices.deleteSponsor(
@@ -145,7 +162,7 @@ describe('Finance Tests', () => {
         await createTestUser(supermanAdmin, orgId),
         'Google',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024, 2025],
         sponsorTierId,
@@ -153,7 +170,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'googlecode'
+        5000,
+        'googlecode',
+        undefined,
+        TEST_EMAIL
       );
 
       await expect(async () =>
@@ -171,7 +191,7 @@ describe('Finance Tests', () => {
         user,
         'Google',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024, 2025],
         sponsorTierId,
@@ -179,7 +199,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'googlecode'
+        5000,
+        'googlecode',
+        undefined,
+        TEST_EMAIL
       );
 
       await FinanceServices.deleteSponsor(sponsor.sponsorId, user, organization);
@@ -196,7 +219,7 @@ describe('Finance Tests', () => {
         await createTestUser(supermanAdmin, orgId),
         'Google',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024, 2025],
         sponsorTierId,
@@ -204,7 +227,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'googlecode'
+        5000,
+        'googlecode',
+        undefined,
+        TEST_EMAIL
       );
 
       const oldSponsorTask = await prisma.sponsor_Task.create({
@@ -237,7 +263,7 @@ describe('Finance Tests', () => {
         await createTestUser(supermanAdmin, orgId),
         'Google',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024, 2025],
         sponsorTierId,
@@ -245,7 +271,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'googlecode'
+        5000,
+        'googlecode',
+        undefined,
+        TEST_EMAIL
       );
 
       await expect(
@@ -258,7 +287,7 @@ describe('Finance Tests', () => {
             'newNotes',
             new Date(12, 20, 24)
           )
-      ).rejects.toThrow(new AccessDeniedException('Only heads can edit sponsor tasks.'));
+      ).rejects.toThrow(new AccessDeniedException('Only finance team members or heads can edit sponsor tasks'));
     });
     it('Edit fails if sponsor task does not exist', async () => {
       await expect(
@@ -278,7 +307,7 @@ describe('Finance Tests', () => {
         await createTestUser(supermanAdmin, orgId),
         'Google',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024, 2025],
         sponsorTierId,
@@ -286,7 +315,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'googlecode'
+        5000,
+        'googlecode',
+        undefined,
+        TEST_EMAIL
       );
 
       const oldSponsorTask = await prisma.sponsor_Task.create({
@@ -346,7 +378,7 @@ describe('Finance Tests', () => {
         await createTestUser(batmanAppAdmin, orgId),
         'Google',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024, 2025],
         sponsorTierId,
@@ -367,7 +399,10 @@ describe('Finance Tests', () => {
           }
         ],
         organization,
-        'googlecode'
+        5000,
+        'googlecode',
+        undefined,
+        TEST_EMAIL
       );
 
       const sponsorTasks = await FinanceServices.getSponsorTasks(sponsor.sponsorId, organization.organizationId);
@@ -389,7 +424,7 @@ describe('Finance Tests', () => {
       const user = await createTestUser(wonderwomanGuest, orgId);
       await expect(
         FinanceServices.createSponsorTask(user, organization, new Date(1, 1, 25), 'notes', 'sponsorId')
-      ).rejects.toThrow(new AccessDeniedException('Only heads can create a sponsor task'));
+      ).rejects.toThrow(new AccessDeniedException('Only finance team members or heads can create a sponsor task'));
     });
 
     it('Fails when assigned user is not found', async () => {
@@ -398,7 +433,7 @@ describe('Finance Tests', () => {
         user,
         'Telsa',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024],
         sponsorTierId,
@@ -406,7 +441,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'telsaCode'
+        5000,
+        'telsaCode',
+        undefined,
+        TEST_EMAIL
       );
 
       await expect(
@@ -436,7 +474,7 @@ describe('Finance Tests', () => {
         user,
         'Telsa',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024],
         sponsorTierId,
@@ -444,7 +482,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'telsaCode'
+        5000,
+        'telsaCode',
+        undefined,
+        TEST_EMAIL
       );
 
       const result = await FinanceServices.createSponsorTask(
@@ -499,7 +540,7 @@ describe('Finance Tests', () => {
         user,
         'Google',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024, 2025],
         sponsorTierId,
@@ -507,7 +548,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'googlecode'
+        5000,
+        'googlecode',
+        undefined,
+        TEST_EMAIL
       );
 
       const updatedSponsor = await FinanceServices.editSponsor(
@@ -516,14 +560,17 @@ describe('Finance Tests', () => {
         oldSponsor.sponsorId,
         'newName',
         false,
-        4000,
+        ['MONETARY'],
         new Date(5, 11, 25),
         [2024, 2025],
         sponsorTierId,
         'New Vendor Contact',
         false,
         [],
-        'New Discount code'
+        4000,
+        'New Discount code',
+        undefined,
+        TEST_EMAIL
       );
 
       expect(updatedSponsor.name).toBe('newName');
@@ -531,8 +578,8 @@ describe('Finance Tests', () => {
       expect(updatedSponsor.sponsorValue).toBe(4000);
       expect(updatedSponsor.joinDate).toEqual(new Date(5, 11, 25));
       expect(updatedSponsor.activeYears).toEqual([2024, 2025]);
-      expect(updatedSponsor.tier.sponsorTierId).toBe(sponsorTierId);
-      expect(updatedSponsor.sponsorContact).toBe('New Vendor Contact');
+      expect(updatedSponsor.tier!.sponsorTierId).toBe(sponsorTierId);
+      expect(updatedSponsor.contact.name).toBe('New Vendor Contact');
       expect(updatedSponsor.taxExempt).toBe(false);
       expect(updatedSponsor.discountCode).toBe('New Discount code');
     });
@@ -544,7 +591,7 @@ describe('Finance Tests', () => {
         user,
         'Google',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024, 2025],
         sponsorTierId,
@@ -552,7 +599,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'googlecode'
+        5000,
+        'googlecode',
+        undefined,
+        TEST_EMAIL
       );
       await expect(
         async () =>
@@ -562,13 +612,17 @@ describe('Finance Tests', () => {
             oldSponsor.sponsorId,
             'newName',
             false,
-            4000,
+            ['MONETARY'],
             new Date(5, 11, 25),
             [2024, 2025],
             sponsorTierId,
             'New Vendor Contact',
             false,
-            []
+            [],
+            4000,
+            undefined,
+            undefined,
+            TEST_EMAIL
           )
       ).rejects.toThrow(new AccessDeniedException('Only heads can edit sponsors.'));
     });
@@ -581,13 +635,17 @@ describe('Finance Tests', () => {
             'badId',
             'newName',
             false,
-            4000,
+            ['MONETARY'],
             new Date(5, 11, 25),
             [2024, 2025],
             sponsorTierId,
             'New Vendor Contact',
             false,
-            []
+            [],
+            4000,
+            undefined,
+            undefined,
+            TEST_EMAIL
           )
       ).rejects.toThrow(new NotFoundException('Sponsor', 'badId'));
     });
@@ -597,7 +655,7 @@ describe('Finance Tests', () => {
         user,
         'Google',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024, 2025],
         sponsorTierId,
@@ -605,7 +663,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'googlecode'
+        5000,
+        'googlecode',
+        undefined,
+        TEST_EMAIL
       );
       await expect(
         async () =>
@@ -615,13 +676,17 @@ describe('Finance Tests', () => {
             oldSponsor.sponsorId,
             'newName',
             false,
-            4000,
+            ['MONETARY'],
             new Date(5, 11, 25),
             [2024, 2025],
             'badId',
             'New Vendor Contact',
             false,
-            []
+            [],
+            4000,
+            undefined,
+            undefined,
+            TEST_EMAIL
           )
       ).rejects.toThrow(new NotFoundException('Sponsor Tier', 'badId'));
     });
@@ -634,7 +699,7 @@ describe('Finance Tests', () => {
         user,
         'Telsa',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024],
         sponsorTierId,
@@ -642,7 +707,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'telsaCode'
+        5000,
+        'telsaCode',
+        undefined,
+        TEST_EMAIL
       );
 
       const sponsorTask = await FinanceServices.createSponsorTask(
@@ -670,7 +738,7 @@ describe('Finance Tests', () => {
         user,
         'Telsa',
         true,
-        5000,
+        ['MONETARY'],
         new Date(12, 1, 24),
         [2024],
         sponsorTierId,
@@ -678,7 +746,10 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [],
         organization,
-        'telsaCode'
+        5000,
+        'telsaCode',
+        undefined,
+        TEST_EMAIL
       );
 
       const sponsorTask = await FinanceServices.createSponsorTask(
@@ -697,12 +768,164 @@ describe('Finance Tests', () => {
           await createTestUser(theVisitorGuest, orgId),
           organization
         )
-      ).rejects.toThrow(new AccessDeniedException('Only heads can delete sponsor tasks.'));
+      ).rejects.toThrow(new AccessDeniedException('Only heads or the task assignee can delete sponsor tasks'));
     });
     it('Delete fails if given sponsor task cannot be found', async () => {
       await expect(async () =>
         FinanceServices.deleteSponsorTask('123', await createTestUser(supermanAdmin, orgId), organization)
       ).rejects.toThrow(new NotFoundException('SponsorTask', '123'));
+    });
+  });
+
+  describe('Toggle Sponsor Task Done', () => {
+    it('Succeeds and toggles done from false to true', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+      const sponsor = await FinanceServices.createSponsor(
+        user,
+        'Tesla',
+        true,
+        ['MONETARY'],
+        new Date(12, 1, 24),
+        [2024],
+        sponsorTierId,
+        true,
+        'Elon Musk',
+        [],
+        organization,
+        5000,
+        undefined,
+        undefined,
+        TEST_EMAIL
+      );
+
+      const sponsorTask = await FinanceServices.createSponsorTask(
+        user,
+        organization,
+        new Date(1, 2, 3),
+        'Test task',
+        sponsor.sponsorId
+      );
+
+      expect(sponsorTask.done).toBe(false);
+
+      const toggledTask = await FinanceServices.toggleSponsorTaskDone(user, organization, sponsorTask.sponsorTaskId);
+
+      expect(toggledTask.done).toBe(true);
+    });
+
+    it('Succeeds and toggles done from true to false', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+      const sponsor = await FinanceServices.createSponsor(
+        user,
+        'Tesla',
+        true,
+        ['MONETARY'],
+        new Date(12, 1, 24),
+        [2024],
+        sponsorTierId,
+        true,
+        'Elon Musk',
+        [],
+        organization,
+        5000,
+        undefined,
+        undefined,
+        TEST_EMAIL
+      );
+
+      const sponsorTask = await FinanceServices.createSponsorTask(
+        user,
+        organization,
+        new Date(1, 2, 3),
+        'Test task',
+        sponsor.sponsorId
+      );
+
+      // Toggle to true first
+      await FinanceServices.toggleSponsorTaskDone(user, organization, sponsorTask.sponsorTaskId);
+
+      // Toggle back to false
+      const toggledTask = await FinanceServices.toggleSponsorTaskDone(user, organization, sponsorTask.sponsorTaskId);
+
+      expect(toggledTask.done).toBe(false);
+    });
+
+    it('Fails if user is not a head', async () => {
+      const head = await createTestUser(supermanAdmin, orgId);
+      const guest = await createTestUser(theVisitorGuest, orgId);
+
+      const sponsor = await FinanceServices.createSponsor(
+        head,
+        'Tesla',
+        true,
+        ['MONETARY'],
+        new Date(12, 1, 24),
+        [2024],
+        sponsorTierId,
+        true,
+        'Elon Musk',
+        [],
+        organization,
+        5000,
+        undefined,
+        undefined,
+        TEST_EMAIL
+      );
+
+      const sponsorTask = await FinanceServices.createSponsorTask(
+        head,
+        organization,
+        new Date(1, 2, 3),
+        'Test task',
+        sponsor.sponsorId
+      );
+
+      await expect(FinanceServices.toggleSponsorTaskDone(guest, organization, sponsorTask.sponsorTaskId)).rejects.toThrow(
+        new AccessDeniedException('Only finance team members, heads, or the task assignee can toggle task status')
+      );
+    });
+
+    it('Fails if sponsor task does not exist', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+
+      await expect(FinanceServices.toggleSponsorTaskDone(user, organization, 'nonexistent-id')).rejects.toThrow(
+        new NotFoundException('SponsorTask', 'nonexistent-id')
+      );
+    });
+
+    it('Fails if sponsor task is deleted', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+      const sponsor = await FinanceServices.createSponsor(
+        user,
+        'Tesla',
+        true,
+        ['MONETARY'],
+        new Date(12, 1, 24),
+        [2024],
+        sponsorTierId,
+        true,
+        'Elon Musk',
+        [],
+        organization,
+        5000,
+        undefined,
+        undefined,
+        TEST_EMAIL
+      );
+
+      const sponsorTask = await FinanceServices.createSponsorTask(
+        user,
+        organization,
+        new Date(1, 2, 3),
+        'Test task',
+        sponsor.sponsorId
+      );
+
+      await FinanceServices.deleteSponsorTask(sponsorTask.sponsorTaskId, user, organization);
+
+      await expect(FinanceServices.toggleSponsorTaskDone(user, organization, sponsorTask.sponsorTaskId)).rejects.toThrow(
+        new NotFoundException('SponsorTask', sponsorTask.sponsorTaskId)
+      );
     });
   });
 });

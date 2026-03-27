@@ -8,15 +8,9 @@ import {
   Title,
   Tooltip,
   Legend,
-  CoreChartOptions,
-  ElementChartOptions,
-  DatasetChartOptions,
-  PluginChartOptions,
-  BarControllerChartOptions,
-  ScaleChartOptions
+  ChartOptions
 } from 'chart.js';
 import { Box } from '@mui/material';
-import { _DeepPartialObject } from 'chart.js/dist/types/utils';
 
 Chart.register(CategoryScale, LinearScale, BarController, BarElement, Title, Tooltip, Legend);
 
@@ -55,14 +49,7 @@ const StatsBarChart: React.FC<StatsBarChartProps> = ({
     }))
   };
 
-  const options: _DeepPartialObject<
-    CoreChartOptions<'bar'> &
-      ElementChartOptions<'bar'> &
-      PluginChartOptions<'bar'> &
-      DatasetChartOptions<'bar'> &
-      ScaleChartOptions<'bar'> &
-      BarControllerChartOptions
-  > = {
+  const options: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {

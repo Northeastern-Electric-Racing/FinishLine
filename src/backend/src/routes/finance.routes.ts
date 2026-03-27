@@ -6,9 +6,9 @@ import {
   isOptionalDate,
   financeDashboardFilterValidators,
   intMinZero
-} from '../utils/validation.utils';
+} from '../utils/validation.utils.js';
 import { body } from 'express-validator';
-import FinanceController from '../controllers/finance.controllers';
+import FinanceController from '../controllers/finance.controllers.js';
 
 const financeRouter = express.Router();
 
@@ -16,19 +16,28 @@ financeRouter.post(
   '/sponsor/create',
   nonEmptyString(body('name')),
   body('activeStatus').isBoolean(),
-  body('sponsorValue').isInt(),
+  body('valueTypes').isArray(),
+  nonEmptyString(body('valueTypes.*')),
+  body('sponsorValue').isInt().optional(),
   isDate(body('joinDate')),
   body('activeYears').isArray(),
   intMinZero(body('activeYears.*')),
-  nonEmptyString(body('sponsorTierId')),
+  nonEmptyString(body('sponsorTierId')).optional({ checkFalsy: true }),
   body('taxExempt').isBoolean(),
-  nonEmptyString(body('sponsorContact')),
+  nonEmptyString(body('contactName')),
+  nonEmptyString(body('contactEmail')).optional({ checkFalsy: true }),
+  nonEmptyString(body('contactPhone')).optional({ checkFalsy: true }),
+  nonEmptyString(body('contactPosition')).optional({ checkFalsy: true }),
   body('sponsorTasks').isArray(),
   isDate(body('sponsorTasks.*.dueDate')),
-  isDate(body('sponsorTasks.*.notifyDate')),
-  nonEmptyString(body('sponsorTasks.*.assigneeUserId')),
+  isDate(body('sponsorTasks.*.notifyDate')).optional({ checkFalsy: true }),
+  nonEmptyString(body('sponsorTasks.*.assigneeUserId')).optional({ checkFalsy: true }),
   nonEmptyString(body('sponsorTasks.*.notes')),
-  nonEmptyString(body('discountCode')).optional(),
+  body('sponsorTasks.*.done').optional().isBoolean(),
+  nonEmptyString(body('discountCode')).optional({ checkFalsy: true }),
+  nonEmptyString(body('sponsorNotes')).optional({ checkFalsy: true }),
+  nonEmptyString(body('stockDescription')).optional({ checkFalsy: true }),
+  nonEmptyString(body('discountDescription')).optional({ checkFalsy: true }),
   validateInputs,
   FinanceController.createSponsor
 );
@@ -58,6 +67,8 @@ financeRouter.post(
 );
 
 financeRouter.post('/sponsorTask/:sponsorTaskId/delete', FinanceController.deleteSponsorTask);
+
+financeRouter.post('/sponsorTask/:sponsorTaskId/toggle-done', FinanceController.toggleSponsorTaskDone);
 
 financeRouter.post(
   '/sponsor/:sponsorId/sponsorTasks',
@@ -133,19 +144,29 @@ financeRouter.post(
   '/sponsor/:sponsorId/edit',
   nonEmptyString(body('name')),
   body('activeStatus').isBoolean(),
-  body('sponsorValue').isInt(),
+  body('valueTypes').isArray(),
+  nonEmptyString(body('valueTypes.*')),
+  body('sponsorValue').isInt().optional(),
   isDate(body('joinDate')),
   body('activeYears').isArray(),
   intMinZero(body('activeYears.*')),
-  nonEmptyString(body('sponsorTierId')),
+  nonEmptyString(body('sponsorTierId')).optional({ checkFalsy: true }),
   body('taxExempt').isBoolean(),
-  nonEmptyString(body('sponsorContact')),
+  nonEmptyString(body('contactName')),
+  nonEmptyString(body('contactEmail')).optional({ checkFalsy: true }),
+  nonEmptyString(body('contactPhone')).optional({ checkFalsy: true }),
+  nonEmptyString(body('contactPosition')).optional({ checkFalsy: true }),
   body('sponsorTasks').isArray(),
+  nonEmptyString(body('sponsorTasks.*.sponsorTaskId')).optional({ checkFalsy: true }),
   isDate(body('sponsorTasks.*.dueDate')),
-  isDate(body('sponsorTasks.*.notifyDate')),
-  nonEmptyString(body('sponsorTasks.*.assigneeUserId')),
+  isDate(body('sponsorTasks.*.notifyDate')).optional({ checkFalsy: true }),
+  nonEmptyString(body('sponsorTasks.*.assigneeUserId')).optional({ checkFalsy: true }),
   nonEmptyString(body('sponsorTasks.*.notes')),
-  body('discountCode').optional(),
+  body('sponsorTasks.*.done').optional().isBoolean(),
+  body('discountCode').optional({ checkFalsy: true }),
+  nonEmptyString(body('sponsorNotes')).optional({ checkFalsy: true }),
+  nonEmptyString(body('stockDescription')).optional({ checkFalsy: true }),
+  nonEmptyString(body('discountDescription')).optional({ checkFalsy: true }),
   validateInputs,
   FinanceController.editSponsor
 );

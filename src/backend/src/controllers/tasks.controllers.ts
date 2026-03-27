@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
-import TasksService from '../services/tasks.services';
+import TasksService from '../services/tasks.services.js';
 import { validateWBS, WbsNumber } from 'shared';
 
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
     try {
       const { title, deadline, startDate, priority, status, assignees, notes } = req.body;
-      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const task = await TasksService.createTask(
         req.currentUser,
@@ -30,7 +30,7 @@ export default class TasksController {
   static async editTask(req: Request, res: Response, next: NextFunction) {
     try {
       const { title, notes, priority, deadline, startDate } = req.body;
-      const { taskId } = req.params;
+      const { taskId } = req.params as Record<string, string>;
 
       const updateTask = await TasksService.editTask(
         req.currentUser,
@@ -52,7 +52,7 @@ export default class TasksController {
   static async editTaskStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { status } = req.body;
-      const { taskId } = req.params;
+      const { taskId } = req.params as Record<string, string>;
 
       const updatedTask = await TasksService.editTaskStatus(
         req.currentUser,
@@ -70,7 +70,7 @@ export default class TasksController {
   static async editTaskAssignees(req: Request, res: Response, next: NextFunction) {
     try {
       const { assignees } = req.body;
-      const { taskId } = req.params;
+      const { taskId } = req.params as Record<string, string>;
 
       const updatedTask = await TasksService.editTaskAssignees(req.currentUser, taskId, assignees, req.organization);
 
@@ -82,7 +82,7 @@ export default class TasksController {
 
   static async deleteTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { taskId } = req.params;
+      const { taskId } = req.params as Record<string, string>;
 
       const updatedTask = await TasksService.deleteTask(req.currentUser, taskId, req.organization);
 
@@ -92,9 +92,29 @@ export default class TasksController {
     }
   }
 
+  static async getFilteredTasks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { memberIds, teamIds, startPeriod, endPeriod } = req.body;
+
+      const tasks = await TasksService.getFilteredTasks(
+        {
+          memberIds,
+          teamIds,
+          startPeriod: new Date(startPeriod),
+          endPeriod: new Date(endPeriod)
+        },
+        req.organization
+      );
+
+      res.status(200).json(tasks);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getOverdueTasksByTeamLeadership(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId } = req.params;
+      const { userId } = req.params as Record<string, string>;
 
       const tasks = await TasksService.getOverdueTasksByTeamLeadership(userId, req.organization);
       res.status(200).json(tasks);

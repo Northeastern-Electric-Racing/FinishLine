@@ -1,18 +1,20 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { ChangeRequestReason, ChangeRequestType } from 'shared';
-import ChangeRequestsController from '../controllers/change-requests.controllers';
+import ChangeRequestsController from '../controllers/change-requests.controllers.js';
 import {
   intMinZero,
+  isDateOnly,
   nonEmptyString,
   projectProposedChangesValidators,
   validateInputs,
   workPackageProposedChangesValidators
-} from '../utils/validation.utils';
+} from '../utils/validation.utils.js';
 
 const changeRequestsRouter = express.Router();
 
 changeRequestsRouter.get('/', ChangeRequestsController.getAllChangeRequests);
+changeRequestsRouter.get('/guest', ChangeRequestsController.getAllGuestChangeRequests);
 
 changeRequestsRouter.get('/to-review', ChangeRequestsController.getToReviewChangeRequests);
 changeRequestsRouter.get('/unreviewed', ChangeRequestsController.getUnreviewedChangeRequests);
@@ -38,7 +40,7 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom((value) => value === ChangeRequestType.Activation),
-  body('startDate').custom((value) => !isNaN(Date.parse(value))),
+  isDateOnly(body('startDate')),
   nonEmptyString(body('leadId')),
   nonEmptyString(body('managerId')),
   body('confirmDetails').isBoolean(),
@@ -113,6 +115,17 @@ changeRequestsRouter.post(
   nonEmptyString(body('userIds.*')),
   validateInputs,
   ChangeRequestsController.requestCRReview
+);
+
+changeRequestsRouter.post(
+  '/new/leadership',
+  intMinZero(body('wbsNum.carNumber')),
+  intMinZero(body('wbsNum.projectNumber')),
+  intMinZero(body('wbsNum.workPackageNumber')),
+  nonEmptyString(body('leadId')).optional(),
+  nonEmptyString(body('managerId')).optional(),
+  validateInputs,
+  ChangeRequestsController.createLeadershipChangeRequest
 );
 
 export default changeRequestsRouter;

@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { RoleEnum, User, UserWithScheduleSettings } from 'shared';
-import userScheduleSettingsTransformer from './user-schedule-settings.transformer';
-import { UserQueryArgs, UserWithSettingsQueryArgs } from '../prisma-query-args/user.query-args';
+import userScheduleSettingsTransformer from './user-schedule-settings.transformer.js';
+import { UserQueryArgs, UserWithSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
 
 export const userTransformer = (user: Prisma.UserGetPayload<UserQueryArgs>): User => {
   return {

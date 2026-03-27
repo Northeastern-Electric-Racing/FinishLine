@@ -1,7 +1,16 @@
-import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
+import { Event_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
 import { Request, Response } from 'express';
 import { body, query, ValidationChain, validationResult } from 'express-validator';
-import { MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
+import {
+  MaterialStatus,
+  TaskPriority,
+  TaskStatus,
+  WorkPackageStage,
+  RoleEnum,
+  WbsElementStatus,
+  DayOfWeek,
+  ConflictStatus
+} from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isInt({ min: 0 }).not().isString();
@@ -78,15 +87,71 @@ export const isOptionalDate = (validationObject: ValidationChain): ValidationCha
   return validationObject.optional().custom((value) => !isNaN(Date.parse(value)));
 };
 
+export const isDateOnly = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.custom((value) => {
+    const parsed = Date.parse(value);
+    if (isNaN(parsed)) return false;
+    const date = new Date(parsed);
+    return (
+      date.getUTCHours() === 0 && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0 && date.getUTCMilliseconds() === 0
+    );
+  });
+};
+
+export const isOptionalDateOnly = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.optional().custom((value) => {
+    const parsed = Date.parse(value);
+    if (isNaN(parsed)) return false;
+    const date = new Date(parsed);
+    return (
+      date.getUTCHours() === 0 && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0 && date.getUTCMilliseconds() === 0
+    );
+  });
+};
+
 export const validateReimbursementProducts = () => {
   return [
+    // Other products (non-project) - keep as strings
     body('otherReimbursementProducts').isArray(),
     nonEmptyString(body('otherReimbursementProducts.*.name')),
     nonEmptyString(body('otherReimbursementProducts.*.reason.otherProductReasonId')),
     nonEmptyString(body('otherReimbursementProducts.*.reason.name')),
     intMinZero(body('otherReimbursementProducts.*.cost')),
+
+    // WBS products - now materials
     body('wbsReimbursementProducts').isArray(),
-    nonEmptyString(body('wbsReimbursementProducts.*.name')),
+    nonEmptyString(body('wbsReimbursementProducts.*.materialId')),
+    intMinZero(body('wbsReimbursementProducts.*.cost')),
+    intMinZero(body('wbsReimbursementProducts.*.reason.carNumber')),
+    intMinZero(body('wbsReimbursementProducts.*.reason.projectNumber')),
+    intMinZero(body('wbsReimbursementProducts.*.reason.workPackageNumber'))
+  ];
+};
+
+export const validateReimbursementProductsForEdit = (): ValidationChain[] => {
+  return [
+    // Other products (non-project) - keep as strings
+    body('otherReimbursementProducts').isArray(),
+    nonEmptyString(body('otherReimbursementProducts.*.name')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason.otherProductReasonId')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason.name')),
+    intMinZero(body('otherReimbursementProducts.*.cost')),
+
+    // WBS products
+    body('wbsReimbursementProducts').isArray(),
+
+    // Either materialId OR name must be present
+    body('wbsReimbursementProducts.*.materialId').optional().isString(),
+    body('wbsReimbursementProducts.*.name').optional().isString(),
+
+    // Ensure at least one is provided
+    body('wbsReimbursementProducts.*').custom((product) => {
+      if (!product.materialId && !product.name) {
+        throw new Error('Either materialId or name must be provided');
+      }
+      return true;
+    }),
+
     intMinZero(body('wbsReimbursementProducts.*.cost')),
     intMinZero(body('wbsReimbursementProducts.*.reason.carNumber')),
     intMinZero(body('wbsReimbursementProducts.*.reason.projectNumber')),
@@ -108,7 +173,7 @@ export const workPackageProposedChangesValidators = (base: string) => [
   nonEmptyString(body(`${base}.leadId`).optional()),
   nonEmptyString(body(`${base}.managerId`).optional()),
   isWorkPackageStageOrNone(workPackageProposedChangesExists(body(`${base}.stage`).optional())),
-  isDate(workPackageProposedChangesExists(body(`${base}.startDate`))),
+  isDateOnly(workPackageProposedChangesExists(body(`${base}.startDate`))),
   intMinZero(workPackageProposedChangesExists(body(`${base}.duration`))),
   workPackageProposedChangesExists(body(`${base}.blockedBy`)).isArray(),
   intMinZero(body(`${base}.blockedBy.*.carNumber`)),
@@ -153,15 +218,30 @@ export const isMaterialStatus = (validationObject: ValidationChain): ValidationC
     ]);
 };
 
-export const isDesignReviewStatus = (validationObject: ValidationChain): ValidationChain => {
+export const isEventStatus = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([Event_Status.CONFIRMED, Event_Status.DONE, Event_Status.SCHEDULED, Event_Status.UNCONFIRMED]);
+};
+
+export const isDayOfWeek = (validationObject: ValidationChain): ValidationChain => {
   return validationObject
     .isString()
     .isIn([
-      Design_Review_Status.CONFIRMED,
-      Design_Review_Status.DONE,
-      Design_Review_Status.SCHEDULED,
-      Design_Review_Status.UNCONFIRMED
+      DayOfWeek.MONDAY,
+      DayOfWeek.TUESDAY,
+      DayOfWeek.WEDNESDAY,
+      DayOfWeek.THURSDAY,
+      DayOfWeek.FRIDAY,
+      DayOfWeek.SATURDAY,
+      DayOfWeek.SUNDAY
     ]);
+};
+
+export const isConflictStatus = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([ConflictStatus.APPROVED, ConflictStatus.PENDING, ConflictStatus.DENIED, ConflictStatus.NO_CONFLICT]);
 };
 
 export const descriptionBulletsValidators = [
@@ -198,15 +278,14 @@ export const materialValidators = [
   nonEmptyString(body('assemblyId').optional()),
   isMaterialStatus(body('status')),
   nonEmptyString(body('materialTypeName')),
-  nonEmptyString(body('manufacturerName')),
-  nonEmptyString(body('manufacturerPartNumber')),
-  nonEmptyString(body('pdmFileName').optional()),
-  decimalMinZero(body('quantity')),
+  body('manufacturerName').optional().isString(),
+  body('manufacturerPartNumber').optional().isString(),
+  body('pdmFileName').optional().isString(),
+  decimalMinZero(body('quantity')).optional(),
   nonEmptyString(body('unitName')).optional(),
-  intMinZero(body('price')), // in cents
-  intMinZero(body('subtotal')), // in cents
-  nonEmptyString(body('linkUrl')),
-  nonEmptyString(body('reimbursementRequestId')).optional(),
+  intMinZero(body('price')).optional(), // in cents
+  intMinZero(body('subtotal')).optional(), // in cents
+  body('linkUrl').optional().isString(),
   body('notes').isString().optional()
 ];
 export const validateInputs = (req: Request, res: Response, next: Function): void => {
@@ -241,3 +320,12 @@ export const financeDashboardFilterValidators = [
   nonEmptyString(query('endDate')).optional(),
   nonEmptyString(query('carNumber')).optional()
 ];
+
+export const requireFile = (chain: ValidationChain): ValidationChain => {
+  return chain.custom((_value, { req }) => {
+    if (!req.file) {
+      throw new Error('Invalid or undefined document data');
+    }
+    return true;
+  });
+};

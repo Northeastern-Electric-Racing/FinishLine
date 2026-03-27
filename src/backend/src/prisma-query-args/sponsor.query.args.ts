@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args';
+import { getUserQueryArgs } from './user.query-args.js';
 
 export type SponsorQueryArgs = ReturnType<typeof getSponsorQueryArgs>;
 
@@ -9,7 +9,8 @@ export const getSponsorQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.SponsorDefaultArgs>()({
     include: {
       sponsorTasks: getSponsorTaskQueryArgs(organizationId),
-      tier: true
+      tier: true,
+      contact: true
     }
   });
 

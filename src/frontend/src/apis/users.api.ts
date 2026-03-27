@@ -5,6 +5,7 @@
 
 import axios from '../utils/axios';
 import {
+  dateToMidnightUTC,
   ProjectOverview,
   SetUserScheduleSettingsPayload,
   Task,
@@ -40,6 +41,16 @@ export const getAllUsers = () => {
  */
 export const getAllOrgUsers = () => {
   return axios.get<UserWithRole[]>(apiUrls.orgUsers(), {
+    transformResponse: (data) => JSON.parse(data).map(userTransformer)
+  });
+};
+
+/**
+ * All users in the current organization that are member or higher in role
+ * @returns the members in the current organization with their roles
+ */
+export const getAllOrgMembers = () => {
+  return axios.get<UserWithRole[]>(apiUrls.orgMembers(), {
     transformResponse: (data) => JSON.parse(data).map(userTransformer)
   });
 };
@@ -160,7 +171,10 @@ export const updateUserSecureSettings = (settings: UserSecureSettings) => {
  * Update the given user's schedule settings by UserId
  */
 export const updateUserScheduleSettings = (settings: SetUserScheduleSettingsPayload) => {
-  return axios.post<UserScheduleSettings>(apiUrls.userScheduleSettingsSet(), settings);
+  return axios.post<UserScheduleSettings>(apiUrls.userScheduleSettingsSet(), {
+    ...settings,
+    availability: settings.availability.map((a) => ({ ...a, dateSet: dateToMidnightUTC(a.dateSet) }))
+  });
 };
 
 export const updateUserRole = (id: string, role: string) => {

@@ -11,7 +11,7 @@ import {
   TableContainer,
   Button
 } from '@mui/material';
-import { isAdmin } from 'shared/src/permission-utils';
+import { isAdmin } from 'shared';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
@@ -26,22 +26,26 @@ import EditUsefulLinkModal from './EditUsefulLinkModal';
 import { linkToLinkCreateArgs } from '../../../../utils/link.utils';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
-const UsefulLinksTable = () => {
+interface UsefulLinksTableProps {
+  isOnGuestHomePage?: boolean;
+}
+
+const UsefulLinksTable = ({ isOnGuestHomePage }: UsefulLinksTableProps) => {
   const currentUser = useCurrentUser();
   const {
-    data: usefulLinks,
+    data: links,
     isLoading: usefulLinksIsLoading,
     isError: usefulLinksIsError,
     error: usefulLinksError
   } = useAllUsefulLinks();
   const { mutateAsync } = useSetUsefulLinks();
-  const { data: linkTypes, isLoading: linkTypesIsLoading } = useAllLinkTypes();
+  const { data: linkTypesBeforeFilter, isLoading: linkTypesIsLoading } = useAllLinkTypes();
 
   const [linkToDelete, setLinkToDelete] = useState<Link>();
   const [editingLink, setEditingLink] = useState<Link>();
   const [showCreateModel, setShowCreateModel] = useState<boolean>(false);
 
-  if (!usefulLinks || usefulLinksIsLoading || !linkTypes || linkTypesIsLoading) return <LoadingIndicator />;
+  if (!links || usefulLinksIsLoading || !linkTypesBeforeFilter || linkTypesIsLoading) return <LoadingIndicator />;
   if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
 
   const handleDelete = (allLinks: Link[], linkToDelete: Link) => {
@@ -50,13 +54,24 @@ const UsefulLinksTable = () => {
     setLinkToDelete(undefined);
   };
 
+  const linkTypes = linkTypesBeforeFilter.filter((linkType) =>
+    isOnGuestHomePage ? linkType.isOnGuestHomePage : !linkType.isOnGuestHomePage
+  );
+
+  const usefulLinks = links.filter((link) =>
+    isOnGuestHomePage ? link.linkType?.isOnGuestHomePage : !link.linkType?.isOnGuestHomePage
+  );
+
+  console.log('Links: ', links);
+  console.log('Links after filter: ', usefulLinks);
+  console.log('isOnGuestHomePage:', isOnGuestHomePage);
   return (
     <Box>
       <CreateUsefulLinkModal
         open={showCreateModel}
         handleClose={() => setShowCreateModel(false)}
         linkTypes={linkTypes}
-        currentLinks={usefulLinks}
+        currentLinks={links}
       />
       {editingLink && (
         <EditUsefulLinkModal
@@ -66,7 +81,7 @@ const UsefulLinksTable = () => {
           }}
           linkType={editingLink}
           linkTypes={linkTypes}
-          currentLinks={usefulLinks}
+          currentLinks={links}
         />
       )}
 

@@ -8,43 +8,49 @@ export const getProjectSegmentedWhereInput = (
 ): {
   where: {
     wbsElement: {
-      organizationId: string;
-      dateDeleted: null;
-      carNumber?: number;
-      dateCreated?: { gte?: Date; lte?: Date };
-    };
-  };
-} => {
-  const baseWhere: {
-    where: {
-      wbsElement: {
+      is: {
         organizationId: string;
         dateDeleted: null;
         carNumber?: number;
         dateCreated?: { gte?: Date; lte?: Date };
       };
     };
+  };
+} => {
+  const baseWhere: {
+    where: {
+      wbsElement: {
+        is: {
+          organizationId: string;
+          dateDeleted: null;
+          carNumber?: number;
+          dateCreated?: { gte?: Date; lte?: Date };
+        };
+      };
+    };
   } = Prisma.validator<Prisma.ProjectFindManyArgs>()({
     where: {
       wbsElement: {
-        organizationId,
-        dateDeleted: null
+        is: {
+          organizationId,
+          dateDeleted: null
+        }
       }
     }
   });
 
-  if (startDate) {
-    baseWhere.where.wbsElement.dateCreated = {
+  if (startDate !== undefined) {
+    baseWhere.where.wbsElement.is.dateCreated = {
       gte: startDate
     };
   }
 
-  if (endDate) {
-    baseWhere.where.wbsElement.dateCreated = { ...baseWhere.where.wbsElement.dateCreated, lte: endDate };
+  if (endDate !== undefined) {
+    baseWhere.where.wbsElement.is.dateCreated = { ...baseWhere.where.wbsElement.is.dateCreated, lte: endDate };
   }
 
   if (carNumber !== undefined) {
-    baseWhere.where.wbsElement.carNumber = carNumber;
+    baseWhere.where.wbsElement.is.carNumber = carNumber;
   }
 
   return baseWhere;
@@ -80,7 +86,7 @@ export const getReimbursementRequestWhereInput = (
     })
   };
 
-  if (carNumber !== undefined) {
+  if (carNumber) {
     baseWhere.reimbursementProducts = {
       some: {
         OR: [
@@ -114,32 +120,51 @@ export const computeRRTotals = (
       reimbursementStatusId: string;
       userId: string;
     }[];
+    reimbursementProducts?: { cost: number }[];
   }[]
 ): {
-  pendingFinance: number;
-  pendingLeadership: number;
-  submittedToSabo: number;
+  approved: number;
+  pendingApproval: number;
+  addedToSabo: number;
   reimbursed: number;
 } => {
-  const totals: Partial<Record<Reimbursement_Status_Type, number>> = {
-    [Reimbursement_Status_Type.PENDING_FINANCE]: 0,
-    [Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL]: 0,
-    [Reimbursement_Status_Type.SABO_SUBMITTED]: 0,
-    [Reimbursement_Status_Type.REIMBURSED]: 0
-  };
+  let pendingApproval = 0;
+  let approved = 0;
+  let addedToSabo = 0;
+  let reimbursed = 0;
 
   reimbursementRequests.forEach((req) => {
     const lastStatus = req.reimbursementStatuses.at(-1)?.type;
+    if (!lastStatus) return;
 
-    if (lastStatus && totals[lastStatus] !== undefined) {
-      totals[lastStatus] += req.totalCost;
+    // If reimbursementProducts are provided, sum their costs; otherwise use totalCost
+    const costToAdd = req.reimbursementProducts
+      ? req.reimbursementProducts.reduce((acc, prod) => acc + prod.cost, 0)
+      : req.totalCost;
+
+    switch (lastStatus) {
+      case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
+        pendingApproval += costToAdd;
+        break;
+      case Reimbursement_Status_Type.LEADERSHIP_APPROVED:
+      case Reimbursement_Status_Type.PENDING_FINANCE:
+      case Reimbursement_Status_Type.ADVISOR_APPROVED:
+        approved += costToAdd;
+        break;
+      case Reimbursement_Status_Type.SABO_SUBMITTED:
+      case Reimbursement_Status_Type.PENDING_SABO_SUBMISSION:
+        addedToSabo += costToAdd;
+        break;
+      case Reimbursement_Status_Type.REIMBURSED:
+        reimbursed += costToAdd;
+        break;
     }
   });
 
-  const pendingFinance = (totals[Reimbursement_Status_Type.PENDING_FINANCE] ?? 0) / 100;
-  const pendingLeadership = (totals[Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL] ?? 0) / 100;
-  const submittedToSabo = (totals[Reimbursement_Status_Type.SABO_SUBMITTED] ?? 0) / 100;
-  const reimbursed = (totals[Reimbursement_Status_Type.REIMBURSED] ?? 0) / 100;
-
-  return { pendingFinance, pendingLeadership, submittedToSabo, reimbursed };
+  return {
+    approved: approved / 100,
+    pendingApproval: pendingApproval / 100,
+    addedToSabo: addedToSabo / 100,
+    reimbursed: reimbursed / 100
+  };
 };

@@ -1,12 +1,12 @@
 import { WBS_Element } from '@prisma/client';
-import { DescriptionBulletPreview, WorkPackageStage, wbsPipe } from 'shared';
-import { getUserFullName } from './users.utils';
+import { DescriptionBulletPreview, WorkPackageStage, wbsPipe, formatDateOnly } from 'shared';
+import { getUserFullName } from './users.utils.js';
 import {
   DescriptionBulletWithType,
   descriptionBulletToChangeListValue,
   descriptionBulletsToChangeListValues,
   separateDescriptionBulletsByType
-} from './description-bullets.utils';
+} from './description-bullets.utils.js';
 
 export enum ChangeType {
   ADDED = 'Added new',
@@ -227,8 +227,8 @@ export const getWorkPackageChanges = async (
   const stageChangeJson = createChange('stage', oldStage, newStage, crId, submitterId, wbsElementId, null, null);
   const startDateChangeJson = createChange(
     'start date',
-    oldStartDate?.toDateString() || null,
-    new Date(newStartDate).toDateString(),
+    oldStartDate ? formatDateOnly(oldStartDate) : null,
+    formatDateOnly(new Date(newStartDate)),
     crId,
     submitterId,
     wbsElementId,

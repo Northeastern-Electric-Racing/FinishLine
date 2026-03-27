@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AvailabilityCreateArgs } from './design-review-types';
+import type { AvailabilityCreateArgs } from './calendar-types.js';
 
 export interface User {
   userId: string;
@@ -42,7 +42,15 @@ export type ThemeName = 'DARK' | 'LIGHT';
 
 export type OrganizationPreview = Pick<
   Organization,
-  'organizationId' | 'name' | 'dateCreated' | 'dateDeleted' | 'description' | 'applicationLink'
+  | 'organizationId'
+  | 'name'
+  | 'dateCreated'
+  | 'dateDeleted'
+  | 'description'
+  | 'applicationLink'
+  | 'newMemberImageId'
+  | 'platformDescription'
+  | 'platformLogoImageId'
 >;
 
 export interface Organization {
@@ -55,14 +63,15 @@ export interface Organization {
   treasurer?: User;
   advisor?: User;
   description: string;
-  applyInterestImageId?: string;
-  exploreAsGuestImageId?: string;
+  newMemberImageId?: string;
   applicationLink?: string;
   onboardingText?: string;
   contacts: Contact[];
   slackWorkspaceId?: string;
   partReviewGuideLink?: string;
   sponsorshipNotificationsSlackChannelId?: string;
+  platformDescription: string;
+  platformLogoImageId?: string;
 }
 
 /**

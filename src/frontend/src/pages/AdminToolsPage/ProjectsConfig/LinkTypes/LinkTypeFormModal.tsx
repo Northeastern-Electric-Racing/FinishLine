@@ -16,9 +16,17 @@ interface LinkTypeFormModalProps {
   defaultValues?: LinkType;
   onSubmit: (data: LinkTypeCreatePayload) => void;
   linkTypes: LinkType[];
+  isOnGuestHomePage?: boolean;
 }
 
-const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTypes }: LinkTypeFormModalProps) => {
+const LinkTypeFormModal = ({
+  open,
+  handleClose,
+  defaultValues,
+  onSubmit,
+  linkTypes,
+  isOnGuestHomePage
+}: LinkTypeFormModalProps) => {
   const toast = useToast();
   const creatingNew = defaultValues === undefined;
 
@@ -31,7 +39,8 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
       .required('LinkType Name is Required')
       .test('unique-LinkType-test', 'LinkType name must be unique', uniqueLinkTypeTest),
     iconName: yup.string().required('Icon name is required'),
-    required: yup.boolean().required('Required field must be specified')
+    required: yup.boolean().required('Required field must be specified'),
+    isOnGuestHomePage: yup.boolean().required('Guest page field must be specified')
   });
 
   const theme = useTheme();
@@ -47,7 +56,8 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
     defaultValues: {
       name: defaultValues?.name ?? '',
       iconName: defaultValues?.iconName ?? '',
-      required: defaultValues?.required ?? false
+      required: defaultValues?.required ?? false,
+      isOnGuestHomePage: isOnGuestHomePage ?? false
     }
   });
 
@@ -63,6 +73,7 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
     }
     handleClose();
   };
+
   const tooltipMessage = (
     <Typography sx={{ fontSize: 14 }}>
       Click to view possible icon names. For names with multiple words, seperate them with an _. AttachMoney = attach_money
@@ -73,7 +84,7 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
       open={open}
       onHide={handleClose}
       title={!!defaultValues ? 'Edit LinkType' : 'Create LinkType'}
-      reset={() => reset({ name: '' })}
+      reset={reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-LinkType-form' : 'create-LinkType-form'}
@@ -83,21 +94,23 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
         <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>LinkType Name</FormLabel>
-            <ReactHookTextField name="name" control={control} disabled={!creatingNew} />
+            <ReactHookTextField name="name" control={control} />
             <FormHelperText error>{errors.name?.message}</FormHelperText>
           </FormControl>
         </Grid>
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>Required</FormLabel>
-            <Controller
-              name="required"
-              control={control}
-              render={({ field }) => <Switch {...field} checked={field.value} />}
-            />
-            <FormHelperText error>{errors.required?.message}</FormHelperText>
-          </FormControl>
-        </Grid>
+        {!isOnGuestHomePage && (
+          <Grid item xs={6}>
+            <FormControl fullWidth>
+              <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>Required</FormLabel>
+              <Controller
+                name="required"
+                control={control}
+                render={({ field }) => <Switch {...field} checked={field.value} />}
+              />
+              <FormHelperText error>{errors.required?.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+        )}
         <Grid item xs={6}>
           <FormControl fullWidth>
             <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>

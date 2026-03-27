@@ -1,5 +1,5 @@
 import { Organization } from '@prisma/client';
-import { userHasPermission } from '../utils/users.utils';
+import { userHasPermission } from '../utils/users.utils.js';
 import {
   FrequentlyAskedQuestion,
   isAdmin,
@@ -22,16 +22,16 @@ import {
   NotFoundException,
   InvalidOrganizationException,
   AccessDeniedGuestException
-} from '../utils/errors.utils';
-import prisma from '../prisma/prisma';
-import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
+} from '../utils/errors.utils.js';
+import prisma from '../prisma/prisma.js';
+import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args.js';
 import {
   getPartQueryArgs,
   getPartReviewQueryArgs,
   getPartReviewRequestQueryArgs,
   getPartSubmissionQueryArgs
-} from '../prisma-query-args/part-review.query-args';
-import { faqTransformer } from '../transformers/faq.transformer';
+} from '../prisma-query-args/part-review.query-args.js';
+import { faqTransformer } from '../transformers/recruitment-transformer.js';
 import {
   partReviewRequestTransformer,
   partsReviewCommonMistakeTransformer,
@@ -41,13 +41,13 @@ import {
   partReviewTransformer,
   partTagTransformer,
   partReviewPopupTransformer
-} from '../transformers/part-review.transformer';
-import { isUserPartOfTeams } from '../utils/teams.utils';
-import { uploadFile, downloadFile } from '../utils/google-integration.utils';
-import ProjectsService from './projects.services';
-import { sendPartAssignmentPopUp, sendPartReviewRequestPopUp } from '../utils/pop-up.utils';
-import { sendSlackPartAssignmentNotif, sendSlackPartReviewRequestNotif } from '../utils/slack.utils';
-import { getUserWithSettingsQueryArgs } from '../prisma-query-args/user.query-args';
+} from '../transformers/part-review.transformer.js';
+import { isUserPartOfTeams } from '../utils/teams.utils.js';
+import { uploadFile, downloadFile } from '../utils/google-integration.utils.js';
+import ProjectsService from './projects.services.js';
+import { sendPartAssignmentPopUp, sendPartReviewRequestPopUp } from '../utils/pop-up.utils.js';
+import { sendSlackPartAssignmentNotif, sendSlackPartReviewRequestNotif } from '../utils/slack.utils.js';
+import { getUserWithSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
 
 export default class PartReviewService {
   /**

@@ -1,6 +1,6 @@
 import { AuthenticatedUser, RoleEnum } from 'shared';
-import { AuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
-import { isCurrentUserAtLeastLeadForFinance, isCurrentUserOnFinance } from '../utils/reimbursement-requests.utils';
+import { AuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args.js';
+import { isCurrentUserAtLeastLeadForFinance, isCurrentUserOnFinance } from '../utils/reimbursement-requests.utils.js';
 import { Prisma } from '@prisma/client';
 
 const authenticatedUserTransformer = (user: Prisma.UserGetPayload<AuthUserQueryArgs>): AuthenticatedUser => {

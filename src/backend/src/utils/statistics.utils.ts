@@ -1,9 +1,9 @@
 import { Graph_Type, Measure, Organization, Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { GraphData, wbsPipe, wbsNamePipe, Permission, User } from 'shared';
-import prisma from '../prisma/prisma';
-import { getGraphCollectionQueryArgs } from '../prisma-query-args/statistics.query-args';
-import { AccessDeniedException, DeletedException, InvalidOrganizationException, NotFoundException } from './errors.utils';
-import { userHasPermissionNew } from './users.utils';
+import prisma from '../prisma/prisma.js';
+import { getGraphCollectionQueryArgs } from '../prisma-query-args/statistics.query-args.js';
+import { AccessDeniedException, DeletedException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
+import { userHasPermissionNew } from './users.utils.js';
 
 interface CarSegmentedData {
   carIds: string[];

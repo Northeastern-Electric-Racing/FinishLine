@@ -14,13 +14,13 @@ import {
   wbsPipe,
   User
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import projectTransformer, {
   projectOverviewTransformer,
   projectGanttTransformer,
   projectPreviewTransformer
-} from '../transformers/projects.transformer';
-import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
+} from '../transformers/projects.transformer.js';
+import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
@@ -29,19 +29,19 @@ import {
   DeletedException,
   AccessDeniedException,
   InvalidOrganizationException
-} from '../utils/errors.utils';
-import { updateProjectAndCreateChanges, getHighestProjectNumber } from '../utils/projects.utils';
-import { wbsNumOf } from '../utils/utils';
-import WorkPackagesService from './work-packages.services';
-import { userHasPermission } from '../utils/users.utils';
+} from '../utils/errors.utils.js';
+import { updateProjectAndCreateChanges, getHighestProjectNumber } from '../utils/projects.utils.js';
+import { wbsNumOf } from '../utils/utils.js';
+import WorkPackagesService from './work-packages.services.js';
+import { userHasPermission } from '../utils/users.utils.js';
 import {
   getProjectGanttQueryArgs,
   getProjectOverviewQueryArgs,
   getProjectPreviewQueryArgs,
   getProjectQueryArgs
-} from '../prisma-query-args/projects.query-args';
-import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
-import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
+} from '../prisma-query-args/projects.query-args.js';
+import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
+import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
 
 export default class ProjectsService {
   /**
@@ -66,6 +66,7 @@ export default class ProjectsService {
   static async getAllProjects(organization: Organization): Promise<ProjectPreview[]> {
     const projects = await prisma.project.findMany({
       where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
+      orderBy: { wbsElement: { dateCreated: 'desc' } },
       ...getProjectPreviewQueryArgs(organization.organizationId)
     });
 
@@ -583,7 +584,8 @@ export default class ProjectsService {
     name: string,
     iconName: string,
     required: boolean,
-    organization: Organization
+    organization: Organization,
+    isOnGuestHomePage: boolean
   ): Promise<LinkType> {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('Only admins can create link types');
@@ -600,7 +602,8 @@ export default class ProjectsService {
         creatorId: user.userId,
         iconName,
         required,
-        organizationId: organization.organizationId
+        organizationId: organization.organizationId,
+        isOnGuestHomePage
       }
     });
 
@@ -621,7 +624,9 @@ export default class ProjectsService {
     iconName: string,
     required: boolean,
     submitter: User,
-    organization: Organization
+    organization: Organization,
+    isOnGuestHomePage: boolean,
+    newName?: string
   ): Promise<LinkType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('Only an admin can update the linkType');
@@ -638,13 +643,28 @@ export default class ProjectsService {
 
     if (!linkType) throw new NotFoundException('Link Type', linkName);
 
+    // If attempting to rename, ensure new name does not conflict with an existing LinkType
+    if (newName && newName !== linkName) {
+      const existingWithNewName = await prisma.link_Type.findUnique({
+        where: {
+          uniqueLinkType: {
+            name: newName,
+            organizationId: organization.organizationId
+          }
+        }
+      });
+
+      if (existingWithNewName) throw new HttpException(400, 'LinkType with that name already exists in this organization.');
+    }
+
     // update the LinkType
     const linkTypeUpdated = await prisma.link_Type.update({
       where: { id: linkType.id },
       data: {
-        name: linkName,
+        name: newName && newName ? newName : linkName,
         iconName,
-        required
+        required,
+        isOnGuestHomePage
       }
     });
     return linkTypeUpdated;

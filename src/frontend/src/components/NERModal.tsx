@@ -15,6 +15,7 @@ export interface NERModalProps {
   onHide: () => void;
   children?: ReactNode;
   titleChildren?: ReactNode;
+  actionsLeftChildren?: ReactNode;
   cancelText?: CancelText;
   submitText?: SubmitText;
   disabled?: boolean;
@@ -40,7 +41,8 @@ const NERModal = ({
   hideBackDrop = false,
   icon,
   paperProps,
-  titleChildren
+  titleChildren,
+  actionsLeftChildren
 }: NERModalProps) => {
   return (
     <Dialog
@@ -110,7 +112,8 @@ const NERModal = ({
         {children}
       </DialogContent>
       {!hideFormButtons && (
-        <DialogActions>
+        <DialogActions sx={{ justifyContent: actionsLeftChildren ? 'space-between' : 'flex-end' }}>
+          {actionsLeftChildren && <Box sx={{ ml: 1 }}>{actionsLeftChildren}</Box>}
           <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
             <NERFailButton sx={{ mx: 1 }} form={formId} onClick={onHide}>
               {cancelText || 'Cancel'}

@@ -8,18 +8,24 @@ import { body } from 'express-validator';
 import {
   intMinZero,
   isDate,
-  isOptionalDate,
+  isOptionalDateOnly,
   nonEmptyString,
   validateInputs,
-  validateReimbursementProducts
-} from '../utils/validation.utils';
-import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
+  validateReimbursementProducts,
+  validateReimbursementProductsForEdit
+} from '../utils/validation.utils.js';
+import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers.js';
 import multer, { memoryStorage } from 'multer';
 import { MAX_FILE_SIZE } from 'shared';
 
 const reimbursementRequestsRouter = express.Router();
 
-const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
+const upload = multer({
+  storage: memoryStorage(),
+  limits: {
+    fileSize: MAX_FILE_SIZE
+  }
+});
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
@@ -101,11 +107,16 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.editVendor
 );
 
+reimbursementRequestsRouter.post(
+  '/vendors/:vendorId/setTaxExemptStatus',
+  ReimbursementRequestController.setVendorTaxExemptStatus
+);
+
 reimbursementRequestsRouter.post('/:vendorId/vendors/delete', ReimbursementRequestController.deleteVendor);
 
 reimbursementRequestsRouter.post(
   '/create',
-  isOptionalDate(body('dateOfExpense')),
+  isOptionalDateOnly(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   nonEmptyString(body('indexCodeId')),
   nonEmptyString(body('accountCodeId')),
@@ -121,7 +132,7 @@ reimbursementRequestsRouter.get('/:requestId', ReimbursementRequestController.ge
 
 reimbursementRequestsRouter.post(
   '/:requestId/edit',
-  isOptionalDate(body('dateOfExpense')),
+  isOptionalDateOnly(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   nonEmptyString(body('indexCodeId')),
   body('receiptPictures').isArray(),
@@ -129,7 +140,7 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('receiptPictures.*.googleFileId')),
   nonEmptyString(body('accountCodeId')),
   intMinZero(body('totalCost')),
-  validateReimbursementProducts(),
+  validateReimbursementProductsForEdit(),
   validateInputs,
   ReimbursementRequestController.editReimbursementRequest
 );
@@ -146,14 +157,14 @@ reimbursementRequestsRouter.get('/pending-advisor/list', ReimbursementRequestCon
 reimbursementRequestsRouter.post(
   '/pending-advisor/send',
   body('saboNumbers').isArray(),
-  intMinZero(body('saboNumbers.*')),
+  nonEmptyString(body('saboNumbers.*')),
   validateInputs,
   ReimbursementRequestController.sendPendingAdvisorList
 );
 
 reimbursementRequestsRouter.post(
   '/:requestId/set-sabo-number',
-  intMinZero(body('saboNumber')),
+  nonEmptyString(body('saboNumber')),
   validateInputs,
   ReimbursementRequestController.setSaboNumber
 );
@@ -167,7 +178,7 @@ reimbursementRequestsRouter.post(
   body('taxExempt').optional().isBoolean(),
   body('twoFactorContacts').optional().isArray(),
   nonEmptyString(body('twoFactorContacts.*')),
-  nonEmptyString(body('notes')).optional(),
+  body('notes').optional().isString(),
   validateInputs,
   ReimbursementRequestController.createVendor
 );

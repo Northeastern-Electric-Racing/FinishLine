@@ -1,12 +1,12 @@
 import { LinkCreateArgs } from 'shared';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
-import { createTestLinkType, createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
-import prisma from '../../src/prisma/prisma';
-import { testLink1 } from '../test-data/organizations.test-data';
-import { uploadFile } from '../../src/utils/google-integration.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
+import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data.js';
+import { createTestLinkType, createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils.js';
+import prisma from '../../src/prisma/prisma.js';
+import { testLink1 } from '../test-data/organizations.test-data.js';
+import { uploadFile } from '../../src/utils/google-integration.utils.js';
 import { Mock, vi } from 'vitest';
-import OrganizationsService from '../../src/services/organizations.services';
+import OrganizationsService from '../../src/services/organizations.services.js';
 import { Organization } from '@prisma/client';
 
 vi.mock('../../src/utils/google-integration.utils', () => ({
@@ -39,46 +39,6 @@ describe('Organization Tests', () => {
       expect(org).not.toBeNull();
       expect(org.organizationId).toBe(orgId);
       expect(org.name).toBe(organization.name);
-    });
-  });
-
-  describe('Set Images', () => {
-    const file1 = { originalname: 'image1.png' } as Express.Multer.File;
-    const file2 = { originalname: 'image2.png' } as Express.Multer.File;
-    const file3 = { originalname: 'image3.png' } as Express.Multer.File;
-    it('Fails if user is not an admin', async () => {
-      await expect(
-        OrganizationsService.setImages(file1, file2, await createTestUser(wonderwomanGuest, orgId), organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update images'));
-    });
-
-    it('Succeeds and updates all the images', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      (uploadFile as Mock).mockImplementation((file) => {
-        return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
-      });
-
-      await OrganizationsService.setImages(file1, file2, testBatman, organization);
-
-      const oldOrganization = await prisma.organization.findUnique({
-        where: {
-          organizationId: orgId
-        }
-      });
-
-      expect(oldOrganization).not.toBeNull();
-      expect(oldOrganization?.applyInterestImageId).toBe('uploaded-image1.png');
-      expect(oldOrganization?.exploreAsGuestImageId).toBe('uploaded-image2.png');
-
-      await OrganizationsService.setImages(file1, file3, testBatman, organization);
-
-      const updatedOrganization = await prisma.organization.findUnique({
-        where: {
-          organizationId: orgId
-        }
-      });
-
-      expect(updatedOrganization?.exploreAsGuestImageId).toBe('uploaded-image3.png');
     });
   });
 
@@ -201,30 +161,6 @@ describe('Organization Tests', () => {
       expect(projects).not.toBeNull();
       expect(projects.length).toBe(1);
       expect(projects[0].id).toBe(testProject1.projectId);
-    });
-  });
-
-  describe('Get Organization Images', () => {
-    it('Fails if an organization does not exist', async () => {
-      await expect(async () => await OrganizationsService.getOrganizationImages('1')).rejects.toThrow(
-        new NotFoundException('Organization', '1')
-      );
-    });
-
-    it('Succeeds and gets all the images', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      await createTestLinkType(testBatman, orgId);
-      await OrganizationsService.setImages(
-        { originalname: 'image1.png' } as Express.Multer.File,
-        { originalname: 'image2.png' } as Express.Multer.File,
-        testBatman,
-        organization
-      );
-      const images = await OrganizationsService.getOrganizationImages(orgId);
-
-      expect(images).not.toBeNull();
-      expect(images.applyInterestImage).toBe('uploaded-image1.png');
-      expect(images.exploreAsGuestImage).toBe('uploaded-image2.png');
     });
   });
 
@@ -357,6 +293,45 @@ describe('Organization Tests', () => {
 
       expect(updatedOrganization).not.toBeNull();
       expect(updatedOrganization.partReviewGuideLink).toBe('newlink');
+    });
+  });
+
+  describe('Set Organization Platform Logo', () => {
+    const file1 = { originalname: 'image1.png' } as Express.Multer.File;
+    const file2 = { originalname: 'image2.png' } as Express.Multer.File;
+    const file3 = { originalname: 'image3.png' } as Express.Multer.File;
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        OrganizationsService.setPlatformLogoImage(file1, await createTestUser(wonderwomanGuest, orgId), organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update platform logo'));
+    });
+
+    it('Succeeds and updates all the images', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      (uploadFile as Mock).mockImplementation((file) => {
+        return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
+      });
+
+      await OrganizationsService.setPlatformLogoImage(file2, testBatman, organization);
+
+      const oldOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(oldOrganization).not.toBeNull();
+      expect(oldOrganization?.platformLogoImageId).toBe('uploaded-image2.png');
+
+      await OrganizationsService.setPlatformLogoImage(file3, testBatman, organization);
+
+      const updatedOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(updatedOrganization?.platformLogoImageId).toBe('uploaded-image3.png');
     });
   });
 });

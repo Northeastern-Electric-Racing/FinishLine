@@ -3,11 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, UserPreview } from './user-types';
-import { ImplementedChange } from './change-request-types';
-import { WorkPackageStage } from './work-package-types';
-import { TeamPreview } from './team-types';
-import { DesignReviewPreview, Task, TeamType } from 'shared';
+import { EventPreview, TeamType } from './calendar-types.js';
+import { ImplementedChange } from './change-request-types.js';
+import { Task } from './task-types.js';
+import { TeamPreview } from './team-types.js';
+import { User, UserPreview } from './user-types.js';
+import { WorkPackageStage } from './work-package-types.js';
 
 export interface WbsNumber {
   carNumber: number;
@@ -81,11 +82,12 @@ export interface ProjectPreview extends WbsElementPreview {
   abbreviation?: string;
   workPackages: WorkPackagePreview[];
   teams: { teamName: string; teamId: string }[];
+  teamTypes: { name: string; teamTypeId: string }[];
 }
 
 export interface ProjectOverview extends ProjectPreview {
   links: Link[];
-  tasks: Task[];
+  tasksRemaining: number;
 }
 
 export interface RetrospectiveWorkPackage extends WorkPackage {
@@ -104,7 +106,7 @@ export interface WorkPackage extends WbsElement {
   stage?: WorkPackageStage;
   teamTypes: TeamType[];
   projectId: string;
-  designReviews: DesignReviewPreview[];
+  events: EventPreview[];
 }
 
 export interface WorkPackagePreview extends WbsElementPreview {
@@ -131,6 +133,7 @@ export interface LinkType {
   name: string;
   required: boolean;
   iconName: string;
+  isOnGuestHomePage: boolean;
 }
 
 export interface Link {
@@ -185,6 +188,7 @@ export interface LinkTypeCreatePayload {
   name: string;
   iconName: string;
   required: boolean;
+  isOnGuestHomePage: boolean;
 }
 
 export interface DescriptionBulletTypeCreatePayload {

@@ -1,19 +1,25 @@
 import express from 'express';
-import { body, param } from 'express-validator';
-import WorkPackagesController from '../controllers/work-packages.controllers';
+import { body, param, query } from 'express-validator';
+import WorkPackagesController from '../controllers/work-packages.controllers.js';
 import {
   blockedByValidators,
   descriptionBulletsValidators,
   intMinZero,
-  isDate,
+  isDateOnly,
   isWorkPackageStageOrNone,
   nonEmptyString,
   validateInputs
-} from '../utils/validation.utils';
-import { WorkPackageSelection } from 'shared';
+} from '../utils/validation.utils.js';
+import { WorkPackageSelection, WbsElementStatus } from 'shared';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
+workPackagesRouter.get(
+  '/all-preview',
+  query('status').optional().isIn(Object.values(WbsElementStatus)),
+  validateInputs,
+  WorkPackagesController.getAllWorkPackagesPreview
+);
 workPackagesRouter.post(
   '/get-many',
   body('wbsNums').isArray(),
@@ -29,7 +35,7 @@ workPackagesRouter.post(
   nonEmptyString(body('crId').optional()),
   nonEmptyString(body('name')),
   isWorkPackageStageOrNone(body('stage')),
-  isDate(body('startDate')),
+  isDateOnly(body('startDate')),
   intMinZero(body('duration')),
   intMinZero(body('projectWbsNum.carNumber')),
   intMinZero(body('projectWbsNum.projectNumber')),
@@ -45,7 +51,7 @@ workPackagesRouter.post(
   nonEmptyString(body('workPackageId')),
   nonEmptyString(body('crId')),
   nonEmptyString(body('name')),
-  isDate(body('startDate')),
+  isDateOnly(body('startDate')),
   intMinZero(body('duration')),
   isWorkPackageStageOrNone(body('stage')),
   ...blockedByValidators,
@@ -59,7 +65,7 @@ workPackagesRouter.delete('/:wbsNum/delete', WorkPackagesController.deleteWorkPa
 workPackagesRouter.get('/:wbsNum/blocking', WorkPackagesController.getBlockingWorkPackages);
 workPackagesRouter.post(
   '/slack-upcoming-deadlines',
-  isDate(body('deadline')),
+  isDateOnly(body('deadline')),
   validateInputs,
   WorkPackagesController.slackMessageUpcomingDeadlines
 );

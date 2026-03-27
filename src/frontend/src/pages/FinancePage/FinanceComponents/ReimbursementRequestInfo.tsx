@@ -1,38 +1,20 @@
-import {
-  Box,
-  Button,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow
-} from '@mui/material';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { Box, Tooltip, IconButton } from '@mui/material';
+import { useLocation, useHistory, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { isGuest, ReimbursementRequest } from 'shared';
-import { ReimbursementRequestRow, ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
+import { ReimbursementProduct, ReimbursementStatusType } from 'shared';
 import { undefinedPipe, fullNamePipe, centsToDollar, datePipe, dateUndefinedPipe } from '../../../utils/pipes';
 import {
   createReimbursementRequestRowData,
-  vendorDescendingComparator,
-  statusDescendingComparator,
-  submitterDescendingComparator,
-  descendingComparator,
   cleanReimbursementRequestStatus
 } from '../../../utils/reimbursement-request.utils';
 import { routes } from '../../../utils/routes';
-import ColumnHeader from './ColumnHeader';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import SidePage from './SidePagePopup';
 import ReimbursementRequestDetails from '../ReimbursementRequestDetailPage/ReimbursementRequestDetails';
-import ReimbursementRequestForm, {
-  ReimbursementRequestDataSubmission
-} from '../ReimbursementRequestForm/ReimbursementRequestForm';
-import { useCreateReimbursementRequest, useUploadManyReceipts } from '../../../hooks/finance.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
+import NERDataGrid, { MapRowResult } from '../../../components/NERDataGrid';
+import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 interface ReimbursementRequestInfoProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -40,16 +22,10 @@ interface ReimbursementRequestInfoProps {
   allReimbursementRequests?: ReimbursementRequest[];
   canViewAllReimbursementRequests?: boolean;
   currentTab?: number;
-  searchText?: string;
   statuses?: ReimbursementStatusType[];
   startDate?: Date | null;
   endDate?: Date | null;
   onCloseSidePage: () => void;
-}
-
-interface ReimbursementTableHeadCell {
-  id: keyof ReimbursementRequestRow;
-  label: string;
 }
 
 const ReimbursementRequestInfo = ({
@@ -58,18 +34,20 @@ const ReimbursementRequestInfo = ({
   allReimbursementRequests,
   canViewAllReimbursementRequests = false,
   currentTab = 0,
-  searchText,
   statuses,
   startDate,
   endDate,
   onCloseSidePage
 }: ReimbursementRequestInfoProps) => {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(100);
-  const [isAscendingOrder, setAscendingOrder] = useState(false);
-  const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('identifier');
   const user = useCurrentUser();
-  const [sidePageTitle, setSidePageTitle] = useState('');
+  const history = useHistory();
+  const { pathname } = useLocation();
+  const { id } = useParams<{ id?: string }>();
+  const [showSidePage, setShowSidePage] = useState(!!id);
+
+  useEffect(() => {
+    if (id) setShowSidePage(true);
+  }, [id]);
 
   const displayedReimbursementRequests =
     canViewAllReimbursementRequests && currentTab === 1 && allReimbursementRequests
@@ -78,110 +56,25 @@ const ReimbursementRequestInfo = ({
         ? userReimbursementRequests
         : assignedReimbursementRequests;
 
-  const rows = displayedReimbursementRequests
-    .map(createReimbursementRequestRowData)
-    .filter((row) => {
-      const submitted = new Date(row.dateSubmitted);
+  const filteredRequests = displayedReimbursementRequests.filter((request) => {
+    const row = createReimbursementRequestRowData(request);
+    const submitted = new Date(row.dateSubmitted);
 
-      if (startDate && submitted < startDate) {
-        return false;
-      }
-      if (endDate && submitted > endDate) {
-        return false;
-      }
-
-      if (statuses && statuses.length > 0 && !statuses.includes(row.status)) {
-        return false;
-      }
-
-      if (!searchText) {
-        return true;
-      }
-
-      const query = searchText.trim().toLowerCase().split(/\s+/);
-      return query.every((query) => {
-        const lowercase_query = query.toLowerCase();
-        // search filters
-        return (
-          row.status.toLowerCase().includes(lowercase_query) ||
-          ('' + row.identifier).toLowerCase().includes(lowercase_query) ||
-          ('' + fullNamePipe(row.submitter)).toLowerCase().includes(lowercase_query) ||
-          ('' + row.identifier).toLowerCase().includes(lowercase_query) ||
-          ('' + row.saboId).toLowerCase().includes(lowercase_query) ||
-          ('' + datePipe(row.dateSubmitted)).toLowerCase().includes(lowercase_query) ||
-          ('' + datePipe(row.dateSubmittedToSabo)).toLowerCase().includes(lowercase_query) ||
-          ('$' + centsToDollar(row.amount)).toLowerCase().includes(lowercase_query)
-        );
-      });
-    })
-    .sort((a, b) => {
-      switch (orderBy) {
-        case 'vendor':
-          return !isAscendingOrder
-            ? vendorDescendingComparator(a.vendor, b.vendor)
-            : -vendorDescendingComparator(a.vendor, b.vendor);
-        case 'status':
-          return !isAscendingOrder
-            ? statusDescendingComparator(a.status, b.status)
-            : -statusDescendingComparator(a.status, b.status);
-        case 'submitter':
-          return !isAscendingOrder
-            ? submitterDescendingComparator(a.submitter, b.submitter)
-            : -submitterDescendingComparator(a.submitter, b.submitter);
-        default:
-          return !isAscendingOrder ? descendingComparator(a, b, orderBy) : -descendingComparator(a, b, orderBy);
-      }
-    });
-
-  const headCells: readonly ReimbursementTableHeadCell[] = [
-    {
-      id: 'status',
-      label: 'Status'
-    },
-    {
-      id: 'submitter',
-      label: 'Submitted By'
-    },
-    {
-      id: 'amount',
-      label: 'Amount'
-    },
-    {
-      id: 'identifier',
-      label: 'RR #'
-    },
-    {
-      id: 'saboId',
-      label: 'SABO ID'
-    },
-    {
-      id: 'dateSubmitted',
-      label: 'Date Submitted'
-    },
-    {
-      id: 'dateSubmittedToSabo',
-      label: 'Date Submitted To SABO'
-    },
-    {
-      id: 'financeMemberAssigned',
-      label: 'Assigned To'
+    if (startDate && submitted < startDate) {
+      return false;
     }
-  ];
+    if (endDate && submitted > endDate) {
+      return false;
+    }
 
-  // handle pagination
-  const handleChangePage = (_event: unknown, page: number) => {
-    setPage(page);
-  };
+    if (statuses && statuses.length > 0 && !statuses.includes(row.status)) {
+      return false;
+    }
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value));
-    setPage(0);
-  };
+    return true;
+  });
 
-  // calculate money
-  const refundTotal = rows.reduce((sum, row) => sum + row.amount, 0);
-
-  const getStatusColor = (status: string): string => {
+  const getStatusColor = (status: ReimbursementStatusType): string => {
     switch (status) {
       case 'REIMBURSED':
         return '#549d49';
@@ -199,11 +92,154 @@ const ReimbursementRequestInfo = ({
     }
   };
 
-  const paginatedRows = rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-  const [showSidePage, setShowSidePage] = useState(false);
-  const [showCreateSidePage, setShowCreateSidePage] = useState(false);
-  const { isLoading: receiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
+  // Define columns for the data grid
+  const getColumns = (): GridColDef[] => {
+    const cols: GridColDef[] = [
+      {
+        field: 'status',
+        headerName: 'Status',
+        flex: 1,
+        minWidth: 220,
+        renderCell: (params: GridRenderCellParams) => (
+          <Box
+            sx={{
+              padding: '3px 8px',
+              display: 'inline-flex',
+              borderRadius: '8px',
+              backgroundColor: getStatusColor(params.value as ReimbursementStatusType),
+              fontWeight: 700,
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {cleanReimbursementRequestStatus(params.value as ReimbursementStatusType)}
+          </Box>
+        )
+      }
+    ];
 
+    if (currentTab !== 0) {
+      cols.push({
+        field: 'submitter',
+        headerName: 'Submitted By',
+        flex: 0.8,
+        minWidth: 150,
+        valueGetter: (params: any) => fullNamePipe(params.row.submitter)
+      });
+    }
+
+    cols.push(
+      {
+        field: 'amount',
+        headerName: 'Amount',
+        flex: 0.5,
+        minWidth: 110,
+        valueGetter: (params: any) => `$${centsToDollar(params.row.amount as number)}`
+      },
+      {
+        field: 'products',
+        headerName: 'Products Purchased',
+        flex: 1,
+        minWidth: 110,
+        valueGetter: (params: any) =>
+          params.row.reimbursementProducts.map((product: ReimbursementProduct) => product.name).join(', ')
+      },
+      {
+        field: 'identifier',
+        headerName: 'RR #',
+        flex: 0.4,
+        minWidth: 80,
+        valueGetter: (params: any) => undefinedPipe(params.row.identifier)
+      },
+      {
+        field: 'saboId',
+        headerName: 'SABO ID',
+        flex: 0.5,
+        minWidth: 100,
+        valueGetter: (params: any) => params.row.saboId
+      },
+      {
+        field: 'dateSubmitted',
+        headerName: 'Date Submitted',
+        flex: 0.7,
+        minWidth: 130,
+        valueGetter: (params: any) => datePipe(params.row.dateSubmitted)
+      },
+      {
+        field: 'dateSubmittedToSabo',
+        headerName: 'Date Submitted To SABO',
+        flex: 0.7,
+        minWidth: 180,
+        valueGetter: (params: any) => dateUndefinedPipe(params.row.dateSubmittedToSabo)
+      },
+      {
+        field: 'description',
+        headerName: 'Description',
+        flex: 0.7,
+        minWidth: 180,
+        valueGetter: (params: any) => params.row.description,
+        renderCell: (params: any) => {
+          const { description } = params.row;
+
+          if (!description || description.trim() === '') {
+            return null;
+          }
+
+          return (
+            <Tooltip title={description} arrow placement="left">
+              <IconButton size="small" sx={{ p: 0.5, color: 'white' }}>
+                <InfoOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          );
+        }
+      }
+    );
+
+    if (currentTab === 1) {
+      cols.push({
+        field: 'financeMemberAssigned',
+        headerName: 'Assigned To',
+        flex: 0.8,
+        minWidth: 150,
+        valueGetter: (params: any) => fullNamePipe(params.row.financeMemberAssigned)
+      });
+    }
+
+    return cols;
+  };
+
+  const mapRow = (request: ReimbursementRequest): MapRowResult<ReimbursementRequest> => {
+    const row = createReimbursementRequestRowData(request);
+    return {
+      ...request,
+      ...row,
+      id: row.id,
+      raw: request
+    };
+  };
+
+  const searchFilter = (term: string, row: MapRowResult<ReimbursementRequest>): boolean => {
+    if (!term) return true;
+
+    const rowData = row.raw ? createReimbursementRequestRowData(row.raw) : row;
+    const query = term.trim().toLowerCase().split(/\s+/);
+    return query.every((q: string) => {
+      const lowercase_query = q.toLowerCase();
+      return (
+        (rowData as any).status.toLowerCase().includes(lowercase_query) ||
+        ('' + (rowData as any).identifier).toLowerCase().includes(lowercase_query) ||
+        ('' + fullNamePipe((rowData as any).submitter)).toLowerCase().includes(lowercase_query) ||
+        ('' + (rowData as any).saboId).toLowerCase().includes(lowercase_query) ||
+        ('' + datePipe((rowData as any).dateSubmitted)).toLowerCase().includes(lowercase_query) ||
+        ('' + datePipe((rowData as any).dateSubmittedToSabo)).toLowerCase().includes(lowercase_query) ||
+        ('$' + centsToDollar((rowData as any).amount)).toLowerCase().includes(lowercase_query) ||
+        ('' + (rowData as any).reimbursementProducts.map((product: any) => product.name))
+          .toLowerCase()
+          .includes(lowercase_query) ||
+        ('' + (rowData as any).description).toLowerCase().includes(lowercase_query)
+      );
+    });
+  };
   const openSidePage = () => {
     setShowSidePage(true);
   };
@@ -213,228 +249,40 @@ const ReimbursementRequestInfo = ({
     onCloseSidePage();
   };
 
-  const closeCreateSidePage = () => {
-    setShowCreateSidePage(false);
-    onCloseSidePage();
-  };
-
-  const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
-    useCreateReimbursementRequest();
-
-  const onSubmitCreate = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
-    const reimbursementRequest = await createReimbursementRequest({ ...data, indexCodeId: data.indexCodeId! });
-    await uploadReceipts({
-      id: reimbursementRequest.reimbursementRequestId,
-      files: data.receiptFiles.map((file) => file.file!)
-    });
-    closeCreateSidePage();
-    return reimbursementRequest.reimbursementRequestId;
-  };
-
-  const { pathname } = useLocation();
   const urlTabInsert = pathname.includes('/all-requests') ? 'all-requests' : 'my-requests';
 
-  if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
+  // Loading indicator not needed here anymore; creation handled on separate page.
 
   return (
-    <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-        <Table aria-label="simple table">
-          <TableHead
-            sx={{
-              backgroundColor: '#dd514c'
-            }}
-          >
-            <TableRow>
-              {headCells.map(
-                (headCell) =>
-                  (currentTab !== 0 || headCell.id !== 'submitter') &&
-                  (currentTab === 1 || headCell.id !== 'financeMemberAssigned') && (
-                    <ColumnHeader
-                      id={headCell.id}
-                      title={headCell.label}
-                      setAscendingOrder={setAscendingOrder}
-                      isAscendingOrder={isAscendingOrder}
-                      setOrderBy={setOrderBy}
-                      orderBy={orderBy}
-                    />
-                  )
-              )}
-              <TableCell align="center" />
-            </TableRow>
-          </TableHead>
-          <TableBody sx={{ backgroundColor: '#121313' }}>
-            {paginatedRows.map((row, index) => {
-              return (
-                <TableRow
-                  key={`$${row.amount}-${index}`}
-                  sx={{
-                    textDecoration: 'none',
-                    '&:last-child td, &:last-child th': { border: 0 },
-                    '&:hover .viewButton': { opacity: 1 },
-                    '&:hover': { backgroundColor: '#5e5e5e' }
-                  }}
-                >
-                  <TableCell align="center">
-                    <Box
-                      sx={{
-                        padding: '3px 8px',
-                        display: 'inline-flex',
-                        borderRadius: '8px',
-                        backgroundColor: getStatusColor(row.status),
-                        fontWeight: 700
-                      }}
-                    >
-                      {cleanReimbursementRequestStatus(row.status)}
-                    </Box>
-                  </TableCell>
-                  {currentTab !== 0 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
-                  <TableCell align="center">{`$${centsToDollar(row.amount)}`}</TableCell>
-                  <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
-                  <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
-                  <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
-                  <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
-                  {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.financeMemberAssigned)}</TableCell>}
-                  <TableCell align="center">
-                    {
-                      <Button
-                        className="viewButton"
-                        size="small"
-                        variant="contained"
-                        component={RouterLink}
-                        onClick={() => openSidePage()}
-                        to={`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${row.id}`}
-                        sx={{
-                          borderRadius: '8px',
-                          color: '#ededed',
-                          backgroundColor: '#dd514c',
-                          boxShadow: '0px 4px rgba(0,0,0,0.3)',
-                          padding: '2px 6px',
-                          opacity: 0,
-                          '&:hover': {
-                            backgroundColor: '#c74340'
-                          }
-                        }}
-                      >
-                        View RR
-                      </Button>
-                    }
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <SidePage
-        showPage={showSidePage}
-        handleClose={closeSidePage}
-        title={''}
-        component={<ReimbursementRequestDetails onCloseEditPage={closeSidePage} />}
-      />
-      <Box
-        sx={{
-          backgroundColor: '#121313',
-          position: 'fixed',
-          bottom: 0,
-          zIndex: 2,
-          width: '100%'
+    <>
+      <NERDataGrid
+        items={filteredRequests}
+        mapRow={mapRow}
+        columns={getColumns()}
+        pageSizeDefault={10}
+        rowsPerPageOptions={[10, 25, 50, 100]}
+        addLabel="CREATE"
+        onAdd={() => {
+          if (!isGuest(user.role)) {
+            history.push(routes.NEW_REIMBURSEMENT_REQUEST);
+          }
         }}
-      >
-        <Box
-          sx={{
-            borderBottom: '2px solid white',
-            mb: 2,
-            width: 'calc(100% - 60px)'
-          }}
-        />
-        {(!canViewAllReimbursementRequests || currentTab === 0) && (
-          <Button
-            className="viewButton"
-            variant="contained"
-            component={RouterLink}
-            onClick={() => {
-              setSidePageTitle('Create Reimbursement Request');
-              setShowCreateSidePage(true);
-            }}
-            to={routes.NEW_REIMBURSEMENT_REQUEST}
-            disabled={isGuest(user.role)}
-            sx={{
-              borderRadius: '8px',
-              color: '#ededed',
-              backgroundColor: '#dd514c',
-              padding: '2px 20px',
-              mb: 1,
-              mr: 2,
-              display: 'inline-flex',
-              fontSize: '20px',
-              fontWeight: 700,
-              textTransform: 'none',
-              '&:hover': {
-                backgroundColor: '#c74340'
-              }
-            }}
-          >
-            Create Request
-          </Button>
-        )}
-        <Box
-          sx={{
-            padding: '5px 20px',
-            mb: 2,
-            mr: 2,
-            display: 'inline-flex',
-            backgroundColor: '#3a3b3b',
-            borderRadius: '8px',
-            fontSize: '20px',
-            fontWeight: 700
-          }}
-        >
-          # of Requests: {rows.length}
-        </Box>
-
-        <Box
-          sx={{
-            padding: '5px 20px',
-            mb: 2,
-            display: 'inline-flex',
-            backgroundColor: '#3a3b3b',
-            borderRadius: '8px',
-            fontSize: '20px',
-            fontWeight: 700
-          }}
-        >
-          Total Amount: {`$${centsToDollar(refundTotal)}`}
-        </Box>
-      </Box>
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          right: 0,
-          padding: '16px 16px',
-          zIndex: 3
+        onRowClick={(request) => {
+          history.push(`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${request.reimbursementRequestId}`);
+          openSidePage();
         }}
-      >
-        <TablePagination
-          count={rows.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          rowsPerPageOptions={[10, 25, 50, 100]}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelDisplayedRows={({ page }) => `Page ${page + 1}`}
-        />
-      </Box>
-      <SidePage
-        showPage={showCreateSidePage}
-        handleClose={closeCreateSidePage}
-        title={sidePageTitle}
-        component={
-          <ReimbursementRequestForm submitText="Submit" submitData={onSubmitCreate} onFormExit={closeCreateSidePage} />
-        }
+        searchFilter={searchFilter}
+        initialSortModel={[{ field: 'identifier', sort: 'desc' }]}
+        paperSx={{
+          borderRadius: '10px 10px 0 0',
+          overflow: 'hidden',
+          height: 'calc(100vh - 160px)', // account for title, filters, tabs, and negative tableOffset
+          display: 'flex',
+          flexDirection: 'column'
+        }}
       />
-    </Box>
+      <SidePage showPage={showSidePage} handleClose={closeSidePage} title={''} component={<ReimbursementRequestDetails />} />
+    </>
   );
 };
 

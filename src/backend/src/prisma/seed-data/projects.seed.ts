@@ -5,7 +5,7 @@
 
 import { Organization } from '@prisma/client';
 import { DescriptionBulletPreview, LinkCreateArgs, WbsNumber, User } from 'shared';
-import ProjectsService from '../../services/projects.services';
+import ProjectsService from '../../services/projects.services.js';
 
 /**
  * Creates a project with the given data using service functions. This has to be done by:

@@ -2,7 +2,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isGuest, isUnderWordCount, notGuest, Task, TaskStatus, TaskPriority, TeamPreview } from 'shared';
+import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, TaskStatus, TeamPreview } from 'shared';
 import { useAllUsers, useCurrentUser } from '../../../../hooks/users.hooks';
 import * as yup from 'yup';
 import { taskUserToAutocompleteOption } from '../../../../utils/task.utils';
@@ -94,9 +94,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
   if (isError) return <ErrorPage error={error} />;
   if (isLoading || !users) return <LoadingIndicator />;
 
-  const options: { label: string; id: string }[] = users
-    .filter((user) => notGuest(user.role))
-    .map(taskUserToAutocompleteOption);
+  const options: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
 
   const unUpperCase = (str: string) => str.charAt(0) + str.slice(1).toLowerCase();
 
@@ -123,7 +121,10 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
           reset();
         }}
         onKeyPress={(e) => {
-          e.key === 'Enter' && e.preventDefault();
+          const target = e.target as HTMLElement;
+          if (e.key === 'Enter' && target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+          }
         }}
       >
         <Grid container spacing={2}>

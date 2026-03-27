@@ -13,20 +13,20 @@ import {
   WorkPackageStage,
   ProjectOverview
 } from 'shared';
-import { convertStatus, wbsNumOf } from '../utils/utils';
-import taskTransformer from './tasks.transformer';
-import { calculateProjectStatus } from '../utils/projects.utils';
-import { descBulletConverter } from '../utils/description-bullets.utils';
-import { userTransformer } from './user.transformer';
+import { convertStatus, wbsNumOf } from '../utils/utils.js';
+import taskTransformer from './tasks.transformer.js';
+import { calculateProjectStatus } from '../utils/projects.utils.js';
+import { descBulletConverter } from '../utils/description-bullets.utils.js';
+import { userTransformer } from './user.transformer.js';
 import {
   ProjectGanttQueryArgs,
   ProjectOverviewQueryArgs,
   ProjectPreviewQueryArgs,
   ProjectQueryArgs
-} from '../prisma-query-args/projects.query-args';
-import { teamPreviewTransformer } from './teams.transformer';
-import workPackageTransformer, { retrospectiveWorkPackageTransformer } from './work-packages.transformer';
-import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+} from '../prisma-query-args/projects.query-args.js';
+import { teamPreviewTransformer } from './teams.transformer.js';
+import workPackageTransformer, { retrospectiveWorkPackageTransformer } from './work-packages.transformer.js';
+import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>): Project => {
   const { wbsElement } = project;
@@ -117,6 +117,19 @@ export const projectPreviewTransformer = (project: Prisma.ProjectGetPayload<Proj
     duration: calculateDuration(project.workPackages),
     startDate: calculateProjectStartDate(project.workPackages),
     abbreviation: project.abbreviation ?? undefined,
+    teamTypes: Array.from(
+      project.teams
+        .reduce((acc, team) => {
+          if (team.teamType) {
+            acc.set(team.teamType.teamTypeId, {
+              name: team.teamType.name,
+              teamTypeId: team.teamType.teamTypeId
+            });
+          }
+          return acc;
+        }, new Map<string, { name: string; teamTypeId: string }>())
+        .values()
+    ),
     teams: project.teams,
     workPackages: project.workPackages.map((wp) => ({
       ...wp,
@@ -141,7 +154,7 @@ export const projectPreviewTransformer = (project: Prisma.ProjectGetPayload<Proj
 export const projectOverviewTransformer = (project: Prisma.ProjectGetPayload<ProjectOverviewQueryArgs>): ProjectOverview => {
   return {
     ...projectPreviewTransformer(project),
-    tasks: project.wbsElement.tasks.map(taskTransformer),
+    tasksRemaining: project.wbsElement._count.tasks,
     links: project.wbsElement.links
   };
 };

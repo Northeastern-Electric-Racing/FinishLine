@@ -10,6 +10,8 @@ interface NERFormModalProps<T extends FieldValues> extends NERModalProps {
   formId: string;
   children?: ReactNode;
   paperProps?: any;
+  titleChildren?: ReactNode;
+  actionsLeftChildren?: ReactNode;
 }
 
 const NERFormModal = ({
@@ -26,7 +28,9 @@ const NERFormModal = ({
   children,
   showCloseButton,
   hideBackDrop = false,
-  paperProps
+  paperProps,
+  titleChildren,
+  actionsLeftChildren
 }: NERFormModalProps<any>) => {
   const toast = useToast();
   /**
@@ -62,6 +66,8 @@ const NERFormModal = ({
       showCloseButton={showCloseButton}
       hideBackDrop={hideBackDrop}
       paperProps={paperProps}
+      titleChildren={titleChildren}
+      actionsLeftChildren={actionsLeftChildren}
     >
       <form id={formId} onSubmit={handleFormSubmit} noValidate>
         {children}

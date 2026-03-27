@@ -11,7 +11,10 @@ import {
   validateWBS,
   WbsElement,
   wbsPipe,
-  WorkPackageTemplate
+  WorkPackageTemplate,
+  WorkPackageStage,
+  LeadershipChangeCreateArgs,
+  isSameDay
 } from 'shared';
 import {
   Control,
@@ -34,9 +37,9 @@ import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
-import { WorkPackageStage } from 'shared';
 import { ObjectSchema } from 'yup';
-import { getMonday, transformDate } from '../../utils/datetime.utils';
+import { getMonday } from '../../utils/datetime.utils';
+import { toDateString } from 'shared';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
 import { StandardChangeRequestType } from '../CreateChangeRequestPage/CreateChangeRequestView';
 import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequestView';
@@ -54,6 +57,7 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { wbsTester } from '../../utils/form';
 import * as yup from 'yup';
 import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeRequestModal';
+import { useQueryClient } from 'react-query';
 
 export interface WorkPackageFormReturn {
   register: UseFormRegister<WorkPackageFormViewPayload>;
@@ -68,6 +72,7 @@ interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
   workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
+  createLeadershipCR: (data: LeadershipChangeCreateArgs) => void;
   defaultValues?: WorkPackageFormViewPayload;
   wbsElement: WbsElement;
   leadOrManagerOptions: User[];
@@ -92,6 +97,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   exitActiveMode,
   workPackageMutateAsync,
   createWorkPackageScopeCR,
+  createLeadershipCR,
   defaultValues,
   wbsElement,
   leadOrManagerOptions,
@@ -103,6 +109,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const query = useQuery();
   const toast = useToast();
   const user = useCurrentUser();
+  const queryClient = useQueryClient();
   const { reset: resetWorkPackageForm, ...workPackageFormMethods } = useForm<WorkPackageFormViewPayload>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -131,6 +138,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     defaultValues ? wbsElement.manager?.userId.toString() : undefined
   );
   const [leadId, setLeadId] = useState<string | undefined>(defaultValues ? wbsElement.lead?.userId.toString() : undefined);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   let changeRequestFormInput: FormInput | undefined = undefined;
   const pageTitle = defaultValues ? 'Edit Work Package' : 'Create Work Package';
@@ -223,10 +231,55 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   if (workPackageTemplateisLoading || !workPackageTemplates) return <LoadingIndicator />;
   if (workPackageTemplateisError) return <ErrorPage message={workPackageTemplateError.message} />;
 
+  // Check if only lead/manager changed
+  const checkOnlyLeadershipChanged = (
+    formName: string,
+    formStartDate: Date,
+    formDuration: number,
+    formBlockedBy: string[],
+    formStage: string,
+    formDescriptionBullets: DescriptionBulletPreview[]
+  ) => {
+    if (!defaultValues) return false; // Only relevant for edits
+
+    return (
+      formName === defaultValues.name &&
+      isSameDay(formStartDate, defaultValues.startDate) &&
+      formDuration === defaultValues.duration &&
+      JSON.stringify(formBlockedBy.sort()) === JSON.stringify((defaultValues.blockedBy || []).sort()) &&
+      formStage === defaultValues.stage &&
+      JSON.stringify(formDescriptionBullets) === JSON.stringify(defaultValues.descriptionBullets) &&
+      (leadId !== wbsElement.lead?.userId.toString() || managerId !== wbsElement.manager?.userId.toString())
+    );
+  };
+
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage, descriptionBullets } = data;
     const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
     try {
+      const onlyLeadershipChanged = checkOnlyLeadershipChanged(
+        name,
+        startDate,
+        duration,
+        blockedBy,
+        stage,
+        descriptionBullets
+      );
+
+      if (onlyLeadershipChanged) {
+        const autoCRPayload = {
+          submitterId: user.userId,
+          wbsNum: wbsElement.wbsNum,
+          leadId,
+          managerId
+        };
+        await createLeadershipCR(autoCRPayload);
+        // fixes cache issue
+        await queryClient.refetchQueries(['work packages']);
+        exitActiveMode();
+        return;
+      }
+
       const payload = {
         leadId,
         managerId,
@@ -235,7 +288,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         userId,
         name,
         crId: crId === 'null' ? undefined : crId,
-        startDate: transformDate(startDate),
+        startDate: toDateString(startDate),
         duration,
         blockedBy: blockedByWbsNums,
         descriptionBullets,
@@ -252,7 +305,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           proposedSolutions: []
         });
 
-        history.push(routes.CHANGE_REQUESTS);
+        history.push(`${routes.PROJECTS}/${wbsPipe(wbsElement.wbsNum)}/change-requests`);
       } else {
         await workPackageMutateAsync(payload);
         exitActiveMode();
@@ -269,6 +322,18 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const changeRequestInputExists = crWatch && crWatch !== 'null' && crWatch !== '';
   const startDate = watch('startDate');
   const duration = watch('duration');
+
+  // Calculate for submit button status
+  const onlyLeadershipChanged = defaultValues
+    ? checkOnlyLeadershipChanged(
+        watch('name'),
+        watch('startDate'),
+        watch('duration'),
+        watch('blockedBy'),
+        watch('stage'),
+        watch('descriptionBullets')
+      )
+    : false;
 
   const calculatedEndDate = dayjs(startDate)
     .add(7 * duration, 'day')
@@ -311,7 +376,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
                   <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
                 </Tooltip>
                 <NERButton
-                  disabled={!!changeRequestInputExists}
+                  disabled={!!changeRequestInputExists || onlyLeadershipChanged}
                   variant="contained"
                   onClick={() => setIsModalOpen(true)}
                   sx={{ mx: 1 }}
@@ -328,7 +393,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
                 variant="contained"
                 type="submit"
                 sx={{ mx: 1 }}
-                disabled={!changeRequestInputExists && !!defaultValues}
+                disabled={!changeRequestInputExists && !!defaultValues && !onlyLeadershipChanged}
               >
                 Submit
               </NERSuccessButton>

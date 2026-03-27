@@ -1,12 +1,11 @@
 import { LinkCreateArgs } from 'shared';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, flashAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
-import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import prisma from '../../src/prisma/prisma';
-import { testLink1 } from '../test-data/organizations.test-data';
-import { uploadFile } from '../../src/utils/google-integration.utils';
-import { Mock, vi } from 'vitest';
-import OrganizationsService from '../../src/services/organizations.services';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
+import { batmanAppAdmin, flashAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data.js';
+import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
+import prisma from '../../src/prisma/prisma.js';
+import { testLink1 } from '../test-data/organizations.test-data.js';
+import { vi } from 'vitest';
+import OrganizationsService from '../../src/services/organizations.services.js';
 import { Organization } from '@prisma/client';
 
 vi.mock('../../src/utils/google-integration.utils', () => ({
@@ -39,46 +38,6 @@ describe('Organization Tests', () => {
       expect(org).not.toBeNull();
       expect(org.organizationId).toBe(orgId);
       expect(org.name).toBe(organization.name);
-    });
-  });
-
-  describe('Set Images', () => {
-    const file1 = { originalname: 'image1.png' } as Express.Multer.File;
-    const file2 = { originalname: 'image2.png' } as Express.Multer.File;
-    const file3 = { originalname: 'image3.png' } as Express.Multer.File;
-    it('Fails if user is not an admin', async () => {
-      await expect(
-        OrganizationsService.setImages(file1, file2, await createTestUser(wonderwomanGuest, orgId), organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update images'));
-    });
-
-    it('Succeeds and updates all the images', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      (uploadFile as Mock).mockImplementation((file) => {
-        return Promise.resolve({ id: `uploaded-${file.originalname}` });
-      });
-
-      await OrganizationsService.setImages(file1, file2, testBatman, organization);
-
-      const oldOrganization = await prisma.organization.findUnique({
-        where: {
-          organizationId: orgId
-        }
-      });
-
-      expect(oldOrganization).not.toBeNull();
-      expect(oldOrganization?.applyInterestImageId).toBe('uploaded-image1.png');
-      expect(oldOrganization?.exploreAsGuestImageId).toBe('uploaded-image2.png');
-
-      await OrganizationsService.setImages(file1, file3, testBatman, organization);
-
-      const updatedOrganization = await prisma.organization.findUnique({
-        where: {
-          organizationId: orgId
-        }
-      });
-
-      expect(updatedOrganization?.exploreAsGuestImageId).toBe('uploaded-image3.png');
     });
   });
 

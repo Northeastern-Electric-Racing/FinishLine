@@ -1,13 +1,14 @@
 import { Theme } from '@prisma/client';
 import express from 'express';
 import { body } from 'express-validator';
-import UsersController from '../controllers/users.controllers';
-import { isRole, nonEmptyString, intMinZero, validateInputs, isDate } from '../utils/validation.utils';
+import UsersController from '../controllers/users.controllers.js';
+import { isRole, nonEmptyString, intMinZero, validateInputs, isDateOnly } from '../utils/validation.utils.js';
 
 const userRouter = express.Router();
 
 userRouter.get('/', UsersController.getAllUsers);
 userRouter.get('/organization', UsersController.getAllOrgUsers);
+userRouter.get('/members', UsersController.getAllMembers);
 userRouter.post(
   '/scheduleSettings',
   body('userIds').isArray(),
@@ -49,7 +50,7 @@ userRouter.post(
   body('availability').isArray(),
   body('availability.*.availability').isArray(),
   intMinZero(body('availability.*.availability.*')),
-  isDate(body('availability.*.dateSet')),
+  isDateOnly(body('availability.*.dateSet')),
   validateInputs,
   UsersController.setUserScheduleSettings
 );

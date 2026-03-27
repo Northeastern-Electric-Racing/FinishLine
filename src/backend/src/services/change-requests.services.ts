@@ -17,7 +17,7 @@ import {
   WorkPackageProposedChangesCreateArgs,
   User
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -27,8 +27,11 @@ import {
   NotFoundException,
   DeletedException,
   InvalidOrganizationException
-} from '../utils/errors.utils';
-import changeRequestTransformer, { changeRequestManyTransformer } from '../transformers/change-requests.transformer';
+} from '../utils/errors.utils.js';
+import changeRequestTransformer, {
+  changeRequestManyTransformer,
+  guestChangeRequestTransformer
+} from '../transformers/change-requests.transformer.js';
 import {
   allChangeRequestsReviewed,
   validateProposedChangesFields,
@@ -40,26 +43,28 @@ import {
   validateWbsElement,
   validateNoUnreviewedOpenOtherReasonCRs,
   validateNoUnreviewedOpenAccountCodeCRs
-} from '../utils/change-requests.utils';
+} from '../utils/change-requests.utils.js';
 import { CR_Type, WBS_Element_Status, Scope_CR_Why_Type, Prisma, Organization } from '@prisma/client';
-import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils';
-import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
-import { buildChangeDetail } from '../utils/changes.utils';
+import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils.js';
+import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils.js';
+import { buildChangeDetail } from '../utils/changes.utils.js';
 import {
   addSlackThreadsToChangeRequest,
   sendAndGetSlackCRNotifications,
   sendSlackCRStatusToThread,
   sendSlackRequestedReviewNotification
-} from '../utils/slack.utils';
+} from '../utils/slack.utils.js';
 import {
   ChangeRequestWithProjectAndWorkPackageQueryArgs,
   getChangeRequestQueryArgs,
   getChangeRequestWithProjectAndWorkPackageQueryArgs,
+  getGuestChangeRequestQueryArgs,
   getManyChangeRequestQueryArgs
-} from '../prisma-query-args/change-requests.query-args';
-import proposedSolutionTransformer from '../transformers/proposed-solutions.transformer';
-import { getProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args';
-import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils';
+} from '../prisma-query-args/change-requests.query-args.js';
+import proposedSolutionTransformer from '../transformers/proposed-solutions.transformer.js';
+import { getProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args.js';
+import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils.js';
+import { GuestChangeRequest } from '../../../shared/src/types/change-request-types.js';
 
 export default class ChangeRequestsService {
   /**
@@ -95,6 +100,20 @@ export default class ChangeRequestsService {
     });
 
     return changeRequests.map(changeRequestManyTransformer);
+  }
+
+  /**
+   * gets all the change requests in the database for the given organization, tailored to the guest cr page
+   * @param organization The organization the user is currently in
+   * @returns All of the change requests
+   */
+  static async getAllGuestChangeRequests(organization: Organization): Promise<GuestChangeRequest[]> {
+    const changeRequests = await prisma.change_Request.findMany({
+      where: { dateDeleted: null, organizationId: organization.organizationId },
+      ...getGuestChangeRequestQueryArgs(organization.organizationId)
+    });
+
+    return changeRequests.map(guestChangeRequestTransformer);
   }
 
   /**
@@ -178,7 +197,7 @@ export default class ChangeRequestsService {
         dateReviewed: null
       },
       {
-        NOT: { scopeChangeRequest: null }
+        changes: { none: {} }
       }
     ];
 
@@ -279,6 +298,14 @@ export default class ChangeRequestsService {
     // verify that the user is not reviewing their own change request
     if (reviewer.userId === foundCR.submitterId)
       throw new AccessDeniedException("You can't review your own change request!");
+
+    // verify that if there are requested reviewers, the reviewer is one of them
+    if (foundCR.requestedReviewers.length > 0) {
+      const isRequestedReviewer = foundCR.requestedReviewers.some((user) => user.userId === reviewer.userId);
+      if (!isRequestedReviewer) {
+        throw new AccessDeniedException('Only requested reviewers can review this change request!');
+      }
+    }
 
     // ScopeChange Request That Has Been Accepted Being Reviewed
     if (foundCR.scopeChangeRequest && accepted) {
@@ -666,9 +693,7 @@ export default class ChangeRequestsService {
       include: {
         changeRequests: {
           where: {
-            dateDeleted: {
-              not: null
-            }
+            dateDeleted: null
           },
           include: {
             changes: true
@@ -775,9 +800,7 @@ export default class ChangeRequestsService {
         descriptionBullets: true,
         changeRequests: {
           where: {
-            dateDeleted: {
-              not: null
-            }
+            dateDeleted: null
           },
           include: { changes: true }
         }
@@ -877,7 +900,7 @@ export default class ChangeRequestsService {
         where: {
           otherReimbursementProductReasonId: otherReasonId
         },
-        include: { changeRequests: { where: { dateDeleted: { not: null } }, include: { changes: true } } }
+        include: { changeRequests: { where: { dateDeleted: null }, include: { changes: true } } }
       });
 
       if (!category) throw new NotFoundException('Reimbursement Product Other Reason', otherReasonId);
@@ -940,7 +963,7 @@ export default class ChangeRequestsService {
         where: {
           accountCodeId
         },
-        include: { changeRequests: { where: { dateDeleted: { not: null } }, include: { changes: true } } }
+        include: { changeRequests: { where: { dateDeleted: null }, include: { changes: true } } }
       });
 
       if (!accountCode) throw new NotFoundException('Account Code', accountCodeId);
@@ -1002,6 +1025,147 @@ export default class ChangeRequestsService {
     }
 
     return changeRequestTransformer(createdChangeRequest);
+  }
+
+  /**
+   * Validates and creates a leadership change request, auto-approved immediately.
+   * Updates the lead and/or manager of a project or work package without requiring review.
+   * @param submitter the user creating the cr
+   * @param carNumber the car number for the wbs element
+   * @param projectNumber the project number for the wbs element
+   * @param workPackageNumber the work package number for the wbs element
+   * @param leadId the id of the new lead
+   * @param managerId the id of the new manager
+   * @param organization the organization the user is currently in
+   * @returns the id of the created cr
+   */
+  static async createLeadershipChangeRequest(
+    submitter: User,
+    carNumber: number,
+    projectNumber: number,
+    workPackageNumber: number,
+    leadId: string | undefined,
+    managerId: string | undefined,
+    organization: Organization
+  ): Promise<string> {
+    if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
+      throw new AccessDeniedGuestException('create leadership change requests');
+
+    // verify wbs element exists
+    const wbsElement = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsNumber: {
+          carNumber,
+          projectNumber,
+          workPackageNumber,
+          organizationId: organization.organizationId
+        }
+      },
+      select: {
+        wbsElementId: true,
+        dateDeleted: true,
+        organizationId: true,
+        leadId: true,
+        managerId: true
+      }
+    });
+
+    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+    if (wbsElement.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+    if (wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('WBS Element');
+
+    // avoid merge conflicts
+    await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
+
+    const numChangeRequests = await prisma.change_Request.count({
+      where: { organizationId: organization.organizationId }
+    });
+
+    const createdCR = await prisma.change_Request.create({
+      data: {
+        submitter: { connect: { userId: submitter.userId } },
+        wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
+        type: CR_Type.LEADERSHIP,
+        organization: { connect: { organizationId: organization.organizationId } },
+        identifier: numChangeRequests + 1,
+        leadershipChangeRequest: {
+          create: {
+            lead: leadId ? { connect: { userId: leadId } } : undefined,
+            manager: managerId ? { connect: { userId: managerId } } : undefined
+          }
+        }
+      }
+    });
+
+    await ChangeRequestsService.applyLeadershipChangeRequest(createdCR.crId, wbsElement, submitter, leadId, managerId);
+
+    return createdCR.crId;
+  }
+
+  /**
+   * Applies a leadership change request by updating the wbs element's lead/manager
+   * and auto-approving the change request.
+   */
+  private static async applyLeadershipChangeRequest(
+    crId: string,
+    wbsElement: { wbsElementId: string; leadId: string | null; managerId: string | null },
+    submitter: User,
+    leadId: string | undefined,
+    managerId: string | undefined
+  ): Promise<void> {
+    await prisma.$transaction(async (tx) => {
+      await tx.change_Request.update({
+        where: { crId },
+        data: {
+          reviewer: { connect: { userId: submitter.userId } },
+          dateReviewed: new Date(),
+          accepted: true,
+          reviewNotes: 'Auto-approved: leadership change only'
+        }
+      });
+
+      await tx.wBS_Element.update({
+        where: { wbsElementId: wbsElement.wbsElementId },
+        data: {
+          lead: leadId ? { connect: { userId: leadId } } : { disconnect: true },
+          manager: managerId ? { connect: { userId: managerId } } : { disconnect: true }
+        }
+      });
+
+      const changes: { changeRequestId: string; implementerId: string; wbsElementId: string; detail: string }[] = [];
+
+      const oldLeadId = wbsElement.leadId ?? undefined;
+      const oldManagerId = wbsElement.managerId ?? undefined;
+
+      if (leadId !== oldLeadId) {
+        // only update if lead changed
+        const oldLead = await getUserFullName(wbsElement.leadId ?? null);
+        const newLead = await getUserFullName(leadId ?? null);
+        changes.push({
+          changeRequestId: crId,
+          implementerId: submitter.userId,
+          wbsElementId: wbsElement.wbsElementId,
+          detail: buildChangeDetail('lead', oldLead, newLead)
+        });
+      }
+
+      if (managerId !== oldManagerId) {
+        // only update if manager changed
+        const oldManager = await getUserFullName(wbsElement.managerId ?? null);
+        const newManager = await getUserFullName(managerId ?? null);
+        changes.push({
+          changeRequestId: crId,
+          implementerId: submitter.userId,
+          wbsElementId: wbsElement.wbsElementId,
+          detail: buildChangeDetail('manager', oldManager, newManager)
+        });
+      }
+
+      if (changes.length > 0) {
+        await tx.change.createMany({ data: changes });
+      }
+    });
   }
 
   /**
@@ -1143,6 +1307,8 @@ export default class ChangeRequestsService {
         }
       }
 
+      const isCreatingNewProject = projectProposedChanges && projectNumber === 0;
+
       const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
           scopeChangeRequest: {
@@ -1151,7 +1317,7 @@ export default class ChangeRequestsService {
             }
           },
           name,
-          status: WBS_Element_Status.ACTIVE,
+          status: isCreatingNewProject ? WBS_Element_Status.INACTIVE : wbsElement.status,
           links: {
             create: validationResult.links.map((linkInfo) => ({
               url: linkInfo.url,
@@ -1234,11 +1400,13 @@ export default class ChangeRequestsService {
         managerId
       );
 
+      const isCreatingNewWorkPackage = workPackageProposedChanges && workPackageNumber === 0;
+
       const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
           scopeChangeRequest: { connect: { scopeCrId: createdCR.scopeChangeRequest!.scopeCrId } },
           name,
-          status: WBS_Element_Status.INACTIVE,
+          status: isCreatingNewWorkPackage ? WBS_Element_Status.INACTIVE : wbsElement.status,
           proposedDescriptionBulletChanges: {
             create: validationResult.descriptionBullets.map((bullet) => ({
               detail: bullet.detail,

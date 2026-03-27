@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
-import { userTransformer } from './user.transformer';
-import { GraphCollectionQueryArgs, GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
+import { userTransformer } from './user.transformer.js';
+import { GraphCollectionQueryArgs, GraphQueryArgs } from '../prisma-query-args/statistics.query-args.js';
 import { GraphCollection, GraphData, Graph, SpecialPermission } from 'shared';
-import graphTransformer from './statistics-graph.transformer';
+import graphTransformer from './statistics-graph.transformer.js';
 
 export const graphCollectionTransformer = (
   graphCollection: Prisma.Graph_CollectionGetPayload<GraphCollectionQueryArgs>,

@@ -6,24 +6,26 @@ import { NERButton } from '../../../../components/NERButton';
 import { useState } from 'react';
 import CreateLinkTypeModal from './CreateLinkTypeModal';
 import EditLinkTypeModal from './EditLinkTypeModal';
-import AdminToolTable from '../../AdminToolTable';
+import NERTable from '../../../../components/NERTable';
 import { isAdmin, LinkType } from 'shared';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 
-const LinkTypeTable = () => {
+interface LinkTypeTableProps {
+  isOnGuestHomePage?: boolean;
+}
+
+const LinkTypeTable = ({ isOnGuestHomePage }: LinkTypeTableProps) => {
   const currentUser = useCurrentUser();
-  const {
-    data: linkTypes,
-    isLoading: linkTypeIsLoading,
-    isError: linkTypeIsError,
-    error: linkTypeError
-  } = useAllLinkTypes();
+  const { data: links, isLoading: linkTypeIsLoading, isError: linkTypeIsError, error: linkTypeError } = useAllLinkTypes();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [clickedLinkType, setClickedLinkType] = useState<LinkType>();
 
-  if (!linkTypes || linkTypeIsLoading) return <LoadingIndicator />;
+  if (!links || linkTypeIsLoading) return <LoadingIndicator />;
   if (linkTypeIsError) return <ErrorPage message={linkTypeError.message} />;
+  const linkTypes = links.filter((linkType) =>
+    isOnGuestHomePage ? linkType.isOnGuestHomePage : !linkType.isOnGuestHomePage
+  );
 
   const linkTypeTableRows = linkTypes.map((linkType, index) => (
     <TableRow
@@ -52,7 +54,12 @@ const LinkTypeTable = () => {
 
   return (
     <Box>
-      <CreateLinkTypeModal open={createModalShow} handleClose={() => setCreateModalShow(false)} linkTypes={linkTypes} />
+      <CreateLinkTypeModal
+        open={createModalShow}
+        handleClose={() => setCreateModalShow(false)}
+        linkTypes={linkTypes}
+        isOnGuestHomePage={isOnGuestHomePage}
+      />
       {clickedLinkType && (
         <EditLinkTypeModal
           open={showEditModal}
@@ -65,7 +72,7 @@ const LinkTypeTable = () => {
         />
       )}
       <Typography variant="subtitle1">Registered LinkTypes</Typography>
-      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Icon Name' }, { name: 'Required' }]} rows={linkTypeTableRows} />
+      <NERTable columns={[{ name: 'Name' }, { name: 'Icon Name' }, { name: 'Required' }]} rows={linkTypeTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         {isAdmin(currentUser.role) && (
           <NERButton

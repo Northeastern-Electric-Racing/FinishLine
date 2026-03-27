@@ -76,6 +76,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Martin Hema', color: '#9125cc' },
     { name: 'Shree Singhal', color: '#ff7ca4' },
     { name: 'Isaac Levine', color: '#6a3941' },
+    { name: 'Pooja Ramakrishnan', color: '#9125cc' },
     { name: 'Andrew Tsai', color: '#3281a8' },
     { name: 'Ahnaf Inkiad', color: '#ab38b5' },
     { name: 'Aaryan Jain', color: '#e53774' },
@@ -110,7 +111,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Sharon Yang', color: '#ed8a5f' },
     { name: 'Jonah Chang', color: '#9AAB89' },
     { name: 'Ha Nguyen', color: '#ff9812' },
-    { name: 'Sathvik Charugundla', color: '#ff0000' },
+    { name: 'Sathvik Charugundla', color: '#00fff2ff' },
     { name: 'Samantha Moy', color: '#d287fa' },
     { name: 'Benjamin Zhu', color: '#ccccff' },
     { name: 'Stephanie Xu', color: '#ffcd42' },
@@ -122,6 +123,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Raghav Mathur', color: '#009933' },
     { name: 'Anika Sharma', color: '#ff0000' },
     { name: 'William (Jack) Turner', color: '#ff5733' },
+    { name: 'Natasha Joshi', color: '#00f7ffff' },
     {
       name: 'Samson Ajayi',
       color: '6a0dad',
@@ -203,6 +205,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Visisht Kamalapuram', color: '#3083AA' },
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Elton Yu', color: '#f202a2' },
+    { name: 'Raphael Bessin', color: '#14855fff' },
     { name: 'Will Anderson', color: '#ebb145' },
     { name: 'Alex Park', color: '#CCCCFF' },
     {
@@ -253,6 +256,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Amber Friar', color: '#F5A9B8' },
     { name: 'Kaung Mo', color: '#9a1115' },
     { name: 'Mae Balesterri', color: '#7fb2bc' },
+    { name: 'Nigel Purvis', color: '#E2725B' },
     {
       name: 'Joshua Goldberg',
       color: 'transparent',
@@ -300,6 +304,16 @@ const CreditsPage: React.FC = () => {
         }
       }
     },
+    { name: 'Edgar Buttner', color: '#9E9764' },
+    {
+      name: 'John Cassidy',
+      color: '#8378ffff',
+      sx: {
+        textShadow: '0px 0px 10px rgba(195, 165, 193, 1)'
+      }
+    },
+    { name: 'Gahan Patel', color: '#0000FF' },
+    { name: 'Mimo Olowu', color: 'white', sx: { px: 1, backgroundColor: '#ac59eb', borderRadius: 2 } },
     { name: 'Saul Manzanares', color: '#AF34FA' },
     { name: 'Richard Feng', color: '#FFFF', sx: { textShadow: '0 0 2px rgba(0,26,255), 0 0 5px rgba(255,255,255)' } },
     {
@@ -313,6 +327,13 @@ const CreditsPage: React.FC = () => {
           '50%': { textShadow: '0 0 10px rgba(190, 0, 0, 1), 0 0 22px rgba(190, 0, 0, 0.95)' },
           '100%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' }
         }
+      }
+    },
+    {
+      name: 'Anthony Basko',
+      color: '#c0aed0ff',
+      sx: {
+        textShadow: '0px 0px 3px rgba(152, 119, 233, 1), 0px .5px rgba(53, 37, 66, 1)'
       }
     },
     {
@@ -335,7 +356,28 @@ const CreditsPage: React.FC = () => {
         },
         filter: 'drop-shadow(0 0 4px rgba(190, 80, 255, 0.6))'
       }
-    }
+    },
+    {
+      name: 'Tony Feng',
+      color: 'transparent',
+      sx: {
+        textShadow: '0 0 5px #a7f3eaff, 0 0 10px #fb99e9ff, 0 0 30px #97eb97ff',
+        background: 'linear-gradient(90deg, white, violet, blue, red, white)',
+        '-webkit-background-clip': 'text',
+        backgroundSize: '800% 800%',
+        animation: 'gradient 30s infinite linear',
+        '@keyframes gradient': {
+          '0%': { backgroundPosition: '400% 200%' },
+          '100%': { backgroundPosition: '0% 200%' }
+        }
+      }
+    },
+    { name: 'Josh Len', color: '#000000ff' },
+    { name: 'Deepika Arulselvan', color: '#ad56fe' },
+    { name: 'Grace Theobald', color: '#537c2c' },
+    { name: 'Jasper Pinkus', color: '#276221' },
+    { name: 'Hamilton LaPides', color: '#55a50a' },
+    { name: 'Sara Johnson', color: '#ffff99' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];

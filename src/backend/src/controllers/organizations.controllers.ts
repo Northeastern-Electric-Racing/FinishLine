@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import OrganizationsService from '../services/organizations.services';
-import { HttpException } from '../utils/errors.utils';
+import OrganizationsService from '../services/organizations.services.js';
+import { HttpException } from '../utils/errors.utils.js';
 
 export default class OrganizationsController {
   static async getCurrentOrganization(req: Request, res: Response, next: NextFunction) {
@@ -22,28 +22,6 @@ export default class OrganizationsController {
     }
   }
 
-  static async setImages(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { applyInterestImage = [], exploreAsGuestImage = [] } = req.files as {
-        applyInterestImage?: Express.Multer.File[];
-        exploreAsGuestImage?: Express.Multer.File[];
-      };
-
-      const applyInterestFile = applyInterestImage[0] || null;
-      const exploreAsGuestFile = exploreAsGuestImage[0] || null;
-
-      const newImages = await OrganizationsService.setImages(
-        applyInterestFile,
-        exploreAsGuestFile,
-        req.currentUser,
-        req.organization
-      );
-
-      res.status(200).json(newImages);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
   static async getAllUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
       const links = await OrganizationsService.getAllUsefulLinks(req.organization.organizationId);
@@ -97,15 +75,6 @@ export default class OrganizationsController {
     }
   }
 
-  static async getOrganizationImages(req: Request, res: Response, next: NextFunction) {
-    try {
-      const images = await OrganizationsService.getOrganizationImages(req.organization.organizationId);
-      res.status(200).json(images);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   static async setOrganizationFeaturedProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const { projectIds } = req.body;
@@ -142,10 +111,63 @@ export default class OrganizationsController {
     }
   }
 
+  static async setPlatformLogoImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.file) {
+        throw new HttpException(400, 'Invalid or undefined image data');
+      }
+
+      const updatedOrg = await OrganizationsService.setPlatformLogoImage(req.file, req.currentUser, req.organization);
+
+      res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setNewMemberImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.file) {
+        throw new HttpException(400, 'Invalid or undefined image data');
+      }
+
+      const updatedOrg = await OrganizationsService.setNewMemberImage(req.file, req.currentUser, req.organization);
+
+      res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getOrganizationNewMemberImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { organization } = req;
+
+      const newMemberImageId = await OrganizationsService.getNewMemberImage(organization.organizationId);
+      res.status(200).json(newMemberImageId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async setOrganizationDescription(req: Request, res: Response, next: NextFunction) {
     try {
       const updatedOrg = await OrganizationsService.setOrganizationDescription(
         req.body.description,
+        req.currentUser,
+        req.organization
+      );
+
+      res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setPlatformDescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const updatedOrg = await OrganizationsService.setPlatformDescription(
+        req.body.platformDescription,
         req.currentUser,
         req.organization
       );

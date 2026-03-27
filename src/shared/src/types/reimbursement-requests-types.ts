@@ -1,5 +1,5 @@
-import { WbsNumber } from './project-types';
-import { User } from './user-types';
+import { WbsNumber } from './project-types.js';
+import { User } from './user-types.js';
 
 export interface IndexCode {
   indexCodeId: string;
@@ -12,7 +12,7 @@ export interface IndexCode {
 export interface ReimbursementRequestRow {
   identifier: number;
   id: string;
-  saboId: number | undefined;
+  saboId: string | undefined;
   amount: number;
   dateSubmitted: Date;
   status: ReimbursementStatusType;
@@ -21,6 +21,8 @@ export interface ReimbursementRequestRow {
   vendor: Vendor;
   refundSource: IndexCode;
   financeMemberAssigned: User | undefined;
+  reimbursementProducts: ReimbursementProduct[];
+  description?: string;
 }
 
 export enum ReimbursementStatusType {
@@ -50,9 +52,10 @@ export interface Receipt {
 export interface ReimbursementRequest {
   reimbursementRequestId: string;
   identifier: number;
-  saboId?: number;
+  saboId?: string;
   dateCreated: Date;
   dateOfExpense?: Date;
+  description?: string;
   reimbursementStatuses: ReimbursementStatus[];
   recipient: User;
   vendor: Vendor;
@@ -81,10 +84,11 @@ export type WBSElementData = { wbsNum: WbsNumber; wbsName: string };
 export type ReimbursementProductReason = WBSElementData | OtherProductReason;
 export interface ReimbursementProduct {
   reimbursementProductId: string;
-  name: string;
+  name?: string;
   cost: number;
   refundSources: RefundSource[];
   reimbursementProductReason: ReimbursementProductReason;
+  materialId?: string;
 }
 
 export interface Vendor {
@@ -122,7 +126,8 @@ export interface CreateRefundSourceArgs {
 
 export interface ReimbursementProductCreateArgs {
   id?: string;
-  name: string;
+  name?: string;
+  materialId?: string;
   cost: number;
   refundSources: CreateRefundSourceArgs[];
 }

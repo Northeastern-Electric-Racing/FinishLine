@@ -10,6 +10,7 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface EditSponsorPageProps {
   showPage: boolean;
@@ -18,33 +19,44 @@ interface EditSponsorPageProps {
 }
 
 const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProps) => {
-  const { isLoading, mutateAsync } = useEditSponsor(sponsor.sponsorId);
+  const toast = useToast();
+  const { isLoading, mutateAsync } = useEditSponsor();
 
-  const defaultSponsorTasks: CreateSponsorTask[] =
+  const defaultSponsorTasks: CreateSponsorTask[] = (
     sponsor.sponsorTasks?.map((task) => ({
       sponsorTaskId: task.sponsorTaskId,
       dueDate: new Date(task.dueDate),
       notifyDate: task.notifyDate ? new Date(task.notifyDate) : undefined,
       assigneeUserId: task.assignee?.userId ?? undefined,
-      notes: task.notes
-    })) ?? [];
+      notes: task.notes,
+      done: task.done
+    })) ?? []
+  ).sort((a, b) => Number(a.done) - Number(b.done));
 
   const {
     handleSubmit,
     control,
+    setValue,
     formState: { errors }
   } = useForm<SponsorPayload>({
     resolver: yupResolver(sponsorSchema),
     defaultValues: {
       name: sponsor.name,
       activeStatus: sponsor.activeStatus,
+      valueTypes: sponsor.valueTypes ?? ['MONETARY'],
       sponsorValue: sponsor.sponsorValue,
       joinDate: sponsor.joinDate,
       activeYears: sponsor.activeYears,
-      sponsorTierId: sponsor.tier.sponsorTierId,
-      sponsorContact: sponsor.sponsorContact,
+      sponsorTierId: sponsor.tier?.sponsorTierId ?? '',
+      contactName: sponsor.contact.name,
+      contactEmail: sponsor.contact.email ?? undefined,
+      contactPhone: sponsor.contact.phone ?? undefined,
+      contactPosition: sponsor.contact.position ?? undefined,
       taxExempt: sponsor.taxExempt,
       discountCode: sponsor.discountCode ?? undefined,
+      sponsorNotes: sponsor.sponsorNotes ?? undefined,
+      stockDescription: sponsor.stockDescription ?? undefined,
+      discountDescription: sponsor.discountDescription ?? undefined,
       sponsorTasks: defaultSponsorTasks
     }
   });
@@ -54,10 +66,12 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
   const onSubmit = async (formData: SponsorPayload) => {
     try {
       setSubmitError(null);
-      await mutateAsync({ ...formData });
+      await mutateAsync({ sponsorId: sponsor.sponsorId, ...formData });
+      toast.success('Sponsor updated successfully!');
       handleClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
+        toast.error(err.message);
         setSubmitError(err.message);
       }
     }
@@ -70,7 +84,7 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       title="Edit Sponsor"
       component={
         <Box display="flex" flexDirection="column" alignItems="flex-end">
-          <SponsorForm control={control} errors={errors} defaultValues={sponsor}></SponsorForm>
+          <SponsorForm control={control} errors={errors} setValue={setValue} defaultValues={sponsor}></SponsorForm>
           {submitError && (
             <Box color="error.main" mb={2} fontWeight="bold">
               {submitError}

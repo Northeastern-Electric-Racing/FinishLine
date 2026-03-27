@@ -14,7 +14,7 @@ import NERFailButton from '../../../components/NERFailButton';
 import LinksEditView from '../../../components/LinksEditView';
 import PageLayout from '../../../components/PageLayout';
 import ProjectFormDetails from './ProjectFormDetails';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllMembers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
@@ -59,6 +59,7 @@ interface ProjectFormContainerProps {
   setCarNumber: (carNumber: number) => void;
   carNumber?: number;
   changeRequestFormReturn: ChangeRequestFormReturn;
+  onlyLeadershipChanged?: boolean;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -73,14 +74,15 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   managerId,
   onSubmitChangeRequest,
   setCarNumber,
-  changeRequestFormReturn
+  changeRequestFormReturn,
+  onlyLeadershipChanged
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
 
   const toast = useToast();
 
-  const allUsers = useAllUsers();
+  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
   const {
     register,
     handleSubmit,
@@ -156,15 +158,13 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     setValue
   ]);
 
-  if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
-  if (allUsers.isError) {
-    return <ErrorPage message={allUsers.error?.message} />;
+  if (usersIsLoading || !users) return <LoadingIndicator />;
+  if (usersIsError) {
+    return <ErrorPage message={usersError?.message} />;
   }
 
   const crWatch = watch('crId');
   const changeRequestInputExists = !!crWatch && crWatch !== 'null' && crWatch !== '';
-
-  const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const handleCreateChangeRequest = async (data: ProjectFormInput) => {
     if (onSubmitChangeRequest && changeRequestFormInput) {
@@ -241,7 +241,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                   variant="contained"
                   onClick={() => setIsModalOpen(true)}
                   sx={{ mx: 1 }}
-                  disabled={changeRequestInputExists}
+                  disabled={changeRequestInputExists || onlyLeadershipChanged}
                 >
                   Create Change Request
                 </NERButton>
@@ -251,7 +251,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               Cancel
             </NERFailButton>
             <NERSuccessButton
-              disabled={!changeRequestInputExists && !!project}
+              disabled={!changeRequestInputExists && !!project && !onlyLeadershipChanged}
               variant="contained"
               type="submit"
               sx={{ mx: 1 }}

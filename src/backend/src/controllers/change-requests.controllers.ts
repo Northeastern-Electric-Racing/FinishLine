@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import ChangeRequestsService from '../services/change-requests.services';
+import ChangeRequestsService from '../services/change-requests.services.js';
 import { validateWBS, WbsNumber } from 'shared';
 
 export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
     try {
-      const { crId } = req.params;
+      const { crId } = req.params as Record<string, string>;
 
       const cr = await ChangeRequestsService.getChangeRequestByID(crId, req.organization);
       res.status(200).json(cr);
@@ -17,6 +17,15 @@ export default class ChangeRequestsController {
   static async getAllChangeRequests(req: Request, res: Response, next: NextFunction) {
     try {
       const changeRequests = await ChangeRequestsService.getAllChangeRequests(req.organization);
+      res.status(200).json(changeRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllGuestChangeRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const changeRequests = await ChangeRequestsService.getAllGuestChangeRequests(req.organization);
       res.status(200).json(changeRequests);
     } catch (error: unknown) {
       next(error);
@@ -140,6 +149,25 @@ export default class ChangeRequestsController {
     }
   }
 
+  static async createLeadershipChangeRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsNum, leadId, managerId } = req.body;
+
+      const cr = await ChangeRequestsService.createLeadershipChangeRequest(
+        req.currentUser,
+        wbsNum.carNumber,
+        wbsNum.projectNumber,
+        wbsNum.workPackageNumber,
+        leadId,
+        managerId,
+        req.organization
+      );
+      res.status(200).json(cr);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createStandardChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum, type, what, why, proposedSolutions, projectProposedChanges, workPackageProposedChanges } = req.body;
@@ -186,7 +214,7 @@ export default class ChangeRequestsController {
 
   static async deleteChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { crId } = req.params;
+      const { crId } = req.params as Record<string, string>;
 
       await ChangeRequestsService.deleteChangeRequest(req.currentUser, crId, req.organization);
       res.status(200).json({ message: `Successfully deleted change request #${crId}` });
@@ -198,7 +226,7 @@ export default class ChangeRequestsController {
   static async requestCRReview(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
-      const { crId } = req.params;
+      const { crId } = req.params as Record<string, string>;
 
       await ChangeRequestsService.requestCRReview(req.currentUser, userIds, crId, req.organization);
       res.status(200).json({ message: `Successfully requested reviewer(s) to change request #${crId}` });

@@ -1,10 +1,10 @@
 import { Organization } from '@prisma/client';
 import { isAdmin, User } from 'shared';
-import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
-import { userHasPermission } from '../utils/users.utils';
-import { faqTransformer } from '../transformers/faq.transformer';
-import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
+import prisma from '../prisma/prisma.js';
+import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils.js';
+import { userHasPermission } from '../utils/users.utils.js';
+import { faqTransformer, guestDefinitionTransformer } from '../transformers/recruitment-transformer.js';
+import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args.js';
 
 export default class RecruitmentServices {
   /**
@@ -211,5 +211,75 @@ export default class RecruitmentServices {
     });
 
     return faq;
+  }
+
+  /**
+   * Creates a guest definition
+   * @param creator user creating the definition
+   * @param organization org the definition is being created in
+   * @param term the term we are defining
+   * @param description the definition of the term
+   * @param order the order the term appears on the page
+   * @param icon the icon associated with the term
+   * @param buttonText the text displayed on the terms button
+   * @param buttonLink where the terms button links to
+   * @returns
+   */
+  static async createGuestDefinition(
+    creator: User,
+    organization: Organization,
+    term: string,
+    description: string,
+    order: number,
+    icon?: string,
+    buttonText?: string,
+    buttonLink?: string
+  ) {
+    if (!(await userHasPermission(creator.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('create a guest definition');
+
+    const definition = await prisma.guest_Definition.create({
+      data: {
+        term,
+        description,
+        order,
+        userCreatedId: creator.userId,
+        organizationId: organization.organizationId,
+        buttonText,
+        buttonLink,
+        icon
+      }
+    });
+
+    return guestDefinitionTransformer(definition);
+  }
+
+  static async getAllGuestDefinitions(organization: Organization) {
+    const allGuestDefintions = await prisma.guest_Definition.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null }
+    });
+
+    return allGuestDefintions.map(guestDefinitionTransformer);
+  }
+
+  /**
+   * Deletes a guestDefinition with the given organization Id and definitionId
+   * @param deleter the user requesting to delete the guestDefinition
+   * @param organizationId the organization ID of the deleter
+   */
+  static async deleteGuestDefinition(deleter: User, definitionId: string, organization: Organization): Promise<void> {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete a guestDefinition');
+    }
+
+    const def = await prisma.guest_Definition.findUnique({ where: { definitionId } });
+
+    if (!def) throw new NotFoundException('Guest Definition', definitionId);
+    if (def.dateDeleted) throw new DeletedException('Guest Definition', definitionId);
+
+    await prisma.guest_Definition.update({
+      where: { definitionId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
   }
 }

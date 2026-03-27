@@ -39,12 +39,15 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
       return <></>;
     case ChangeRequestType.Budget:
       return <BudgetDetails budgetChangeRequest={cr as BudgetChangeRequest} />;
+    case ChangeRequestType.Leadership:
+      return <></>;
     default:
       return <StandardDetails cr={cr as StandardChangeRequest} />;
   }
 };
 interface ChangeRequestDetailsProps {
   isUserAllowedToReview: boolean;
+  reviewDisabledTooltip?: string;
   isUserAllowedToImplement: boolean;
   isUserAllowedToDelete: boolean;
   changeRequest: ChangeRequest;
@@ -52,6 +55,7 @@ interface ChangeRequestDetailsProps {
 
 const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   isUserAllowedToReview,
+  reviewDisabledTooltip,
   isUserAllowedToImplement,
   isUserAllowedToDelete,
   changeRequest
@@ -66,7 +70,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const isStandard =
     changeRequest.type !== ChangeRequestType.Activation &&
     changeRequest.type !== ChangeRequestType.StageGate &&
-    changeRequest.type !== ChangeRequestType.Budget;
+    changeRequest.type !== ChangeRequestType.Budget &&
+    changeRequest.type !== ChangeRequestType.Leadership;
 
   const isActivation = changeRequest.type === ChangeRequestType.Activation;
 
@@ -83,6 +88,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       headerRight={
         <ChangeRequestActionMenu
           isUserAllowedToReview={isUserAllowedToReview}
+          reviewDisabledTooltip={reviewDisabledTooltip}
           isUserAllowedToImplement={isUserAllowedToImplement}
           isUserAllowedToDelete={isUserAllowedToDelete}
           changeRequest={changeRequest}

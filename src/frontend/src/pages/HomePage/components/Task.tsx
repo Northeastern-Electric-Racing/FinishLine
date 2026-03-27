@@ -71,7 +71,7 @@ const Task: React.FC<SubtaskProps> = ({ parentTask }) => {
             }}
           />
 
-          <Typography sx={{ color: 'black', fontWeight: 'bold' }}>{parentTask.name}</Typography>
+          <Typography sx={{ color: 'black', fontWeight: 'bold' }}>{parentTask.content}</Typography>
           <IconButton onClick={toggleShowSubtasks} sx={{ marginLeft: 'auto' }}>
             {showSubtasks ? <KeyboardArrowDown sx={{ color: 'black' }} /> : <KeyboardArrowRight sx={{ color: 'black' }} />}
           </IconButton>
