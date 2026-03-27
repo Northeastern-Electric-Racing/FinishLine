@@ -301,6 +301,7 @@ const ProjectGanttChartPage: FC = () => {
       teamTypes: [],
       changes: [],
       events: [],
+      tasks: [],
       deleted: false
     };
 
