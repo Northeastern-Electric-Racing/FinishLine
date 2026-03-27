@@ -10,7 +10,7 @@ import { exampleWbsProject1 } from './wbs-numbers.stub';
 export const exampleTask1: Task = {
   taskId: 'i8f-rotwyv',
   wbsNum: exampleWbsProject1,
-  wbsName: 'WP'
+  wbsName: 'WP',
   title: 'Sketches',
   notes: 'drafting the sketches with very straight lines',
   dateCreated: new Date('2023-03-04T00:00:00-05:00'),
@@ -24,7 +24,7 @@ export const exampleTask1: Task = {
 export const exampleTask1DueSoon: Task = {
   taskId: 'i8f-rotwyv',
   wbsNum: exampleWbsProject1,
-  wbsName: 'WP'
+  wbsName: 'WP',
   title: 'Sketches',
   notes: 'drafting the sketches with very straight lines',
   dateCreated: new Date('2023-03-04T00:00:00-05:00'),
