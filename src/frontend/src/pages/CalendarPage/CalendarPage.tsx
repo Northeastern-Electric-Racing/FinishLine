@@ -18,7 +18,7 @@ import {
   Switch
 } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { Calendar, ConflictStatus, DayOfWeek, EventType, Event } from 'shared';
+import { Calendar, CalendarTask, ConflictStatus, DayOfWeek, EventType, Event, FilterTaskArgs } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import { useConflictingEvents, useFilterEvents } from '../../hooks/calendar.hooks';
@@ -34,7 +34,8 @@ import {
   convertIntToDay,
   eventsToEventInstances,
   eventsToNextEventInstance,
-  getOverlapTime
+  getOverlapTime,
+  getSundayOfWeek
 } from '../../utils/calendar.utils';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -43,6 +44,8 @@ import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { EventInstance } from 'shared';
+import CalendarWeekView from './CalendarWeekView';
+import { useFilterTasks } from '../../hooks/tasks.hooks';
 
 // localStorage key for calendar filters
 const CALENDAR_FILTERS_KEY = 'calendar-filters';
@@ -55,6 +58,8 @@ interface CalendarFilterSettings {
   showInvitedEvents: boolean;
   showTeamEvents: boolean;
   selectedCalendarIds: string[];
+  showEvents: boolean;
+  showTasks: boolean;
 }
 
 // Load filter settings from localStorage
@@ -85,7 +90,12 @@ interface NewCalendarPageProps {
   yourEvents: EventInstance[];
   reviewEvents: Event[];
   allCalendars: Calendar[];
-  onCreateEventClick: (date: Date) => void;
+  onCreateEventClick: (date: Date, startTime?: Date, endTime?: Date) => void;
+  viewMode: 'month' | 'week';
+  displayMonthYear: Date;
+  setDisplayMonthYear: (date: Date) => void;
+  displayWeek: Date;
+  setDisplayWeek: (date: Date) => void;
 }
 
 const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
@@ -93,7 +103,12 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   yourEvents,
   reviewEvents,
   allCalendars,
-  onCreateEventClick
+  onCreateEventClick,
+  viewMode,
+  displayMonthYear,
+  setDisplayMonthYear,
+  displayWeek,
+  setDisplayWeek
 }) => {
   const theme = useTheme();
   const history = useHistory();
@@ -111,13 +126,14 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
 
   const [memberIds, setMemberIds] = useState<string[]>(savedFilters.memberIds ?? []);
   const [teamIds, setTeamIds] = useState<string[]>(savedFilters.teamIds ?? []);
-  const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(savedFilters.showInvitedEvents ?? true);
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(savedFilters.showTeamEvents ?? true);
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
   const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>([]);
   const [allEventsMode, setAllEventsMode] = useState<boolean>(savedFilters.allEventsMode ?? true);
+  const [showEvents, setShowEvents] = useState<boolean>(savedFilters.showEvents ?? true);
+  const [showTasks, setShowTasks] = useState<boolean>(savedFilters.showTasks ?? false);
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -145,9 +161,11 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
       teamIds,
       showInvitedEvents,
       showTeamEvents,
-      selectedCalendarIds
+      showEvents,
+      selectedCalendarIds,
+      showTasks
     });
-  }, [allEventsMode, memberIds, teamIds, showInvitedEvents, showTeamEvents, selectedCalendarIds]);
+  }, [allEventsMode, memberIds, teamIds, showInvitedEvents, showTeamEvents, showEvents, selectedCalendarIds, showTasks]);
 
   useEffect(() => {
     if (allTeams && additionalTeamIds.length === 0 && showTeamEvents && !allEventsMode) {
@@ -155,8 +173,14 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     }
   }, [allTeams, teamList, additionalTeamIds.length, showTeamEvents, allEventsMode]);
 
-  const startPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15);
-  const endPeriod = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15);
+  const startPeriod =
+    viewMode === 'week'
+      ? new Date(displayWeek.getFullYear(), displayWeek.getMonth(), displayWeek.getDate())
+      : new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, 15);
+  const endPeriod =
+    viewMode === 'week'
+      ? new Date(displayWeek.getFullYear(), displayWeek.getMonth(), displayWeek.getDate() + 7, 23, 59, 59)
+      : new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, 15);
 
   // When allEventsMode is true, we don't filter by members/teams, but still filter by date and calendars
   const filterArgs = allEventsMode
@@ -176,6 +200,25 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
       };
 
   const { isLoading, isError, error, data: allEvents } = useFilterEvents(filterArgs);
+
+  // Task filtering - uses same date range and member/team filters as events
+  const taskFilterArgs: FilterTaskArgs | null = showTasks
+    ? allEventsMode
+      ? { startPeriod, endPeriod }
+      : {
+          startPeriod,
+          endPeriod,
+          memberIds: [...new Set(memberIds.concat(additionalMemberIds))],
+          teamIds: [...new Set(teamIds.concat(additionalTeamIds))]
+        }
+    : null;
+
+  const {
+    isLoading: tasksIsLoading,
+    isError: tasksIsError,
+    error: tasksError,
+    data: filteredTasks
+  } = useFilterTasks(taskFilterArgs);
 
   const [pendingEvent, setPendingEvent] = useState(
     yourEvents.filter((event) => event.approved === ConflictStatus.PENDING).length > 0
@@ -294,6 +337,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   if (conflictingEventsIsError) return <ErrorPage message={conflictingEventsError.message} />;
   if (conflictingDeniedEventsIsError) return <ErrorPage message={conflictingDeniedEventsError.message} />;
   if (conflictingReviewEventsIsError) return <ErrorPage message={conflictingReviewEventsError.message} />;
+  if (tasksIsError) return <ErrorPage message={tasksError.message} />;
 
   if (
     isLoading ||
@@ -303,7 +347,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     conflictingDeniedEventsLoading ||
     !conflictingDeniedEvents ||
     conflictingReviewEventsLoading ||
-    !conflictingReviewEvents
+    !conflictingReviewEvents ||
+    tasksIsLoading ||
+    (showTasks && !filteredTasks)
   )
     return <LoadingIndicator />;
 
@@ -373,6 +419,21 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
       eventDict.set(dateString, [event]);
     }
   });
+
+  // Build task dict keyed by date string (using deadline)
+  const taskDict = new Map<string, CalendarTask[]>();
+  if (showTasks && filteredTasks) {
+    filteredTasks.forEach((task) => {
+      if (!task.deadline) return;
+      const deadlineDate = new Date(task.deadline);
+      const dateString = datePipe(deadlineDate);
+      if (taskDict.has(dateString)) {
+        taskDict.get(dateString)!.push(task);
+      } else {
+        taskDict.set(dateString, [task]);
+      }
+    });
+  }
 
   const startOfEachWeek = [0, 7, 14, 21, 28, 35];
 
@@ -533,80 +594,93 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
           }}
         >
           <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-            <Grid container sx={{ flexShrink: 0 }}>
-              {enumToArray(DAY_NAMES).map((day, index) => (
-                <Grid item xs={12 / 7} key={index}>
-                  <Typography align={'center'} sx={{ fontWeight: 'bold', fontSize: 18 }}>
-                    {
-                      // Day of the week display based on current breakpoint
-                      isLargerView ? day : isExtraSmallView ? day.charAt(0) : day.substring(0, 3)
-                    }
-                  </Typography>
+            {viewMode === 'week' ? (
+              <CalendarWeekView
+                allEventTypes={allEventTypes ?? []}
+                allCalendars={allCalendars ?? []}
+                eventInstances={showEvents ? eventInstances : []}
+                displayWeek={displayWeek}
+                onNavigateWeek={(offset) => {
+                  const newWeek = new Date(displayWeek);
+                  newWeek.setDate(newWeek.getDate() + offset * 7);
+                  setDisplayWeek(newWeek);
+                }}
+                onCreateEventClick={onCreateEventClick}
+                tasks={showTasks && filteredTasks ? filteredTasks : []}
+              />
+            ) : (
+              <>
+                <Grid container sx={{ flexShrink: 0 }}>
+                  {enumToArray(DAY_NAMES).map((day, index) => (
+                    <Grid item xs={12 / 7} key={index}>
+                      <Typography align={'center'} sx={{ fontWeight: 'bold', fontSize: 18 }}>
+                        {
+                          // Day of the week display based on current breakpoint
+                          isLargerView ? day : isExtraSmallView ? day.charAt(0) : day.substring(0, 3)
+                        }
+                      </Typography>
+                    </Grid>
+                  ))}
                 </Grid>
-              ))}
-            </Grid>
-            <Box
-              sx={{
-                border: '2px solid white',
-                borderRadius: 2,
-                bgcolor: '#1a1a1a',
-                p: 1,
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden'
-              }}
-            >
-              {startOfEachWeek
-                .filter((week) => daysThisMonth.slice(week, week + 7).length > 0)
-                .map((week, weekIndex) => (
-                  <Box
-                    key={weekIndex}
-                    sx={{
-                      display: 'flex',
-                      flex: 1,
-                      minHeight: 0
-                    }}
-                  >
-                    {daysThisMonth.slice(week, week + 7).map((day, dayIndex) => {
-                      const cardDate = new Date(
-                        displayMonthYear.getFullYear(),
-                        displayMonthYear.getMonth() + (isDayInDifferentMonth(day, week) ? (day > 15 ? -1 : 1) : 0),
-                        day
-                      );
-                      return (
-                        <Box
-                          key={dayIndex}
-                          sx={{
-                            flex: 1,
-                            minWidth: 0,
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'stretch',
-                            p: 0.5
-                          }}
-                        >
-                          <CalendarDayCard
-                            cardDate={cardDate}
-                            displayMonth={displayMonthYear}
-                            events={
-                              eventDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
-                              []
-                            }
-                            eventTypes={allEventTypes ?? []}
-                            calendars={allCalendars ?? []}
-                            dayOfWeek={
-                              dayDict.get(datePipe(new Date(cardDate.getTime() + cardDate.getTimezoneOffset() * 60000))) ??
-                              DayOfWeek.SUNDAY
-                            }
-                            onCreateEventClick={onCreateEventClick}
-                          />
-                        </Box>
-                      );
-                    })}
-                  </Box>
-                ))}
-            </Box>
+                <Box
+                  sx={{
+                    border: '2px solid white',
+                    borderRadius: 2,
+                    bgcolor: '#1a1a1a',
+                    p: 1,
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {startOfEachWeek
+                    .filter((week) => daysThisMonth.slice(week, week + 7).length > 0)
+                    .map((week, weekIndex) => (
+                      <Box
+                        key={weekIndex}
+                        sx={{
+                          display: 'flex',
+                          flex: 1,
+                          minHeight: 0
+                        }}
+                      >
+                        {daysThisMonth.slice(week, week + 7).map((day, dayIndex) => {
+                          const cardDate = new Date(
+                            displayMonthYear.getFullYear(),
+                            displayMonthYear.getMonth() + (isDayInDifferentMonth(day, week) ? (day > 15 ? -1 : 1) : 0),
+                            day
+                          );
+                          return (
+                            <Box
+                              key={dayIndex}
+                              sx={{
+                                flex: 1,
+                                minWidth: 0,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'stretch',
+                                p: 0.5
+                              }}
+                            >
+                              <CalendarDayCard
+                                cardDate={cardDate}
+                                displayMonth={displayMonthYear}
+                                events={showEvents ? (eventDict.get(datePipe(cardDate)) ?? []) : []}
+                                eventTypes={allEventTypes ?? []}
+                                calendars={allCalendars ?? []}
+                                dayOfWeek={dayDict.get(datePipe(cardDate)) ?? DayOfWeek.SUNDAY}
+                                onCreateEventClick={onCreateEventClick}
+                                tasks={taskDict.get(datePipe(cardDate)) ?? []}
+                              />
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    ))}
+                </Box>
+              </>
+            )}
           </Box>
           <Box
             sx={{
@@ -619,10 +693,17 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
           >
             <Box sx={{ flexShrink: 0 }}>
               <DateCalendar
-                value={displayMonthYear}
-                onMonthChange={(newDate) => setDisplayMonthYear(newDate)}
+                value={viewMode === 'week' ? displayWeek : displayMonthYear}
+                onMonthChange={(newDate) => {
+                  if (viewMode !== 'week') setDisplayMonthYear(newDate);
+                }}
                 onChange={(newDate) => {
-                  if (newDate) setDisplayMonthYear(newDate);
+                  if (!newDate) return;
+                  if (viewMode === 'week') {
+                    setDisplayWeek(getSundayOfWeek(newDate));
+                  } else {
+                    setDisplayMonthYear(newDate);
+                  }
                 }}
                 slotProps={{
                   day: {
@@ -697,32 +778,91 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                 overflow: 'hidden'
               }}
             >
-              <Stack
-                direction="row"
-                spacing={1}
-                alignItems="center"
-                justifyContent="space-between"
-                sx={{ mb: 1, flexShrink: 0 }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontFamily: (t) => t.typography.h4.fontFamily,
-                    fontWeight: 400,
-                    fontSize: 22
-                  }}
-                >
-                  Calendars:
-                </Typography>
+              <Stack direction="row" sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                {/* Left column: heading + scrollable calendar list */}
+                <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontFamily: (t) => t.typography.h4.fontFamily,
+                      fontWeight: 400,
+                      fontSize: 22,
+                      flexShrink: 0,
+                      mb: 1
+                    }}
+                  >
+                    Calendars:
+                  </Typography>
+                  {calendars.length > 0 && (
+                    <Box
+                      sx={{
+                        flex: 1,
+                        minHeight: 0,
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
+                        p: 2,
+                        pt: 0,
+                        borderRadius: 2,
+                        scrollbarColor: `${theme.palette.primary.main} transparent`,
+                        '&::-webkit-scrollbar': {
+                          width: '8px'
+                        },
+                        '&::-webkit-scrollbar-track': {
+                          background: 'transparent'
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                          background: theme.palette.primary.main,
+                          borderRadius: '4px'
+                        }
+                      }}
+                    >
+                      <FormGroup>
+                        {calendars.map((cal) => {
+                          const { calendarId, color } = cal;
+                          const checked = selectedCalendarIds.includes(calendarId);
+                          return (
+                            <FormControlLabel
+                              key={calendarId}
+                              sx={{
+                                ml: -1,
+                                mb: 1.5
+                              }}
+                              control={
+                                <Checkbox
+                                  checked={checked}
+                                  onChange={() => toggleCalendar(calendarId)}
+                                  icon={<RadioButtonUncheckedIcon />}
+                                  checkedIcon={<CheckCircleOutlineIcon />}
+                                  sx={{
+                                    p: 0.5,
+                                    color,
+                                    '&.Mui-checked': { color }
+                                  }}
+                                />
+                              }
+                              label={
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    fontFamily: (t) => t.typography.h6.fontFamily,
+                                    fontSize: 16,
+                                    color,
+                                    fontWeight: 500
+                                  }}
+                                >
+                                  {cal.name}
+                                </Typography>
+                              }
+                            />
+                          );
+                        })}
+                      </FormGroup>
+                    </Box>
+                  )}
+                </Box>
 
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <FormControlLabel
-                    control={
-                      <Switch size="small" checked={allEventsMode} onChange={(e) => setAllEventsMode(e.target.checked)} />
-                    }
-                    label={<Typography sx={{ fontSize: 12, color: 'white', whiteSpace: 'nowrap' }}>All Events</Typography>}
-                    sx={{ mr: 0 }}
-                  />
+                {/* Right column: filters + toggles */}
+                <Stack sx={{ flex: 1, alignItems: 'flex-end', pt: 0.5 }} spacing={0.5}>
                   <Button
                     size="small"
                     variant="outlined"
@@ -750,74 +890,25 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                   >
                     Filters
                   </Button>
+                  <FormControlLabel
+                    control={
+                      <Switch size="small" checked={allEventsMode} onChange={(e) => setAllEventsMode(e.target.checked)} />
+                    }
+                    label={<Typography sx={{ fontSize: 12, color: 'white', whiteSpace: 'nowrap' }}>Show All</Typography>}
+                    sx={{ mr: 0 }}
+                  />
+                  <FormControlLabel
+                    control={<Switch size="small" checked={showEvents} onChange={(e) => setShowEvents(e.target.checked)} />}
+                    label={<Typography sx={{ fontSize: 12, color: 'white', whiteSpace: 'nowrap' }}>Events</Typography>}
+                    sx={{ mr: 0 }}
+                  />
+                  <FormControlLabel
+                    control={<Switch size="small" checked={showTasks} onChange={(e) => setShowTasks(e.target.checked)} />}
+                    label={<Typography sx={{ fontSize: 12, color: 'white', whiteSpace: 'nowrap' }}>Tasks</Typography>}
+                    sx={{ mr: 0 }}
+                  />
                 </Stack>
               </Stack>
-
-              {calendars.length > 0 && (
-                <Box
-                  sx={{
-                    flex: 1,
-                    minHeight: 0,
-                    overflowY: 'auto',
-                    overflowX: 'hidden',
-                    p: 2,
-                    borderRadius: 2,
-                    scrollbarColor: `${theme.palette.primary.main} transparent`,
-                    '&::-webkit-scrollbar': {
-                      width: '8px'
-                    },
-                    '&::-webkit-scrollbar-track': {
-                      background: 'transparent'
-                    },
-                    '&::-webkit-scrollbar-thumb': {
-                      background: theme.palette.primary.main,
-                      borderRadius: '4px'
-                    }
-                  }}
-                >
-                  <FormGroup>
-                    {calendars.map((cal) => {
-                      const { calendarId, color } = cal;
-                      const checked = selectedCalendarIds.includes(calendarId);
-                      return (
-                        <FormControlLabel
-                          key={calendarId}
-                          sx={{
-                            ml: -1,
-                            mb: 1.5
-                          }}
-                          control={
-                            <Checkbox
-                              checked={checked}
-                              onChange={() => toggleCalendar(calendarId)}
-                              icon={<RadioButtonUncheckedIcon />}
-                              checkedIcon={<CheckCircleOutlineIcon />}
-                              sx={{
-                                p: 0.5,
-                                color,
-                                '&.Mui-checked': { color }
-                              }}
-                            />
-                          }
-                          label={
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                fontFamily: (t) => t.typography.h6.fontFamily,
-                                fontSize: 16,
-                                color,
-                                fontWeight: 500
-                              }}
-                            >
-                              {cal.name}
-                            </Typography>
-                          }
-                        />
-                      );
-                    })}
-                  </FormGroup>
-                </Box>
-              )}
             </Box>
           </Box>
         </Box>

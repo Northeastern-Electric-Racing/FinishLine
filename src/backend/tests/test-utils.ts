@@ -101,6 +101,7 @@ export const createTestUser = async (
 };
 
 export const resetUsers = async () => {
+  await prisma.guest_Definition.deleteMany();
   await prisma.part_Review_Popup.deleteMany();
   await prisma.part_Review_Request.deleteMany();
   await prisma.part_Review.deleteMany();
@@ -121,6 +122,7 @@ export const resetUsers = async () => {
   await prisma.manufacturer.deleteMany();
   await prisma.material_Type.deleteMany();
   await prisma.assembly.deleteMany();
+  await prisma.meeting_Attendance.deleteMany();
   await prisma.team.deleteMany();
   await prisma.user_Secure_Settings.deleteMany();
   await prisma.receipt.deleteMany();
@@ -161,6 +163,7 @@ export const resetUsers = async () => {
   await prisma.announcement.deleteMany();
   await prisma.popUp.deleteMany();
   await prisma.sponsor_Task.deleteMany();
+  await prisma.prospective_Sponsor.deleteMany();
   await prisma.sponsor.deleteMany();
   await prisma.sponsor_Tier.deleteMany();
   await prisma.reimbursement_Product_Other_Reason.deleteMany();
@@ -175,6 +178,8 @@ export const resetUsers = async () => {
   await prisma.shop_Machinery.deleteMany();
   await prisma.machinery.deleteMany();
   await prisma.shop.deleteMany();
+  await prisma.description_Bullet.deleteMany();
+  await prisma.description_Bullet_Type.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };

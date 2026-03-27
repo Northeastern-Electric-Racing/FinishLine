@@ -82,11 +82,12 @@ export interface ProjectPreview extends WbsElementPreview {
   abbreviation?: string;
   workPackages: WorkPackagePreview[];
   teams: { teamName: string; teamId: string }[];
+  teamTypes: { name: string; teamTypeId: string }[];
 }
 
 export interface ProjectOverview extends ProjectPreview {
   links: Link[];
-  tasks: Task[];
+  tasksRemaining: number;
 }
 
 export interface RetrospectiveWorkPackage extends WorkPackage {
@@ -132,6 +133,7 @@ export interface LinkType {
   name: string;
   required: boolean;
   iconName: string;
+  isOnGuestHomePage: boolean;
 }
 
 export interface Link {
@@ -186,6 +188,7 @@ export interface LinkTypeCreatePayload {
   name: string;
   iconName: string;
   required: boolean;
+  isOnGuestHomePage: boolean;
 }
 
 export interface DescriptionBulletTypeCreatePayload {

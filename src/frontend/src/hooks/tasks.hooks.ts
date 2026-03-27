@@ -4,14 +4,15 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { WbsNumber, TaskPriority, TaskStatus, Task, TaskCardPreview } from 'shared';
+import { CalendarTask, FilterTaskArgs, WbsNumber, TaskPriority, TaskStatus, Task, TaskCardPreview } from 'shared';
 import {
   createSingleTask,
   deleteSingleTask,
   editSingleTaskStatus,
   editTask,
   editTaskAssignees,
-  getOverdueTasksByTeamLeader
+  getOverdueTasksByTeamLeader,
+  getFilterTasks
 } from '../apis/tasks.api';
 
 export interface CreateTaskPayload {
@@ -24,6 +25,24 @@ export interface CreateTaskPayload {
   notes?: string;
   assignees: string[];
 }
+
+/**
+ * Custom React Hook for filtering tasks based on various criteria
+ * @returns the filtered tasks query
+ */
+export const useFilterTasks = (filterArgs: FilterTaskArgs | null) => {
+  return useQuery<CalendarTask[], Error>(
+    ['filter-tasks', filterArgs],
+    async () => {
+      const { data } = await getFilterTasks(filterArgs!);
+      return data;
+    },
+    {
+      keepPreviousData: true,
+      enabled: filterArgs !== null
+    }
+  );
+};
 
 export const useCreateTask = () => {
   const queryClient = useQueryClient();
@@ -45,6 +64,7 @@ export const useCreateTask = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
       }
     }
   );
@@ -82,6 +102,7 @@ export const useEditTask = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
       }
     }
   );
@@ -102,6 +123,7 @@ export const useEditTaskAssignees = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
       }
     }
   );
@@ -142,6 +164,7 @@ export const useDeleteTask = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
       }
     }
   );

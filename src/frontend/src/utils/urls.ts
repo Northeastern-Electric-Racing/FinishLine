@@ -95,6 +95,7 @@ const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
 const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
+const tasksFilter = () => `${tasks()}/filter`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
 
 /**************** Work Packages Endpoints ****************/
@@ -119,6 +120,7 @@ const homePageWorkPackages = (selection: WorkPackageSelection) => `${workPackage
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
+const guestChangeRequests = () => `${API_URL}/change-requests/guest`;
 const toReviewChangeRequests = () => `${API_URL}/change-requests/to-review`;
 const unreviewedChangeRequests = (wbsNum?: WbsNumber) =>
   `${API_URL}/change-requests/unreviewed` + (wbsNum ? `?wbsnum=${wbsPipe(wbsNum)}` : '');
@@ -131,6 +133,7 @@ const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
 const changeRequestsCreateBudget = () => `${changeRequestsCreate()}/budget`;
+const changeRequestsCreateLeadership = () => `${changeRequestsCreate()}/leadership`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
 const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/request-review';
@@ -315,6 +318,23 @@ const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/
 const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
 const deleteSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}`;
 const editSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}/edit`;
+const toggleSponsorTaskDone = (sponsorTaskId: string) =>
+  `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/toggle-done`;
+
+/**************** Prospective Sponsors Endpoints ****************/
+const prospectiveSponsorsEndpoint = () => `${API_URL}/prospective-sponsors`;
+const getAllProspectiveSponsors = () => `${prospectiveSponsorsEndpoint()}/`;
+const createProspectiveSponsor = () => `${prospectiveSponsorsEndpoint()}/create`;
+const editProspectiveSponsor = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/edit`;
+const deleteProspectiveSponsor = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/delete`;
+const getProspectiveSponsorTasks = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/tasks`;
+const createProspectiveSponsorTask = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/tasks`;
+const acceptProspectiveSponsor = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/accept`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -328,6 +348,7 @@ const bomGetAssembliesByWbsNum = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbs
 const bomCreateMaterial = (wbsNum: WbsNumber) => `${materialEndpoints()}/${wbsPipe(wbsNum)}/create`;
 const bomEditMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/edit`;
 const bomDeleteMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/delete`;
+const bomCopyMaterials = () => `${materialEndpoints()}/copy`;
 const bomCreateAssembly = (wbsNum: WbsNumber) => `${assemblyEndpoints()}/${wbsPipe(wbsNum)}/create`;
 const bomDeleteAssembly = (assemblyId: string) => `${assemblyEndpoints()}/${assemblyId}/delete`;
 const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${materialId}/assign-assembly`;
@@ -358,16 +379,18 @@ const organizations = () => `${API_URL}/organizations`;
 const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
-const organizationsSetImages = () => `${organizations()}/images/update`;
 const organizationsUpdateContacts = () => `${organizations()}/contacts/set`;
 const organizationsSetOnboardingText = () => `${organizations()}/onboardingText/set`;
 const organizationsUpdateApplicationLink = () => `${organizations()}/application-link/update`;
 const organizationsSetDescription = () => `${organizations()}/description/set`;
+const organizationsSetPlatformDescription = () => `${organizations()}/platform-description/set`;
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
 const organizationsNewMemberImage = () => `${organizations()}/new-member-image`;
 const organizationsSetNewMemberImage = () => `${organizations()}/new-member-image/update`;
+const organizationsPlatformLogoImage = () => `${organizations()}/platform-logo`;
+const organizationsSetPlatformLogoImage = () => `${organizationsPlatformLogoImage()}/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
@@ -476,6 +499,15 @@ const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${event
 const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 const calendarScheduleEvent = (eventId: string) => `${calendar()}/event/${eventId}/schedule`;
 
+/**************** Attendance Endpoints ****************/
+const attendance = () => `${API_URL}/attendance`;
+const attendanceTakeAttendance = () => `${attendance()}/`;
+const attendanceGetAll = () => `${attendance()}/`;
+const attendanceCheckChannel = (teamId: string) => `${attendance()}/check-channel/${teamId}`;
+const attendanceGetOngoing = (teamId: string) => `${attendance()}/ongoing/${teamId}`;
+const attendanceCloseOngoing = (teamId: string) => `${attendance()}/close/${teamId}`;
+const attendanceGetById = (meetingAttendanceId: string) => `${attendance()}/${meetingAttendanceId}`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -555,6 +587,7 @@ export const apiUrls = {
 
   tasksCreate,
   tasks,
+  tasksFilter,
   editTaskById,
   taskEditStatus,
   editTaskAssignees,
@@ -573,6 +606,7 @@ export const apiUrls = {
   homePageWorkPackages,
 
   changeRequests,
+  guestChangeRequests,
   changeRequestsById,
   changeRequestsReview,
   changeRequestDelete,
@@ -580,6 +614,7 @@ export const apiUrls = {
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
   changeRequestsCreateBudget,
+  changeRequestsCreateLeadership,
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
   changeRequestRequestReviewer,
@@ -677,6 +712,15 @@ export const apiUrls = {
   financeGetUsersTeamsReimbursementRequests,
   deleteSponsorTier,
   editSponsorTier,
+  toggleSponsorTaskDone,
+
+  getAllProspectiveSponsors,
+  createProspectiveSponsor,
+  editProspectiveSponsor,
+  deleteProspectiveSponsor,
+  getProspectiveSponsorTasks,
+  createProspectiveSponsorTask,
+  acceptProspectiveSponsor,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,
@@ -687,6 +731,7 @@ export const apiUrls = {
   bomCreateMaterial,
   bomEditMaterial,
   bomDeleteMaterial,
+  bomCopyMaterials,
   bomCreateAssembly,
   bomDeleteAssembly,
   bomAssignAssembly,
@@ -719,16 +764,18 @@ export const apiUrls = {
   currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
-  organizationsSetImages,
   organizationsUpdateContacts,
   organizationsSetOnboardingText,
   organizationsUpdateApplicationLink,
   organizationsFeaturedProjects,
   organizationsSetDescription,
+  organizationsSetPlatformDescription,
   organizationsLogoImage,
   organizationsSetLogoImage,
   organizationsNewMemberImage,
   organizationsSetNewMemberImage,
+  organizationsPlatformLogoImage,
+  organizationsSetPlatformLogoImage,
   organizationsSetFeaturedProjects,
   organizationsSetWorkspaceId,
   organizationsGetPartReviewGuideLink,
@@ -820,6 +867,13 @@ export const apiUrls = {
   calendarPreviewScheduleSlotRecurringEdits,
   calendarDeleteScheduleSlot,
   calendarScheduleEvent,
+
+  attendanceTakeAttendance,
+  attendanceGetAll,
+  attendanceCheckChannel,
+  attendanceGetOngoing,
+  attendanceCloseOngoing,
+  attendanceGetById,
 
   version
 };

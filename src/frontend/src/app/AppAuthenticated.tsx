@@ -70,7 +70,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
 
   return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
-      {!onGuestHomePage && (
+      {
         <>
           <Box
             onMouseEnter={() => {
@@ -108,12 +108,12 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             setMoveContent={setMoveContent}
           />
         </>
-      )}
+      }
       <Box display={'flex'}>
-        <HiddenContentMargin open={!onGuestHomePage && moveContent} variant="permanent" />
+        <HiddenContentMargin open={moveContent} variant="permanent" />
         <Container
           maxWidth={false}
-          sx={{ width: !onGuestHomePage && moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}
+          sx={{ width: onGuestHomePage && moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}
         >
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />

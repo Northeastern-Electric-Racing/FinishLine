@@ -11,7 +11,7 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useAssignMaterialToAssembly, useDeleteAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
-import { Link, Typography } from '@mui/material';
+import { Button, Link, Typography } from '@mui/material';
 import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
 import { renderStatusBOM } from './BOMTableCustomCells';
@@ -209,7 +209,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     {
       ...bomBaseColDef,
       flex: 1,
-      field: 'reimbursementRequestId',
+      field: 'reimbursementRequests',
       headerName: 'RR#',
       type: 'string',
       sortable: false,
@@ -217,20 +217,59 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       hide: hideColumn[0],
       renderCell: (params) => {
         const material = materials.find((m) => m.materialId === params.row.materialId);
-        const reimbursementRequest = material?.reimbursementRequest;
+        if (!material) return null;
 
-        if (!reimbursementRequest) return null;
+        const { reimbursementRequests } = material;
+
+        // case 1 (if linked reimbursement requests exist): show a list of links
+        if (reimbursementRequests.length > 0) {
+          return (
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+              {reimbursementRequests.map((rr) => (
+                <Link
+                  key={rr.reimbursementRequestId}
+                  component={RouterLink}
+                  to={`${routes.REIMBURSEMENT_REQUESTS}/view/${rr.reimbursementRequestId}`}
+                  underline="hover"
+                  sx={{ color: '#dd514c', fontWeight: 'bold', cursor: 'pointer' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {rr.identifier}
+                </Link>
+              ))}
+            </Box>
+          );
+        }
+
+        // case 2 (no linked reimbursement requests): link to the create reimbursement request page with pre-filled info
+        const { quantity, price } = material;
+
+        const prefillCost = quantity != null && price != null ? (Number(quantity) * Number(price)) / 100 : undefined;
 
         return (
-          <Link
+          <Button
             component={RouterLink}
-            to={`${routes.REIMBURSEMENT_REQUESTS}/view/${reimbursementRequest.reimbursementRequestId}`}
-            underline="hover"
-            sx={{ color: '#dd514c', fontWeight: 'bold', cursor: 'pointer' }}
-            onClick={(e) => e.stopPropagation()}
+            to={{
+              pathname: routes.NEW_REIMBURSEMENT_REQUEST,
+              state: {
+                projectWbsNum: project.wbsNum,
+                materialId: material.materialId,
+                materialName: material.name,
+                prefillCost
+              }
+            }}
+            variant="contained"
+            size="small"
+            onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
+            sx={{
+              backgroundColor: '#dd514c',
+              textTransform: 'none',
+              fontWeight: 600,
+              '&:hover': { backgroundColor: '#c7443f' }
+            }}
           >
-            {reimbursementRequest.identifier}
-          </Link>
+            Create RR
+          </Button>
         );
       }
     },

@@ -1,19 +1,19 @@
-import { Typography, Box } from '@mui/material';
-import PageLayout from '../../components/PageLayout';
-import ImageWithButton from './components/ImageWithButton';
-import { useHistory } from 'react-router-dom';
-import { routes } from '../../utils/routes';
-import { useCurrentUser } from '../../hooks/users.hooks';
+import { Typography, Box, Icon, Card, CardContent } from '@mui/material';
+import Link from '@mui/material/Link';
+import { Link as RouterLink } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useHomePageContext } from '../../app/HomePageContext';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useGetImageUrl } from '../../hooks/onboarding.hook';
+import FeaturedProjects from './components/FeaturedProjects';
+import { useAllUsefulLinks } from '../../hooks/projects.hooks';
+import { Stack } from '@mui/system';
+import { routes } from '../../utils/routes';
+import { NERButton } from '../../components/NERButton';
 
 const IntroGuestHomePage = () => {
-  const user = useCurrentUser();
-  const history = useHistory();
   const {
     data: organization,
     isLoading: organizationIsLoading,
@@ -22,63 +22,118 @@ const IntroGuestHomePage = () => {
   } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
 
-  const {
-    data: applyInterestImageUrl,
-    isLoading: applyImageLoading,
-    isError: applyImageIsError,
-    error: applyImageError
-  } = useGetImageUrl(organization?.applyInterestImageId ?? null);
-  const {
-    data: exploreGuestImageUrl,
-    isLoading: exploreImageLoading,
-    isError: exploreImageIsError,
-    error: exploreImageError
-  } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
-
   useEffect(() => {
     setCurrentHomePage('guest');
   }, [setCurrentHomePage]);
 
+  const {
+    data: usefulLinks,
+    isLoading: usefulLinksIsLoading,
+    isError: usefulLinksIsError,
+    error: usefulLinksError
+  } = useAllUsefulLinks();
+
+  const {
+    data: finishlineImageUrl,
+    isError: finishlineImageIsError,
+    error: finishlineImageError
+  } = useGetImageUrl(organization?.platformLogoImageId ?? null);
+
   if (organizationIsError) {
     return <ErrorPage message={organizationError.message} />;
   }
-  if (applyImageIsError) return <ErrorPage message={applyImageError.message} />;
-  if (exploreImageIsError) return <ErrorPage message={exploreImageError.message} />;
 
-  if (!organization || organizationIsLoading || applyImageLoading || exploreImageLoading) return <LoadingIndicator />;
-  if (!applyInterestImageUrl || !exploreGuestImageUrl) return <LoadingIndicator />;
+  if (usefulLinksIsError) {
+    return <ErrorPage message={usefulLinksError.message} />;
+  }
+
+  if (finishlineImageIsError) {
+    return <ErrorPage message={finishlineImageError.message} />;
+  }
+
+  if (!organization || organizationIsLoading || !usefulLinks || usefulLinksIsLoading) return <LoadingIndicator />;
+
+  const guestPageLinks = usefulLinks?.filter((link) => link.linkType.isOnGuestHomePage);
 
   return (
-    <PageLayout title="Home" hidePageTitle>
-      <Typography variant="h3" textAlign="center" sx={{ mt: 2, pt: 3 }}>
-        {user ? `Welcome, ${user.firstName}!` : 'Welcome, Guest!'}
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', px: 2 }}>
+      <Typography mt={2} variant="h4" sx={{ fontWeight: 'bold' }}>
+        FinishLine By NER
       </Typography>
       <Box
         sx={{
+          mt: 2,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          flexDirection: { xs: 'column', md: 'row' },
-          mt: 4,
-          padding: '20px'
+          width: '100%',
+          maxWidth: 480,
+          bgcolor: 'grey.200',
+          border: '1px solid',
+          borderColor: 'grey.800',
+          borderRadius: 1,
+          overflow: 'hidden',
+          boxSizing: 'border-box'
         }}
       >
-        <Box sx={{ display: 'flex', gap: 5 }}>
-          <ImageWithButton
-            title="Interested in applying"
-            imageSrc={applyInterestImageUrl}
-            buttonText="Learn More"
-            onClick={() => history.push(routes.HOME_PNM)}
-          />
-          <ImageWithButton
-            title="Explore Our Work as a Guest"
-            imageSrc={exploreGuestImageUrl}
-            buttonText="FinishLine"
-            onClick={() => history.push(routes.HOME_MEMBER)}
-          />
-        </Box>
+        <Box
+          component="img"
+          src={finishlineImageUrl ?? '/NER-Logo-App-Icon.png'}
+          alt="FinishLine logo"
+          sx={{
+            display: 'block',
+            width: '100%',
+            height: 'auto',
+            objectFit: 'contain'
+          }}
+        />
       </Box>
-    </PageLayout>
+
+      <Typography mt={2} align="center" sx={{ maxWidth: 560 }}>
+        {organization.platformDescription}
+      </Typography>
+      <Box sx={{ mt: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <Stack direction="row" flexWrap="wrap" gap={2} useFlexGap justifyContent="center">
+          {guestPageLinks.map((link) => (
+            <Link
+              key={link.linkId}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              underline="hover"
+              sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+            >
+              <Icon sx={{ fontSize: 22 }}>{link.linkType.iconName}</Icon>
+            </Link>
+          ))}
+        </Stack>
+      </Box>
+      <Card
+        component="section"
+        sx={{
+          mt: 3,
+          width: '100%',
+          maxWidth: 420,
+          mx: 'auto',
+          textAlign: 'center',
+          boxShadow: 1
+        }}
+      >
+        <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
+          <RouterLink to={routes.HOME_PNM} style={{ textDecoration: 'none' }}>
+            <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
+              Interested in becoming a member?
+            </Typography>
+            <NERButton variant="contained" size="medium">
+              Join {organization.name}
+            </NERButton>
+          </RouterLink>
+        </CardContent>
+      </Card>
+      <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', mt: 3 }}>
+        <FeaturedProjects />
+      </Box>
+    </Box>
   );
 };
 

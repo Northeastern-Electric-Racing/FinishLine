@@ -4,6 +4,7 @@
  */
 
 import {
+  dbDateToLocalDate,
   DescriptionBullet,
   Project,
   ProjectOverview,
@@ -40,8 +41,8 @@ export const projectTransformer = (project: Project): Project => {
   return {
     ...project,
     dateCreated: new Date(project.dateCreated),
-    startDate: project.startDate ? new Date(project.startDate) : undefined,
-    endDate: project.endDate ? new Date(project.endDate) : undefined,
+    startDate: project.startDate ? dbDateToLocalDate(new Date(project.startDate)) : undefined,
+    endDate: project.endDate ? dbDateToLocalDate(new Date(project.endDate)) : undefined,
     workPackages: project.workPackages.map(workPackageTransformer),
     descriptionBullets: project.descriptionBullets.map(descriptionBulletTransformer),
     changes: project.changes.map(implementedChangeTransformer),
@@ -98,8 +99,7 @@ export const projectOverviewTransformer = (project: ProjectOverview): ProjectOve
       startDate: new Date(wp.startDate),
       endDate: new Date(wp.endDate)
     })),
-    links: project.links,
-    tasks: project.tasks.map(taskTransformer)
+    links: project.links
   };
 };
 

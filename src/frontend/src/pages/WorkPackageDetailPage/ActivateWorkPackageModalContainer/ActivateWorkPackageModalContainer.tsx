@@ -4,7 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { ChangeRequestType, WbsNumber } from 'shared';
+import { ChangeRequestType, dateToMidnightUTC, WbsNumber, wbsPipe } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { useCreateActivationChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useAllMembers } from '../../../hooks/users.hooks';
@@ -54,10 +54,10 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
         type: ChangeRequestType.Activation,
         leadId,
         managerId,
-        startDate: startDate.toISOString(),
+        startDate: dateToMidnightUTC(startDate).toISOString(),
         confirmDetails
       });
-      history.push(routes.CHANGE_REQUESTS);
+      history.push(`${routes.PROJECTS}/${wbsPipe(wbsNum)}/change-requests`);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message);

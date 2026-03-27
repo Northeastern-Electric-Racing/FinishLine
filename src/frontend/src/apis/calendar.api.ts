@@ -5,6 +5,7 @@ import {
   Machinery,
   EventType,
   AvailabilityCreateArgs,
+  dateToMidnightUTC,
   Event,
   EventStatus,
   EventTypeCreateArgs,
@@ -118,7 +119,9 @@ export const editShop = (shopId: string, payload: { name: string; description: s
 };
 
 export const markUserConfirmed = async (id: string, payload: { availability: AvailabilityCreateArgs[] }) => {
-  return axios.post<Event>(apiUrls.calendarEventMarkUserConfirmed(id), payload);
+  return axios.post<Event>(apiUrls.calendarEventMarkUserConfirmed(id), {
+    availability: payload.availability.map((a) => ({ ...a, dateSet: dateToMidnightUTC(a.dateSet) }))
+  });
 };
 
 export const getSingleEvent = async (id: string) => {

@@ -1,15 +1,34 @@
 import express from 'express';
 import { body } from 'express-validator';
 import TasksController from '../controllers/tasks.controllers.js';
-import { nonEmptyString, isTaskPriority, isTaskStatus, validateInputs, isOptionalDate } from '../utils/validation.utils.js';
+import {
+  nonEmptyString,
+  isTaskPriority,
+  isTaskStatus,
+  validateInputs,
+  isOptionalDateOnly
+} from '../utils/validation.utils.js';
+import { isDate } from '../utils/validation.utils.js';
 
 const tasksRouter = express.Router();
 
 tasksRouter.post(
+  '/filter',
+  isDate(body('startPeriod')),
+  isDate(body('endPeriod')),
+  body('memberIds').optional().isArray(),
+  body('memberIds.*').optional().isString(),
+  body('teamIds').optional().isArray(),
+  body('teamIds.*').optional().isString(),
+  validateInputs,
+  TasksController.getFilteredTasks
+);
+
+tasksRouter.post(
   '/:wbsNum',
   nonEmptyString(body('title')),
-  isOptionalDate(body('deadline')),
-  isOptionalDate(body('startDate')),
+  isOptionalDateOnly(body('deadline')),
+  isOptionalDateOnly(body('startDate')),
   body('notes').isString(),
   isTaskPriority(body('priority')),
   isTaskStatus(body('status')),
@@ -23,8 +42,8 @@ tasksRouter.post(
   '/:taskId/edit',
   nonEmptyString(body('title')),
   nonEmptyString(body('notes')),
-  isOptionalDate(body('deadline')),
-  isOptionalDate(body('startDate')),
+  isOptionalDateOnly(body('deadline')),
+  isOptionalDateOnly(body('startDate')),
   isTaskPriority(body('priority')),
   TasksController.editTask
 );

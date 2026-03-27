@@ -54,6 +54,8 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Tooltip from '@mui/material/Tooltip';
 import { convertDayToInt, convertIntToDay } from '../../../utils/calendar.utils';
 import EditSeriesConfirmationModal from './EditSeriesConfirmationModal';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 export interface EventFormValues {
   title: string;
@@ -152,7 +154,10 @@ export interface BaseEventModalProps {
   initialValues?: Partial<EventFormValues>;
   eventTypes: EventType[];
   defaultDate?: Date;
+  defaultStartTime?: Date; // Pre-fill start time without triggering edit mode (e.g. drag-to-create)
+  defaultEndTime?: Date; // Pre-fill end time without triggering edit mode
   eventId?: string; // Required for edit mode to fetch preview of affected schedule slots
+  actionsLeftChildren?: React.ReactNode;
 }
 
 /**
@@ -211,7 +216,10 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   initialValues,
   eventTypes,
   defaultDate = new Date(),
-  eventId
+  defaultStartTime,
+  defaultEndTime,
+  eventId,
+  actionsLeftChildren
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -230,6 +238,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const [showSeriesConfirmModal, setShowSeriesConfirmModal] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<EventPayload | null>(null);
   const [pendingFormData, setPendingFormData] = useState<EventFormValues | null>(null);
+
+  // used in edit mode for ability to send notifs when wp changes
+  const [workPackageIds, setWorkPackageIds] = useState<string[]>(initialValues?.workPackageIds ?? []);
 
   // Fetch preview of other schedule slots that would be affected when editing with "edit all in series"
   const isEditMode = !!initialValues;
@@ -272,14 +283,14 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       questionDocumentLink: initialValues?.questionDocumentLink,
       description: initialValues?.description,
       scheduleDate: initialValues?.scheduleDate ?? defaultDate,
-      startTime: initialValues?.startTime ?? defaultTimes.startTime,
-      endTime: initialValues?.endTime ?? defaultTimes.endTime,
+      startTime: initialValues?.startTime ?? defaultStartTime ?? defaultTimes.startTime,
+      endTime: initialValues?.endTime ?? defaultEndTime ?? defaultTimes.endTime,
       allDay: initialValues?.allDay ?? false,
       recurrenceNumber: 0,
       days: [],
       selectedScheduleSlotId: initialValues?.selectedScheduleSlotId
     };
-  }, [initialValues, defaultDate]);
+  }, [initialValues, defaultDate, defaultStartTime, defaultEndTime]);
 
   const allowedEventTypes = useMemo(() => {
     return eventTypes.filter((et) => {
@@ -670,6 +681,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
         onFormSubmit={onFormSubmit}
         formId="event-form"
         showCloseButton
+        actionsLeftChildren={actionsLeftChildren}
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 500, p: 2 }}>
           {/* Title Input with red placeholder styling */}
@@ -882,7 +894,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                                   error: !!errors.startTime,
                                   helperText: errors.startTime?.message,
                                   onClick: () => setStartTimePickerOpen(true),
-                                  sx: { width: 100 }
+                                  sx: { width: 120 }
                                 },
                                 layout: {
                                   sx: {
@@ -930,7 +942,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                                   error: !!errors.endTime,
                                   helperText: errors.endTime?.message,
                                   onClick: () => setEndTimePickerOpen(true),
-                                  sx: { width: 100 }
+                                  sx: { width: 120 }
                                 },
                                 layout: {
                                   sx: {
@@ -1142,6 +1154,43 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   )}
                 </>
               )}
+            </Box>
+          )}
+          {/* Notification Section */}
+          {selectedEventType && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <NotificationsIcon sx={{ color: 'text.secondary' }} />
+              <Tooltip
+                arrow
+                placement="right"
+                title={
+                  !selectedEventType.sendSlackNotifications
+                    ? 'Slack notifications are disabled for this event type.'
+                    : selectedTeams.length || workPackageIds.length
+                      ? 'Slack notifications will be sent for this event.'
+                      : ''
+                }
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'default' }}>
+                  <Typography variant="body2" color={'text.disabled'} fontWeight={500}>
+                    {selectedEventType.sendSlackNotifications ? 'On' : 'Off'}
+                  </Typography>
+                  {selectedEventType.sendSlackNotifications && !selectedTeams.length && !workPackageIds.length && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <WarningAmberIcon sx={{ color: 'error.main', fontSize: 18 }} />
+                      <Typography variant="body2" color="error.main">
+                        Add{' '}
+                        {selectedEventType.teams && selectedEventType.workPackage
+                          ? 'a team or work package'
+                          : selectedEventType.teams
+                            ? 'a team'
+                            : 'a work package'}{' '}
+                        to send notifications
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Tooltip>
             </Box>
           )}
           {/* Required Members Section */}
@@ -1410,7 +1459,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     value={workPackageOptions.find((wp) => value?.[0] === wp.id) || null}
                     onChange={(_, newValue) => {
                       if (newValue?.id !== 'loading') {
-                        onChange(newValue ? [newValue.id] : []);
+                        const ids = newValue ? [newValue.id] : [];
+                        onChange(ids);
+                        setWorkPackageIds(ids);
                       }
                     }}
                     getOptionLabel={(option) => option.label}

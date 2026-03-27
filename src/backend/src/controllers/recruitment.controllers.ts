@@ -96,4 +96,32 @@ export default class RecruitmentController {
       next(error);
     }
   }
+
+  static async createGuestDefinition(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { term, description, order, icon, buttonText, buttonLink } = req.body;
+      const definition = await RecruitmentServices.createGuestDefinition(
+        req.currentUser,
+        req.organization,
+        term,
+        description,
+        order,
+        icon,
+        buttonText,
+        buttonLink
+      );
+      res.status(200).json(definition);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllGuestDefintions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const allDefinitons = await RecruitmentServices.getAllGuestDefinitions(req.organization);
+      res.status(200).json(allDefinitons);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

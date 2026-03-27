@@ -11,17 +11,18 @@ export * from './src/types/team-types.js';
 export * from './src/types/task-types.js';
 export * from './src/types/finance-types.js';
 export * from './src/types/reimbursement-requests-types.js';
-export * from './src/types/frequently-asked-questions-types.js';
+export * from './src/types/recruitment-types.js';
 export * from './src/types/milestone-types.js';
 export * from './src/types/checklist-types.js';
 export * from './src/types/pop-up-types.js';
 export * from './src/types/announcements.types.js';
 export * from './src/types/part-review.types.js';
-export * from './src/types/finance-types.js';
 export * from './src/types/calendar-types.js';
+export * from './src/types/attendance-types.js';
 
 export * from './src/validate-wbs.js';
 export * from './src/date-utils.js';
+export * from './src/date-format.js';
 
 export * from './src/backend-supports/project-supports.js';
 export * from './src/word-count.js';

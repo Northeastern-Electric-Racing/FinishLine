@@ -34,11 +34,10 @@ import {
   IndexCode,
   isHead,
   MAX_FILE_SIZE,
+  ProjectPreview,
   ReimbursementProductFormArgs,
   ReimbursementReceiptUploadArgs,
-  Vendor,
-  WbsNumber,
-  wbsPipe
+  Vendor
 } from 'shared';
 import { ClearIcon, DatePicker } from '@mui/x-date-pickers';
 import ReimbursementProductTable from './ReimbursementProductTable';
@@ -50,7 +49,6 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-import { wbsNumComparator } from 'shared';
 import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
 import { imagePreviewUrl } from '../../../utils/reimbursement-request.utils';
 import { useCreateVendor } from '../../../hooks/finance.hooks';
@@ -64,15 +62,16 @@ interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
   allAccountCodes: AccountCode[];
   receiptFiles: ReimbursementReceiptUploadArgs[];
-  allWbsElements: {
-    wbsNum: WbsNumber;
-    wbsName: string;
+  allProjects: ProjectPreview[];
+  projectAutocompleteOptions: {
+    label: string;
+    id: string;
   }[];
   control: Control<ReimbursementRequestFormInput, any>;
   reimbursementProducts: ReimbursementProductFormArgs[];
   receiptPrepend: (args: ReimbursementReceiptUploadArgs) => void;
   receiptRemove: (index: number) => void;
-  reimbursementProductAppend: (args: ReimbursementProductFormArgs) => void;
+  reimbursementProductPrepend: (args: ReimbursementProductFormArgs) => void;
   reimbursementProductRemove: (index: number) => void;
   onSubmit: (data: ReimbursementRequestFormInput) => void;
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
@@ -92,13 +91,14 @@ interface ReimbursementRequestFormViewProps {
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
   allVendors,
   allAccountCodes,
-  allWbsElements,
+  allProjects,
+  projectAutocompleteOptions,
   receiptFiles,
   reimbursementProducts,
   control,
   receiptPrepend,
   receiptRemove,
-  reimbursementProductAppend,
+  reimbursementProductPrepend,
   reimbursementProductRemove,
   onSubmit,
   handleSubmit,
@@ -235,13 +235,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const calculatedTotalCost = products
     .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost), 0)
     .toFixed(2);
-
-  const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
-    label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
-    id: wbsPipe(wbsElement.wbsNum)
-  }));
-
-  wbsElementAutocompleteOptions.sort((wbsNum1, wbsNum2) => wbsNumComparator(wbsNum1.id, wbsNum2.id));
 
   const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();
 
@@ -751,7 +744,26 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
                   {/* Receipt Previews */}
                   <Box sx={{ mt: 2 }}>
-                    <Grid container spacing={2}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 2,
+                        overflowX: 'auto',
+                        overflowY: 'hidden',
+                        maxHeight: '250px',
+                        paddingBottom: '10px',
+                        '&::-webkit-scrollbar': {
+                          height: '0.55rem' // Adjust the the thickness of the scrollbar
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                          backgroundColor: '#EF4345', //FinishLine 'red' color
+                          borderRadius: '50px' //make the scrollbar rounded
+                        },
+                        '&::-webkit-scrollbar-thumb:hover': {
+                          backgroundColor: '#b0191a' // Change to a darker shade of red on hover
+                        }
+                      }}
+                    >
                       {receiptFiles.map((receiptFile, index) => {
                         let previewUrl = '';
                         // if file is newly uploaded, show local preview, else show google drive preview
@@ -762,7 +774,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                         }
 
                         return (
-                          <Grid item xs={6} key={index}>
+                          <Grid item xs={6} key={index} sx={{ minWidth: '250px' }}>
                             <Stack
                               direction="column"
                               spacing={1}
@@ -842,8 +854,39 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           </Grid>
                         );
                       })}
-                    </Grid>
+                    </Box>
                   </Box>
+                </FormControl>
+
+                {/* Description */}
+                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                  <FormLabel
+                    sx={{
+                      color: '#dd524c',
+                      textShadow: '1.5px 0 #dd524c',
+                      letterSpacing: '0.5px',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3.5px',
+                      textDecorationThickness: '0.6px',
+                      fontSize: 'x-large',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Description
+                  </FormLabel>
+                  <Controller
+                    name="description"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <TextField
+                        value={value || ''}
+                        onChange={onChange}
+                        placeholder="Enter Description"
+                        multiline
+                        rows={3}
+                      />
+                    )}
+                  />
                 </FormControl>
               </Stack>
             </Grid>
@@ -857,9 +900,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             <ReimbursementProductTable
               errors={errors}
               reimbursementProducts={reimbursementProducts}
-              appendProduct={reimbursementProductAppend}
+              prependProduct={reimbursementProductPrepend}
               removeProduct={reimbursementProductRemove}
-              wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
+              projectAutocompleteOptions={projectAutocompleteOptions}
               watch={watch}
               register={register}
               setValue={setValue}
@@ -869,6 +912,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               secondRefundSourceIndexCode={secondRefundSourcePassed}
               firstRefundSourceName={firstRefundSource.name}
               secondRefundSourceName={secondRefundSource.name}
+              allProjects={allProjects}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>

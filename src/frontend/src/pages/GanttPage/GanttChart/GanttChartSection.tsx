@@ -15,6 +15,7 @@ import { Box, Typography } from '@mui/material';
 import { useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
+import { ArcherContainer } from 'react-archer';
 
 interface GanttChartSectionProps<T> {
   start: Date;

@@ -23,6 +23,15 @@ export default class ChangeRequestsController {
     }
   }
 
+  static async getAllGuestChangeRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const changeRequests = await ChangeRequestsService.getAllGuestChangeRequests(req.organization);
+      res.status(200).json(changeRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getToReviewChangeRequests(req: Request, res: Response, next: NextFunction) {
     try {
       const changeRequests = await ChangeRequestsService.getToReviewChangeRequests(req.currentUser, req.organization);
@@ -133,6 +142,25 @@ export default class ChangeRequestsController {
         req.organization,
         otherReasonId,
         accountCodeId
+      );
+      res.status(200).json(cr);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createLeadershipChangeRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsNum, leadId, managerId } = req.body;
+
+      const cr = await ChangeRequestsService.createLeadershipChangeRequest(
+        req.currentUser,
+        wbsNum.carNumber,
+        wbsNum.projectNumber,
+        wbsNum.workPackageNumber,
+        leadId,
+        managerId,
+        req.organization
       );
       res.status(200).json(cr);
     } catch (error: unknown) {

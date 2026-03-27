@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { Alert, Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
-import { Calendar, DayOfWeek, EventInstance, EventStatus, EventType, isAdmin, isHead, wbsPipe } from 'shared';
+import {
+  Calendar,
+  DayOfWeek,
+  EventInstance,
+  EventStatus,
+  EventType,
+  formatEventTime,
+  isAdmin,
+  isHead,
+  wbsPipe
+} from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../utils/routes';
@@ -29,7 +39,7 @@ import EditEventModal from './Components/EditEventModal';
 import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmationModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import NERDeleteModal from '../../components/NERDeleteModal';
-import { formatTime } from '../../utils/datetime.utils';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { getPendingReason } from '../../utils/calendar.utils';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
@@ -158,62 +168,64 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
           {pendingReason}
         </Alert>
       )}
-      <Box sx={{ position: 'relative', mb: 2 }}>
-        {!disable && canEditOrDelete && (
-          <Box sx={{ position: 'absolute', top: 0, right: 0, display: 'flex', gap: 0.5 }}>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                stopClick(e);
-                onEdit(event);
-              }}
-              sx={{
-                color: theme.palette.grey[500],
-                '&:hover': {
-                  color: theme.palette.common.white,
-                  bgcolor: 'transparent'
-                }
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                stopClick(e);
-                onDelete(event);
-              }}
-              sx={{
-                color: theme.palette.grey[500],
-                '&:hover': {
-                  color: '#ef5350',
-                  bgcolor: 'transparent'
-                }
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        )}
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ pr: 4 }}>
+
+      <Box sx={{ mb: 2 }}>
+        <Stack direction="row" spacing={1} alignItems="flex-start">
           {getTeamTypeIcon(event.teamType?.name ?? '', true)}
-          <Typography
-            variant="h6"
-            noWrap
-            sx={{
-              fontWeight: 'bold',
-              color: calendarColor
-            }}
-          >
-            {name}
-          </Typography>
+
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 'bold',
+                color: calendarColor,
+                whiteSpace: 'normal',
+                overflowWrap: 'anywhere',
+                lineHeight: 1.2
+              }}
+            >
+              {name}
+            </Typography>
+          </Box>
+
+          {!disable && canEditOrDelete && (
+            <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  stopClick(e);
+                  onEdit(event);
+                }}
+                sx={{
+                  color: theme.palette.grey[500],
+                  '&:hover': { color: theme.palette.common.white, bgcolor: 'transparent' }
+                }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  stopClick(e);
+                  onDelete(event);
+                }}
+                sx={{
+                  color: theme.palette.grey[500],
+                  '&:hover': { color: '#ef5350', bgcolor: 'transparent' }
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Stack>
+          )}
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5, flexWrap: 'wrap' }}>
           {dayOfWeek && <AccessTimeIcon fontSize="small" />}
           {dayOfWeek && !event.allDay && (
             <Typography variant="body2">
-              {formatTime(event.startTime)} – {formatTime(event.endTime)}
+              {formatEventTime(event.startTime)} – {formatEventTime(event.endTime)}
             </Typography>
           )}
           {dayOfWeek && event.allDay && <Typography variant="body2">All day</Typography>}
@@ -424,8 +436,12 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
             <Typography variant="body2" sx={{ flex: 1 }}>
               <b>Status:</b> {event.status}
             </Typography>
+            {specificEventType?.sendSlackNotifications && (event.teams.length > 0 || event.workPackages.length > 0) && (
+              <NotificationsIcon sx={{ color: 'white', fontSize: 18, mt: '3px', flexShrink: 0 }} />
+            )}
           </Stack>
         )}
+
         {addApprovalButtons && canApprove && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <NERSuccessButton
@@ -443,6 +459,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
             >
               Approve
             </NERSuccessButton>
+
             <NERFailButton
               sx={{ mx: 1 }}
               onClick={async () => {
