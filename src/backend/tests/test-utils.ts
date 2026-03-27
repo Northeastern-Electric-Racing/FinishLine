@@ -945,3 +945,20 @@ export const createMinimalPartReviewForReview = async (
 
   return { review, partId: part.partId };
 };
+
+export const createTestGuestDefinition = async (user: User, organizationId: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const def = await prisma.guest_Definition.create({
+    data: {
+      term: 'Term',
+      description: 'Description',
+      order: 0,
+      organizationId,
+      userCreatedId: user.userId
+    }
+  });
+
+  return def;
+};

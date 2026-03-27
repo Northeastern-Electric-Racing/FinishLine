@@ -261,4 +261,25 @@ export default class RecruitmentServices {
 
     return allGuestDefintions.map(guestDefinitionTransformer);
   }
+
+  /**
+   * Deletes a guestDefinition with the given organization Id and definitionId
+   * @param deleter the user requesting to delete the guestDefinition
+   * @param organizationId the organization ID of the deleter
+   */
+  static async deleteGuestDefinition(deleter: User, definitionId: string, organization: Organization): Promise<void> {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete a guestDefinition');
+    }
+
+    const def = await prisma.guest_Definition.findUnique({ where: { definitionId } });
+
+    if (!def) throw new NotFoundException('Guest Definition', definitionId);
+    if (def.dateDeleted) throw new DeletedException('Guest Definition', definitionId);
+
+    await prisma.guest_Definition.update({
+      where: { definitionId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
+  }
 }
