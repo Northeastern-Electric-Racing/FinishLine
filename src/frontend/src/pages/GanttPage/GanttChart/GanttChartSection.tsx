@@ -15,6 +15,7 @@ import { Box } from '@mui/material';
 import { useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
+import { ArcherContainer } from 'react-archer';
 
 interface GanttChartSectionProps<T> {
   start: Date;
@@ -64,42 +65,44 @@ const GanttChartSection = <T,>({
   };
 
   return (
-    <Box sx={{ width: 'fit-content' }}>
-      <Box sx={{ mt: '1rem', width: 'fit-content' }}>
-        {tasks.map((task) => {
-          return (
-            <Box display="flex" alignItems="center">
-              <GanttTaskBar
-                key={task.id}
-                days={days}
-                task={task}
-                isEditMode={isEditMode}
-                createChange={handleCreateProjectChange}
-                handleOnMouseOver={handleOnMouseOver}
-                handleOnMouseLeave={handleOnMouseLeave}
-                onShowChildrenToggle={() => onShowChildrenToggle(task)}
-                onAddTaskPressed={onAddTaskPressed}
-                showChildren={shouldShowChildren(task)}
-                highlightedChange={highlightedChange}
-                highlightSubtaskComparator={highlightSubtaskComparator}
-                highlightTaskComparator={highlightTaskComparator}
-              />
-            </Box>
-          );
-        })}
+    <ArcherContainer strokeColor="#ef4545">
+      <Box sx={{ width: 'fit-content' }}>
+        <Box sx={{ mt: '1rem', width: 'fit-content' }}>
+          {tasks.map((task) => {
+            return (
+              <Box display="flex" alignItems="center">
+                <GanttTaskBar
+                  key={task.id}
+                  days={days}
+                  task={task}
+                  isEditMode={isEditMode}
+                  createChange={handleCreateProjectChange}
+                  handleOnMouseOver={handleOnMouseOver}
+                  handleOnMouseLeave={handleOnMouseLeave}
+                  onShowChildrenToggle={() => onShowChildrenToggle(task)}
+                  onAddTaskPressed={onAddTaskPressed}
+                  showChildren={shouldShowChildren(task)}
+                  highlightedChange={highlightedChange}
+                  highlightSubtaskComparator={highlightSubtaskComparator}
+                  highlightTaskComparator={highlightTaskComparator}
+                />
+              </Box>
+            );
+          })}
+        </Box>
+        {currentTooltipOptions && (
+          <GanttToolTip
+            yCoordinate={cursorY}
+            title={currentTooltipOptions.name}
+            startDate={currentTooltipOptions.start}
+            endDate={currentTooltipOptions.end}
+            color={currentTooltipOptions.styles?.backgroundColor}
+            upperRightDisplay={currentTooltipOptions.tooltip?.upperRightDisplay}
+            lowerRightDisplay={currentTooltipOptions.tooltip?.lowerRightDisplay}
+          />
+        )}
       </Box>
-      {currentTooltipOptions && (
-        <GanttToolTip
-          yCoordinate={cursorY}
-          title={currentTooltipOptions.name}
-          startDate={currentTooltipOptions.start}
-          endDate={currentTooltipOptions.end}
-          color={currentTooltipOptions.styles?.backgroundColor}
-          upperRightDisplay={currentTooltipOptions.tooltip?.upperRightDisplay}
-          lowerRightDisplay={currentTooltipOptions.tooltip?.lowerRightDisplay}
-        />
-      )}
-    </Box>
+    </ArcherContainer>
   );
 };
 
