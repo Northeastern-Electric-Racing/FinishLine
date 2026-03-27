@@ -109,6 +109,7 @@ export const mockEditTaskAssigneesReturnValue = mockUseMutationResult<Task>(
     status: TaskStatus.IN_PROGRESS,
     priority: TaskPriority.Medium,
     wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+    wbsName: 'WP',
     notes: '',
     dateCreated: new Date(),
     createdBy: exampleAdminUser,

@@ -350,6 +350,7 @@ const ProjectGanttChartPage: FC = () => {
     const newTask: Task = {
       taskId,
       wbsNum: parentProject.wbsNum,
+      wbsName: parentProject.name,
       title: taskInfo.title,
       notes: taskInfo.notes,
       dateCreated: new Date(),
