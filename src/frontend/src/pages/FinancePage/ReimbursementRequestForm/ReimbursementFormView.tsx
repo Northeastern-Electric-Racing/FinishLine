@@ -285,7 +285,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           <Grid container spacing={3} alignItems="flex-start">
             {/* Left Column */}
             <Grid item xs={12} md={6}>
-              <Stack spacing={3}>
+              <Stack spacing={4}>
                 {/* Vendor */}
                 <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
                   <FormLabel
@@ -681,7 +681,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
             {/* Right Column */}
             <Grid item xs={12} md={6}>
-              <Stack spacing={3}>
+              <Stack spacing={2}>
                 {/* Upload Receipts */}
                 <FormControl sx={{ display: 'flex', borderRadius: '25px', width: '100%' }}>
                   <FormLabel
