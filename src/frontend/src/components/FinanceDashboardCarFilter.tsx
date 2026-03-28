@@ -79,7 +79,7 @@ const FinanceDashboardCarFilterComponent: React.FC<FinanceDashboardCarFilterProp
 
   const carAutocompleteOptions = [ALL_CARS_OPTION, ...carOptions];
 
-  const handleCarChange = (_event: any, newValue: any) => {
+  const handleCarChange = (_event: React.SyntheticEvent, newValue: { label: string; id: string } | null) => {
     if (newValue === null) {
       // User cleared the input (X button), re-mirror global
       clearLocalSelection();
