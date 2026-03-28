@@ -42,7 +42,7 @@ const shouldRenderUnderParent = <T,>(parentTask: GanttTask<T>, task: GanttTask<T
   }
 
   const parentWbs = wbsPipe(parentTask.element.wbsNum);
-  const canonicalBlockedByParent = task.element.blockedBy.map(wbsPipe).sort()[0];
+  const [canonicalBlockedByParent] = task.element.blockedBy.map(wbsPipe).sort();
   return canonicalBlockedByParent === parentWbs;
 };
 
