@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Car } from 'shared';
-import { createCar, getAllCars, getCurrentCar } from '../apis/cars.api';
+import { createCar, getAllCars } from '../apis/cars.api';
 
 export interface CreateCarPayload {
   name: string;
@@ -12,16 +12,6 @@ export interface CreateCarPayload {
 export const useGetAllCars = () => {
   return useQuery<Car[], Error>(['cars'], async () => {
     const { data } = await getAllCars();
-    return data;
-  });
-};
-
-/**
- * Custom React Hook to get the current car (most recent car by car number).
- */
-export const useGetCurrentCar = () => {
-  return useQuery<Car | null, Error>(['cars', 'current'], async () => {
-    const { data } = await getCurrentCar();
     return data;
   });
 };

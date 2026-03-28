@@ -7,10 +7,6 @@ export const getAllCars = async () => {
   return await axios.get<Car[]>(apiUrls.cars());
 };
 
-export const getCurrentCar = async () => {
-  return await axios.get<Car | null>(apiUrls.carsCurrent());
-};
-
 export const createCar = async (payload: CreateCarPayload) => {
   return await axios.post<Car>(apiUrls.carsCreate(), payload);
 };
