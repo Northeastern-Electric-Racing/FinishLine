@@ -8,6 +8,7 @@ import { Collapse } from '@mui/material';
 import GanttTaskBar from './GanttTaskBar';
 import GanttTaskBarDisplay from './GanttTaskBarDisplay';
 import BlockedGanttTaskView from './BlockedTaskBarView';
+import { useState } from 'react';
 
 interface GanttTaskBarViewProps<T> {
   days: Date[];
@@ -16,12 +17,11 @@ interface GanttTaskBarViewProps<T> {
   getEndCol: (end: Date) => number;
   handleOnMouseOver: (e: React.MouseEvent, task: OnMouseOverOptions) => void;
   handleOnMouseLeave: () => void;
-  onShowChildrenToggle: () => void;
-  showChildren: boolean;
   highlightedChange?: RequestEventChange<T>;
   onAddTaskPressed: (parent: GanttTask<T>) => void;
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
+  onToggle?: () => void;
 }
 
 const GanttTaskBarView = <T,>({
@@ -31,13 +31,18 @@ const GanttTaskBarView = <T,>({
   getEndCol,
   handleOnMouseOver,
   handleOnMouseLeave,
-  onShowChildrenToggle,
-  showChildren,
   highlightedChange,
   onAddTaskPressed,
   highlightSubtaskComparator,
-  highlightTaskComparator
+  highlightTaskComparator,
+  onToggle
 }: GanttTaskBarViewProps<T>) => {
+  const [showChildren, setShowChildren] = useState(false);
+
+  const handleToggle = () => {
+    setShowChildren((prev) => !prev);
+  };
+
   return (
     <>
       <GanttTaskBarDisplay
@@ -46,7 +51,7 @@ const GanttTaskBarView = <T,>({
         handleOnMouseOver={handleOnMouseOver}
         handleOnMouseLeave={handleOnMouseLeave}
         showChildren={showChildren}
-        onShowChildrenToggle={onShowChildrenToggle}
+        onShowChildrenToggle={handleToggle}
         highlightedChange={highlightedChange}
         getStartCol={getStartCol}
         getEndCol={getEndCol}
@@ -54,25 +59,23 @@ const GanttTaskBarView = <T,>({
         highlightTaskComparator={highlightTaskComparator}
       />
 
-      <Collapse in={showChildren} unmountOnExit>
-        {task.children.map((child) => {
-          return (
-            <GanttTaskBar
-              key={child.id}
-              days={days}
-              task={child}
-              isEditMode={false}
-              createChange={() => {}}
-              handleOnMouseOver={handleOnMouseOver}
-              handleOnMouseLeave={handleOnMouseLeave}
-              onShowChildrenToggle={onShowChildrenToggle}
-              highlightedChange={highlightedChange}
-              onAddTaskPressed={onAddTaskPressed}
-              highlightSubtaskComparator={highlightSubtaskComparator}
-              highlightTaskComparator={highlightTaskComparator}
-            />
-          );
-        })}
+      <Collapse in={showChildren} unmountOnExit onEntered={onToggle} onExited={onToggle}>
+        {task.children.map((child) => (
+          <GanttTaskBar
+            key={child.id}
+            days={days}
+            task={child}
+            isEditMode={false}
+            createChange={() => {}}
+            handleOnMouseOver={handleOnMouseOver}
+            handleOnMouseLeave={handleOnMouseLeave}
+            highlightedChange={highlightedChange}
+            onAddTaskPressed={onAddTaskPressed}
+            highlightSubtaskComparator={highlightSubtaskComparator}
+            highlightTaskComparator={highlightTaskComparator}
+            onToggle={onToggle}
+          />
+        ))}
       </Collapse>
       {task.blocking.map((blocking) => {
         return (
@@ -84,7 +87,7 @@ const GanttTaskBarView = <T,>({
             getStartCol={getStartCol}
             getEndCol={getEndCol}
             handleOnMouseOver={handleOnMouseOver}
-            onShowChildrenToggle={onShowChildrenToggle}
+            onShowChildrenToggle={handleToggle}
             highlightSubtaskComparator={highlightSubtaskComparator}
             highlightTaskComparator={highlightTaskComparator}
             handleOnMouseLeave={handleOnMouseLeave}
