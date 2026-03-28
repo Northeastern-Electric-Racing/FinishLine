@@ -12,7 +12,8 @@ import {
   OnMouseOverOptions,
   RequestEventChange
 } from '../../../../../utils/gantt.utils';
-import { dateToString, getMonday } from '../../../../../utils/datetime.utils';
+import { getMonday } from '../../../../../utils/datetime.utils';
+import { toDateString } from 'shared';
 
 interface GanttTaskBarProps<T> {
   days: Date[];
@@ -44,21 +45,16 @@ const GanttTaskBar = <T,>({
   highlightTaskComparator
 }: GanttTaskBarProps<T>) => {
   const getStartCol = (start: Date) => {
-    const startCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(start))) + 1;
+    const startCol = days.findIndex((day) => toDateString(day) === toDateString(getMonday(start))) + 1;
     return startCol;
   };
 
-  // if the end date doesn't exist within the timeframe, have it span to the end
   const getEndCol = (end: Date) => {
     const endCol =
-      days.findIndex((day) => dateToString(day) === dateToString(getMonday(end))) === -1
+      days.findIndex((day) => toDateString(day) === toDateString(getMonday(end))) === -1
         ? days.length + 1
-        : days.findIndex((day) => dateToString(day) === dateToString(getMonday(end))) + 2;
+        : days.findIndex((day) => toDateString(day) === toDateString(getMonday(end))) + 2;
     return endCol;
-  };
-
-  const handleChange = (change: GanttChange<T>) => {
-    createChange(change);
   };
 
   return (
@@ -67,7 +63,7 @@ const GanttTaskBar = <T,>({
         <GanttTaskBarEdit
           days={days}
           task={task}
-          createChange={handleChange}
+          createChange={createChange}
           getStartCol={getStartCol}
           getEndCol={getEndCol}
           onAddTaskPressed={onAddTaskPressed}

@@ -4,6 +4,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { Sponsor } from 'shared';
 import NERModal from '../../../components/NERModal';
 import { Typography } from '@mui/material';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface DeleteSponsorProps {
   handleClose: () => void;
@@ -12,6 +13,7 @@ interface DeleteSponsorProps {
 }
 
 const DeleteSponsorModal = ({ handleClose, sponsor, showModal }: DeleteSponsorProps) => {
+  const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useDeleteSponsor(sponsor.sponsorId);
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -23,9 +25,16 @@ const DeleteSponsorModal = ({ handleClose, sponsor, showModal }: DeleteSponsorPr
       title="Warning!"
       onHide={handleClose}
       submitText="Delete"
-      onSubmit={() => {
-        mutateAsync();
-        handleClose();
+      onSubmit={async () => {
+        try {
+          await mutateAsync();
+          toast.success(`Sponsor "${sponsor.name}" deleted successfully!`);
+          handleClose();
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            toast.error(err.message);
+          }
+        }
       }}
     >
       <Typography gutterBottom>

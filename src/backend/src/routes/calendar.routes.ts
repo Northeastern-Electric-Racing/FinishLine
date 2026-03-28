@@ -3,6 +3,7 @@ import { body, param } from 'express-validator';
 import {
   intMinZero,
   isDate,
+  isDateOnly,
   nonEmptyString,
   validateInputs,
   isEventStatus,
@@ -185,7 +186,7 @@ calendarRouter.post(
   body('availability').isArray(),
   body('availability.*.availability').isArray(),
   intMinZero(body('availability.*.availability.*')),
-  isDate(body('availability.*.dateSet')),
+  isDateOnly(body('availability.*.dateSet')),
   validateInputs,
   CalendarController.markUserConfirmed
 );

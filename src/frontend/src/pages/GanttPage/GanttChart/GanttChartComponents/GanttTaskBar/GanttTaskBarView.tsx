@@ -6,8 +6,8 @@ import {
 } from '../../../../../utils/gantt.utils';
 import { Collapse } from '@mui/material';
 import GanttTaskBar from './GanttTaskBar';
-import BlockedGanttTaskView from './BlockedTaskBarView';
 import GanttTaskBarDisplay from './GanttTaskBarDisplay';
+import BlockedGanttTaskView from './BlockedTaskBarView';
 
 interface GanttTaskBarViewProps<T> {
   days: Date[];
@@ -54,7 +54,7 @@ const GanttTaskBarView = <T,>({
         highlightTaskComparator={highlightTaskComparator}
       />
 
-      <Collapse in={showChildren}>
+      <Collapse in={showChildren} unmountOnExit>
         {task.children.map((child) => {
           return (
             <GanttTaskBar

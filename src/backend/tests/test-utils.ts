@@ -101,6 +101,7 @@ export const createTestUser = async (
 };
 
 export const resetUsers = async () => {
+  await prisma.guest_Definition.deleteMany();
   await prisma.part_Review_Popup.deleteMany();
   await prisma.part_Review_Request.deleteMany();
   await prisma.part_Review.deleteMany();
@@ -161,6 +162,7 @@ export const resetUsers = async () => {
   await prisma.announcement.deleteMany();
   await prisma.popUp.deleteMany();
   await prisma.sponsor_Task.deleteMany();
+  await prisma.prospective_Sponsor.deleteMany();
   await prisma.sponsor.deleteMany();
   await prisma.sponsor_Tier.deleteMany();
   await prisma.reimbursement_Product_Other_Reason.deleteMany();

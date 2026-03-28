@@ -4,12 +4,19 @@ import { EventFormValues } from '../pages/CalendarPage/Components/EventModal';
 /**
  * Gets the reason why an event is pending for display purposes.
  */
+export const getSundayOfWeek = (date: Date): Date => {
+  const d = new Date(date);
+  d.setDate(d.getDate() - d.getDay());
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
 export const getPendingReason = (event: EventInstance): string | null => {
   if (event.approved === ConflictStatus.PENDING) {
     return 'This event has a scheduling conflict and requires approval.';
   } else if (event.approved === ConflictStatus.DENIED) {
     return 'This event was denied due to a scheduling conflict.';
-  } else if (event.status === EventStatus.UNCONFIRMED) {
+  } else if (event.status !== EventStatus.SCHEDULED) {
     return 'This event is unconfirmed and waiting to be scheduled.';
   }
   return null;
@@ -184,8 +191,8 @@ export const eventsToNextEventInstance = (events: Event[]): EventInstance[] => {
     ...event,
     scheduledTimes: [
       event.scheduledTimes.reduce((acc, current) => {
-        if (current.startTime < acc.startTime) return acc;
-        return current;
+        if ((current.startTime < acc.startTime && current.startTime > now) || acc.startTime < now) return current;
+        return acc;
       })
     ]
   }));

@@ -39,6 +39,8 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
       return <></>;
     case ChangeRequestType.Budget:
       return <BudgetDetails budgetChangeRequest={cr as BudgetChangeRequest} />;
+    case ChangeRequestType.Leadership:
+      return <></>;
     default:
       return <StandardDetails cr={cr as StandardChangeRequest} />;
   }
@@ -68,7 +70,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const isStandard =
     changeRequest.type !== ChangeRequestType.Activation &&
     changeRequest.type !== ChangeRequestType.StageGate &&
-    changeRequest.type !== ChangeRequestType.Budget;
+    changeRequest.type !== ChangeRequestType.Budget &&
+    changeRequest.type !== ChangeRequestType.Leadership;
 
   const isActivation = changeRequest.type === ChangeRequestType.Activation;
 

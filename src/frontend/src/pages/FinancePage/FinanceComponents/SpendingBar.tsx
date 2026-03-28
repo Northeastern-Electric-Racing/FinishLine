@@ -21,10 +21,10 @@ const isAllUppercase = (label: string): boolean => {
 };
 
 const getTotalMoneySpent = (data: ReimbursementRequestData) =>
-  data.available + data.pendingFinance + data.pendingLeadership + data.reimbursed + data.submittedToSabo;
+  data.available + data.approved + data.pendingApproval + data.reimbursed + data.addedToSabo;
 
 const getTotalMoneySpentNotAvailable = (data: ReimbursementRequestData) =>
-  data.pendingFinance + data.pendingLeadership + data.reimbursed + data.submittedToSabo;
+  data.approved + data.pendingApproval + data.reimbursed + data.addedToSabo;
 
 const transformReimbursementDataToBarData = (
   title: string,
@@ -96,9 +96,9 @@ const SpendingBar = ({ data, title, edit }: SpendingBarProps) => {
         datasets: data.flatMap((val, index) => {
           if (index === hoveredIndex) {
             return [
-              getBarData('Leadership', val.spendingInfo.pendingLeadership + average, '#ef2020', data.length + 4),
-              getBarData('Finance', val.spendingInfo.pendingFinance + average, '#ef4545', data.length + 4),
-              getBarData('SABO', val.spendingInfo.submittedToSabo + average, '#efA0A0', data.length + 4),
+              getBarData('Pending Approval', val.spendingInfo.pendingApproval + average, '#ef2020', data.length + 4),
+              getBarData('Approved', val.spendingInfo.approved + average, '#ef4545', data.length + 4),
+              getBarData('Added to SABO', val.spendingInfo.addedToSabo + average, '#efA0A0', data.length + 4),
               getBarData('Reimbursed', val.spendingInfo.reimbursed + average, grey[800], data.length + 4),
               getBarData('Available', val.spendingInfo.available + average, grey[500], data.length + 4)
             ];

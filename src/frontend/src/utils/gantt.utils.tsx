@@ -485,9 +485,7 @@ export const transformProjectToGanttTask = (
     end: endDate,
     blocking: [],
     children: [
-      ...project.workPackages
-        .filter((workPackage) => workPackage.blockedBy.length === 0)
-        .map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
+      ...project.workPackages.map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
       ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
     ],
     overlays: [
