@@ -6,7 +6,6 @@ import { userTransformer } from './user.transformer.js';
 import { WorkPackageQueryArgs, WorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 import { teamTypeTransformer } from './team-types.transformer.js';
 import { eventPreviewTransformer } from './calendar.transformer.js';
-import { taskTransformer } from './tasks.transformer.js';
 
 const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
   const wbsNum = wbsNumOf(wpInput.wbsElement);
@@ -43,7 +42,6 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
     events: wpInput.events.map((event) =>
       eventPreviewTransformer(event, `${wpInput.project.wbsElement.name} - ${wpInput.wbsElement.name}`)
     ),
-    tasks: wpInput.wbsElement.tasks.map(taskTransformer),
     deleted: wpInput.wbsElement.dateDeleted !== null
   };
 };

@@ -32,7 +32,6 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
           },
           blocking: { where: { wbsElement: { dateDeleted: null } }, include: { wbsElement: true } },
           descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) },
-          tasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organizationId) }
         }
       },
       blockedBy: { where: { dateDeleted: null } },

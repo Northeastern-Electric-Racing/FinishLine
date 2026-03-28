@@ -7,7 +7,6 @@ import { dbDateToLocalDate, RetrospectiveWorkPackage, WorkPackage, WorkPackagePr
 import { implementedChangeTransformer } from './change-requests.transformers';
 import { descriptionBulletTransformer } from './projects.transformers';
 import { eventPreviewTransformer } from './calendar.transformer';
-import { taskTransformer } from './tasks.transformers';
 
 /**
  * Transforms a work package to ensure deep field transformation of date objects.
@@ -23,8 +22,7 @@ export const workPackageTransformer = (workPackage: WorkPackage): WorkPackage =>
     endDate: dbDateToLocalDate(new Date(workPackage.endDate)),
     descriptionBullets: workPackage.descriptionBullets.map(descriptionBulletTransformer),
     changes: workPackage.changes.map(implementedChangeTransformer),
-    events: workPackage.events.map(eventPreviewTransformer),
-    tasks: workPackage.tasks.map(taskTransformer)
+    events: workPackage.events.map(eventPreviewTransformer)
   };
 };
 

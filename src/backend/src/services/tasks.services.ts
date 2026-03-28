@@ -74,15 +74,7 @@ export default class TasksService {
             workPackages: { include: { wbsElement: true } }
           }
         },
-        workPackage: {
-          include: {
-            project: {
-              include: {
-                teams: getTeamQueryArgs(organization.organizationId)
-              }
-            }
-          }
-        }
+        workPackage: true
       }
     });
     if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
