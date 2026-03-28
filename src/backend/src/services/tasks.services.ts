@@ -74,7 +74,15 @@ export default class TasksService {
             workPackages: { include: { wbsElement: true } }
           }
         },
-        workPackage: true
+        workPackage: {
+          include: {
+            project: {
+              include: {
+                teams: getTeamQueryArgs(organization.organizationId)
+              }
+            }
+          }
+        }
       }
     });
     if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
@@ -439,5 +447,61 @@ export default class TasksService {
     });
 
     return tasks.map(taskCardPreviewTransformer);
+  }
+
+  /**
+   * Gets all tasks associated with a wbs element
+   * If the wbs number is a project (workPackageNumber === 0), returns the project's
+   * own tasks merged with all of its work packages' tasks
+   * If the wbs number is a work package, returns just that WP's tasks
+   * @param wbsNum the wbs number to fetch tasks for
+   * @param organization the organization that the user is currently in
+   * @returns array of tasks
+   */
+  static async getTasksByWbsNum(wbsNum: WbsNumber, organization: Organization): Promise<Task[]> {
+    const wbsElement = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsNumber: {
+          ...wbsNum,
+          organizationId: organization.organizationId
+        }
+      }
+    });
+
+    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+
+    // project case, so return project's own tasks and all its wp's tasks
+    if (wbsNum.workPackageNumber === 0) {
+      const project = await prisma.project.findUnique({
+        where: { wbsElementId: wbsElement.wbsElementId },
+        include: { workPackages: { include: { wbsElement: true } } }
+      });
+
+      if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+
+      const wpWbsElementIds = project.workPackages.map((wp) => wp.wbsElementId);
+
+      const tasks = await prisma.task.findMany({
+        where: {
+          dateDeleted: null,
+          wbsElementId: { in: [wbsElement.wbsElementId, ...wpWbsElementIds] }
+        },
+        ...getTaskQueryArgs(organization.organizationId)
+      });
+
+      return tasks.map(taskTransformer);
+    }
+
+    // work package case, so return just that wp's tasks
+    const tasks = await prisma.task.findMany({
+      where: {
+        dateDeleted: null,
+        wbsElementId: wbsElement.wbsElementId
+      },
+      ...getTaskQueryArgs(organization.organizationId)
+    });
+
+    return tasks.map(taskTransformer);
   }
 }

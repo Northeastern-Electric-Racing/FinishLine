@@ -157,3 +157,16 @@ export const getOverdueTasksByTeamLeader = (userId: string) => {
     transformResponse: (data) => JSON.parse(data).map(taskTransformer)
   });
 };
+
+/**
+ * Gets all tasks for a given WBS element
+ * For projects, returns project tasks merged with all project's wp's tasks
+ * For work packages, returns just that wp's tasks
+ * @param wbsNum the wbs number to fetch tasks for
+ * @returns array of tasks
+ */
+export const getTasksByWbsNum = (wbsNum: WbsNumber) => {
+  return axios.get<Task[]>(apiUrls.tasksByWbsNum(wbsPipe(wbsNum)), {
+    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  });
+};

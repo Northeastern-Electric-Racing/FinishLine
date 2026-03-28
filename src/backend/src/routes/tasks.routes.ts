@@ -69,4 +69,6 @@ tasksRouter.post('/:taskId/delete', validateInputs, TasksController.deleteTask);
 
 tasksRouter.get('/overdue-by-team-member/:userId', TasksController.getOverdueTasksByTeamLeadership);
 
+tasksRouter.get('/by-wbs/:wbsNum', TasksController.getTasksByWbsNum);
+
 export default tasksRouter;

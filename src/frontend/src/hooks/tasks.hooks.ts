@@ -13,8 +13,10 @@ import {
   editTaskAssignees,
   editTaskWbsElement,
   getOverdueTasksByTeamLeader,
-  getFilterTasks
+  getFilterTasks,
+  getTasksByWbsNum
 } from '../apis/tasks.api';
+import { wbsPipe } from '../utils/pipes';
 
 export interface CreateTaskPayload {
   wbsNum: WbsNumber;
@@ -195,6 +197,20 @@ export const useDeleteTask = () => {
 export const useOverdueTasksByTeamLeader = (userId: string) => {
   return useQuery<TaskCardPreview[], Error>([userId, 'tasks'], async () => {
     const { data } = await getOverdueTasksByTeamLeader(userId);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all tasks for a given wbs element
+ * For projects, returns project tasks merged with all project's wp's tasks
+ * For work packages, returns just that wp's tasks
+ * @param wbsNum the wbs number to fetch tasks for
+ * @returns the tasks query
+ */
+export const useTasksByWbsNum = (wbsNum: WbsNumber) => {
+  return useQuery<Task[], Error>(['tasks', wbsPipe(wbsNum)], async () => {
+    const { data } = await getTasksByWbsNum(wbsNum);
     return data;
   });
 };

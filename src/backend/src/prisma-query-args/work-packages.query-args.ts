@@ -3,7 +3,6 @@ import { getUserPreviewQueryArgs, getUserQueryArgs } from './user.query-args.js'
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.js';
 import { getLinkQueryArgs } from './links.query-args.js';
 import { getEventQueryArgs } from './event.query-args.js';
-import { getTaskQueryArgs } from './tasks.query-args.js';
 
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
 export type WorkPackagePreviewQueryArgs = ReturnType<typeof getWorkPackagePreviewQueryArgs>;

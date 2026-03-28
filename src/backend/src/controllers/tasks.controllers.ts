@@ -135,4 +135,14 @@ export default class TasksController {
       next(error);
     }
   }
+
+  static async getTasksByWbsNum(req: Request, res: Response, next: NextFunction) {
+    try {
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
+      const tasks = await TasksService.getTasksByWbsNum(wbsNum, req.organization);
+      res.status(200).json(tasks);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

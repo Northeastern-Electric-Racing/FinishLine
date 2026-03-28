@@ -98,6 +98,7 @@ const editTaskWbsElement = (taskId: string) => `${tasks()}/${taskId}/edit-wbs-el
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
+const tasksByWbsNum = (wbsNum: string) => `${tasks()}/by-wbs/${wbsNum}`;
 
 /**************** Work Packages Endpoints ****************/
 const workPackages = (queryParams?: { [field: string]: string }) => {
@@ -595,6 +596,7 @@ export const apiUrls = {
   editTaskWbsElement,
   deleteTask,
   overdueTasksByTeamLeadership,
+  tasksByWbsNum,
 
   workPackages,
   workPackagesByWbsNum,
