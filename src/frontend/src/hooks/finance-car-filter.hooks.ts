@@ -34,6 +34,7 @@ export interface FinanceDashboardCarFilter {
 export const useFinanceDashboardCarFilter = (initialStartDate?: Date, initialEndDate?: Date): FinanceDashboardCarFilter => {
   const { selectedCar: globalSelectedCar, allCars, isLoading, error } = useGlobalCarFilter();
 
+  // undefined = not set (mirror global), null = explicitly set to "All Cars", Car = explicitly set to specific car
   const [localSelectedCar, setLocalSelectedCar] = useState<Car | null | undefined>(undefined);
   const [startDate, setStartDate] = useState<Date | undefined>(initialStartDate);
   const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate);
