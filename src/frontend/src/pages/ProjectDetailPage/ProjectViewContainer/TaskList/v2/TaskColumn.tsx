@@ -11,10 +11,8 @@ import TaskFormModal, { EditTaskFormInput } from '../TaskFormModal';
 
 export const TaskColumn = ({
   status,
-  tasks,
   wbsNum,
   wbsElementId,
-  workPackages,
   equalizedHeight,
   isDragging,
   onEditTask,
@@ -23,10 +21,8 @@ export const TaskColumn = ({
   onHeightChange
 }: {
   status: TaskStatus;
-  tasks: TaskWithIndex[];
   wbsNum: WbsNumber;
   wbsElementId: string;
-  workPackages?: WorkPackage[];
   equalizedHeight: number;
   isDragging: boolean;
   onEditTask: (task: Task) => void;

@@ -9,11 +9,6 @@ export const TaskList = ({ project, isGuest }: { project: Project; isGuest: bool
   return isSmall || isGuest ? (
     <GuestsTasksList project={project} />
   ) : (
-    <TaskListContent
-      tasks={project.tasks}
-      wbsNum={project.wbsNum}
-      wbsElementId={project.wbsElementId}
-      workPackages={project.workPackages}
-    />
+    <TaskListContent wbsNum={project.wbsNum} wbsElementId={project.wbsElementId} />
   );
 };

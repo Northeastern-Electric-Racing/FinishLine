@@ -9,13 +9,11 @@ import { TaskColumn } from './TaskColumn';
 import confetti from 'canvas-confetti';
 
 interface TaskListContentProps {
-  tasks: Task[];
   wbsNum: WbsNumber;
   wbsElementId: string;
-  workPackages?: WorkPackage[];
 }
 
-export const TaskListContent = ({ tasks, wbsNum, wbsElementId, workPackages }: TaskListContentProps) => {
+export const TaskListContent = ({ wbsNum, wbsElementId }: TaskListContentProps) => {
   const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus>(getTasksByStatus(tasks));
   const { mutateAsync: setTaskStatus } = useSetTaskStatus();
 
