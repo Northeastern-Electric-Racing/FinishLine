@@ -98,9 +98,9 @@ export default class WorkPackagesService {
         wbsElement: {
           dateDeleted: null,
           organizationId: organization.organizationId,
-          ...(status ? { status: status as WbsElementStatus } : {}),
-          ...(carId ? { project: { carId } } : {})
-        }
+          ...(status ? { status: status as WbsElementStatus } : {})
+        },
+        ...(carId && { project: { carId } })
       },
       ...getWorkPackagePreviewQueryArgs()
     });
