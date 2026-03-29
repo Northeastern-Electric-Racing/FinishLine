@@ -397,7 +397,7 @@ export const createTestLinkType = async (user: User, organizationId?: string) =>
   return linkType;
 };
 
-export const createTestCar = async (orgId?: string, userIdentification?: string) => {
+export const createTestCar = async (orgId?: string, userIdentification?: string, carNumber: number = 0) => {
   if (!orgId) orgId = (await createTestOrganization()).organizationId;
   if (!userIdentification) userIdentification = (await createTestUser(supermanAdmin, orgId)).userId;
 
@@ -405,7 +405,7 @@ export const createTestCar = async (orgId?: string, userIdentification?: string)
     data: {
       wbsElement: {
         create: {
-          carNumber: 0,
+          carNumber,
           projectNumber: 0,
           workPackageNumber: 0,
           dateCreated: new Date('01/01/2023'),
