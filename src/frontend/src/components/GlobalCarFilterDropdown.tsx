@@ -10,16 +10,11 @@ import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 import LoadingIndicator from './LoadingIndicator';
 
 interface GlobalCarFilterDropdownProps {
-  compact?: boolean;
   sx?: object;
 }
 
-const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compact = false, sx = {} }) => {
+const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ sx = {} }) => {
   const { selectedCar, allCars, setSelectedCar, isLoading, error } = useGlobalCarFilter();
-
-  const handleCarSelect = (car: Car | null) => {
-    setSelectedCar(car);
-  };
 
   if (isLoading) {
     return <LoadingIndicator />;
@@ -49,93 +44,76 @@ const GlobalCarFilterDropdown: React.FC<GlobalCarFilterDropdownProps> = ({ compa
 
   const currentCarLabel = selectedCar ? selectedCar.name : 'All Cars';
 
-  if (compact) {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, ...sx }}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            cursor: 'pointer',
-            '&:hover': { opacity: 0.8 }
-          }}
-        >
-          <CarIcon fontSize="small" sx={{ color: 'white' }} />
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="caption" sx={{ fontWeight: 500, color: 'white' }}>
-              Working with:
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'white', fontWeight: 'bold' }}>
-              {currentCarLabel}
-            </Typography>
-          </Box>
-        </Box>
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 1,
-            overflowX: 'auto',
-            py: 1,
-            '&::-webkit-scrollbar': {
-              height: 6
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'rgba(255,255,255,0.3)',
-              borderRadius: 3
-            }
-          }}
-        >
-          <Chip
-            label="All Cars"
-            onClick={() => handleCarSelect(null)}
-            variant="outlined"
-            sx={{
-              borderColor: 'white',
-              color: 'white',
-              backgroundColor: 'transparent',
-              fontWeight: !selectedCar ? 'bold' : 'normal',
-              borderWidth: !selectedCar ? 2 : 1,
-              '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
-              whiteSpace: 'nowrap'
-            }}
-          />
-          {sortedCars.map((car) => {
-            const isSelected = selectedCar ? car.id === selectedCar.id : false;
-            return (
-              <Chip
-                key={car.id}
-                label={car.name}
-                onClick={() => handleCarSelect(car)}
-                variant="outlined"
-                sx={{
-                  borderColor: 'white',
-                  color: 'white',
-                  backgroundColor: 'transparent',
-                  fontWeight: isSelected ? 'bold' : 'normal',
-                  borderWidth: isSelected ? 2 : 1,
-                  '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
-                  whiteSpace: 'nowrap'
-                }}
-              />
-            );
-          })}
-        </Box>
-      </Box>
-    );
-  }
-
-  // Non-compact mode (not used in current implementation)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, ...sx }}>
-      <Typography variant="caption" sx={{ fontWeight: 500 }}>
-        Working with:
-      </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <CarIcon fontSize="small" />
-        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-          {currentCarLabel}
-        </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          cursor: 'pointer',
+          '&:hover': { opacity: 0.8 }
+        }}
+      >
+        <CarIcon fontSize="small" sx={{ color: 'white' }} />
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="caption" sx={{ fontWeight: 500, color: 'white' }}>
+            Working with:
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'white', fontWeight: 'bold' }}>
+            {currentCarLabel}
+          </Typography>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          overflowX: 'auto',
+          py: 1,
+          '&::-webkit-scrollbar': {
+            height: 6
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(255,255,255,0.3)',
+            borderRadius: 3
+          }
+        }}
+      >
+        <Chip
+          label="All Cars"
+          onClick={() => setSelectedCar(null)}
+          variant="outlined"
+          sx={{
+            borderColor: 'white',
+            color: 'white',
+            backgroundColor: 'transparent',
+            fontWeight: !selectedCar ? 'bold' : 'normal',
+            borderWidth: !selectedCar ? 2 : 1,
+            '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
+            whiteSpace: 'nowrap'
+          }}
+        />
+        {sortedCars.map((car) => {
+          const isSelected = selectedCar?.id === car.id;
+          return (
+            <Chip
+              key={car.id}
+              label={car.name}
+              onClick={() => setSelectedCar(car)}
+              variant="outlined"
+              sx={{
+                borderColor: 'white',
+                color: 'white',
+                backgroundColor: 'transparent',
+                fontWeight: isSelected ? 'bold' : 'normal',
+                borderWidth: isSelected ? 2 : 1,
+                '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
+                whiteSpace: 'nowrap'
+              }}
+            />
+          );
+        })}
       </Box>
     </Box>
   );
