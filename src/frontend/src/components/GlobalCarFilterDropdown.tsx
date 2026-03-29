@@ -5,7 +5,6 @@
 
 import { Box, Typography, Chip } from '@mui/material';
 import { DirectionsCar as CarIcon } from '@mui/icons-material';
-import { Car } from 'shared';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 import LoadingIndicator from './LoadingIndicator';
 
