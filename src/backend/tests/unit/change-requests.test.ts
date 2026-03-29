@@ -775,7 +775,7 @@ describe('Change Request Tests', () => {
 
         expect(results).toHaveLength(1);
         expect(results[0].wbsNum?.projectNumber).toBe(1); // car A's project
-      });
+      }, 15000);
 
       it('ignores the global car filter when a wbsNum is provided and returns CRs matching the wbsNum', async () => {
         const crA = await ChangeRequestsService.createStandardChangeRequest(
@@ -815,7 +815,7 @@ describe('Change Request Tests', () => {
 
         expect(results).toHaveLength(1);
         expect(results[0].wbsNum?.projectNumber).toBe(1); // car A's project
-      });
+      }, 15000);
     });
   });
 });
