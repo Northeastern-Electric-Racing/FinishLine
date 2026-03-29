@@ -36,7 +36,9 @@ export const GlobalCarFilterProvider: React.FC<GlobalCarFilterProviderProps> = (
       if (savedCarId) {
         const savedCar = allCars.find((car) => car.id === savedCarId);
         if (savedCar) {
-          setSelectedCar(savedCar);
+          setSelectedCarState(savedCar);
+          setCurrentCarId(savedCar.id);
+          localStorage.setItem('selectedCarId', savedCar.id);
           return;
         }
         // Stored ID not found in car list (stale or invalid) — clear it
