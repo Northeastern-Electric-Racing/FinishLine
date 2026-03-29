@@ -53,24 +53,18 @@ export const useGetToReviewChangeRequests = () => {
 
 export const useGetUnreviewedChangeRequests = (wbsNum?: WbsNumber) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ChangeRequest[], Error>(
-    ['change requests', 'unreviewed', selectedCar?.id, wbsNum],
-    async () => {
-      const { data } = await getUnreviewedChangeRequests(wbsNum);
-      return data;
-    }
-  );
+  return useQuery<ChangeRequest[], Error>(['change requests', 'unreviewed', selectedCar?.id, wbsNum], async () => {
+    const { data } = await getUnreviewedChangeRequests(wbsNum);
+    return data;
+  });
 };
 
 export const useGetApprovedChangeRequests = (wbsNum?: WbsNumber) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ChangeRequest[], Error>(
-    ['change requests', 'approved', selectedCar?.id, wbsNum],
-    async () => {
-      const { data } = await getApprovedChangeRequests(wbsNum);
-      return data;
-    }
-  );
+  return useQuery<ChangeRequest[], Error>(['change requests', 'approved', selectedCar?.id, wbsNum], async () => {
+    const { data } = await getApprovedChangeRequests(wbsNum);
+    return data;
+  });
 };
 
 /**
