@@ -286,7 +286,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  const car24 = await prisma.car.create({
+  await prisma.car.create({
     data: {
       wbsElement: {
         create: {
