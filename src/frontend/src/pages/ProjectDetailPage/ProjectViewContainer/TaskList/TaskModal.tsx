@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WorkPackage } from 'shared';
 import { fullNamePipe, datePipe } from '../../../../utils/pipes';
 import { Task } from 'shared';
 import { Box, Grid, Typography } from '@mui/material';
@@ -17,10 +16,9 @@ interface TaskModalProps {
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
   hasEditPermissions: boolean;
-  workPackages?: WorkPackage[];
 }
 
-const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit, hasEditPermissions, workPackages }) => {
+const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit, hasEditPermissions }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const isWpTask = task.wbsNum.workPackageNumber !== 0;
@@ -105,7 +103,6 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
       onReset={() => {
         setIsEditMode(false);
       }}
-      workPackages={workPackages}
     />
   ) : (
     <ViewModal />

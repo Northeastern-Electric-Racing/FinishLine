@@ -18,14 +18,12 @@ export const TaskCard = ({
   task,
   index,
   wbsElementId,
-  workPackages,
   onDeleteTask,
   onEditTask
 }: {
   task: Task;
   index: number;
   wbsElementId: string;
-  workPackages?: WorkPackage[];
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
 }) => {
@@ -116,7 +114,6 @@ export const TaskCard = ({
         onHide={() => setShowModal(false)}
         onSubmit={handleEditTask}
         hasEditPermissions={notGuest(user.role)}
-        workPackages={workPackages}
       />
       <NERModal
         open={showDeleteConfirm}

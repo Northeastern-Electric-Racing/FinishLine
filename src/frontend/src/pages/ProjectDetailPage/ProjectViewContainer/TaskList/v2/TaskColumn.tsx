@@ -1,7 +1,7 @@
 import { Droppable } from '@hello-pangea/dnd';
 import { Box, Typography, useTheme } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-import { Task, TaskStatus, TaskWithIndex, WbsNumber, WorkPackage } from 'shared';
+import { Task, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
 import { statusNames, TaskCard } from '.';
 import { NERButton } from '../../../../../components/NERButton';
 import { useCreateTask } from '../../../../../hooks/tasks.hooks';
@@ -84,7 +84,6 @@ export const TaskColumn = ({
         onSubmit={handleCreateTask}
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
-        workPackages={workPackages}
       />
       <Box
         sx={{
@@ -141,7 +140,6 @@ export const TaskColumn = ({
                   task={task}
                   index={index}
                   wbsElementId={wbsElementId}
-                  workPackages={workPackages}
                 />
               ))}
               {droppableProvided.placeholder}
