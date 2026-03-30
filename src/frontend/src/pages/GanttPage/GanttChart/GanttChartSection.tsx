@@ -12,7 +12,7 @@ import {
   RequestEventChange
 } from '../../../utils/gantt.utils';
 import { Box, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
 
@@ -47,21 +47,27 @@ const GanttChartSection = <T,>({
   const [currentTooltipOptions, setCurrentTooltipOptions] = useState<OnMouseOverOptions | undefined>(undefined);
   const [cursorY, setCursorY] = useState<number>(0);
 
-  const handleOnMouseOver = (e: React.MouseEvent, task: OnMouseOverOptions) => {
-    if (!isEditMode) {
-      setCurrentTooltipOptions(task);
-      setCursorY(e.clientY);
-    }
-  };
+  const handleOnMouseOver = useCallback(
+    (e: React.MouseEvent, task: OnMouseOverOptions) => {
+      if (!isEditMode) {
+        setCurrentTooltipOptions(task);
+        setCursorY(e.clientY);
+      }
+    },
+    [isEditMode]
+  );
 
-  const handleCreateProjectChange = (change: GanttChange<T>) => {
-    createChange(change);
-    setCurrentTooltipOptions(undefined);
-  };
+  const handleCreateProjectChange = useCallback(
+    (change: GanttChange<T>) => {
+      createChange(change);
+      setCurrentTooltipOptions(undefined);
+    },
+    [createChange]
+  );
 
-  const handleOnMouseLeave = () => {
+  const handleOnMouseLeave = useCallback(() => {
     setCurrentTooltipOptions(undefined);
-  };
+  }, []);
 
   return tasks.length > 0 ? (
     <Box sx={{ width: 'fit-content' }}>

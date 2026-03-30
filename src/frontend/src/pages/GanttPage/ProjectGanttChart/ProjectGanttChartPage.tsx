@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import React, { ChangeEvent, FC, useEffect, useState } from 'react';
+import React, { ChangeEvent, FC, useEffect, useState, useCallback, useMemo } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAllProjectsGantt } from '../../../hooks/projects.hooks';
 import ErrorPage from '../../ErrorPage';
@@ -55,15 +55,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { projectWbsPipe } from '../../../utils/pipes';
 import { projectGanttTransformer } from '../../../apis/transformers/projects.transformers';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import { all } from 'axios';
 
 const getElementId = (element: WbsElementPreview | Task) => {
   return (element as WbsElementPreview).id ?? (element as Task).taskId;
 };
 
 const ProjectGanttChartPage: FC = () => {
-  const history = useHistory();
-  const toast = useToast();
-
   const {
     isLoading: projectsIsLoading,
     isError: projectsIsError,
@@ -71,6 +69,7 @@ const ProjectGanttChartPage: FC = () => {
     error: projectsError
   } = useAllProjectsGantt();
 
+  /******************** Filters ***************************/
   const {
     isLoading: teamTypesIsLoading,
     isError: teamTypesIsError,
@@ -80,24 +79,44 @@ const ProjectGanttChartPage: FC = () => {
 
   const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
+
+  if (
+    projectsIsLoading ||
+    teamTypesIsLoading ||
+    teamsIsLoading ||
+    !teams ||
+    !projects ||
+    !teamTypes ||
+    carsIsLoading ||
+    !cars
+  )
+    return <LoadingIndicator />;
+
+  if (projectsIsError) return <ErrorPage message={projectsError.message} />;
+  if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
+  if (teamsIsError) return <ErrorPage message={teamsError.message} />;
+  if (carsIsError) return <ErrorPage message={carsError.message} />;
+
+  return <ProjectGanttChartPageData projects={projects} teams={teams} teamTypes={teamTypes} cars={cars} />;
+};
+
+interface ProjectGanttChartPageDataProps {
+  projects: ProjectGantt[];
+  teams: TeamPreview[];
+  teamTypes: TeamType[];
+  cars: { wbsNum: { carNumber: number } }[];
+}
+
+const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ projects, teams, teamTypes, cars }) => {
+  const history = useHistory();
+  const toast = useToast();
+
+  const { filters, setFilters } = useGanttFilters('project-gantt');
   const [searchText, setSearchText] = useState<string>('');
-  const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
   const [addedProjects, setAddedProjects] = useState<ProjectGantt[]>([]);
-  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
-  const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
-  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
-  const [showSelectionModal, setShowSelectionModal] = useState(false);
-  const [ganttChanges, setGanttChanges] = useState<GanttChange<WbsElementPreview | Task>[]>([]);
-  const [requestEventChanges, setRequestEventChanges] = useState<RequestEventChange<WbsElementPreview | Task>[]>([]);
-  const [selectedProject, setSelectedProject] = useState<ProjectGantt | undefined>(undefined);
-  const [selectedTeam, setSelectedTeam] = useState<TeamPreview | undefined>(undefined);
-  const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | Task>[]>([]);
   const [allProjects, setAllProjects] = useState<ProjectGantt[]>([]);
   const [editedProjects, setEditedProjects] = useState<ProjectGantt[]>([]);
-  const user = useCurrentUser();
-
-  /******************** Filters ***************************/
-  const { filters, setFilters } = useGanttFilters('project-gantt');
+  const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | Task>[]>([]);
 
   useEffect(() => {
     const requestRefresh = (
@@ -133,25 +152,22 @@ const ProjectGanttChartPage: FC = () => {
     }
   }, [teams, projects, addedProjects, setAllProjects, setCollections, editedProjects, filters, searchText, history]);
 
+  const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
+
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+  const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [showSelectionModal, setShowSelectionModal] = useState(false);
+  const [ganttChanges, setGanttChanges] = useState<GanttChange<WbsElementPreview | Task>[]>([]);
+  const [requestEventChanges, setRequestEventChanges] = useState<RequestEventChange<WbsElementPreview | Task>[]>([]);
+  const [selectedProject, setSelectedProject] = useState<ProjectGantt | undefined>(undefined);
+  const [selectedTeam, setSelectedTeam] = useState<TeamPreview | undefined>(undefined);
+
+  const user = useCurrentUser();
+
   const handleSetGanttFilters = (newFilters: GanttFilters) => {
     setFilters(newFilters);
   };
-
-  if (
-    projectsIsLoading ||
-    teamTypesIsLoading ||
-    teamsIsLoading ||
-    !teams ||
-    !projects ||
-    !teamTypes ||
-    carsIsLoading ||
-    !cars
-  )
-    return <LoadingIndicator />;
-  if (projectsIsError) return <ErrorPage message={projectsError.message} />;
-  if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
-  if (teamsIsError) return <ErrorPage message={teamsError.message} />;
-  if (carsIsError) return <ErrorPage message={carsError.message} />;
 
   const carFilterHandler = (car: number) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
@@ -250,25 +266,25 @@ const ProjectGanttChartPage: FC = () => {
   /* **************************************************** */
   /* ****************** Editability ********************* */
 
-  const handleCancel = (_collection?: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
+  const handleCancel = useCallback((_collection?: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
     //TODO Filter by gantt collection
     setAddedProjects([]);
     setEditedProjects([]);
     setSelectedTeam(undefined);
     setSelectedProject(undefined);
-  };
+  }, []);
 
-  const onAddNewSubtask = (parent: GanttTask<WbsElementPreview | Task>) => {
+  const onAddNewSubtask = useCallback((parent: GanttTask<WbsElementPreview | Task>) => {
     if (isProjectPreview(parent.element)) {
       setSelectedProject(parent.element);
       setShowSelectionModal(true);
     }
-  };
+  }, []);
 
-  const onAddNewTask = (collection: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
+  const onAddNewTask = useCallback((collection: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
     setSelectedTeam(collection.element);
     setShowAddProjectModal(true);
-  };
+  }, []);
 
   const handleAddWorkPackageInfo = (
     workPackageInfo: { name: string; stage?: WorkPackageStage },
@@ -418,20 +434,23 @@ const ProjectGanttChartPage: FC = () => {
     setGanttChanges([...ganttChanges, change]);
   };
 
-  const createChangeHandler = (change: GanttChange<WbsElementPreview | Task>) => {
-    const parentProject = allProjects.find((project) => wbsPipe(project.wbsNum) === projectWbsPipe(change.element.wbsNum)); // Find the project that either the change is on, or the changes work package is a part of
-    if (!parentProject) return;
+  const createChangeHandler = useCallback(
+    (change: GanttChange<WbsElementPreview | Task>) => {
+      const parentProject = allProjects.find((project) => wbsPipe(project.wbsNum) === projectWbsPipe(change.element.wbsNum)); // Find the project that either the change is on, or the changes work package is a part of
+      if (!parentProject) return;
 
-    const { updatedProject } = applyChangesToWBSElement([change], change.element, parentProject);
-    const addedProject = addedProjects.find((proj) => proj.id === updatedProject.id);
-    if (addedProject) {
-      setAddedProjects((prev) => [...prev.filter((project) => project.id !== updatedProject.id), updatedProject]);
-    } else {
-      setEditedProjects((prev) => [...prev.filter((project) => project.id !== updatedProject.id), updatedProject]);
-    }
+      const { updatedProject } = applyChangesToWBSElement([change], change.element, parentProject);
+      const addedProject = addedProjects.find((proj) => proj.id === updatedProject.id);
+      if (addedProject) {
+        setAddedProjects((prev) => [...prev.filter((project) => project.id !== updatedProject.id), updatedProject]);
+      } else {
+        setEditedProjects((prev) => [...prev.filter((project) => project.id !== updatedProject.id), updatedProject]);
+      }
 
-    createChange(change);
-  };
+      createChange(change);
+    },
+    [allProjects, addedProjects]
+  );
 
   const saveChanges = async () => {
     try {
@@ -589,19 +608,19 @@ const ProjectGanttChartPage: FC = () => {
     }
   };
 
-  const highlightProjectComparator = (
-    highlightedElement: WbsElementPreview | Task,
-    wbsElement: WbsElementPreview | Task
-  ) => {
-    return projectWbsPipe(highlightedElement.wbsNum) === projectWbsPipe(wbsElement.wbsNum);
-  };
+  const highlightProjectComparator = useCallback(
+    (highlightedElement: WbsElementPreview | Task, wbsElement: WbsElementPreview | Task) => {
+      return projectWbsPipe(highlightedElement.wbsNum) === projectWbsPipe(wbsElement.wbsNum);
+    },
+    []
+  );
 
-  const highlightWorkPackageComparator = (
-    highlightedElement: WbsElementPreview | Task,
-    wbsElement: WbsElementPreview | Task
-  ) => {
-    return wbsPipe(highlightedElement.wbsNum) === wbsPipe(wbsElement.wbsNum);
-  };
+  const highlightWorkPackageComparator = useCallback(
+    (highlightedElement: WbsElementPreview | Task, wbsElement: WbsElementPreview | Task) => {
+      return wbsPipe(highlightedElement.wbsNum) === wbsPipe(wbsElement.wbsNum);
+    },
+    []
+  );
 
   /* **************************************************** */
 
@@ -645,9 +664,9 @@ const ProjectGanttChartPage: FC = () => {
     });
   };
 
-  const toggleElementShowChildren = (element: WbsElementPreview | Task) => {
+  const toggleElementShowChildren = useCallback((element: WbsElementPreview | Task) => {
     setShowWorkPackagesMap((prev) => new Map(prev.set(getElementId(element), !prev.get(getElementId(element)))));
-  };
+  }, []);
 
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
@@ -704,3 +723,9 @@ const ProjectGanttChartPage: FC = () => {
 };
 
 export default ProjectGanttChartPage;
+
+/*
+function useCallback(arg0: (_collection?: GanttCollection<TeamPreview, WbsElementPreview | Task>) => void) {
+  throw new Error('Function not implemented.');
+}
+*/

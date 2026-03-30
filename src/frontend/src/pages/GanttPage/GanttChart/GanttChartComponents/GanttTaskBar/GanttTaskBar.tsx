@@ -6,6 +6,7 @@
 import GanttTaskBarEdit from './GanttTaskBarEdit';
 import GanttTaskBarView from './GanttTaskBarView';
 import { ArcherContainer } from 'react-archer';
+import { useCallback } from 'react';
 import { useRef } from 'react';
 import { ArcherContainerHandle } from 'react-archer/lib/ArcherContainer/ArcherContainer.types';
 import {
@@ -48,19 +49,25 @@ const GanttTaskBar = <T,>({
 }: GanttTaskBarProps<T>) => {
   const archerRef = useRef<ArcherContainerHandle>(null);
 
-  const getStartCol = (start: Date) => {
-    const startCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(start))) + 1;
-    return startCol;
-  };
+  const getStartCol = useCallback(
+    (start: Date) => {
+      const startCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(start))) + 1;
+      return startCol;
+    },
+    [days]
+  );
 
   // if the end date doesn't exist within the timeframe, have it span to the end
-  const getEndCol = (end: Date) => {
-    const endCol =
-      days.findIndex((day) => dateToString(day) === dateToString(getMonday(end))) === -1
-        ? days.length + 1
-        : days.findIndex((day) => dateToString(day) === dateToString(getMonday(end))) + 2;
-    return endCol;
-  };
+  const getEndCol = useCallback(
+    (end: Date) => {
+      const endCol =
+        days.findIndex((day) => dateToString(day) === dateToString(getMonday(end))) === -1
+          ? days.length + 1
+          : days.findIndex((day) => dateToString(day) === dateToString(getMonday(end))) + 2;
+      return endCol;
+    },
+    [days]
+  );
 
   const handleChange = (change: GanttChange<T>) => {
     createChange(change);
