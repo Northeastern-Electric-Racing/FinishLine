@@ -3,16 +3,18 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useLayoutEffect, ReactNode } from 'react';
 import { Car } from 'shared';
 import { useGetAllCars } from '../hooks/cars.hooks';
 import { setCurrentCarId } from '../utils/axios';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 interface GlobalCarFilterContextType {
   selectedCar: Car | null;
   allCars: Car[];
   setSelectedCar: (car: Car | null) => void;
   isLoading: boolean;
+  isInitialized: boolean;
   error: Error | null;
 }
 
@@ -24,21 +26,24 @@ interface GlobalCarFilterProviderProps {
 
 export const GlobalCarFilterProvider: React.FC<GlobalCarFilterProviderProps> = ({ children }) => {
   const [selectedCar, setSelectedCarState] = useState<Car | null>(null);
-  const hasInitialized = useRef(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const { data: allCars = [], isLoading, error } = useGetAllCars();
 
-  useEffect(() => {
-    if (!isLoading && !hasInitialized.current) {
-      hasInitialized.current = true;
+  // Guarantees the header is updated before React Query enqueues new fetches.
+  useLayoutEffect(() => {
+    setCurrentCarId(selectedCar ? selectedCar.id : null);
+  }, [selectedCar]);
 
+  useEffect(() => {
+    if (!isLoading && !isInitialized) {
       const savedCarId = localStorage.getItem('selectedCarId');
       if (savedCarId) {
         const savedCar = allCars.find((car) => car.id === savedCarId);
         if (savedCar) {
           setSelectedCarState(savedCar);
-          setCurrentCarId(savedCar.id);
           localStorage.setItem('selectedCarId', savedCar.id);
+          setIsInitialized(true);
           return;
         }
         // Stored ID not found in car list (stale or invalid) — clear it
@@ -47,12 +52,12 @@ export const GlobalCarFilterProvider: React.FC<GlobalCarFilterProviderProps> = (
 
       // Default to null (all cars)
       setSelectedCarState(null);
+      setIsInitialized(true);
     }
-  }, [allCars, isLoading]);
+  }, [allCars, isLoading, isInitialized]);
 
   const setSelectedCar = (car: Car | null) => {
     setSelectedCarState(car);
-    setCurrentCarId(car ? car.id : null);
     if (car) {
       localStorage.setItem('selectedCarId', car.id);
     } else {
@@ -65,10 +70,15 @@ export const GlobalCarFilterProvider: React.FC<GlobalCarFilterProviderProps> = (
     allCars,
     setSelectedCar,
     isLoading,
+    isInitialized,
     error
   };
 
-  return <GlobalCarFilterContext.Provider value={value}>{children}</GlobalCarFilterContext.Provider>;
+  return (
+    <GlobalCarFilterContext.Provider value={value}>
+      {isInitialized ? children : <LoadingIndicator />}
+    </GlobalCarFilterContext.Provider>
+  );
 };
 
 export const useGlobalCarFilter = (): GlobalCarFilterContextType => {

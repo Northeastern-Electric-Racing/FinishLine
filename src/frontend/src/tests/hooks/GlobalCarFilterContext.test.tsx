@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, render, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { GlobalCarFilterProvider, useGlobalCarFilter } from '../../app/AppGlobalCarFilterContext';
 import * as carsHooks from '../../hooks/cars.hooks';
@@ -140,19 +140,27 @@ describe('useGlobalCarFilter', () => {
     expect(result.current.selectedCar).toBeNull();
   });
 
-  it('should handle loading state', () => {
+  it('should render a loading indicator while cars are being fetched', () => {
     mockUseGetAllCars.mockReturnValue({
       data: undefined,
       isLoading: true,
       error: null
     } as any);
 
-    const { result } = renderHook(() => useGlobalCarFilter(), {
-      wrapper: createWrapper()
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
     });
 
-    expect(result.current.isLoading).toBe(true);
-    expect(result.current.selectedCar).toBeNull();
+    const { getByTestId, queryByTestId } = render(
+      <QueryClientProvider client={queryClient}>
+        <GlobalCarFilterProvider>
+          <div data-testid="children" />
+        </GlobalCarFilterProvider>
+      </QueryClientProvider>
+    );
+
+    expect(getByTestId('loader')).toBeInTheDocument();
+    expect(queryByTestId('children')).toBeNull();
   });
 
   it('should handle error state', () => {
