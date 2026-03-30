@@ -34,7 +34,7 @@ describe('getCurrentCar Middleware', () => {
     const user = await createTestUser(supermanAdmin, orgId);
     const car = await createTestCar(orgId, user.userId);
 
-    const req = { headers: { carid: car.carId } } as unknown as Request;
+    const req = { headers: { carid: car.carId }, organization: { organizationId: orgId } } as unknown as Request;
     const res = {} as Response;
     const next = vi.fn() as unknown as NextFunction;
 
@@ -47,7 +47,7 @@ describe('getCurrentCar Middleware', () => {
   });
 
   it('calls next() with a NotFoundException when carId header does not match any car', async () => {
-    const req = { headers: { carid: 'non-existent-car-id' } } as unknown as Request;
+    const req = { headers: { carid: 'non-existent-car-id' }, organization: { organizationId: orgId } } as unknown as Request;
     const res = {} as Response;
     const next = vi.fn() as unknown as NextFunction;
 
@@ -72,7 +72,7 @@ describe('getCurrentCar Middleware', () => {
     const dbError = new Error('DB connection lost');
     const spy = vi.spyOn(prisma.car, 'findUnique').mockRejectedValueOnce(dbError);
 
-    const req = { headers: { carid: 'some-car-id' } } as unknown as Request;
+    const req = { headers: { carid: 'some-car-id' }, organization: { organizationId: orgId } } as unknown as Request;
     const res = {} as Response;
     const next = vi.fn() as unknown as NextFunction;
 
