@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { renderHook, render, act, waitFor } from '@testing-library/react';
+import { renderHook, render, screen, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { GlobalCarFilterProvider, useGlobalCarFilter } from '../../app/AppGlobalCarFilterContext';
 import * as carsHooks from '../../hooks/cars.hooks';
@@ -151,7 +151,7 @@ describe('useGlobalCarFilter', () => {
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
     });
 
-    const { getByTestId, queryByTestId } = render(
+    render(
       <QueryClientProvider client={queryClient}>
         <GlobalCarFilterProvider>
           <div data-testid="children" />
@@ -159,8 +159,8 @@ describe('useGlobalCarFilter', () => {
       </QueryClientProvider>
     );
 
-    expect(getByTestId('loader')).toBeInTheDocument();
-    expect(queryByTestId('children')).toBeNull();
+    expect(screen.getByTestId('loader')).toBeInTheDocument();
+    expect(screen.queryByTestId('children')).toBeNull();
   });
 
   it('should handle error state', () => {
