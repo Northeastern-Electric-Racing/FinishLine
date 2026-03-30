@@ -11,7 +11,7 @@ export * from './src/types/team-types.js';
 export * from './src/types/task-types.js';
 export * from './src/types/finance-types.js';
 export * from './src/types/reimbursement-requests-types.js';
-export * from './src/types/frequently-asked-questions-types.js';
+export * from './src/types/recruitment-types.js';
 export * from './src/types/milestone-types.js';
 export * from './src/types/checklist-types.js';
 export * from './src/types/pop-up-types.js';

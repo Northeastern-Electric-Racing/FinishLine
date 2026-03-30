@@ -28,7 +28,10 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
-import changeRequestTransformer, { changeRequestManyTransformer } from '../transformers/change-requests.transformer.js';
+import changeRequestTransformer, {
+  changeRequestManyTransformer,
+  guestChangeRequestTransformer
+} from '../transformers/change-requests.transformer.js';
 import {
   allChangeRequestsReviewed,
   validateProposedChangesFields,
@@ -55,11 +58,13 @@ import {
   ChangeRequestWithProjectAndWorkPackageQueryArgs,
   getChangeRequestQueryArgs,
   getChangeRequestWithProjectAndWorkPackageQueryArgs,
+  getGuestChangeRequestQueryArgs,
   getManyChangeRequestQueryArgs
 } from '../prisma-query-args/change-requests.query-args.js';
 import proposedSolutionTransformer from '../transformers/proposed-solutions.transformer.js';
 import { getProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args.js';
 import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils.js';
+import { GuestChangeRequest } from '../../../shared/src/types/change-request-types.js';
 
 export default class ChangeRequestsService {
   /**
@@ -99,6 +104,20 @@ export default class ChangeRequestsService {
     });
 
     return changeRequests.map(changeRequestManyTransformer);
+  }
+
+  /**
+   * gets all the change requests in the database for the given organization, tailored to the guest cr page
+   * @param organization The organization the user is currently in
+   * @returns All of the change requests
+   */
+  static async getAllGuestChangeRequests(organization: Organization): Promise<GuestChangeRequest[]> {
+    const changeRequests = await prisma.change_Request.findMany({
+      where: { dateDeleted: null, organizationId: organization.organizationId },
+      ...getGuestChangeRequestQueryArgs(organization.organizationId)
+    });
+
+    return changeRequests.map(guestChangeRequestTransformer);
   }
 
   /**

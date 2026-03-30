@@ -272,6 +272,23 @@ export const getChannelName = async (channelId: string) => {
 };
 
 /**
+ * Checks whether the bot is a member of the given channel
+ * @param channelId the id of the slack channel
+ * @returns true if the bot is a member of the channel, false otherwise
+ */
+export const checkBotInChannel = async (channelId: string): Promise<boolean> => {
+  const client = getSlackClient();
+  if (!client) return false;
+
+  try {
+    const channelRes = await client.conversations.info({ channel: channelId });
+    return channelRes.channel?.is_member ?? false;
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
  * Given a slack user id, prood.uces the name of the channel
  * @param userId the id of the slack user
  * @returns the name of the user (real name if no display name), undefined if cannot be found

@@ -13,7 +13,8 @@ import {
   ProposedSolutionCreateArgs,
   WbsNumber,
   WorkPackageProposedChangesCreateArgs,
-  LeadershipChangeCreateArgs
+  LeadershipChangeCreateArgs,
+  GuestChangeRequest
 } from 'shared';
 import {
   createActivationChangeRequest,
@@ -29,7 +30,8 @@ import {
   getUnreviewedChangeRequests,
   getApprovedChangeRequests,
   createBudgetChangeRequest,
-  createLeadershipChangeRequest
+  createLeadershipChangeRequest,
+  getAllGuestChangeRequests
 } from '../apis/change-requests.api';
 
 /**
@@ -39,6 +41,13 @@ export const useAllChangeRequests = () => {
   const { selectedCar } = useGlobalCarFilter();
   return useQuery<ChangeRequest[], Error>(['change requests', selectedCar?.id], async () => {
     const { data } = await getAllChangeRequests();
+    return data;
+  });
+};
+
+export const useAllGuestChangeRequests = () => {
+  return useQuery<GuestChangeRequest[], Error>(['guest change requests'], async () => {
+    const { data } = await getAllGuestChangeRequests();
     return data;
   });
 };
