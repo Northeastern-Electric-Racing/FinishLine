@@ -1,23 +1,19 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Autocomplete, Box, CircularProgress, InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Autocomplete, InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import { useForm } from 'react-hook-form';
-import { useQuery } from 'react-query';
 import { Assembly, Car, Material, ProjectPreview, WbsNumber } from 'shared';
 
 import NERFormModal from '../../../../../components/NERFormModal';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import ErrorPage from '../../../../ErrorPage';
 
 import { useGetAllCars } from '../../../../../hooks/cars.hooks';
 import { useAllProjects } from '../../../../../hooks/projects.hooks';
-import { getMaterialsForWbsElement } from '../../../../../apis/bom.api';
-import SearchIcon from '@mui/icons-material/Search';
+import { useGetMaterialsForWbsElement, useGetMaterialsForCar } from '../../../../../hooks/bom.hooks';
 
 type AutocompleteOption = { label: string; id: string };
-
-type SearchResult = {
-  material: Material;
-  project: ProjectPreview;
-};
 
 interface SelectMaterialToCopyModalProps {
   open: boolean;
@@ -38,12 +34,7 @@ const projectToOption = (project: ProjectPreview): AutocompleteOption => ({
   id: project.wbsElementId
 });
 
-const searchResultToOption = ({ material, project }: SearchResult): AutocompleteOption => ({
-  label: `${material.name} – ${project.wbsNum.carNumber}.${project.wbsNum.projectNumber} - ${project.name}`,
-  id: material.materialId
-});
-
-const projectToProjectWbs = (project: ProjectPreview): WbsNumber => ({
+const projectToWbsNumber = (project: ProjectPreview): WbsNumber => ({
   carNumber: project.wbsNum.carNumber,
   projectNumber: project.wbsNum.projectNumber,
   workPackageNumber: 0
@@ -60,33 +51,44 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [selectedProject, setSelectedProject] = useState<ProjectPreview | null>(null);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
-  const [searchText, setSearchText] = useState<string>('');
 
-  const carsQuery = useGetAllCars();
-  const projectsQuery = useAllProjects();
+  const { data: cars, isLoading: carsIsLoading, isError: carsIsError, error: carsError } = useGetAllCars();
 
-  const cars = useMemo(() => carsQuery.data ?? [], [carsQuery.data]);
-  const projects = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data]);
+  const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
 
-  const latestCar = useMemo(() => getLatestCar(cars), [cars]);
+  const allCars = useMemo(() => cars ?? [], [cars]);
+  const allProjects = useMemo(() => projects ?? [], [projects]);
+
+  const latestCar = useMemo(() => getLatestCar(allCars), [allCars]);
+  const effectiveCar = selectedCar ?? latestCar;
 
   const projectsForSelectedCar = useMemo(() => {
-    if (!selectedCar) return [];
-    const {
-      wbsNum: { carNumber }
-    } = selectedCar;
-    return projects.filter((p) => p.wbsNum.carNumber === carNumber);
-  }, [projects, selectedCar]);
+    if (!effectiveCar) return [];
+    return allProjects.filter((p) => p.wbsNum.carNumber === effectiveCar.wbsNum.carNumber);
+  }, [allProjects, effectiveCar]);
 
-  const selectedProjectWbsNum = useMemo(() => {
-    if (!selectedProject) return null;
-    return projectToProjectWbs(selectedProject);
-  }, [selectedProject]);
-
-  const assemblyNameById = useMemo(
-    () => new Map(assemblies.map((assembly) => [assembly.assemblyId, assembly.name])),
-    [assemblies]
+  const selectedProjectWbsNum = useMemo(
+    () => (selectedProject ? projectToWbsNumber(selectedProject) : null),
+    [selectedProject]
   );
+
+  // Materials for the selected project for autocomplete
+  const {
+    data: projectMaterials,
+    isLoading: projectMaterialsIsLoading,
+    isError: projectMaterialsIsError,
+    error: projectMaterialsError
+  } = useGetMaterialsForWbsElement(selectedProjectWbsNum ?? { carNumber: 0, projectNumber: 0, workPackageNumber: 0 });
+
+  // All materials across the selected car for search bar
+  const {
+    data: carMaterials,
+    isLoading: carMaterialsIsLoading,
+    isError: carMaterialsIsError,
+    error: carMaterialsError
+  } = useGetMaterialsForCar(effectiveCar?.wbsNum.carNumber ?? null, allProjects);
+
+  const assemblyNameById = useMemo(() => new Map(assemblies.map((a) => [a.assemblyId, a.name])), [assemblies]);
 
   const materialToOption = useCallback(
     (material: Material): AutocompleteOption => ({
@@ -103,191 +105,111 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
     [assemblyNameById]
   );
 
-  const projectMaterialsQuery = useQuery<Material[], Error>(
-    ['materials', 'project', selectedProject?.wbsElementId ?? 'none'],
-    async () => {
-      if (!selectedProjectWbsNum) return [];
-      const { data } = await getMaterialsForWbsElement(selectedProjectWbsNum);
-      return data;
-    },
-    { enabled: !!selectedProjectWbsNum && open }
-  );
+  const materials = useMemo(() => (selectedProject ? (projectMaterials ?? []) : []), [selectedProject, projectMaterials]);
 
-  const carMaterialsQuery = useQuery<SearchResult[], Error>(
-    ['materials', 'car', selectedCar?.wbsNum.carNumber ?? 'none'],
-    async () => {
-      if (!selectedCar) return [];
-      const {
-        wbsNum: { carNumber }
-      } = selectedCar;
-      const projectsInCar = projects.filter((p) => p.wbsNum.carNumber === carNumber);
-      const results = await Promise.all(
-        projectsInCar.map(async (p) => {
-          const { data } = await getMaterialsForWbsElement(projectToProjectWbs(p));
-          return data.map((material) => ({
-            material,
-            project: p
-          }));
-        })
-      );
-
-      const flattened = results.flat();
-      const seen = new Set<string>();
-
-      return flattened.filter(({ material, project }) => {
-        const key = `${material.name.toLowerCase()}-${project.name.toLowerCase()}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-    },
-    { enabled: !!selectedCar && open }
-  );
-
-  const projectMaterials = useMemo(() => projectMaterialsQuery.data ?? [], [projectMaterialsQuery.data]);
-  const carSearchResults = useMemo(() => carMaterialsQuery.data ?? [], [carMaterialsQuery.data]);
-
-  const carOptions = useMemo(() => cars.map(carToOption), [cars]);
+  const carOptions = useMemo(() => allCars.map(carToOption), [allCars]);
   const projectOptions = useMemo(() => projectsForSelectedCar.map(projectToOption), [projectsForSelectedCar]);
-  const projectMaterialOptions = useMemo(() => projectMaterials.map(materialToOption), [projectMaterials, materialToOption]);
+  const materialOptions = useMemo(() => materials.map(materialToOption), [materials, materialToOption]);
+  const carMaterialOptions = useMemo(() => (carMaterials ?? []).map(materialToOption), [carMaterials, materialToOption]);
 
-  const searchOptions = useMemo(() => {
-    const q = searchText.trim().toLowerCase();
-    const filtered =
-      q.length === 0 ? carSearchResults : carSearchResults.filter(({ material }) => material.name.toLowerCase().includes(q));
-
-    return filtered.map(searchResultToOption);
-  }, [carSearchResults, searchText]);
-
-  useEffect(() => {
-    if (open && !selectedCar && latestCar) {
-      setSelectedCar(latestCar);
-    }
-  }, [open, selectedCar, latestCar]);
-
-  useEffect(() => {
-    setSelectedProject(null);
-    setSelectedMaterial(null);
-    setSearchText('');
-  }, [selectedCar?.wbsElementId]);
-
-  useEffect(() => {
-    setSelectedMaterial(null);
-  }, [selectedProject?.wbsElementId]);
-
-  useEffect(() => {
-    if (!open) {
-      setSelectedCar(null);
-      setSelectedProject(null);
-      setSelectedMaterial(null);
-      setSearchText('');
-      reset();
-    }
-  }, [open, reset]);
-
-  const anyLoading =
-    carsQuery.isLoading || projectsQuery.isLoading || projectMaterialsQuery.isLoading || carMaterialsQuery.isLoading;
-
-  const anyError =
-    (carsQuery.error as Error | undefined) ||
-    (projectsQuery.error as Error | undefined) ||
-    projectMaterialsQuery.error ||
-    carMaterialsQuery.error ||
-    null;
-
-  const selectedCarOption = selectedCar ? carToOption(selectedCar) : null;
+  const selectedCarOption = effectiveCar ? (carOptions.find((o) => o.id === effectiveCar.wbsElementId) ?? null) : null;
   const selectedProjectOption = selectedProject ? projectToOption(selectedProject) : null;
   const selectedMaterialOption = selectedMaterial ? materialToOption(selectedMaterial) : null;
 
-  const canSubmit = !!selectedMaterial;
+  // Selecting from the search bar auto-populates the project and material dropdowns
+  const handleSearchSelect = useCallback(
+    (_: React.SyntheticEvent, value: AutocompleteOption | null) => {
+      if (!value) return;
+      const material = (carMaterials ?? []).find((m) => m.materialId === value.id) ?? null;
+      if (!material) return;
+      const project = allProjects.find((p) => p.wbsElementId === material.wbsElementId) ?? null;
+      setSelectedProject(project);
+      setSelectedMaterial(material);
+    },
+    [carMaterials, allProjects]
+  );
+
+  const handleCarChange = useCallback(
+    (_: React.SyntheticEvent, value: AutocompleteOption | null) => {
+      const next = value ? (allCars.find((c) => c.wbsElementId === value.id) ?? null) : null;
+      setSelectedCar(next);
+      setSelectedProject(null);
+      setSelectedMaterial(null);
+    },
+    [allCars]
+  );
+
+  const handleProjectChange = useCallback(
+    (_: React.SyntheticEvent, value: AutocompleteOption | null) => {
+      const next = value ? (projectsForSelectedCar.find((p) => p.wbsElementId === value.id) ?? null) : null;
+      setSelectedProject(next);
+      setSelectedMaterial(null);
+    },
+    [projectsForSelectedCar]
+  );
+
+  const handleMaterialChange = useCallback(
+    (_: React.SyntheticEvent, value: AutocompleteOption | null) => {
+      const next = value ? (materials.find((m) => m.materialId === value.id) ?? null) : null;
+      setSelectedMaterial(next);
+    },
+    [materials]
+  );
 
   const handleCopy = () => {
     if (!selectedMaterial) return;
     onSelect(selectedMaterial);
     onHide();
+    reset();
+    setSelectedCar(null);
+    setSelectedProject(null);
+    setSelectedMaterial(null);
   };
 
-  return (
-    <NERFormModal
-      open={open}
-      onHide={onHide}
-      title="Select Material to Copy"
-      formId="select-material-to-copy-form"
-      reset={reset}
-      handleUseFormSubmit={handleSubmit}
-      onFormSubmit={handleCopy}
-      submitText="Copy"
-      cancelText="Cancel"
-      disabled={!canSubmit}
-      showCloseButton
-      paperProps={{ width: '500px', maxWidth: '95vw' }}
-    >
+  const handleHide = () => {
+    onHide();
+    reset();
+    setSelectedCar(null);
+    setSelectedProject(null);
+    setSelectedMaterial(null);
+  };
+
+  const modalContent = () => {
+    if (carsIsError) return <ErrorPage message={carsError?.message} />;
+    if (projectsIsError) return <ErrorPage message={projectsError?.message} />;
+    if (projectMaterialsIsError) return <ErrorPage message={projectMaterialsError?.message} />;
+    if (carMaterialsIsError) return <ErrorPage message={carMaterialsError?.message} />;
+    if (carsIsLoading || projectsIsLoading) return <LoadingIndicator />;
+
+    return (
       <Stack spacing={2} sx={{ p: 1 }}>
-        {anyLoading && (
-          <Stack direction="row" spacing={1} alignItems="center">
-            <CircularProgress size={18} />
-            <Typography variant="body2">Loading…</Typography>
-          </Stack>
-        )}
-
-        {anyError && (
-          <Typography variant="body2" color="error">
-            {anyError.message}
-          </Typography>
-        )}
-
-        <Box>
-          <Autocomplete
-            id="search-material"
-            options={searchOptions}
-            value={null}
-            getOptionLabel={(option) => option.label}
-            onInputChange={(_, value) => {
-              setSearchText(value);
-            }}
-            onChange={async (_, value) => {
-              if (!value) return;
-
-              const match =
-                carSearchResults.find(({ material, project }) => {
-                  return (
-                    material.materialId === value.id &&
-                    `${material.name} – ${project.wbsNum.carNumber}.${project.wbsNum.projectNumber} - ${project.name}` ===
-                      value.label
-                  );
-                }) ?? null;
-
-              if (!match) return;
-
-              setSelectedProject(match.project);
-              setSearchText(match.material.name);
-
-              const { data } = await getMaterialsForWbsElement(projectToProjectWbs(match.project));
-              const selected = data.find((m) => m.materialId === match.material.materialId) ?? null;
-
-              setSelectedMaterial(selected);
-            }}
-            disabled={!selectedCar || carMaterialsQuery.isLoading}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                placeholder={selectedCar ? 'Search' : 'Select a car first'}
-                fullWidth
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: (
-                    <>
-                      <InputAdornment position="start">
-                        <SearchIcon />
-                      </InputAdornment>
-                      {params.InputProps.startAdornment}
-                    </>
-                  )
-                }}
-              />
-            )}
-          />
-        </Box>
+        <Autocomplete
+          id="search-material"
+          options={carMaterialOptions}
+          value={null}
+          loading={carMaterialsIsLoading}
+          getOptionLabel={(option) => option.label}
+          onChange={handleSearchSelect}
+          disabled={!effectiveCar || carMaterialsIsLoading}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              placeholder={effectiveCar ? 'Search all materials in this car...' : 'Select a car first'}
+              fullWidth
+              InputProps={{
+                ...params.InputProps,
+                startAdornment: (
+                  <>
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                    {params.InputProps.startAdornment}
+                  </>
+                )
+              }}
+            />
+          )}
+        />
 
         <NERAutocomplete
           id="select-car"
@@ -295,48 +217,57 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
           placeholder="Select a car"
           options={carOptions}
           value={selectedCarOption}
-          onChange={(_, value) => {
-            const next = value ? (cars.find((c) => c.wbsElementId === value.id) ?? null) : null;
-            setSelectedCar(next);
-          }}
-          required={true}
-          disabled={carsQuery.isLoading}
+          onChange={handleCarChange}
+          required
         />
 
         <NERAutocomplete
           id="select-project"
           size="medium"
-          placeholder={selectedCar ? 'Select a project' : 'Select a car first'}
+          placeholder={effectiveCar ? 'Select a project' : 'Select a car first'}
           options={projectOptions}
           value={selectedProjectOption}
-          onChange={(_, value) => {
-            const next = value ? (projectsForSelectedCar.find((p) => p.wbsElementId === value.id) ?? null) : null;
-            setSelectedProject(next);
-          }}
-          required={true}
-          disabled={!selectedCar || projectsQuery.isLoading}
+          onChange={handleProjectChange}
+          required
+          disabled={!effectiveCar}
         />
 
         <NERAutocomplete
           id="select-material"
           size="medium"
           placeholder={selectedProject ? 'Select a material' : 'Select a project first'}
-          options={projectMaterialOptions}
+          options={materialOptions}
           value={selectedMaterialOption}
-          onChange={(_, value) => {
-            const next = value ? (projectMaterials.find((m) => m.materialId === value.id) ?? null) : null;
-            setSelectedMaterial(next);
-          }}
-          required={true}
-          disabled={!selectedProject || projectMaterialsQuery.isLoading}
+          onChange={handleMaterialChange}
+          required
+          disabled={!selectedProject || projectMaterialsIsLoading}
         />
 
-        {!canSubmit && (
+        {!selectedMaterial && (
           <Typography variant="caption" color="text.secondary">
-            Pick a material to enable “Copy”.
+            Pick a material to enable "Copy".
           </Typography>
         )}
       </Stack>
+    );
+  };
+
+  return (
+    <NERFormModal
+      open={open}
+      onHide={handleHide}
+      title="Select Material to Copy"
+      formId="select-material-to-copy-form"
+      reset={reset}
+      handleUseFormSubmit={handleSubmit}
+      onFormSubmit={handleCopy}
+      submitText="Copy"
+      cancelText="Cancel"
+      disabled={!selectedMaterial}
+      showCloseButton
+      paperProps={{ width: '600px', minHeight: '500px' }}
+    >
+      {modalContent()}
     </NERFormModal>
   );
 };
