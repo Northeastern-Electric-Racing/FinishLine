@@ -3,7 +3,7 @@ import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, T
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, TaskStatus, TeamPreview } from 'shared';
-import { useAllUsers, useCurrentUser } from '../../../../hooks/users.hooks';
+import { useAllMembers, useCurrentUser } from '../../../../hooks/users.hooks';
 import * as yup from 'yup';
 import { taskUserToAutocompleteOption } from '../../../../utils/task.utils';
 import NERFormModal from '../../../../components/NERFormModal';
