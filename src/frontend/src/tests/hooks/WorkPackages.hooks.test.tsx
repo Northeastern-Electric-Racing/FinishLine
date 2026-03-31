@@ -35,7 +35,7 @@ describe('work package hooks', () => {
     mockedGetAllWorkPackages.mockReturnValue(mockPromiseAxiosResponse<WorkPackage[]>(exampleAllWorkPackages));
 
     const { result } = renderHook(() => useAllWorkPackages(), { wrapper });
-    await waitFor(() => result.current.isSuccess);
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(exampleAllWorkPackages);
   });
 
@@ -46,7 +46,7 @@ describe('work package hooks', () => {
     const { result } = renderHook(() => useSingleWorkPackage(exampleWbsWorkPackage1), {
       wrapper
     });
-    await waitFor(() => result.current.isSuccess);
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(exampleResearchWorkPackage);
   });
 });
