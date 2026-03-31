@@ -578,13 +578,8 @@ export default class WorkPackagesService {
     if (workPackage.wbsElement.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Work Package');
 
-    const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
-
-    const filteredWorkPackages = carId
-      ? blockingWorkPackages.filter((wp) => wp.project.carId === carId)
-      : blockingWorkPackages;
-
-    return filteredWorkPackages.map(workPackageTransformer);
+    const blockingWorkPackages = await getBlockingWorkPackages(workPackage, carId);
+    return blockingWorkPackages.map(workPackageTransformer);
   }
 
   /**
