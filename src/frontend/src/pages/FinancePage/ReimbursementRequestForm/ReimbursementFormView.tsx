@@ -87,6 +87,7 @@ interface ReimbursementRequestFormViewProps {
   onSubmitToFinance?: (data: ReimbursementRequestFormInput) => void;
   isSubmitting?: boolean;
   applySplitShippingToProducts: (totalShipping?: number) => void;
+  applyProportionalShippingToProducts: (totalShipping?: number) => void;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -114,7 +115,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   isLeadershipApproved = false,
   onSubmitToFinance,
   isSubmitting = false,
-  applySplitShippingToProducts
+  applySplitShippingToProducts,
+  applyProportionalShippingToProducts
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [showAddRefundSourceModal, setShowAddRefundSourceModal] = useState(false);
@@ -142,13 +144,26 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const theme = useTheme();
   const products = watch('reimbursementProducts') as ReimbursementProductFormArgs[];
   const accountCodeId = watch('accountCodeId');
+  const splitShippingValue = watch('splitShipping');
 
   const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
-  const indexCodes: IndexCode[] = useMemo(() => selectedAccountCode?.indexCodes ?? [], [selectedAccountCode?.indexCodes]);
+  const indexCodes: IndexCode[] = useMemo(() => selectedAccountCode?.indexCodes ?? [], [selectedAccountCode]);
 
   const firstRefundSourceId = watch('indexCodeId');
   const secondRefundSourceId = watch('secondaryAccount');
   const hasPreFilledData = useRef(true);
+
+
+  const nonShippingProducts = products?.filter((product) => product.name !== 'Split Shipping') ?? [];
+
+  const allNonShippingProductsHaveCosts =
+    nonShippingProducts.length > 0 &&
+    nonShippingProducts.every(
+      (product) =>
+        product.cost !== undefined && product.cost !== null && String(product.cost) !== '' && Number(product.cost) > 0
+    );
+
+  const canApplyProportionalSplit = Number(splitShippingValue) > 0 && allNonShippingProductsHaveCosts;
 
   useEffect(() => {
     if (!hasPreFilledData.current) return;
@@ -912,27 +927,44 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     name="splitShipping"
                     control={control}
                     render={({ field: { onChange, value } }) => (
-                      <TextField
-                        value={value ?? ''}
-                        onChange={(e) => {
-                          onChange(e);
-                        }}
-                        onBlur={() => applySplitShippingToProducts(Number(value))}
-                        placeholder="Enter total shipping cost"
-                        type="number"
-                        inputProps={{ min: 0, step: 0.01 }}
-                        size="small"
-                        fullWidth
-                        sx={{
-                          '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
-                            WebkitAppearance: 'none',
-                            margin: 0
-                          },
-                          '& input[type=number]': {
-                            MozAppearance: 'textfield'
-                          }
-                        }}
-                      />
+                      <>
+                        <TextField
+                          value={value ?? ''}
+                          onChange={(e) => {
+                            onChange(e);
+                          }}
+                          onBlur={() => applySplitShippingToProducts(Number(value))}
+                          placeholder="Enter total shipping cost"
+                          type="number"
+                          inputProps={{ min: 0, step: 0.01 }}
+                          size="small"
+                          fullWidth
+                          sx={{
+                            '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                              WebkitAppearance: 'none',
+                              margin: 0
+                            },
+                            '& input[type=number]': {
+                              MozAppearance: 'textfield'
+                            }
+                          }}
+                        />
+
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          sx={{
+                            mt: 1,
+                            alignSelf: 'flex-start',
+                            width: 'fit-content',
+                            textTransform: 'none'
+                          }}
+                          disabled={!canApplyProportionalSplit}
+                          onClick={() => applyProportionalShippingToProducts(Number(value))}
+                        >
+                          Split proportional to cost
+                        </Button>
+                      </>
                     )}
                   />
 

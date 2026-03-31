@@ -246,6 +246,80 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     reimbursementProductReplace(updatedProducts);
   };
 
+  const applyProportionalShippingToProducts = (totalShipping?: number) => {
+    const currentProducts = watch('reimbursementProducts') ?? [];
+
+    const nonShippingProducts = currentProducts.filter((product) => product.name !== 'Split Shipping');
+
+    if (!totalShipping || totalShipping <= 0 || nonShippingProducts.length === 0) {
+      reimbursementProductReplace(nonShippingProducts);
+      return;
+    }
+
+    const groupedProducts = new Map<string, ReimbursementProductFormArgs[]>();
+
+    nonShippingProducts.forEach((product) => {
+      const key =
+        'otherProductReasonId' in product.reason
+          ? `other-${product.reason.otherProductReasonId}`
+          : `wbs-${product.reason.carNumber}-${product.reason.projectNumber}`;
+
+      if (!groupedProducts.has(key)) {
+        groupedProducts.set(key, []);
+      }
+
+      groupedProducts.get(key)!.push(product);
+    });
+
+    const groupedEntries = Array.from(groupedProducts.values());
+
+    const totalShippingCents = Math.round(totalShipping * 100);
+
+    const groupCosts = groupedEntries.map((productsInGroup) =>
+      productsInGroup.reduce((sum, product) => sum + Math.round(Number(product.cost || 0) * 100), 0)
+    );
+
+    const totalCostCents = groupCosts.reduce((sum, cost) => sum + cost, 0);
+
+    if (totalCostCents <= 0) {
+      reimbursementProductReplace(nonShippingProducts);
+      return;
+    }
+
+    const exactShares = groupCosts.map((groupCost) => (groupCost / totalCostCents) * totalShippingCents);
+    const flooredShares = exactShares.map((share) => Math.floor(share));
+    let remainingCents = totalShippingCents - flooredShares.reduce((sum, cents) => sum + cents, 0);
+
+    const remainders = exactShares.map((share, index) => ({
+      index,
+      remainder: share - Math.floor(share)
+    }));
+
+    remainders.sort((a, b) => b.remainder - a.remainder);
+
+    remainders.forEach(({ index }) => {
+      if (remainingCents > 0) {
+        flooredShares[index] += 1;
+        remainingCents -= 1;
+      }
+    });
+
+    const updatedProducts: ReimbursementProductFormArgs[] = [];
+
+    groupedEntries.forEach((productsInGroup, index) => {
+      productsInGroup.forEach((product) => updatedProducts.push(product));
+
+      updatedProducts.push({
+        name: 'Split Shipping',
+        reason: productsInGroup[0].reason,
+        cost: flooredShares[index] / 100,
+        refundSources: []
+      });
+    });
+
+    reimbursementProductReplace(updatedProducts);
+  };
+
   const {
     isLoading: allVendorsIsLoading,
     isError: allVendorsIsError,
@@ -429,6 +503,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       onSubmitToFinance={onSubmitToFinanceWrapper}
       isSubmitting={isSubmitting}
       applySplitShippingToProducts={applySplitShippingToProducts}
+      applyProportionalShippingToProducts={applyProportionalShippingToProducts}
     />
   );
 };
