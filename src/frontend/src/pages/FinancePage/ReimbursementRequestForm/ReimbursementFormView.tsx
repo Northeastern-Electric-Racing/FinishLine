@@ -153,7 +153,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const secondRefundSourceId = watch('secondaryAccount');
   const hasPreFilledData = useRef(true);
 
-
   const nonShippingProducts = products?.filter((product) => product.name !== 'Split Shipping') ?? [];
 
   const allNonShippingProductsHaveCosts =
