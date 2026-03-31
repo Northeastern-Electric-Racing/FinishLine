@@ -523,9 +523,9 @@ describe('Change Request Tests', () => {
       carBId = carB.carId;
 
       // Project under car A: WBS 0.1.0, project.carId = carAId, lead/manager = user
-      await createTestProject(user, orgId, undefined, carAId, 1);
+      await createTestProject(user, orgId, undefined, carAId, 0, 1);
       // Project under car B: WBS 0.2.0, project.carId = carBId, lead/manager = user
-      await createTestProject(user, orgId, undefined, carBId, 2);
+      await createTestProject(user, orgId, undefined, carBId, 0, 2);
     });
 
     describe('getAllChangeRequests', () => {

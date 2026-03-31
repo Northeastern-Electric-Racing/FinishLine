@@ -427,6 +427,7 @@ export const createTestProject = async (
   organizationId?: string,
   teamId?: string,
   carId?: string,
+  carNumber: number = 0,
   projectNumber: number = 1,
   dateDeleted?: Date
 ): Promise<Project> => {
@@ -437,7 +438,7 @@ export const createTestProject = async (
     data: {
       wbsElement: {
         create: {
-          carNumber: 0,
+          carNumber,
           projectNumber,
           workPackageNumber: 0,
           dateCreated: new Date('01/01/2023'),
@@ -476,6 +477,36 @@ export const createTestProject = async (
 
   return genesisProject;
 };
+
+export const createTestWorkPackage = async (
+  user: User,
+  organizationId: string,
+  projectId: string,
+  carNumber: number = 0,
+  projectNumber: number = 1,
+  workPackageNumber: number = 1
+) =>
+  prisma.work_Package.create({
+    data: {
+      wbsElement: {
+        create: {
+          carNumber,
+          projectNumber,
+          workPackageNumber,
+          name: `WP ${carNumber}.${projectNumber}.${workPackageNumber}`,
+          status: WBS_Element_Status.ACTIVE,
+          leadId: user.userId,
+          managerId: user.userId,
+          organizationId
+        }
+      },
+      project: { connect: { projectId } },
+      startDate: new Date('2024-01-01'),
+      duration: 4,
+      orderInProject: workPackageNumber
+    },
+    include: { wbsElement: true }
+  });
 
 export const createTestReimbursementRequest = async () => {
   const organization = await createTestOrganization();
