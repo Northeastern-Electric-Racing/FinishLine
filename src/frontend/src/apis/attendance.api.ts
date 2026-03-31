@@ -1,6 +1,6 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { MeetingAttendance } from 'shared';
+import { MeetingAttendance, MeetingAttendanceWithAttendees } from 'shared';
 
 export const postTakeAttendance = (payload: { teamId: string; message: string }) => {
   return axios.post<MeetingAttendance>(apiUrls.attendanceTakeAttendance(), payload, {
@@ -28,4 +28,10 @@ export const getOngoingAttendance = (teamId: string) => {
 
 export const postCloseAttendance = (teamId: string) => {
   return axios.post(apiUrls.attendanceCloseOngoing(teamId));
+};
+
+export const getAttendanceById = (meetingAttendanceId: string) => {
+  return axios.get<MeetingAttendanceWithAttendees>(apiUrls.attendanceGetById(meetingAttendanceId), {
+    transformResponse: (data) => JSON.parse(data) as MeetingAttendanceWithAttendees
+  });
 };

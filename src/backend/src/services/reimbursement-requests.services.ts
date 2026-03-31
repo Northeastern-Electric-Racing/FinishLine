@@ -426,17 +426,6 @@ export default class ReimbursementRequestService {
     //set any deleted receipts with a dateDeleted
     await removeDeletedReceiptPictures(receiptPictures, oldReimbursementRequest.receiptPictures || [], submitter);
 
-    try {
-      await sendPendingSaboSubmissionNotification(
-        updatedReimbursementRequest.notificationSlackThreads,
-        submitter.userId,
-        updatedReimbursementRequest.recipientId,
-        updatedReimbursementRequest.reimbursementRequestId
-      );
-    } catch (e: unknown) {
-      console.error('Error sending pending SABO submission notification:', e);
-    }
-
     return updatedReimbursementRequest;
   }
 
