@@ -297,5 +297,6 @@ calendarRouter.post(
 );
 
 calendarRouter.get('/calendars', CalendarController.getAllCalendars);
+calendarRouter.get('/events-paginated', CalendarController.getAllEventsPaginated);
 
 export default calendarRouter;

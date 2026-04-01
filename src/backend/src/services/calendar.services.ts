@@ -15,7 +15,8 @@ import {
   Machinery,
   ScheduleSlot,
   notGuest,
-  isSameDay
+  isSameDay,
+  EventInstance
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
@@ -2748,5 +2749,56 @@ export default class CalendarService {
       ...getEventTypeQueryArgs(organization.organizationId)
     });
     return eventTypes.map(eventTypeTransformer);
+  }
+
+  /**
+   * Gets all the events paginated, ordered by start time and grouped by date
+   * @param organization the org the user is currently in
+   * @param cursor the start time of the last event on the prev page
+   * @param pageSize the number of events to return per page
+   * @returns
+   */
+  static async getAllEventsPaginated(
+    organization: Organization,
+    cursor?: Date,
+    pageSize: number = 25
+  ): Promise<{ instances: EventInstance[]; nextCursor: Date | null }> {
+    const now = new Date();
+
+    const slots = await prisma.schedule_Slot.findMany({
+      where: {
+        startTime: {
+          lt: cursor ?? now
+        },
+        event: {
+          dateDeleted: null,
+          eventType: {
+            organizationId: organization.organizationId
+          }
+        }
+      },
+      include: {
+        event: getEventQueryArgs(organization.organizationId)
+      },
+      orderBy: { startTime: 'desc' },
+      take: pageSize
+    });
+
+    const nextCursor = slots.length === pageSize ? slots[slots.length - 1].startTime : null;
+
+    const instances: EventInstance[] = slots.map((slot) => {
+      const { scheduledTimes, ...eventWithoutSlots } = eventTransformer(slot.event);
+      return {
+        ...eventWithoutSlots,
+        scheduleSlotId: slot.scheduleSlotId,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        allDay: slot.allDay,
+        recurring: slot.event.scheduledTimes.length > 1,
+        totalScheduledSlots: slot.event.scheduledTimes.length
+      };
+    });
+
+    return { instances, nextCursor };
   }
 }
