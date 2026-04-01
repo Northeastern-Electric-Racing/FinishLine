@@ -2772,6 +2772,7 @@ export default class CalendarService {
         },
         event: {
           dateDeleted: null,
+          status: Event_Status.SCHEDULED,
           eventType: {
             organizationId: organization.organizationId
           }

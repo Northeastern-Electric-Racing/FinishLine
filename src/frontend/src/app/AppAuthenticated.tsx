@@ -34,6 +34,7 @@ import { useCurrentOrganization } from '../hooks/organizations.hooks';
 import Statistics from '../pages/StatisticsPage/Statistics';
 import RetrospectiveGanttChartPage from '../pages/RetrospectivePage/Retrospective';
 import Calendar from '../pages/CalendarPage/Calendar';
+import GuestEventPage from '../pages/GuestEventPage/GuestEventPage';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -130,6 +131,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.STATISTICS} component={Statistics} />
             <Route path={routes.HOME} component={Home} />
             <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
+            <Route path={routes.EVENTS} component={GuestEventPage} />
             <Redirect from={routes.BASE} to={routes.HOME} />
             <Route path="*" component={PageNotFound} />
           </Switch>
