@@ -70,9 +70,8 @@ const GanttChartSection = <T,>({
         <Box sx={{ mt: '1rem', width: 'fit-content' }}>
           {tasks.map((task) => {
             return (
-              <Box display="flex" alignItems="center">
+              <Box key={task.id} display="flex" alignItems="center">
                 <GanttTaskBar
-                  key={task.id}
                   days={days}
                   task={task}
                   isEditMode={isEditMode}
