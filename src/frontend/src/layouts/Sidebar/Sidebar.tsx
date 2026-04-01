@@ -37,6 +37,7 @@ import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useState } from 'react';
+import { CalendarIcon } from '@mui/x-date-pickers';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -101,9 +102,9 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
               route: routes.CHANGE_REQUESTS
             },
             {
-              name: 'Design Review',
-              icon: <RateReviewIcon />,
-              route: routes.CALENDAR
+              name: 'Events',
+              icon: <CalendarIcon />,
+              route: routes.EVENTS
             }
           ]
         },
