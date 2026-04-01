@@ -9,7 +9,6 @@ import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { Typography, Box, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
-import RateReviewIcon from '@mui/icons-material/RateReview';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 // To be uncommented after guest sponsors page is developed
 // import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
