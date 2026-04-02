@@ -118,7 +118,7 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
 
   // Selecting from the search bar auto-populates the project and material dropdowns
   const handleSearchSelect = useCallback(
-    (_: React.SyntheticEvent, value: AutocompleteOption | null) => {
+    (_, value: AutocompleteOption | null) => {
       if (!value) return;
       const material = (carMaterials ?? []).find((m) => m.materialId === value.id) ?? null;
       if (!material) return;

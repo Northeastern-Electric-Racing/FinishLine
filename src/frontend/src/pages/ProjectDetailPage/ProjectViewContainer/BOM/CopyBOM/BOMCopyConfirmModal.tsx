@@ -20,21 +20,12 @@ const BOMCopyConfirmModal = ({
   currentProjectName,
   destinationWbsNum
 }: BOMCopyConfirmModalProps) => {
-  const copyMaterials = useCopyMaterialsToProject();
+  const { mutateAsync: copyMaterials } = useCopyMaterialsToProject();
 
-  const handleConfirm = () => {
-    copyMaterials.mutate(
-      {
-        materialIds,
-        destinationWbsNum
-      },
-      {
-        onSuccess: () => {
-          onSuccess();
-          onHide();
-        }
-      }
-    );
+  const handleConfirm = async () => {
+    await copyMaterials({ materialIds, destinationWbsNum });
+    onSuccess();
+    onHide();
   };
 
   const message = `Are you sure you want to copy ${materialIds.length} materials from ${sourceProjectName} to ${currentProjectName}?`;

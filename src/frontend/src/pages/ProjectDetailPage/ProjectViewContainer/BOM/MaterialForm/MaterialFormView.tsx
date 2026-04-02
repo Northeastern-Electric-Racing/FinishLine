@@ -27,7 +27,7 @@ import { displayEnum } from '../../../../../utils/pipes';
 import { MaterialStatus } from 'shared';
 import React, { useState } from 'react';
 import { AddCircle } from '@mui/icons-material';
-import SelectMaterialToCopyModal from './SelectMaterialToCopyModal';
+import SelectMaterialToCopyModal from '../CopyBOM/SelectMaterialToCopyModal';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';

@@ -5,7 +5,7 @@ import { useAllProjects } from '../../../../../hooks/projects.hooks';
 import React, { useState } from 'react';
 import ErrorPage from '../../../../ErrorPage';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
-import BOMCopyConfirmModal from '../MaterialForm/BOMCopyConfirmModal';
+import BOMCopyConfirmModal from './BOMCopyConfirmModal';
 
 export interface CopyBOMModalProps {
   open: boolean;
@@ -21,9 +21,9 @@ const CopyBOMModal: React.FC<CopyBOMModalProps> = ({ open, onHide, destinationWb
   const [confirmedMaterialIds, setConfirmedMaterialIds] = useState<string[]>([]);
   const [confirmedSourceProjectName, setConfirmedSourceProjectName] = useState('');
 
-  if (isLoadingCars || !cars || isLoadingProjects || !projects) return <LoadingIndicator />;
   if (carsIsError) return <ErrorPage message={carsError?.message} />;
   if (projectsIsError) return <ErrorPage message={projectsError?.message} />;
+  if (isLoadingCars || !cars || isLoadingProjects || !projects) return <LoadingIndicator />;
 
   const destinationWbs = wbsPipe(destinationWbsNum);
 
