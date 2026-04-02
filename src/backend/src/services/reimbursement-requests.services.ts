@@ -4,7 +4,7 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Reimbursement_Request, Reimbursement_Status_Type, Organization } from '@prisma/client';
+import { Reimbursement_Request, Reimbursement_Status_Type, Organization, Prisma } from '@prisma/client';
 import {
   Reimbursement,
   ReimbursementReceiptCreateArgs,
@@ -699,14 +699,20 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
-    const reimbursementRequestWithSaboNumber = await prisma.reimbursement_Request.update({
-      where: { reimbursementRequestId },
-      data: {
-        saboId: saboNumber
+    try {
+      const reimbursementRequestWithSaboNumber = await prisma.reimbursement_Request.update({
+        where: { reimbursementRequestId },
+        data: {
+          saboId: saboNumber
+        }
+      });
+      return reimbursementRequestWithSaboNumber;
+    } catch (error: unknown) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new HttpException(400, 'This SABO number is already assigned to another reimbursement reqest.');
       }
-    });
-
-    return reimbursementRequestWithSaboNumber;
+      throw error;
+    }
   }
 
   /**
