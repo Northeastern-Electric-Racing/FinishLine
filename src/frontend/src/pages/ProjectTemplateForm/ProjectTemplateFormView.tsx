@@ -15,7 +15,7 @@ import React from 'react';
 import ProjectTemplateWorkPackageSection from './ProjectTemplateWorkPackageSection';
 import { generateUUID } from '../../utils/form';
 import { AttachMoney } from '@mui/icons-material';
-import { useAllTeams } from '../../hooks/teams.hooks';
+import { useAllTeamPreviews } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { WorkPackageTemplateApiInputs } from 'shared';
@@ -59,7 +59,7 @@ const ProjectTemplateFormView: React.FC<ProjectTemplateFormViewProps> = ({
 
   const history = useHistory();
 
-  const { data: teams, isLoading: teamsLoading, isError: teamsIsError, error: teamsError } = useAllTeams();
+  const { data: teams, isLoading: teamsLoading, isError: teamsIsError, error: teamsError } = useAllTeamPreviews();
 
   const pageTitle = defaultValues ? 'Edit Project Template' : 'Create Project Template';
 

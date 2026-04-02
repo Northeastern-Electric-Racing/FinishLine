@@ -11,7 +11,8 @@ import { styled } from '@mui/material/styles';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useSingleProject } from '../../../hooks/projects.hooks';
-import { daysOverdue, formatDate } from '../../../utils/datetime.utils';
+import { daysOverdue } from '../../../utils/datetime.utils';
+import { formatDateOnly } from 'shared';
 
 interface TaskDetailCardProps {
   task: Task;
@@ -101,7 +102,7 @@ const TaskDetailCard: React.FC<TaskDetailCardProps> = ({ task, taskNumber }) => 
               />
               <Chip
                 icon={<CalendarMonthIcon />}
-                label={task.deadline ? formatDate(new Date(task.deadline)) : 'No Deadline'}
+                label={task.deadline ? formatDateOnly(new Date(task.deadline)) : 'No Deadline'}
                 size="small"
               />
             </Stack>

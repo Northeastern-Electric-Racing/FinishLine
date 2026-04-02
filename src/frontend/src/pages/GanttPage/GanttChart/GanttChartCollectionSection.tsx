@@ -8,8 +8,6 @@ import { GanttEditability } from './GanttChart';
 interface GanttChartCollectionSectionProps<E, T> {
   startDate: Date;
   endDate: Date;
-  shouldShowChildren: (task: GanttTask<T>) => boolean;
-  onShowChildrenToggle: (task: GanttTask<T>) => void;
   collection: GanttCollection<E, T>;
   editability?: GanttEditability<E, T>;
 }
@@ -18,8 +16,6 @@ const GanttChartCollectionSection = <E, T>({
   startDate,
   endDate,
   collection,
-  shouldShowChildren,
-  onShowChildrenToggle,
   editability
 }: GanttChartCollectionSectionProps<E, T>) => {
   const theme = useTheme();
@@ -100,9 +96,7 @@ const GanttChartCollectionSection = <E, T>({
           createChange={editability?.onCreateChange ?? ignore}
           highlightedChange={editability?.highlightedChange}
           tasks={collection.tasks}
-          shouldShowChildren={shouldShowChildren}
           onAddTaskPressed={editability?.onNewSubTaskPressed ?? ignore}
-          onShowChildrenToggle={onShowChildrenToggle}
           highlightSubtaskComparator={editability?.highlightSubtaskComparator ?? ignoreBool}
           highlightTaskComparator={editability?.highlightTaskComparator ?? ignoreBool}
         />

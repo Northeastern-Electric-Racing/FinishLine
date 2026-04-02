@@ -6,6 +6,7 @@ import {
   getFeaturedProjects,
   getCurrentOrganization,
   setOrganizationDescription,
+  setPlatformDescription,
   setOrganizationFeaturedProjects,
   setOrganizationWorkspaceId,
   setOrganizationLogo,
@@ -13,14 +14,14 @@ import {
   updateApplicationLink,
   setOnboardingText,
   updateOrganizationContacts,
-  setOrganizationImages,
   getPartReviewGuideLink,
   setPartReviewGuideLink,
   setSlackSponsorshipNotificationSlackChannelId,
   getFinanceDelegates,
   setFinanceDelegates,
   setOrganizationNewMemberImage,
-  getOrganizationNewMemberImage
+  getOrganizationNewMemberImage,
+  setOrganizationPlatformLogoImage
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/organizations.api';
 
@@ -64,22 +65,6 @@ export const useProvideOrganization = (): OrganizationProvider => {
     organizationId,
     selectOrganization
   };
-};
-
-export const useSetOrganizationImages = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation<any, unknown, File[]>(
-    async (images: File[]) => {
-      const { data } = await setOrganizationImages(images);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['organizations']);
-      }
-    }
-  );
 };
 
 export const useFeaturedProjects = () => {
@@ -164,6 +149,22 @@ export const useSetOrganizationDescription = () => {
   );
 };
 
+export const useSetPlatformDescription = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, string>(
+    ['organizations', 'platform-description'],
+    async (platformDescription: string) => {
+      const { data } = await setPlatformDescription(platformDescription);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
+
 export const useSetFeaturedProjects = () => {
   const queryClient = useQueryClient();
   return useMutation<Organization, Error, ProjectPreview[]>(
@@ -231,6 +232,15 @@ export const useSetOrganizationNewMemberImage = () => {
     const { data } = await setOrganizationNewMemberImage(file);
     queryClient.invalidateQueries(['organizations']);
     queryClient.invalidateQueries(['organizations', 'new-member-image']);
+    return data;
+  });
+};
+
+export const useSetOrganizationPlatformLogoImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, File>(['organizations', 'platform-logo'], async (file: File) => {
+    const { data } = await setOrganizationPlatformLogoImage(file);
+    queryClient.invalidateQueries(['organizations']);
     return data;
   });
 };

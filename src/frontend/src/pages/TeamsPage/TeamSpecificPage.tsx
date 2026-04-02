@@ -29,7 +29,7 @@ interface ParamTypes {
 }
 
 const getTotalMoneySpent = (data: ReimbursementRequestData) =>
-  data.pendingFinance + data.pendingLeadership + data.reimbursed + data.submittedToSabo;
+  data.approved + data.pendingApproval + data.reimbursed + data.addedToSabo;
 
 const TeamSpecificPage: React.FC = () => {
   const toast = useToast();

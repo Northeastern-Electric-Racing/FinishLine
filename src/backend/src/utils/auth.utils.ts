@@ -33,7 +33,7 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
     req.path === '/users/auth/login' || // logins dont have cookies yet
     req.path === '/' || // base route is available so aws can listen and check the health
     req.method === 'OPTIONS' || // this is a pre-flight request and those don't send cookies
-    req.path === '/slack' // slack http endpoint is only used from slack api
+    req.path.startsWith('/slack') // slack endpoints (events and interactions) are only used from slack api
   ) {
     return next();
   } else if (
@@ -65,7 +65,7 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
     req.path === '/' || // base route is available so aws can listen and check the health
     req.method === 'OPTIONS' || // this is a pre-flight request and those don't send cookies
     req.path === '/users' || // dev login needs the list of users to log in
-    req.path === '/slack' // slack http endpoint is only used from slack api
+    req.path.startsWith('/slack') // slack endpoints (events and interactions) are only used from slack api
   ) {
     next();
   } else if (
@@ -185,7 +185,7 @@ export const getUserAndOrganization = async (req: Request, res: Response, next: 
     req.path === '/' || // base route is available so aws can listen and check the health
     req.method === 'OPTIONS' || // this is a pre-flight request and those don't send cookies
     req.path === '/users' || // dev login needs the list of users to log in
-    req.path === '/slack' || // slack http endpoint is only used from slack api
+    req.path.startsWith('/slack') || // slack endpoints (events and interactions) are only used from slack api
     req.path.startsWith('/notifications') // Notifications route has its own auth, only called from gh
   ) {
     return next();

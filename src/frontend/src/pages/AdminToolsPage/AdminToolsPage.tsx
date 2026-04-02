@@ -21,6 +21,7 @@ import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitme
 import GuestViewConfig from './EditGuestView/GuestViewConfig';
 import AdminToolsSlackIds from './AdminToolsSlackIds';
 import AdminToolsOnboardingConfig from './OnboardingConfig/AdminToolsOnboardingConfig';
+import AdminToolsScheduleConfig from './ScheduleConfig/AdminToolsScheduleConfig';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -37,6 +38,7 @@ const AdminToolsPage: React.FC = () => {
   if (isUserHead || isUserAdmin) {
     tabs.push({ tabUrlValue: 'user-management', tabName: 'User Management' });
     tabs.push({ tabUrlValue: 'project-configuration', tabName: 'Project Configuration' });
+    tabs.push({ tabUrlValue: 'schedule', tabName: 'Schedule' });
   }
   if (isUserAdmin || isUserFinanceLead) {
     tabs.push({ tabUrlValue: 'finance-configuration', tabName: 'Finance Configuration' });
@@ -75,12 +77,14 @@ const AdminToolsPage: React.FC = () => {
           {isUserAdmin && <AdminToolsBOMConfig />}
         </Box>
       ) : tabIndex === 2 ? (
-        <AdminToolsFinanceConfig />
+        <AdminToolsScheduleConfig />
       ) : tabIndex === 3 ? (
-        <AdminToolsRecruitmentConfig />
+        <AdminToolsFinanceConfig />
       ) : tabIndex === 4 ? (
-        <GuestViewConfig />
+        <AdminToolsRecruitmentConfig />
       ) : tabIndex === 5 ? (
+        <GuestViewConfig />
+      ) : tabIndex === 6 ? (
         <AdminToolsOnboardingConfig />
       ) : (
         <Box>

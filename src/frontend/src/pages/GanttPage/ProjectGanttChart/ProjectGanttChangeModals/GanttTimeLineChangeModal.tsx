@@ -2,6 +2,7 @@ import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Text
 import {
   ChangeRequestReason,
   ChangeRequestType,
+  dateToMidnightUTC,
   Link,
   LinkCreateArgs,
   ProjectGantt,
@@ -151,7 +152,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
                 name: workPackage.name,
                 stage: workPackage.stage,
                 duration,
-                startDate: change.newStart.toISOString(),
+                startDate: dateToMidnightUTC(change.newStart).toISOString(),
                 blockedBy: workPackage.blockedBy,
                 descriptionBullets: workPackage.descriptionBullets,
                 leadId: workPackage.lead ? workPackage.lead.userId : undefined,
@@ -180,7 +181,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
         await createSingleWorkPackage({
           projectWbsNum: project.wbsNum,
           name: workPackage.name,
-          startDate: workPackage.startDate.toISOString(),
+          startDate: dateToMidnightUTC(workPackage.startDate).toISOString(),
           duration,
           stage: workPackage.stage ?? 'NONE',
           blockedBy: [],
@@ -198,8 +199,8 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
             status: task.status,
             assignees: task.assignees?.map((user) => user.userId) || [],
             notes: task.notes || '',
-            deadline: task.deadline?.toISOString(),
-            startDate: task.startDate?.toISOString()
+            deadline: task.deadline ? dateToMidnightUTC(task.deadline).toISOString() : undefined,
+            startDate: task.startDate ? dateToMidnightUTC(task.startDate).toISOString() : undefined
           };
 
           try {

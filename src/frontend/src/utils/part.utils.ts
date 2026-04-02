@@ -1,4 +1,4 @@
-import { Part, PartReview, PartReviewRequest, PartSubmission, Review_Status, User } from 'shared';
+import { Part, PartReview, PartReviewRequest, PartSubmission, Review_Status, User, formatDateOnly } from 'shared';
 import { yellow, purple, green, grey, red } from '@mui/material/colors';
 
 type HistoryEntry = [Date, string];
@@ -120,12 +120,7 @@ export const completePartHistory = (part: Part): string[] => {
   history
     .sort((a, b) => a[0].getTime() - b[0].getTime())
     .forEach(([date, message]) => {
-      const formattedDate = date.toLocaleDateString('en-US', {
-        timeZone: 'UTC',
-        year: '2-digit',
-        month: '2-digit',
-        day: '2-digit'
-      });
+      const formattedDate = formatDateOnly(date, 'MM/DD/YY');
       result.push(`[${formattedDate}] - ${message}.`);
     });
   return result;
