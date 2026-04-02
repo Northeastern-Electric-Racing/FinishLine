@@ -378,67 +378,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   />
                 </FormControl>
 
-                {/* Date of Expense */}
-                {(isHead(user.role) || (isEditing && isLeadershipApproved)) && (
-                  <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
-                    <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
-                      <FormLabel
-                        sx={{
-                          color: '#dd524c',
-                          textShadow: '1.5px 0 #dd524c',
-                          letterSpacing: '0.5px',
-                          textDecoration: 'underline',
-                          textUnderlineOffset: '3.5px',
-                          textDecorationThickness: '0.6px',
-                          paddingBottom: '2px',
-                          fontSize: 'x-large',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Date of Expense{isLeadershipApproved ? '*' : ''}
-                      </FormLabel>
-                      <Tooltip
-                        title="Reimbursements with Different Purchase Dates Should be on Different Requests. Leave Empty for Not Yet Purchased Items"
-                        placement="right"
-                      >
-                        <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px' }} />
-                      </Tooltip>
-                    </Box>
-                    <Controller
-                      name="dateOfExpense"
-                      control={control}
-                      render={({ field: { onChange, value } }) => (
-                        <DatePicker
-                          value={value}
-                          open={datePickerOpen}
-                          onClose={() => setDatePickerOpen(false)}
-                          onOpen={() => setDatePickerOpen(true)}
-                          onChange={(newValue) => {
-                            onChange(newValue ?? new Date());
-                          }}
-                          slotProps={{
-                            textField: {
-                              error: !!errors.dateOfExpense,
-                              helperText: errors.dateOfExpense?.message,
-                              variant: 'outlined',
-                              fullWidth: true,
-                              size: 'small',
-                              InputProps: {
-                                onClick: (e) => {
-                                  const target = e.target as HTMLElement;
-                                  if (target.closest('button')) {
-                                    setDatePickerOpen(true);
-                                  }
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      )}
-                    />
-                  </FormControl>
-                )}
-
                 {/* Account Code */}
                 <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
                   <FormLabel
@@ -682,6 +621,98 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             {/* Right Column */}
             <Grid item xs={12} md={6}>
               <Stack spacing={2}>
+                {/* Date of Expense */}
+                {(isHead(user.role) || (isEditing && isLeadershipApproved)) && (
+                  <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                    <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
+                      <FormLabel
+                        sx={{
+                          color: '#dd524c',
+                          textShadow: '1.5px 0 #dd524c',
+                          letterSpacing: '0.5px',
+                          textDecoration: 'underline',
+                          textUnderlineOffset: '3.5px',
+                          textDecorationThickness: '0.6px',
+                          paddingBottom: '2px',
+                          fontSize: 'x-large',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Date of Expense{isLeadershipApproved ? '*' : ''}
+                      </FormLabel>
+                      <Tooltip
+                        title="Reimbursements with Different Purchase Dates Should be on Different Requests. Leave Empty for Not Yet Purchased Items"
+                        placement="right"
+                      >
+                        <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px' }} />
+                      </Tooltip>
+                    </Box>
+                    <Controller
+                      name="dateOfExpense"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <DatePicker
+                          value={value}
+                          open={datePickerOpen}
+                          onClose={() => setDatePickerOpen(false)}
+                          onOpen={() => setDatePickerOpen(true)}
+                          onChange={(newValue) => {
+                            onChange(newValue ?? new Date());
+                          }}
+                          slotProps={{
+                            textField: {
+                              error: !!errors.dateOfExpense,
+                              helperText: errors.dateOfExpense?.message,
+                              variant: 'outlined',
+                              fullWidth: true,
+                              size: 'small',
+                              InputProps: {
+                                onClick: (e) => {
+                                  const target = e.target as HTMLElement;
+                                  if (target.closest('button')) {
+                                    setDatePickerOpen(true);
+                                  }
+                                }
+                              }
+                            }
+                          }}
+                        />
+                      )}
+                    />
+                  </FormControl>
+                )}
+
+                {/* Description */}
+                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                  <FormLabel
+                    sx={{
+                      color: '#dd524c',
+                      textShadow: '1.5px 0 #dd524c',
+                      letterSpacing: '0.5px',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3.5px',
+                      textDecorationThickness: '0.6px',
+                      fontSize: 'x-large',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Description
+                  </FormLabel>
+                  <Controller
+                    name="description"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <TextField
+                        value={value || ''}
+                        onChange={onChange}
+                        placeholder="Enter Description"
+                        multiline
+                        rows={3}
+                      />
+                    )}
+                  />
+                </FormControl>
+
                 {/* Upload Receipts */}
                 <FormControl sx={{ display: 'flex', borderRadius: '25px', width: '100%' }}>
                   <FormLabel
@@ -856,37 +887,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       })}
                     </Box>
                   </Box>
-                </FormControl>
-
-                {/* Description */}
-                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
-                  <FormLabel
-                    sx={{
-                      color: '#dd524c',
-                      textShadow: '1.5px 0 #dd524c',
-                      letterSpacing: '0.5px',
-                      textDecoration: 'underline',
-                      textUnderlineOffset: '3.5px',
-                      textDecorationThickness: '0.6px',
-                      fontSize: 'x-large',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Description
-                  </FormLabel>
-                  <Controller
-                    name="description"
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <TextField
-                        value={value || ''}
-                        onChange={onChange}
-                        placeholder="Enter Description"
-                        multiline
-                        rows={3}
-                      />
-                    )}
-                  />
                 </FormControl>
               </Stack>
             </Grid>
