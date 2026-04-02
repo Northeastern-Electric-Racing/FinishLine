@@ -788,10 +788,13 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
  */
 export const useGetPendingAdvisorList = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'pending-advisors', selectedCar?.id], async () => {
-    const { data } = await getPendingAdvisorList();
-    return data;
-  });
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', 'pending-advisors', selectedCar?.id],
+    async () => {
+      const { data } = await getPendingAdvisorList();
+      return data;
+    }
+  );
 };
 
 /**
