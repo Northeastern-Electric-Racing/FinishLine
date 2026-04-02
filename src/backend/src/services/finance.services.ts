@@ -1139,7 +1139,12 @@ export default class FinanceServices {
     return data;
   }
 
-  static async getSpendingBarCategoryData(organization: Organization, startDate?: Date, endDate?: Date, carNumber?: number): Promise<SpendingBarData> {
+  static async getSpendingBarCategoryData(
+    organization: Organization,
+    startDate?: Date,
+    endDate?: Date,
+    carNumber?: number
+  ): Promise<SpendingBarData> {
     const { organizationId } = organization;
     const otherReasons = await prisma.reimbursement_Product_Other_Reason.findMany({
       where: {
@@ -1151,7 +1156,13 @@ export default class FinanceServices {
     });
 
     const spendingInfoPromises = otherReasons.map((r) =>
-      this.getReimbursementRequestCategoryData(r.otherReimbursementProductReasonId, organization, startDate, endDate, carNumber)
+      this.getReimbursementRequestCategoryData(
+        r.otherReimbursementProductReasonId,
+        organization,
+        startDate,
+        endDate,
+        carNumber
+      )
     );
     const spendingInfos = await Promise.all(spendingInfoPromises);
 
