@@ -1,5 +1,5 @@
 import { Organization, User } from '@prisma/client';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createTestCar, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import { supermanAdmin, member } from '../test-data/users.test-data';
 import CarsService from '../../src/services/car.services';
 import { AccessDeniedAdminOnlyException } from '../../src/utils/errors.utils';
@@ -27,38 +27,8 @@ describe('Cars Tests', () => {
     });
 
     test('getAllCars returns all cars for organization', async () => {
-      // Create test cars manually with unique car numbers
-      await prisma.car.create({
-        data: {
-          wbsElement: {
-            create: {
-              carNumber: 0,
-              projectNumber: 0,
-              workPackageNumber: 0,
-              name: 'Car 1',
-              organizationId: org.organizationId,
-              leadId: adminUser.userId,
-              managerId: adminUser.userId
-            }
-          }
-        }
-      });
-
-      await prisma.car.create({
-        data: {
-          wbsElement: {
-            create: {
-              carNumber: 1,
-              projectNumber: 0,
-              workPackageNumber: 0,
-              name: 'Car 2',
-              organizationId: org.organizationId,
-              leadId: adminUser.userId,
-              managerId: adminUser.userId
-            }
-          }
-        }
-      });
+      await createTestCar(org.organizationId, adminUser.userId, 0);
+      await createTestCar(org.organizationId, adminUser.userId, 1);
 
       const cars = await CarsService.getAllCars(org);
       expect(cars).toHaveLength(2);
@@ -66,21 +36,7 @@ describe('Cars Tests', () => {
 
     test('getAllCars only returns cars for specified organization', async () => {
       // Create car in our org
-      await prisma.car.create({
-        data: {
-          wbsElement: {
-            create: {
-              carNumber: 0,
-              projectNumber: 0,
-              workPackageNumber: 0,
-              name: 'Our Car',
-              organizationId: org.organizationId,
-              leadId: adminUser.userId,
-              managerId: adminUser.userId
-            }
-          }
-        }
-      });
+      await createTestCar(org.organizationId, adminUser.userId, 0);
 
       // Create car in different org
       const uniqueId = `${Date.now()}-${Math.random()}`;
@@ -112,21 +68,7 @@ describe('Cars Tests', () => {
         otherOrg.organizationId
       );
 
-      await prisma.car.create({
-        data: {
-          wbsElement: {
-            create: {
-              carNumber: 0,
-              projectNumber: 0,
-              workPackageNumber: 0,
-              name: 'Other Car',
-              organizationId: otherOrg.organizationId,
-              leadId: otherUser.userId,
-              managerId: otherUser.userId
-            }
-          }
-        }
-      });
+      await createTestCar(otherOrg.organizationId, otherUser.userId, 0);
 
       const cars = await CarsService.getAllCars(org);
       expect(cars).toHaveLength(1);
