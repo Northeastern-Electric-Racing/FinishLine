@@ -48,6 +48,8 @@ export type SubmitText =
   | 'Submit Vendor'
   | 'Copy'
   | 'Accept'
+  | 'Send'
+  | 'Close Attendance'
   | 'Copy BOM';
 
 export type CancelText = 'Cancel' | 'Delete' | 'Exit' | 'No';

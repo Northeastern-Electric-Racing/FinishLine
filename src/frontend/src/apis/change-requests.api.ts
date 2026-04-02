@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { ChangeRequest, WbsNumber, ChangeRequestType } from 'shared';
+import { ChangeRequest, WbsNumber, ChangeRequestType, GuestChangeRequest } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { changeRequestTransformer } from './transformers/change-requests.transformers';
 import { CreateStandardChangeRequestPayload } from '../hooks/change-requests.hooks';
@@ -15,6 +15,12 @@ import { CreateStandardChangeRequestPayload } from '../hooks/change-requests.hoo
 export const getAllChangeRequests = () => {
   return axios.get<ChangeRequest[]>(apiUrls.changeRequests(), {
     transformResponse: (data) => JSON.parse(data).map(changeRequestTransformer)
+  });
+};
+
+export const getAllGuestChangeRequests = () => {
+  return axios.get<GuestChangeRequest[]>(apiUrls.guestChangeRequests(), {
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 

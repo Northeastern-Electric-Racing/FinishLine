@@ -1,6 +1,6 @@
 import { Droppable } from '@hello-pangea/dnd';
 import { Box, Typography, useTheme } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Project, Task, TaskStatus, TaskWithIndex } from 'shared';
 import { statusNames, TaskCard } from '.';
 import { NERButton } from '../../../../../components/NERButton';
@@ -34,6 +34,17 @@ export const TaskColumn = ({
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const toast = useToast();
   const theme = useTheme();
+  const droppableBoxRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const box = droppableBoxRef.current;
+    if (!box) return;
+    const observer = new ResizeObserver(() => {
+      onHeightChange(status, box.scrollHeight);
+    });
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, [status, onHeightChange]);
 
   const handleCreateTask = async ({ notes, title, deadline, assignees, priority, startDate }: EditTaskFormInput) => {
     try {
@@ -60,6 +71,7 @@ export const TaskColumn = ({
   return (
     <>
       <TaskFormModal
+        status={status}
         onSubmit={handleCreateTask}
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
@@ -96,14 +108,8 @@ export const TaskColumn = ({
           {(droppableProvided, snapshot) => (
             <Box
               ref={(droppableBox: HTMLElement | null) => {
-                droppableProvided.innerRef(droppableBox); // give dnd lib access to dom node
-                if (!droppableBox) return;
-
-                const observer = new ResizeObserver(() => {
-                  onHeightChange(status, droppableBox.scrollHeight);
-                });
-                observer.observe(droppableBox);
-                return () => observer.disconnect();
+                droppableProvided.innerRef(droppableBox);
+                droppableBoxRef.current = droppableBox;
               }}
               {...droppableProvided.droppableProps}
               className={snapshot.isDraggingOver ? ' isDraggingOver' : ''}
