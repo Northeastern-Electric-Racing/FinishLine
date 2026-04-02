@@ -115,4 +115,26 @@ export default class RecruitmentController {
       next(error);
     }
   }
+
+  static async editGuestDefinition(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { guestId } = req.params as Record<string, string>;
+      const { term, description, order, icon, buttonText, buttonLink } = req.body;
+
+      const guest = await RecruitmentServices.editGuestDefinition(
+        req.currentUser,
+        req.organization,
+        term,
+        description,
+        guestId,
+        order,
+        icon,
+        buttonText,
+        buttonLink
+      );
+      res.status(200).json(guest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

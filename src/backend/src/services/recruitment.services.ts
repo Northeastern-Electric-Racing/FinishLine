@@ -253,4 +253,60 @@ export default class RecruitmentServices {
 
     return definition;
   }
+
+  /**
+   * Edits guest definition
+   * @param creator user editing the definition
+   * @param organization org the definition is being edited
+   * @param term the term we are editing
+   * @param description the definition of the term
+   * @param order the order the term appears on the page
+   * @param icon the icon associated with the term
+   * @param buttonText the text displayed on the terms button
+   * @param buttonLink where the terms button links to
+   * @returns
+   */
+  static async editGuestDefinition(
+    creator: User,
+    organization: Organization,
+    term: string,
+    description: string,
+    definitionId: string,
+    order: number,
+    icon?: string,
+    buttonText?: string,
+    buttonLink?: string
+  ) {
+    if (!(await userHasPermission(creator.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit a guest definition');
+
+    const currentGuestDefinition = await prisma.guest_Definition.findUnique({
+      where: {
+        definitionId
+      }
+    });
+
+    if (!currentGuestDefinition) {
+      throw new NotFoundException('Guest Definition', definitionId);
+    }
+
+    if (currentGuestDefinition.dateDeleted) {
+      throw new DeletedException('Guest Definition', definitionId);
+    }
+
+    const updatedGuest = await prisma.guest_Definition.update({
+      where: {
+        definitionId
+      },
+      data: {
+        term,
+        description,
+        order,
+        icon,
+        buttonText,
+        buttonLink
+      }
+    });
+    return updatedGuest;
+  }
 }
