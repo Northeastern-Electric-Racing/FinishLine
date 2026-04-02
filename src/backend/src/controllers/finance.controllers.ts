@@ -318,7 +318,17 @@ export default class FinanceController {
 
   static async getSpendingBarCategoryData(req: Request, res: Response, next: NextFunction) {
     try {
-      const spendingBarData = await FinanceServices.getSpendingBarCategoryData(req.organization);
+      const { startDate, endDate } = req.query;
+      const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
+      const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
+      const carNumber = req.currentCar?.wbsElement.carNumber;
+
+      const spendingBarData = await FinanceServices.getSpendingBarCategoryData(
+        req.organization,
+        parsedStartDate,
+        parsedEndDate,
+        carNumber
+      );
       res.status(200).json(spendingBarData);
     } catch (error: unknown) {
       next(error);
