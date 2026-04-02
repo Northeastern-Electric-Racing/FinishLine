@@ -38,6 +38,7 @@ export const getTeamPreviewQueryArgs = (organizationId: string) =>
     include: {
       members: getUserQueryArgs(organizationId),
       head: getUserQueryArgs(organizationId),
-      leads: getUserQueryArgs(organizationId)
+      leads: getUserQueryArgs(organizationId),
+      teamType: true
     }
   });

@@ -38,7 +38,8 @@ export const teamPreviewTransformer = (team: Prisma.TeamGetPayload<TeamPreviewQu
     leads: team.leads.map(userTransformer),
     members: team.members.map(userTransformer),
     head: userTransformer(team.head),
-    dateArchived: team.dateArchived ?? undefined
+    dateArchived: team.dateArchived ?? undefined,
+    teamType: team.teamType ? teamTypeTransformer(team.teamType) : undefined
   };
 };
 
