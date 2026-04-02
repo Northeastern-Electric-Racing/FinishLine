@@ -102,6 +102,7 @@ import {
   ProspectiveSponsor
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Helper function to handle file upload errors with file name context
@@ -465,7 +466,8 @@ export const useGetAllAccountCodes = () => {
  * Custom React Hook to get the reimbursement requests created by the current user
  */
 export const useCurrentUserReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user', selectedCar?.id], async () => {
     const { data } = await getCurrentUserReimbursementRequests();
     return data;
   });
@@ -475,7 +477,8 @@ export const useCurrentUserReimbursementRequests = () => {
  * Custom React Hook to get the reimbursement requests assigned to the current user
  */
 export const useCurrentUserAssignedReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'assignee'], async () => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'assignee', selectedCar?.id], async () => {
     const { data } = await getCurrentUserAssignedReimbursementRequests();
     return data;
   });
@@ -485,7 +488,8 @@ export const useCurrentUserAssignedReimbursementRequests = () => {
  * Custom React Hook to get the reimbursement requests for the current user's teams
  */
 export const useCurrentUsersTeamsReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'teams', selectedCar?.id], async () => {
     const { data } = await getCurrentUsersTeamsReimbursementRequests();
     return data;
   });
@@ -537,7 +541,8 @@ export const useSetTaxExemptStatus = () => {
  * Custom React Hook to get all the reimbursement requests
  */
 export const useAllReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests'], async () => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', selectedCar?.id], async () => {
     const { data } = await getAllReimbursementRequests();
     return data;
   });
@@ -782,7 +787,8 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
  * @returns the list of Reimbursement Reqeusts that are pending Advisor Approval
  */
 export const useGetPendingAdvisorList = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'pending-advisors'], async () => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'pending-advisors', selectedCar?.id], async () => {
     const { data } = await getPendingAdvisorList();
     return data;
   });
