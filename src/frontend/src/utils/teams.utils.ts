@@ -46,6 +46,7 @@ export type SubmitText =
   | 'Create Change Request'
   | 'Update'
   | 'Submit Vendor'
+  | 'Copy'
   | 'Accept'
   | 'Copy BOM';
 

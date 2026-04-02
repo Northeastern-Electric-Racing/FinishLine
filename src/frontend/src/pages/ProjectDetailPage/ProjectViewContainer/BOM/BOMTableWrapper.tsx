@@ -298,6 +298,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       flex: 1.5,
       field: 'name',
       headerName: 'Name',
+      type: 'string',
       sortable: false,
       filterable: false,
       hide: hideColumn[3],
