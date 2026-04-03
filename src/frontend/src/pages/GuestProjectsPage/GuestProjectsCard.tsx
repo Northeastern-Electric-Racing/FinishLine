@@ -78,6 +78,8 @@ const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
         </Stack>
         <Typography
           sx={{
+            fontSize: 15,
+            lineHeight: 1.4,
             flexGrow: 1,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
