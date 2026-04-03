@@ -177,13 +177,19 @@ const ChangeRequestsTable: React.FC = () => {
     }
   ];
 
-  const defaultFilter = '{"columnField": "identifier", "operatorValue": "=", "value": ""}';
+  const defaultFilter = { columnField: 'identifier', operatorValue: '=', value: '' };
   let filterValues: { columnField: string; operatorValue: string; value: string };
   try {
-    filterValues = JSON.parse(localStorage.getItem('changeRequestsTableFilter') ?? defaultFilter);
+    const parsed = JSON.parse(localStorage.getItem('changeRequestsTableFilter') ?? 'null');
+    if (parsed && typeof parsed.columnField === 'string' && typeof parsed.operatorValue === 'string') {
+      filterValues = parsed;
+    } else {
+      localStorage.removeItem('changeRequestsTableFilter');
+      filterValues = defaultFilter;
+    }
   } catch {
     localStorage.removeItem('changeRequestsTableFilter');
-    filterValues = JSON.parse(defaultFilter);
+    filterValues = defaultFilter;
   }
 
   return (
