@@ -152,24 +152,6 @@ const RetrospectivePage = () => {
     };
   });
 
-  const overdueHandler = [
-    {
-      filterLabel: 'Overdue',
-      handler: (event: ChangeEvent<HTMLInputElement>) =>
-        handleSetGanttFilters({ ...filters, showOnlyOverdue: event.target.checked }),
-      defaultChecked: filters.showOnlyOverdue
-    }
-  ];
-
-  const hideTasksHandler = [
-    {
-      filterLabel: 'Hide Tasks',
-      handler: (event: ChangeEvent<HTMLInputElement>) =>
-        handleSetGanttFilters({ ...filters, hideTasks: event.target.checked }),
-      defaultChecked: filters.hideTasks
-    }
-  ];
-
   const carHandlers: {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -218,6 +200,12 @@ const RetrospectivePage = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
+  const elementId = (element: WbsElementPreview | Task) => (element as WbsElementPreview).id || (element as Task).taskId;
+
+  const toggleElementShowChildren = (element: WbsElementPreview | Task) => {
+    setShowWorkPackagesMap((prev) => new Map(prev.set(elementId(element), !prev.get(elementId(element)))));
+  };
+
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />
@@ -231,8 +219,6 @@ const RetrospectivePage = () => {
         carHandlers={carHandlers}
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
-        overdueHandler={overdueHandler}
-        hideTasksHandler={hideTasksHandler}
         resetHandler={resetHandler}
       />
     </Box>

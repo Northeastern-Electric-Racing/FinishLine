@@ -305,7 +305,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           proposedSolutions: []
         });
 
-        history.push(routes.CHANGE_REQUESTS);
+        history.push(`${routes.PROJECTS}/${wbsPipe(wbsElement.wbsNum)}/change-requests`);
       } else {
         await workPackageMutateAsync(payload);
         exitActiveMode();

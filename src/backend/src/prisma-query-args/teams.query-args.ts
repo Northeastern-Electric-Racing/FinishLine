@@ -39,8 +39,6 @@ export const getTeamPreviewQueryArgs = (organizationId: string) =>
       members: getUserQueryArgs(organizationId),
       head: getUserQueryArgs(organizationId),
       leads: getUserQueryArgs(organizationId),
-      teamType: {
-        select: { teamTypeId: true, name: true }
-      }
+      teamType: true
     }
   });

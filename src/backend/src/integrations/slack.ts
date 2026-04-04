@@ -144,6 +144,26 @@ export const editMessage = async (
 };
 
 /**
+ * Deletes a slack message
+ * @param channelId - the channel id of the channel containing the message
+ * @param timestamp - the timestamp of the message to delete
+ */
+export const deleteMessage = async (channelId: string, timestamp: string) => {
+  const client = getSlackClient();
+  if (!client) return;
+
+  try {
+    await client.chat.delete({
+      channel: channelId,
+      ts: timestamp
+    });
+  } catch (error) {
+    console.error('Failed to delete Slack message:', (error as any)?.data?.error ?? error);
+    return undefined;
+  }
+};
+
+/**
  * Reacts to a slack message
  * @param slackId - the channel id of the channel of the message to reply to
  * @param parentTimestamp - the timestamp of the message to reply to in a thread
@@ -248,6 +268,23 @@ export const getChannelName = async (channelId: string) => {
     return channelRes.channel?.name;
   } catch (error) {
     return undefined;
+  }
+};
+
+/**
+ * Checks whether the bot is a member of the given channel
+ * @param channelId the id of the slack channel
+ * @returns true if the bot is a member of the channel, false otherwise
+ */
+export const checkBotInChannel = async (channelId: string): Promise<boolean> => {
+  const client = getSlackClient();
+  if (!client) return false;
+
+  try {
+    const channelRes = await client.conversations.info({ channel: channelId });
+    return channelRes.channel?.is_member ?? false;
+  } catch (error) {
+    return false;
   }
 };
 
