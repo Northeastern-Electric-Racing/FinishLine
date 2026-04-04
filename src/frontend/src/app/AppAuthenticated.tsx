@@ -34,6 +34,7 @@ import { useCurrentOrganization } from '../hooks/organizations.hooks';
 import Statistics from '../pages/StatisticsPage/Statistics';
 import RetrospectiveGanttChartPage from '../pages/RetrospectivePage/Retrospective';
 import Calendar from '../pages/CalendarPage/Calendar';
+import GuestEventPage from '../pages/GuestEventPage/GuestEventPage';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -121,26 +122,72 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
 
   return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
-      <SidebarLayout>
-        <Switch>
-          <Route path={routes.PROJECTS} component={Projects} />
-          <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
-          <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
-          <Route path={routes.GANTT} component={GanttChartPage} />
-          <Route path={routes.TEAMS} component={Teams} />
-          <Route path={routes.SETTINGS} component={Settings} />
-          <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
-          <Route path={routes.INFO} component={InfoPage} />
-          <Route path={routes.CREDITS} component={Credits} />
-          <Route path={routes.FINANCE} component={Finance} />
-          <Route path={routes.CALENDAR} component={Calendar} />
-          <Route path={routes.STATISTICS} component={Statistics} />
-          <Route path={routes.HOME} component={Home} />
-          <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
-          <Redirect from={routes.BASE} to={routes.HOME} />
-          <Route path="*" component={PageNotFound} />
-        </Switch>
-      </SidebarLayout>
+      {
+        <>
+          <Box
+            onMouseEnter={() => {
+              setDrawerOpen(true);
+            }}
+            sx={{
+              height: '100vh',
+              position: 'fixed',
+              width: 15,
+              borderRight: 2,
+              borderRightColor: theme.palette.background.paper
+            }}
+          />
+          <IconButton
+            onClick={() => {
+              setDrawerOpen(true);
+              setMoveContent(true);
+            }}
+            sx={{ position: 'fixed', left: -8, top: '3%' }}
+            id="sidebar-button"
+          >
+            <ArrowCircleRightTwoToneIcon
+              sx={{
+                fontSize: '30px',
+                zIndex: 1,
+                '& path:first-of-type': { color: '#000000' },
+                '& path:last-of-type': { color: '#ef4345' }
+              }}
+            />
+          </IconButton>
+          <Sidebar
+            drawerOpen={drawerOpen}
+            setDrawerOpen={setDrawerOpen}
+            moveContent={moveContent}
+            setMoveContent={setMoveContent}
+          />
+        </>
+      }
+      <Box display={'flex'}>
+        <HiddenContentMargin open={moveContent} variant="permanent" />
+        <Container
+          maxWidth={false}
+          sx={{ width: onGuestHomePage && moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}
+        >
+          <Switch>
+            <Route path={routes.PROJECTS} component={Projects} />
+            <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
+            <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
+            <Route path={routes.GANTT} component={GanttChartPage} />
+            <Route path={routes.TEAMS} component={Teams} />
+            <Route path={routes.SETTINGS} component={Settings} />
+            <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
+            <Route path={routes.INFO} component={InfoPage} />
+            <Route path={routes.CREDITS} component={Credits} />
+            <Route path={routes.FINANCE} component={Finance} />
+            <Route path={routes.CALENDAR} component={Calendar} />
+            <Route path={routes.STATISTICS} component={Statistics} />
+            <Route path={routes.HOME} component={Home} />
+            <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
+            <Route path={routes.EVENTS} component={GuestEventPage} />
+            <Redirect from={routes.BASE} to={routes.HOME} />
+            <Route path="*" component={PageNotFound} />
+          </Switch>
+        </Container>
+      </Box>
     </AppContextUser>
   ) : (
     <SetUserPreferences userSettings={userSettingsData} />
