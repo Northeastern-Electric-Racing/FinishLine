@@ -41,6 +41,10 @@ const PROJECT_PART = PROJECTS_BY_WBS + '/part/:indexNum';
 const TEAMS = `/teams`;
 const TEAMS_BY_ID = TEAMS + `/:teamId`;
 
+/**************** Divisions Section ***************/
+const DIVISIONS = `/divisions`;
+const DIVISIONS_BY_ID = DIVISIONS + `/:teamTypeId`;
+
 /**************** Change Requests Section ****************/
 const CHANGE_REQUESTS = `/change-requests`;
 const ALL_CHANGE_REQUESTS = CHANGE_REQUESTS + `/all`;
@@ -95,6 +99,9 @@ export const routes = {
 
   TEAMS,
   TEAMS_BY_ID,
+
+  DIVISIONS,
+  DIVISIONS_BY_ID,
 
   GANTT,
 

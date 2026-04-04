@@ -13,6 +13,7 @@ import Settings from '../pages/SettingsPage/SettingsPage';
 import InfoPage from '../pages/InfoPage';
 import GanttChartPage from '../pages/GanttPage/ProjectGanttChart/ProjectGanttChartPage';
 import Teams from '../pages/TeamsPage/Teams';
+import GuestTeamPage from '../pages/GuestDivisionPage/GuestTeamPage';
 import AdminTools from '../pages/AdminToolsPage/AdminTools';
 import Credits from '../pages/CreditsPage/Credits';
 import AppContextUser from './AppContextUser';
@@ -121,6 +122,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
             <Route path={routes.GANTT} component={GanttChartPage} />
             <Route path={routes.TEAMS} component={Teams} />
+            <Route path={routes.DIVISIONS_BY_ID} component={GuestTeamPage} />
             <Route path={routes.SETTINGS} component={Settings} />
             <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
             <Route path={routes.INFO} component={InfoPage} />

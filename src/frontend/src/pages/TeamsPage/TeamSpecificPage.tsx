@@ -194,7 +194,11 @@ const TeamSpecificPage: React.FC = () => {
           </Box>
         ) : null
       }
-      previousPages={[{ name: 'Teams', route: routes.TEAMS }]}
+      previousPages={
+        isGuest(user.role) && data.teamType
+          ? [{ name: data.teamType.name, route: `${routes.DIVISIONS}/${data.teamType.teamTypeId}` }]
+          : [{ name: 'Teams', route: routes.TEAMS }]
+      }
     >
       <Grid container spacing={2}>
         <Grid item xs={12}>

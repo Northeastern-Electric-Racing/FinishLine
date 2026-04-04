@@ -38,6 +38,7 @@ import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useState } from 'react';
+import { sub } from 'date-fns';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -59,7 +60,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     return {
       name: team.name,
       icon: <IconComponent />,
-      route: routes.TEAMS + '/' + team.teamTypeId
+      route: routes.DIVISIONS + '/' + team.teamTypeId
     };
   });
 
