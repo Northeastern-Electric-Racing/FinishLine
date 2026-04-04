@@ -51,7 +51,7 @@ const GanttTaskBar = <T,>({
 
   const getStartCol = useCallback(
     (start: Date) => {
-      const startCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(start))) + 1;
+      const startCol = days.findIndex((day) => day.toDateString() === getMonday(start).toDateString()) + 1;
       return startCol;
     },
     [days]
@@ -61,9 +61,9 @@ const GanttTaskBar = <T,>({
   const getEndCol = useCallback(
     (end: Date) => {
       const endCol =
-        days.findIndex((day) => dateToString(day) === dateToString(getMonday(end))) === -1
+        days.findIndex((day) => day.toDateString() === getMonday(end).toDateString()) === -1
           ? days.length + 1
-          : days.findIndex((day) => dateToString(day) === dateToString(getMonday(end))) + 2;
+          : days.findIndex((day) => day.toDateString() === getMonday(end).toDateString()) + 2;
       return endCol;
     },
     [days]

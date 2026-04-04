@@ -30,6 +30,7 @@ import GanttChartColorLegend from './GanttChartColorLegend';
 import GanttChartFiltersButton from './GanttChartFiltersButton';
 import GanttChart from '../GanttChart/GanttChart';
 import {
+  Car,
   ProjectGantt,
   Task,
   TaskPriority,
@@ -104,7 +105,7 @@ interface ProjectGanttChartPageDataProps {
   projects: ProjectGantt[];
   teams: TeamPreview[];
   teamTypes: TeamType[];
-  cars: { wbsNum: { carNumber: number } }[];
+  cars: Car[];
 }
 
 const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ projects, teams, teamTypes, cars }) => {
@@ -723,9 +724,3 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
 };
 
 export default ProjectGanttChartPage;
-
-/*
-function useCallback(arg0: (_collection?: GanttCollection<TeamPreview, WbsElementPreview | Task>) => void) {
-  throw new Error('Function not implemented.');
-}
-*/

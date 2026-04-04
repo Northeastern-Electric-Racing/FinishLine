@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useState, useCallback } from 'react';
 import { IconButton, Popover } from '@mui/material';
 import GanttChartFilters from './GanttChartFilters';
 import { Tune } from '@mui/icons-material';
@@ -41,9 +41,9 @@ const GanttChartFiltersButton = ({
     setAnchorFilterEl(event.currentTarget);
   };
 
-  const handleFilterClose = () => {
+  const handleFilterClose = useCallback(() => {
     setAnchorFilterEl(null);
-  };
+  }, []);
 
   const open = Boolean(anchorFilterEl);
   return (
