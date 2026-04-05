@@ -11,8 +11,7 @@ import {
   EventTypeCreateArgs,
   Calendar,
   FilterArgs,
-  ScheduleSlot,
-  EventInstance
+  ScheduleSlot
 } from 'shared';
 import { eventTransformer, eventWithMembersTransformer } from './transformers/calendar.transformer';
 import { EditEventArgs, EditScheduleSlotArgs, EventCreateArgs } from '../hooks/calendar.hooks';
@@ -266,20 +265,4 @@ export const scheduleEvent = async (eventId: string, payload: { startTime: Date;
   return axios.post<Event>(apiUrls.calendarScheduleEvent(eventId), payload, {
     transformResponse: (data) => eventTransformer(JSON.parse(data))
   });
-};
-
-export const getAllEventsPaginated = (cursor?: Date, pageSize?: number) => {
-  return axios.post<{ instances: EventInstance[]; nextCursor: Date | null }>(
-    apiUrls.calendarEventsPaginated(),
-    { cursor, pageSize },
-    {
-      transformResponse: (data) => {
-        const parsed = JSON.parse(data);
-        return {
-          instances: parsed.instances,
-          nextCursor: parsed.nextCursor ? new Date(parsed.nextCursor) : null
-        };
-      }
-    }
-  );
 };

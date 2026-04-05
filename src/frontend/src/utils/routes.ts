@@ -66,7 +66,6 @@ const PROJECT_TEMPLATE_EDIT = PROJECT_TEMPLATES + '/edit';
 
 /**************** Design Review Calendar ****************/
 const CALENDAR = `/calendar`;
-const EVENTS = '/events';
 
 /**************** Organizations ****************/
 const ORGANIZATIONS = `/organizations`;
@@ -136,7 +135,6 @@ export const routes = {
   PROJECT_TEMPLATE_EDIT,
 
   CALENDAR,
-  EVENTS,
 
   ORGANIZATIONS,
 
