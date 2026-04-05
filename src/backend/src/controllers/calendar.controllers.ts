@@ -21,8 +21,7 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
-        requiresConfirmation,
-        sendSlackNotifications
+        requiresConfirmation
       } = req.body;
 
       const eventType = await CalendarService.createEventType(
@@ -43,8 +42,7 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
-        requiresConfirmation,
-        sendSlackNotifications
+        requiresConfirmation
       );
       res.status(200).json(eventType);
     } catch (error: unknown) {
@@ -205,8 +203,7 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
-        requiresConfirmation,
-        sendSlackNotifications
+        requiresConfirmation
       } = req.body;
 
       const eventType = await CalendarService.editEventType(
@@ -228,8 +225,7 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
-        requiresConfirmation,
-        sendSlackNotifications
+        requiresConfirmation
       );
       res.status(200).json(eventType);
     } catch (error: unknown) {
@@ -278,7 +274,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        sendSlackNotifications
       } = req.body;
 
       const parsedScheduleSlots = scheduleSlots.map((slot: any) => ({
@@ -306,7 +303,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        sendSlackNotifications
       );
       res.status(200).json(event);
     } catch (error: unknown) {
@@ -332,7 +330,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        sendSlackNotifications
       } = req.body;
 
       const event = await CalendarService.editEvent(
@@ -352,7 +351,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        sendSlackNotifications
       );
       res.status(200).json(event);
     } catch (error: unknown) {
