@@ -9,7 +9,6 @@ import ChangeRequestsOverview from './ChangeRequestsOverview';
 import ChangeRequestsTable from './ChangeRequestsTable';
 import PageLayout from '../../components/PageLayout';
 import FullPageTabs from '../../components/FullPageTabs';
-import GuestChangeRequestsPage from './GuestChangeRequestsPage';
 
 const ChangeRequestsView: React.FC = () => {
   const history = useHistory();
@@ -18,9 +17,6 @@ const ChangeRequestsView: React.FC = () => {
   // Default to the "overview" tab
   const [tabIndex, setTabIndex] = useState<number>(0);
 
-  if (isGuest(user.role)) {
-    return <GuestChangeRequestsPage />;
-  }
   const headerRight = (
     <NERButton
       variant="contained"

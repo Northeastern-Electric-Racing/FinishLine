@@ -5,11 +5,7 @@ import { useAllReimbursementRequests } from '../../hooks/finance.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { WbsNumber, ReimbursementRequest, WBSElementData, equalsWbsNumber, ReimbursementStatusType } from 'shared';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import {
-  createReimbursementRequestRowData,
-  cleanReimbursementRequestStatus,
-  getCurrentReimbursementStatus
-} from '../../utils/reimbursement-request.utils';
+import { createReimbursementRequestRowData, cleanReimbursementRequestStatus } from '../../utils/reimbursement-request.utils';
 import NERDataGrid, { MapRowResult } from '../../components/NERDataGrid';
 import { routes } from '../../utils/routes';
 import { fullNamePipe, centsToDollar, datePipe } from '../../utils/pipes';
@@ -70,10 +66,7 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
   const budgetInfo = useMemo(() => {
     if (!project) return null;
     const totalBudget = project.budget; // already in dollars
-    const nonDeniedRequests = reimbursementRequests.filter(
-      (rr) => getCurrentReimbursementStatus(rr.reimbursementStatuses).type !== 'DENIED'
-    );
-    const totalSpent = nonDeniedRequests.reduce((sum, rr) => sum + getProjectCost(rr, wbsNum), 0) / 100; // cents → dollars
+    const totalSpent = reimbursementRequests.reduce((sum, rr) => sum + getProjectCost(rr, wbsNum), 0) / 100; // cents → dollars
     const budgetRemaining = totalBudget - totalSpent;
     const budgetUsedPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
     return {

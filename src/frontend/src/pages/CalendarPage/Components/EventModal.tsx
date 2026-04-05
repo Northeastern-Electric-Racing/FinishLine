@@ -54,8 +54,6 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Tooltip from '@mui/material/Tooltip';
 import { convertDayToInt, convertIntToDay } from '../../../utils/calendar.utils';
 import EditSeriesConfirmationModal from './EditSeriesConfirmationModal';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 export interface EventFormValues {
   title: string;
@@ -238,9 +236,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const [showSeriesConfirmModal, setShowSeriesConfirmModal] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<EventPayload | null>(null);
   const [pendingFormData, setPendingFormData] = useState<EventFormValues | null>(null);
-
-  // used in edit mode for ability to send notifs when wp changes
-  const [workPackageIds, setWorkPackageIds] = useState<string[]>(initialValues?.workPackageIds ?? []);
 
   // Fetch preview of other schedule slots that would be affected when editing with "edit all in series"
   const isEditMode = !!initialValues;
@@ -1156,43 +1151,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
               )}
             </Box>
           )}
-          {/* Notification Section */}
-          {selectedEventType && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <NotificationsIcon sx={{ color: 'text.secondary' }} />
-              <Tooltip
-                arrow
-                placement="right"
-                title={
-                  !selectedEventType.sendSlackNotifications
-                    ? 'Slack notifications are disabled for this event type.'
-                    : selectedTeams.length || workPackageIds.length
-                      ? 'Slack notifications will be sent for this event.'
-                      : ''
-                }
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'default' }}>
-                  <Typography variant="body2" color={'text.disabled'} fontWeight={500}>
-                    {selectedEventType.sendSlackNotifications ? 'On' : 'Off'}
-                  </Typography>
-                  {selectedEventType.sendSlackNotifications && !selectedTeams.length && !workPackageIds.length && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <WarningAmberIcon sx={{ color: 'error.main', fontSize: 18 }} />
-                      <Typography variant="body2" color="error.main">
-                        Add{' '}
-                        {selectedEventType.teams && selectedEventType.workPackage
-                          ? 'a team or work package'
-                          : selectedEventType.teams
-                            ? 'a team'
-                            : 'a work package'}{' '}
-                        to send notifications
-                      </Typography>
-                    </Box>
-                  )}
-                </Box>
-              </Tooltip>
-            </Box>
-          )}
           {/* Required Members Section */}
           {selectedEventType?.requiredMembers && (
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
@@ -1459,9 +1417,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     value={workPackageOptions.find((wp) => value?.[0] === wp.id) || null}
                     onChange={(_, newValue) => {
                       if (newValue?.id !== 'loading') {
-                        const ids = newValue ? [newValue.id] : [];
-                        onChange(ids);
-                        setWorkPackageIds(ids);
+                        onChange(newValue ? [newValue.id] : []);
                       }
                     }}
                     getOptionLabel={(option) => option.label}

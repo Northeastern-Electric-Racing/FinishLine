@@ -1,4 +1,4 @@
-import { Box, Grid, ListItemIcon, Menu, MenuItem, Stack, Typography } from '@mui/material';
+import { Box, Grid, ListItemIcon, Menu, MenuItem, Stack } from '@mui/material';
 import { useArchiveTeam, useSingleTeam } from '../../hooks/teams.hooks';
 import { useParams } from 'react-router-dom';
 import TeamMembersPageBlock from './TeamMembersPageBlock';
@@ -11,13 +11,10 @@ import { routes } from '../../utils/routes';
 import PageLayout from '../../components/PageLayout';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { useCloseAttendance, useOngoingAttendance } from '../../hooks/attendance.hooks';
 import { isAdmin, isGuest, ReimbursementRequestData, WbsElementStatus } from 'shared';
 import React, { useState } from 'react';
 import DeleteTeamModal from './DeleteTeamModal';
 import SetTeamTypeModal from './SetTeamTypeModal';
-import TakeAttendanceModal from './TakeAttendanceModal';
-import NERModal from '../../components/NERModal';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { TeamPill } from './TeamPill';
 import { useToast } from '../../hooks/toasts.hooks';
@@ -41,11 +38,7 @@ const TeamSpecificPage: React.FC = () => {
   const user = useCurrentUser();
   const [showDeleteModal, setDeleteModalShow] = useState(false);
   const [showTeamTypeModal, setShowTeamTypeModal] = useState(false);
-  const [showTakeAttendanceModal, setShowTakeAttendanceModal] = useState(false);
-  const [showCloseAttendanceConfirm, setShowCloseAttendanceConfirm] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { data: ongoingAttendance } = useOngoingAttendance(teamId);
-  const { mutateAsync: closeAttendance } = useCloseAttendance();
   const dropdownOpen = Boolean(anchorEl);
   const { mutateAsync: archiveTeam } = useArchiveTeam(teamId);
   const handleClickDelete = () => {
@@ -91,31 +84,6 @@ const TeamSpecificPage: React.FC = () => {
       Set Division
     </NERButton>
   );
-
-  const isAttendanceAuthorized = isAdmin(user.role) || user.userId === data.head.userId;
-
-  const handleCloseAttendance = async () => {
-    try {
-      await closeAttendance(teamId);
-      setShowCloseAttendanceConfirm(false);
-      toast.success('Attendance closed successfully!');
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        toast.error(e.message, 3000);
-      }
-    }
-  };
-
-  const AttendanceButton = () =>
-    ongoingAttendance ? (
-      <NERButton variant="contained" onClick={() => setShowCloseAttendanceConfirm(true)} disabled={!isAttendanceAuthorized}>
-        Close Attendance
-      </NERButton>
-    ) : (
-      <NERButton variant="contained" onClick={() => setShowTakeAttendanceModal(true)} disabled={!isAttendanceAuthorized}>
-        Take Attendance
-      </NERButton>
-    );
 
   interface ArchiveTeamButtonProps {
     archive: boolean;
@@ -181,7 +149,6 @@ const TeamSpecificPage: React.FC = () => {
     <PageLayout
       headerRight={
         <Stack direction="row" spacing={2} justifyContent="flex-end">
-          <AttendanceButton />
           <SetDivisionButton />
           {TeamActionsDropdown}
         </Stack>
@@ -228,23 +195,6 @@ const TeamSpecificPage: React.FC = () => {
       </Grid>
       <DeleteTeamModal teamId={teamId} showModal={showDeleteModal} onHide={() => setDeleteModalShow(false)} />
       <SetTeamTypeModal teamId={teamId} showModal={showTeamTypeModal} onHide={() => setShowTeamTypeModal(false)} />
-      <TakeAttendanceModal
-        teamId={teamId}
-        teamName={data.teamName}
-        showModal={showTakeAttendanceModal}
-        onHide={() => setShowTakeAttendanceModal(false)}
-      />
-      <NERModal
-        open={showCloseAttendanceConfirm}
-        onHide={() => setShowCloseAttendanceConfirm(false)}
-        title="Close Attendance"
-        submitText="Close Attendance"
-        onSubmit={handleCloseAttendance}
-        cancelText="Cancel"
-      >
-        <Typography>Are you sure you want to close the ongoing attendance session for {data.teamName}?</Typography>
-        <Typography>This will delete the Slack message and end the attendance session.</Typography>
-      </NERModal>
     </PageLayout>
   );
 };

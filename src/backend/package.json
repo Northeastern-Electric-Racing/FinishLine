@@ -39,7 +39,7 @@
   "devDependencies": {
     "@types/express-jwt": "^6.0.4",
     "@types/jsonwebtoken": "^8.5.9",
-    "@types/node": "^25.0.0",
+    "@types/node": "^20.0.0",
     "@types/supertest": "^2.0.12",
     "nodemon": "^2.0.16",
     "supertest": "^6.2.4",

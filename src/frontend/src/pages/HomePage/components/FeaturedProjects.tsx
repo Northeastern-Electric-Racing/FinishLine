@@ -3,14 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import FeaturedProjectsCard from './FeaturedProjectsCard';
 import { useFeaturedProjects } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
+import { wbsPipe } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import { Box, Stack, useMediaQuery } from '@mui/material';
 import { Error } from '@mui/icons-material';
-import GuestProjectsCard from '../../GuestProjectsPage/GuestProjectsCard';
 
 const NoFeaturedProjectsDisplay: React.FC = () => {
   return (
@@ -50,11 +51,7 @@ const FeaturedProjects: React.FC = () => {
         {featuredProjects.length === 0 ? (
           <NoFeaturedProjectsDisplay />
         ) : (
-          featuredProjects.map((p) => (
-            <Box key={p.wbsNum.projectNumber} sx={{ width: isMobilePortrait ? '100%' : 300, flexShrink: 0 }}>
-              <GuestProjectsCard project={p} />
-            </Box>
-          ))
+          featuredProjects.map((p) => <FeaturedProjectsCard key={wbsPipe(p.wbsNum)} project={p} />)
         )}
       </Stack>
     </ScrollablePageBlock>

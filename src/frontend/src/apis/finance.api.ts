@@ -327,7 +327,7 @@ export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => 
         break;
       }
       default: {
-        console.log(blob.type + ' type not supported and will not be added to the PDF');
+        console.log(blob.type + 'type not supported and will not be added to the PDF, name: ' + blob.name);
         // throw new Error(blob.type + ' type not supported');
       }
     }

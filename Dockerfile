@@ -1,5 +1,5 @@
 # Build stage - compile TypeScript
-FROM node:25 AS builder
+FROM node:20 AS builder
 WORKDIR /app
 
 COPY package.json tsconfig.build.json ./
@@ -11,11 +11,11 @@ RUN cd src/backend && npx prisma generate
 RUN yarn build:shared
 RUN yarn build:backend
 
-FROM platformatic/node-caged:25-slim
+FROM node:20-slim
 WORKDIR /app
 
 # Install OpenSSL for Prisma (slim image needs this)
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/* && npm install -g yarn
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 COPY package.json ./
 

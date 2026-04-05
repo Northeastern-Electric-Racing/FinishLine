@@ -120,7 +120,6 @@ const homePageWorkPackages = (selection: WorkPackageSelection) => `${workPackage
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
-const guestChangeRequests = () => `${API_URL}/change-requests/guest`;
 const toReviewChangeRequests = () => `${API_URL}/change-requests/to-review`;
 const unreviewedChangeRequests = (wbsNum?: WbsNumber) =>
   `${API_URL}/change-requests/unreviewed` + (wbsNum ? `?wbsnum=${wbsPipe(wbsNum)}` : '');
@@ -500,15 +499,6 @@ const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${event
 const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 const calendarScheduleEvent = (eventId: string) => `${calendar()}/event/${eventId}/schedule`;
 
-/**************** Attendance Endpoints ****************/
-const attendance = () => `${API_URL}/attendance`;
-const attendanceTakeAttendance = () => `${attendance()}/`;
-const attendanceGetAll = () => `${attendance()}/`;
-const attendanceCheckChannel = (teamId: string) => `${attendance()}/check-channel/${teamId}`;
-const attendanceGetOngoing = (teamId: string) => `${attendance()}/ongoing/${teamId}`;
-const attendanceCloseOngoing = (teamId: string) => `${attendance()}/close/${teamId}`;
-const attendanceGetById = (meetingAttendanceId: string) => `${attendance()}/${meetingAttendanceId}`;
-
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -607,7 +597,6 @@ export const apiUrls = {
   homePageWorkPackages,
 
   changeRequests,
-  guestChangeRequests,
   changeRequestsById,
   changeRequestsReview,
   changeRequestDelete,
@@ -869,13 +858,6 @@ export const apiUrls = {
   calendarPreviewScheduleSlotRecurringEdits,
   calendarDeleteScheduleSlot,
   calendarScheduleEvent,
-
-  attendanceTakeAttendance,
-  attendanceGetAll,
-  attendanceCheckChannel,
-  attendanceGetOngoing,
-  attendanceCloseOngoing,
-  attendanceGetById,
 
   version
 };

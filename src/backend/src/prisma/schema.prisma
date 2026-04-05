@@ -303,8 +303,6 @@ model User {
   leadershipCrAsLead                      Leadership_CR[]                      @relation(name: "leadershipCrLead")
   leadershipCrAsManager                   Leadership_CR[]                      @relation(name: "leadershipCrManager")
   prospectiveSponsorsContacted            Prospective_Sponsor[]                @relation(name: "prospectiveSponsorContactor")
-  createdMeetingAttendances               Meeting_Attendance[]                 @relation(name: "meetingAttendanceCreated")
-  attendedMeetingAttendances              Meeting_Attendance[]                 @relation(name: "meetingAttendees")
 }
 
 model Role {
@@ -341,7 +339,6 @@ model Team {
   organization           Organization               @relation(fields: [organizationId], references: [organizationId])
   checklists             Checklist[]
   projectTemplates       Project_Template[]
-  meetingAttendances     Meeting_Attendance[]
 
   @@index([headId])
   @@index([organizationId])
@@ -739,11 +736,11 @@ model Receipt {
 model Reimbursement_Request {
   reimbursementRequestId   String                          @id @default(uuid())
   identifier               Int
-  saboId                   String?                         @unique
+  saboId                   String?                            @unique
   dateCreated              DateTime                        @default(now())
   dateDeleted              DateTime?
   dateOfExpense            DateTime?
-  description              String                          @default("")
+  description              String @default("")
   reimbursementStatuses    Reimbursement_Status[]
   recipientId              String
   recipient                User                            @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
@@ -1447,7 +1444,6 @@ model Organization {
   machineries              Machinery[]
   calendars                Calendar[]
   eventTypes               Event_Type[]
-  meetingAttendances       Meeting_Attendance[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1804,22 +1800,4 @@ model Guest_Definition {
   organizationId String
 
   @@index([organizationId])
-}
-
-model Meeting_Attendance {
-  meetingAttendanceId   String       @id @default(uuid())
-  organizationId        String
-  organization          Organization @relation(fields: [organizationId], references: [organizationId])
-  teamId                String
-  team                  Team         @relation(fields: [teamId], references: [teamId])
-  userCreatedId         String
-  userCreated           User         @relation(name: "meetingAttendanceCreated", fields: [userCreatedId], references: [userId])
-  openedAt              DateTime     @default(now())
-  closedAt              DateTime?
-  slackChannelId        String
-  slackMessageTimestamp String
-  attendees             User[]       @relation(name: "meetingAttendees")
-
-  @@index([organizationId])
-  @@index([teamId])
 }

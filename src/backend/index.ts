@@ -27,7 +27,6 @@ import partsRouter from './src/routes/parts.routes.js';
 import financeRouter from './src/routes/finance.routes.js';
 import calendarRouter from './src/routes/calendar.routes.js';
 import prospectiveSponsorRouter from './src/routes/prospective-sponsor.routes.js';
-import attendanceRouter from './src/routes/attendance.routes.js';
 
 const app = express();
 
@@ -113,7 +112,6 @@ app.use('/parts', partsRouter);
 app.use('/finance', financeRouter);
 app.use('/calendar', calendarRouter);
 app.use('/prospective-sponsors', prospectiveSponsorRouter);
-app.use('/attendance', attendanceRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

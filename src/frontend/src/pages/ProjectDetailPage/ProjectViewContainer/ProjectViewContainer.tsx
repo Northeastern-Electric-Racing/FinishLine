@@ -4,7 +4,7 @@
  */
 
 import { Link, useHistory } from 'react-router-dom';
-import { Project, isGuest, isAdmin, isLeadership, RoleEnum } from 'shared';
+import { Project, isGuest, isAdmin, isLeadership } from 'shared';
 import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
 import ProjectDetails from './ProjectDetails';
 import { routes } from '../../../utils/routes';
@@ -207,7 +207,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       {tab === 0 ? (
         <ProjectDetails project={project} />
       ) : tab === 1 ? (
-        <TaskList project={project} isGuest={user.role === RoleEnum.GUEST} />
+        <TaskList project={project} />
       ) : tab === 2 ? (
         <BOMTab project={project} />
       ) : tab === 3 ? (

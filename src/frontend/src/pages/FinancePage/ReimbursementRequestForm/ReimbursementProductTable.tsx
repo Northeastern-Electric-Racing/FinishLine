@@ -45,7 +45,7 @@ import CreateMaterialModal from '../../ProjectDetailPage/ProjectViewContainer/BO
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
   removeProduct: (index: number) => void;
-  prependProduct: (args: ReimbursementProductFormArgs) => void;
+  appendProduct: (args: ReimbursementProductFormArgs) => void;
   projectAutocompleteOptions: {
     label: string;
     id: string;
@@ -145,7 +145,7 @@ const MaterialAutocomplete: React.FC<{
 const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   reimbursementProducts,
   removeProduct,
-  prependProduct,
+  appendProduct,
   projectAutocompleteOptions,
   control,
   errors,
@@ -403,7 +403,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     options={projectAutocompleteOptions}
                     onChange={(_e, value) => {
                       if (value) {
-                        prependProduct({
+                        appendProduct({
                           reason: validateWBS(value.id),
                           name: '',
                           cost: 0,
@@ -428,7 +428,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     getOptionLabel={(option) => formatReasonName(option.name)}
                     onChange={(_e, value) => {
                       if (value) {
-                        prependProduct({
+                        appendProduct({
                           reason: value,
                           name: '',
                           cost: 0,
@@ -834,7 +834,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       onClick={(e) => {
                         const existingProducts = uniqueWbsElementsWithProducts.get(key);
                         if (existingProducts && existingProducts.length > 0) {
-                          prependProduct({
+                          appendProduct({
                             reason: existingProducts[0].reason,
                             name: '',
                             cost: 0,

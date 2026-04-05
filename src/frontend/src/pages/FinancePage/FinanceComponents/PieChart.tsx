@@ -231,7 +231,6 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
                 />
               </Pie>
               <Tooltip
-                wrapperStyle={{ zIndex: 10 }} // added z index to make the div pop up in front of the legend items
                 contentStyle={{
                   backgroundColor: '#333',
                   color: '#fff',

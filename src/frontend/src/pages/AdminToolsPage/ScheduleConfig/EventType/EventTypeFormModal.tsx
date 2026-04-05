@@ -1,11 +1,11 @@
-import { Box, FormHelperText, Typography, Checkbox, FormControl, Select, MenuItem, Tooltip } from '@mui/material';
+import { Box, FormHelperText, Typography, Checkbox, FormControl, Select, MenuItem } from '@mui/material';
 import NERFormModal from '../../../../components/NERFormModal';
 import ReactHookTextField from '../../../../components/ReactHookTextField';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { EventType } from 'shared';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../../utils/form';
@@ -115,16 +115,6 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
     watch,
     setValue
   });
-
-  const watchTeams = watch('teams');
-  const watchWorkPackage = watch('workPackage');
-  const notificationsDisabled = !watchTeams && !watchWorkPackage;
-
-  useEffect(() => {
-    if (notificationsDisabled) {
-      setValue('sendSlackNotifications', false);
-    }
-  }, [notificationsDisabled, setValue]);
 
   const onFormSubmit = async (data: EventTypeFormValues) => {
     try {
@@ -839,22 +829,12 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
             control={control}
             name="sendSlackNotifications"
             render={({ field: { onChange, value } }) => (
-              <Checkbox
-                checked={value}
-                onChange={onChange}
-                disabled={notificationsDisabled}
-                sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }}
-              />
+              <Checkbox checked={value} onChange={onChange} sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />
             )}
           />
-          <Tooltip
-            title={notificationsDisabled ? 'Slack notifications cannot be sent without teams or work packages enabled' : ''}
-            placement="right"
-          >
-            <NotificationsIcon sx={{ color: notificationsDisabled ? 'rgba(255,255,255,0.3)' : 'white', mr: 1 }} />
-          </Tooltip>
+          <NotificationsIcon sx={{ color: 'white', mr: 1 }} />
           <Box sx={{ flex: 1 }}>
-            <Typography variant="body2" sx={{ color: notificationsDisabled ? 'rgba(255,255,255,0.3)' : 'white' }}>
+            <Typography variant="body2" sx={{ color: 'white' }}>
               Send Slack Notifications
             </Typography>
           </Box>

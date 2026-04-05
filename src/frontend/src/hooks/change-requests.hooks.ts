@@ -12,8 +12,7 @@ import {
   ProposedSolutionCreateArgs,
   WbsNumber,
   WorkPackageProposedChangesCreateArgs,
-  LeadershipChangeCreateArgs,
-  GuestChangeRequest
+  LeadershipChangeCreateArgs
 } from 'shared';
 import {
   createActivationChangeRequest,
@@ -29,8 +28,7 @@ import {
   getUnreviewedChangeRequests,
   getApprovedChangeRequests,
   createBudgetChangeRequest,
-  createLeadershipChangeRequest,
-  getAllGuestChangeRequests
+  createLeadershipChangeRequest
 } from '../apis/change-requests.api';
 
 /**
@@ -39,13 +37,6 @@ import {
 export const useAllChangeRequests = () => {
   return useQuery<ChangeRequest[], Error>(['change requests'], async () => {
     const { data } = await getAllChangeRequests();
-    return data;
-  });
-};
-
-export const useAllGuestChangeRequests = () => {
-  return useQuery<GuestChangeRequest[], Error>(['guest change requests'], async () => {
-    const { data } = await getAllGuestChangeRequests();
     return data;
   });
 };

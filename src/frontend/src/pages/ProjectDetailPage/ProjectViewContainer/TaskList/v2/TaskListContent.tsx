@@ -1,7 +1,7 @@
-import { DragDropContext, OnDragEndResponder, OnDragStartResponder } from '@hello-pangea/dnd';
+import { DragDropContext, OnDragEndResponder } from '@hello-pangea/dnd';
 import { Box } from '@mui/material';
-import { useCallback, useState } from 'react';
-import { Project, Task, TaskStatus, TaskWithIndex } from 'shared';
+import { useState } from 'react';
+import { Project, Task, TaskWithIndex } from 'shared';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
 import { useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
@@ -18,14 +18,6 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   const { mutateAsync: setTaskStatus } = useSetTaskStatus();
 
   const toast = useToast();
-
-  const [isDragging, setIsDragging] = useState(false);
-  const [columnHeights, setColumnHeights] = useState<Partial<Record<TaskStatus, number>>>({});
-  const equalizedHeight = Math.max(...(Object.values(columnHeights) as number[]));
-
-  const onHeightChange = useCallback((status: TaskStatus, height: number) => {
-    setColumnHeights((prev) => ({ ...prev, [status]: height }));
-  }, []);
 
   const onDeleteTask = (taskId: string) => {
     setTasksByStatus((prev) => {
@@ -62,12 +54,7 @@ export const TaskListContent = ({ project }: TaskListProps) => {
     }));
   };
 
-  const onDragStart: OnDragStartResponder = () => {
-    setIsDragging(true);
-  };
-
   const onDragEnd: OnDragEndResponder = async (result) => {
-    setIsDragging(false);
     const { destination, source } = result;
 
     if (!destination) {
@@ -123,20 +110,17 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   };
 
   return (
-    <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+    <DragDropContext onDragEnd={onDragEnd}>
       <Box display="flex">
         {statuses.map((status) => (
           <TaskColumn
             onAddTask={onAddTask}
             onDeleteTask={onDeleteTask}
             onEditTask={onEditTask}
-            onHeightChange={onHeightChange}
             status={status}
             tasks={tasksByStatus[status]}
             key={status}
             project={project}
-            equalizedHeight={equalizedHeight}
-            isDragging={isDragging}
           />
         ))}
       </Box>

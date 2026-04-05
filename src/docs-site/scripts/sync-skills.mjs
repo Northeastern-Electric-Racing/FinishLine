@@ -46,7 +46,7 @@ function parseFrontmatter(content) {
   const restOfContent = content.slice(match[0].length);
 
   // Parse YAML
-  const lines = yamlContent.split(/\r?\n/);
+  const lines = yamlContent.split('\n');
   const metadata = {};
   let currentKey = null;
   let currentValue = '';
