@@ -14,3 +14,13 @@ export interface FrequentlyAskedQuestion {
   dateCreated: Date;
   dateDeleted?: Date;
 }
+
+export interface GuestDefinition {
+  definitionId: string;
+  term: string;
+  description: string;
+  order: number;
+  buttonText?: string;
+  buttonLink?: string;
+  icon?: string;
+}

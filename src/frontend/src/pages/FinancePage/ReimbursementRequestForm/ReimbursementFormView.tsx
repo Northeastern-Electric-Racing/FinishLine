@@ -71,7 +71,7 @@ interface ReimbursementRequestFormViewProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
   receiptPrepend: (args: ReimbursementReceiptUploadArgs) => void;
   receiptRemove: (index: number) => void;
-  reimbursementProductAppend: (args: ReimbursementProductFormArgs) => void;
+  reimbursementProductPrepend: (args: ReimbursementProductFormArgs) => void;
   reimbursementProductRemove: (index: number) => void;
   onSubmit: (data: ReimbursementRequestFormInput) => void;
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
@@ -98,7 +98,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   control,
   receiptPrepend,
   receiptRemove,
-  reimbursementProductAppend,
+  reimbursementProductPrepend,
   reimbursementProductRemove,
   onSubmit,
   handleSubmit,
@@ -285,7 +285,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           <Grid container spacing={3} alignItems="flex-start">
             {/* Left Column */}
             <Grid item xs={12} md={6}>
-              <Stack spacing={3}>
+              <Stack spacing={4}>
                 {/* Vendor */}
                 <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
                   <FormLabel
@@ -378,66 +378,59 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   />
                 </FormControl>
 
-                {/* Date of Expense */}
-                {(isHead(user.role) || (isEditing && isLeadershipApproved)) && (
-                  <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
-                    <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
-                      <FormLabel
-                        sx={{
-                          color: '#dd524c',
-                          textShadow: '1.5px 0 #dd524c',
-                          letterSpacing: '0.5px',
-                          textDecoration: 'underline',
-                          textUnderlineOffset: '3.5px',
-                          textDecorationThickness: '0.6px',
-                          paddingBottom: '2px',
-                          fontSize: 'x-large',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Date of Expense{isLeadershipApproved ? '*' : ''}
-                      </FormLabel>
-                      <Tooltip
-                        title="Reimbursements with Different Purchase Dates Should be on Different Requests. Leave Empty for Not Yet Purchased Items"
-                        placement="right"
-                      >
-                        <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px' }} />
-                      </Tooltip>
-                    </Box>
-                    <Controller
-                      name="dateOfExpense"
-                      control={control}
-                      render={({ field: { onChange, value } }) => (
-                        <DatePicker
+                {/* Account Code */}
+                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                  <FormLabel
+                    sx={{
+                      color: '#dd524c',
+                      textShadow: '1.5px 0 #dd524c',
+                      letterSpacing: '0.5px',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3.5px',
+                      textDecorationThickness: '0.6px',
+                      paddingBottom: '2px',
+                      fontSize: 'x-large',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Account Code*
+                  </FormLabel>
+                  <Controller
+                    name="accountCodeId"
+                    control={control}
+                    render={({ field: { onChange, value } }) => {
+                      const mappedAccountCodes = allAccountCodes
+                        .filter((accountCode) => accountCode.allowed)
+                        .map(accountCodesToAutocomplete);
+                      return (
+                        <Select
                           value={value}
-                          open={datePickerOpen}
-                          onClose={() => setDatePickerOpen(false)}
-                          onOpen={() => setDatePickerOpen(true)}
-                          onChange={(newValue) => {
-                            onChange(newValue ?? new Date());
+                          onChange={(e) => {
+                            onChange(e.target.value);
                           }}
-                          slotProps={{
-                            textField: {
-                              error: !!errors.dateOfExpense,
-                              helperText: errors.dateOfExpense?.message,
-                              variant: 'outlined',
-                              fullWidth: true,
-                              size: 'small',
-                              InputProps: {
-                                onClick: (e) => {
-                                  const target = e.target as HTMLElement;
-                                  if (target.closest('button')) {
-                                    setDatePickerOpen(true);
-                                  }
-                                }
-                              }
+                          displayEmpty
+                          variant="outlined"
+                          fullWidth
+                          size="small"
+                          IconComponent={KeyboardArrowDownIcon}
+                          renderValue={(selected) => {
+                            if (!selected) {
+                              return <Typography style={{ color: 'gray' }}>Select Account Code</Typography>;
                             }
+                            return mappedAccountCodes.find((accountCode) => accountCode.id === selected)?.label;
                           }}
-                        />
-                      )}
-                    />
-                  </FormControl>
-                )}
+                        >
+                          {mappedAccountCodes.map((accountCode) => (
+                            <MenuItem key={accountCode.id} value={accountCode.id}>
+                              {accountCode.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      );
+                    }}
+                  />
+                  <FormHelperText error>{errors.accountCodeId?.message}</FormHelperText>
+                </FormControl>
 
                 {/* Refund Sources */}
                 <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
@@ -627,8 +620,69 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
             {/* Right Column */}
             <Grid item xs={12} md={6}>
-              <Stack spacing={3}>
-                {/* Account Code */}
+              <Stack spacing={2}>
+                {/* Date of Expense */}
+                {(isHead(user.role) || (isEditing && isLeadershipApproved)) && (
+                  <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                    <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
+                      <FormLabel
+                        sx={{
+                          color: '#dd524c',
+                          textShadow: '1.5px 0 #dd524c',
+                          letterSpacing: '0.5px',
+                          textDecoration: 'underline',
+                          textUnderlineOffset: '3.5px',
+                          textDecorationThickness: '0.6px',
+                          paddingBottom: '2px',
+                          fontSize: 'x-large',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Date of Expense{isLeadershipApproved ? '*' : ''}
+                      </FormLabel>
+                      <Tooltip
+                        title="Reimbursements with Different Purchase Dates Should be on Different Requests. Leave Empty for Not Yet Purchased Items"
+                        placement="right"
+                      >
+                        <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px' }} />
+                      </Tooltip>
+                    </Box>
+                    <Controller
+                      name="dateOfExpense"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <DatePicker
+                          value={value}
+                          open={datePickerOpen}
+                          onClose={() => setDatePickerOpen(false)}
+                          onOpen={() => setDatePickerOpen(true)}
+                          onChange={(newValue) => {
+                            onChange(newValue ?? new Date());
+                          }}
+                          slotProps={{
+                            textField: {
+                              error: !!errors.dateOfExpense,
+                              helperText: errors.dateOfExpense?.message,
+                              variant: 'outlined',
+                              fullWidth: true,
+                              size: 'small',
+                              InputProps: {
+                                onClick: (e) => {
+                                  const target = e.target as HTMLElement;
+                                  if (target.closest('button')) {
+                                    setDatePickerOpen(true);
+                                  }
+                                }
+                              }
+                            }
+                          }}
+                        />
+                      )}
+                    />
+                  </FormControl>
+                )}
+
+                {/* Description */}
                 <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
                   <FormLabel
                     sx={{
@@ -638,48 +692,25 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       textDecoration: 'underline',
                       textUnderlineOffset: '3.5px',
                       textDecorationThickness: '0.6px',
-                      paddingBottom: '2px',
                       fontSize: 'x-large',
                       fontWeight: 'bold'
                     }}
                   >
-                    Account Code*
+                    Description
                   </FormLabel>
                   <Controller
-                    name="accountCodeId"
+                    name="description"
                     control={control}
-                    render={({ field: { onChange, value } }) => {
-                      const mappedAccountCodes = allAccountCodes
-                        .filter((accountCode) => accountCode.allowed)
-                        .map(accountCodesToAutocomplete);
-                      return (
-                        <Select
-                          value={value}
-                          onChange={(e) => {
-                            onChange(e.target.value);
-                          }}
-                          displayEmpty
-                          variant="outlined"
-                          fullWidth
-                          size="small"
-                          IconComponent={KeyboardArrowDownIcon}
-                          renderValue={(selected) => {
-                            if (!selected) {
-                              return <Typography style={{ color: 'gray' }}>Select Account Code</Typography>;
-                            }
-                            return mappedAccountCodes.find((accountCode) => accountCode.id === selected)?.label;
-                          }}
-                        >
-                          {mappedAccountCodes.map((accountCode) => (
-                            <MenuItem key={accountCode.id} value={accountCode.id}>
-                              {accountCode.label}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      );
-                    }}
+                    render={({ field: { onChange, value } }) => (
+                      <TextField
+                        value={value || ''}
+                        onChange={onChange}
+                        placeholder="Enter Description"
+                        multiline
+                        rows={3}
+                      />
+                    )}
                   />
-                  <FormHelperText error>{errors.accountCodeId?.message}</FormHelperText>
                 </FormControl>
 
                 {/* Upload Receipts */}
@@ -857,37 +888,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     </Box>
                   </Box>
                 </FormControl>
-
-                {/* Description */}
-                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
-                  <FormLabel
-                    sx={{
-                      color: '#dd524c',
-                      textShadow: '1.5px 0 #dd524c',
-                      letterSpacing: '0.5px',
-                      textDecoration: 'underline',
-                      textUnderlineOffset: '3.5px',
-                      textDecorationThickness: '0.6px',
-                      fontSize: 'x-large',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Description
-                  </FormLabel>
-                  <Controller
-                    name="description"
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <TextField
-                        value={value || ''}
-                        onChange={onChange}
-                        placeholder="Enter Description"
-                        multiline
-                        rows={3}
-                      />
-                    )}
-                  />
-                </FormControl>
               </Stack>
             </Grid>
           </Grid>
@@ -900,7 +900,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             <ReimbursementProductTable
               errors={errors}
               reimbursementProducts={reimbursementProducts}
-              appendProduct={reimbursementProductAppend}
+              prependProduct={reimbursementProductPrepend}
               removeProduct={reimbursementProductRemove}
               projectAutocompleteOptions={projectAutocompleteOptions}
               watch={watch}
