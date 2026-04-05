@@ -100,6 +100,11 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
+  const theme = useTheme();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [moveContent, setMoveContent] = useState(false);
+  const { onGuestHomePage } = useHomePageContext();
+
   const {
     data: organization,
     isLoading: organizationIsLoading,

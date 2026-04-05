@@ -605,10 +605,6 @@ const ProjectGanttChartPage: FC = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
-  const toggleElementShowChildren = (element: WbsElementPreview | Task) => {
-    setShowWorkPackagesMap((prev) => new Map(prev.set(getElementId(element), !prev.get(getElementId(element)))));
-  };
-
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />
