@@ -3,11 +3,11 @@ import { TeamPreview } from 'shared';
 import { NERButton } from '../../components/NERButton';
 import { Link as RouterLink } from 'react-router-dom';
 
-interface TeamTypeCardProps {
+interface GuestSubteamCardProps {
   team: TeamPreview;
 }
 
-const GuestSubteamCard: React.FC<TeamTypeCardProps> = ({ team }) => {
+const GuestSubteamCard: React.FC<GuestSubteamCardProps> = ({ team }) => {
   const theme = useTheme();
 
   return (

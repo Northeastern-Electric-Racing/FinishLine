@@ -12,11 +12,16 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { isGuest } from 'shared';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import GuestTeamPage from '../GuestDivisionPage/GuestTeamPage';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 const TeamOrDivisionPage: React.FC = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const user = useCurrentUser();
-  const { data: teamTypes } = useAllTeamTypes();
+  const { isLoading: teamsLoading, isError: isTeamsError, data: teamTypes, error: teamsError } = useAllTeamTypes();
+
+  if (teamsLoading || !teamTypes) return <LoadingIndicator />;
+  if (isTeamsError) return <ErrorPage message={teamsError.message} />;
 
   if (isGuest(user.role) && teamTypes?.some((t) => t.teamTypeId === teamId)) {
     return <GuestTeamPage teamTypeId={teamId} />;
