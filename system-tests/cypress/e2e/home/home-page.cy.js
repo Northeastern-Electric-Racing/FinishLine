@@ -23,7 +23,7 @@ describe('Home Page', () => {
   });
 
   it('Overdue Work Packages Contains At Least One Entry', () => {
-    cy.contains('Impact Attenuator').should(VISIBLE);
+    cy.contains('Impact Attenuator').scrollIntoView().should(VISIBLE);
   });
 
   it('Can Navigate to Change Requests Page via Sidebar', () => {
