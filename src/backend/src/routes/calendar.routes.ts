@@ -64,7 +64,6 @@ calendarRouter.post(
   body('description').isBoolean(),
   body('onlyHeadsOrAbove').isBoolean(),
   body('requiresConfirmation').isBoolean(),
-  body('sendSlackNotifications').isBoolean(),
   validateInputs,
   CalendarController.createEventType
 );
@@ -88,7 +87,6 @@ calendarRouter.post(
   body('description').isBoolean(),
   body('onlyHeadsOrAbove').isBoolean(),
   body('requiresConfirmation').isBoolean(),
-  body('sendSlackNotifications').isBoolean(),
   validateInputs,
   CalendarController.editEventType
 );
@@ -119,6 +117,7 @@ calendarRouter.post(
   isDate(body('scheduleSlots.*.startTime')),
   isDate(body('scheduleSlots.*.endTime')),
   body('scheduleSlots.*.allDay').isBoolean(),
+  body('sendSlackNotifications').isBoolean(),
   validateInputs,
   CalendarController.createEvent
 );
@@ -147,6 +146,7 @@ calendarRouter.post(
   nonEmptyString(body('documents.*.googleFileId')),
   body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),
+  body('sendSlackNotifications').isBoolean(),
   validateInputs,
   CalendarController.editEvent
 );
