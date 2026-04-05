@@ -13,7 +13,6 @@ import Settings from '../pages/SettingsPage/SettingsPage';
 import InfoPage from '../pages/InfoPage';
 import GanttChartPage from '../pages/GanttPage/ProjectGanttChart/ProjectGanttChartPage';
 import Teams from '../pages/TeamsPage/Teams';
-import GuestTeamPage from '../pages/GuestDivisionPage/GuestTeamPage';
 import AdminTools from '../pages/AdminToolsPage/AdminTools';
 import Credits from '../pages/CreditsPage/Credits';
 import AppContextUser from './AppContextUser';
