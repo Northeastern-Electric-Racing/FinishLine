@@ -122,7 +122,6 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
             <Route path={routes.GANTT} component={GanttChartPage} />
             <Route path={routes.TEAMS} component={Teams} />
-            <Route path={routes.DIVISIONS_BY_ID} component={GuestTeamPage} />
             <Route path={routes.SETTINGS} component={Settings} />
             <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
             <Route path={routes.INFO} component={InfoPage} />

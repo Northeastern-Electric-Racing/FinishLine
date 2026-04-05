@@ -196,7 +196,7 @@ const TeamSpecificPage: React.FC = () => {
       }
       previousPages={
         isGuest(user.role) && data.teamType
-          ? [{ name: data.teamType.name, route: `${routes.DIVISIONS}/${data.teamType.teamTypeId}` }]
+          ? [{ name: data.teamType.name, route: `${routes.TEAMS}/${data.teamType.teamTypeId}` }]
           : [{ name: 'Teams', route: routes.TEAMS }]
       }
     >

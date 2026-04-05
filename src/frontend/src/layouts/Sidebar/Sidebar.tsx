@@ -38,7 +38,6 @@ import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useState } from 'react';
-import { sub } from 'date-fns';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -54,13 +53,12 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
   const { onGuestHomePage } = useHomePageContext();
   const { isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamTypes();
 
-  // To be uncommented once guest divisions pages are developed
   const allTeams: LinkItem[] = (teams ?? []).map((team: TeamType) => {
     const IconComponent = MuiIcons[(team.iconName in MuiIcons ? team.iconName : 'Circle') as keyof typeof MuiIcons];
     return {
       name: team.name,
       icon: <IconComponent />,
-      route: routes.DIVISIONS + '/' + team.teamTypeId
+      route: routes.TEAMS + '/' + team.teamTypeId
     };
   });
 

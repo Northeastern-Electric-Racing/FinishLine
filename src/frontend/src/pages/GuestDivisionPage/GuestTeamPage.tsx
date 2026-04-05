@@ -4,15 +4,13 @@ import { Box, useMediaQuery } from '@mui/system';
 import PageLayout from '../../components/PageLayout';
 import GuestSubteamCard from './GuestSubteamCard';
 import { useTeamsByTypeId } from '../../hooks/teams.hooks';
-import { useParams } from 'react-router-dom';
 
-interface ParamTypes {
+interface GuestTeamPageProps {
   teamTypeId: string;
 }
 
-const GuestTeamPage: React.FC = () => {
+const GuestTeamPage: React.FC<GuestTeamPageProps> = ({ teamTypeId }) => {
   const isMobilePortrait = useMediaQuery('(max-width:480px)');
-  const { teamTypeId } = useParams<ParamTypes>();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useTeamsByTypeId(teamTypeId);
 
   if (teamsIsLoading || !teams) return <LoadingIndicator />;
