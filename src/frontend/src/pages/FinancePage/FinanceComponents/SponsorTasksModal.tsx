@@ -1,43 +1,49 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, TextField, IconButton, Button, Autocomplete } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AddCircle, RemoveCircle } from '@mui/icons-material';
-import { useCreateSponsorTask, useEditSponsorTask, useGetSponsorTasks } from '../../../hooks/finance.hooks';
-import { Sponsor, SponsorTask } from 'shared';
+import React, { useEffect, useRef } from 'react';
+import { Box, Button } from '@mui/material';
+import { AddCircle } from '@mui/icons-material';
+import { useDeleteSponsorTask, useEditSponsorTask } from '../../../hooks/finance.hooks';
+import { SponsorTask } from 'shared';
 import { useAllMembers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import DeleteSponsorTaskModal from './DeleteSponsorTaskModal';
+import SponsorTaskCard from './SponsorTaskCard';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 interface SponsorTasksModalProps {
   onClose: () => void;
-  sponsor: Sponsor;
+  tasks: SponsorTask[] | undefined;
+  createTask: (payload: { dueDate: Date; notifyDate?: Date; assigneeUserId?: string; notes: string }) => void;
+  canEdit?: boolean;
 }
 
-const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor }) => {
+const taskSchema = yup.object().shape({
+  sponsorTaskId: yup.string().optional(),
+  dueDate: yup.date().required('Due date is required'),
+  notifyDate: yup.date().nullable().optional(),
+  assigneeUserId: yup.string().nullable().optional(),
+  notes: yup.string().required('Notes is required'),
+  done: yup.boolean().optional()
+});
+
+const schema = yup.object().shape({
+  tasks: yup.array().of(taskSchema)
+});
+
+const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({
+  onClose,
+  tasks: sponsorTasks,
+  createTask,
+  canEdit = true
+}) => {
   const toast = useToast();
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
-  const { data: sponsorTasks } = useGetSponsorTasks(sponsor.sponsorId);
-  const { mutate: createTask } = useCreateSponsorTask(sponsor.sponsorId);
   const { mutate: editTask } = useEditSponsorTask();
+  const { mutate: deleteTask } = useDeleteSponsorTask();
 
-  const [sponsorTaskToDelete, setSponsorTaskToDelete] = useState<SponsorTask | undefined>(undefined);
-
-  const taskSchema = yup.object().shape({
-    sponsorTaskId: yup.string().optional(),
-    dueDate: yup.date().required('Due date is required'),
-    notifyDate: yup.date().nullable().optional(),
-    assignee: yup.string().nullable().optional(),
-    notes: yup.string().required('Notes is required')
-  });
-
-  const schema = yup.object().shape({
-    tasks: yup.array().of(taskSchema)
-  });
+  const deletedTaskIds = useRef<string[]>([]);
 
   const {
     control,
@@ -49,29 +55,39 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
     defaultValues: { tasks: [] }
   });
 
-  const { fields, append } = useFieldArray({ control, name: 'tasks' });
+  const { fields, append, remove } = useFieldArray({ control, name: 'tasks' });
 
   useEffect(() => {
     if (sponsorTasks) {
-      reset({
-        tasks: sponsorTasks.map((task) => ({
-          sponsorTaskId: task.sponsorTaskId,
-          dueDate: task.dueDate ? new Date(task.dueDate) : new Date(),
-          notifyDate: task.notifyDate ? new Date(task.notifyDate) : undefined,
-          assignee: task.assignee?.userId || '',
-          notes: task.notes || ''
-        }))
-      });
+      const mapped = sponsorTasks.map((task) => ({
+        sponsorTaskId: task.sponsorTaskId,
+        dueDate: task.dueDate ? new Date(task.dueDate) : new Date(),
+        notifyDate: task.notifyDate ? new Date(task.notifyDate) : undefined,
+        assigneeUserId: task.assignee?.userId || '',
+        notes: task.notes || '',
+        done: task.done || false
+      }));
+      // Sort: incomplete tasks first, done tasks at the bottom
+      mapped.sort((a, b) => Number(a.done) - Number(b.done));
+      reset({ tasks: mapped });
+      deletedTaskIds.current = [];
     }
   }, [sponsorTasks, reset]);
 
   const handleSave = handleSubmit(({ tasks }) => {
+    // Delete removed tasks
+    deletedTaskIds.current.forEach((sponsorTaskId) => {
+      deleteTask({ sponsorTaskId });
+    });
+
+    // Edit existing / create new tasks
     tasks?.forEach((task) => {
       const payload = {
         dueDate: task.dueDate,
         notifyDate: task.notifyDate || undefined,
-        assigneeUserId: task.assignee || undefined,
-        notes: task.notes
+        assigneeUserId: task.assigneeUserId || undefined,
+        notes: task.notes,
+        done: task.done ?? false
       };
       if (task.sponsorTaskId) {
         try {
@@ -91,6 +107,7 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
         }
       }
     });
+    toast.success('Tasks saved successfully!');
     onClose();
   });
 
@@ -99,157 +116,53 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', p: '0px 8px 0px 14px', color: '#EF4345' }}>
-        {['Due Date', 'Notify Date', 'Assign to', 'Notes'].map((label) => (
-          <Typography
-            key={label}
-            variant="h5"
-            sx={{ flex: 1, textDecoration: 'underline', fontSize: '23px', fontWeight: 'bold' }}
-          >
-            {label}
-          </Typography>
-        ))}
-        <Box sx={{ width: 40 }} />
-      </Box>
-
       {fields.map((item, idx) => (
-        <Box
-          key={item.id}
-          sx={{
-            display: 'flex',
-            gap: 1,
-            mb: 0.5,
-            p: 1,
-            borderRadius: 1,
-            color: '#fff'
-          }}
-        >
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Controller
-              control={control}
-              name={`tasks.${idx}.dueDate`}
-              render={({ field }) => (
-                <DatePicker
-                  {...field}
-                  value={field.value || undefined}
-                  onChange={field.onChange}
-                  slotProps={{
-                    textField: {
-                      placeholder: 'MM/DD/YY',
-                      sx: {
-                        width: '100%'
-                      }
-                    }
-                  }}
-                />
-              )}
-            />
-          </Box>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Controller
-              control={control}
-              name={`tasks.${idx}.notifyDate`}
-              render={({ field }) => (
-                <DatePicker
-                  {...field}
-                  value={field.value || undefined}
-                  onChange={field.onChange}
-                  slotProps={{
-                    textField: {
-                      placeholder: 'MM/DD/YY',
-                      sx: {
-                        width: '100%'
-                      }
-                    }
-                  }}
-                />
-              )}
-            />
-          </Box>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Controller
-              control={control}
-              name={`tasks.${idx}.assignee`}
-              render={({ field }) => (
-                <Autocomplete
-                  options={users}
-                  getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
-                  isOptionEqualToValue={(option, value) => option.userId === value.userId}
-                  value={users.find((u) => u.userId === field.value) || undefined}
-                  onChange={(_, newValue) => field.onChange(newValue?.userId || '')}
-                  sx={{ width: '100%' }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      sx={{
-                        width: '100%',
-                        input: { color: '#fff' },
-                        '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#555' } }
-                      }}
-                    />
-                  )}
-                />
-              )}
-            />
-          </Box>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Controller
-              control={control}
-              name={`tasks.${idx}.notes`}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  error={!!errors.tasks?.[idx]?.notes}
-                  helperText={errors.tasks?.[idx]?.notes?.message}
-                  sx={{
-                    width: '100%',
-                    input: { color: '#fff' },
-                    '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#555' } },
-                    label: { color: '#fff' }
-                  }}
-                />
-              )}
-            />
-          </Box>
-          <Box sx={{ width: 40, display: 'flex', justifyContent: 'center' }}>
-            {fields[idx].sponsorTaskId && (
-              <IconButton
-                onClick={() => {
-                  const fieldTask = fields[idx];
-                  const taskToDelete: SponsorTask = {
-                    ...fieldTask,
-                    sponsorTaskId: fieldTask.sponsorTaskId || '',
-                    assignee: fieldTask.assignee ? users.find((u) => u.userId === fieldTask.assignee) : undefined,
-                    notifyDate: fieldTask.notifyDate ?? undefined
-                  };
-                  setSponsorTaskToDelete(taskToDelete);
-                }}
-              >
-                <RemoveCircle sx={{ width: '90%' }} />
-              </IconButton>
-            )}
-          </Box>
+        <Box key={item.id} sx={{ mb: 1.5 }}>
+          <SponsorTaskCard
+            control={control}
+            errors={errors}
+            fieldPrefix={`tasks.${idx}`}
+            members={users}
+            showDoneCheckbox
+            isExistingTask={!!item.sponsorTaskId}
+            canEdit={canEdit}
+            onRemove={() => {
+              if (item.sponsorTaskId) {
+                deletedTaskIds.current.push(item.sponsorTaskId);
+              }
+              remove(idx);
+            }}
+          />
         </Box>
       ))}
-      <Button
-        startIcon={<AddCircle />}
-        onClick={() =>
-          append({ dueDate: new Date(), notifyDate: undefined, assignee: '', notes: '', sponsorTaskId: undefined })
-        }
-      >
-        Add Task
-      </Button>
+      {canEdit && (
+        <Button
+          startIcon={<AddCircle />}
+          onClick={() =>
+            append({
+              dueDate: new Date(),
+              notifyDate: undefined,
+              assigneeUserId: '',
+              notes: '',
+              sponsorTaskId: undefined,
+              done: false
+            })
+          }
+          sx={{ mb: 2 }}
+        >
+          Add Task
+        </Button>
+      )}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Button onClick={onClose} sx={{ mr: 2, color: 'white', border: '1px solid white', borderRadius: 1, px: 2 }}>
-          Cancel
+          {canEdit ? 'Cancel' : 'Close'}
         </Button>
-        <Button onClick={handleSave} sx={{ backgroundColor: '#EF4345', color: 'white', borderRadius: 1, px: 2 }}>
-          Save
-        </Button>
+        {canEdit && (
+          <Button onClick={handleSave} sx={{ backgroundColor: '#EF4345', color: 'white', borderRadius: 1, px: 2 }}>
+            Save
+          </Button>
+        )}
       </Box>
-      {sponsorTaskToDelete && (
-        <DeleteSponsorTaskModal handleClose={() => setSponsorTaskToDelete(undefined)} sponsorTask={sponsorTaskToDelete} />
-      )}
     </Box>
   );
 };

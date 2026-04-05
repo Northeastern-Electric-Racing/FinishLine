@@ -1,57 +1,24 @@
-import dayjs from 'dayjs';
-
 /**
- * Returns monday of current week
- * @param date date for modify
+ * Returns monday of current week.
+ * @param date date to find the Monday for
+ * @param utc if true, uses UTC getters — required for @db.Date values (midnight UTC) to avoid
+ *            timezone shift in negative-offset timezones. Pass false (default) for local dates.
  */
-export const getMonday = (date: Date) => {
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+export const getMonday = (date: Date, utc = false) => {
+  const day = utc ? date.getUTCDay() : date.getDay();
+  const dateOfMonth = utc ? date.getUTCDate() : date.getDate();
+  const diff = dateOfMonth - day + (day === 0 ? -6 : 1); // adjust when day is sunday
   const newDate = new Date(date.getTime());
-  return new Date(newDate.setDate(diff));
-};
-
-export const dateToString = (date: Date) => {
-  return dayjs(date).format('YYYY-MM-DD');
-};
-
-export const dateFormatMonthDate = (date: Date) => {
-  return dayjs(date).format('MMM D');
-};
-
-export const transformDate = (date: Date) => {
-  const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
-  const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
-  return `${date.getFullYear().toString()}/${month}/${day}`;
-};
-
-export const formatDate = (date: Date) => {
-  const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
-  const day = date.getDate() + 1 < 10 ? `0${date.getDate() + 1}` : (date.getDate() + 1).toString();
-  return `${month}/${day}/${date.getFullYear().toString()}`;
+  if (utc) {
+    newDate.setUTCDate(diff);
+  } else {
+    newDate.setDate(diff);
+  }
+  return newDate;
 };
 
 export const daysOverdue = (deadline: Date) => {
   return Math.round((new Date().getTime() - deadline.getTime()) / (1000 * 60 * 60 * 24));
-};
-
-export const timezoneOffset = (date: Date) => {
-  const timestamp = new Date(date).getTime() - new Date(date).getTimezoneOffset() * -60000;
-  return new Date(timestamp);
-};
-
-/**
- * Formats a Date object in the form of Month Day, Year (ie: January 1, 2024)
- *
- * @param date the date object for modify
- * @returns a string representing the date
- */
-export const dateMonthDayYear = (date: Date): string => {
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
 };
 
 /**

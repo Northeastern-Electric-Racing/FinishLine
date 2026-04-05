@@ -9,11 +9,15 @@ import {
   isProject,
   IndexCode,
   AccountCode,
-  DesignReview,
   WorkPackagePreview,
   WbsElementPreview,
-  UserPreview
+  UserPreview,
+  ScheduleSlot,
+  Event,
+  formatEventTime,
+  formatEventDate
 } from 'shared';
+import dayjs from 'dayjs';
 
 /**
  * Pipes:
@@ -66,22 +70,15 @@ export const emDashPipe = (str: string) => {
 };
 
 /**
- * Return a given date as a string in the local en-US format,
- * with single digit numbers starting with a zero.
- *
- * Prisma sends date in UTC but TypeScript assumes it's in your local time,
- * so to get around that we do the toDateString() of the time and pass it into the Date constructor
- * where the constructor assumes it's in UTC and makes the correct Date object finally
+ * Return a given date as a string in the local en-US format.
+ * @db.Date values should be normalized to local dates via dbDateToLocalDate in transformers
+ * before reaching this function, so local formatting is correct for all inputs.
  */
-export const datePipe = (date?: Date, includeYear = true) => {
+export const datePipe = (date?: Date | string, includeYear = true) => {
   if (!date) return '';
-  date = typeof date == 'string' ? new Date(date) : new Date(date.toDateString());
-  return date.toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: '2-digit',
-    year: includeYear ? 'numeric' : undefined,
-    timeZone: 'UTC'
-  });
+  date = typeof date === 'string' ? new Date(date) : date;
+  const format = includeYear ? 'MM/DD/YYYY' : 'MM/DD';
+  return dayjs(date).format(format);
 };
 
 /** returns a given number as a string with a percent sign */
@@ -126,14 +123,22 @@ export const daysOrWeeksLeftOrLate = (daysLeft: number) => {
   return `${daysToDaysOrWeeksPipe(Math.abs(daysLeft))} ${daysLeft > 0 ? 'left' : 'late'}`;
 };
 
-export const designReviewNamePipe = (designReview: DesignReview) => {
-  return `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
+export const eventNamePipe = (event: Event) => {
+  const [firstWorkPackage] = event.workPackages;
+
+  if (firstWorkPackage) {
+    return `${wbsPipe({
+      carNumber: firstWorkPackage.wbsElement.carNumber,
+      projectNumber: firstWorkPackage.wbsElement.projectNumber,
+      workPackageNumber: firstWorkPackage.wbsElement.workPackageNumber
+    })} - ${firstWorkPackage.wbsElement.name}`;
+  }
+
+  return event.title;
 };
 
 export const dateRangePipe = (startDate: Date, endDate: Date) => {
-  return `${(startDate.getMonth() + 1).toString()}/${startDate.getDate().toString()} - ${(
-    endDate.getMonth() + 1
-  ).toString()}/${endDate.getDate().toString()}`;
+  return `${dayjs(startDate).format('M/D')} - ${dayjs(endDate).format('M/D')}`;
 };
 
 export const undefinedPipe = (element: any) => {
@@ -175,23 +180,19 @@ export const displayEnum = (enumString: string) => {
   return enumString;
 };
 
-export const meetingStartTimePipe = (times: number[], isEndTime = false) => {
-  if (isEndTime && times[0] % 12 === 0) return '10pm';
-  const time = (times[0] % 12) + 10;
+export const meetingStartTimePipeScheduleSlot = (scheduledTimes: ScheduleSlot[]): string => {
+  if (scheduledTimes.length === 0) return '';
 
-  return time === 12 ? time + 'pm' : time < 12 ? time + 'am' : time - 12 + 'pm';
+  const firstTime = scheduledTimes[0].startTime;
+  if (!firstTime) return '';
+
+  return formatEventTime(new Date(firstTime));
 };
 
-// takes in a Date and returns it as a string in the form mm/dd/yy
+// takes in a Date and returns it as a string in the form mm/dd/yyyy
 export const meetingDatePipe = (date?: Date) => {
   if (!date) return '';
-  date = new Date(date.toDateString());
-  return date.toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-    timeZone: 'UTC'
-  });
+  return formatEventDate(new Date(date));
 };
 
 export const labelPipe = (label: string) => {
@@ -208,15 +209,4 @@ export const labelPipe = (label: string) => {
   }
 
   return result;
-};
-
-// Pad SABO ID with leading zeroes
-export const formatSaboIdPipe = (saboId: number | undefined): string => {
-  if (saboId === undefined || saboId === null) return undefinedPipe(saboId as any);
-  const str = String(saboId);
-  // Only pad if it's shorter than 5
-  if (str.length < 5) {
-    return str.padStart(5, '0');
-  }
-  return str;
 };

@@ -261,7 +261,6 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
   const resetHandler = () => {
     history.push(routes.GANTT);
     localStorage.removeItem('ganttURL');
-    showWorkPackagesMap.clear();
   };
 
   /* **************************************************** */
@@ -317,7 +316,7 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
       dateCreated: new Date(),
       teamTypes: [],
       changes: [],
-      designReviews: [],
+      events: [],
       deleted: false
     };
 
@@ -458,10 +457,6 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
       if (ganttChanges.length > 0) {
         const requestEventChanges = constructFinalizedChanges(projects, addedProjects.concat(editedProjects), ganttChanges);
         setRequestEventChanges(requestEventChanges);
-        if (requestEventChanges.length > 0) {
-          const { element } = requestEventChanges[requestEventChanges.length - 1];
-          setShowWorkPackagesMap((prev) => new Map(prev.set(element.id, true)));
-        }
       } else {
         toast.success('Changes saved successfully!');
         handleCancel();
@@ -485,6 +480,7 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
             toast.error('No Team Selected');
           }
         }}
+        cars={cars}
       />
     );
   };
@@ -549,11 +545,6 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
     setRequestEventChanges(newChanges);
     if (newChanges.length === 0) {
       handleCancel();
-    } else {
-      const change = newChanges[newChanges.length - 1];
-      setShowWorkPackagesMap(
-        (prev) => new Map(prev.set((change.element as Task).taskId ?? (change.element as WbsElementPreview).id, true))
-      );
     }
 
     if (cancelled) {
@@ -679,8 +670,6 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
         overdueHandler={overdueHandler}
         hideTasksHandler={hideTasksHandler}
         resetHandler={resetHandler}
-        collapseHandler={collapseHandler}
-        expandHandler={expandHandler}
       />
     </Box>
   );
@@ -715,8 +704,6 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
             highlightSubtaskComparator: highlightWorkPackageComparator,
             highlightTaskComparator: highlightProjectComparator
           }}
-          shouldShowChildren={(task) => !!showWorkPackagesMap.get(getElementId(task.element))}
-          onShowChildrenToggle={(task) => toggleElementShowChildren(task.element)}
         />
       </PageLayout>
     </>

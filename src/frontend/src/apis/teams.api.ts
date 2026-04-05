@@ -4,10 +4,16 @@
  */
 
 import axios from '../utils/axios';
-import { Team, TeamPreview } from 'shared';
+import { Team, TeamBase, TeamPreview } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateTeamPayload } from '../hooks/teams.hooks';
 import { teamPreviewTransformer, teamTransformer } from './transformers/teams.transformers';
+
+export const getAllTeamPreviews = () => {
+  return axios.get<TeamBase[]>(apiUrls.teamPreviews(), {
+    transformResponse: (data) => JSON.parse(data).map(teamPreviewTransformer)
+  });
+};
 
 export const getAllTeams = () => {
   return axios.get<TeamPreview[]>(apiUrls.teams(), {

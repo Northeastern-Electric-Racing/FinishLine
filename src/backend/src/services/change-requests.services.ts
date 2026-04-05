@@ -781,9 +781,7 @@ export default class ChangeRequestsService {
         descriptionBullets: true,
         changeRequests: {
           where: {
-            dateDeleted: {
-              not: null
-            }
+            dateDeleted: null
           },
           include: { changes: true }
         }
@@ -883,7 +881,7 @@ export default class ChangeRequestsService {
         where: {
           otherReimbursementProductReasonId: otherReasonId
         },
-        include: { changeRequests: { where: { dateDeleted: { not: null } }, include: { changes: true } } }
+        include: { changeRequests: { where: { dateDeleted: null }, include: { changes: true } } }
       });
 
       if (!category) throw new NotFoundException('Reimbursement Product Other Reason', otherReasonId);
@@ -946,7 +944,7 @@ export default class ChangeRequestsService {
         where: {
           accountCodeId
         },
-        include: { changeRequests: { where: { dateDeleted: { not: null } }, include: { changes: true } } }
+        include: { changeRequests: { where: { dateDeleted: null }, include: { changes: true } } }
       });
 
       if (!accountCode) throw new NotFoundException('Account Code', accountCodeId);
@@ -1008,6 +1006,147 @@ export default class ChangeRequestsService {
     }
 
     return changeRequestTransformer(createdChangeRequest);
+  }
+
+  /**
+   * Validates and creates a leadership change request, auto-approved immediately.
+   * Updates the lead and/or manager of a project or work package without requiring review.
+   * @param submitter the user creating the cr
+   * @param carNumber the car number for the wbs element
+   * @param projectNumber the project number for the wbs element
+   * @param workPackageNumber the work package number for the wbs element
+   * @param leadId the id of the new lead
+   * @param managerId the id of the new manager
+   * @param organization the organization the user is currently in
+   * @returns the id of the created cr
+   */
+  static async createLeadershipChangeRequest(
+    submitter: User,
+    carNumber: number,
+    projectNumber: number,
+    workPackageNumber: number,
+    leadId: string | undefined,
+    managerId: string | undefined,
+    organization: Organization
+  ): Promise<string> {
+    if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
+      throw new AccessDeniedGuestException('create leadership change requests');
+
+    // verify wbs element exists
+    const wbsElement = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsNumber: {
+          carNumber,
+          projectNumber,
+          workPackageNumber,
+          organizationId: organization.organizationId
+        }
+      },
+      select: {
+        wbsElementId: true,
+        dateDeleted: true,
+        organizationId: true,
+        leadId: true,
+        managerId: true
+      }
+    });
+
+    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+    if (wbsElement.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+    if (wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('WBS Element');
+
+    // avoid merge conflicts
+    await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
+
+    const numChangeRequests = await prisma.change_Request.count({
+      where: { organizationId: organization.organizationId }
+    });
+
+    const createdCR = await prisma.change_Request.create({
+      data: {
+        submitter: { connect: { userId: submitter.userId } },
+        wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
+        type: CR_Type.LEADERSHIP,
+        organization: { connect: { organizationId: organization.organizationId } },
+        identifier: numChangeRequests + 1,
+        leadershipChangeRequest: {
+          create: {
+            lead: leadId ? { connect: { userId: leadId } } : undefined,
+            manager: managerId ? { connect: { userId: managerId } } : undefined
+          }
+        }
+      }
+    });
+
+    await ChangeRequestsService.applyLeadershipChangeRequest(createdCR.crId, wbsElement, submitter, leadId, managerId);
+
+    return createdCR.crId;
+  }
+
+  /**
+   * Applies a leadership change request by updating the wbs element's lead/manager
+   * and auto-approving the change request.
+   */
+  private static async applyLeadershipChangeRequest(
+    crId: string,
+    wbsElement: { wbsElementId: string; leadId: string | null; managerId: string | null },
+    submitter: User,
+    leadId: string | undefined,
+    managerId: string | undefined
+  ): Promise<void> {
+    await prisma.$transaction(async (tx) => {
+      await tx.change_Request.update({
+        where: { crId },
+        data: {
+          reviewer: { connect: { userId: submitter.userId } },
+          dateReviewed: new Date(),
+          accepted: true,
+          reviewNotes: 'Auto-approved: leadership change only'
+        }
+      });
+
+      await tx.wBS_Element.update({
+        where: { wbsElementId: wbsElement.wbsElementId },
+        data: {
+          lead: leadId ? { connect: { userId: leadId } } : { disconnect: true },
+          manager: managerId ? { connect: { userId: managerId } } : { disconnect: true }
+        }
+      });
+
+      const changes: { changeRequestId: string; implementerId: string; wbsElementId: string; detail: string }[] = [];
+
+      const oldLeadId = wbsElement.leadId ?? undefined;
+      const oldManagerId = wbsElement.managerId ?? undefined;
+
+      if (leadId !== oldLeadId) {
+        // only update if lead changed
+        const oldLead = await getUserFullName(wbsElement.leadId ?? null);
+        const newLead = await getUserFullName(leadId ?? null);
+        changes.push({
+          changeRequestId: crId,
+          implementerId: submitter.userId,
+          wbsElementId: wbsElement.wbsElementId,
+          detail: buildChangeDetail('lead', oldLead, newLead)
+        });
+      }
+
+      if (managerId !== oldManagerId) {
+        // only update if manager changed
+        const oldManager = await getUserFullName(wbsElement.managerId ?? null);
+        const newManager = await getUserFullName(managerId ?? null);
+        changes.push({
+          changeRequestId: crId,
+          implementerId: submitter.userId,
+          wbsElementId: wbsElement.wbsElementId,
+          detail: buildChangeDetail('manager', oldManager, newManager)
+        });
+      }
+
+      if (changes.length > 0) {
+        await tx.change.createMany({ data: changes });
+      }
+    });
   }
 
   /**

@@ -28,6 +28,9 @@
 *.env
 .agent
 
+# Generated Claude skills (source is src/docs-site/docs/)
+.claude/skills/
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -64,3 +67,8 @@ eb-deploy/
 # Docker
 *.bak
 *.backup
+
+# Claude Code Files
+CLAUDE.md
+.playwright-mcp/
+docs/
