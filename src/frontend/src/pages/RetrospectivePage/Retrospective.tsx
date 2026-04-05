@@ -200,12 +200,6 @@ const RetrospectivePage = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
-  const elementId = (element: WbsElementPreview | Task) => (element as WbsElementPreview).id || (element as Task).taskId;
-
-  const toggleElementShowChildren = (element: WbsElementPreview | Task) => {
-    setShowWorkPackagesMap((prev) => new Map(prev.set(elementId(element), !prev.get(elementId(element)))));
-  };
-
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />

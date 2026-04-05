@@ -21,89 +21,22 @@ import LoadingIndicator from '../components/LoadingIndicator';
 import SessionTimeoutAlert from './SessionTimeoutAlert';
 import SetUserPreferences from '../pages/HomePage/components/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
-import Sidebar from '../layouts/Sidebar/Sidebar';
-import { Box } from '@mui/system';
-import { Container, IconButton, useTheme } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
-import { useState } from 'react';
-import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
-import HiddenContentMargin from '../components/HiddenContentMargin';
-import { useHomePageContext } from './HomePageContext';
 import { useCurrentOrganization } from '../hooks/organizations.hooks';
 import Statistics from '../pages/StatisticsPage/Statistics';
 import RetrospectiveGanttChartPage from '../pages/RetrospectivePage/Retrospective';
 import Calendar from '../pages/CalendarPage/Calendar';
 import GuestEventPage from '../pages/GuestEventPage/GuestEventPage';
+import SidebarLayout from '../layouts/SidebarLayout';
 
 interface AppAuthenticatedProps {
   userId: string;
   userRole: Role;
 }
 
-const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const theme = useTheme();
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [moveContent, setMoveContent] = useState(false);
-  const { onGuestHomePage } = useHomePageContext();
-
-  return (
-    <>
-      <Box
-        onMouseEnter={() => {
-          setDrawerOpen(true);
-        }}
-        sx={{
-          height: '100vh',
-          position: 'fixed',
-          width: 15,
-          borderRight: 2,
-          borderRightColor: theme.palette.background.paper
-        }}
-      />
-      <IconButton
-        onClick={() => {
-          setDrawerOpen(true);
-          setMoveContent(true);
-        }}
-        sx={{ position: 'fixed', left: -8, top: '3%' }}
-        id="sidebar-button"
-      >
-        <ArrowCircleRightTwoToneIcon
-          sx={{
-            fontSize: '30px',
-            zIndex: 1,
-            '& path:first-of-type': { color: '#000000' },
-            '& path:last-of-type': { color: '#ef4345' }
-          }}
-        />
-      </IconButton>
-      <Sidebar
-        drawerOpen={drawerOpen}
-        setDrawerOpen={setDrawerOpen}
-        moveContent={moveContent}
-        setMoveContent={setMoveContent}
-      />
-      <Box display={'flex'}>
-        <HiddenContentMargin open={moveContent} variant="permanent" />
-        <Container
-          maxWidth={false}
-          sx={{ width: onGuestHomePage && moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}
-        >
-          {children}
-        </Container>
-      </Box>
-    </>
-  );
-};
-
 const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
-
-  const theme = useTheme();
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [moveContent, setMoveContent] = useState(false);
-  const { onGuestHomePage } = useHomePageContext();
 
   const {
     data: organization,
@@ -127,72 +60,27 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
 
   return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
-      {
-        <>
-          <Box
-            onMouseEnter={() => {
-              setDrawerOpen(true);
-            }}
-            sx={{
-              height: '100vh',
-              position: 'fixed',
-              width: 15,
-              borderRight: 2,
-              borderRightColor: theme.palette.background.paper
-            }}
-          />
-          <IconButton
-            onClick={() => {
-              setDrawerOpen(true);
-              setMoveContent(true);
-            }}
-            sx={{ position: 'fixed', left: -8, top: '3%' }}
-            id="sidebar-button"
-          >
-            <ArrowCircleRightTwoToneIcon
-              sx={{
-                fontSize: '30px',
-                zIndex: 1,
-                '& path:first-of-type': { color: '#000000' },
-                '& path:last-of-type': { color: '#ef4345' }
-              }}
-            />
-          </IconButton>
-          <Sidebar
-            drawerOpen={drawerOpen}
-            setDrawerOpen={setDrawerOpen}
-            moveContent={moveContent}
-            setMoveContent={setMoveContent}
-          />
-        </>
-      }
-      <Box display={'flex'}>
-        <HiddenContentMargin open={moveContent} variant="permanent" />
-        <Container
-          maxWidth={false}
-          sx={{ width: onGuestHomePage && moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}
-        >
-          <Switch>
-            <Route path={routes.PROJECTS} component={Projects} />
-            <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
-            <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
-            <Route path={routes.GANTT} component={GanttChartPage} />
-            <Route path={routes.TEAMS} component={Teams} />
-            <Route path={routes.SETTINGS} component={Settings} />
-            <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
-            <Route path={routes.INFO} component={InfoPage} />
-            <Route path={routes.CREDITS} component={Credits} />
-            <Route path={routes.FINANCE} component={Finance} />
-            <Route path={routes.CALENDAR} component={Calendar} />
-            <Route path={routes.STATISTICS} component={Statistics} />
-            <Route path={routes.HOME} component={Home} />
-            <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
-            <Route path={routes.EVENTS} component={GuestEventPage} />
-            <Redirect from={routes.BASE} to={routes.HOME} />
-            <Route path="*" component={PageNotFound} />
-          </Switch>
-        </Container>
-      </Box>
+      <SidebarLayout>
+        <Switch>
+          <Route path={routes.PROJECTS} component={Projects} />
+          <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
+          <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
+          <Route path={routes.GANTT} component={GanttChartPage} />
+          <Route path={routes.TEAMS} component={Teams} />
+          <Route path={routes.SETTINGS} component={Settings} />
+          <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
+          <Route path={routes.INFO} component={InfoPage} />
+          <Route path={routes.CREDITS} component={Credits} />
+          <Route path={routes.FINANCE} component={Finance} />
+          <Route path={routes.CALENDAR} component={Calendar} />
+          <Route path={routes.STATISTICS} component={Statistics} />
+          <Route path={routes.HOME} component={Home} />
+          <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
+          <Route path={routes.EVENTS} component={GuestEventPage} />
+          <Redirect from={routes.BASE} to={routes.HOME} />
+          <Route path="*" component={PageNotFound} />
+        </Switch>
+      </SidebarLayout>
     </AppContextUser>
   ) : (
     <SetUserPreferences userSettings={userSettingsData} />
