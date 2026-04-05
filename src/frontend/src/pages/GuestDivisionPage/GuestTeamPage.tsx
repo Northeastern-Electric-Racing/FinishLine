@@ -3,7 +3,7 @@ import ErrorPage from '../ErrorPage';
 import { Box, useMediaQuery } from '@mui/system';
 import PageLayout from '../../components/PageLayout';
 import GuestSubteamCard from './GuestSubteamCard';
-import { useTeamsByTypeId } from '../../hooks/teams.hooks';
+import { useAllTeams } from '../../hooks/teams.hooks';
 
 interface GuestTeamPageProps {
   teamTypeId: string;
@@ -11,7 +11,8 @@ interface GuestTeamPageProps {
 
 const GuestTeamPage: React.FC<GuestTeamPageProps> = ({ teamTypeId }) => {
   const isMobilePortrait = useMediaQuery('(max-width:480px)');
-  const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useTeamsByTypeId(teamTypeId);
+  const { isLoading: teamsIsLoading, isError: teamsIsError, data: allTeams, error: teamsError } = useAllTeams();
+  const teams = allTeams?.filter((team) => team.teamType?.teamTypeId === teamTypeId);
 
   if (teamsIsLoading || !teams) return <LoadingIndicator />;
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;

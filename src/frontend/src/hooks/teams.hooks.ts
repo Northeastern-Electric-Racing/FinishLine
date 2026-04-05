@@ -199,10 +199,3 @@ export const useMyTeamAsHead = () => {
     return data;
   });
 };
-
-export const useTeamsByTypeId = (teamTypeId: string) => {
-  return useQuery<TeamPreview[], Error>(['teams', 'type', teamTypeId], async () => {
-    const { data } = await getAllTeams();
-    return data.filter((team) => team.teamType?.teamTypeId === teamTypeId);
-  });
-};
