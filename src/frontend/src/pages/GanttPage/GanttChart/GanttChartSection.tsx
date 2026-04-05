@@ -11,7 +11,7 @@ import {
   OnMouseOverOptions,
   RequestEventChange
 } from '../../../utils/gantt.utils';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { MutableRefObject, useCallback, useRef, useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
