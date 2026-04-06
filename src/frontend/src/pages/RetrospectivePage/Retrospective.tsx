@@ -41,7 +41,6 @@ const RetrospectivePage = () => {
   const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
 
   const [searchText, setSearchText] = useState<string>('');
-  const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
   const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | Task>[]>([]);
 
   const {
@@ -169,7 +168,6 @@ const RetrospectivePage = () => {
   const resetHandler = () => {
     history.push(routes.RETROSPECTIVE);
     localStorage.removeItem('retro-gantt');
-    showWorkPackagesMap.clear();
   };
 
   /***************************************************** */
@@ -202,12 +200,6 @@ const RetrospectivePage = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
-  const elementId = (element: WbsElementPreview | Task) => (element as WbsElementPreview).id || (element as Task).taskId;
-
-  const toggleElementShowChildren = (element: WbsElementPreview | Task) => {
-    setShowWorkPackagesMap((prev) => new Map(prev.set(elementId(element), !prev.get(elementId(element)))));
-  };
-
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />
@@ -233,13 +225,7 @@ const RetrospectivePage = () => {
         chips={<SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />}
         headerRight={headerRight}
       >
-        <GanttChart
-          collections={collections}
-          startDate={startDate}
-          endDate={endDate}
-          shouldShowChildren={(task) => !!showWorkPackagesMap.get(elementId(task.element))}
-          onShowChildrenToggle={(task) => toggleElementShowChildren(task.element)}
-        />
+        <GanttChart collections={collections} startDate={startDate} endDate={endDate} />
       </PageLayout>
     </>
   );
