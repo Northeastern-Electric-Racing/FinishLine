@@ -9,7 +9,6 @@ import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { Typography, Box, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
-import RateReviewIcon from '@mui/icons-material/RateReview';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 // To be uncommented after guest sponsors page is developed
 // import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
@@ -38,6 +37,7 @@ import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useState } from 'react';
 import GlobalCarFilterDropdown from '../../components/GlobalCarFilterDropdown';
+import { CalendarIcon } from '@mui/x-date-pickers';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -102,9 +102,9 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
               route: routes.CHANGE_REQUESTS
             },
             {
-              name: 'Design Review',
-              icon: <RateReviewIcon />,
-              route: routes.CALENDAR
+              name: 'Events',
+              icon: <CalendarIcon />,
+              route: routes.EVENTS
             }
           ]
         },

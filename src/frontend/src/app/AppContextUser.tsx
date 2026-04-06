@@ -16,7 +16,7 @@ import ErrorPage from '../pages/ErrorPage';
 
 export const UserContext = createContext<AuthenticatedUser | undefined>(undefined);
 
-const AppContextUser: React.FC = (props) => {
+const AppContextUser: React.FC<{ children: React.ReactNode }> = (props) => {
   const auth = useAuth();
   const clarity = useClarity();
   const { data: teams, isLoading: teamsIsLoading, isError: teamsIsError, error: teamsError } = useGetUsersTeams();
