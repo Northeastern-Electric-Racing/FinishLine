@@ -5,6 +5,7 @@
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { WorkPackage, WorkPackagePreview, WbsNumber, WorkPackageSelection } from 'shared';
+import { wbsPipe } from '../utils/pipes';
 import {
   createSingleWorkPackage,
   deleteWorkPackage,
@@ -14,6 +15,7 @@ import {
   getAllWorkPackagesPreview,
   getManyWorkPackages,
   getSingleWorkPackage,
+  getWorkPackagesByProject,
   slackUpcomingDeadlines,
   WorkPackageCreateArgs,
   WorkPackageEditArgs,
@@ -48,6 +50,17 @@ export const useAllWorkPackagesPreview = (status?: string) => {
 export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
   return useQuery<WorkPackage, Error>(['work packages', wbsNum], async () => {
     const { data } = await getSingleWorkPackage(wbsNum);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all work packages for a given project
+ * @param projectWbsNum the wbs number of the project
+ */
+export const useWorkPackagesByProject = (projectWbsNum: WbsNumber) => {
+  return useQuery<WorkPackage[], Error>(['work-packages', 'by-project', wbsPipe(projectWbsNum)], async () => {
+    const { data } = await getWorkPackagesByProject(projectWbsNum);
     return data;
   });
 };

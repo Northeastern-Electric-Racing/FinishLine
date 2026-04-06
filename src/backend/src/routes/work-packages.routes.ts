@@ -30,6 +30,9 @@ workPackagesRouter.post(
   WorkPackagesController.getManyWorkPackages
 );
 workPackagesRouter.get('/:wbsNum', WorkPackagesController.getSingleWorkPackage);
+
+workPackagesRouter.get('/by-project/:wbsNum', WorkPackagesController.getWorkPackagesByProject);
+
 workPackagesRouter.post(
   '/create',
   nonEmptyString(body('crId').optional()),

@@ -110,6 +110,7 @@ const workPackages = (queryParams?: { [field: string]: string }) => {
 };
 
 const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
+const workPackagesByProject = (wbsNum: string) => `${workPackages()}/by-project/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
@@ -600,6 +601,7 @@ export const apiUrls = {
 
   workPackages,
   workPackagesByWbsNum,
+  workPackagesByProject,
   workPackagesCreate,
   workPackagesEdit,
   workPackagesDelete,

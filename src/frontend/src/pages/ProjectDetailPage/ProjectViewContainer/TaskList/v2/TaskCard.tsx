@@ -2,7 +2,7 @@ import { Draggable } from '@hello-pangea/dnd';
 import { Construction, Delete, Schedule } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Grid, Typography, IconButton } from '@mui/material';
 import { useState } from 'react';
-import { notGuest, Task, WorkPackage } from 'shared';
+import { notGuest, Task } from 'shared';
 import { useDeleteTask, useEditTask, useEditTaskAssignees, useEditTaskWbsElement } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
