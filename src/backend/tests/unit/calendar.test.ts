@@ -79,8 +79,7 @@ describe('Calendar Tests', () => {
       true, // documents
       true, // description
       true, // onlyHeadsOrAbove
-      false, // requiresConfirmation - changed to false so tests don't need initialDateScheduled
-      true // sendSlackNotifications
+      false // requiresConfirmation - changed to false so tests don't need initialDateScheduled
     );
   });
 
@@ -263,7 +262,6 @@ describe('Calendar Tests', () => {
             true,
             false,
             true,
-            false,
             false
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create event type'));
@@ -288,7 +286,6 @@ describe('Calendar Tests', () => {
         false,
         false,
         true,
-        false,
         false
       );
 
@@ -307,7 +304,6 @@ describe('Calendar Tests', () => {
       expect(result.description).toBe(false);
       expect(result.onlyHeadsOrAboveForEventCreation).toBe(true);
       expect(result.requiresConfirmation).toBe(false);
-      expect(result.sendSlackNotifications).toBe(false);
     });
   });
 
@@ -653,8 +649,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         true,
-        true,
-        false
+        true
       );
     });
 
@@ -667,7 +662,6 @@ describe('Calendar Tests', () => {
           [calendar.calendarId],
           organization,
           'Initial Event Type',
-          false,
           false,
           false,
           false,
@@ -695,7 +689,6 @@ describe('Calendar Tests', () => {
           [invalidCalendarId],
           organization,
           'Initial Event Type 2',
-          true,
           true,
           true,
           true,
@@ -754,7 +747,6 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
-          false,
           false
         )
       ).rejects.toThrow(new InvalidOrganizationException('Calendar'));
@@ -782,8 +774,7 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
-          true,
-          false
+          true
         )
       ).rejects.toThrow(new NotFoundException('Event Type', nonExistentId));
     });
@@ -808,7 +799,6 @@ describe('Calendar Tests', () => {
         true,
         false,
         false,
-        false,
         false
       );
 
@@ -828,7 +818,6 @@ describe('Calendar Tests', () => {
       expect(result.description).toBe(false);
       expect(result.onlyHeadsOrAboveForEventCreation).toBe(false);
       expect(result.requiresConfirmation).toBe(false);
-      expect(result.sendSlackNotifications).toBe(false);
     });
   });
 
@@ -891,7 +880,8 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         scheduleSlots,
-        undefined, // initialDateScheduled
+        undefined, // initialDateScheduled,
+        true, // sendSlackNotification
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -911,6 +901,7 @@ describe('Calendar Tests', () => {
       expect(result.machinery[0].machineryId).toBe(machinery.machineryId);
       expect(result.workPackages).toHaveLength(0);
       expect(result.scheduledTimes).toHaveLength(1);
+      expect(result.sendSlackNotifications).toBe(true);
       expect(result.teamType).toBe(undefined);
       expect(result.approved).toBe(Conflict_Status.NO_CONFLICT);
       expect(result.approvalRequiredFrom).toBe(undefined);
@@ -943,6 +934,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          true, // sendSlackNotifications
           undefined // teamTypeId
         )
       ).rejects.toThrow(new NotFoundException('Event Type', 'non-existent-event-type-id'));
@@ -971,6 +963,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          true, // sendSlackNotifications
           undefined // teamTypeId
         )
       ).rejects.toThrow(new InvalidOrganizationException('Event Type'));
@@ -998,6 +991,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        true, // sendSlackNotifications
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1015,6 +1009,7 @@ describe('Calendar Tests', () => {
       expect(result.machinery).toHaveLength(1);
       expect(result.workPackages).toHaveLength(0);
       expect(result.scheduledTimes).toHaveLength(1);
+      expect(result.sendSlackNotifications).toBe(true);
       expect(result.teamType).toBe(undefined);
       expect(result.approved).toBe(Conflict_Status.NO_CONFLICT);
       expect(result.approvalRequiredFrom).toBeUndefined();
@@ -1047,6 +1042,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          true, // sendSlackNotifications
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1079,6 +1075,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          true, // sendSlackNotifications
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1111,6 +1108,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          true, // sendSlackNotifications
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1143,6 +1141,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          true, // sendSlackNotifications
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1175,6 +1174,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          true, // sendSlackNotifications
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1213,6 +1213,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          true, // sendSlackNotifications
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1258,6 +1259,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          true, // sendSlackNotifications
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1293,6 +1295,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        true, // sendSlackNotifications
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1313,6 +1316,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        true, // sendSlackNotifications
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1356,6 +1360,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        true, // sendSlackNotifications
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1376,6 +1381,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        true, // sendSlackNotifications
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1405,6 +1411,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots2,
         undefined, // initialDateScheduled
+        true, // sendSlackNotifications
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1449,6 +1456,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        true, // sendSlackNotifications
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1469,6 +1477,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        true, // sendSlackNotifications
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1498,6 +1507,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots2,
         undefined, // initialDateScheduled
+        true, // sendSlackNotifications
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1679,6 +1689,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        true, // sendSlackNotification
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1701,7 +1712,8 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
-          []
+          [],
+          true
         )
       ).rejects.toThrow(new NotFoundException('Event', 'non-existent-id'));
     });
@@ -1725,7 +1737,7 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
-          []
+          true
         )
       ).rejects.toThrow(new DeletedException('Event', event.eventId));
     });
@@ -1745,6 +1757,7 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
+          true,
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1769,6 +1782,7 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
+          true,
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1799,6 +1813,7 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
+          true,
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1823,6 +1838,7 @@ describe('Calendar Tests', () => {
           ['non-existent-machinery-id'],
           [],
           [],
+          true,
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1853,6 +1869,7 @@ describe('Calendar Tests', () => {
           [deletedMachinery.machineryId],
           [],
           [],
+          true,
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1878,6 +1895,7 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         [],
+        true,
         undefined,
         'https://updated.com/questions.pdf',
         'Updated Location',
@@ -1928,6 +1946,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        true, // sendSlackNotifications
         undefined, // teamTypeId
         'https://updated.com/questions.pdf',
         'Updated Location',
@@ -2110,6 +2129,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined,
+        true, // sendSlackNotifications
         undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -2162,6 +2182,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined,
+        true, // sendSlackNotifications
         undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -2368,6 +2389,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined,
+        true, // sendSlackNotifications
         undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -2486,6 +2508,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined,
+        true, // sendSlackNotifications
         undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
