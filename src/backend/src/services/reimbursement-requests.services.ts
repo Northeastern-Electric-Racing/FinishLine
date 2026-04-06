@@ -95,11 +95,12 @@ export default class ReimbursementRequestService {
         dateDeleted: null,
         recipientId: recipient.userId,
         organizationId: organization.organizationId,
-        ...(carNumber !== undefined && {
-          reimbursementProducts: {
-            some: { reimbursementProductReason: { wbsElement: { carNumber } } }
-          }
-        })
+        ...(carNumber !== undefined &&
+          carNumber !== null && {
+            reimbursementProducts: {
+              some: { reimbursementProductReason: { wbsElement: { carNumber } } }
+            }
+          })
       },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -122,11 +123,12 @@ export default class ReimbursementRequestService {
         dateDeleted: null,
         assigneeId: assignee.userId,
         organizationId: organization.organizationId,
-        ...(carNumber !== undefined && {
-          reimbursementProducts: {
-            some: { reimbursementProductReason: { wbsElement: { carNumber } } }
-          }
-        })
+        ...(carNumber !== undefined &&
+          carNumber !== null && {
+            reimbursementProducts: {
+              some: { reimbursementProductReason: { wbsElement: { carNumber } } }
+            }
+          })
       },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -185,11 +187,12 @@ export default class ReimbursementRequestService {
         dateDeleted: null,
         recipientId: { in: Array.from(teamUserIds) },
         organizationId: organization.organizationId,
-        ...(carNumber !== undefined && {
-          reimbursementProducts: {
-            some: { reimbursementProductReason: { wbsElement: { carNumber } } }
-          }
-        })
+        ...(carNumber !== undefined &&
+          carNumber !== null && {
+            reimbursementProducts: {
+              some: { reimbursementProductReason: { wbsElement: { carNumber } } }
+            }
+          })
       },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -627,11 +630,12 @@ export default class ReimbursementRequestService {
           }
         },
         accountCode: { organizationId: organization.organizationId },
-        ...(carNumber !== undefined && {
-          reimbursementProducts: {
-            some: { reimbursementProductReason: { wbsElement: { carNumber } } }
-          }
-        })
+        ...(carNumber !== undefined &&
+          carNumber !== null && {
+            reimbursementProducts: {
+              some: { reimbursementProductReason: { wbsElement: { carNumber } } }
+            }
+          })
       },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -1031,11 +1035,12 @@ export default class ReimbursementRequestService {
       where: {
         dateDeleted: null,
         accountCode: { organizationId: organization.organizationId },
-        ...(carNumber !== undefined && {
-          reimbursementProducts: {
-            some: { reimbursementProductReason: { wbsElement: { carNumber } } }
-          }
-        })
+        ...(carNumber !== undefined &&
+          carNumber !== null && {
+            reimbursementProducts: {
+              some: { reimbursementProductReason: { wbsElement: { carNumber } } }
+            }
+          })
       },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });

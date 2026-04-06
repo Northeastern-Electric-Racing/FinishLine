@@ -36,7 +36,8 @@ import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useState } from 'react';
-import GlobalCarFilterDropdown from '../../components/GlobalCarFilterDropdown';
+import GlobalCarFilterHeader from '../../components/GlobalCarFilterHeader';
+import GlobalCarFilterChips from '../../components/GlobalCarFilterChips';
 import { CalendarIcon } from '@mui/x-date-pickers';
 
 interface SidebarProps {
@@ -224,12 +225,16 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       }}
     >
       <DrawerHeader>
-        <Box sx={{ maxWidth: 150, minWidth: 0, maxHeight: 70, minHeight: 70 }}>
-          <GlobalCarFilterDropdown />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <GlobalCarFilterHeader sx={{ flex: 1 }} />
+            <IconButton onClick={() => handleMoveContent()} sx={{ p: 0.5 }}>
+              {moveContent ? <ChevronLeft /> : <ChevronRight />}
+            </IconButton>
+          </Box>
+          <GlobalCarFilterChips />
         </Box>
-        <IconButton onClick={() => handleMoveContent()}>{moveContent ? <ChevronLeft /> : <ChevronRight />}</IconButton>
       </DrawerHeader>
-      <Box sx={{ py: 2.5 }}></Box>
       <Divider />
       <Box
         overflow={'auto'}

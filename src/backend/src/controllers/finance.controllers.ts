@@ -169,10 +169,6 @@ export default class FinanceController {
     }
   }
 
-  // Finance data filters by carNumber (integer) rather than carId (UUID) because the
-  // finance schema links through WbsElement, which owns carNumber directly. Filtering
-  // by carId would require nested Prisma joins across every finance utility function.
-  // carNumber is sourced from req.currentCar?.wbsElement.carNumber via middleware.
   static async getReimbursementRequestTeamData(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamId } = req.params as Record<string, string>;
