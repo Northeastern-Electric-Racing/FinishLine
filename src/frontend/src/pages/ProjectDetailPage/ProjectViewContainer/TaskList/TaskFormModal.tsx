@@ -4,6 +4,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, WbsNumber } from 'shared';
 import { useAllUsers, useCurrentUser } from '../../../../hooks/users.hooks';
+import { useWorkPackagesByProject } from '../../../../hooks/work-packages.hooks';
 import * as yup from 'yup';
 import { taskUserToAutocompleteOption } from '../../../../utils/task.utils';
 import NERFormModal from '../../../../components/NERFormModal';
@@ -38,18 +39,17 @@ interface TaskFormModalProps {
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
   onReset?: () => void;
+  wbsNum: WbsNumber;
 }
 
-const TaskFormModal: React.FC<TaskFormModalProps> = ({
-  task,
-  onSubmit,
-  modalShow,
-  onHide,
-  onReset
-}) => {
+const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow, onHide, onReset, wbsNum }) => {
   const user = useCurrentUser();
 
   const { data: users, isLoading, isError, error } = useAllUsers();
+
+  const projectWbsNum = { ...wbsNum, workPackageNumber: 0 };
+  const { data: workPackages } = useWorkPackagesByProject(projectWbsNum);
+  const isWpContext = wbsNum.workPackageNumber !== 0;
 
   const {
     handleSubmit,
@@ -66,7 +66,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       deadline: task?.deadline ?? undefined,
       priority: task?.priority ?? TaskPriority.Low,
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? [],
-      wpWbsNum: task?.wbsNum.workPackageNumber !== 0 ? task?.wbsNum : undefined
+      wpWbsNum: task?.wbsNum.workPackageNumber !== 0 ? task?.wbsNum : isWpContext ? wbsNum : undefined
     }
   });
 
@@ -152,37 +152,27 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
               />
             </FormControl>
           </Grid>
-          {/* wrap with WP check so dropdown doesn't render if within WP tasks tab*/}
-          {workPackages && (
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <FormLabel>Work Package</FormLabel>
-                <Controller
-                  name="wpWbsNum"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <Autocomplete
-                      disabled={!!lockedWorkPackage}
-                      options={wpOptions}
-                      isOptionEqualToValue={(option, val) =>
-                        option.wbsNum.workPackageNumber === val.wbsNum.workPackageNumber
-                      }
-                      getOptionLabel={(option) => option.label}
-                      onChange={(_, val) => onChange(val?.wbsNum ?? undefined)}
-                      value={wpOptions.find((o) => o.wbsNum.workPackageNumber === value?.workPackageNumber) ?? null}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          variant="standard"
-                          placeholder={lockedWorkPackage ? '' : 'Select a work package'}
-                        />
-                      )}
-                    />
-                  )}
-                />
-              </FormControl>
-            </Grid>
-          )}
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <FormLabel>Work Package</FormLabel>
+              <Controller
+                name="wpWbsNum"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Autocomplete
+                    options={wpOptions}
+                    isOptionEqualToValue={(option, val) => option.wbsNum.workPackageNumber === val.wbsNum.workPackageNumber}
+                    getOptionLabel={(option) => option.label}
+                    onChange={(_, val) => onChange(val?.wbsNum ?? undefined)}
+                    value={wpOptions.find((o) => o.wbsNum.workPackageNumber === value?.workPackageNumber) ?? null}
+                    renderInput={(params) => (
+                      <TextField {...params} variant="standard" placeholder={'Select a work package'} />
+                    )}
+                  />
+                )}
+              />
+            </FormControl>
+          </Grid>
           <Grid item md={12}>
             <FormControl fullWidth>
               <FormLabel>Assignees</FormLabel>

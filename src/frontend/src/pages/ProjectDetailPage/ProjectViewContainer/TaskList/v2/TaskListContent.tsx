@@ -17,7 +17,7 @@ interface TaskListContentProps {
 
 export const TaskListContent = ({ wbsNum, wbsElementId }: TaskListContentProps) => {
   const { data: tasks, isLoading, isError, error } = useTasksByWbsNum(wbsNum);
-  const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus | undefined>(); // can't use getTasksByStatus since tasks are async
+  const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus>(getTasksByStatus([])); // can't use getTasksByStatus since tasks are async
   const { mutateAsync: setTaskStatus } = useSetTaskStatus();
 
   const toast = useToast();
@@ -37,7 +37,7 @@ export const TaskListContent = ({ wbsNum, wbsElementId }: TaskListContentProps) 
     setColumnHeights((prev) => ({ ...prev, [status]: height }));
   }, []);
 
-  if (isLoading || !tasksByStatus) return <LoadingIndicator />;
+  if (isLoading || !tasks) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
   const onDeleteTask = (taskId: string) => {

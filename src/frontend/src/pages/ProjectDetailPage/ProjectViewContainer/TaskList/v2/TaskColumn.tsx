@@ -84,6 +84,7 @@ export const TaskColumn = ({
         onSubmit={handleCreateTask}
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
+        wbsNum={wbsNum}
       />
       <Box
         sx={{

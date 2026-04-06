@@ -17,12 +17,14 @@ import { wbsPipe } from '../../../../../utils/pipes';
 export const TaskCard = ({
   task,
   index,
+  wbsNum,
   wbsElementId,
   onDeleteTask,
   onEditTask
 }: {
   task: Task;
   index: number;
+  wbsNum: WbsNumber;
   wbsElementId: string;
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
@@ -105,6 +107,7 @@ export const TaskCard = ({
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const isOverdue = task.deadline != null && new Date(task.deadline) < new Date() && task.status !== 'DONE';
   const isWpTask = task.wbsNum.workPackageNumber !== 0;
+  const isProjectContext = wbsNum.workPackageNumber === 0;
 
   return (
     <>
@@ -114,6 +117,7 @@ export const TaskCard = ({
         onHide={() => setShowModal(false)}
         onSubmit={handleEditTask}
         hasEditPermissions={notGuest(user.role)}
+        wbsNum={wbsNum}
       />
       <NERModal
         open={showDeleteConfirm}
@@ -168,7 +172,7 @@ export const TaskCard = ({
                         size="medium"
                       />
                       {isWpTask && // render iff task does have associated wp
-                        workPackages && ( // and if on project's task page, not wp's
+                        isProjectContext && ( // and if on project's task page, not wp's
                           <Chip
                             label={task.wbsName}
                             size="medium"
