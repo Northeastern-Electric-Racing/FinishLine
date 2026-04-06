@@ -77,90 +77,6 @@ describe('Task Test', () => {
     });
   });
 
-  describe('Edit task WBS element', () => {
-    test('Successfully updates the wbs element of a task', async () => {
-      const user = await createTestUser(supermanAdmin, organizationId);
-      const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
-
-      const newWbsElement = await prisma.wBS_Element.create({
-        data: {
-          name: 'New WBS',
-          status: 'INACTIVE',
-          carNumber: 1,
-          projectNumber: 1,
-          workPackageNumber: 0,
-          dateCreated: new Date('01/01/2023'),
-          leadId: user.userId,
-          managerId: user.userId,
-          organizationId
-        }
-      });
-
-      const updatedTask = await TasksService.editTaskWbsElement(user, task.taskId, newWbsElement.wbsElementId, {
-        organizationId
-      } as any);
-
-      expect(updatedTask.taskId).toBe(task.taskId);
-    });
-
-    test('Throws NotFoundException when task does not exist', async () => {
-      const user = await createTestUser(supermanAdmin, organizationId);
-      const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
-
-      await expect(async () =>
-        TasksService.editTaskWbsElement(user, 'non-existent-task-id', task.wbsElementId, { organizationId } as any)
-      ).rejects.toThrow(new NotFoundException('Task', 'non-existent-task-id'));
-    });
-
-    test('Throws DeletedException when task is deleted', async () => {
-      const user = await createTestUser(supermanAdmin, organizationId);
-      const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
-
-      await prisma.task.update({
-        where: { taskId: task.taskId },
-        data: { dateDeleted: new Date() }
-      });
-
-      await expect(async () =>
-        TasksService.editTaskWbsElement(user, task.taskId, task.wbsElementId, { organizationId } as any)
-      ).rejects.toThrow(new DeletedException('Task', task.taskId));
-    });
-
-    test('Throws NotFoundException when new wbs element does not exist', async () => {
-      const user = await createTestUser(supermanAdmin, organizationId);
-      const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
-
-      await expect(async () =>
-        TasksService.editTaskWbsElement(user, task.taskId, 'non-existent-wbs-element-id', { organizationId } as any)
-      ).rejects.toThrow(new NotFoundException('WBS Element', 'non-existent-wbs-element-id'));
-    });
-
-    test('Throws DeletedException when new wbs element is deleted', async () => {
-      const user = await createTestUser(supermanAdmin, organizationId);
-      const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
-
-      // create second wbs element and delete it
-      const deletedWbsElement = await prisma.wBS_Element.create({
-        data: {
-          name: 'Deleted WBS',
-          status: 'INACTIVE',
-          carNumber: 99,
-          projectNumber: 99,
-          workPackageNumber: 0,
-          dateCreated: new Date('01/01/2023'),
-          leadId: user.userId,
-          managerId: user.userId,
-          organizationId,
-          dateDeleted: new Date()
-        }
-      });
-
-      await expect(async () =>
-        TasksService.editTaskWbsElement(user, task.taskId, deletedWbsElement.wbsElementId, { organizationId } as any)
-      ).rejects.toThrow(new DeletedException('WBS Element', deletedWbsElement.wbsElementId));
-    });
-  });
-
   describe('Guest editing permissions', () => {
     test('Guests cannot edit tasks', async () => {
       const guest = await createTestUser(theVisitorGuest, organizationId);
@@ -168,16 +84,6 @@ describe('Task Test', () => {
       const task = await createTestTask(admin, 'Test', '', [], 'HIGH', 'DONE', organizationId, new Date());
       await expect(async () =>
         TasksService.editTask(guest, organizationId, task.taskId, 'Title', 'Notes', 'HIGH', new Date())
-      ).rejects.toThrow(new AccessDeniedException('Guests cannot edit tasks'));
-    });
-
-    test('Guests cannot edit task wbs element', async () => {
-      const admin = await createTestUser(supermanAdmin, organizationId);
-      const guest = await createTestUser(theVisitorGuest, organizationId);
-      const task = await createTestTask(admin, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
-
-      await expect(async () =>
-        TasksService.editTaskWbsElement(guest, task.taskId, task.wbsElementId, { organizationId } as any)
       ).rejects.toThrow(new AccessDeniedException('Guests cannot edit tasks'));
     });
   });

@@ -3,7 +3,7 @@ import { Construction, Delete, Schedule } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Grid, Typography, IconButton } from '@mui/material';
 import { useState } from 'react';
 import { notGuest, Task } from 'shared';
-import { useDeleteTask, useEditTask, useEditTaskAssignees, useEditTaskWbsElement } from '../../../../../hooks/tasks.hooks';
+import { useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
 import { datePipe, fullNamePipe } from '../../../../../utils/pipes';
@@ -32,7 +32,6 @@ export const TaskCard = ({
   const { mutateAsync: deleteTask } = useDeleteTask();
   const { mutateAsync: editTask } = useEditTask();
   const { mutateAsync: editTaskAssignees } = useEditTaskAssignees();
-  const { mutateAsync: editTaskWbsElement } = useEditTaskWbsElement();
 
   const user = useCurrentUser();
 
@@ -66,7 +65,7 @@ export const TaskCard = ({
     assignees,
     priority,
     startDate,
-    wpWbsNum
+    wpWbsElementId
   }: EditTaskFormInput) => {
     try {
       await editTask({
@@ -75,24 +74,14 @@ export const TaskCard = ({
         title,
         deadline,
         startDate,
-        priority
+        priority,
+        wbsElementId: wpWbsElementId
       });
 
       let newTask = await editTaskAssignees({
         taskId,
         assignees
       });
-
-      // check if wp changed first to avoid unnecessary api call
-      const wpChanged = (wpWbsNum?.workPackageNumber ?? 0) !== task.wbsNum.workPackageNumber;
-      if (wpChanged) {
-        const targetWbsElementId = wpWbsNum
-          ? workPackages?.find((wp) => wp.wbsNum.workPackageNumber === wpWbsNum.workPackageNumber)?.wbsElementId
-          : wbsElementId;
-        if (targetWbsElementId) {
-          newTask = await editTaskWbsElement({ taskId, wbsElementId: targetWbsElementId });
-        }
-      }
 
       onEditTask(newTask);
       toast.success('Task edited successfully!');

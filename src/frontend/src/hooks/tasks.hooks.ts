@@ -11,7 +11,6 @@ import {
   editSingleTaskStatus,
   editTask,
   editTaskAssignees,
-  editTaskWbsElement,
   getOverdueTasksByTeamLeader,
   getFilterTasks,
   getTasksByWbsNum
@@ -80,6 +79,7 @@ export interface TaskPayload {
   startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
+  wbsElementId?: string;
 }
 
 /**
@@ -97,7 +97,8 @@ export const useEditTask = () => {
         taskPayload.notes ?? '',
         taskPayload.priority,
         taskPayload.deadline,
-        taskPayload.startDate
+        taskPayload.startDate,
+        taskPayload.wbsElementId
       );
 
       return data;
@@ -105,6 +106,7 @@ export const useEditTask = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['tasks']);
         queryClient.invalidateQueries(['filter-tasks']);
       }
     }
@@ -121,27 +123,6 @@ export const useEditTaskAssignees = () => {
     ['tasks', 'edit-assignees'],
     async (editAssigneesTaskPayload: { taskId: string; assignees: string[] }) => {
       const { data } = await editTaskAssignees(editAssigneesTaskPayload.taskId, editAssigneesTaskPayload.assignees);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
-        queryClient.invalidateQueries(['filter-tasks']);
-      }
-    }
-  );
-};
-
-/**
- * custom react hook for editing a task's wbs element
- * @returns the edit task wbs element mutation
- */
-export const useEditTaskWbsElement = () => {
-  const queryClient = useQueryClient();
-  return useMutation<Task, Error, { taskId: string; wbsElementId: string }>(
-    ['tasks', 'edit-wbs-element'],
-    async (editWbsElementTaskPayload: { taskId: string; wbsElementId: string }) => {
-      const { data } = await editTaskWbsElement(editWbsElementTaskPayload.taskId, editWbsElementTaskPayload.wbsElementId);
       return data;
     },
     {

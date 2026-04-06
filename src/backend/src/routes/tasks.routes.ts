@@ -45,6 +45,7 @@ tasksRouter.post(
   isOptionalDateOnly(body('deadline')),
   isOptionalDateOnly(body('startDate')),
   isTaskPriority(body('priority')),
+  nonEmptyString(body('wbsElementId').optional()),
   TasksController.editTask
 );
 
@@ -56,13 +57,6 @@ tasksRouter.post(
   nonEmptyString(body('assignees.*')),
   validateInputs,
   TasksController.editTaskAssignees
-);
-
-tasksRouter.post(
-  '/:taskId/edit-wbs-element',
-  nonEmptyString(body('wbsElementId')),
-  validateInputs,
-  TasksController.editTaskWbsElement
 );
 
 tasksRouter.post('/:taskId/delete', validateInputs, TasksController.deleteTask);
