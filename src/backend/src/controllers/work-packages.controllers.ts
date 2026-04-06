@@ -7,15 +7,12 @@ export default class WorkPackagesController {
   // Fetch all work packages, optionally filtered by query parameters
   static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const { query } = req;
-      const queryWithCarId = {
-        ...query,
-        carId: req.currentCar?.carId
-      };
+      const { status, daysUntilDeadline } = req.query as { status?: string; daysUntilDeadline?: string };
 
       const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(
-        queryWithCarId,
-        req.organization
+        { status, daysUntilDeadline },
+        req.organization,
+        req.currentCar?.carId
       );
 
       res.status(200).json(outputWorkPackages);
@@ -137,7 +134,10 @@ export default class WorkPackagesController {
     try {
       const wbsNum = validateWBS(req.params.wbsNum as string);
 
-      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(wbsNum, req.organization);
+      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(
+        wbsNum,
+        req.organization
+      );
 
       res.status(200).json(blockingWorkPackages);
     } catch (error: unknown) {

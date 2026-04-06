@@ -51,16 +51,16 @@ export default class WorkPackagesService {
    */
   static async getAllWorkPackages(
     query: {
-      status?: WbsElementStatus;
+      status?: WbsElementStatus | string;
       daysUntilDeadline?: string;
-      carId?: string;
     },
-    organization: Organization
+    organization: Organization,
+    carId?: string
   ): Promise<WorkPackage[]> {
     const workPackages = await prisma.work_Package.findMany({
       where: {
         wbsElement: { dateDeleted: null, organizationId: organization.organizationId },
-        ...(query.carId && { project: { carId: query.carId } })
+        ...(carId && { project: { carId } })
       },
       ...getWorkPackageQueryArgs(organization.organizationId)
     });
