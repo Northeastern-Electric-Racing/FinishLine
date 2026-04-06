@@ -58,11 +58,7 @@ export default class WorkPackagesController {
     try {
       const { wbsNums } = req.body;
 
-      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(
-        wbsNums,
-        req.organization,
-        req.currentCar?.carId
-      );
+      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization);
       res.status(200).json(workPackages);
     } catch (error: unknown) {
       next(error);
@@ -141,11 +137,7 @@ export default class WorkPackagesController {
     try {
       const wbsNum = validateWBS(req.params.wbsNum as string);
 
-      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(
-        wbsNum,
-        req.organization,
-        req.currentCar?.carId
-      );
+      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(wbsNum, req.organization);
 
       res.status(200).json(blockingWorkPackages);
     } catch (error: unknown) {

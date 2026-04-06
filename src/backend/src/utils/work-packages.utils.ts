@@ -17,10 +17,7 @@ export const calculateWorkPackageProgress = (
  * @param initialWorkPackage the work package to get the blocking work packages for
  * @returns an array of the blocking work packages
  */
-export const getBlockingWorkPackages = async (
-  initialWorkPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>,
-  carId?: string
-) => {
+export const getBlockingWorkPackages = async (initialWorkPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>) => {
   // track the wbs element ids we've seen so far so we don't update the same one multiple times
   const seenWbsElementIds: Set<string> = new Set<string>([initialWorkPackage.wbsElement.wbsElementId]);
 
@@ -40,10 +37,7 @@ export const getBlockingWorkPackages = async (
       where: { wbsElementId: currWbsId },
       include: {
         blocking: true,
-        workPackage: {
-          ...getWorkPackageQueryArgs(initialWorkPackage.wbsElement.organizationId),
-          ...(carId && { where: { project: { carId } } })
-        }
+        workPackage: getWorkPackageQueryArgs(initialWorkPackage.wbsElement.organizationId)
       }
     });
 

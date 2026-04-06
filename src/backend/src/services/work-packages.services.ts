@@ -153,11 +153,7 @@ export default class WorkPackagesService {
    * @returns the work packages with the given WBS numbers
    * @throws if any of the work packages are not found or are not part of the organization
    */
-  static async getManyWorkPackages(
-    wbsNums: WbsNumber[],
-    organization: Organization,
-    carId?: string
-  ): Promise<WorkPackage[]> {
+  static async getManyWorkPackages(wbsNums: WbsNumber[], organization: Organization): Promise<WorkPackage[]> {
     wbsNums.forEach((wbsNum) => {
       if (!isWorkPackageWbs(wbsNum)) {
         throw new HttpException(
@@ -174,8 +170,7 @@ export default class WorkPackagesService {
         workPackageNumber: wbsNum.workPackageNumber,
         organizationId: organization.organizationId,
         dateDeleted: null
-      },
-      ...(carId && { project: { carId } })
+      }
     }));
 
     const workPackages = await prisma.work_Package.findMany({
@@ -547,11 +542,7 @@ export default class WorkPackagesService {
    * @param carId the optional carId to filter work packages by
    * @returns the blocking work packages for the given work package
    */
-  static async getBlockingWorkPackages(
-    wbsNum: WbsNumber,
-    organization: Organization,
-    carId?: string
-  ): Promise<WorkPackage[]> {
+  static async getBlockingWorkPackages(wbsNum: WbsNumber, organization: Organization): Promise<WorkPackage[]> {
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 
     // is a project or car so just return empty array until we implement blocking projects/cars
@@ -578,7 +569,7 @@ export default class WorkPackagesService {
     if (workPackage.wbsElement.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Work Package');
 
-    const blockingWorkPackages = await getBlockingWorkPackages(workPackage, carId);
+    const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
     return blockingWorkPackages.map(workPackageTransformer);
   }
 

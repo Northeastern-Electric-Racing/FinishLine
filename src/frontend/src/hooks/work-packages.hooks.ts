@@ -131,8 +131,10 @@ export const useGetBlockingWorkPackages = (wbsNum: WbsNumber) => {
  * Custom React Hook to get many work packages
  */
 export const useGetManyWorkPackages = (wbsNums: WbsNumber[]) => {
-  return useQuery<WorkPackage[], Error>(['work packages', 'blocking', wbsNums], async () => {
-    const { data } = await getManyWorkPackages(wbsNums);
+  const { selectedCar } = useGlobalCarFilter();
+  const filteredWbsNums = selectedCar ? wbsNums.filter((wbsNum) => wbsNum.carNumber === selectedCar.wbsNum.carNumber) : wbsNums;
+  return useQuery<WorkPackage[], Error>(['work packages', 'many', filteredWbsNums, selectedCar?.id], async () => {
+    const { data } = await getManyWorkPackages(filteredWbsNums);
     return data;
   });
 };
