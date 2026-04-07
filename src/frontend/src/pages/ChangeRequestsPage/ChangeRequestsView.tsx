@@ -36,7 +36,9 @@ const ChangeRequestsView: React.FC = () => {
 
   return (
     <PageLayout
-      title={selectedCar ? `Change Requests For ${selectedCar.name}` : 'Change Requests'}
+      title={
+        selectedCar ? `Change Requests For ${selectedCar === 'all-cars' ? 'All Cars' : selectedCar.name}` : 'Change Requests'
+      }
       tabs={
         <FullPageTabs
           setTab={setTabIndex}
