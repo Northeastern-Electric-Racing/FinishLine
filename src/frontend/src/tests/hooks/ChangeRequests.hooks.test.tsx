@@ -20,7 +20,7 @@ describe('change request hooks', () => {
     mockedGetAllChangeRequests.mockReturnValue(mockPromiseAxiosResponse<ChangeRequest[]>(exampleAllChangeRequests));
 
     const { result } = renderHook(() => useAllChangeRequests(), { wrapper });
-    await waitFor(() => result.current.isSuccess);
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(exampleAllChangeRequests);
   });
 
@@ -29,7 +29,7 @@ describe('change request hooks', () => {
     mockedGetSingleChangeRequest.mockReturnValue(mockPromiseAxiosResponse<ChangeRequest>(exampleStageGateChangeRequest));
 
     const { result } = renderHook(() => useSingleChangeRequest('1'), { wrapper });
-    await waitFor(() => result.current.isSuccess);
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(exampleStageGateChangeRequest);
   });
 });
