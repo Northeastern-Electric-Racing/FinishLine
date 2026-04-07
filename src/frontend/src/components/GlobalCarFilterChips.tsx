@@ -41,20 +41,20 @@ const GlobalCarFilterChips: React.FC<GlobalCarFilterChipsProps> = ({ sx = {} }) 
     >
       <Chip
         label="All Cars"
-        onClick={() => setSelectedCar(null)}
+        onClick={() => setSelectedCar('all-cars')}
         variant="outlined"
         sx={{
           borderColor: 'white',
           color: 'white',
           backgroundColor: 'transparent',
-          fontWeight: !selectedCar ? 'bold' : 'normal',
-          borderWidth: !selectedCar ? 2 : 1,
+          fontWeight: selectedCar === 'all-cars' ? 'bold' : 'normal',
+          borderWidth: selectedCar === 'all-cars' ? 2 : 1,
           '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
           whiteSpace: 'nowrap'
         }}
       />
       {sortedCars.map((car) => {
-        const isSelected = selectedCar?.id === car.id;
+        const isSelected = selectedCar !== 'all-cars' && selectedCar.id === car.id;
         return (
           <Chip
             key={car.id}

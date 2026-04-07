@@ -68,7 +68,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
           teamId={allTeams[0].teamId}
           startDate={filter.startDate}
           endDate={filter.endDate}
-          overrideCarId={filter.selectedCar?.id ?? null}
+          overrideCarId={filter.selectedCar === 'all-cars' ? 'all-cars' : filter.selectedCar.id}
         />
       </PageLayout>
     );
@@ -105,7 +105,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
           teamId={selectedTab.tabUrlValue}
           startDate={filter.startDate}
           endDate={filter.endDate}
-          overrideCarId={filter.selectedCar?.id ?? null}
+          overrideCarId={filter.selectedCar === 'all-cars' ? 'all-cars' : filter.selectedCar.id}
         />
       )}
     </PageLayout>

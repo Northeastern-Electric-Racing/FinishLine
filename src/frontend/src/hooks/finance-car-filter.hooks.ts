@@ -8,11 +8,11 @@ import { Car } from 'shared';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 export interface FinanceDashboardCarFilter {
-  selectedCar: Car | null;
+  selectedCar: Car | 'all-cars';
   allCars: Car[];
   startDate: Date | undefined;
   endDate: Date | undefined;
-  setSelectedCar: (car: Car | null) => void;
+  setSelectedCar: (car: Car | 'all-cars') => void;
   clearLocalSelection: () => void;
   setStartDate: (date: Date | undefined) => void;
   setEndDate: (date: Date | undefined) => void;
@@ -25,7 +25,8 @@ export interface FinanceDashboardCarFilter {
  * Uses local state only; does not mutate the global car selection.
  *
  * selectedCar is the resolved car (local override if set, otherwise global) and can be used
- * directly as overrideCarId using selectedCar?.id ?? null, keeping query keys reactive to both.
+ * directly as overrideCarId using selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id,
+ * keeping query keys reactive to both.
  *
  * When a specific car is selected, dates auto-populate:
  * - Start date: When the car was initialized (car.dateCreated)
@@ -34,12 +35,12 @@ export interface FinanceDashboardCarFilter {
 export const useFinanceDashboardCarFilter = (initialStartDate?: Date, initialEndDate?: Date): FinanceDashboardCarFilter => {
   const { selectedCar: globalSelectedCar, allCars, isLoading, error } = useGlobalCarFilter();
 
-  // undefined = not set (mirror global), null = explicitly set to "All Cars", Car = explicitly set to specific car
-  const [localSelectedCar, setLocalSelectedCar] = useState<Car | null | undefined>(undefined);
+  // undefined = not set (mirror global), 'all-cars' = explicitly set to "All Cars", Car = explicitly set to specific car
+  const [localSelectedCar, setLocalSelectedCar] = useState<Car | 'all-cars' | undefined>(undefined);
   const [startDate, setStartDate] = useState<Date | undefined>(initialStartDate);
   const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate);
 
-  const setSelectedCar = (car: Car | null) => {
+  const setSelectedCar = (car: Car | 'all-cars') => {
     setLocalSelectedCar(car);
   };
 
@@ -52,7 +53,7 @@ export const useFinanceDashboardCarFilter = (initialStartDate?: Date, initialEnd
 
   // Auto-populate dates from the resolved car.
   useEffect(() => {
-    if (selectedCar === null) {
+    if (selectedCar === 'all-cars') {
       setStartDate(undefined);
       setEndDate(undefined);
     } else if (allCars.length > 0) {

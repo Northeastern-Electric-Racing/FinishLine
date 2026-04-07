@@ -63,7 +63,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        {!project && !selectedCar && (
+        {!project && selectedCar === 'all-cars' && (
           <Grid item lg={2.4} md={6} xs={12}>
             <FormControl fullWidth>
               <FormLabel>Car</FormLabel>

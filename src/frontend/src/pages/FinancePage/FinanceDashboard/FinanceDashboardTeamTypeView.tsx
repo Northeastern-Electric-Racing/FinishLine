@@ -9,7 +9,7 @@ interface FinanceDashboardTeamTypeViewProps {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
-  overrideCarId?: string | null;
+  overrideCarId?: string | 'all-cars';
 }
 
 const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamTypeViewProps> = ({

@@ -13,7 +13,7 @@ import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/auth
 
 vi.mock('../../../app/AppGlobalCarFilterContext', () => ({
   useGlobalCarFilter: () => ({
-    selectedCar: null,
+    selectedCar: 'all-cars',
     allCars: [],
     setSelectedCar: vi.fn(),
     isLoading: false,

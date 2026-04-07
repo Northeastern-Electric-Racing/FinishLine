@@ -327,47 +327,47 @@ export interface ReimbursementRequestTeamDataPayload {
   teamId: string;
   startDate?: Date;
   endDate?: Date;
-  overrideCarId?: string | null;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface ReimbursementRequestDataPayload {
   startDate?: Date;
   endDate?: Date;
-  overrideCarId?: string | null;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface ReimbursementRequestCategoryDataPayload {
   otherReasonId: string;
   startDate?: Date;
   endDate?: Date;
-  overrideCarId?: string | null;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface ReimbursementRequestTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
-  overrideCarId?: string | null;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface SpendingBarTeamDataPayload {
   teamId: string;
   startDate?: Date;
   endDate?: Date;
-  overrideCarId?: string | null;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface SpendingBarTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
-  overrideCarId?: string | null;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface SpendingBarDataPayload {
   startDate?: Date;
   endDate?: Date;
-  overrideCarId?: string | null;
+  overrideCarId?: string | 'all-cars';
 }
 
 /**
@@ -467,7 +467,7 @@ export const useGetAllAccountCodes = () => {
  */
 export const useCurrentUserReimbursementRequests = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user', selectedCar?.id], async () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
     const { data } = await getCurrentUserReimbursementRequests();
     return data;
   });
@@ -478,7 +478,7 @@ export const useCurrentUserReimbursementRequests = () => {
  */
 export const useCurrentUserAssignedReimbursementRequests = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'assignee', selectedCar?.id], async () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'assignee', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
     const { data } = await getCurrentUserAssignedReimbursementRequests();
     return data;
   });
@@ -489,7 +489,7 @@ export const useCurrentUserAssignedReimbursementRequests = () => {
  */
 export const useCurrentUsersTeamsReimbursementRequests = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'teams', selectedCar?.id], async () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'teams', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
     const { data } = await getCurrentUsersTeamsReimbursementRequests();
     return data;
   });
@@ -542,7 +542,7 @@ export const useSetTaxExemptStatus = () => {
  */
 export const useAllReimbursementRequests = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', selectedCar?.id], async () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
     const { data } = await getAllReimbursementRequests();
     return data;
   });
@@ -789,7 +789,7 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
 export const useGetPendingAdvisorList = () => {
   const { selectedCar } = useGlobalCarFilter();
   return useQuery<ReimbursementRequest[], Error>(
-    ['reimbursement-requests', 'pending-advisors', selectedCar?.id],
+    ['reimbursement-requests', 'pending-advisors', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
     async () => {
       const { data } = await getPendingAdvisorList();
       return data;

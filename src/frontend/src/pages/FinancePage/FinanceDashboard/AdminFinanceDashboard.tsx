@@ -87,7 +87,8 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
   }
 
   const ALL_CARS_ID = '__ALL_CARS__';
-  const sortedCars = [...filter.allCars].sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber);
+  const { selectedCar, allCars } = filter;
+  const sortedCars = [...allCars].sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber);
   const carOptions = sortedCars.map((car) => ({
     label: car.wbsNum.carNumber === 0 ? car.name : `${car.name} (Car ${car.wbsNum.carNumber})`,
     id: car.id
@@ -211,9 +212,9 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
               filter.clearLocalSelection();
             } else if (newValue.id === ALL_CARS_ID) {
               // Explicit "All Cars" override
-              filter.setSelectedCar(null);
+              filter.setSelectedCar('all-cars');
             } else {
-              const car = filter.allCars.find((c) => c.id === newValue.id);
+              const car = allCars.find((c) => c.id === newValue.id);
               if (car) filter.setSelectedCar(car);
             }
           }}
@@ -221,9 +222,9 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
           size="small"
           placeholder="Select A Car"
           value={
-            !filter.selectedCar
+            selectedCar === 'all-cars'
               ? { label: 'All Cars', id: ALL_CARS_ID }
-              : (carOptions.find((car) => car.id === filter.selectedCar!.id) ?? null)
+              : (carOptions.find((car) => car.id === selectedCar.id) ?? null)
           }
           sx={datePickerStyle}
         />
@@ -353,13 +354,13 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
         <FinanceDashboardAllView
           startDate={filter.startDate}
           endDate={filter.endDate}
-          overrideCarId={filter.selectedCar?.id ?? null}
+          overrideCarId={selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id}
         />
       ) : tabIndex === tabs.length - 1 ? (
         <FinanceDashboardCategoriesView
           startDate={filter.startDate}
           endDate={filter.endDate}
-          overrideCarId={filter.selectedCar?.id ?? null}
+          overrideCarId={selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id}
         />
       ) : (
         selectedTab && (
@@ -367,7 +368,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
             teamTypeId={selectedTab.tabUrlValue}
             startDate={filter.startDate}
             endDate={filter.endDate}
-            overrideCarId={filter.selectedCar?.id ?? null}
+            overrideCarId={selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id}
           />
         )
       )}

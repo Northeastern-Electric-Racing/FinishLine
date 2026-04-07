@@ -26,7 +26,7 @@ import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
  */
 export const useAllWorkPackages = (queryParams?: { [field: string]: string }) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<WorkPackage[], Error>(['work packages', queryParams, selectedCar?.id], async () => {
+  return useQuery<WorkPackage[], Error>(['work packages', queryParams, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
     const { data } = await getAllWorkPackages(queryParams);
     return data;
   });
@@ -37,7 +37,7 @@ export const useAllWorkPackages = (queryParams?: { [field: string]: string }) =>
  */
 export const useAllWorkPackagesPreview = (status?: string) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<WorkPackagePreview[], Error>(['work packages', 'preview', status, selectedCar?.id], async () => {
+  return useQuery<WorkPackagePreview[], Error>(['work packages', 'preview', status, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
     const { data } = await getAllWorkPackagesPreview(status);
     return data;
   });
@@ -132,10 +132,10 @@ export const useGetBlockingWorkPackages = (wbsNum: WbsNumber) => {
  */
 export const useGetManyWorkPackages = (wbsNums: WbsNumber[]) => {
   const { selectedCar } = useGlobalCarFilter();
-  const filteredWbsNums = selectedCar
-    ? wbsNums.filter((wbsNum) => wbsNum.carNumber === selectedCar.wbsNum.carNumber)
-    : wbsNums;
-  return useQuery<WorkPackage[], Error>(['work packages', 'many', filteredWbsNums, selectedCar?.id], async () => {
+  const filteredWbsNums =
+    selectedCar === 'all-cars' ? wbsNums : wbsNums.filter((wbsNum) => wbsNum.carNumber === selectedCar.wbsNum.carNumber);
+  const carKey = selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id;
+  return useQuery<WorkPackage[], Error>(['work packages', 'many', filteredWbsNums, carKey], async () => {
     const { data } = await getManyWorkPackages(filteredWbsNums);
     return data;
   });
@@ -153,7 +153,7 @@ export const useSlackUpcomingDeadlines = () => {
 
 export const useHomeScreenWorkPackages = (selection: WorkPackageSelection) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<WorkPackage[], Error>(['teams', 'work-packages', selection, selectedCar?.id], async () => {
+  return useQuery<WorkPackage[], Error>(['teams', 'work-packages', selection, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
     const { data } = await getHomePageWorkPackages(selection);
     return data;
   });

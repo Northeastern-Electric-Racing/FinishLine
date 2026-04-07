@@ -29,12 +29,12 @@ import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/t
 /**
  * Fetches all projects with query args needed for Gantt chart
  * Note: Gantt supports multi-car local selection and handles its own frontend filtering,
- * so we bypass the global car filter using overrideCarId: null
+ * so we bypass the global car filter using overrideCarId: 'all-cars'
  */
 export const getAllProjectsGantt = () => {
   return axios.get<ProjectGantt[]>(apiUrls.allProjectsGantt(), {
     transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer),
-    overrideCarId: null
+    overrideCarId: 'all-cars'
   });
 };
 

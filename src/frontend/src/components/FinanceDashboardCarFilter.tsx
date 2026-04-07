@@ -85,16 +85,15 @@ const FinanceDashboardCarFilterComponent: React.FC<FinanceDashboardCarFilterProp
       clearLocalSelection();
     } else if (newValue.id === ALL_CARS_ID) {
       // Explicit "All Cars" override, bypass global filter entirely
-      setSelectedCar(null);
+      setSelectedCar('all-cars');
     } else {
       const car = allCars.find((c) => c.id === newValue.id);
       if (car) setSelectedCar(car);
     }
   };
 
-  const selectedCarOption = !selectedCar
-    ? ALL_CARS_OPTION
-    : (carOptions.find((option) => option.id === selectedCar.id) ?? null);
+  const selectedCarOption =
+    selectedCar === 'all-cars' ? ALL_CARS_OPTION : (carOptions.find((option) => option.id === selectedCar.id) ?? null);
 
   if (isLoading) {
     return (

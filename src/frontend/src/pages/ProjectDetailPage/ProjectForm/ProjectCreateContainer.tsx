@@ -46,7 +46,7 @@ const ProjectCreateContainer: React.FC = () => {
     budget: 0,
     summary: '',
     teamIds: [],
-    carNumber: selectedCar?.wbsNum.carNumber,
+    carNumber: selectedCar === 'all-cars' ? undefined : selectedCar.wbsNum.carNumber,
     links: [],
     crId: query.get('crId') || undefined,
     descriptionBullets: [],

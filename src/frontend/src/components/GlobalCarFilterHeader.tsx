@@ -29,7 +29,7 @@ const GlobalCarFilterHeader: React.FC<GlobalCarFilterHeaderProps> = ({ sx = {} }
 
   if (allCars.length === 0) return null;
 
-  const currentCarLabel = selectedCar ? selectedCar.name : 'All Cars';
+  const currentCarLabel = selectedCar === 'all-cars' ? 'All Cars' : selectedCar.name;
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pt: 1, ...sx }}>

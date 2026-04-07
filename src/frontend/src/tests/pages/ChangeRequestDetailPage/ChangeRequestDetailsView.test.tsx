@@ -26,7 +26,7 @@ vi.mock('../../../hooks/projects.hooks');
 vi.mock('../../../hooks/users.hooks');
 vi.mock('../../../app/AppGlobalCarFilterContext', () => ({
   useGlobalCarFilter: () => ({
-    selectedCar: null,
+    selectedCar: 'all-cars',
     allCars: [],
     setSelectedCar: vi.fn(),
     isLoading: false,

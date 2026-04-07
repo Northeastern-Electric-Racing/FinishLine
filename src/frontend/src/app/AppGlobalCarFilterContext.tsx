@@ -10,9 +10,9 @@ import { setCurrentCarId } from '../utils/axios';
 import LoadingIndicator from '../components/LoadingIndicator';
 
 interface GlobalCarFilterContextType {
-  selectedCar: Car | null;
+  selectedCar: Car | 'all-cars';
   allCars: Car[];
-  setSelectedCar: (car: Car | null) => void;
+  setSelectedCar: (car: Car | 'all-cars') => void;
   isLoading: boolean;
   isInitialized: boolean;
   error: Error | null;
@@ -25,43 +25,55 @@ interface GlobalCarFilterProviderProps {
 }
 
 export const GlobalCarFilterProvider: React.FC<GlobalCarFilterProviderProps> = ({ children }) => {
-  const [selectedCar, setSelectedCarState] = useState<Car | null>(null);
+  const [selectedCar, setSelectedCarState] = useState<Car | 'all-cars'>('all-cars');
   const [isInitialized, setIsInitialized] = useState(false);
 
   const { data: allCars = [], isLoading, error } = useGetAllCars();
 
   // Guarantees the header is updated before React Query enqueues new fetches.
   useLayoutEffect(() => {
-    setCurrentCarId(selectedCar ? selectedCar.id : null);
+    setCurrentCarId(selectedCar === 'all-cars' ? null : selectedCar.id);
   }, [selectedCar]);
 
   useEffect(() => {
     if (!isLoading && !isInitialized) {
       const savedCarId = localStorage.getItem('selectedCarId');
-      if (savedCarId) {
+
+      // Handle saved selection
+      if (savedCarId === 'all-cars') {
+        setSelectedCarState('all-cars');
+        setIsInitialized(true);
+        return;
+      } else if (savedCarId) {
         const savedCar = allCars.find((car) => car.id === savedCarId);
         if (savedCar) {
           setSelectedCarState(savedCar);
-          localStorage.setItem('selectedCarId', savedCar.id);
           setIsInitialized(true);
           return;
         }
-        // Stored ID not found in car list (stale or invalid) — clear it
+        // Fall back to default if saved car id is invalid
         localStorage.removeItem('selectedCarId');
       }
 
-      // Default to null (all cars)
-      setSelectedCarState(null);
+      // Default to most recent car if no car was previously saved (highest car number)
+      const mostRecentCar =
+        allCars.length > 0 ? allCars.reduce((a, b) => (a.wbsNum.carNumber > b.wbsNum.carNumber ? a : b)) : null;
+      if (mostRecentCar) {
+        setSelectedCarState(mostRecentCar);
+        localStorage.setItem('selectedCarId', mostRecentCar.id);
+      } else {
+        setSelectedCarState('all-cars');
+      }
       setIsInitialized(true);
     }
   }, [allCars, isLoading, isInitialized]);
 
-  const setSelectedCar = (car: Car | null) => {
+  const setSelectedCar = (car: Car | 'all-cars') => {
     setSelectedCarState(car);
-    if (car) {
+    if (car !== 'all-cars') {
       localStorage.setItem('selectedCarId', car.id);
     } else {
-      localStorage.removeItem('selectedCarId');
+      localStorage.setItem('selectedCarId', 'all-cars');
     }
   };
 

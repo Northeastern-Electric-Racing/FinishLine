@@ -102,7 +102,7 @@ const ProjectGanttChartPage: FC = () => {
   const [showCars, setShowCars] = useState<number[]>([]);
   useEffect(() => {
     if (carFilterLoading) return;
-    setShowCars(selectedCar ? [selectedCar.wbsNum.carNumber] : allCars.map((car) => car.wbsNum.carNumber));
+    setShowCars(selectedCar === 'all-cars' ? allCars.map((car) => car.wbsNum.carNumber) : [selectedCar.wbsNum.carNumber]);
   }, [carFilterLoading, selectedCar, allCars]);
 
   useEffect(() => {
@@ -232,7 +232,7 @@ const ProjectGanttChartPage: FC = () => {
   const resetHandler = () => {
     history.push(routes.GANTT);
     localStorage.removeItem('ganttURL');
-    setShowCars(selectedCar ? [selectedCar.wbsNum.carNumber] : allCars.map((car) => car.wbsNum.carNumber));
+    setShowCars(selectedCar === 'all-cars' ? allCars.map((car) => car.wbsNum.carNumber) : [selectedCar.wbsNum.carNumber]);
   };
 
   /* **************************************************** */

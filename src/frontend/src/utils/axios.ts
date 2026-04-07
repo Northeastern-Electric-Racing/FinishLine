@@ -2,7 +2,7 @@ import axiosStatic from 'axios';
 
 declare module 'axios' {
   interface AxiosRequestConfig {
-    overrideCarId?: string | null;
+    overrideCarId?: string | 'all-cars';
   }
 }
 
@@ -52,7 +52,7 @@ axios.interceptors.request.use(
     const organizationId = localStorage.getItem('organizationId');
     request.headers!['organizationId'] = organizationId ?? '';
     if (request.overrideCarId !== undefined) {
-      if (request.overrideCarId !== null) request.headers!['carId'] = request.overrideCarId;
+      if (request.overrideCarId !== 'all-cars') request.headers!['carId'] = request.overrideCarId;
     } else if (currentCarId) {
       request.headers!['carId'] = currentCarId;
     }

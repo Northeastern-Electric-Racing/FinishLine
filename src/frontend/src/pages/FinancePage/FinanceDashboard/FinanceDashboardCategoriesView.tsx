@@ -8,7 +8,7 @@ import AdminBalance from './AdminBalance';
 interface FinanceDashboardCategoryViewProps {
   startDate?: Date;
   endDate?: Date;
-  overrideCarId?: string | null;
+  overrideCarId?: string | 'all-cars';
 }
 
 const FinanceDashboardCategoriesView: React.FC<FinanceDashboardCategoryViewProps> = ({

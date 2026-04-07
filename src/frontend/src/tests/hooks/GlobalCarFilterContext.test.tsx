@@ -35,7 +35,7 @@ describe('useGlobalCarFilter', () => {
     vi.clearAllMocks();
   });
 
-  it('should initialize with null when no saved car id in local storage', async () => {
+  it('should default to the most recent car when no saved car id in local storage', async () => {
     mockUseGetAllCars.mockReturnValue({
       data: exampleAllCars,
       isLoading: false,
@@ -50,8 +50,9 @@ describe('useGlobalCarFilter', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(result.current.selectedCar).toBeNull();
-    expect(result.current.allCars).toEqual(exampleAllCars);
+    const mostRecentCar = exampleAllCars.reduce((a, b) => (a.wbsNum.carNumber > b.wbsNum.carNumber ? a : b));
+    expect(result.current.selectedCar).toEqual(mostRecentCar);
+    expect(localStorage.getItem('selectedCarId')).toBe(mostRecentCar.id);
   });
 
   it('should restore car from local storage by id', async () => {
@@ -72,7 +73,27 @@ describe('useGlobalCarFilter', () => {
     });
   });
 
-  it('should default to null when saved car id does not match any car', async () => {
+  it('should restore "all-cars" from local storage', async () => {
+    localStorage.setItem('selectedCarId', 'all-cars');
+
+    mockUseGetAllCars.mockReturnValue({
+      data: exampleAllCars,
+      isLoading: false,
+      error: null
+    } as any);
+
+    const { result } = renderHook(() => useGlobalCarFilter(), {
+      wrapper: createWrapper()
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.selectedCar).toBe('all-cars');
+  });
+
+  it('should default to most recent car when saved car id does not match any car', async () => {
     localStorage.setItem('selectedCarId', 'nonexistent-id');
 
     mockUseGetAllCars.mockReturnValue({
@@ -89,7 +110,8 @@ describe('useGlobalCarFilter', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(result.current.selectedCar).toBeNull();
+    const mostRecentCar = exampleAllCars.reduce((a, b) => (a.wbsNum.carNumber > b.wbsNum.carNumber ? a : b));
+    expect(result.current.selectedCar).toEqual(mostRecentCar);
   });
 
   it('should persist car id to local storage when selecting a car', async () => {
@@ -115,7 +137,7 @@ describe('useGlobalCarFilter', () => {
     expect(result.current.selectedCar).toEqual(exampleAllCars[1]);
   });
 
-  it('should clear local storage when selecting null (all cars)', async () => {
+  it('should store "all-cars" in local storage when selecting all cars', async () => {
     localStorage.setItem('selectedCarId', exampleAllCars[0].id);
 
     mockUseGetAllCars.mockReturnValue({
@@ -133,11 +155,11 @@ describe('useGlobalCarFilter', () => {
     });
 
     act(() => {
-      result.current.setSelectedCar(null);
+      result.current.setSelectedCar('all-cars');
     });
 
-    expect(localStorage.getItem('selectedCarId')).toBeNull();
-    expect(result.current.selectedCar).toBeNull();
+    expect(localStorage.getItem('selectedCarId')).toBe('all-cars');
+    expect(result.current.selectedCar).toBe('all-cars');
   });
 
   it('should render a loading indicator while cars are being fetched', () => {
