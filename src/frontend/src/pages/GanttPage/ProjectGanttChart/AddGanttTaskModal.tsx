@@ -2,7 +2,7 @@ import React from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FormControl, FormHelperText, FormLabel, MenuItem, TextField, Autocomplete, Grid } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isUnderWordCount, TaskPriority, TaskStatus } from 'shared';
+import { countWords, isUnderWordCount, TaskPriority, TaskStatus, WorkPackage, WbsNumber } from 'shared';
 import * as yup from 'yup';
 import NERFormModal from '../../../components/NERFormModal';
 import { useAllMembers } from '../../../hooks/users.hooks';
@@ -18,7 +18,8 @@ const schema = yup.object().shape({
   assignees: yup.array().of(yup.string()).min(0, 'At least 0 assignees are required'),
   notes: yup.string(),
   startDate: yup.date().nullable(),
-  deadline: yup.date().nullable()
+  deadline: yup.date().nullable(),
+  wpWbsNum: yup.mixed<WbsNumber>().optional()
 });
 
 interface CreateTaskFormData {
@@ -29,15 +30,17 @@ interface CreateTaskFormData {
   notes: string;
   startDate: Date | null;
   deadline: Date | null;
+  wpWbsNum?: WbsNumber;
 }
 
 interface AddGanttTaskModalProps {
   showModal: boolean;
   handleClose: () => void;
   addTask: (task: CreateTaskFormData) => void;
+  workPackages: WorkPackage[];
 }
 
-const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handleClose, addTask }) => {
+const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handleClose, addTask, workPackages }) => {
   const { isLoading: usersIsLoading, isError: usersIsError, data: users, error: usersError } = useAllMembers();
 
   const unUpperCase = (str: string) => str.charAt(0) + str.slice(1).toLowerCase();
@@ -56,7 +59,8 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
       assignees: [],
       notes: '',
       startDate: null,
-      deadline: null
+      deadline: null,
+      wpWbsNum: undefined
     }
   });
 
@@ -64,6 +68,10 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
   if (usersIsError) return <ErrorPage message={usersError?.message} />;
 
   const options: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
+  const wpOptions: { label: string; wbsNum: WbsNumber }[] = workPackages.map((wp) => ({
+    label: wp.name,
+    wbsNum: wp.wbsNum
+  }));
 
   const onSubmit = async (data: CreateTaskFormData) => {
     addTask(data);
@@ -127,6 +135,25 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
                     </MenuItem>
                   ))}
                 </TextField>
+              )}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12}>
+          <FormControl fullWidth>
+            <FormLabel>Work Package</FormLabel>
+            <Controller
+              name="wpWbsNum"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Autocomplete
+                  options={wpOptions}
+                  isOptionEqualToValue={(option, val) => option.wbsNum.workPackageNumber === val.wbsNum.workPackageNumber}
+                  getOptionLabel={(option) => option.label}
+                  onChange={(_, val) => onChange(val?.wbsNum ?? undefined)}
+                  value={wpOptions.find((o) => o.wbsNum.workPackageNumber === value?.workPackageNumber) ?? null}
+                  renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select a work package" />}
+                />
               )}
             />
           </FormControl>
