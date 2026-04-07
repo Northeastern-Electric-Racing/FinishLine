@@ -393,7 +393,7 @@ describe('Recruitment Tests', () => {
             'buttonTxt',
             'buttonLink'
           )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit guest definition'));
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a guest definition'));
     });
 
     it('Fails if guest definition doesn`t exist', async () => {
@@ -409,7 +409,70 @@ describe('Recruitment Tests', () => {
             'buttonTxt',
             'buttonLink'
           )
-      ).rejects.toThrow(new NotFoundException('Milestone', 1));
+      ).rejects.toThrow(new NotFoundException('Guest Definition', 'definition id'));
+    });
+
+    it('Successful edit guest definition', async () => {
+      const def = await RecruitmentServices.createGuestDefinition(
+        superman,
+        organization,
+        'test term',
+        'test description',
+        2,
+        'iconname',
+        'buttonTxt',
+        'buttonLink'
+      );
+
+      const edited = await RecruitmentServices.editGuestDefinition(
+        await createTestUser(batmanAppAdmin, orgId),
+        organization,
+        'new term',
+        'new description',
+        def.definitionId,
+        4,
+        'new icon',
+        'new text',
+        'new link'
+      );
+
+      expect(edited.term).toBe('new term');
+      expect(edited.description).toBe('new description');
+      expect(edited.order).toBe(4);
+      expect(edited.icon).toBe('new icon');
+      expect(edited.buttonText).toBe('new text');
+      expect(edited.buttonLink).toBe('new link');
+    });
+
+    it('Edit guest definition fails if defintion is deleted', async () => {
+      const def = await RecruitmentServices.createGuestDefinition(
+        superman,
+        organization,
+        'test term',
+        'test description',
+        2,
+        'iconname',
+        'buttonTxt',
+        'buttonLink'
+      );
+
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+
+      await RecruitmentServices.deleteGuestDefinition(batman, def.definitionId, organization);
+
+      await expect(
+        async () =>
+          await RecruitmentServices.editGuestDefinition(
+            batman,
+            organization,
+            'term',
+            'description',
+            def.definitionId,
+            2,
+            'buttonTxt',
+            'buttonLink'
+          )
+      ).rejects.toThrow(new DeletedException('Guest Definition', def.definitionId));
     });
 
     it('Fails if milestone is deleted', async () => {
