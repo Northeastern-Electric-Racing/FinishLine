@@ -7,6 +7,7 @@ import { render, screen, routerWrapperBuilder } from '../../../test-support/test
 import { wbsPipe } from '../../../../utils/pipes';
 import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import StageGateWorkPackageModal from '../../../../pages/WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModal';
+import { ToastProvider } from '../../../../components/Toast/ToastProvider';
 
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting
@@ -24,12 +25,14 @@ const renderComponent = (modalShow: boolean) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <StageGateWorkPackageModal
-        modalShow={modalShow}
-        onHide={mockHandleHide}
-        onSubmit={mockHandleSubmit}
-        wbsNum={exampleWbs1}
-      />
+      <ToastProvider>
+        <StageGateWorkPackageModal
+          modalShow={modalShow}
+          onHide={mockHandleHide}
+          onSubmit={mockHandleSubmit}
+          wbsNum={exampleWbs1}
+        />
+      </ToastProvider>
     </RouterWrapper>
   );
 };

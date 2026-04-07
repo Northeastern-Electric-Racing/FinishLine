@@ -80,6 +80,7 @@ export const TaskColumn = ({
   return (
     <>
       <TaskFormModal
+        status={status}
         onSubmit={handleCreateTask}
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}

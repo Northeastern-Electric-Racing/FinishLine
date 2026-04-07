@@ -2,7 +2,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, WbsNumber } from 'shared';
+import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, TaskStatus, TeamPreview, WbsNumber } from 'shared';
 import { useAllUsers, useCurrentUser } from '../../../../hooks/users.hooks';
 import { useWorkPackagesByProject } from '../../../../hooks/work-packages.hooks';
 import * as yup from 'yup';
@@ -10,18 +10,6 @@ import { taskUserToAutocompleteOption } from '../../../../utils/task.utils';
 import NERFormModal from '../../../../components/NERFormModal';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
-
-const schema = yup.object().shape({
-  notes: yup.string().optional(),
-  startDate: yup.date().optional(),
-  deadline: yup.date().optional(),
-  priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
-  assignees: yup.array().required(),
-  title: yup.string().required(),
-  taskId: yup.string().required(),
-  wpWbsElementId: yup.string().optional(),
-  wpWbsNum: yup.mixed<WbsNumber>().optional()
-});
 
 export interface EditTaskFormInput {
   taskId: string;
@@ -37,6 +25,8 @@ export interface EditTaskFormInput {
 
 interface TaskFormModalProps {
   task?: Task;
+  status?: Task['status'];
+  teams: TeamPreview[];
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
@@ -44,7 +34,49 @@ interface TaskFormModalProps {
   wbsNum: WbsNumber;
 }
 
-const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow, onHide, onReset, wbsNum }) => {
+const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, modalShow, onHide, onReset, wbsNum }) => {
+  let schema;
+
+  if (status === TaskStatus.IN_PROGRESS) {
+    schema = yup.object().shape({
+      notes: yup
+        .string()
+        .optional()
+        .test((value) => {
+          if (!value) return true;
+          const wordCount = countWords(value);
+          return wordCount < 250;
+        }),
+      startDate: yup.date().optional(),
+      deadline: yup.date().required('Deadline is required for In Progress tasks'),
+      priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
+      assignees: yup.array().required().min(1, 'At least one assignee is required for In Progress tasks'),
+      title: yup.string().required(),
+      taskId: yup.string().required(),
+      wpWbsElementId: yup.string().optional(),
+      wpWbsNum: yup.mixed<WbsNumber>().optional()
+    });
+  } else {
+    schema = yup.object().shape({
+      notes: yup
+        .string()
+        .optional()
+        .test((value) => {
+          if (!value) return true;
+          const wordCount = countWords(value);
+          return wordCount < 250;
+        }),
+      startDate: yup.date().optional(),
+      deadline: yup.date().optional(),
+      priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
+      assignees: yup.array().required(),
+      title: yup.string().required(),
+      taskId: yup.string().required(),
+      wpWbsElementId: yup.string().optional(),
+      wpWbsNum: yup.mixed<WbsNumber>().optional()
+    });
+  }
+
   const user = useCurrentUser();
 
   const { data: users, isLoading, isError, error } = useAllUsers();
@@ -208,6 +240,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
                   />
                 )}
               />
+              <FormHelperText error={!!errors.assignees}>{errors.assignees?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item md={6}>
@@ -246,6 +279,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
                   />
                 )}
               />
+              <FormHelperText error={!!errors.deadline}>{errors.deadline?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={12} md={12}>
