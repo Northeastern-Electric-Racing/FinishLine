@@ -377,4 +377,65 @@ describe('Recruitment Tests', () => {
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a guest definition'));
     });
   });
+  describe('Edit Guest Definition', () => {
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editGuestDefinition(
+            await createTestUser(member, orgId),
+            organization,
+            'test term',
+            'test description',
+            'test definition id',
+            2,
+            'buttonTxt',
+            'buttonLink'
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit guest definition'));
+    });
+
+    it('Fails if guest definition doesn`t exist', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editGuestDefinition(
+            await createTestUser(batmanAppAdmin, orgId),
+            organization,
+            'term',
+            'description',
+            'definition id',
+            2,
+            'buttonTxt',
+            'buttonLink'
+          )
+      ).rejects.toThrow(new NotFoundException('Milestone', 1));
+    });
+
+    it('Fails if milestone is deleted', async () => {
+      const milestone = await RecruitmentServices.createMilestone(
+        await createTestUser(batmanAppAdmin, orgId),
+        'name',
+        'description',
+        new Date('11/12/24'),
+        organization
+      );
+
+      await prisma.milestone.delete({
+        where: {
+          milestoneId: milestone.milestoneId
+        }
+      });
+
+      await expect(
+        async () =>
+          await RecruitmentServices.editMilestone(
+            superman,
+            'name',
+            'description',
+            new Date('11/12/24'),
+            milestone.milestoneId,
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Milestone', milestone.milestoneId));
+    });
+  });
 });
