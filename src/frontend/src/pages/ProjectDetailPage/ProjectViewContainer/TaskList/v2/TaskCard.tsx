@@ -2,7 +2,7 @@ import { Draggable } from '@hello-pangea/dnd';
 import { Construction, Delete, Schedule } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Grid, Typography, IconButton } from '@mui/material';
 import { useState } from 'react';
-import { notGuest, Task } from 'shared';
+import { notGuest, Task, WbsNumber } from 'shared';
 import { useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
@@ -18,14 +18,12 @@ export const TaskCard = ({
   task,
   index,
   wbsNum,
-  wbsElementId,
   onDeleteTask,
   onEditTask
 }: {
   task: Task;
   index: number;
   wbsNum: WbsNumber;
-  wbsElementId: string;
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
 }) => {
@@ -78,7 +76,7 @@ export const TaskCard = ({
         wbsElementId: wpWbsElementId
       });
 
-      let newTask = await editTaskAssignees({
+      const newTask = await editTaskAssignees({
         taskId,
         assignees
       });

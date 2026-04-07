@@ -13,7 +13,6 @@ export const TaskColumn = ({
   status,
   tasks,
   wbsNum,
-  wbsElementId,
   equalizedHeight,
   isDragging,
   onEditTask,
@@ -140,7 +139,7 @@ export const TaskColumn = ({
                   key={task.taskId}
                   task={task}
                   index={index}
-                  wbsElementId={wbsElementId}
+                  wbsNum={wbsNum}
                 />
               ))}
               {droppableProvided.placeholder}

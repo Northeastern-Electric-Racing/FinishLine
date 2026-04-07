@@ -158,7 +158,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
       ) : tabValue === 1 ? (
         !allowEdit ? null : (
-          <TaskListContent tasks={workPackage.tasks} wbsNum={workPackage.wbsNum} wbsElementId={workPackage.wbsElementId} />
+          <TaskListContent wbsNum={workPackage.wbsNum} wbsElementId={workPackage.wbsElementId} />
         )
       ) : tabValue === 2 ? (
         <ScopeTab workPackage={workPackage} />

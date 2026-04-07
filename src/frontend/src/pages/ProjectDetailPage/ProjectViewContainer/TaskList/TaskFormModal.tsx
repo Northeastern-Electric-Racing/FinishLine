@@ -19,6 +19,7 @@ const schema = yup.object().shape({
   assignees: yup.array().required(),
   title: yup.string().required(),
   taskId: yup.string().required(),
+  wpWbsElementId: yup.string().optional(),
   wpWbsNum: yup.mixed<WbsNumber>().optional()
 });
 
@@ -30,6 +31,7 @@ export interface EditTaskFormInput {
   startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
+  wpWbsElementId?: string;
   wpWbsNum?: WbsNumber;
 }
 
@@ -55,7 +57,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
     handleSubmit,
     control,
     formState: { errors },
-    reset
+    reset,
+    setValue
   } = useForm<EditTaskFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -66,6 +69,12 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
       deadline: task?.deadline ?? undefined,
       priority: task?.priority ?? TaskPriority.Low,
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? [],
+      wpWbsElementId:
+        task?.wbsNum.workPackageNumber !== 0
+          ? workPackages?.find((wp) => wp.wbsNum.workPackageNumber === task?.wbsNum.workPackageNumber)?.wbsElementId
+          : isWpContext
+            ? workPackages?.find((wp) => wp.wbsNum.workPackageNumber === wbsNum.workPackageNumber)?.wbsElementId
+            : undefined,
       wpWbsNum: task?.wbsNum.workPackageNumber !== 0 ? task?.wbsNum : isWpContext ? wbsNum : undefined
     }
   });
@@ -74,8 +83,9 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
   if (isLoading || !users) return <LoadingIndicator />;
 
   const userOptions: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
-  const wpOptions: { label: string; wbsNum: WbsNumber }[] = (workPackages ?? []).map((wp) => ({
+  const wpOptions: { label: string; wbsElementId: string; wbsNum: WbsNumber }[] = (workPackages ?? []).map((wp) => ({
     label: wp.name,
+    wbsElementId: wp.wbsElementId,
     wbsNum: wp.wbsNum
   }));
 
@@ -156,15 +166,18 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
             <FormControl fullWidth>
               <FormLabel>Work Package</FormLabel>
               <Controller
-                name="wpWbsNum"
+                name="wpWbsElementId"
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Autocomplete
                     options={wpOptions}
-                    isOptionEqualToValue={(option, val) => option.wbsNum.workPackageNumber === val.wbsNum.workPackageNumber}
+                    isOptionEqualToValue={(option, val) => option.wbsElementId === val.wbsElementId}
                     getOptionLabel={(option) => option.label}
-                    onChange={(_, val) => onChange(val?.wbsNum ?? undefined)}
-                    value={wpOptions.find((o) => o.wbsNum.workPackageNumber === value?.workPackageNumber) ?? null}
+                    onChange={(_, val) => {
+                      onChange(val?.wbsElementId ?? undefined);
+                      setValue('wpWbsNum', val?.wbsNum ?? undefined);
+                    }}
+                    value={wpOptions.find((o) => o.wbsElementId === value) ?? null}
                     renderInput={(params) => (
                       <TextField {...params} variant="standard" placeholder={'Select a work package'} />
                     )}

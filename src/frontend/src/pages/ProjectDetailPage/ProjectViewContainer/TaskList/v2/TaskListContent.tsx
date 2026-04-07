@@ -17,7 +17,7 @@ interface TaskListContentProps {
 
 export const TaskListContent = ({ wbsNum, wbsElementId }: TaskListContentProps) => {
   const { data: tasks, isLoading, isError, error } = useTasksByWbsNum(wbsNum);
-  const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus>(getTasksByStatus([])); // can't use getTasksByStatus since tasks are async
+  const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus | undefined>(undefined); // can't use getTasksByStatus since tasks are async
   const { mutateAsync: setTaskStatus } = useSetTaskStatus();
 
   const toast = useToast();
@@ -31,17 +31,20 @@ export const TaskListContent = ({ wbsNum, wbsElementId }: TaskListContentProps) 
     if (tasks && !tasksByStatus) {
       setTasksByStatus(getTasksByStatus(tasks));
     }
+    // disable lint check because adding tasksByStatus to deps would cause infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tasks]);
 
   const onHeightChange = useCallback((status: TaskStatus, height: number) => {
     setColumnHeights((prev) => ({ ...prev, [status]: height }));
   }, []);
 
-  if (isLoading || !tasks) return <LoadingIndicator />;
+  if (isLoading || !tasksByStatus) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
   const onDeleteTask = (taskId: string) => {
     setTasksByStatus((prev) => {
+      if (!prev) return prev;
       const newTasksByStatus = { ...prev };
       for (const status of statuses) {
         const index = newTasksByStatus[status].findIndex((task) => task?.taskId === taskId);
@@ -56,6 +59,7 @@ export const TaskListContent = ({ wbsNum, wbsElementId }: TaskListContentProps) 
 
   const onEditTask = (task: Task) => {
     setTasksByStatus((prev) => {
+      if (!prev) return prev;
       const newTasksByStatus = { ...prev };
       for (const status of statuses) {
         const index = newTasksByStatus[status].findIndex((t) => t?.taskId === task.taskId);
@@ -69,10 +73,13 @@ export const TaskListContent = ({ wbsNum, wbsElementId }: TaskListContentProps) 
   };
 
   const onAddTask = (task: Task) => {
-    setTasksByStatus((prev) => ({
-      ...prev,
-      [task.status]: [...prev[task.status], { ...task, index: prev[task.status].length }]
-    }));
+    setTasksByStatus((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [task.status]: [...prev[task.status], { ...task, index: prev[task.status].length }]
+      };
+    });
   };
 
   const onDragStart: OnDragStartResponder = () => {

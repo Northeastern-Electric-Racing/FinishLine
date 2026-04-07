@@ -62,10 +62,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
     startDate: calculateProjectStartDate(project.workPackages),
     endDate: calculateProjectEndDate(project.workPackages),
     descriptionBullets: wbsElement.descriptionBullets.map(descBulletConverter),
-    tasks: [
-      ...wbsElement.tasks.map(taskTransformer), // this project's tasks
-      ...project.workPackages.flatMap((wp) => wp.wbsElement.tasks.map(taskTransformer)) // all of this project's work packages' tasks, flattened to one array
-    ],
+    tasks: wbsElement.tasks.map(taskTransformer),
     workPackages: project.workPackages.map(workPackageTransformer),
     abbreviation: project.abbreviation ?? undefined
   };
@@ -94,10 +91,7 @@ export const projectGanttTransformer = (project: Prisma.ProjectGetPayload<Projec
     })),
     duration: calculateDuration(project.workPackages),
     startDate: calculateProjectStartDate(project.workPackages),
-    tasks: [
-      ...wbsElement.tasks.map(taskTransformer), // this project's tasks
-      ...project.workPackages.flatMap((wp) => wp.wbsElement.tasks.map(taskTransformer)) // all of this project's work packages' tasks, flattened to one array
-    ],
+    tasks: project.wbsElement.tasks.map(taskTransformer),
     workPackages: project.workPackages.map(workPackageTransformer),
     abbreviation: project.abbreviation ?? undefined
   };
