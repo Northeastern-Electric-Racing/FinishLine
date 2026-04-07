@@ -14,7 +14,13 @@ import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/change
 
 vi.mock('../../apis/change-requests.api');
 vi.mock('../../app/AppGlobalCarFilterContext', () => ({
-  useGlobalCarFilter: () => ({ selectedCar: 'all-cars', allCars: [], setSelectedCar: vi.fn(), isLoading: false, error: null })
+  useGlobalCarFilter: () => ({
+    selectedCar: 'all-cars',
+    allCars: [],
+    setSelectedCar: vi.fn(),
+    isLoading: false,
+    error: null
+  })
 }));
 
 describe('change request hooks', () => {

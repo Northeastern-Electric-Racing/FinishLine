@@ -190,10 +190,13 @@ export const useUserScheduleSettings = (id: string) => {
  */
 export const useUsersFavoriteProjects = (id: string) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ProjectOverview[], Error>(['users', id, 'favorite projects', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
-    const { data } = await getUsersFavoriteProjects(id);
-    return data;
-  });
+  return useQuery<ProjectOverview[], Error>(
+    ['users', id, 'favorite projects', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getUsersFavoriteProjects(id);
+      return data;
+    }
+  );
 };
 
 /**

@@ -467,10 +467,13 @@ export const useGetAllAccountCodes = () => {
  */
 export const useCurrentUserReimbursementRequests = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
-    const { data } = await getCurrentUserReimbursementRequests();
-    return data;
-  });
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', 'user', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getCurrentUserReimbursementRequests();
+      return data;
+    }
+  );
 };
 
 /**
@@ -478,10 +481,13 @@ export const useCurrentUserReimbursementRequests = () => {
  */
 export const useCurrentUserAssignedReimbursementRequests = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'assignee', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
-    const { data } = await getCurrentUserAssignedReimbursementRequests();
-    return data;
-  });
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', 'assignee', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getCurrentUserAssignedReimbursementRequests();
+      return data;
+    }
+  );
 };
 
 /**
@@ -489,10 +495,13 @@ export const useCurrentUserAssignedReimbursementRequests = () => {
  */
 export const useCurrentUsersTeamsReimbursementRequests = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'teams', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
-    const { data } = await getCurrentUsersTeamsReimbursementRequests();
-    return data;
-  });
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', 'teams', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getCurrentUsersTeamsReimbursementRequests();
+      return data;
+    }
+  );
 };
 
 /**
@@ -542,10 +551,13 @@ export const useSetTaxExemptStatus = () => {
  */
 export const useAllReimbursementRequests = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
-    const { data } = await getAllReimbursementRequests();
-    return data;
-  });
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllReimbursementRequests();
+      return data;
+    }
+  );
 };
 
 /**

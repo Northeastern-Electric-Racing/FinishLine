@@ -56,10 +56,13 @@ export const useAllProjectsGantt = () => {
  */
 export const useAllProjects = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ProjectPreview[], Error>(['projects', 'previews', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
-    const { data } = await getAllProjects();
-    return data;
-  });
+  return useQuery<ProjectPreview[], Error>(
+    ['projects', 'previews', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllProjects();
+      return data;
+    }
+  );
 };
 
 /**
@@ -67,10 +70,13 @@ export const useAllProjects = () => {
  */
 export const useGetUsersTeamsProjects = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ProjectOverview[], Error>(['projects', 'teams', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
-    const { data } = await getUsersTeamsProjects();
-    return data;
-  });
+  return useQuery<ProjectOverview[], Error>(
+    ['projects', 'teams', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getUsersTeamsProjects();
+      return data;
+    }
+  );
 };
 
 /**
@@ -78,10 +84,13 @@ export const useGetUsersTeamsProjects = () => {
  */
 export const useGetUsersLeadingProjects = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ProjectOverview[], Error>(['projects', 'leading', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
-    const { data } = await getUsersLeadingProjects();
-    return data;
-  });
+  return useQuery<ProjectOverview[], Error>(
+    ['projects', 'leading', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getUsersLeadingProjects();
+      return data;
+    }
+  );
 };
 
 /**
@@ -89,10 +98,13 @@ export const useGetUsersLeadingProjects = () => {
  */
 export const useGetTeamsProjects = (teamId: string) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<Project[], Error>(['projects', 'teams', teamId, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
-    const { data } = await getTeamsProjects(teamId);
-    return data;
-  });
+  return useQuery<Project[], Error>(
+    ['projects', 'teams', teamId, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getTeamsProjects(teamId);
+      return data;
+    }
+  );
 };
 
 /**

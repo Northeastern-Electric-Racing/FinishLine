@@ -8,7 +8,13 @@ import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import AppContextQuery from '../../app/AppContextQuery';
 
 vi.mock('../../app/AppGlobalCarFilterContext', () => ({
-  useGlobalCarFilter: () => ({ selectedCar: 'all-cars', allCars: [], setSelectedCar: vi.fn(), isLoading: false, error: null })
+  useGlobalCarFilter: () => ({
+    selectedCar: 'all-cars',
+    allCars: [],
+    setSelectedCar: vi.fn(),
+    isLoading: false,
+    error: null
+  })
 }));
 
 describe('app context', () => {

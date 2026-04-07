@@ -26,10 +26,13 @@ import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
  */
 export const useAllWorkPackages = (queryParams?: { [field: string]: string }) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<WorkPackage[], Error>(['work packages', queryParams, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
-    const { data } = await getAllWorkPackages(queryParams);
-    return data;
-  });
+  return useQuery<WorkPackage[], Error>(
+    ['work packages', queryParams, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllWorkPackages(queryParams);
+      return data;
+    }
+  );
 };
 
 /**
@@ -37,10 +40,13 @@ export const useAllWorkPackages = (queryParams?: { [field: string]: string }) =>
  */
 export const useAllWorkPackagesPreview = (status?: string) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<WorkPackagePreview[], Error>(['work packages', 'preview', status, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
-    const { data } = await getAllWorkPackagesPreview(status);
-    return data;
-  });
+  return useQuery<WorkPackagePreview[], Error>(
+    ['work packages', 'preview', status, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllWorkPackagesPreview(status);
+      return data;
+    }
+  );
 };
 
 /**
@@ -153,8 +159,11 @@ export const useSlackUpcomingDeadlines = () => {
 
 export const useHomeScreenWorkPackages = (selection: WorkPackageSelection) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<WorkPackage[], Error>(['teams', 'work-packages', selection, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id], async () => {
-    const { data } = await getHomePageWorkPackages(selection);
-    return data;
-  });
+  return useQuery<WorkPackage[], Error>(
+    ['teams', 'work-packages', selection, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getHomePageWorkPackages(selection);
+      return data;
+    }
+  );
 };
