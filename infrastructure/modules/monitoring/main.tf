@@ -357,6 +357,10 @@ resource "aws_cloudwatch_metric_alarm" "eb_memory_high" {
     Environment = var.environment
     Project     = var.project_name
   }
+
+  lifecycle {
+    ignore_changes = [metric_query]
+  }
 }
 
 #############

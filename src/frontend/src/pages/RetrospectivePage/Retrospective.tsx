@@ -41,7 +41,6 @@ const RetrospectivePage = () => {
   const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
 
   const [searchText, setSearchText] = useState<string>('');
-  const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
   const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | Task>[]>([]);
 
   const {
@@ -153,24 +152,6 @@ const RetrospectivePage = () => {
     };
   });
 
-  const overdueHandler = [
-    {
-      filterLabel: 'Overdue',
-      handler: (event: ChangeEvent<HTMLInputElement>) =>
-        handleSetGanttFilters({ ...filters, showOnlyOverdue: event.target.checked }),
-      defaultChecked: filters.showOnlyOverdue
-    }
-  ];
-
-  const hideTasksHandler = [
-    {
-      filterLabel: 'Hide Tasks',
-      handler: (event: ChangeEvent<HTMLInputElement>) =>
-        handleSetGanttFilters({ ...filters, hideTasks: event.target.checked }),
-      defaultChecked: filters.hideTasks
-    }
-  ];
-
   const carHandlers: {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -187,7 +168,6 @@ const RetrospectivePage = () => {
   const resetHandler = () => {
     history.push(routes.RETROSPECTIVE);
     localStorage.removeItem('retro-gantt');
-    showWorkPackagesMap.clear();
   };
 
   /***************************************************** */
@@ -220,24 +200,6 @@ const RetrospectivePage = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
-  const collapseHandler = () => {
-    projects.forEach((project) => {
-      setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, false)));
-    });
-  };
-
-  const expandHandler = () => {
-    projects.forEach((project) => {
-      setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, true)));
-    });
-  };
-
-  const elementId = (element: WbsElementPreview | Task) => (element as WbsElementPreview).id || (element as Task).taskId;
-
-  const toggleElementShowChildren = (element: WbsElementPreview | Task) => {
-    setShowWorkPackagesMap((prev) => new Map(prev.set(elementId(element), !prev.get(elementId(element)))));
-  };
-
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />
@@ -251,11 +213,7 @@ const RetrospectivePage = () => {
         carHandlers={carHandlers}
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
-        overdueHandler={overdueHandler}
-        hideTasksHandler={hideTasksHandler}
         resetHandler={resetHandler}
-        collapseHandler={collapseHandler}
-        expandHandler={expandHandler}
       />
     </Box>
   );
@@ -267,13 +225,7 @@ const RetrospectivePage = () => {
         chips={<SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />}
         headerRight={headerRight}
       >
-        <GanttChart
-          collections={collections}
-          startDate={startDate}
-          endDate={endDate}
-          shouldShowChildren={(task) => !!showWorkPackagesMap.get(elementId(task.element))}
-          onShowChildrenToggle={(task) => toggleElementShowChildren(task.element)}
-        />
+        <GanttChart collections={collections} startDate={startDate} endDate={endDate} />
       </PageLayout>
     </>
   );

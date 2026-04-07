@@ -81,7 +81,6 @@ const ProjectGanttChartPage: FC = () => {
   const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
-  const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
   const [addedProjects, setAddedProjects] = useState<ProjectGantt[]>([]);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
@@ -210,24 +209,6 @@ const ProjectGanttChartPage: FC = () => {
     };
   });
 
-  const overdueHandler = [
-    {
-      filterLabel: 'Overdue',
-      handler: (event: ChangeEvent<HTMLInputElement>) =>
-        handleSetGanttFilters({ ...filters, showOnlyOverdue: event.target.checked }),
-      defaultChecked: filters.showOnlyOverdue
-    }
-  ];
-
-  const hideTasksHandler = [
-    {
-      filterLabel: 'Hide Tasks',
-      handler: (event: ChangeEvent<HTMLInputElement>) =>
-        handleSetGanttFilters({ ...filters, hideTasks: event.target.checked }),
-      defaultChecked: filters.hideTasks
-    }
-  ];
-
   const carHandlers: {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -244,7 +225,6 @@ const ProjectGanttChartPage: FC = () => {
   const resetHandler = () => {
     history.push(routes.GANTT);
     localStorage.removeItem('ganttURL');
-    showWorkPackagesMap.clear();
   };
 
   /* **************************************************** */
@@ -438,10 +418,6 @@ const ProjectGanttChartPage: FC = () => {
       if (ganttChanges.length > 0) {
         const requestEventChanges = constructFinalizedChanges(projects, addedProjects.concat(editedProjects), ganttChanges);
         setRequestEventChanges(requestEventChanges);
-        if (requestEventChanges.length > 0) {
-          const { element } = requestEventChanges[requestEventChanges.length - 1];
-          setShowWorkPackagesMap((prev) => new Map(prev.set(element.id, true)));
-        }
       } else {
         toast.success('Changes saved successfully!');
         handleCancel();
@@ -530,11 +506,6 @@ const ProjectGanttChartPage: FC = () => {
     setRequestEventChanges(newChanges);
     if (newChanges.length === 0) {
       handleCancel();
-    } else {
-      const change = newChanges[newChanges.length - 1];
-      setShowWorkPackagesMap(
-        (prev) => new Map(prev.set((change.element as Task).taskId ?? (change.element as WbsElementPreview).id, true))
-      );
     }
 
     if (cancelled) {
@@ -634,22 +605,6 @@ const ProjectGanttChartPage: FC = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
-  const collapseHandler = () => {
-    allProjects.forEach((project) => {
-      setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, false)));
-    });
-  };
-
-  const expandHandler = () => {
-    allProjects.forEach((project) => {
-      setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, true)));
-    });
-  };
-
-  const toggleElementShowChildren = (element: WbsElementPreview | Task) => {
-    setShowWorkPackagesMap((prev) => new Map(prev.set(getElementId(element), !prev.get(getElementId(element)))));
-  };
-
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />
@@ -657,11 +612,7 @@ const ProjectGanttChartPage: FC = () => {
         carHandlers={carHandlers}
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
-        overdueHandler={overdueHandler}
-        hideTasksHandler={hideTasksHandler}
         resetHandler={resetHandler}
-        collapseHandler={collapseHandler}
-        expandHandler={expandHandler}
       />
     </Box>
   );
@@ -696,8 +647,6 @@ const ProjectGanttChartPage: FC = () => {
             highlightSubtaskComparator: highlightWorkPackageComparator,
             highlightTaskComparator: highlightProjectComparator
           }}
-          shouldShowChildren={(task) => !!showWorkPackagesMap.get(getElementId(task.element))}
-          onShowChildrenToggle={(task) => toggleElementShowChildren(task.element)}
         />
       </PageLayout>
     </>

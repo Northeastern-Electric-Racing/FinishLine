@@ -379,7 +379,11 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   const WeekEventBlock = ({ event, layout }: { event: EventInstance; layout: LayoutEvent }) => {
     const [blockHovered, setBlockHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
+    const tooltipHoveredRef = useRef(false);
+    tooltipHoveredRef.current = tooltipHovered;
     const isLocked = lockedTooltipEventId === event.eventId + event.scheduleSlotId;
+    const isLockedRef = useRef(false);
+    isLockedRef.current = isLocked;
     const isOpen = isLocked || blockHovered || tooltipHovered;
 
     const baseColor = getEventColor(event);
@@ -405,7 +409,11 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
         enterDelay={0}
         leaveDelay={200}
         title={
-          <Box onMouseEnter={() => setTooltipHovered(true)} onMouseLeave={() => setTooltipHovered(false)}>
+          <Box
+            onMouseEnter={() => setTooltipHovered(true)}
+            onMouseLeave={() => setTooltipHovered(false)}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <EventClickContent
               event={event}
               eventTypes={allEventTypes}
@@ -438,8 +446,9 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
           data-testid="week-event-block"
           onMouseEnter={() => setBlockHovered(true)}
           onMouseLeave={() => {
+            setTooltipHovered(false);
             setTimeout(() => {
-              if (!isLocked && !tooltipHovered) setBlockHovered(false);
+              if (!isLockedRef.current && !tooltipHoveredRef.current) setBlockHovered(false);
             }, 100);
           }}
           onClick={(e) => {
@@ -491,7 +500,11 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   const AllDayEventBlock = ({ event }: { event: EventInstance }) => {
     const [blockHovered, setBlockHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
+    const tooltipHoveredRef = useRef(false);
+    tooltipHoveredRef.current = tooltipHovered;
     const isLocked = lockedTooltipEventId === event.eventId + event.scheduleSlotId;
+    const isLockedRef = useRef(false);
+    isLockedRef.current = isLocked;
     const isOpen = isLocked || blockHovered || tooltipHovered;
 
     const baseColor = getEventColor(event);
@@ -513,7 +526,11 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
         enterDelay={0}
         leaveDelay={200}
         title={
-          <Box onMouseEnter={() => setTooltipHovered(true)} onMouseLeave={() => setTooltipHovered(false)}>
+          <Box
+            onMouseEnter={() => setTooltipHovered(true)}
+            onMouseLeave={() => setTooltipHovered(false)}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <EventClickContent
               event={event}
               eventTypes={allEventTypes}
@@ -545,8 +562,9 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
         <Card
           onMouseEnter={() => setBlockHovered(true)}
           onMouseLeave={() => {
+            setTooltipHovered(false);
             setTimeout(() => {
-              if (!isLocked && !tooltipHovered) setBlockHovered(false);
+              if (!isLockedRef.current && !tooltipHoveredRef.current) setBlockHovered(false);
             }, 100);
           }}
           onClick={(e) => {
@@ -575,8 +593,12 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   const AllDayTaskBlock = ({ task }: { task: CalendarTask }) => {
     const [blockHovered, setBlockHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
+    const tooltipHoveredRef = useRef(false);
+    tooltipHoveredRef.current = tooltipHovered;
     const tooltipKey = `task-${task.taskId}`;
     const isLocked = lockedTooltipEventId === tooltipKey;
+    const isLockedRef = useRef(false);
+    isLockedRef.current = isLocked;
     const isOpen = isLocked || blockHovered || tooltipHovered;
 
     return (
@@ -590,7 +612,11 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
         enterDelay={0}
         leaveDelay={200}
         title={
-          <Box onMouseEnter={() => setTooltipHovered(true)} onMouseLeave={() => setTooltipHovered(false)}>
+          <Box
+            onMouseEnter={() => setTooltipHovered(true)}
+            onMouseLeave={() => setTooltipHovered(false)}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <TaskClickContent task={task} onClose={() => setLockedTooltipEventId(null)} />
           </Box>
         }
@@ -612,8 +638,9 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
         <Card
           onMouseEnter={() => setBlockHovered(true)}
           onMouseLeave={() => {
+            setTooltipHovered(false);
             setTimeout(() => {
-              if (!isLocked && !tooltipHovered) setBlockHovered(false);
+              if (!isLockedRef.current && !tooltipHoveredRef.current) setBlockHovered(false);
             }, 100);
           }}
           onClick={(e) => {
