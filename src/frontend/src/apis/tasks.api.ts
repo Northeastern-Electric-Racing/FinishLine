@@ -65,7 +65,7 @@ export const createSingleTask = (
  * @param priority the new priority
  * @param deadline the new deadline
  * @param startDate the new start date
- * @param wbsElementId the new wbs element
+ * @param wbsNum the new wbs element
  * @returns the edited task
  */
 export const editTask = (
@@ -75,7 +75,7 @@ export const editTask = (
   priority: TaskPriority,
   deadline?: Date,
   startDate?: Date,
-  wbsElementId?: string
+  wbsNum?: WbsNumber
 ) => {
   return axios.post<{ message: string }>(apiUrls.editTaskById(taskId), {
     title,
@@ -83,7 +83,7 @@ export const editTask = (
     priority,
     deadline: deadline ? dateToMidnightUTC(deadline) : undefined,
     startDate: startDate ? dateToMidnightUTC(startDate) : undefined,
-    wbsElementId
+    wbsNum
   });
 };
 

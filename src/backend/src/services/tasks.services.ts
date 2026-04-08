@@ -148,7 +148,7 @@ export default class TasksService {
    * @param priority the new priority for the task
    * @param startDate the new start date for the task
    * @param deadline the new deadline for the task
-   * @param wbsElementId the new wbs element id for the task
+   * @param wbsNum the new wbs element for the task
    * @returns the sucessfully edited task
    */
   static async editTask(
@@ -160,7 +160,7 @@ export default class TasksService {
     priority: Task_Priority,
     startDate?: Date,
     deadline?: Date,
-    wbsElementId?: string
+    wbsNum?: WbsNumber
   ) {
     const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
     if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
@@ -175,11 +175,18 @@ export default class TasksService {
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
-    // if wbsElementId passed, error if there's a problem with the wbs element
-    if (wbsElementId) {
-      const newWbsElement = await prisma.wBS_Element.findUnique({ where: { wbsElementId } });
-      if (!newWbsElement) throw new NotFoundException('WBS Element', wbsElementId);
-      if (newWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsElementId);
+    // if wbsNum passed, error if there's a problem with the wbs element
+    if (wbsNum) {
+      const newWbsElement = await prisma.wBS_Element.findUnique({
+        where: {
+          wbsNumber: {
+            ...wbsNum,
+            organizationId
+          }
+        }
+      });
+      if (!newWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+      if (newWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
     }
 
     const updatedTask = await prisma.task.update({
@@ -190,8 +197,17 @@ export default class TasksService {
         priority,
         startDate,
         deadline,
-        // if wbsElementId passed, update prisma relation to connect task with wbs element
-        ...(wbsElementId && { wbsElement: { connect: { wbsElementId } } })
+        // if wbsNum passed, update prisma relation to connect task with wbs element
+        ...(wbsNum && {
+          wbsElement: {
+            connect: {
+              wbsNumber: {
+                ...wbsNum,
+                organizationId
+              }
+            }
+          }
+        })
       },
       ...getTaskQueryArgs(originalTask.wbsElement.organizationId)
     });

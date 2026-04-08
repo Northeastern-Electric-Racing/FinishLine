@@ -41,7 +41,7 @@ export default class TasksController {
         priority,
         startDate ? new Date(startDate) : undefined,
         deadline ? new Date(deadline) : undefined,
-        wbsElementId
+        wbsNum
       );
 
       res.status(200).json(updateTask);

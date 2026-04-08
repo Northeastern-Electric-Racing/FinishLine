@@ -23,7 +23,6 @@ export const TaskColumn = ({
   status: TaskStatus;
   tasks: TaskWithIndex[];
   wbsNum: WbsNumber;
-  wbsElementId: string;
   equalizedHeight: number;
   isDragging: boolean;
   onEditTask: (task: Task) => void;
@@ -57,8 +56,9 @@ export const TaskColumn = ({
     wpWbsNum
   }: EditTaskFormInput) => {
     try {
+      const projectWbsNum = { ...wbsNum, workPackageNumber: 0 };
       const task = await createTask({
-        wbsNum: wpWbsNum ?? wbsNum,
+        wbsNum: wpWbsNum ?? projectWbsNum,
         title,
         deadline: deadline ? toDateString(deadline) : undefined,
         startDate: startDate ? toDateString(startDate) : undefined,

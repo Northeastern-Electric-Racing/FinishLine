@@ -67,6 +67,7 @@ export const useCreateTask = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['tasks']);
       }
     }
   );
@@ -79,7 +80,7 @@ export interface TaskPayload {
   startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
-  wbsElementId?: string;
+  wbsNum?: WbsNumber;
 }
 
 /**
@@ -98,7 +99,7 @@ export const useEditTask = () => {
         taskPayload.priority,
         taskPayload.deadline,
         taskPayload.startDate,
-        taskPayload.wbsElementId
+        taskPayload.wbsNum
       );
 
       return data;

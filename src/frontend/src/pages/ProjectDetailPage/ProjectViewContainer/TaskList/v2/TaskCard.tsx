@@ -63,9 +63,13 @@ export const TaskCard = ({
     assignees,
     priority,
     startDate,
-    wpWbsElementId
+    wpWbsNum
   }: EditTaskFormInput) => {
     try {
+      // uses the project's wbs element id as fallback if no wp was selected
+      const targetWbsNum =
+        wpWbsNum ?? (task.wbsNum.workPackageNumber !== 0 ? { ...wbsNum, workPackageNumber: 0 } : undefined);
+
       await editTask({
         taskId,
         notes,
@@ -73,7 +77,7 @@ export const TaskCard = ({
         deadline,
         startDate,
         priority,
-        wbsElementId: wpWbsElementId
+        wbsNum: targetWbsNum
       });
 
       const newTask = await editTaskAssignees({

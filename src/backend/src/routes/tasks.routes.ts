@@ -45,7 +45,7 @@ tasksRouter.post(
   isOptionalDateOnly(body('deadline')),
   isOptionalDateOnly(body('startDate')),
   isTaskPriority(body('priority')),
-  nonEmptyString(body('wbsElementId').optional()),
+  body('wbsNum').optional(),
   TasksController.editTask
 );
 
