@@ -709,7 +709,7 @@ export default class ReimbursementRequestService {
       return reimbursementRequestWithSaboNumber;
     } catch (error: unknown) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-        throw new HttpException(400, 'This SABO number is already assigned to another reimbursement reqest.');
+        throw new HttpException(400, 'This SABO number is already assigned to another reimbursement request.');
       }
       throw error;
     }
