@@ -20,8 +20,8 @@ const TeamOrDivisionPage: React.FC = () => {
   const user = useCurrentUser();
   const { isLoading: teamsLoading, isError: isTeamsError, data: teamTypes, error: teamsError } = useAllTeamTypes();
 
-  if (teamsLoading || !teamTypes) return <LoadingIndicator />;
   if (isTeamsError) return <ErrorPage message={teamsError.message} />;
+  if (teamsLoading || !teamTypes) return <LoadingIndicator />;
 
   if (isGuest(user.role) && teamTypes?.some((t) => t.teamTypeId === teamId)) {
     return <GuestTeamPage teamTypeId={teamId} />;

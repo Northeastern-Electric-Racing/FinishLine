@@ -21,9 +21,9 @@ const GuestTeamPage: React.FC<GuestTeamPageProps> = ({ teamTypeId }) => {
     error: teamTypesError
   } = useAllTeamTypes();
 
-  if (teamsIsLoading || !allTeams || teamTypesIsLoading || !allTeamTypes) return <LoadingIndicator />;
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;
   if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
+  if (teamsIsLoading || !allTeams || teamTypesIsLoading || !allTeamTypes) return <LoadingIndicator />;
 
   const teams = allTeams.filter((team) => team.teamType?.teamTypeId === teamTypeId);
   const teamTypeName = allTeamTypes.find((tt) => tt.teamTypeId === teamTypeId)?.name ?? '';
