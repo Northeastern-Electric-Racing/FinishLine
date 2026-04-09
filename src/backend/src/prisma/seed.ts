@@ -41,6 +41,7 @@ import OnboardingServices from '../services/onboarding.services.js';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed.js';
 import FinanceServices from '../services/finance.services.js';
 import CalendarService from '../services/calendar.services.js';
+import { allChangeRequestsReviewed } from '../utils/change-requests.utils.js';
 
 const prisma = new PrismaClient();
 
@@ -299,6 +300,40 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
+  await prisma.car.create({
+    data: {
+      wbsElement: {
+        create: {
+          name: 'NER-24',
+          carNumber: 24,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          organizationId
+        }
+      }
+    },
+    include: {
+      wbsElement: true
+    }
+  });
+
+  const car25 = await prisma.car.create({
+    data: {
+      wbsElement: {
+        create: {
+          name: 'NER-25',
+          carNumber: 25,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          organizationId
+        }
+      }
+    },
+    include: {
+      wbsElement: true
+    }
+  });
+
   const miles = await prisma.car.create({
     data: {
       wbsElement: {
@@ -317,11 +352,11 @@ const performSeed: () => Promise<void> = async () => {
   });
 
   /**
-   * Make an initial change request for car 1 using the wbs of the genesis project
+   * Make an initial change request for NER-25 using the wbs of the genesis project
    */
   const changeRequest1: StandardChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
-    fergus.wbsElement.carNumber,
+    car25.wbsElement.carNumber,
     fergus.wbsElement.projectNumber,
     fergus.wbsElement.workPackageNumber,
     CR_Type.OTHER,
@@ -606,7 +641,7 @@ const performSeed: () => Promise<void> = async () => {
   } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    fergus.wbsElement.carNumber,
+    car25.wbsElement.carNumber,
     'Impact Attenuator',
     'Develop rules-compliant impact attenuator',
     [huskies.teamId],
@@ -634,7 +669,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: projectHuskies2WbsNumber, projectId: projectHuskies2Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    fergus.wbsElement.carNumber,
+    car25.wbsElement.carNumber,
     'Bodywork',
     'Develop rules-compliant bodywork',
     [huskies.teamId],
@@ -662,7 +697,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: projectHuskies3WbsNumber, projectId: projectHuskies3Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    fergus.wbsElement.carNumber,
+    car25.wbsElement.carNumber,
     'Battery Box',
     'Develop rules-compliant battery box.',
     [huskies.teamId],
@@ -690,7 +725,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: projectHuskies4WbsNumber, projectId: projectHuskies4Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    fergus.wbsElement.carNumber,
+    car25.wbsElement.carNumber,
     'Motor Controller Integration',
     'Develop rules-compliant motor controller integration.',
     [huskies.teamId],
@@ -723,7 +758,7 @@ const performSeed: () => Promise<void> = async () => {
   } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    fergus.wbsElement.carNumber,
+    car25.wbsElement.carNumber,
     'Wiring Harness',
     'Develop rules-compliant wiring harness.',
     [slackBotTeam.teamId],
@@ -808,7 +843,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: projectAvatar1WbsNumber, projectId: projectAvatar1Id } = await seedProject(
     aang,
     changeRequest1.crId,
-    0,
+    car25.wbsElement.carNumber,
     'Appa Plush',
     'Manufacture plushes of Appa for moral support.',
     [avatarBenders.teamId],
@@ -837,7 +872,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: projectJustice1WbsNumber, projectId: projectJustice1Id } = await seedProject(
     lexLuther,
     changeRequest1.crId,
-    0,
+    car25.wbsElement.carNumber,
     'Laser Cannon Prototype',
     'Develop a prototype of a laser cannon for the Justice League',
     [justiceLeague.teamId],
@@ -894,7 +929,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: projectRavens1WbsNumber } = await seedProject(
     ryanGiggs,
     changeRequest1.crId,
-    0,
+    car25.wbsElement.carNumber,
     'Stadium Renovation',
     `Renovate the team's stadium to improve fan experience`,
     [ravens.teamId],
@@ -3471,7 +3506,7 @@ const performSeed: () => Promise<void> = async () => {
     '1',
     thomasEmrax,
     {
-      carNumber: 0,
+      carNumber: car25.wbsElement.carNumber,
       projectNumber: 1,
       workPackageNumber: 0
     },
@@ -3485,7 +3520,7 @@ const performSeed: () => Promise<void> = async () => {
     'Resistor',
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
-      carNumber: 0,
+      carNumber: car25.wbsElement.carNumber,
       projectNumber: 1,
       workPackageNumber: 0
     },
@@ -3508,7 +3543,7 @@ const performSeed: () => Promise<void> = async () => {
     'Resistor',
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
-      carNumber: 0,
+      carNumber: car25.wbsElement.carNumber,
       projectNumber: 1,
       workPackageNumber: 0
     },
@@ -3531,7 +3566,7 @@ const performSeed: () => Promise<void> = async () => {
     'Resistor',
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
-      carNumber: 0,
+      carNumber: car25.wbsElement.carNumber,
       projectNumber: 1,
       workPackageNumber: 0
     },
@@ -3558,7 +3593,7 @@ const performSeed: () => Promise<void> = async () => {
     [thomasEmrax.userId, batman.userId],
     [superman.userId, wonderwoman.userId],
     {
-      carNumber: 0,
+      carNumber: car25.wbsElement.carNumber,
       projectNumber: 1,
       workPackageNumber: 0
     },
@@ -5077,6 +5112,61 @@ const performSeed: () => Promise<void> = async () => {
     undefined,
     undefined,
     undefined
+  );
+
+  /* Guest Definitions */
+  const guestDef1 = await prisma.guest_Definition.create({
+    data: {
+      term: 'NER',
+      description: 'A really awesome organization!',
+      order: 0,
+      organizationId,
+      userCreatedId: batman.userId
+    }
+  });
+
+  await RecruitmentServices.createGuestDefinition(
+    thomasEmrax,
+    ner,
+    'Projects',
+    'This is the definition of a project. Projects are blah blah blah',
+    0,
+    'bar_chart',
+    'Click here to view all our projects!',
+    '/projects'
+  );
+
+  await RecruitmentServices.createGuestDefinition(
+    thomasEmrax,
+    ner,
+    'Change Requests',
+    'This is the definiton for a change request. Changes requests are blah blah blah',
+    0,
+    'bar_chart',
+    'Click here to view all our change requests!',
+    '/change-requests'
+  );
+
+  await RecruitmentServices.createGuestDefinition(
+    thomasEmrax,
+    ner,
+    'Gantt Chart',
+    'This is the definiton for a change request. Changes requests are blah blah blah',
+    0,
+    'bar_chart',
+    'Click here to view all our projects!',
+    '/gantt'
+  );
+
+  await RecruitmentServices.createGuestDefinition(
+    thomasEmrax,
+    ner,
+    'Design Reviews',
+    'This is the definiton for a design review. Design reviews are blah blah blah',
+    0,
+    'bar_chart',
+    'Click here to view all our design reviews!',
+    '/design-reviews'
   );
 };
 

@@ -11,7 +11,7 @@ const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
 // generate a jwt using the user's first and last name
 export const generateAccessToken = (user: { userId: string; firstName: string; lastName: string }) => {
-  return jwt.sign(user, TOKEN_SECRET, { expiresIn: '12h' });
+  return jwt.sign(user, TOKEN_SECRET, { expiresIn: '7d' });
 };
 
 // headers needed for production
@@ -24,7 +24,8 @@ export const prodHeaders = [
   'XMLHttpRequest',
   'X-Auth-Token',
   'Client-Security-Token',
-  'organizationId'
+  'organizationId',
+  'carId'
 ];
 
 // middleware function for production that will enforce jwt authorization

@@ -44,8 +44,8 @@ import {
   WorkPackageStage
 } from 'shared';
 import { useAllTeams } from '../../../hooks/teams.hooks';
-import { useGetAllCars } from '../../../hooks/cars.hooks';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
+import { useGlobalCarFilter } from '../../../app/AppGlobalCarFilterContext';
 import AddGanttProjectModal from './AddGanttProjectModal';
 import AddGanttWorkPackageModal from './AddGanttWorkPackageModal';
 import AddGanttSelectionModal from './AddGanttSelectionModal';
@@ -78,7 +78,7 @@ const ProjectGanttChartPage: FC = () => {
     error: teamTypesError
   } = useAllTeamTypes();
 
-  const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
+  const { selectedCar, allCars, isLoading: carFilterLoading } = useGlobalCarFilter();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
 
   if (
@@ -119,6 +119,13 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
   const [editedProjects, setEditedProjects] = useState<ProjectGantt[]>([]);
   const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | Task>[]>([]);
 
+  // Local car filter state — resets to global selection whenever global car filter changes
+  const [showCars, setShowCars] = useState<number[]>([]);
+  useEffect(() => {
+    if (carFilterLoading) return;
+    setShowCars(selectedCar === 'all-cars' ? allCars.map((car) => car.wbsNum.carNumber) : [selectedCar.wbsNum.carNumber]);
+  }, [carFilterLoading, selectedCar, allCars]);
+
   useEffect(() => {
     const requestRefresh = (
       projects: ProjectGantt[],
@@ -131,6 +138,7 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
       let allProjects: ProjectGantt[] = JSON.parse(JSON.stringify(projects.concat(addedProjects))).map(
         projectGanttTransformer
       );
+
       allProjects = allProjects.map((project) => {
         const editedProject = editedProjects.find((proj) => proj.id === project.id);
         return editedProject ? editedProject : project;
@@ -149,9 +157,20 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
     };
 
     if (projects && teams) {
-      requestRefresh(projects, teams, editedProjects, addedProjects, filters, searchText);
+      requestRefresh(projects, teams, editedProjects, addedProjects, { ...filters, showCars }, searchText);
     }
-  }, [teams, projects, addedProjects, setAllProjects, setCollections, editedProjects, filters, searchText, history]);
+  }, [
+    teams,
+    projects,
+    addedProjects,
+    setAllProjects,
+    setCollections,
+    editedProjects,
+    filters,
+    showCars,
+    searchText,
+    history
+  ]);
 
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
 
@@ -170,13 +189,15 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
     setFilters(newFilters);
   };
 
+  if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || carFilterLoading || !teams || !projects || !teamTypes)
+    return <LoadingIndicator />;
+  if (projectsIsError) return <ErrorPage message={projectsError.message} />;
+  if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
+  if (teamsIsError) return <ErrorPage message={teamsError.message} />;
+
   const carFilterHandler = (car: number) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
-      handleSetGanttFilters(
-        event.target.checked
-          ? { ...filters, showCars: Array.from(new Set([...filters.showCars, car])) }
-          : { ...filters, showCars: filters.showCars.filter((c) => c !== car) }
-      );
+      setShowCars((prev) => (event.target.checked ? Array.from(new Set([...prev, car])) : prev.filter((c) => c !== car)));
     };
   };
 
@@ -227,40 +248,25 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
     };
   });
 
-  const overdueHandler = [
-    {
-      filterLabel: 'Overdue',
-      handler: (event: ChangeEvent<HTMLInputElement>) =>
-        handleSetGanttFilters({ ...filters, showOnlyOverdue: event.target.checked }),
-      defaultChecked: filters.showOnlyOverdue
-    }
-  ];
-
-  const hideTasksHandler = [
-    {
-      filterLabel: 'Hide Tasks',
-      handler: (event: ChangeEvent<HTMLInputElement>) =>
-        handleSetGanttFilters({ ...filters, hideTasks: event.target.checked }),
-      defaultChecked: filters.hideTasks
-    }
-  ];
-
   const carHandlers: {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
     defaultChecked: boolean;
-  }[] = cars.map((car) => {
-    const carNum = car.wbsNum.carNumber;
-    return {
-      filterLabel: carNum === 0 ? 'None' : `Car ${carNum}`,
-      handler: carFilterHandler(carNum),
-      defaultChecked: filters.showCars.includes(carNum)
-    };
-  });
+  }[] = [...allCars]
+    .sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber)
+    .map((car) => {
+      const carNum = car.wbsNum.carNumber;
+      return {
+        filterLabel: car.name,
+        handler: carFilterHandler(carNum),
+        defaultChecked: showCars.includes(carNum)
+      };
+    });
 
   const resetHandler = () => {
     history.push(routes.GANTT);
     localStorage.removeItem('ganttURL');
+    setShowCars(selectedCar === 'all-cars' ? allCars.map((car) => car.wbsNum.carNumber) : [selectedCar.wbsNum.carNumber]);
   };
 
   /* **************************************************** */
@@ -480,7 +486,7 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
             toast.error('No Team Selected');
           }
         }}
-        cars={cars}
+        cars={allCars}
       />
     );
   };
@@ -667,8 +673,6 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
         carHandlers={carHandlers}
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
-        overdueHandler={overdueHandler}
-        hideTasksHandler={hideTasksHandler}
         resetHandler={resetHandler}
       />
     </Box>

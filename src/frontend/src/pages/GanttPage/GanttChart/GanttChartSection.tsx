@@ -11,7 +11,7 @@ import {
   OnMouseOverOptions,
   RequestEventChange
 } from '../../../utils/gantt.utils';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { MutableRefObject, useCallback, useRef, useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
@@ -94,8 +94,8 @@ const GanttChartSection = <T,>({
     [createChange]
   );
 
-  return tasks.length > 0 ? (
-    <ArcherContainer strokeColor="#ef4545" ref={archerRef}>
+  return (
+    <ArcherContainer strokeColor="#ef4545">
       <Box sx={{ width: 'fit-content' }}>
         <Box sx={{ mt: '1rem', width: 'fit-content' }}>
           {tasks.map((task) => {
@@ -121,8 +121,6 @@ const GanttChartSection = <T,>({
         <GanttTooltipLayer updateRef={updateTooltip} />
       </Box>
     </ArcherContainer>
-  ) : (
-    <Typography sx={{ marginTop: 5 }}>No Projects to Display</Typography>
   );
 };
 

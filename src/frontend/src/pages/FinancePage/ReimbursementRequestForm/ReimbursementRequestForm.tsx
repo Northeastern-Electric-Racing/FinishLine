@@ -180,7 +180,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   });
   const {
     fields: reimbursementProducts,
-    append: reimbursementProductAppend,
+    prepend: reimbursementProductPrepend,
     remove: reimbursementProductRemove
   } = useFieldArray({
     control,
@@ -356,7 +356,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       reimbursementProducts={reimbursementProducts}
       receiptPrepend={receiptPrepend}
       receiptRemove={receiptRemove}
-      reimbursementProductAppend={reimbursementProductAppend}
+      reimbursementProductPrepend={reimbursementProductPrepend}
       reimbursementProductRemove={reimbursementProductRemove}
       onSubmit={onSubmitWrapper}
       handleSubmit={handleSubmit}

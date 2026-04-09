@@ -52,6 +52,7 @@ describe('Material Tests', () => {
       expect(material.manufacturerName).toEqual('Digikey');
       expect(material.manufacturerPartNumber).toEqual('lalsd');
       expect(material.quantity?.toString()).toEqual('5');
+      expect(material.isCopied).toBe(false);
     });
   });
 
@@ -148,6 +149,9 @@ describe('Material Tests', () => {
       expect(copiedMat1.notes).toBe('Test notes');
 
       expect(copiedMat2.status).toBe('NOT_READY_TO_ORDER');
+
+      expect(copiedMat1.isCopied).toBe(true);
+      expect(copiedMat2.isCopied).toBe(true);
     });
 
     test('Fails when material does not exist', async () => {
