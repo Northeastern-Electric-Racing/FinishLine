@@ -9,7 +9,6 @@ import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { Typography, Box, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
-import RateReviewIcon from '@mui/icons-material/RateReview';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 // To be uncommented after guest sponsors page is developed
 // import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
@@ -28,15 +27,19 @@ import { useHomePageContext } from '../../app/HomePageContext';
 // once divisions developed, import TeamType from shared
 import { isGuest } from 'shared';
 // To be uncommented after divisions page is developed
-// import * as MuiIcons from '@mui/icons-material';
-// import { useAllTeamTypes } from '../../hooks/team-types.hooks';
-// import ErrorPage from '../../pages/ErrorPage';
+import * as MuiIcons from '@mui/icons-material';
+import { useAllTeamTypes } from '../../hooks/team-types.hooks';
+import { TeamType } from 'shared';
+import ErrorPage from '../../pages/ErrorPage';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useState } from 'react';
+import GlobalCarFilterHeader from '../../components/GlobalCarFilterHeader';
+import GlobalCarFilterChips from '../../components/GlobalCarFilterChips';
+import { CalendarIcon } from '@mui/x-date-pickers';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -50,19 +53,18 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const user = useCurrentUser();
   const { onGuestHomePage } = useHomePageContext();
-  // const { isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamTypes();
+  const { isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamTypes();
 
-  // To be uncommented once guest divisions pages are developed
-  // const allTeams: LinkItem[] = (teams ?? []).map((team: TeamType) => {
-  //   const IconComponent = MuiIcons[(team.iconName in MuiIcons ? team.iconName : 'Circle') as keyof typeof MuiIcons];
-  //   return {
-  //     name: team.name,
-  //     icon: <IconComponent />,
-  //     route: routes.TEAMS + '/' + team.teamTypeId
-  //   };
-  // });
+  const allTeams: LinkItem[] = (teams ?? []).map((team: TeamType) => {
+    const IconComponent = MuiIcons[(team.iconName in MuiIcons ? team.iconName : 'Circle') as keyof typeof MuiIcons];
+    return {
+      name: team.name,
+      icon: <IconComponent />,
+      route: routes.TEAMS + '/' + team.teamTypeId
+    };
+  });
 
-  // if (teamsError) return <ErrorPage error={teamsErrorMsg} />;
+  if (teamsError) return <ErrorPage error={teamsErrorMsg} />;
   const memberLinkItems: LinkItem[] = [
     {
       name: 'Home',
@@ -101,9 +103,9 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
               route: routes.CHANGE_REQUESTS
             },
             {
-              name: 'Design Review',
-              icon: <RateReviewIcon />,
-              route: routes.CALENDAR
+              name: 'Events',
+              icon: <CalendarIcon />,
+              route: routes.EVENTS
             }
           ]
         },
@@ -136,23 +138,18 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     },
 
     // Teams tab here to be replaced with below code once guest divisions is developed
-    !onGuestHomePage && {
-      name: 'Teams',
-      icon: <GroupIcon />,
-      route: routes.TEAMS
-    },
-    // !onGuestHomePage
-    //   ? {
-    //       name: 'Teams',
-    //       icon: <GroupIcon />,
-    //       route: routes.TEAMS
-    //     }
-    //   : {
-    //       name: 'Divisions',
-    //       icon: <GroupIcon />,
-    //       route: routes.TEAMS,
-    //       subItems: allTeams
-    //     },
+    !onGuestHomePage
+      ? {
+          name: 'Teams',
+          icon: <GroupIcon />,
+          route: routes.TEAMS
+        }
+      : {
+          name: 'Divisions',
+          icon: <GroupIcon />,
+          route: routes.TEAMS,
+          subItems: allTeams
+        },
     !onGuestHomePage && {
       name: 'Calendar',
       icon: <CalendarTodayIcon />,
@@ -223,7 +220,15 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       }}
     >
       <DrawerHeader>
-        <IconButton onClick={() => handleMoveContent()}>{moveContent ? <ChevronLeft /> : <ChevronRight />}</IconButton>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <GlobalCarFilterHeader sx={{ flex: 1 }} />
+            <IconButton onClick={() => handleMoveContent()} sx={{ p: 0.5 }}>
+              {moveContent ? <ChevronLeft /> : <ChevronRight />}
+            </IconButton>
+          </Box>
+          <GlobalCarFilterChips />
+        </Box>
       </DrawerHeader>
       <Divider />
       <Box
@@ -237,12 +242,14 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
         <Box>
           {linkItems.map((linkItem) => (
             <NavPageLink
+              key={linkItem.route}
               {...linkItem}
               isSubmenuOpen={openSubmenu === linkItem.name}
               onSubmenuHover={() => handleOpenSubmenu(linkItem.name)}
               onSubmenuCollapse={() => handleCloseSubmenu()}
             />
           ))}
+          <Divider sx={{ mx: 1, my: 2 }} />
           <NavUserMenu open={drawerOpen} />
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>

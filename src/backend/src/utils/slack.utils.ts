@@ -127,18 +127,37 @@ export const sendSlackTaskAssignedNotification = async (
 
 /**
  * Send a notification to users that a reimbursement request is created on Slack
- * @param requestId the id if the reimbursement request
+ * @param requestId the id of the reimbursement request
  * @param submitterId the id of the user who created the reimbursement request
+ * @param organizationId the organization id of the current user
  */
 export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = async (
   requestId: string,
-  requestIdentifier: number,
   submitterId: string,
   organizationId: string
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
 
-  const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request (ID#: ${requestIdentifier}) 💲`;
+  const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+    where: { reimbursementRequestId: requestId },
+    select: {
+      identifier: true,
+      totalCost: true,
+      description: true,
+      vendor: {
+        select: {
+          name: true
+        }
+      }
+    }
+  });
+
+  if (!reimbursementRequest) throw new HttpException(500, 'Reimbursement request does not exist!');
+
+  const { identifier, totalCost, description, vendor } = reimbursementRequest;
+  const formattedCost = `$${(totalCost / 100).toFixed(2)}`; // convert from cents to dollars and cents
+
+  const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request for ${formattedCost} at ${vendor.name} (ID#: ${identifier}) 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
@@ -151,13 +170,23 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
   const messageInfo = await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
   if (!messageInfo) return;
 
-  await prisma.message_Info.create({
+  const createdMessageInfo = await prisma.message_Info.create({
     data: {
       reimbursementRequestId: requestId,
       channelId: messageInfo.channelId,
       timestamp: messageInfo.ts
     }
   });
+
+  const { messageInfoId, channelId, timestamp } = createdMessageInfo;
+
+  // send reimbursement request description in slack thread
+  if (description) {
+    await sendThreadResponse(
+      [{ messageInfoId, channelId, timestamp, changeRequestId: null }],
+      `Description: ${description}`
+    );
+  }
 };
 
 /**

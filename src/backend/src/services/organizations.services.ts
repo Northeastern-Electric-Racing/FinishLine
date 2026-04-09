@@ -410,7 +410,7 @@ export default class OrganizationsService {
       throw new NotFoundException('Organization', organizationId);
     }
 
-    return organization.featuredProjects.map(projectPreviewTransformer);
+    return organization.featuredProjects.filter((p) => !p.wbsElement.dateDeleted).map(projectPreviewTransformer);
   }
 
   /**

@@ -98,7 +98,7 @@ const GanttChartCollectionSection = <E, T>({
         />
       </Box>
     </Box>
-  );
+  ) : null;
 };
 
 export default GanttChartCollectionSection;

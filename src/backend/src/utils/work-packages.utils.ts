@@ -37,7 +37,7 @@ export const getBlockingWorkPackages = async (initialWorkPackage: Prisma.Work_Pa
       where: { wbsElementId: currWbsId },
       include: {
         blocking: true,
-        workPackage: { ...getWorkPackageQueryArgs(initialWorkPackage.wbsElement.organizationId) }
+        workPackage: getWorkPackageQueryArgs(initialWorkPackage.wbsElement.organizationId)
       }
     });
 
