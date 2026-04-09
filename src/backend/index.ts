@@ -3,7 +3,6 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { getUserAndOrganization, prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils.js';
 import { errorHandler } from './src/utils/errors.utils.js';
-import { getCurrentCar } from './src/utils/car.utils.js';
 import userRouter from './src/routes/users.routes.js';
 import projectRouter from './src/routes/projects.routes.js';
 import teamsRouter from './src/routes/teams.routes.js';
@@ -28,7 +27,6 @@ import partsRouter from './src/routes/parts.routes.js';
 import financeRouter from './src/routes/finance.routes.js';
 import calendarRouter from './src/routes/calendar.routes.js';
 import prospectiveSponsorRouter from './src/routes/prospective-sponsor.routes.js';
-import attendanceRouter from './src/routes/attendance.routes.js';
 
 const app = express();
 
@@ -91,9 +89,6 @@ app.use(isProd ? requireJwtProd : requireJwtDev);
 // get user and organization
 app.use(getUserAndOrganization);
 
-// get current car
-app.use(getCurrentCar);
-
 // routes
 app.use('/users', userRouter);
 app.use('/projects', projectRouter);
@@ -117,7 +112,6 @@ app.use('/parts', partsRouter);
 app.use('/finance', financeRouter);
 app.use('/calendar', calendarRouter);
 app.use('/prospective-sponsors', prospectiveSponsorRouter);
-app.use('/attendance', attendanceRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

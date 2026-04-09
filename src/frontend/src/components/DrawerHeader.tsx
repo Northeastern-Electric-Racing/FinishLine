@@ -7,8 +7,12 @@ import { styled } from '@mui/material';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
-  alignItems: 'flex-start',
-  padding: theme.spacing(0, 1)
+  alignItems: 'center',
+  justifyContent: 'flex-end',
+  padding: theme.spacing(0, 1),
+  height: '68px',
+  // necessary for content to be below app bar
+  ...theme.mixins.toolbar
 }));
 
 export default DrawerHeader;

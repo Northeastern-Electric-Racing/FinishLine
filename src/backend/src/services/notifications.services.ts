@@ -3,13 +3,11 @@ import {
   TaskWithAssignees,
   endOfDayTomorrow,
   startOfDayTomorrow,
-  startOfTodayEST,
-  startOfTomorrowEST,
   usersToSlackPings,
   EventWithAttendees
 } from '../utils/notifications.utils.js';
 import { sendMessage } from '../integrations/slack.js';
-import { daysBetween, wbsPipe, formatTimeForSlack } from 'shared';
+import { daysBetween, startOfDay, wbsPipe, formatTimeForSlack } from 'shared';
 import { buildDueString, sendThreadResponse } from '../utils/slack.utils.js';
 import WorkPackagesService from './work-packages.services.js';
 import { addWeeksToDate } from 'shared';
@@ -32,7 +30,7 @@ export default class NotificationsService {
   static async sendTaskDeadlineSlackNotifications() {
     const endOfDay = endOfDayTomorrow();
 
-    if (endOfDay.getUTCDay() === 0 || endOfDay.getUTCDay() === 2 || endOfDay.getUTCDay() === 4) return;
+    if (endOfDay.getDay() === 0 || endOfDay.getDay() === 2 || endOfDay.getDay() === 4) return;
 
     const tasks = await prisma.task.findMany({
       where: {
@@ -83,8 +81,7 @@ export default class NotificationsService {
       const messageBlock = tasks
         .map((task) => {
           // prisma call earlier allows the forced unwrap (deadline is guaranteed to be a non-null value)
-          const todayMidnightUTC = new Date(new Date().setUTCHours(0, 0, 0, 0));
-          const daysUntilDeadline = daysBetween(task.deadline!, todayMidnightUTC);
+          const daysUntilDeadline = daysBetween(task.deadline!, new Date());
 
           return `${usersToSlackPings(task.assignees ?? [])} <https://finishlinebyner.com/projects/${wbsPipe(
             task.wbsElement
@@ -121,11 +118,11 @@ export default class NotificationsService {
   }
 
   /**
-   * Sends Slack notifications for all events scheduled for today whose event type has sendSlackNotifications enabled
+   * Sends the design review slack notifications for all design reviews scheduled for today
    */
   static async sendEventSlackNotifications() {
-    const endOfToday = startOfTomorrowEST();
-    const startOfToday = startOfTodayEST();
+    const endOfToday = startOfDayTomorrow();
+    const startOfToday = startOfDay(new Date());
 
     const events = await prisma.event.findMany({
       where: {
@@ -145,8 +142,6 @@ export default class NotificationsService {
         optionalMembers: { include: { userSettings: true } },
         userCreated: { include: { userSettings: true } },
         scheduledTimes: true,
-        teams: true,
-        eventType: true,
         workPackages: {
           include: {
             wbsElement: true,
@@ -161,17 +156,11 @@ export default class NotificationsService {
       }
     });
 
-    const eventTeamMap = new Map<string, EventWithAttendees[]>();
+    const desginReviewEventTeamMap = new Map<string, EventWithAttendees[]>();
 
     events.forEach((event) => {
-      // Collect unique team Slack IDs: first from teams directly on the event, then from work packages
+      // Get all unique teams from all work packages associated with this event
       const teamSlackIds = new Set<string>();
-
-      event.teams.forEach((team) => {
-        if (team.slackId) {
-          teamSlackIds.add(team.slackId);
-        }
-      });
 
       event.workPackages.forEach((workPackage) => {
         workPackage.project.teams.forEach((team) => {
@@ -182,7 +171,7 @@ export default class NotificationsService {
       });
 
       teamSlackIds.forEach((teamSlackId) => {
-        const currentEvents = eventTeamMap.get(teamSlackId);
+        const currentEvents = desginReviewEventTeamMap.get(teamSlackId);
         const eventWithAttendees = {
           ...event,
           attendees: event.requiredMembers.concat(event.optionalMembers).concat(event.userCreated),
@@ -192,20 +181,20 @@ export default class NotificationsService {
         if (currentEvents) {
           currentEvents.push(eventWithAttendees);
         } else {
-          eventTeamMap.set(teamSlackId, [eventWithAttendees]);
+          desginReviewEventTeamMap.set(teamSlackId, [eventWithAttendees]);
         }
       });
     });
 
-    // Send the notifications to each team for their respective events
-    const promises = Array.from(eventTeamMap).map(async ([slackId, events]) => {
+    // Send the notifications to each team for their respective design reviews
+    const promises = Array.from(desginReviewEventTeamMap).map(async ([slackId, events]) => {
       const messageBlock = events
         .map((event) => {
           const zoomLink = event.zoomLink ? `<${event.zoomLink}|Zoom Link>\n` : '';
           const questionDocLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Question Doc Link>\n` : '';
 
+          // Get work package names for this event
           const workPackageNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
-          const workPackagesPart = workPackageNames ? ` (${workPackageNames})` : '';
 
           // Get the earliest scheduled start time for display
           const [earliestSlot] = event.scheduledTimes
@@ -214,7 +203,7 @@ export default class NotificationsService {
           const timeDisplay = earliestSlot ? formatTimeForSlack(new Date(earliestSlot.startTime!)) : 'TBD';
 
           return (
-            `${usersToSlackPings(event.attendees ?? [])} *${event.eventType.name}*: ${event.title}${workPackagesPart} ` +
+            `${usersToSlackPings(event.attendees ?? [])} ${event.title} (${workPackageNames}) ` +
             `will be having an event today at ${timeDisplay} ET! ` +
             zoomLink +
             questionDocLink
@@ -222,9 +211,9 @@ export default class NotificationsService {
         })
         .join('\n\n');
 
-      // messageBlock will be empty if there are events with no attendees
+      // messageBlock will be empty if there are design reviews with no attendees
       if (messageBlock !== '')
-        await sendMessage(slackId, ':calendar: :clock9: Upcoming Events! :clock9: :calendar: \n\n\n' + messageBlock);
+        await sendMessage(slackId, ':calendar: :clock9: Upcoming Design Reviews! :clock9: :calendar: \n\n\n' + messageBlock);
     });
 
     await Promise.all(promises);
@@ -234,7 +223,7 @@ export default class NotificationsService {
    * Sends the sponsor task slack notifications for all tasks with a notify date of today
    */
   static async sendSponsorTaskNotifications() {
-    const startOfToday = new Date(new Date().setUTCHours(0, 0, 0, 0));
+    const startOfToday = startOfDay(new Date());
     const endOfToday = startOfDayTomorrow();
 
     const sponsorTasks = await prisma.sponsor_Task.findMany({

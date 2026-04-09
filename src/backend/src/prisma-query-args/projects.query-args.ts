@@ -1,4 +1,4 @@
-import { Prisma, Task_Status } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args.js';
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.js';
 import { getTeamPreviewQueryArgs } from './teams.query-args.js';
@@ -100,12 +100,6 @@ export const getProjectPreviewQueryArgs = (organizationId: string) =>
       abbreviation: true,
       teams: {
         select: {
-          teamType: {
-            select: {
-              teamTypeId: true,
-              name: true
-            }
-          },
           teamId: true,
           teamName: true
         }
@@ -129,13 +123,7 @@ export const getProjectOverviewQueryArgs = (organizationId: string) =>
           manager: getUserQueryArgs(organizationId),
           status: true,
           links: getLinkQueryArgs(),
-          _count: {
-            select: {
-              tasks: {
-                where: { AND: [{ dateDeleted: null }, { NOT: { status: Task_Status.DONE } }] }
-              }
-            }
-          }
+          tasks: getTaskQueryArgs(organizationId)
         }
       },
       workPackages: getWorkPackagePreviewQueryArgs(),
@@ -144,12 +132,6 @@ export const getProjectOverviewQueryArgs = (organizationId: string) =>
       abbreviation: true,
       teams: {
         select: {
-          teamType: {
-            select: {
-              teamTypeId: true,
-              name: true
-            }
-          },
           teamId: true,
           teamName: true
         }

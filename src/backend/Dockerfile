@@ -1,6 +1,5 @@
 # TO BE RUN FROM DOCKER COMPOSE. DO NOT RUN MANUALLY AS CONTEXT IS NOT SET CORRECTLY
-FROM platformatic/node-caged:25-slim
-RUN npm install -g yarn
+FROM node:20
 
 WORKDIR /base
 

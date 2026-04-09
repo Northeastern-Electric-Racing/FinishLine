@@ -13,11 +13,9 @@ import { HttpException } from '../utils/errors.utils.js';
 export default class ReimbursementRequestsController {
   static async getCurrentUserReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const carNumber = req.currentCar?.wbsElement.carNumber;
       const userReimbursementRequests = await ReimbursementRequestService.getUserReimbursementRequests(
         req.currentUser,
-        req.organization,
-        carNumber
+        req.organization
       );
       res.status(200).json(userReimbursementRequests);
     } catch (error: unknown) {
@@ -27,11 +25,9 @@ export default class ReimbursementRequestsController {
 
   static async getCurrentUserAssignedReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const carNumber = req.currentCar?.wbsElement.carNumber;
       const assignedReimbursementRequests = await ReimbursementRequestService.getUserAssignedReimbursementRequests(
         req.currentUser,
-        req.organization,
-        carNumber
+        req.organization
       );
       res.status(200).json(assignedReimbursementRequests);
     } catch (error: unknown) {
@@ -50,11 +46,9 @@ export default class ReimbursementRequestsController {
 
   static async getCurrentUsersTeamsReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const carNumber = req.currentCar?.wbsElement.carNumber;
       const userTeamsReimbursementRequests = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(
         req.currentUser,
-        req.organization,
-        carNumber
+        req.organization
       );
       res.status(200).json(userTeamsReimbursementRequests);
     } catch (error: unknown) {
@@ -214,11 +208,9 @@ export default class ReimbursementRequestsController {
 
   static async getPendingAdvisorList(req: Request, res: Response, next: NextFunction) {
     try {
-      const carNumber = req.currentCar?.wbsElement.carNumber;
       const requestsPendingAdvisors: ReimbursementRequest[] = await ReimbursementRequestService.getPendingAdvisorList(
         req.currentUser,
-        req.organization,
-        carNumber
+        req.organization
       );
       res.status(200).json(requestsPendingAdvisors);
     } catch (error: unknown) {
@@ -316,11 +308,9 @@ export default class ReimbursementRequestsController {
 
   static async getAllReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const carNumber = req.currentCar?.wbsElement.carNumber;
       const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests(
         req.currentUser,
-        req.organization,
-        carNumber
+        req.organization
       );
       res.status(200).json(reimbursementRequests);
     } catch (error: unknown) {

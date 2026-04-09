@@ -11,8 +11,7 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useAssignMaterialToAssembly, useDeleteAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { Button, Link, Tooltip, Typography } from '@mui/material';
+import { Button, Link, Typography } from '@mui/material';
 import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
 import { renderStatusBOM } from './BOMTableCustomCells';
@@ -301,20 +300,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'string',
       sortable: false,
       filterable: false,
-      hide: hideColumn[3],
-      renderCell: (params) => {
-        const material = materials.find((m) => m.materialId === params.row.materialId);
-        return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography variant="body2">{params.value}</Typography>
-            {material?.isCopied && (
-              <Tooltip title="Copied from another BOM">
-                <ContentCopyIcon sx={{ fontSize: 14, color: 'warning.main' }} />
-              </Tooltip>
-            )}
-          </Box>
-        );
-      }
+      hide: hideColumn[3]
     },
     {
       ...bomBaseColDef,

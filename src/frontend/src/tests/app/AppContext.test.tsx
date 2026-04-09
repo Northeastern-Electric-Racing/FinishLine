@@ -33,15 +33,6 @@ vi.mock('../../app/AppContextTheme', () => {
   };
 });
 
-vi.mock('../../app/AppGlobalCarFilterContext', () => {
-  return {
-    __esModule: true,
-    GlobalCarFilterProvider: (props: { children: React.ReactNode }) => {
-      return <div>{props.children}</div>;
-    }
-  };
-});
-
 // Sets up the component under test with the desired values and renders it
 const renderComponent = () => {
   render(

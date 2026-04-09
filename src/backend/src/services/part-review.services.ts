@@ -31,7 +31,7 @@ import {
   getPartReviewRequestQueryArgs,
   getPartSubmissionQueryArgs
 } from '../prisma-query-args/part-review.query-args.js';
-import { faqTransformer } from '../transformers/recruitment-transformer.js';
+import { faqTransformer } from '../transformers/faq.transformer.js';
 import {
   partReviewRequestTransformer,
   partsReviewCommonMistakeTransformer,

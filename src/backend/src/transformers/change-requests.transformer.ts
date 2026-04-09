@@ -10,8 +10,7 @@ import {
   WorkPackageStage,
   BudgetChangeRequest,
   isWorkPackageWbs,
-  LeadershipChangeRequest,
-  ChangeRequestStatus
+  LeadershipChangeRequest
 } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
 import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils.js';
@@ -26,12 +25,10 @@ import {
 } from '../prisma-query-args/scope-change-requests.query-args.js';
 import { HttpException } from '../utils/errors.utils.js';
 import {
-  ChangeRequestGuestQueryArgs,
   ChangeRequestManyQueryArgs,
   ChangeRequestWithProjectAndWorkPackageQueryArgs
 } from '../prisma-query-args/change-requests.query-args.js';
 import { accountCodeTransformer, otherProductReasonTransformer } from './reimbursement-requests.transformer.js';
-import { GuestChangeRequest } from '../../../shared/src/types/change-request-types.js';
 
 const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>
@@ -232,41 +229,3 @@ const changeRequestTransformer = (
 };
 
 export default changeRequestTransformer;
-
-export const guestChangeRequestTransformer = (
-  changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestGuestQueryArgs>
-): GuestChangeRequest => {
-  const status = changeRequest.changes.length
-    ? ChangeRequestStatus.Implemented
-    : changeRequest.accepted && changeRequest.dateReviewed
-      ? ChangeRequestStatus.Accepted
-      : changeRequest.dateReviewed
-        ? ChangeRequestStatus.Denied
-        : ChangeRequestStatus.Open;
-
-  const wbsName = changeRequest.wbsElement
-    ? !isWorkPackageWbs(changeRequest.wbsElement)
-      ? changeRequest.wbsElement?.name
-      : `${changeRequest.wbsElement?.workPackage?.project.wbsElement.name} - ${changeRequest.wbsElement?.name}`
-    : undefined;
-
-  return {
-    crId: changeRequest.crId,
-    submitter: userTransformer(changeRequest.submitter),
-    identifier: changeRequest.identifier,
-    type: changeRequest.type,
-    status,
-    teamTypeNames: changeRequest.wbsElement
-      ? isWorkPackageWbs(changeRequest.wbsElement)
-        ? (changeRequest.wbsElement.workPackage?.project?.teams
-            .map((team) => team.teamType?.name)
-            .filter((name) => name !== undefined) ?? [])
-        : (changeRequest.wbsElement.project?.teams.map((team) => team.teamType?.name).filter((name) => name !== undefined) ??
-          [])
-      : [],
-    accepted: changeRequest.accepted ?? undefined,
-    reviewer: changeRequest.reviewer ? userTransformer(changeRequest.reviewer) : undefined,
-    wbsNum: changeRequest.wbsElement ? wbsNumOf(changeRequest.wbsElement) : undefined,
-    wbsName
-  };
-};

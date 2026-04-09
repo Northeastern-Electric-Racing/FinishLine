@@ -66,7 +66,7 @@ const GanttChartCollectionSection = <E, T>({
 
   const ignoreBool = useCallback(() => false, []);
 
-  return collection.tasks.length > 0 ? (
+  return (
     <Box sx={collectionSectionBackgroundStyle}>
       <Box sx={collectionDescriptionContainerStyle}>
         <Typography variant="h6" fontWeight={400}>
@@ -102,7 +102,7 @@ const GanttChartCollectionSection = <E, T>({
         />
       </Box>
     </Box>
-  ) : null;
+  );
 };
 
 export default GanttChartCollectionSection;

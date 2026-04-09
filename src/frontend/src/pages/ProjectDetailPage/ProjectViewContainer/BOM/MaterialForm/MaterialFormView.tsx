@@ -2,7 +2,6 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Button,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -15,7 +14,7 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { Assembly, Manufacturer, Material, MaterialType, Unit } from 'shared';
+import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
@@ -27,7 +26,6 @@ import { displayEnum } from '../../../../../utils/pipes';
 import { MaterialStatus } from 'shared';
 import React, { useState } from 'react';
 import { AddCircle } from '@mui/icons-material';
-import SelectMaterialToCopyModal from '../CopyBOM/SelectMaterialToCopyModal';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -44,6 +42,7 @@ export interface MaterialFormViewProps {
   watch: UseFormWatch<MaterialFormInput>;
   createManufacturer: (name: string) => void;
   setValue: UseFormSetValue<MaterialFormInput>;
+  copyFromExistingBomAction?: React.ReactNode;
   fromRRForm?: boolean;
 }
 
@@ -78,23 +77,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   const price = watch('price');
   const subtotal = quantity && price ? quantity * price : 0;
 
-  const [copyModalOpen, setCopyModalOpen] = React.useState(false);
-
-  const handleCopySelect = (m: Material) => {
-    setValue('name', m.name ?? '');
-    setValue('materialTypeName', m.materialTypeName ?? '');
-    setValue('manufacturerName', m.manufacturerName ?? '');
-    setValue('manufacturerPartNumber', m.manufacturerPartNumber ?? '');
-    setValue('pdmFileName', m.pdmFileName ?? '');
-    setValue('linkUrl', m.linkUrl ?? '');
-    setValue('quantity', m.quantity != null ? Number(m.quantity) : undefined);
-    setValue('unitName', m.unitName ?? undefined);
-    setValue('price', m.price != null ? m.price / 100 : undefined);
-    setValue('notes', m.notes ?? '');
-    setValue('assemblyId', undefined);
-
-    setCopyModalOpen(false);
-  };
   const optionalFields = (
     <Grid container spacing={2}>
       <Grid item xs={12}>
@@ -522,7 +504,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           )}
         </Grid>
       </Grid>
-      {submitText === 'Add' && (
+      {/*submitText === 'Add' && (
         <Grid item xs={12} sx={{ pl: 0, pr: 0 }}>
           <Box
             sx={{
@@ -532,7 +514,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             <Button
               variant="contained"
               disableElevation
-              onClick={() => setCopyModalOpen(true)}
+              onClick={() => {}}
               sx={{
                 mx: 0,
                 textTransform: 'none',
@@ -545,13 +527,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             </Button>
           </Box>
         </Grid>
-      )}
-      <SelectMaterialToCopyModal
-        open={copyModalOpen}
-        onHide={() => setCopyModalOpen(false)}
-        onSelect={handleCopySelect}
-        assemblies={assemblies ?? []}
-      />
+      )*/}
     </NERFormModal>
   );
 };

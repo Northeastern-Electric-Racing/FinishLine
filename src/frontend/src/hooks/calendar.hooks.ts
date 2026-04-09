@@ -11,8 +11,7 @@ import {
   FilterArgs,
   ScheduleSlotCreateArgs,
   EventWithMembers,
-  ScheduleSlot,
-  EventInstance
+  ScheduleSlot
 } from 'shared';
 import {
   getAllShops,
@@ -49,8 +48,7 @@ import {
   getSingleEventWithMembers,
   previewScheduleSlotRecurringEdits,
   postDeleteScheduleSlot,
-  scheduleEvent,
-  getAllEventsPaginated
+  scheduleEvent
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 import { PDFDocument } from 'pdf-lib';
@@ -665,17 +663,4 @@ export const combinePdfsAndDownload = async (blobData: Blob[], filename: string)
   const pdfBytes = await pdfDoc.save();
   const pdfBlob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
   saveAs(pdfBlob, filename);
-};
-
-/**
- * Custom hook to get all events in a paginated manner, sorted by scheduled date ascending.
- */
-export const useAllEventsPaginated = (cursor?: Date, pageSize?: number) => {
-  return useQuery<{ instances: EventInstance[]; nextCursor: Date | null }, Error>(
-    ['events', 'paginated', cursor, pageSize],
-    async () => {
-      const { data } = await getAllEventsPaginated(cursor, pageSize);
-      return data;
-    }
-  );
 };

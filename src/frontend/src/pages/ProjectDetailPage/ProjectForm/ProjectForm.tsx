@@ -56,6 +56,8 @@ interface ProjectFormContainerProps {
   leadId?: string;
   managerId?: string;
   onSubmitChangeRequest?: (data: ProjectCreateChangeRequestFormInput) => void;
+  setCarNumber: (carNumber: number) => void;
+  carNumber?: number;
   changeRequestFormReturn: ChangeRequestFormReturn;
   onlyLeadershipChanged?: boolean;
 }
@@ -71,6 +73,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   leadId,
   managerId,
   onSubmitChangeRequest,
+  setCarNumber,
   changeRequestFormReturn,
   onlyLeadershipChanged
 }) => {
@@ -304,6 +307,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           leadId={leadId}
           managerId={managerId}
           project={project}
+          setCarNumber={setCarNumber}
         />
         <Stack spacing={4}>
           <Box>

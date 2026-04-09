@@ -4,7 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { ChangeRequestType, WbsNumber, wbsPipe } from 'shared';
+import { ChangeRequestType, WbsNumber } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { useCreateStageGateChangeRequest } from '../../../hooks/change-requests.hooks';
 import { routes } from '../../../utils/routes';
@@ -45,7 +45,7 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
         type: ChangeRequestType.StageGate,
         confirmDone
       });
-      history.push(`${routes.PROJECTS}/${wbsPipe(wbsNum)}/change-requests`);
+      history.push(routes.CHANGE_REQUESTS);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message);

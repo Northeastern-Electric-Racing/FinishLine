@@ -1,10 +1,14 @@
-import { useMediaQuery, Theme } from '@mui/material';
+import { useMediaQuery, Typography, Theme } from '@mui/material';
 import { Project } from 'shared';
 import { TaskListContent } from './TaskListContent';
-import { GuestsTasksList } from '../GuestTasksList';
 
-export const TaskList = ({ project, isGuest }: { project: Project; isGuest: boolean }) => {
+export const TaskList = ({ project }: { project: Project }) => {
   const isSmall = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'));
-
-  return isSmall || isGuest ? <GuestsTasksList project={project} /> : <TaskListContent project={project} />;
+  return isSmall ? <FallbackForMobile /> : <TaskListContent project={project} />;
 };
+
+const FallbackForMobile = () => (
+  <Typography mt={3} align="center">
+    The Kanban board is not available on mobile
+  </Typography>
+);

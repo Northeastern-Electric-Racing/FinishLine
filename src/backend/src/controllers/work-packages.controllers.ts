@@ -7,13 +7,9 @@ export default class WorkPackagesController {
   // Fetch all work packages, optionally filtered by query parameters
   static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const { status, daysUntilDeadline } = req.query as { status?: string; daysUntilDeadline?: string };
+      const { query } = req;
 
-      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(
-        { status, daysUntilDeadline },
-        req.organization,
-        req.currentCar?.carId
-      );
+      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, req.organization);
 
       res.status(200).json(outputWorkPackages);
     } catch (error: unknown) {
@@ -28,8 +24,7 @@ export default class WorkPackagesController {
 
       const outputWorkPackages: WorkPackagePreview[] = await WorkPackagesService.getAllWorkPackagesPreview(
         status,
-        req.organization,
-        req.currentCar?.carId
+        req.organization
       );
 
       res.status(200).json(outputWorkPackages);
@@ -163,8 +158,7 @@ export default class WorkPackagesController {
       const workPackages: WorkPackagePreview[] = await WorkPackagesService.getHomePageWorkPackages(
         req.currentUser,
         req.organization,
-        selection as WorkPackageSelection,
-        req.currentCar?.carId
+        selection as WorkPackageSelection
       );
 
       res.status(200).json(workPackages);

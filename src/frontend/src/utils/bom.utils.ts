@@ -20,7 +20,6 @@ export interface BomRow extends GridValidRowModel {
   link: string;
   notes: string | undefined;
   assemblyId: string | undefined;
-  isCopied: boolean;
 }
 
 export const materialToRow = (material: Material, idx: number): BomRow => {
@@ -39,8 +38,7 @@ export const materialToRow = (material: Material, idx: number): BomRow => {
     subtotal: material.subtotal !== undefined ? `$${centsToDollar(material.subtotal)}` : '',
     link: material.linkUrl,
     notes: material.notes,
-    assemblyId: material.assemblyId ?? 'assembly-misc',
-    isCopied: material.isCopied
+    assemblyId: material.assemblyId ?? 'assembly-misc'
   };
 };
 

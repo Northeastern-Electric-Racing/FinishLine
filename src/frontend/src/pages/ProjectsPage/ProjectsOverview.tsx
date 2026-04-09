@@ -64,17 +64,18 @@ const ProjectsOverview: React.FC = () => {
         favoriteProjectsSet={favoriteProjectsSet}
         emptyMessage="You have no favorite projects. Click the star on a project's page to add one!"
       />
-      {filteredLeadingProjects.length > 0 && (
-        <ProjectsOverviewCards
-          projects={filteredLeadingProjects}
-          title="Projects I'm Leading"
-          favoriteProjectsSet={favoriteProjectsSet}
-        />
-      )}
+
       {filteredTeamsProjects.length > 0 && (
         <ProjectsOverviewCards
           projects={filteredTeamsProjects}
           title="My Team's Projects"
+          favoriteProjectsSet={favoriteProjectsSet}
+        />
+      )}
+      {filteredLeadingProjects.length > 0 && (
+        <ProjectsOverviewCards
+          projects={filteredLeadingProjects}
+          title="Projects I'm Leading"
           favoriteProjectsSet={favoriteProjectsSet}
         />
       )}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Autocomplete, Box, Button, Checkbox, TextField, Typography } from '@mui/material';
 import NERModal from '../../components/NERModal';
 import PeopleIcon from '@mui/icons-material/People';
-import { useAllMembers, useCurrentUser } from '../../hooks/users.hooks';
+import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import ErrorPage from '../ErrorPage';
 
@@ -39,7 +39,7 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
 
   const MemberDropdown = () => {
     const memberIds = filterValues?.memberIds ?? [];
-    const { data: allUsers } = useAllMembers();
+    const { data: allUsers } = useAllUsers();
 
     return (
       <Box sx={{ width: '100%', display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>

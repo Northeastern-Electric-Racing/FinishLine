@@ -74,11 +74,7 @@ export default class UsersController {
 
   static async getUsersFavoriteProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects = await UsersService.getUsersFavoriteProjects(
-        req.currentUser.userId,
-        req.organization,
-        req.currentCar?.carId
-      );
+      const projects = await UsersService.getUsersFavoriteProjects(req.currentUser.userId, req.organization);
 
       res.status(200).json(projects);
     } catch (error: unknown) {
@@ -106,7 +102,7 @@ export default class UsersController {
 
       const { user, token } = await UsersService.logUserIn(idToken, header!);
 
-      res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 7 * 24 * 60 * 60 * 1000 });
+      res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
       res.status(200).json(user);
     } catch (error: unknown) {
       next(error);

@@ -94,7 +94,7 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
       {subItems && (
         <Collapse in={isSubmenuOpen} timeout="auto" unmountOnExit>
           {subItems.map((subItem) => (
-            <NavPageLink key={subItem.route} {...subItem} isSubItem={true} />
+            <NavPageLink {...subItem} isSubItem={true} />
           ))}
         </Collapse>
       )}

@@ -115,7 +115,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
         toast.error(e.message);
       }
     } finally {
-      if (requestHasASolution) history.push(`${routes.PROJECTS}/${wbsNum}/change-requests`);
+      if (requestHasASolution) history.push(routes.CHANGE_REQUESTS);
     }
   };
 

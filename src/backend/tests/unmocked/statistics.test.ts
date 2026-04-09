@@ -92,7 +92,7 @@ describe('Statistics Tests', () => {
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, user.userId);
       await createTestProject(user, orgId, team.teamId, car.carId);
-      await createTestProject(user, orgId, team.teamId, car.carId, 0, 2);
+      await createTestProject(user, orgId, team.teamId, car.carId, 2);
 
       const result = await StatisticsService.createGraph(
         user,
@@ -131,7 +131,7 @@ describe('Statistics Tests', () => {
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, user.userId);
       await createTestProject(user, orgId, team.teamId, car.carId);
-      await createTestProject(user, orgId, team.teamId, car.carId, 0, 2);
+      await createTestProject(user, orgId, team.teamId, car.carId, 2);
 
       const result = await StatisticsService.createGraph(
         user,
@@ -173,7 +173,7 @@ describe('Statistics Tests', () => {
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, user.userId);
       await createTestProject(user, orgId, team.teamId, car.carId);
-      await createTestProject(user, orgId, team.teamId, car.carId, 0, 2, new Date());
+      await createTestProject(user, orgId, team.teamId, car.carId, 2, new Date());
 
       const result = await StatisticsService.createGraph(
         user,
@@ -215,7 +215,7 @@ describe('Statistics Tests', () => {
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, user.userId);
       await createTestProject(user, orgId, team.teamId, car.carId);
-      await createTestProject(user, orgId, team.teamId, car.carId, 0, 2, new Date());
+      await createTestProject(user, orgId, team.teamId, car.carId, 2, new Date());
 
       const result = await StatisticsService.createGraph(
         user,
@@ -255,7 +255,7 @@ describe('Statistics Tests', () => {
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, user.userId);
       await createTestProject(user, orgId, team.teamId, car.carId);
-      await createTestProject(user, orgId, team.teamId, car.carId, 0, 2, new Date());
+      await createTestProject(user, orgId, team.teamId, car.carId, 2, new Date());
 
       const result = await StatisticsService.createGraph(
         user,

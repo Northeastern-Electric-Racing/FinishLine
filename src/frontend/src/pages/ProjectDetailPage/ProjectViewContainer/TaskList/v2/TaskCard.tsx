@@ -77,7 +77,6 @@ export const TaskCard = ({
   };
 
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
-  const isOverdue = task.deadline != null && new Date(task.deadline) < new Date() && task.status !== 'DONE';
 
   return (
     <>
@@ -108,8 +107,7 @@ export const TaskCard = ({
                 sx={{
                   opacity: snapshot.isDragging ? 0.9 : 1,
                   transform: snapshot.isDragging ? 'rotate(-2deg)' : '',
-                  borderRadius: '5px',
-                  ...(isOverdue && { border: '2px solid #ef4345' })
+                  borderRadius: '5px'
                 }}
                 elevation={snapshot.isDragging ? 3 : 1}
               >
@@ -154,11 +152,8 @@ export const TaskCard = ({
                         )}
                         {task.deadline && (
                           <Box alignItems={'center'} justifyContent={'right'} display={'flex'}>
-                            <Schedule sx={{ fontSize: 16, mr: 0.5, ...(isOverdue && { color: '#ef4345' }) }} />
-                            <Typography
-                              variant="body2"
-                              sx={{ fontSize: '0.875rem', ...(isOverdue && { color: '#ef4345', fontWeight: 'bold' }) }}
-                            >
+                            <Schedule sx={{ fontSize: 16, mr: 0.5 }} />
+                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
                               Due: {datePipe(task.deadline)}
                             </Typography>
                           </Box>

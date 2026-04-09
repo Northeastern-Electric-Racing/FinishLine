@@ -13,16 +13,6 @@ import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { mockUseSingleUserSettings } from '../../test-support/mock-hooks';
 import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
-vi.mock('../../../app/AppGlobalCarFilterContext', () => ({
-  useGlobalCarFilter: () => ({
-    selectedCar: 'all-cars',
-    allCars: [],
-    setSelectedCar: vi.fn(),
-    isLoading: false,
-    error: null
-  })
-}));
-
 vi.mock('../../../pages/HomePage/components/UsefulLinks', () => {
   return {
     __esModule: true,

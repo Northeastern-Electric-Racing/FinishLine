@@ -1,22 +1,8 @@
 import axiosStatic from 'axios';
 
-declare module 'axios' {
-  interface AxiosRequestConfig {
-    overrideCarId?: string | 'all-cars';
-  }
-}
-
 const axios = axiosStatic.create({
   withCredentials: import.meta.env.MODE !== 'development' ? true : undefined
 });
-
-// holds the validated car UUID in memory, set by GlobalCarFilterProvider after login.
-// Storing only in memory prevents stale UUIDs from being sent
-// before the car list has been loaded and validated post-login.
-let currentCarId: string | null = null;
-export const setCurrentCarId = (id: string | null) => {
-  currentCarId = id;
-};
 
 // This allows us to get good server errors
 // All express responses must be: res.status(404).json({ message: "You are not authorized to do that." })
@@ -51,11 +37,6 @@ axios.interceptors.request.use(
     if (import.meta.env.MODE === 'development') request.headers!['Authorization'] = localStorage.getItem('devUserId') || '';
     const organizationId = localStorage.getItem('organizationId');
     request.headers!['organizationId'] = organizationId ?? '';
-    if (request.overrideCarId !== undefined) {
-      if (request.overrideCarId !== 'all-cars') request.headers!['carId'] = request.overrideCarId;
-    } else if (currentCarId) {
-      request.headers!['carId'] = currentCarId;
-    }
     return request;
   },
   (error) => {

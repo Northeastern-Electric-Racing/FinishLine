@@ -161,11 +161,7 @@ export default class UsersService {
    * @param organizationId the id of the organization the user is in
    * @returns the user's favorite projects
    */
-  static async getUsersFavoriteProjects(
-    userId: string,
-    organization: Organization,
-    carId?: string
-  ): Promise<ProjectOverview[]> {
+  static async getUsersFavoriteProjects(userId: string, organization: Organization): Promise<ProjectOverview[]> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
     if (!requestedUser) throw new NotFoundException('User', userId);
 
@@ -179,8 +175,7 @@ export default class UsersService {
         wbsElement: {
           organizationId: organization.organizationId,
           dateDeleted: null
-        },
-        ...(carId && { carId })
+        }
       },
       ...getProjectOverviewQueryArgs(organization.organizationId)
     });

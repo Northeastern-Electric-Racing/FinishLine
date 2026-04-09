@@ -16,7 +16,7 @@ import BillOfMaterialsService from '../services/boms.services.js';
 export default class ProjectsController {
   static async getAllProjectsGantt(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectGantt[] = await ProjectsService.getAllProjectsGantt(req.organization, req.currentCar?.carId);
+      const projects: ProjectGantt[] = await ProjectsService.getAllProjectsGantt(req.organization);
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
@@ -25,7 +25,7 @@ export default class ProjectsController {
 
   static async getAllProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectPreview[] = await ProjectsService.getAllProjects(req.organization, req.currentCar?.carId);
+      const projects: ProjectPreview[] = await ProjectsService.getAllProjects(req.organization);
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
@@ -34,11 +34,7 @@ export default class ProjectsController {
 
   static async getUsersTeamsProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectOverview[] = await ProjectsService.getUsersTeamsProjects(
-        req.currentUser,
-        req.organization,
-        req.currentCar?.carId
-      );
+      const projects: ProjectOverview[] = await ProjectsService.getUsersTeamsProjects(req.currentUser, req.organization);
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
@@ -47,11 +43,7 @@ export default class ProjectsController {
 
   static async getUsersLeadingProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectOverview[] = await ProjectsService.getUsersLeadingProjects(
-        req.currentUser,
-        req.organization,
-        req.currentCar?.carId
-      );
+      const projects: ProjectOverview[] = await ProjectsService.getUsersLeadingProjects(req.currentUser, req.organization);
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
@@ -61,7 +53,7 @@ export default class ProjectsController {
   static async getTeamsProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamId } = req.params as Record<string, string>;
-      const projects: Project[] = await ProjectsService.getTeamsProjects(req.organization, teamId, req.currentCar?.carId);
+      const projects: Project[] = await ProjectsService.getTeamsProjects(req.organization, teamId);
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);

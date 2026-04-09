@@ -1,6 +1,6 @@
 import { Droppable } from '@hello-pangea/dnd';
 import { Box, Typography, useTheme } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Project, Task, TaskStatus, TaskWithIndex } from 'shared';
 import { statusNames, TaskCard } from '.';
 import { NERButton } from '../../../../../components/NERButton';
@@ -13,38 +13,21 @@ export const TaskColumn = ({
   status,
   tasks,
   project,
-  equalizedHeight,
-  isDragging,
   onEditTask,
   onDeleteTask,
-  onAddTask,
-  onHeightChange
+  onAddTask
 }: {
-  status: TaskStatus;
+  status: Task['status'];
   tasks: TaskWithIndex[];
   project: Project;
-  equalizedHeight: number;
-  isDragging: boolean;
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   onAddTask: (task: Task) => void;
-  onHeightChange: (status: TaskStatus, height: number) => void;
 }) => {
   const { mutateAsync: createTask } = useCreateTask();
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const toast = useToast();
   const theme = useTheme();
-  const droppableBoxRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const box = droppableBoxRef.current;
-    if (!box) return;
-    const observer = new ResizeObserver(() => {
-      onHeightChange(status, box.scrollHeight);
-    });
-    observer.observe(box);
-    return () => observer.disconnect();
-  }, [status, onHeightChange]);
 
   const handleCreateTask = async ({ notes, title, deadline, assignees, priority, startDate }: EditTaskFormInput) => {
     try {
@@ -71,7 +54,6 @@ export const TaskColumn = ({
   return (
     <>
       <TaskFormModal
-        status={status}
         onSubmit={handleCreateTask}
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
@@ -80,37 +62,20 @@ export const TaskColumn = ({
       <Box
         sx={{
           flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
           paddingTop: '8px',
           paddingBottom: '16px',
           backgroundColor: theme.palette.background.paper,
           marginLeft: '5px',
-          borderRadius: '5px',
-          minHeight: isDragging ? `${equalizedHeight}px` : undefined
+          borderRadius: '5px'
         }}
       >
         <Typography align="center" variant="h5">
           {statusNames[status]}
         </Typography>
-        <NERButton
-          sx={{
-            marginTop: '5px',
-            backgroundColor: theme.palette.secondary.contrastText,
-            width: 'calc(100% - 10px)',
-            marginX: '5px'
-          }}
-          onClick={() => setShowCreateTaskModal(true)}
-        >
-          + Add A Task
-        </NERButton>
         <Droppable droppableId={status}>
           {(droppableProvided, snapshot) => (
             <Box
-              ref={(droppableBox: HTMLElement | null) => {
-                droppableProvided.innerRef(droppableBox);
-                droppableBoxRef.current = droppableBox;
-              }}
+              ref={droppableProvided.innerRef}
               {...droppableProvided.droppableProps}
               className={snapshot.isDraggingOver ? ' isDraggingOver' : ''}
               sx={{
@@ -118,7 +83,6 @@ export const TaskColumn = ({
                 flexDirection: 'column',
                 borderRadius: 5,
                 padding: '5px',
-                flex: 1,
                 '&.isDraggingOver': {
                   bgcolor: '#dadadf'
                 }
@@ -138,6 +102,17 @@ export const TaskColumn = ({
             </Box>
           )}
         </Droppable>
+        <NERButton
+          sx={{
+            marginTop: '5px',
+            backgroundColor: theme.palette.secondary.contrastText,
+            width: 'calc(100% - 10px)',
+            marginX: '5px'
+          }}
+          onClick={() => setShowCreateTaskModal(true)}
+        >
+          + Add A Task
+        </NERButton>
       </Box>
     </>
   );

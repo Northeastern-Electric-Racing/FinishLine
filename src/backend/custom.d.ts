@@ -1,4 +1,4 @@
-import { Organization, Prisma } from '@prisma/client';
+import { Organization } from '@prisma/client';
 import { User as SharedUser } from 'shared';
 
 declare global {
@@ -6,7 +6,6 @@ declare global {
     export interface Request {
       currentUser: SharedUser;
       organization: Organization;
-      currentCar?: Prisma.CarGetPayload<{ include: { wbsElement: true } }>;
     }
   }
 }

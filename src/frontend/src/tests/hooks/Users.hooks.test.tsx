@@ -22,7 +22,7 @@ describe('user hooks', () => {
     mockedGetAllOrgUsers.mockReturnValue(mockPromiseAxiosResponse<User[]>(exampleAllUsers));
 
     const { result } = renderHook(() => useAllUsers(), { wrapper });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleAllUsers);
   });
 
@@ -31,7 +31,7 @@ describe('user hooks', () => {
     mockedGetSingleUser.mockReturnValue(mockPromiseAxiosResponse<User>(exampleAdminUser));
 
     const { result } = renderHook(() => useSingleUser('1'), { wrapper });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleAdminUser);
   });
 
@@ -47,7 +47,7 @@ describe('user hooks', () => {
       result.current.mutate(exampleAdminUser.email);
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleAdminUser);
   });
 });

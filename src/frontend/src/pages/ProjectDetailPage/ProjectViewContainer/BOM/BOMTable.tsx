@@ -63,8 +63,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
       subtotal: '',
       link: '',
       notes: '',
-      assemblyId: assembly.assemblyId,
-      isCopied: false
+      assemblyId: assembly.assemblyId
     });
 
     assemblyMaterials.forEach((material, indx) => materialsWithAssemblies.push(materialToRow(material, indx)));

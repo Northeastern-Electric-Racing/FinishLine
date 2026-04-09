@@ -9,11 +9,11 @@ import AdminBalance from './AdminBalance';
 interface FinanceDashboardAllViewProps {
   startDate?: Date;
   endDate?: Date;
-  overrideCarId?: string | 'all-cars';
+  carNumber?: number;
 }
 
-const FinanceDashboardAllView: React.FC<FinanceDashboardAllViewProps> = ({ startDate, endDate, overrideCarId }) => {
-  const payload = { startDate, endDate, overrideCarId };
+const FinanceDashboardAllView: React.FC<FinanceDashboardAllViewProps> = ({ startDate, endDate, carNumber }) => {
+  const payload = { startDate, endDate, carNumber };
   // this hook returns the all data then budget data then cash data
   const {
     data: allRRData,

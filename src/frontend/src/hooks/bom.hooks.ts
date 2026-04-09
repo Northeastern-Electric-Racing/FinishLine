@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Assembly, Manufacturer, Material, MaterialType, ProjectPreview, Unit, WbsNumber, wbsPipe } from 'shared';
+import { Assembly, Manufacturer, Material, MaterialType, Unit, WbsNumber, wbsPipe } from 'shared';
 import { useToast } from '../hooks/toasts.hooks';
 import {
   assignMaterialToAssembly,
@@ -325,34 +325,4 @@ export const useGetMaterialsForWbsElement = (wbsNum: WbsNumber) => {
     const { data } = await getMaterialsForWbsElement(wbsNum);
     return data;
   });
-};
-
-export const useGetMaterialsForCar = (carNumber: number | null, projects: ProjectPreview[]) => {
-  const projectsInCar = projects.filter((p) => p.wbsNum.carNumber === carNumber);
-
-  return useQuery<Material[], Error>(
-    ['materials', 'car', carNumber ?? 'none'],
-    async () => {
-      const results = await Promise.all(
-        projectsInCar.map(async (p) => {
-          const { data } = await getMaterialsForWbsElement({
-            carNumber: p.wbsNum.carNumber,
-            projectNumber: p.wbsNum.projectNumber,
-            workPackageNumber: 0
-          });
-          return data;
-        })
-      );
-
-      const flat = results.flat();
-      const seen = new Set<string>();
-      return flat.filter((material) => {
-        const key = `${material.name.toLowerCase()}-${material.assemblyId ?? 'no-assembly'}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-    },
-    { enabled: carNumber !== null && projectsInCar.length > 0 }
-  );
 };

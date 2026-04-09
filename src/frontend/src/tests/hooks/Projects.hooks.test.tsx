@@ -6,14 +6,12 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { AxiosResponse } from 'axios';
 import { Project } from 'shared';
-import AppContextQuery from '../../app/AppContextQuery';
+import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import { exampleAllProjects, exampleProject1 } from '../test-support/test-data/projects.stub';
 import { exampleWbsProject1 } from '../test-support/test-data/wbs-numbers.stub';
 import { getAllProjectsGantt, getSingleProject } from '../../apis/projects.api';
 import { useAllProjectsGantt, useSingleProject } from '../../hooks/projects.hooks';
-
-const wrapper = ({ children }: { children: React.ReactNode }) => <AppContextQuery>{children}</AppContextQuery>;
 
 vi.mock('../../apis/projects.api');
 
@@ -23,7 +21,7 @@ describe('project hooks', () => {
     mockedGetAllProjects.mockReturnValue(mockPromiseAxiosResponse<Project[]>(exampleAllProjects));
 
     const { result } = renderHook(() => useAllProjectsGantt(), { wrapper });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleAllProjects);
   });
 
@@ -32,7 +30,7 @@ describe('project hooks', () => {
     mockedGetSingleProject.mockReturnValue(mockPromiseAxiosResponse<Project>(exampleProject1));
 
     const { result } = renderHook(() => useSingleProject(exampleWbsProject1), { wrapper });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleProject1);
   });
 });

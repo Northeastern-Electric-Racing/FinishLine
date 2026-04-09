@@ -77,7 +77,6 @@ export interface Material {
   linkUrl: string;
   notes?: string;
   reimbursementRequests: MaterialReimbursementRequest[];
-  isCopied: boolean;
 }
 
 export type MaterialPreview = Omit<

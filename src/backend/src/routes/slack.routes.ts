@@ -1,6 +1,5 @@
 import { getSlackApp } from '../integrations/slack.js';
 import SlackController from '../controllers/slack.controllers.js';
-import AttendanceService from '../services/attendance.services.js';
 
 // Register Slack event listeners only if the Slack app is configured
 const slackApp = getSlackApp();
@@ -12,18 +11,6 @@ if (slackApp) {
       await SlackController.processMessageEvent(message);
     } catch (error) {
       logger.error('Error processing message event:', error);
-      console.error(error);
-    }
-  });
-
-  // Register reaction_added event listener for attendance tracking
-  slackApp.event('reaction_added', async ({ event, logger }: any) => {
-    try {
-      const { user, item } = event;
-      if (item.type !== 'message') return;
-      await AttendanceService.handleReactionAdded(user, item.channel, item.ts);
-    } catch (error) {
-      logger.error('Error handling reaction_added event:', error);
       console.error(error);
     }
   });

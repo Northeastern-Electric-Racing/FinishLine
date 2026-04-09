@@ -1,5 +1,5 @@
 import { Project, User } from 'shared';
-import { Box, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, FormControl, FormLabel, Grid, MenuItem, Select, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
@@ -8,8 +8,9 @@ import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { AttachMoney } from '@mui/icons-material';
 import TeamDropdown from '../../../components/TeamsDropdown';
 import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
-import { useGlobalCarFilter } from '../../../app/AppGlobalCarFilterContext';
+import { useGetAllCars } from '../../../hooks/cars.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 interface ProjectEditDetailsProps {
   users: User[];
@@ -21,6 +22,7 @@ interface ProjectEditDetailsProps {
   setManagerId: (id?: string) => void;
   setLeadId: (id?: string) => void;
   setcrId?: (crId?: number) => void;
+  setCarNumber: (carNumber: number) => void;
 }
 
 const userToAutocompleteOption = (user?: User): { label: string; id: string } => {
@@ -36,15 +38,18 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
   managerId,
   leadId,
   setLeadId,
-  setManagerId
+  setManagerId,
+  setCarNumber
 }) => {
-  const { selectedCar, allCars, isLoading: carFilterIsLoading } = useGlobalCarFilter();
+  const { data: cars, isLoading, isError, error } = useGetAllCars();
 
-  if (carFilterIsLoading) {
+  if (isLoading || !cars) {
     return <LoadingIndicator />;
   }
 
-  const sortedCars = [...allCars].sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber);
+  if (isError) {
+    return <ErrorPage message={error.message} />;
+  }
 
   return (
     <Box>
@@ -63,33 +68,43 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        {!project && selectedCar === 'all-cars' && (
-          <Grid item lg={2.4} md={6} xs={12}>
-            <FormControl fullWidth>
-              <FormLabel>Car</FormLabel>
-              <Controller
-                name="carNumber"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <TextField select onChange={onChange} value={value ?? ''} fullWidth size="small">
-                    {sortedCars.map((car) => (
-                      <MenuItem key={car.id} value={car.wbsNum.carNumber}>
-                        {car.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
-              />
-              <FormHelperText error>{errors.carNumber?.message}</FormHelperText>
-            </FormControl>
-          </Grid>
-        )}
         {!project && (
-          <Grid item lg={2.4} md={6} xs={12}>
-            <FormControl fullWidth>
-              <TeamDropdown control={control} name="teamIds" multiselect />
-            </FormControl>
-          </Grid>
+          <>
+            <Grid item lg={2.4} md={6} xs={12} sx={{ display: 'flex' }}>
+              <FormControl fullWidth>
+                <FormLabel>Car</FormLabel>
+                <Controller
+                  name="carNumber"
+                  control={control}
+                  defaultValue={cars.length - 1}
+                  render={({ field: { onChange, value } }) => (
+                    <Select
+                      error={!!errors.carNumber}
+                      value={value}
+                      onChange={(e) => {
+                        setCarNumber(e.target.value as number);
+                        onChange(e);
+                      }}
+                    >
+                      {
+                        // reverse to show most recent cars first
+                        cars.toReversed().map((car) => (
+                          <MenuItem key={car.wbsElementId} value={car.wbsNum.carNumber}>
+                            {car.name}
+                          </MenuItem>
+                        ))
+                      }
+                    </Select>
+                  )}
+                ></Controller>
+              </FormControl>
+            </Grid>
+            <Grid item lg={2.4} md={6} xs={12}>
+              <FormControl fullWidth>
+                <TeamDropdown control={control} name="teamIds" multiselect />
+              </FormControl>
+            </Grid>
+          </>
         )}
         <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
           <FormControl fullWidth>

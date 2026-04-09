@@ -19,34 +19,25 @@ import {
   WorkPackageEditArgs,
   getHomePageWorkPackages
 } from '../apis/work-packages.api';
-import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Custom React Hook to supply all work packages.
  */
 export const useAllWorkPackages = (queryParams?: { [field: string]: string }) => {
-  const { selectedCar } = useGlobalCarFilter();
-  return useQuery<WorkPackage[], Error>(
-    ['work packages', queryParams, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
-    async () => {
-      const { data } = await getAllWorkPackages(queryParams);
-      return data;
-    }
-  );
+  return useQuery<WorkPackage[], Error>(['work packages', queryParams], async () => {
+    const { data } = await getAllWorkPackages(queryParams);
+    return data;
+  });
 };
 
 /**
  * Custom React Hook to supply all work packages in preview format (minimal data).
  */
 export const useAllWorkPackagesPreview = (status?: string) => {
-  const { selectedCar } = useGlobalCarFilter();
-  return useQuery<WorkPackagePreview[], Error>(
-    ['work packages', 'preview', status, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
-    async () => {
-      const { data } = await getAllWorkPackagesPreview(status);
-      return data;
-    }
-  );
+  return useQuery<WorkPackagePreview[], Error>(['work packages', 'preview', status], async () => {
+    const { data } = await getAllWorkPackagesPreview(status);
+    return data;
+  });
 };
 
 /**
@@ -137,12 +128,8 @@ export const useGetBlockingWorkPackages = (wbsNum: WbsNumber) => {
  * Custom React Hook to get many work packages
  */
 export const useGetManyWorkPackages = (wbsNums: WbsNumber[]) => {
-  const { selectedCar } = useGlobalCarFilter();
-  const filteredWbsNums =
-    selectedCar === 'all-cars' ? wbsNums : wbsNums.filter((wbsNum) => wbsNum.carNumber === selectedCar.wbsNum.carNumber);
-  const carKey = selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id;
-  return useQuery<WorkPackage[], Error>(['work packages', 'many', filteredWbsNums, carKey], async () => {
-    const { data } = await getManyWorkPackages(filteredWbsNums);
+  return useQuery<WorkPackage[], Error>(['work packages', 'blocking', wbsNums], async () => {
+    const { data } = await getManyWorkPackages(wbsNums);
     return data;
   });
 };
@@ -158,12 +145,8 @@ export const useSlackUpcomingDeadlines = () => {
 };
 
 export const useHomeScreenWorkPackages = (selection: WorkPackageSelection) => {
-  const { selectedCar } = useGlobalCarFilter();
-  return useQuery<WorkPackage[], Error>(
-    ['teams', 'work-packages', selection, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
-    async () => {
-      const { data } = await getHomePageWorkPackages(selection);
-      return data;
-    }
-  );
+  return useQuery<WorkPackage[], Error>(['teams', 'work-packages', selection], async () => {
+    const { data } = await getHomePageWorkPackages(selection);
+    return data;
+  });
 };

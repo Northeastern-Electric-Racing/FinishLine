@@ -520,10 +520,6 @@ export default class FinanceServices {
     return data;
   }
 
-  // Finance data filters by carNumber (integer) rather than carId (UUID) because the
-  // finance schema links through WbsElement, which owns carNumber directly. Filtering
-  // by carId would require nested Prisma joins across every finance utility function.
-  // carNumber is sourced from req.currentCar?.wbsElement.carNumber via middleware.
   static async getReimbursementRequestTeamData(
     organization: Organization,
     teamId: string,
@@ -1143,12 +1139,7 @@ export default class FinanceServices {
     return data;
   }
 
-  static async getSpendingBarCategoryData(
-    organization: Organization,
-    startDate?: Date,
-    endDate?: Date,
-    carNumber?: number
-  ): Promise<SpendingBarData> {
+  static async getSpendingBarCategoryData(organization: Organization): Promise<SpendingBarData> {
     const { organizationId } = organization;
     const otherReasons = await prisma.reimbursement_Product_Other_Reason.findMany({
       where: {
@@ -1160,13 +1151,7 @@ export default class FinanceServices {
     });
 
     const spendingInfoPromises = otherReasons.map((r) =>
-      this.getReimbursementRequestCategoryData(
-        r.otherReimbursementProductReasonId,
-        organization,
-        startDate,
-        endDate,
-        carNumber
-      )
+      this.getReimbursementRequestCategoryData(r.otherReimbursementProductReasonId, organization)
     );
     const spendingInfos = await Promise.all(spendingInfoPromises);
 

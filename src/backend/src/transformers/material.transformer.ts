@@ -48,8 +48,7 @@ export const materialTransformer = (material: Prisma.MaterialGetPayload<Material
           .filter((p) => p.reimbursementRequest && !p.reimbursementRequest.dateDeleted)
           .map((p) => [p.reimbursementRequest!.reimbursementRequestId, p.reimbursementRequest!])
       ).values()
-    ),
-    isCopied: material.isCopied
+    )
   };
 };
 

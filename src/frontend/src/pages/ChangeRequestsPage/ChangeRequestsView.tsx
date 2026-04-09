@@ -5,24 +5,18 @@ import { routes } from '../../utils/routes';
 import { isGuest } from 'shared';
 import { Add } from '@mui/icons-material';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { useGlobalCarFilter } from '../../app/AppGlobalCarFilterContext';
 import ChangeRequestsOverview from './ChangeRequestsOverview';
 import ChangeRequestsTable from './ChangeRequestsTable';
 import PageLayout from '../../components/PageLayout';
 import FullPageTabs from '../../components/FullPageTabs';
-import GuestChangeRequestsPage from './GuestChangeRequestsPage';
 
 const ChangeRequestsView: React.FC = () => {
   const history = useHistory();
   const user = useCurrentUser();
-  const { selectedCar } = useGlobalCarFilter();
 
   // Default to the "overview" tab
   const [tabIndex, setTabIndex] = useState<number>(0);
 
-  if (isGuest(user.role)) {
-    return <GuestChangeRequestsPage />;
-  }
   const headerRight = (
     <NERButton
       variant="contained"
@@ -36,9 +30,7 @@ const ChangeRequestsView: React.FC = () => {
 
   return (
     <PageLayout
-      title={
-        selectedCar ? `Change Requests For ${selectedCar === 'all-cars' ? 'All Cars' : selectedCar.name}` : 'Change Requests'
-      }
+      title="Change Requests"
       tabs={
         <FullPageTabs
           setTab={setTabIndex}
