@@ -37,6 +37,8 @@ import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useState } from 'react';
+import GlobalCarFilterHeader from '../../components/GlobalCarFilterHeader';
+import GlobalCarFilterChips from '../../components/GlobalCarFilterChips';
 import { CalendarIcon } from '@mui/x-date-pickers';
 
 interface SidebarProps {
@@ -218,7 +220,15 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       }}
     >
       <DrawerHeader>
-        <IconButton onClick={() => handleMoveContent()}>{moveContent ? <ChevronLeft /> : <ChevronRight />}</IconButton>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <GlobalCarFilterHeader sx={{ flex: 1 }} />
+            <IconButton onClick={() => handleMoveContent()} sx={{ p: 0.5 }}>
+              {moveContent ? <ChevronLeft /> : <ChevronRight />}
+            </IconButton>
+          </Box>
+          <GlobalCarFilterChips />
+        </Box>
       </DrawerHeader>
       <Divider />
       <Box
@@ -232,12 +242,14 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
         <Box>
           {linkItems.map((linkItem) => (
             <NavPageLink
+              key={linkItem.route}
               {...linkItem}
               isSubmenuOpen={openSubmenu === linkItem.name}
               onSubmenuHover={() => handleOpenSubmenu(linkItem.name)}
               onSubmenuCollapse={() => handleCloseSubmenu()}
             />
           ))}
+          <Divider sx={{ mx: 1, my: 2 }} />
           <NavUserMenu open={drawerOpen} />
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
