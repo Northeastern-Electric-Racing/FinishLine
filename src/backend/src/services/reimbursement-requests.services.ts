@@ -699,20 +699,20 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
-    try {
-      const reimbursementRequestWithSaboNumber = await prisma.reimbursement_Request.update({
-        where: { reimbursementRequestId },
-        data: {
-          saboId: saboNumber
-        }
-      });
-      return reimbursementRequestWithSaboNumber;
-    } catch (error: unknown) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-        throw new HttpException(400, 'This SABO number is already assigned to another reimbursement request.');
-      }
-      throw error;
+    const existingWithSaboNumber = await prisma.reimbursement_Request.findFirst({
+      where: { saboId: saboNumber, organizationId: organization.organizationId }
+    });
+    if (existingWithSaboNumber) {
+      throw new HttpException(400, 'This SABO number is already assigned to another reimbursement request.');
     }
+
+    const reimbursementRequestWithSaboNumber = await prisma.reimbursement_Request.update({
+      where: { reimbursementRequestId },
+      data: {
+        saboId: saboNumber
+      }
+    });
+    return reimbursementRequestWithSaboNumber;
   }
 
   /**
