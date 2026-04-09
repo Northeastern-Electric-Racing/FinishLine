@@ -23,7 +23,7 @@ describe('project hooks', () => {
     mockedGetAllProjects.mockReturnValue(mockPromiseAxiosResponse<Project[]>(exampleAllProjects));
 
     const { result } = renderHook(() => useAllProjectsGantt(), { wrapper });
-    await waitFor(() => result.current.isSuccess);
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(exampleAllProjects);
   });
 
@@ -32,7 +32,7 @@ describe('project hooks', () => {
     mockedGetSingleProject.mockReturnValue(mockPromiseAxiosResponse<Project>(exampleProject1));
 
     const { result } = renderHook(() => useSingleProject(exampleWbsProject1), { wrapper });
-    await waitFor(() => result.current.isSuccess);
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(exampleProject1);
   });
 });
