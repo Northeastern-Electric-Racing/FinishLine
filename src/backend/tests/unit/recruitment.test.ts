@@ -377,4 +377,33 @@ describe('Recruitment Tests', () => {
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a guest definition'));
     });
   });
+
+  describe('Get a single guest defenition', () => {
+    it('Get a single team type works', async () => {
+      const guestDefinition = await RecruitmentServices.createGuestDefinition(
+        superman,
+        organization,
+        'test term',
+        'test description',
+        2,
+        'iconname',
+        'buttonTxt',
+        'buttonLink'
+      );
+      const result = await RecruitmentServices.getGuestDefinition(
+        guestDefinition.userCreatedId,
+        orgId,
+        guestDefinition.definitionId
+      );
+      expect(result).toStrictEqual(guestDefinition);
+    });
+
+    it('Get a single guest defenition fails', async () => {
+      const nonExistingGuestId = 'nonExistingGuest';
+      const nonExistingDefinitionId = 'nonExistingDefinition';
+      await expect(async () =>
+        RecruitmentServices.getGuestDefinition(nonExistingGuestId, orgId, nonExistingDefinitionId)
+      ).rejects.toThrow(new NotFoundException('User', nonExistingGuestId));
+    });
+  });
 });

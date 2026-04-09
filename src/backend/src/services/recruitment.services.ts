@@ -1,4 +1,4 @@
-import { Organization } from '@prisma/client';
+import { Guest_Definition, Organization } from '@prisma/client';
 import { isAdmin, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils.js';
@@ -252,5 +252,29 @@ export default class RecruitmentServices {
     });
 
     return definition;
+  }
+
+  /**
+   * Gets a single guest defenition with the given user, organization, and definition ids
+   * @param userCreatedId the id of guest to retrieve
+   * @param organizationId the organization the user is currently in
+   * @param definitionId the id of the specific defenition being found
+   * @returns a definition
+   * @throws if the defenition is not found in the db
+   */
+  static async getGuestDefinition(
+    userCreatedId: string,
+    organizationId: string,
+    definitionId: string
+  ): Promise<Guest_Definition> {
+    const guest = await prisma.guest_Definition.findFirst({
+      where: { userCreatedId, organizationId, definitionId }
+    });
+
+    if (!guest) {
+      throw new NotFoundException('User', userCreatedId);
+    }
+
+    return guest;
   }
 }

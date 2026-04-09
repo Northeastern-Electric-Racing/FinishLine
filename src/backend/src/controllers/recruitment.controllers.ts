@@ -115,4 +115,18 @@ export default class RecruitmentController {
       next(error);
     }
   }
+
+  static async getGuestDefinition(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userCreatedId, organizationId, definitionId } = req.params as {
+        userCreatedId: string;
+        organizationId: string;
+        definitionId: string;
+      };
+      const definition = await RecruitmentServices.getGuestDefinition(userCreatedId, organizationId, definitionId);
+      res.status(200).json(definition);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
