@@ -36,7 +36,7 @@ export const useAllWorkPackages = (queryParams?: { [field: string]: string }) =>
 export const useAllWorkPackagesPreview = (status?: string) => {
   return useQuery<WorkPackagePreview[], Error>(['work packages', 'preview', status], async () => {
     const { data } = await getAllWorkPackagesPreview(status);
-      return data;
+    return data;
   });
 };
 
