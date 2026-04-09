@@ -7,6 +7,7 @@ import {
 import { Collapse } from '@mui/material';
 import GanttTaskBar from './GanttTaskBar';
 import GanttTaskBarDisplay from './GanttTaskBarDisplay';
+import BlockedGanttTaskView from './BlockedTaskBarView';
 import { useState } from 'react';
 
 interface GanttTaskBarViewProps<T> {
@@ -76,6 +77,24 @@ const GanttTaskBarView = <T,>({
           />
         ))}
       </Collapse>
+      {task.blocking.map((blocking) => {
+        return (
+          <BlockedGanttTaskView
+            key={blocking.id}
+            parentTask={task}
+            task={blocking}
+            days={days}
+            getStartCol={getStartCol}
+            getEndCol={getEndCol}
+            handleOnMouseOver={handleOnMouseOver}
+            onShowChildrenToggle={handleToggle}
+            highlightSubtaskComparator={highlightSubtaskComparator}
+            highlightTaskComparator={highlightTaskComparator}
+            handleOnMouseLeave={handleOnMouseLeave}
+            highlightedChange={highlightedChange}
+          />
+        );
+      })}
     </>
   );
 };

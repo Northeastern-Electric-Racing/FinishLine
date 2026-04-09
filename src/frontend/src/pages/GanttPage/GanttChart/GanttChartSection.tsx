@@ -94,8 +94,8 @@ const GanttChartSection = <T,>({
     [createChange]
   );
 
-  return (
-    <ArcherContainer strokeColor="#ef4545">
+  return tasks.length > 0 ? (
+    <ArcherContainer strokeColor="#ef4545" noCurves ref={archerRef}>
       <Box sx={{ width: 'fit-content' }}>
         <Box sx={{ mt: '1rem', width: 'fit-content' }}>
           {tasks.map((task) => {
@@ -121,7 +121,7 @@ const GanttChartSection = <T,>({
         <GanttTooltipLayer updateRef={updateTooltip} />
       </Box>
     </ArcherContainer>
-  );
+  ) : null;
 };
 
 export default GanttChartSection;
