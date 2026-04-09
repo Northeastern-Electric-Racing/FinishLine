@@ -10,15 +10,13 @@ interface GanttChartCollectionSectionProps<E, T> {
   endDate: Date;
   collection: GanttCollection<E, T>;
   editability?: GanttEditability<E, T>;
-  onHeightChange?: (height: number) => void;
 }
 
 const GanttChartCollectionSection = <E, T>({
   startDate,
   endDate,
   collection,
-  editability,
-  onHeightChange
+  editability
 }: GanttChartCollectionSectionProps<E, T>) => {
   const theme = useTheme();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -63,18 +61,6 @@ const GanttChartCollectionSection = <E, T>({
   const ignore = () => {};
 
   const ignoreBool = () => false;
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el || !onHeightChange) return;
-
-    const ro = new ResizeObserver(() => {
-      onHeightChange(el.getBoundingClientRect().height);
-    });
-    ro.observe(el);
-    onHeightChange(el.getBoundingClientRect().height);
-    return () => ro.disconnect();
-  }, [onHeightChange]);
 
   return (
     <Box ref={sectionRef} sx={collectionSectionBackgroundStyle}>
