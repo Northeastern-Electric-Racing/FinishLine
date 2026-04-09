@@ -8,13 +8,18 @@ import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import BOMTable from './BOMTable';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { useAssignMaterialToAssembly, useDeleteAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
+import {
+  useAssignMaterialToAssembly,
+  useDeleteAssembly,
+  useDeleteMaterial,
+  useEditMaterialStatus
+} from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
 import { Button, Link, Typography } from '@mui/material';
 import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
-import { renderStatusBOM } from './BOMTableCustomCells';
+import { StatusDropdownCell } from './BOMTableCustomCells';
 import LinkIcon from '@mui/icons-material/Link';
 import NotesIcon from '@mui/icons-material/Notes';
 import { routes } from '../../../../utils/routes';
@@ -42,6 +47,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
   const [modalShow, setModalShow] = useState(false);
   const { mutateAsync: deleteMaterialMutateAsync, isLoading: deleteMaterialIsLoading } = useDeleteMaterial(project.wbsNum);
   const { mutateAsync: deleteAssemblyMutateAsync, isLoading: deleteAssemblyIsLoading } = useDeleteAssembly(project.wbsNum);
+  const { mutateAsync: editMaterialStatus } = useEditMaterialStatus(project.wbsNum);
   const { mutateAsync: assignMaterialToAssembly } = useAssignMaterialToAssembly();
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -275,10 +281,44 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     },
     {
       ...bomBaseColDef,
-      flex: 1.2,
+      flex: 1.4,
       field: 'status',
       headerName: 'Status',
-      renderCell: renderStatusBOM,
+      renderCell: (params) => {
+        if (!params.value || String(params.row.id).startsWith('assembly')) return null;
+        const material = materials.find((m) => m.materialId === params.row.materialId);
+        if (!material) return null;
+        return (
+          <StatusDropdownCell
+            status={params.value}
+            disabled={!editPerms}
+            onStatusChange={async (newStatus) => {
+              try {
+                await editMaterialStatus({
+                  materialId: material.materialId,
+                  payload: {
+                    name: material.name,
+                    status: newStatus,
+                    materialTypeName: material.materialTypeName,
+                    manufacturerName: material.manufacturerName,
+                    manufacturerPartNumber: material.manufacturerPartNumber,
+                    pdmFileName: material.pdmFileName,
+                    price: material.price,
+                    quantity: material.quantity,
+                    unitName: material.unitName,
+                    linkUrl: material.linkUrl,
+                    notes: material.notes,
+                    assemblyId: material.assemblyId
+                  }
+                });
+                toast.success('Status updated successfully');
+              } catch (e: unknown) {
+                if (e instanceof Error) toast.error(e.message, 6000);
+              }
+            }}
+          />
+        );
+      },
       sortable: false,
       filterable: false,
       hide: hideColumn[1]

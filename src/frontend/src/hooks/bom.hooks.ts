@@ -313,6 +313,27 @@ export const useCreateMaterialType = () => {
   );
 };
 
+/**
+ * Custom React hook to edit a material's status inline.
+ * @param wbsNum The wbs element the material belongs to
+ * @returns mutation function to edit a material's status
+ */
+export const useEditMaterialStatus = (wbsNum: WbsNumber) => {
+  const queryClient = useQueryClient();
+  return useMutation<Material, Error, { materialId: string; payload: MaterialDataSubmission }>(
+    ['materials', 'edit', 'status'],
+    async ({ materialId, payload }) => {
+      const data = await editMaterial(materialId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
+      }
+    }
+  );
+};
+
 export const useGetAssembliesForWbsElement = (wbsNum: WbsNumber) => {
   return useQuery<Assembly[], Error>(['assemblies', wbsPipe(wbsNum)], async () => {
     const { data } = await getAssembliesForWbsElement(wbsNum);
