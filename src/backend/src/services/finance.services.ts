@@ -34,6 +34,7 @@ import {
   getReimbursementRequestWhereInput
 } from '../utils/finance.utils.js';
 import { notifySponsorTaskAssignee } from '../utils/slack.utils.js';
+import { uploadFile } from '../utils/google-integration.utils.js';
 import { isUserFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
 
 export default class FinanceServices {
@@ -80,7 +81,8 @@ export default class FinanceServices {
     contactPhone?: string,
     contactPosition?: string,
     stockDescription?: string,
-    discountDescription?: string
+    discountDescription?: string,
+    logoImage?: Express.Multer.File
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can create a sponsor');
@@ -104,6 +106,15 @@ export default class FinanceServices {
       data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
     });
 
+    let logoImageId: string | undefined;
+    if (logoImage) {
+      const logoImageData = await uploadFile(logoImage);
+      if (!logoImageData?.id || !logoImageData?.name) {
+        throw new HttpException(500, 'Sponsor logo upload failed');
+      }
+      logoImageId = logoImageData.id;
+    }
+
     const sponsor = await prisma.sponsor.create({
       data: {
         name,
@@ -118,6 +129,7 @@ export default class FinanceServices {
         taxExempt,
         discountCode,
         sponsorNotes,
+        logoImageId,
         contactId: contact.sponsorContactId,
         sponsorTasks: {
           create: sponsorTasks.map((task) => ({
@@ -1223,7 +1235,8 @@ export default class FinanceServices {
     contactPhone?: string,
     contactPosition?: string,
     stockDescription?: string,
-    discountDescription?: string
+    discountDescription?: string,
+    logoImage?: Express.Multer.File
   ): Promise<Sponsor> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can edit sponsors.');
@@ -1321,6 +1334,15 @@ export default class FinanceServices {
       data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
     });
 
+    let logoImageId: string | undefined;
+    if (logoImage) {
+      const logoImageData = await uploadFile(logoImage);
+      if (!logoImageData?.id || !logoImageData?.name) {
+        throw new HttpException(500, 'Sponsor logo upload failed');
+      }
+      logoImageId = logoImageData.id;
+    }
+
     const updatedSponsor = await prisma.sponsor.update({
       where: { sponsorId: oldSponsor.sponsorId },
       data: {
@@ -1335,7 +1357,8 @@ export default class FinanceServices {
         tier: sponsorTierId ? { connect: { sponsorTierId } } : { disconnect: true },
         taxExempt,
         discountCode,
-        sponsorNotes
+        sponsorNotes,
+        ...(logoImageId && { logoImageId })
       },
       ...getSponsorQueryArgs(organization.organizationId)
     });
