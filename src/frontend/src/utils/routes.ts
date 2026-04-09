@@ -30,6 +30,7 @@ const COMPANIES = FINANCE + `/companies`;
 
 /**************** Projects Section ****************/
 const PROJECTS = `/projects`;
+const PROJECT_MANAGEMENT = `/project-management`;
 const PROJECTS_OVERVIEW = PROJECTS + '/overview';
 const PROJECTS_ALL = PROJECTS + '/all';
 const PROJECTS_BY_WBS = PROJECTS + `/:wbsNum`;
@@ -100,6 +101,7 @@ export const routes = {
   GANTT,
 
   PROJECTS,
+  PROJECT_MANAGEMENT,
   PROJECTS_OVERVIEW,
   PROJECTS_ALL,
   PROJECTS_BY_WBS,

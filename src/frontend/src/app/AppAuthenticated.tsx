@@ -28,6 +28,7 @@ import Statistics from '../pages/StatisticsPage/Statistics';
 import RetrospectiveGanttChartPage from '../pages/RetrospectivePage/Retrospective';
 import Calendar from '../pages/CalendarPage/Calendar';
 import GuestEventPage from '../pages/GuestEventPage/GuestEventPage';
+import ProjectManagementPage from '../pages/ProjectManagementPage/ProjectManagementPage';
 import SidebarLayout from '../layouts/SidebarLayout';
 
 interface AppAuthenticatedProps {
@@ -77,6 +78,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
           <Route path={routes.HOME} component={Home} />
           <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
           <Route path={routes.EVENTS} component={GuestEventPage} />
+          <Route path={routes.PROJECT_MANAGEMENT} component={ProjectManagementPage} />
           <Redirect from={routes.BASE} to={routes.HOME} />
           <Route path="*" component={PageNotFound} />
         </Switch>
