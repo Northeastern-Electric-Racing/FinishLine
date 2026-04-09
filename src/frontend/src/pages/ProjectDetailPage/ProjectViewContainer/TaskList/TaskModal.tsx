@@ -21,6 +21,7 @@ interface TaskModalProps {
 
 const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit, hasEditPermissions, wbsNum }) => {
   const [isEditMode, setIsEditMode] = useState(false);
+
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const isWpTask = task.wbsNum.workPackageNumber !== 0;
 

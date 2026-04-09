@@ -29,7 +29,7 @@ export default class TasksController {
 
   static async editTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, notes, priority, deadline, startDate, wbsElementId } = req.body;
+      const { title, notes, priority, deadline, startDate, wbsNum } = req.body;
       const { taskId } = req.params as Record<string, string>;
 
       const updateTask = await TasksService.editTask(

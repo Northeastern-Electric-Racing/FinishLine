@@ -4,12 +4,12 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, TaskStatus, WbsNumber } from 'shared';
 import { useAllUsers, useCurrentUser } from '../../../../hooks/users.hooks';
-import { useWorkPackagesByProject } from '../../../../hooks/work-packages.hooks';
 import * as yup from 'yup';
 import { taskUserToAutocompleteOption } from '../../../../utils/task.utils';
 import NERFormModal from '../../../../components/NERFormModal';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
+import { useWorkPackagesByProject } from '../../../../hooks/work-packages.hooks';
 
 export interface EditTaskFormInput {
   taskId: string;
@@ -76,9 +76,9 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
   const user = useCurrentUser();
 
   const { data: users, isLoading, isError, error } = useAllUsers();
-
   const projectWbsNum = { ...wbsNum, workPackageNumber: 0 };
   const { data: workPackages } = useWorkPackagesByProject(projectWbsNum);
+
   const isWpContext = wbsNum.workPackageNumber !== 0;
 
   const {
@@ -96,7 +96,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
       deadline: task?.deadline ?? undefined,
       priority: task?.priority ?? TaskPriority.Low,
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? [],
-      wpWbsNum: task?.wbsNum.workPackageNumber !== 0 ? task?.wbsNum : isWpContext ? wbsNum : undefined
+      wpWbsNum: task?.wbsNum.workPackageNumber !== 0 ? task?.wbsNum : undefined
     }
   });
 
@@ -182,27 +182,31 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <FormControl fullWidth>
-              <FormLabel>Work Package</FormLabel>
-              <Controller
-                name="wpWbsNum"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Autocomplete
-                    options={wpOptions}
-                    isOptionEqualToValue={(option, val) => option.wbsNum.workPackageNumber === val.wbsNum.workPackageNumber}
-                    getOptionLabel={(option) => option.label}
-                    onChange={(_, val) => onChange(val?.wbsNum ?? undefined)}
-                    value={wpOptions.find((o) => o.wbsNum.workPackageNumber === value?.workPackageNumber) ?? null}
-                    renderInput={(params) => (
-                      <TextField {...params} variant="standard" placeholder={'Select a work package'} />
-                    )}
-                  />
-                )}
-              />
-            </FormControl>
-          </Grid>
+          {!isWpContext && (
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <FormLabel>Work Package</FormLabel>
+                <Controller
+                  name="wpWbsNum"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <Autocomplete
+                      options={wpOptions}
+                      getOptionLabel={(option) => option.label}
+                      isOptionEqualToValue={(option, val) =>
+                        option.wbsNum.workPackageNumber === val.wbsNum.workPackageNumber
+                      }
+                      onChange={(_, val) => onChange(val?.wbsNum ?? undefined)}
+                      value={wpOptions.find((o) => o.wbsNum.workPackageNumber === value?.workPackageNumber) ?? undefined}
+                      renderInput={(params) => (
+                        <TextField {...params} variant="standard" placeholder="Select a work package" />
+                      )}
+                    />
+                  )}
+                />
+              </FormControl>
+            </Grid>
+          )}
           <Grid item md={12}>
             <FormControl fullWidth>
               <FormLabel>Assignees</FormLabel>
