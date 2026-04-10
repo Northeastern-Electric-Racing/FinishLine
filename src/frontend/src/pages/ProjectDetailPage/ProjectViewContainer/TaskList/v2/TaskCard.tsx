@@ -188,7 +188,7 @@ export const TaskCard = ({
                               backgroundColor: wpColor.bg,
                               color: wpColor.color,
                               fontWeight: 500,
-                              maxWidth: 300 // truncates wtih ellipses if it gets too long
+                              maxWidth: 275 // truncates wtih ellipses if it gets too long
                             }}
                           />
                         )}
