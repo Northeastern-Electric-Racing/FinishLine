@@ -119,10 +119,9 @@ describe('Work Package Tests', () => {
 
     it('throws NotFoundException when project does not exist', async () => {
       await expect(async () =>
-        WorkPackagesService.getWorkPackagesByProject(
-          { carNumber: 99, projectNumber: 99, workPackageNumber: 0 },
-          { organizationId: orgId } as any
-        )
+        WorkPackagesService.getWorkPackagesByProject({ carNumber: 99, projectNumber: 99, workPackageNumber: 0 }, {
+          organizationId: orgId
+        } as any)
       ).rejects.toThrow(NotFoundException);
     });
   });

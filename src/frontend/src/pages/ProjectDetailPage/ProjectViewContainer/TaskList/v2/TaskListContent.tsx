@@ -12,10 +12,9 @@ import ErrorPage from '../../../../ErrorPage';
 
 interface TaskListContentProps {
   wbsNum: WbsNumber;
-  wbsElementId: string;
 }
 
-export const TaskListContent = ({ wbsNum, wbsElementId }: TaskListContentProps) => {
+export const TaskListContent = ({ wbsNum }: TaskListContentProps) => {
   const { data: tasks, isLoading, isError, error } = useTasksByWbsNum(wbsNum);
   const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus | undefined>(undefined); // can't use getTasksByStatus since tasks are async
   const { mutateAsync: setTaskStatus } = useSetTaskStatus();
@@ -155,7 +154,6 @@ export const TaskListContent = ({ wbsNum, wbsElementId }: TaskListContentProps) 
             tasks={tasksByStatus[status]}
             key={status}
             wbsNum={wbsNum}
-            wbsElementId={wbsElementId}
             equalizedHeight={equalizedHeight}
             isDragging={isDragging}
           />

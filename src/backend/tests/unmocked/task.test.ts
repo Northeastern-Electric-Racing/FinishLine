@@ -14,7 +14,6 @@ import { WbsNumber } from 'shared';
 
 describe('Task Tests', () => {
   let organizationId: string;
-  const testWbsNum: WbsNumber = { carNumber: 1, projectNumber: 1, workPackageNumber: 0 };
 
   beforeEach(async () => {
     ({ organizationId } = await createTestOrganization());
