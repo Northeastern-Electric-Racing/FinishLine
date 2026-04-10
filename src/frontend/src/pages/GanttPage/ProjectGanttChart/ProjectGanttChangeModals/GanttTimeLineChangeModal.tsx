@@ -216,6 +216,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
       if (editedTasks.length > 0) {
         for (const task of editedTasks) {
           const taskPayload: TaskPayload = {
+            wbsNum: task.wbsNum,
             taskId: task.taskId,
             title: task.title,
             priority: task.priority,

@@ -67,7 +67,8 @@ export const TaskCard = ({
   }: EditTaskFormInput) => {
     try {
       // uses the project's wbs element id as fallback if no wp was selected
-      const targetWbsNum = wpWbsNum ?? (task.wbsNum.workPackageNumber !== 0 ? { ...wbsNum, workPackageNumber: 0 } : null);
+      const targetWbsNum =
+        wpWbsNum ?? (task.wbsNum.workPackageNumber !== 0 ? { ...wbsNum, workPackageNumber: 0 } : undefined);
 
       await editTask({
         taskId,

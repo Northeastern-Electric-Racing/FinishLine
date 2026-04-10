@@ -16,6 +16,7 @@ import { useEditTask, useEditTaskAssignees, useDeleteTask } from '../../hooks/ta
 import { useToast } from '../../hooks/toasts.hooks';
 import TaskFormModal, { EditTaskFormInput } from '../ProjectDetailPage/ProjectViewContainer/TaskList/TaskFormModal';
 import NERDeleteModal from '../../components/NERDeleteModal';
+import { isNullOrUndefined } from 'node:util';
 
 const PRIORITY_COLORS: Record<TaskPriority, string> = {
   [TaskPriority.Low]: '#4caf50',
@@ -238,6 +239,7 @@ export const TaskClickContent: React.FC<TaskClickContentProps> = ({ task, onClos
           modalShow={showEditModal}
           onHide={() => setShowEditModal(false)}
           onSubmit={handleEditSubmit}
+          wbsNum={wbsNum}
         />
       )}
 

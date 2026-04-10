@@ -19,7 +19,7 @@ export interface EditTaskFormInput {
   startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
-  wpWbsNum?: WbsNumber;
+  wpWbsNum?: WbsNumber | null;
 }
 
 interface TaskFormModalProps {
@@ -69,7 +69,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
       assignees: yup.array().required(),
       title: yup.string().required(),
       taskId: yup.string().required(),
-      wpWbsNum: yup.mixed<WbsNumber>().optional()
+      wpWbsNum: yup.mixed<WbsNumber>().nullable().optional()
     });
   }
 
@@ -196,8 +196,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
                       isOptionEqualToValue={(option, val) =>
                         option.wbsNum.workPackageNumber === val.wbsNum.workPackageNumber
                       }
-                      onChange={(_, val) => onChange(val?.wbsNum ?? undefined)}
-                      value={wpOptions.find((o) => o.wbsNum.workPackageNumber === value?.workPackageNumber) ?? undefined}
+                      onChange={(_, val) => onChange(val?.wbsNum ?? null)}
+                      value={wpOptions.find((o) => o.wbsNum.workPackageNumber === value?.workPackageNumber) ?? null}
                       renderInput={(params) => (
                         <TextField {...params} variant="standard" placeholder="Select a work package" />
                       )}
