@@ -31,7 +31,7 @@ import {
   getDay
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
+import { useAllMembers, useCurrentUser } from '../../../hooks/users.hooks';
 import { useAllWorkPackagesPreview } from '../../../hooks/work-packages.hooks';
 import { useAllTeamPreviews } from '../../../hooks/teams.hooks';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
@@ -252,7 +252,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   );
 
   // Lazy load all data needed for the form so users can start filling out instantly
-  const { isLoading: usersLoading, isError: usersError, error: usersErrorMsg, data: users } = useAllUsers();
+  const { isLoading: usersLoading, isError: usersError, error: usersErrorMsg, data: users } = useAllMembers();
   const { isLoading: shopsLoading, isError: shopsError, error: shopsErrorMsg, data: shops } = useAllShops();
   const { isError: machineryError, error: machineryErrorMsg, data: machinery } = useAllMachines();
   const {

@@ -318,8 +318,7 @@ export const partPopupValidators = [
 
 export const financeDashboardFilterValidators = [
   nonEmptyString(query('startDate')).optional(),
-  nonEmptyString(query('endDate')).optional(),
-  nonEmptyString(query('carNumber')).optional()
+  nonEmptyString(query('endDate')).optional()
 ];
 
 export const requireFile = (chain: ValidationChain): ValidationChain => {

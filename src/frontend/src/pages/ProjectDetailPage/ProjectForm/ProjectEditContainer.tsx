@@ -45,7 +45,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const { name, budget, summary, workPackages } = project;
   const [managerId, setManagerId] = useState<string | undefined>(project.manager?.userId.toString());
   const [leadId, setLeadId] = useState<string | undefined>(project.lead?.userId.toString());
-  const [carNumber, setCarNumber] = useState<number | undefined>(project.wbsNum.carNumber);
   const descriptionBullets = bulletsToObject(project.descriptionBullets);
 
   const { mutateAsync, isLoading } = useEditSingleProject(project.wbsNum);
@@ -141,7 +140,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     summary,
     // teamId and carNumber aren't used for projectEdit
     teamIds: [],
-    carNumber,
+    carNumber: project.wbsNum.carNumber,
     links,
     crId: query.get('crId') || '',
     descriptionBullets,
@@ -290,7 +289,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       leadId={leadId}
       managerId={managerId}
       onSubmitChangeRequest={onSubmitChangeRequest}
-      setCarNumber={setCarNumber}
       onlyLeadershipChanged={onlyLeadershipChanged}
     />
   );

@@ -6,12 +6,14 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { AxiosResponse } from 'axios';
 import { Project } from 'shared';
-import wrapper from '../../app/AppContextQuery';
+import AppContextQuery from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import { exampleAllProjects, exampleProject1 } from '../test-support/test-data/projects.stub';
 import { exampleWbsProject1 } from '../test-support/test-data/wbs-numbers.stub';
 import { getAllProjectsGantt, getSingleProject } from '../../apis/projects.api';
 import { useAllProjectsGantt, useSingleProject } from '../../hooks/projects.hooks';
+
+const wrapper = ({ children }: { children: React.ReactNode }) => <AppContextQuery>{children}</AppContextQuery>;
 
 vi.mock('../../apis/projects.api');
 

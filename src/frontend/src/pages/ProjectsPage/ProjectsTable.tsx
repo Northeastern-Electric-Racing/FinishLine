@@ -20,6 +20,7 @@ import { getProjectTeamsName } from '../ProjectDetailPage/ProjectViewContainer/P
  */
 const ProjectsTable: React.FC = () => {
   const { isLoading, data, error } = useAllProjects();
+
   if (!localStorage.getItem('projectsTableRowCount')) localStorage.setItem('projectsTableRowCount', '30');
   const [pageSize, setPageSize] = useState(localStorage.getItem('projectsTableRowCount'));
   const [windowSize, setWindowSize] = useState(window.innerWidth);

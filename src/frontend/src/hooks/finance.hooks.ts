@@ -102,6 +102,7 @@ import {
   ProspectiveSponsor
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Helper function to handle file upload errors with file name context
@@ -326,47 +327,47 @@ export interface ReimbursementRequestTeamDataPayload {
   teamId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface ReimbursementRequestDataPayload {
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface ReimbursementRequestCategoryDataPayload {
   otherReasonId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface ReimbursementRequestTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface SpendingBarTeamDataPayload {
   teamId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface SpendingBarTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface SpendingBarDataPayload {
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 /**
@@ -465,30 +466,42 @@ export const useGetAllAccountCodes = () => {
  * Custom React Hook to get the reimbursement requests created by the current user
  */
 export const useCurrentUserReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
-    const { data } = await getCurrentUserReimbursementRequests();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', 'user', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getCurrentUserReimbursementRequests();
+      return data;
+    }
+  );
 };
 
 /**
  * Custom React Hook to get the reimbursement requests assigned to the current user
  */
 export const useCurrentUserAssignedReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'assignee'], async () => {
-    const { data } = await getCurrentUserAssignedReimbursementRequests();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', 'assignee', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getCurrentUserAssignedReimbursementRequests();
+      return data;
+    }
+  );
 };
 
 /**
  * Custom React Hook to get the reimbursement requests for the current user's teams
  */
 export const useCurrentUsersTeamsReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
-    const { data } = await getCurrentUsersTeamsReimbursementRequests();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', 'teams', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getCurrentUsersTeamsReimbursementRequests();
+      return data;
+    }
+  );
 };
 
 /**
@@ -537,10 +550,14 @@ export const useSetTaxExemptStatus = () => {
  * Custom React Hook to get all the reimbursement requests
  */
 export const useAllReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests'], async () => {
-    const { data } = await getAllReimbursementRequests();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllReimbursementRequests();
+      return data;
+    }
+  );
 };
 
 /**
@@ -782,10 +799,14 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
  * @returns the list of Reimbursement Reqeusts that are pending Advisor Approval
  */
 export const useGetPendingAdvisorList = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'pending-advisors'], async () => {
-    const { data } = await getPendingAdvisorList();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', 'pending-advisors', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getPendingAdvisorList();
+      return data;
+    }
+  );
 };
 
 /**
@@ -1160,7 +1181,7 @@ export const useGetReimbursementRequestTeamData = (reimbursementRequestData: Rei
       'reimbursement-request-team-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
-      reimbursementRequestData.carNumber,
+      reimbursementRequestData.overrideCarId,
       reimbursementRequestData.teamId
     ],
     async () => {
@@ -1175,7 +1196,7 @@ export const useGetReimbursementRequestTeamTypeData = (reimbursementRequestData:
       'reimbursement-request-team-type-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
-      reimbursementRequestData.carNumber,
+      reimbursementRequestData.overrideCarId,
       reimbursementRequestData.teamTypeId
     ],
     async () => {
@@ -1204,7 +1225,7 @@ export const useGetReimbursementRequestCategoryData = (reimbursementRequestData:
       'reimbursement-request-category-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
-      reimbursementRequestData.carNumber,
+      reimbursementRequestData.overrideCarId,
       reimbursementRequestData.otherReasonId
     ],
     async () => {
@@ -1219,7 +1240,7 @@ export const useGetAllReimbursementRequestData = (reimbursementRequestData: Reim
       'reimbursement-request-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
-      reimbursementRequestData.carNumber
+      reimbursementRequestData.overrideCarId
     ],
     async () => {
       const { data } = await getAllReimbursementRequestData(reimbursementRequestData);
@@ -1233,7 +1254,7 @@ export const useGetSpendingBarTeamData = (spendingBarData: SpendingBarTeamDataPa
       'spending-bar-team-data',
       spendingBarData.endDate,
       spendingBarData.startDate,
-      spendingBarData.carNumber,
+      spendingBarData.overrideCarId,
       spendingBarData.teamId
     ],
     async () => {
@@ -1248,7 +1269,7 @@ export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTy
       'spending-bar-team-type-data',
       spendingBarData.endDate,
       spendingBarData.startDate,
-      spendingBarData.carNumber,
+      spendingBarData.overrideCarId,
       spendingBarData.teamTypeId
     ],
     async () => {
@@ -1259,7 +1280,7 @@ export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTy
 
 export const useGetSpendingBarCategoryData = (spendingBarData: SpendingBarDataPayload) =>
   useQuery<SpendingBarData, Error>(
-    ['spending-bar-category-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.carNumber],
+    ['spending-bar-category-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.overrideCarId],
     async () => {
       const { data } = await getSpendingBarCategoryData(spendingBarData);
       return data;
@@ -1268,7 +1289,7 @@ export const useGetSpendingBarCategoryData = (spendingBarData: SpendingBarDataPa
 
 export const useGetAllSpendingBarData = (spendingBarData: SpendingBarDataPayload) =>
   useQuery<SpendingBarData[], Error>(
-    ['spending-bar-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.carNumber],
+    ['spending-bar-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.overrideCarId],
     async () => {
       const { data } = await getAllSpendingBarData(spendingBarData);
       return data;
