@@ -30,7 +30,7 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
             orderBy: { dateImplemented: 'asc' }
           },
           blocking: { where: { wbsElement: { dateDeleted: null } }, include: { wbsElement: true } },
-          descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) },
+          descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) }
         }
       },
       blockedBy: { where: { dateDeleted: null } },

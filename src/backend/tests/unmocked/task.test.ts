@@ -1,11 +1,21 @@
 import { financeMember, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data.js';
-import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils.js';
-import { createTestOrganization, createTestTask, createTestUser, resetUsers } from '../test-utils.js';
+import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../../src/utils/errors.utils.js';
+import {
+  createTestOrganization,
+  createTestTask,
+  createTestUser,
+  resetUsers,
+  createTestCar,
+  createTestProject
+} from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import TasksService from '../../src/services/tasks.services.js';
+import { WbsNumber } from 'shared';
 
-describe('Task Test', () => {
+describe('Task Tests', () => {
   let organizationId: string;
+  const testWbsNum: WbsNumber = { carNumber: 1, projectNumber: 1, workPackageNumber: 0 };
+
   beforeEach(async () => {
     ({ organizationId } = await createTestOrganization());
   });
@@ -15,7 +25,7 @@ describe('Task Test', () => {
   });
 
   describe('Edit task', () => {
-    test('Successfully updates wbs element when wbsElementId is provided', async () => {
+    it('successfully updates wbs element when wbsNum is provided', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
 
@@ -33,6 +43,12 @@ describe('Task Test', () => {
         }
       });
 
+      const newWbsNum: WbsNumber = {
+        carNumber: newWbsElement.carNumber,
+        projectNumber: newWbsElement.projectNumber,
+        workPackageNumber: newWbsElement.workPackageNumber
+      };
+
       const updatedTask = await TasksService.editTask(
         user,
         organizationId,
@@ -42,14 +58,14 @@ describe('Task Test', () => {
         'HIGH',
         undefined,
         undefined,
-        newWbsElement.wbsElementId
+        newWbsNum
       );
 
       expect(updatedTask.taskId).toBe(task.taskId);
       expect(updatedTask.wbsNum).toBeDefined();
     });
 
-    test('Does not update wbs element when wbsElementId is not provided', async () => {
+    it('does not update wbs element when wbsNum is not provided', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
 
@@ -59,9 +75,11 @@ describe('Task Test', () => {
       expect(updatedTask.title).toBe('Updated Title');
     });
 
-    test('Throws NotFoundException when wbsElementId does not exist', async () => {
+    it('throws NotFoundException when wbsNum does not exist', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
+
+      const nonExistentWbsNum: WbsNumber = { carNumber: 99, projectNumber: 99, workPackageNumber: 99 };
 
       await expect(async () =>
         TasksService.editTask(
@@ -73,12 +91,12 @@ describe('Task Test', () => {
           'HIGH',
           undefined,
           undefined,
-          'non-existent-wbs-element-id'
+          nonExistentWbsNum
         )
-      ).rejects.toThrow(new NotFoundException('WBS Element', 'non-existent-wbs-element-id'));
+      ).rejects.toThrow(NotFoundException);
     });
 
-    test('Throws DeletedException when wbsElementId is deleted', async () => {
+    it('throws DeletedException when wbsNum is deleted', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
 
@@ -97,6 +115,12 @@ describe('Task Test', () => {
         }
       });
 
+      const deletedWbsNum: WbsNumber = {
+        carNumber: deletedWbsElement.carNumber,
+        projectNumber: deletedWbsElement.projectNumber,
+        workPackageNumber: deletedWbsElement.workPackageNumber
+      };
+
       await expect(async () =>
         TasksService.editTask(
           user,
@@ -107,14 +131,14 @@ describe('Task Test', () => {
           'HIGH',
           undefined,
           undefined,
-          deletedWbsElement.wbsElementId
+          deletedWbsNum
         )
-      ).rejects.toThrow(new DeletedException('WBS Element', deletedWbsElement.wbsElementId));
+      ).rejects.toThrow(DeletedException);
     });
   });
 
   describe('Edit task status', () => {
-    test('Setting status to in progress works when task has deadline and assignees', async () => {
+    it('successfully sets status to in progress when task has deadline and assignees', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const correctTask = await createTestTask(
         user,
@@ -136,7 +160,7 @@ describe('Task Test', () => {
       expect(updatedTask?.status).toBe('IN_PROGRESS');
     });
 
-    test('Setting status to in progress does not work when task does not have a deadline and assignees', async () => {
+    it('fails to set status to in progress when task does not have a deadline and assignees', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const badTask = await createTestTask(user, 'Test', '', [], 'HIGH', 'DONE', organizationId);
       await expect(async () =>
@@ -149,7 +173,7 @@ describe('Task Test', () => {
       ).rejects.toThrow(new HttpException(400, 'A task in progress must have a deadline and assignees!'));
     });
 
-    test('Setting status to in progress does not work when task does not have a deadline, but does have assignees', async () => {
+    it('fails to set status to in progress when task does not have a deadline, but does have assignees', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const badTask = await createTestTask(user, 'Test', '', [user], 'HIGH', 'IN_BACKLOG', organizationId);
       await expect(async () =>
@@ -162,7 +186,7 @@ describe('Task Test', () => {
       ).rejects.toThrow(new HttpException(400, 'A task in progress must have a deadline and assignees!'));
     });
 
-    test('Setting status to in progress does not work when task does not have assignees, but does have a deadline', async () => {
+    it('fails to set status to in progress when task does not have assignees, but does have a deadline', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const badTask = await createTestTask(user, 'Test', '', [], 'HIGH', 'DONE', organizationId, new Date());
       await expect(async () =>
@@ -177,7 +201,7 @@ describe('Task Test', () => {
   });
 
   describe('Get tasks by wbs num', () => {
-    test('Returns project tasks and all WP tasks when given a project wbs number', async () => {
+    it('returns project tasks and all WP tasks when given a project wbs number', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const car = await createTestCar(organizationId, user.userId);
       const project = await createTestProject(user, organizationId, undefined, car.carId);
@@ -240,7 +264,7 @@ describe('Task Test', () => {
       expect(tasks.map((t) => t.title)).toContain('WP Task');
     });
 
-    test('Returns only WP tasks when given a WP wbs number', async () => {
+    it('returns only WP tasks when given a WP wbs number', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const car = await createTestCar(organizationId, user.userId);
       const project = await createTestProject(user, organizationId, undefined, car.carId);
@@ -287,7 +311,7 @@ describe('Task Test', () => {
       expect(tasks[0].title).toBe('WP Task');
     });
 
-    test('Throws NotFoundException when wbs element does not exist', async () => {
+    it('throws NotFoundException when wbs element does not exist', async () => {
       await expect(async () =>
         TasksService.getTasksByWbsNum({ carNumber: 99, projectNumber: 99, workPackageNumber: 0 }, { organizationId } as any)
       ).rejects.toThrow(NotFoundException);
@@ -295,7 +319,7 @@ describe('Task Test', () => {
   });
 
   describe('Guest editing permissions', () => {
-    test('Guests cannot edit tasks', async () => {
+    it('does not let guests edit tasks', async () => {
       const guest = await createTestUser(theVisitorGuest, organizationId);
       const admin = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(admin, 'Test', '', [], 'HIGH', 'DONE', organizationId, new Date());
