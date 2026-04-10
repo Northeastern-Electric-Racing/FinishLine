@@ -57,7 +57,7 @@ export default class FinanceServices {
    * @param contactPosition The position of the sponsor contact.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being created.
-   *
+   * @param logoImage An optional logo image file for the sponsor.
    * @returns The created sponsor object, including associated tasks.
    *
    * @throws AccessDeniedAdminOnlyException If the submitter does not have permission to create a sponsor.
@@ -109,9 +109,6 @@ export default class FinanceServices {
     let logoImageId: string | undefined;
     if (logoImage) {
       const logoImageData = await uploadFile(logoImage);
-      if (!logoImageData?.id || !logoImageData?.name) {
-        throw new HttpException(500, 'Sponsor logo upload failed');
-      }
       logoImageId = logoImageData.id;
     }
 
@@ -1212,6 +1209,8 @@ export default class FinanceServices {
    * @param contactPosition The position of the sponsor contact.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being edited.
+   * @param logoImage An optional logo image file for the sponsor.
+   *
    * @returns the edited sponsor.
    */
 
@@ -1337,9 +1336,6 @@ export default class FinanceServices {
     let logoImageId: string | undefined;
     if (logoImage) {
       const logoImageData = await uploadFile(logoImage);
-      if (!logoImageData?.id || !logoImageData?.name) {
-        throw new HttpException(500, 'Sponsor logo upload failed');
-      }
       logoImageId = logoImageData.id;
     }
 
