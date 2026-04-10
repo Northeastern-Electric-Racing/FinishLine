@@ -1,5 +1,5 @@
 import { Draggable } from '@hello-pangea/dnd';
-import { Construction, Delete, Schedule } from '@mui/icons-material';
+import { Construction, Folder, Delete, Schedule } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Grid, Typography, IconButton } from '@mui/material';
 import { useState } from 'react';
 import { notGuest, Task, WbsNumber } from 'shared';
@@ -13,6 +13,17 @@ import NERModal from '../../../../../components/NERModal';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../../../utils/routes';
 import { wbsPipe } from '../../../../../utils/pipes';
+
+const wpColors = [
+  { bg: 'rgba(55,138,221,0.15)', color: '#7dbef4' }, // blue
+  { bg: 'rgba(127,119,221,0.15)', color: '#AFA9EC' }, // purple
+  { bg: 'rgba(255,182,193,0.15)', color: '#F4A7B9' }, // rose
+  { bg: 'rgba(79,172,254,0.15)', color: '#63C5DA' }, // cyan
+  { bg: 'rgba(100,149,237,0.15)', color: '#93B5E1' }, // greyish blue
+  { bg: 'rgba(147,112,219,0.15)', color: '#C9B1FF' }, // lavender
+  { bg: 'rgba(176,196,222,0.15)', color: '#A8C0D6' }, // really greyish blue
+  { bg: 'rgba(29,158,117,0.15)', color: '#5DCAA5' } // teal
+];
 
 export const TaskCard = ({
   task,
@@ -99,6 +110,7 @@ export const TaskCard = ({
   const isOverdue = task.deadline != null && new Date(task.deadline) < new Date() && task.status !== 'DONE';
   const isWpTask = task.wbsNum.workPackageNumber !== 0;
   const isProjectContext = wbsNum.workPackageNumber === 0;
+  const wpColor = wpColors[(task.wbsNum.workPackageNumber - 1) % wpColors.length];
 
   return (
     <>
@@ -153,7 +165,7 @@ export const TaskCard = ({
                     </Grid>
                     <Grid item xs={12} lg={8}>
                       <Chip
-                        sx={{ marginTop: 1, marginRight: 2 }}
+                        sx={{ marginTop: 1, marginRight: 2, backgroundColor: 'rgba(255,255,255,0.08)' }}
                         icon={<Construction />}
                         label={
                           task.assignees.length === 0
@@ -165,6 +177,7 @@ export const TaskCard = ({
                       {isWpTask && // render iff task does have associated wp
                         isProjectContext && ( // and if on project's task page, not wp's
                           <Chip
+                            icon={<Folder sx={{ color: `${wpColor.color} !important` }} />}
                             label={task.wbsName}
                             size="medium"
                             component={RouterLink}
@@ -172,9 +185,8 @@ export const TaskCard = ({
                             clickable
                             sx={{
                               marginTop: 1,
-                              backgroundColor: 'rgba(55, 138, 221, 0.15)',
-                              color: '#7dbef4',
-                              border: '1px solid rgba(55, 138, 221, 0.4)',
+                              backgroundColor: wpColor.bg,
+                              color: wpColor.color,
                               fontWeight: 500,
                               maxWidth: 300 // truncates wtih ellipses if it gets too long
                             }}

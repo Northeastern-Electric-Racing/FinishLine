@@ -24,6 +24,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
 
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const isWpTask = task.wbsNum.workPackageNumber !== 0;
+  const isWpContext = wbsNum.workPackageNumber !== 0;
 
   const ViewModal: React.FC = () => {
     return (
@@ -72,7 +73,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
               <Typography display={'inline'}> {task.assignees.map((user) => fullNamePipe(user)).join(', ')}</Typography>
             </Typography>
           </Grid>
-          {isWpTask && (
+          {isWpTask && !isWpContext && (
             <Grid item xs={12} md={6}>
               <Typography fontWeight={'bold'}>
                 Work Package:
