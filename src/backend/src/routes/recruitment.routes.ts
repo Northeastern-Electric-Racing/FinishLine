@@ -57,6 +57,7 @@ recruitmentRouter.post(
   nonEmptyString(body('term')),
   nonEmptyString(body('description')),
   body('order').isInt(),
+  nonEmptyString(body('type')).optional(),
   nonEmptyString(body('icon')).optional(),
   nonEmptyString(body('buttonText')).optional(),
   nonEmptyString(body('buttonLink')).optional(),
@@ -65,10 +66,11 @@ recruitmentRouter.post(
 );
 
 recruitmentRouter.post(
-  '/guestDefinition/:guestId/edit',
+  '/guestdefinition/:definitionId/edit',
   nonEmptyString(body('term')),
   nonEmptyString(body('description')),
   body('order').isInt(),
+  nonEmptyString(body('type')).optional(),
   nonEmptyString(body('icon')).optional(),
   nonEmptyString(body('buttonText')).optional(),
   nonEmptyString(body('buttonLink')).optional(),

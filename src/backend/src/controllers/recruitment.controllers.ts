@@ -99,13 +99,14 @@ export default class RecruitmentController {
 
   static async createGuestDefinition(req: Request, res: Response, next: NextFunction) {
     try {
-      const { term, description, order, icon, buttonText, buttonLink } = req.body;
+      const { term, description, order, icon, type, buttonText, buttonLink } = req.body;
       const definition = await RecruitmentServices.createGuestDefinition(
         req.currentUser,
         req.organization,
         term,
         description,
         order,
+        type,
         icon,
         buttonText,
         buttonLink
@@ -119,7 +120,7 @@ export default class RecruitmentController {
   static async editGuestDefinition(req: Request, res: Response, next: NextFunction) {
     try {
       const { definitionId } = req.params as Record<string, string>;
-      const { term, description, order, icon, buttonText, buttonLink } = req.body;
+      const { term, description, order, type, icon, buttonText, buttonLink } = req.body;
 
       const definition = await RecruitmentServices.editGuestDefinition(
         req.currentUser,
@@ -128,6 +129,7 @@ export default class RecruitmentController {
         description,
         definitionId,
         order,
+        type,
         icon,
         buttonText,
         buttonLink
