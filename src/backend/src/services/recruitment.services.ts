@@ -336,6 +336,6 @@ export default class RecruitmentServices {
         buttonLink
       }
     });
-    return updatedGuest;
+    return guestDefinitionTransformer(updatedGuest);
   }
 }
