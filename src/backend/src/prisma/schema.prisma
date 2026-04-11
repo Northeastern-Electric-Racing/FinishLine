@@ -1020,6 +1020,7 @@ model Material {
   linkUrl                String
   notes                  String?
   reimbursementProducts  Reimbursement_Product[]
+  isCopied               Boolean                 @default(false)
 
   @@index([assemblyId])
   @@index([materialTypeId])

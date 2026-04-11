@@ -19,9 +19,10 @@ import {
 } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
-import { Button, Link, Typography } from '@mui/material';
 import { BomRow, bomBaseColDef } from '../../../../utils/bom.utils';
 import { centsToDollar } from '../../../../utils/pipes';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { Button, Link, Tooltip, Typography } from '@mui/material';
 import NERModal from '../../../../components/NERModal';
 import { StatusDropdownCell } from './BOMTableCustomCells';
 import LinkIcon from '@mui/icons-material/Link';
@@ -427,7 +428,20 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       editable: editPerms,
       sortable: false,
       filterable: false,
-      hide: hideColumn[3]
+      hide: hideColumn[3],
+      renderCell: (params) => {
+        const material = materials.find((m) => m.materialId === params.row.materialId);
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Typography variant="body2">{params.value}</Typography>
+            {material?.isCopied && (
+              <Tooltip title="Copied from another BOM">
+                <ContentCopyIcon sx={{ fontSize: 14, color: 'warning.main' }} />
+              </Tooltip>
+            )}
+          </Box>
+        );
+      }
     },
     {
       ...bomBaseColDef,

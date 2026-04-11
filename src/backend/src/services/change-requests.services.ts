@@ -93,9 +93,13 @@ export default class ChangeRequestsService {
    * @param organization The organization the user is currently in
    * @returns All of the change requests
    */
-  static async getAllChangeRequests(organization: Organization): Promise<ChangeRequest[]> {
+  static async getAllChangeRequests(organization: Organization, carId?: string): Promise<ChangeRequest[]> {
     const changeRequests = await prisma.change_Request.findMany({
-      where: { dateDeleted: null, organizationId: organization.organizationId },
+      where: {
+        dateDeleted: null,
+        organizationId: organization.organizationId,
+        ...(carId && { wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } })
+      },
       ...getManyChangeRequestQueryArgs(organization.organizationId)
     });
 
@@ -123,7 +127,7 @@ export default class ChangeRequestsService {
    * @param organization The organization the user is in
    * @returns The user's change requests for them to review
    */
-  static async getToReviewChangeRequests(user: User, organization: Organization): Promise<ChangeRequest[]> {
+  static async getToReviewChangeRequests(user: User, organization: Organization, carId?: string): Promise<ChangeRequest[]> {
     const wbsOr: Prisma.WBS_ElementWhereInput[] = [{ managerId: user.userId }, { leadId: user.userId }];
 
     if (await userHasPermission(user.userId, organization.organizationId, isLeadership)) {
@@ -167,7 +171,8 @@ export default class ChangeRequestsService {
           },
           {
             NOT: [{ scopeChangeRequest: null }, { submitterId: user.userId }]
-          }
+          },
+          ...(carId ? [{ wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } }] : [])
         ],
         organizationId: organization.organizationId,
         OR: queryOr
@@ -189,7 +194,8 @@ export default class ChangeRequestsService {
   static async getUnreviewedChangeRequests(
     user: User,
     wbsnum: WbsNumber | undefined,
-    organization: Organization
+    organization: Organization,
+    carId?: string
   ): Promise<ChangeRequest[]> {
     // Check that its unreviewed and a scope change request, omit activation and stage gate
     const queryAnd: Prisma.Change_RequestWhereInput[] = [
@@ -202,7 +208,12 @@ export default class ChangeRequestsService {
     ];
 
     if (wbsnum) queryAnd.push({ wbsElementId: (await validateWbsElement(wbsnum, organization)).wbsElementId });
-    else queryAnd.push({ submitterId: user.userId });
+    else {
+      queryAnd.push({ submitterId: user.userId });
+      queryAnd.push(
+        ...(carId ? [{ wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } }] : [])
+      );
+    }
 
     const changeRequests = await prisma.change_Request.findMany({
       where: {
@@ -227,13 +238,17 @@ export default class ChangeRequestsService {
   static async getApprovedChangeRequests(
     user: User,
     wbsnum: WbsNumber | undefined,
-    organization: Organization
+    organization: Organization,
+    carId?: string
   ): Promise<ChangeRequest[]> {
     const currentDate = new Date();
     const fiveDaysAgo = new Date(currentDate.getTime() - 1000 * 60 * 60 * 24 * 5); // Change requests that were reviewed less than five days ago
     const queryAnd = wbsnum
       ? [{ wbsElementId: (await validateWbsElement(wbsnum, organization)).wbsElementId }]
-      : [{ submitterId: user.userId }];
+      : [
+          { submitterId: user.userId },
+          ...(carId ? [{ wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } }] : [])
+        ];
 
     const changeRequests = await prisma.change_Request.findMany({
       where: {

@@ -204,7 +204,8 @@ export default class BillOfMaterialsService {
             dateCreated: new Date(),
             userCreatedId: user.userId,
             wbsElementId: destinationProject.wbsElementId,
-            assemblyId: null
+            assemblyId: null,
+            isCopied: true
           },
           ...getMaterialQueryArgs(organization.organizationId)
         });
