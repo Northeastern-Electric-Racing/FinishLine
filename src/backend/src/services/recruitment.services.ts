@@ -232,7 +232,7 @@ export default class RecruitmentServices {
     term: string,
     description: string,
     order: number,
-    type?: GuestDefinitionType,
+    type: GuestDefinitionType,
     icon?: string,
     buttonText?: string,
     buttonLink?: string
@@ -306,7 +306,7 @@ export default class RecruitmentServices {
     description: string,
     definitionId: string,
     order: number,
-    type?: GuestDefinitionType,
+    type: GuestDefinitionType,
     icon?: string,
     buttonText?: string,
     buttonLink?: string
