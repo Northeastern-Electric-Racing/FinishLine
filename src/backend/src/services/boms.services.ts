@@ -631,7 +631,6 @@ export default class BillOfMaterialsService {
     manufacturerPartNumber?: string,
     quantity?: Decimal,
     price?: number,
-    subtotal?: number,
     notes?: string,
     unitName?: string,
     assemblyId?: string,
