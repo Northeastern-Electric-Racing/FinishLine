@@ -13,9 +13,21 @@ interface BOMTableProps {
   columns: GridColumns<BomRow>;
   materials: Material[];
   assemblies: Assembly[];
+  processRowUpdate: (newRow: BomRow, oldRow: BomRow) => Promise<BomRow>;
+  onProcessRowUpdateError: (error: unknown) => void;
+  editPerms: boolean;
 }
 
-const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, columns, materials, assemblies }) => {
+const BOMTable: React.FC<BOMTableProps> = ({
+  setHideColumn,
+  assignMaterial,
+  columns,
+  materials,
+  assemblies,
+  processRowUpdate,
+  onProcessRowUpdateError,
+  editPerms
+}) => {
   const [openRows, setOpenRows] = useState<String[]>([]);
   const [draggedMaterial, setDraggedMaterial] = useState<Material | null>(null);
 
@@ -145,6 +157,12 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
         sx={bomTableStyles.datagrid}
         disableSelectionOnClick
         autoHeight={false}
+        experimentalFeatures={{ newEditingApi: true }}
+        processRowUpdate={
+          processRowUpdate as unknown as (newRow: GridValidRowModel, oldRow: GridValidRowModel) => Promise<GridValidRowModel>
+        }
+        onProcessRowUpdateError={onProcessRowUpdateError}
+        isCellEditable={(params) => editPerms && !String(params.row.id).startsWith('assembly')}
         onRowClick={openAssembly}
         componentsProps={{
           row: {

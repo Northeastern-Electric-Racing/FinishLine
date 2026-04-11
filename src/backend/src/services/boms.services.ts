@@ -669,6 +669,12 @@ export default class BillOfMaterialsService {
       manufacturer = await BillOfMaterialsService.getSingleManufacturerWithQueryArgs(manufacturerName, organization);
     }
 
+    // recalculate subtotal on edits
+    const finalPrice = price !== undefined ? price : (material.price ?? undefined);
+    const finalQuantity = quantity !== undefined ? quantity : (material.quantity ?? undefined);
+    const computedSubtotal =
+      finalPrice !== undefined && finalQuantity !== undefined ? Math.round(finalPrice * Number(finalQuantity)) : undefined;
+
     const updatedMaterial = await prisma.material.update({
       where: { materialId },
       data: {
@@ -680,12 +686,12 @@ export default class BillOfMaterialsService {
         quantity,
         unitId: unit ? unit.id : null,
         price,
-        subtotal,
+        subtotal: computedSubtotal,
         linkUrl,
         notes,
         wbsElementId: project.wbsElementId,
         assemblyId,
-        pdmFileName
+        pdmFileName: pdmFileName !== undefined ? pdmFileName || null : undefined
       },
       ...getMaterialQueryArgs(organization.organizationId)
     });

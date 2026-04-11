@@ -2,6 +2,7 @@ import { Box } from '@mui/system';
 import { GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { Assembly, Material, Project, isLeadership } from 'shared';
+import Decimal from 'decimal.js';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
@@ -12,12 +13,15 @@ import {
   useAssignMaterialToAssembly,
   useDeleteAssembly,
   useDeleteMaterial,
-  useEditMaterialStatus
+  useEditMaterialStatus,
+  useGetAllManufacturers,
+  useGetAllMaterialTypes
 } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
 import { Button, Link, Typography } from '@mui/material';
-import { bomBaseColDef } from '../../../../utils/bom.utils';
+import { BomRow, bomBaseColDef } from '../../../../utils/bom.utils';
+import { centsToDollar } from '../../../../utils/pipes';
 import NERModal from '../../../../components/NERModal';
 import { StatusDropdownCell } from './BOMTableCustomCells';
 import LinkIcon from '@mui/icons-material/Link';
@@ -49,6 +53,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
   const { mutateAsync: deleteAssemblyMutateAsync, isLoading: deleteAssemblyIsLoading } = useDeleteAssembly(project.wbsNum);
   const { mutateAsync: editMaterialStatus } = useEditMaterialStatus(project.wbsNum);
   const { mutateAsync: assignMaterialToAssembly } = useAssignMaterialToAssembly();
+  const { data: materialTypes } = useGetAllMaterialTypes();
+  const { data: manufacturers } = useGetAllManufacturers();
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -119,6 +125,85 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     project.teams.some((team) => team.head.userId === user.userId) ||
     project.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId)) ||
     project.teams.some((team) => team.members.map((member) => member.userId).includes(user.userId));
+
+  const processRowUpdate = async (newRow: BomRow, oldRow: BomRow): Promise<BomRow> => {
+    // assemblies are not editable
+    if (String(newRow.id).startsWith('assembly')) return newRow;
+
+    const material = materials.find((m) => m.materialId === newRow.materialId);
+    if (!material) return newRow;
+
+    // MUI writes the edited number directly to the field, so we detect changes via typeof
+    const newQuantity = typeof newRow.quantity === 'number' ? (newRow.quantity as number) : null;
+    const newPriceDollars = typeof newRow.price === 'number' ? (newRow.price as number) : null;
+
+    if (
+      newRow.name === oldRow.name &&
+      newRow.type === oldRow.type &&
+      newRow.manufacturer === oldRow.manufacturer &&
+      newRow.manufacturerPN === oldRow.manufacturerPN &&
+      newRow.pdmFileName === oldRow.pdmFileName &&
+      newQuantity === null &&
+      newPriceDollars === null
+    )
+      return newRow;
+
+    if (newRow.name !== undefined && !newRow.name.trim()) {
+      toast.error('Name cannot be empty');
+      return oldRow;
+    }
+    if (newQuantity !== null && (isNaN(newQuantity) || newQuantity <= 0)) {
+      toast.error('Quantity must be a positive number');
+      return oldRow;
+    }
+    if (newPriceDollars !== null && (isNaN(newPriceDollars) || newPriceDollars < 0)) {
+      toast.error('Price must be a non-negative number');
+      return oldRow;
+    }
+
+    const changedFields: string[] = [];
+    if (newRow.name !== oldRow.name) changedFields.push('Name');
+    if (newRow.type !== oldRow.type) changedFields.push('Type');
+    if (newRow.manufacturer !== oldRow.manufacturer) changedFields.push('Manufacturer');
+    if (newRow.manufacturerPN !== oldRow.manufacturerPN) changedFields.push('Manufacturer PN');
+    if (newRow.pdmFileName !== oldRow.pdmFileName) changedFields.push('PDM File Name');
+    if (newQuantity !== null) changedFields.push('Quantity');
+    if (newPriceDollars !== null) changedFields.push('Price');
+
+    const priceInCents = newPriceDollars !== null ? Math.round(newPriceDollars * 100) : material.price;
+    const quantityValue = newQuantity !== null ? newQuantity : Number(material.quantity);
+
+    try {
+      await editMaterialStatus({
+        materialId: material.materialId,
+        payload: {
+          name: newRow.name,
+          status: material.status,
+          materialTypeName: newRow.type,
+          manufacturerName: newRow.manufacturer || undefined,
+          manufacturerPartNumber: newRow.manufacturerPN || undefined,
+          pdmFileName: newRow.pdmFileName,
+          price: priceInCents,
+          quantity: new Decimal(quantityValue),
+          unitName: material.unitName,
+          linkUrl: material.linkUrl,
+          notes: material.notes,
+          assemblyId: material.assemblyId
+        }
+      });
+      toast.success(`Material ${changedFields.join(', ')} updated successfully`);
+      return {
+        ...newRow,
+        quantity: material.unitName ? `${quantityValue} ${material.unitName}` : `${quantityValue}`,
+        quantityRaw: quantityValue,
+        price: priceInCents !== undefined ? `$${centsToDollar(priceInCents)}` : newRow.price,
+        priceRaw: priceInCents !== undefined ? priceInCents / 100 : newRow.priceRaw
+      };
+    } catch (e: unknown) {
+      if (e instanceof Error) toast.error(e.message, 6000);
+      return oldRow;
+    }
+  };
 
   const selectedMaterial = materials.find((material) => material.materialId === selectedMaterialId);
 
@@ -327,7 +412,9 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       ...bomBaseColDef,
       field: 'type',
       headerName: 'Type',
-      type: 'string',
+      editable: editPerms,
+      type: 'singleSelect',
+      valueOptions: materialTypes?.map((mt) => mt.name) ?? [],
       sortable: false,
       filterable: false,
       hide: hideColumn[2]
@@ -337,7 +424,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       flex: 1.5,
       field: 'name',
       headerName: 'Name',
-      type: 'string',
+      editable: editPerms,
       sortable: false,
       filterable: false,
       hide: hideColumn[3]
@@ -347,7 +434,9 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       flex: 1.2,
       field: 'manufacturer',
       headerName: 'Manufacturer',
-      type: 'string',
+      editable: editPerms,
+      type: 'singleSelect',
+      valueOptions: ['', ...(manufacturers?.map((m) => m.name) ?? [])],
       sortable: false,
       filterable: false,
       hide: hideColumn[4]
@@ -357,7 +446,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       flex: 1.5,
       field: 'manufacturerPN',
       headerName: 'Manufacterer PN',
-      type: 'string',
+      editable: editPerms,
       sortable: false,
       filterable: false,
       colSpan: ({ row }) => {
@@ -373,7 +462,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       flex: 1.3,
       field: 'pdmFileName',
       headerName: 'PDM File Name',
-      type: 'string',
+      editable: editPerms,
       sortable: false,
       filterable: false,
       hide: hideColumn[6]
@@ -383,6 +472,9 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       field: 'quantity',
       headerName: 'Quantity',
       type: 'number',
+      editable: editPerms,
+      valueGetter: (params) => params.row.quantityRaw,
+      renderCell: (params) => params.row.quantity,
       sortable: false,
       filterable: false,
       hide: hideColumn[7]
@@ -392,6 +484,9 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       field: 'price',
       headerName: 'Price per Unit',
       type: 'number',
+      editable: editPerms,
+      valueGetter: (params) => params.row.priceRaw,
+      renderCell: (params) => params.row.price,
       sortable: false,
       filterable: false,
       hide: hideColumn[8]
@@ -400,7 +495,6 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       ...bomBaseColDef,
       field: 'subtotal',
       headerName: 'Subtotal',
-      type: 'number',
       sortable: false,
       filterable: false,
       hide: hideColumn[9]
@@ -449,6 +543,11 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
         columns={columns}
         assemblies={assemblies}
         materials={materials}
+        processRowUpdate={processRowUpdate}
+        onProcessRowUpdateError={(error) => {
+          if (error instanceof Error) toast.error(error.message, 6000);
+        }}
+        editPerms={editPerms}
       />
     </Box>
   );

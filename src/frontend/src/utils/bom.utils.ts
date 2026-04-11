@@ -15,7 +15,9 @@ export interface BomRow extends GridValidRowModel {
   manufacturerPN: string;
   pdmFileName: string;
   quantity: string;
+  quantityRaw?: number;
   price: string;
+  priceRaw?: number;
   subtotal: string;
   link: string;
   notes: string | undefined;
@@ -32,9 +34,11 @@ export const materialToRow = (material: Material, idx: number): BomRow => {
     name: material.name,
     manufacturer: material.manufacturerName ?? '',
     manufacturerPN: material.manufacturerPartNumber ?? '',
-    pdmFileName: material.pdmFileName ?? 'None',
+    pdmFileName: material.pdmFileName ?? '',
     quantity: material.quantity + (material.unitName ? ' ' + material.unitName : ''),
+    quantityRaw: material.quantity !== undefined ? Number(material.quantity) : undefined,
     price: material.price !== undefined ? `$${centsToDollar(material.price)}` : '',
+    priceRaw: material.price !== undefined ? material.price / 100 : undefined,
     subtotal: material.subtotal !== undefined ? `$${centsToDollar(material.subtotal)}` : '',
     link: material.linkUrl,
     notes: material.notes,
