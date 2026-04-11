@@ -13,7 +13,7 @@ import {
   useAssignMaterialToAssembly,
   useDeleteAssembly,
   useDeleteMaterial,
-  useEditMaterialStatus,
+  useEditMaterialById,
   useGetAllManufacturers,
   useGetAllMaterialTypes
 } from '../../../../hooks/bom.hooks';
@@ -51,8 +51,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
   const [modalShow, setModalShow] = useState(false);
   const { mutateAsync: deleteMaterialMutateAsync, isLoading: deleteMaterialIsLoading } = useDeleteMaterial(project.wbsNum);
   const { mutateAsync: deleteAssemblyMutateAsync, isLoading: deleteAssemblyIsLoading } = useDeleteAssembly(project.wbsNum);
-  const { mutateAsync: editMaterialStatus } = useEditMaterialStatus(project.wbsNum);
   const { mutateAsync: assignMaterialToAssembly } = useAssignMaterialToAssembly();
+  const { mutateAsync: editMaterial } = useEditMaterialById(project.wbsNum);
   const { data: materialTypes } = useGetAllMaterialTypes();
   const { data: manufacturers } = useGetAllManufacturers();
 
@@ -133,7 +133,6 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     const material = materials.find((m) => m.materialId === newRow.materialId);
     if (!material) return newRow;
 
-    // MUI writes the edited number directly to the field, so we detect changes via typeof
     const newQuantity = typeof newRow.quantity === 'number' ? (newRow.quantity as number) : null;
     const newPriceDollars = typeof newRow.price === 'number' ? (newRow.price as number) : null;
 
@@ -174,7 +173,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     const quantityValue = newQuantity !== null ? newQuantity : Number(material.quantity);
 
     try {
-      await editMaterialStatus({
+      await editMaterial({
         materialId: material.materialId,
         payload: {
           name: newRow.name,
@@ -370,6 +369,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       field: 'status',
       headerName: 'Status',
       renderCell: (params) => {
+        // assemblies are not editable
         if (!params.value || String(params.row.id).startsWith('assembly')) return null;
         const material = materials.find((m) => m.materialId === params.row.materialId);
         if (!material) return null;
@@ -379,7 +379,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
             disabled={!editPerms}
             onStatusChange={async (newStatus) => {
               try {
-                await editMaterialStatus({
+                await editMaterial({
                   materialId: material.materialId,
                   payload: {
                     name: material.name,

@@ -1,8 +1,3 @@
-/*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
- * See the LICENSE file in the repository root folder for details.
- */
-
 import { useState } from 'react';
 import { Box } from '@mui/system';
 import { GridRenderCellParams } from '@mui/x-data-grid';
@@ -22,6 +17,8 @@ const getStatusColor = (status: MaterialStatus) => {
       return '#1b537a';
     case MaterialStatus.ReadyToOrder:
       return '#D34B27';
+    default:
+      return 'grey';
   }
 };
 

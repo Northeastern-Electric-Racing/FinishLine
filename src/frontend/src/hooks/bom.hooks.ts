@@ -318,10 +318,10 @@ export const useCreateMaterialType = () => {
  * @param wbsNum The wbs element the material belongs to
  * @returns mutation function to edit a material's status
  */
-export const useEditMaterialStatus = (wbsNum: WbsNumber) => {
+export const useEditMaterialById = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<Material, Error, { materialId: string; payload: MaterialDataSubmission }>(
-    ['materials', 'edit', 'status'],
+    ['materials', 'edit'],
     async ({ materialId, payload }) => {
       const data = await editMaterial(materialId, payload);
       return data;
