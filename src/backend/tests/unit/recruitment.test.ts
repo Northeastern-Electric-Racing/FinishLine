@@ -374,6 +374,7 @@ describe('Recruitment Tests', () => {
             'test term',
             'test description',
             2,
+            GuestDefinitionType.INFO_PAGE,
             'iconname',
             'buttonTxt',
             'buttonLink'
