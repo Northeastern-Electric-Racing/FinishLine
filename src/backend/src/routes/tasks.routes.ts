@@ -6,7 +6,8 @@ import {
   isTaskPriority,
   isTaskStatus,
   validateInputs,
-  isOptionalDateOnly
+  isOptionalDateOnly,
+  intMinZero
 } from '../utils/validation.utils.js';
 import { isDate } from '../utils/validation.utils.js';
 
@@ -45,7 +46,9 @@ tasksRouter.post(
   isOptionalDateOnly(body('deadline')),
   isOptionalDateOnly(body('startDate')),
   isTaskPriority(body('priority')),
-  body('wbsNum').optional(),
+  intMinZero(body('wbsNum.carNumber')),
+  intMinZero(body('wbsNum.projectNumber')),
+  intMinZero(body('wbsNum.workPackageNumber')),
   TasksController.editTask
 );
 
