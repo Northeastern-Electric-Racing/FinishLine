@@ -106,11 +106,7 @@ export default class FinanceServices {
       data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
     });
 
-    let logoImageId: string | undefined;
-    if (logoImage) {
-      const logoImageData = await uploadFile(logoImage);
-      logoImageId = logoImageData.id;
-    }
+    const { id: logoImageId } = logoImage ? await uploadFile(logoImage) : { id: undefined };
 
     const sponsor = await prisma.sponsor.create({
       data: {
@@ -1333,11 +1329,7 @@ export default class FinanceServices {
       data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
     });
 
-    let logoImageId: string | undefined;
-    if (logoImage) {
-      const logoImageData = await uploadFile(logoImage);
-      logoImageId = logoImageData.id;
-    }
+    const { id: logoImageId } = logoImage ? await uploadFile(logoImage) : { id: undefined };
 
     const updatedSponsor = await prisma.sponsor.update({
       where: { sponsorId: oldSponsor.sponsorId },
