@@ -200,8 +200,7 @@ describe('Material Tests', () => {
         manufacturer.name,
         'lalsd',
         new Decimal(5),
-        10,
-        50
+        10
       );
 
       expect(newMaterial.name).toEqual('100k Resistor Updated');
