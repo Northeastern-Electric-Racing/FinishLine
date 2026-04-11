@@ -44,6 +44,7 @@ export interface Sponsor {
   sponsorNotes?: string;
   sponsorTasks: SponsorTask[];
   tier?: SponsorTier;
+  logoImageId?: string;
 }
 
 export interface SponsorTask {

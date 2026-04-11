@@ -9,11 +9,15 @@ import {
 } from '../utils/validation.utils.js';
 import { body } from 'express-validator';
 import FinanceController from '../controllers/finance.controllers.js';
+import multer, { memoryStorage } from 'multer';
+import { MAX_FILE_SIZE } from 'shared';
 
 const financeRouter = express.Router();
+const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 financeRouter.post(
   '/sponsor/create',
+  upload.single('logoImage'),
   nonEmptyString(body('name')),
   body('activeStatus').isBoolean(),
   body('valueTypes').isArray(),
@@ -142,6 +146,7 @@ financeRouter.get('/sponsorTiers', FinanceController.getAllSponsorTiers);
 
 financeRouter.post(
   '/sponsor/:sponsorId/edit',
+  upload.single('logoImage'),
   nonEmptyString(body('name')),
   body('activeStatus').isBoolean(),
   body('valueTypes').isArray(),
