@@ -346,7 +346,7 @@ export default class RecruitmentServices {
    * @returns a definition
    * @throws if the definition is not found in the db
    */
-  static async getGuestDefinition(organizationId: string, definitionId: string): Promise<Guest_Definition> {
+  static async getGuestDefinition(organizationId: string, definitionId: string) {
     const guest = await prisma.guest_Definition.findUnique({
       where: { organizationId, definitionId }
     });
