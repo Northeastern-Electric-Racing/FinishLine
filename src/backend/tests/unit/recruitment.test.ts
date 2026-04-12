@@ -397,11 +397,10 @@ describe('Recruitment Tests', () => {
     });
 
     it('Get a single guest defenition fails', async () => {
-      const nonExistingGuestId = 'nonExistingGuest';
       const nonExistingDefinitionId = 'nonExistingDefinition';
-      await expect(async () =>
-        RecruitmentServices.getGuestDefinition(nonExistingGuestId, orgId, nonExistingDefinitionId)
-      ).rejects.toThrow(new NotFoundException('User', nonExistingGuestId));
+      await expect(async () => RecruitmentServices.getGuestDefinition(orgId, nonExistingDefinitionId)).rejects.toThrow(
+        new NotFoundException('Guest Definition', nonExistingDefinitionId)
+      );
     });
   });
   describe('Edit Guest Definition', () => {
