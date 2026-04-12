@@ -50,8 +50,10 @@ recruitmentRouter.post(
 
 recruitmentRouter.delete('/faq/:faqId/delete', RecruitmentController.deleteFaq);
 
+/* Guest Definition Section */
+
 recruitmentRouter.post(
-  '/guestDefinition/create',
+  '/guestdefinition/create',
   nonEmptyString(body('term')),
   nonEmptyString(body('description')),
   body('order').isInt(),
@@ -63,5 +65,20 @@ recruitmentRouter.post(
 );
 
 recruitmentRouter.get('/guestDefinition/:definitionId', RecruitmentController.getGuestDefinition);
+
+recruitmentRouter.post(
+  '/guestDefinition/:guestId/edit',
+  nonEmptyString(body('term')),
+  nonEmptyString(body('description')),
+  body('order').isInt(),
+  nonEmptyString(body('icon')).optional(),
+  nonEmptyString(body('buttonText')).optional(),
+  nonEmptyString(body('buttonLink')).optional(),
+  validateInputs,
+  RecruitmentController.editGuestDefinition
+);
+
+recruitmentRouter.delete('/guestdefinition/:definitionId/delete', RecruitmentController.deleteGuestDefinition);
+recruitmentRouter.get('/guestdefinitions', RecruitmentController.getAllGuestDefintions);
 
 export default recruitmentRouter;

@@ -14,6 +14,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { isGuest } from 'shared';
 import { Add } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
+import GuestProjectsPage from '../GuestProjectsPage/GuestProjectsPage';
 
 /**
  * Cards of all projects that this user is in their team.
@@ -24,6 +25,9 @@ const ProjectsPage: React.FC = () => {
   const user = useCurrentUser();
   const history = useHistory();
 
+  if (isGuest(user.role)) {
+    return <GuestProjectsPage />;
+  }
   return (
     <PageLayout
       title="Projects"

@@ -4,6 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 import {
   ChangeRequest,
   ChangeRequestReason,
@@ -12,7 +13,8 @@ import {
   ProposedSolutionCreateArgs,
   WbsNumber,
   WorkPackageProposedChangesCreateArgs,
-  LeadershipChangeCreateArgs
+  LeadershipChangeCreateArgs,
+  GuestChangeRequest
 } from 'shared';
 import {
   createActivationChangeRequest,
@@ -28,38 +30,62 @@ import {
   getUnreviewedChangeRequests,
   getApprovedChangeRequests,
   createBudgetChangeRequest,
-  createLeadershipChangeRequest
+  createLeadershipChangeRequest,
+  getAllGuestChangeRequests
 } from '../apis/change-requests.api';
 
 /**
  * Custom React Hook to supply all change requests.
  */
 export const useAllChangeRequests = () => {
-  return useQuery<ChangeRequest[], Error>(['change requests'], async () => {
-    const { data } = await getAllChangeRequests();
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ChangeRequest[], Error>(
+    ['change requests', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllChangeRequests();
+      return data;
+    }
+  );
+};
+
+export const useAllGuestChangeRequests = () => {
+  return useQuery<GuestChangeRequest[], Error>(['guest change requests'], async () => {
+    const { data } = await getAllGuestChangeRequests();
     return data;
   });
 };
 
 export const useGetToReviewChangeRequests = () => {
-  return useQuery<ChangeRequest[], Error>(['change requests', 'to-review'], async () => {
-    const { data } = await getToReviewChangeRequests();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ChangeRequest[], Error>(
+    ['change requests', 'to-review', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getToReviewChangeRequests();
+      return data;
+    }
+  );
 };
 
 export const useGetUnreviewedChangeRequests = (wbsNum?: WbsNumber) => {
-  return useQuery<ChangeRequest[], Error>(['change requests', 'unreviewed'], async () => {
-    const { data } = await getUnreviewedChangeRequests(wbsNum);
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ChangeRequest[], Error>(
+    ['change requests', 'unreviewed', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id, wbsNum],
+    async () => {
+      const { data } = await getUnreviewedChangeRequests(wbsNum);
+      return data;
+    }
+  );
 };
 
 export const useGetApprovedChangeRequests = (wbsNum?: WbsNumber) => {
-  return useQuery<ChangeRequest[], Error>(['change requests', 'approved'], async () => {
-    const { data } = await getApprovedChangeRequests(wbsNum);
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ChangeRequest[], Error>(
+    ['change requests', 'approved', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id, wbsNum],
+    async () => {
+      const { data } = await getApprovedChangeRequests(wbsNum);
+      return data;
+    }
+  );
 };
 
 /**

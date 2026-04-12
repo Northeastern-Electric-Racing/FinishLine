@@ -18,6 +18,22 @@ Cypress.Commands.add('login', (username = 'Thomas Emrax', redirect = '/home') =>
   cy.contains(username).click();
   cy.get(LOGIN_ICON).click();
   cy.waitForLoading();
+  // Login is complete, devUserId and organizationId are now in localStorage.
+  // Make an authenticated request directly to the API to resolve NER-25's car ID
+  // (UUID changes each seed), then persist it before the redirect so
+  // GlobalCarFilterProvider restores it on first mount.
+  cy.window().then((win) => {
+    const devUserId = win.localStorage.getItem('devUserId');
+    const organizationId = win.localStorage.getItem('organizationId');
+    cy.request({
+      method: 'GET',
+      url: `${Cypress.env('backend_url')}/cars`,
+      headers: { Authorization: devUserId || '', organizationId: organizationId || '' }
+    }).then(({ body }) => {
+      const ner25 = body.find((car) => car.name === 'NER-25');
+      if (ner25) win.localStorage.setItem('selectedCarId', ner25.id);
+    });
+  });
   cy.visit(Cypress.env('base_url') + redirect);
   cy.waitForLoading();
 });

@@ -128,4 +128,45 @@ export default class RecruitmentController {
       next(error);
     }
   }
+
+  static async editGuestDefinition(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { definitionId } = req.params as Record<string, string>;
+      const { term, description, order, icon, buttonText, buttonLink } = req.body;
+
+      const definition = await RecruitmentServices.editGuestDefinition(
+        req.currentUser,
+        req.organization,
+        term,
+        description,
+        definitionId,
+        order,
+        icon,
+        buttonText,
+        buttonLink
+      );
+      res.status(200).json(definition);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteGuestDefinition(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { definitionId } = req.params as Record<string, string>;
+      await RecruitmentServices.deleteGuestDefinition(req.currentUser, definitionId, req.organization);
+      res.status(200).json({ message: `Successfully deleted guestDefinition with id ${definitionId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllGuestDefintions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const allDefinitons = await RecruitmentServices.getAllGuestDefinitions(req.organization);
+      res.status(200).json(allDefinitons);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
