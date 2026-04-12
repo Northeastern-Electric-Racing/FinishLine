@@ -355,6 +355,6 @@ export default class RecruitmentServices {
       throw new NotFoundException('Guest Definition', definitionId);
     }
 
-    return guest;
+    return guestDefinitionTransformer(guest);
   }
 }
