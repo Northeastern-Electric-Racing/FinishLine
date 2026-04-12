@@ -1,4 +1,4 @@
-import { Guest_Definition, Organization } from '@prisma/client';
+import { Organization } from '@prisma/client';
 import { isAdmin, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils.js';
