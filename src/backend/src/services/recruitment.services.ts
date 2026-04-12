@@ -340,11 +340,11 @@ export default class RecruitmentServices {
   }
 
   /**
-   * Gets a single guest defenition with the given user, organization, and definition ids
+   * Gets a single guest definition with the given user, organization, and definition ids
    * @param organizationId the organization the user is currently in
-   * @param definitionId the id of the specific defenition being found
+   * @param definitionId the id of the specific definition being found
    * @returns a definition
-   * @throws if the defenition is not found in the db
+   * @throws if the definition is not found in the db
    */
   static async getGuestDefinition(organizationId: string, definitionId: string): Promise<Guest_Definition> {
     const guest = await prisma.guest_Definition.findUnique({
@@ -352,7 +352,7 @@ export default class RecruitmentServices {
     });
 
     if (!guest) {
-      throw new NotFoundException('Guest Defenition', definitionId);
+      throw new NotFoundException('Guest Definition', definitionId);
     }
 
     return guest;

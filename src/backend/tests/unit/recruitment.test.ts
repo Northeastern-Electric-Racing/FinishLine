@@ -380,8 +380,8 @@ describe('Recruitment Tests', () => {
     });
   });
 
-  describe('Get a single guest defenition', () => {
-    it('Get a single team type works', async () => {
+  describe('Get a single guest definition', () => {
+    it('Get a single guest definition works', async () => {
       const guestDefinition = await RecruitmentServices.createGuestDefinition(
         superman,
         organization,
@@ -396,7 +396,7 @@ describe('Recruitment Tests', () => {
       expect(result).toStrictEqual(guestDefinition);
     });
 
-    it('Get a single guest defenition fails', async () => {
+    it('Get a single guest definition fails', async () => {
       const nonExistingDefinitionId = 'nonExistingDefinition';
       await expect(async () => RecruitmentServices.getGuestDefinition(orgId, nonExistingDefinitionId)).rejects.toThrow(
         new NotFoundException('Guest Definition', nonExistingDefinitionId)
