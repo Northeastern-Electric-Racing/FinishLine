@@ -11,9 +11,10 @@ import { useParams } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { isGuest } from 'shared';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
-import GuestTeamPage from '../GuestDivisionPage/GuestTeamPage';
+import GuestTeamPage from '../GuestTeamsPage/GuestTeamPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import GuestDivisionPage from '../GuestDivisionPage/GuestDivisionPage';
 
 const TeamOrDivisionPage: React.FC = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -29,11 +30,17 @@ const TeamOrDivisionPage: React.FC = () => {
   return <TeamSpecificPage />;
 };
 
+const GuestOrMemberTeamsPage: React.FC = () => {
+  const user = useCurrentUser();
+  if (isGuest(user.role)) return <GuestDivisionPage />;
+  return <TeamsPage />;
+};
+
 const Teams: React.FC = () => {
   return (
     <Switch>
       <Route path={routes.TEAMS_BY_ID} component={TeamOrDivisionPage} />
-      <Route path={routes.TEAMS} component={TeamsPage} />
+      <Route path={routes.TEAMS} component={GuestOrMemberTeamsPage} />
     </Switch>
   );
 };
