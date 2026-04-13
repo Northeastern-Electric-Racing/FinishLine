@@ -94,6 +94,10 @@ export default class TasksService {
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
+    if (startDate && deadline && startDate > deadline) {
+      throw new HttpException(400, 'Start date must be before or on the same day as the deadline')
+    }
+
     if (status === 'IN_PROGRESS' && (!deadline || assignees.length === 0)) {
       throw new HttpException(400, 'Tasks in progress must have a dealine and assignees');
     }
