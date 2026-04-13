@@ -118,7 +118,6 @@ export default class RecruitmentController {
 
   static async getGuestDefinition(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log({ organizationId: req.organization.organizationId, definitionId: req.params.definitionId as string });
       const definition = await RecruitmentServices.getGuestDefinition(
         req.organization.organizationId,
         req.params.definitionId as string
