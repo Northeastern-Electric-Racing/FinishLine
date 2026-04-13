@@ -15,8 +15,8 @@ const GuestDivisionPage: React.FC = () => {
     error: teamTypesError
   } = useAllTeamTypes();
 
-  if (teamTypesIsLoading || !allTeamTypes) return <LoadingIndicator />;
   if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
+  if (teamTypesIsLoading || !allTeamTypes) return <LoadingIndicator />;
 
   if (allTeamTypes.length === 0) {
     return (
