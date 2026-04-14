@@ -341,7 +341,7 @@ export default class RecruitmentServices {
 
   /**
    * Gets a single guest definition with the given user, organization, and definition ids
-   * @param organizationId the organization the user is currently in
+   * @param organization the organization the user is currently in
    * @param definitionId the id of the specific definition being found
    * @returns a definition
    * @throws if the definition is not found in the db
