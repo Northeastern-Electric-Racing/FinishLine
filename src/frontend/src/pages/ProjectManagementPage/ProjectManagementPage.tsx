@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import { GuestDefinition, GuestDefinitionType } from 'shared';
+import { GuestDefinitionType } from 'shared';
 import PageLayout from '../../components/PageLayout';
 import ProjectManagementCard from './ProjectManagementCard';
 import { useAllGuestDefinitions } from '../../hooks/recruitment.hooks';
@@ -7,7 +7,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 
 const ProjectManagementPage: React.FC = () => {
-  // replace when hook is ready
   const { data: definitions, isLoading, isError, error } = useAllGuestDefinitions();
 
   if (isError) {
