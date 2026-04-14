@@ -254,6 +254,7 @@ export interface EventWithMembers {
   description?: string;
   status: EventStatus;
   initialDateScheduled?: Date;
+  sendSlackNotifications: boolean;
 }
 
 export interface TeamType {
