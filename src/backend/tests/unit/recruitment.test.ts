@@ -11,6 +11,7 @@ import {
   createTestUser,
   resetUsers
 } from '../test-utils.js';
+import { GuestDefinitionType } from 'shared';
 import {
   batmanAppAdmin,
   wonderwomanGuest,
@@ -351,6 +352,7 @@ describe('Recruitment Tests', () => {
         'test term',
         'test description',
         2,
+        GuestDefinitionType.INFO_PAGE,
         'iconname',
         'buttonTxt',
         'buttonLink'
@@ -372,6 +374,7 @@ describe('Recruitment Tests', () => {
             'test term',
             'test description',
             2,
+            GuestDefinitionType.INFO_PAGE,
             'iconname',
             'buttonTxt',
             'buttonLink'
@@ -414,6 +417,7 @@ describe('Recruitment Tests', () => {
             'test description',
             'test definition id',
             2,
+            GuestDefinitionType.INFO_PAGE,
             'buttonTxt',
             'buttonLink'
           )
@@ -430,6 +434,7 @@ describe('Recruitment Tests', () => {
             'description',
             'definition id',
             2,
+            GuestDefinitionType.INFO_PAGE,
             'buttonTxt',
             'buttonLink'
           )
@@ -443,6 +448,7 @@ describe('Recruitment Tests', () => {
         'test term',
         'test description',
         2,
+        GuestDefinitionType.INFO_PAGE,
         'iconname',
         'buttonTxt',
         'buttonLink'
@@ -455,6 +461,7 @@ describe('Recruitment Tests', () => {
         'new description',
         def.definitionId,
         4,
+        GuestDefinitionType.INFO_PAGE,
         'new icon',
         'new text',
         'new link'
@@ -475,6 +482,7 @@ describe('Recruitment Tests', () => {
         'test term',
         'test description',
         2,
+        GuestDefinitionType.INFO_PAGE,
         'iconname',
         'buttonTxt',
         'buttonLink'
@@ -493,6 +501,7 @@ describe('Recruitment Tests', () => {
             'description',
             def.definitionId,
             2,
+            GuestDefinitionType.INFO_PAGE,
             'buttonTxt',
             'buttonLink'
           )
@@ -579,6 +588,7 @@ describe('Recruitment Tests', () => {
         'test term',
         'test description',
         2,
+        GuestDefinitionType.INFO_PAGE,
         'iconname',
         'buttonTxt',
         'buttonLink'
@@ -590,6 +600,7 @@ describe('Recruitment Tests', () => {
         'test term',
         'test description',
         2,
+        GuestDefinitionType.INFO_PAGE,
         'iconname',
         'buttonTxt',
         'buttonLink'

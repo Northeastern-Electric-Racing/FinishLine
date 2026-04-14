@@ -1,5 +1,5 @@
 import { Organization } from '@prisma/client';
-import { isAdmin, User } from 'shared';
+import { GuestDefinitionType, isAdmin, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
@@ -221,6 +221,7 @@ export default class RecruitmentServices {
    * @param description the definition of the term
    * @param order the order the term appears on the page
    * @param icon the icon associated with the term
+   * @param type the type of the guest definition
    * @param buttonText the text displayed on the terms button
    * @param buttonLink where the terms button links to
    * @returns
@@ -231,6 +232,7 @@ export default class RecruitmentServices {
     term: string,
     description: string,
     order: number,
+    type: GuestDefinitionType,
     icon?: string,
     buttonText?: string,
     buttonLink?: string
@@ -243,6 +245,7 @@ export default class RecruitmentServices {
         term,
         description,
         order,
+        type,
         userCreatedId: creator.userId,
         organizationId: organization.organizationId,
         buttonText,
@@ -291,6 +294,7 @@ export default class RecruitmentServices {
    * @param description the definition of the term
    * @param order the order the term appears on the page
    * @param icon the icon associated with the term
+   * @param type the type of the guest definition
    * @param buttonText the text displayed on the terms button
    * @param buttonLink where the terms button links to
    * @returns
@@ -302,6 +306,7 @@ export default class RecruitmentServices {
     description: string,
     definitionId: string,
     order: number,
+    type: GuestDefinitionType,
     icon?: string,
     buttonText?: string,
     buttonLink?: string
@@ -332,6 +337,7 @@ export default class RecruitmentServices {
         description,
         order,
         icon,
+        type,
         buttonText,
         buttonLink
       }

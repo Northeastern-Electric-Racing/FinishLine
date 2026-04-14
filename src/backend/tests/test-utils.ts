@@ -986,6 +986,7 @@ export const createTestGuestDefinition = async (user: User, organizationId: stri
       term: 'Term',
       description: 'Description',
       order: 0,
+      type: 'INFO_PAGE',
       organizationId,
       userCreatedId: user.userId
     }
