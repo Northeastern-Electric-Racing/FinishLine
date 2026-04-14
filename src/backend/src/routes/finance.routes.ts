@@ -17,7 +17,6 @@ const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStor
 
 financeRouter.post(
   '/sponsor/create',
-  upload.single('logoImage'),
   nonEmptyString(body('name')),
   body('activeStatus').isBoolean(),
   body('valueTypes').isArray(),
@@ -51,6 +50,8 @@ financeRouter.get('/sponsors', FinanceController.getAllSponsors);
 financeRouter.get('/sponsor/:sponsorId/sponsorTasks', FinanceController.getSponsorTasks);
 
 financeRouter.post('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
+
+financeRouter.post('/sponsor/:sponsorId/uploadLogo', upload.single('logoImage'), FinanceController.uploadSponsorLogo);
 
 financeRouter.post(
   '/sponsorTier/create',
@@ -146,7 +147,6 @@ financeRouter.get('/sponsorTiers', FinanceController.getAllSponsorTiers);
 
 financeRouter.post(
   '/sponsor/:sponsorId/edit',
-  upload.single('logoImage'),
   nonEmptyString(body('name')),
   body('activeStatus').isBoolean(),
   body('valueTypes').isArray(),
