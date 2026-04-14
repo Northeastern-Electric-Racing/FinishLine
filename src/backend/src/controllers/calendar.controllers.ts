@@ -299,12 +299,12 @@ export default class CalendarController {
         workPackageIds,
         parsedScheduleSlots,
         parsedInitialDateScheduled,
+        sendSlackNotifications,
         teamTypeId,
         questionDocumentLink,
         location,
         zoomLink,
         description,
-        sendSlackNotifications
       );
       res.status(200).json(event);
     } catch (error: unknown) {
@@ -347,12 +347,12 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         documents,
+        sendSlackNotifications,
         teamTypeId,
         questionDocumentLink,
         location,
         zoomLink,
-        description,
-        sendSlackNotifications
+        description
       );
       res.status(200).json(event);
     } catch (error: unknown) {
