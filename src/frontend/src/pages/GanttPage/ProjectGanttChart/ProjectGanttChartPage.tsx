@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import React, { ChangeEvent, FC, useEffect, useState } from 'react';
+import React, { ChangeEvent, FC, useEffect, useRef, useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAllProjectsGantt } from '../../../hooks/projects.hooks';
 import ErrorPage from '../../ErrorPage';
@@ -88,8 +88,8 @@ const ProjectGanttChartPage: FC = () => {
   const [showSelectionModal, setShowSelectionModal] = useState(false);
   const [ganttChanges, setGanttChanges] = useState<GanttChange<WbsElementPreview | Task>[]>([]);
   const [requestEventChanges, setRequestEventChanges] = useState<RequestEventChange<WbsElementPreview | Task>[]>([]);
-  const [selectedProject, setSelectedProject] = useState<ProjectGantt | undefined>(undefined);
-  const [selectedTeam, setSelectedTeam] = useState<TeamPreview | undefined>(undefined);
+  const selectedTeamRef = useRef<TeamPreview | undefined>(undefined);
+  const selectedProjectRef = useRef<ProjectGantt | undefined>(undefined);
   const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | Task>[]>([]);
   const [allProjects, setAllProjects] = useState<ProjectGantt[]>([]);
   const [editedProjects, setEditedProjects] = useState<ProjectGantt[]>([]);
@@ -232,21 +232,21 @@ const ProjectGanttChartPage: FC = () => {
 
   const handleCancel = (_collection?: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
     //TODO Filter by gantt collection
-    setAddedProjects([]);
-    setEditedProjects([]);
-    setSelectedTeam(undefined);
-    setSelectedProject(undefined);
+    if (addedProjects.length > 0) setAddedProjects([]);
+    if (editedProjects.length > 0) setEditedProjects([]);
+    selectedTeamRef.current = undefined;
+    selectedProjectRef.current = undefined;
   };
 
   const onAddNewSubtask = (parent: GanttTask<WbsElementPreview | Task>) => {
     if (isProjectPreview(parent.element)) {
-      setSelectedProject(parent.element);
+      selectedProjectRef.current = parent.element;
       setShowSelectionModal(true);
     }
   };
 
   const onAddNewTask = (collection: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
-    setSelectedTeam(collection.element);
+    selectedTeamRef.current = collection.element;
     setShowAddProjectModal(true);
   };
 
@@ -291,7 +291,7 @@ const ProjectGanttChartPage: FC = () => {
       type: 'create-sub-task',
       element: workPackage
     });
-    setSelectedProject(undefined);
+    selectedProjectRef.current = undefined;
   };
 
   const getNewProjectNumber = (carNumber: number) => {
@@ -353,7 +353,7 @@ const ProjectGanttChartPage: FC = () => {
       type: 'create-sub-task',
       element: newTask
     });
-    setSelectedProject(undefined);
+    selectedProjectRef.current = undefined;
   };
   const handleAddProjectInfo = async (
     projectInfo: { name: string; carNumber: number },
@@ -391,7 +391,7 @@ const ProjectGanttChartPage: FC = () => {
     };
 
     setRequestEventChanges((prev) => [...prev, requestChange]);
-    setSelectedTeam(undefined);
+    selectedTeamRef.current = undefined;
   };
 
   const createChange = (change: GanttChange<WbsElementPreview | Task>) => {
@@ -435,8 +435,8 @@ const ProjectGanttChartPage: FC = () => {
         showModal={showAddProjectModal}
         handleClose={() => setShowAddProjectModal(false)}
         addProject={(projectInfo) => {
-          if (selectedTeam) {
-            handleAddProjectInfo(projectInfo, selectedTeam);
+          if (selectedTeamRef.current) {
+            handleAddProjectInfo(projectInfo, selectedTeamRef.current);
           } else {
             toast.error('No Team Selected');
           }
@@ -452,8 +452,8 @@ const ProjectGanttChartPage: FC = () => {
         showModal={showAddWorkPackageModal}
         handleClose={() => setShowAddWorkPackageModal(false)}
         addWorkPackage={(wpInfo) => {
-          if (selectedProject) {
-            handleAddWorkPackageInfo(wpInfo, selectedProject);
+          if (selectedProjectRef.current) {
+            handleAddWorkPackageInfo(wpInfo, selectedProjectRef.current);
           } else {
             toast.error('No Parent Project Selected');
           }
@@ -468,8 +468,8 @@ const ProjectGanttChartPage: FC = () => {
         showModal={showAddTaskModal}
         handleClose={() => setShowAddTaskModal(false)}
         addTask={(taskInfo) => {
-          if (selectedProject) {
-            handleAddTaskInfo(taskInfo, selectedProject);
+          if (selectedProjectRef.current) {
+            handleAddTaskInfo(taskInfo, selectedProjectRef.current);
           } else {
             toast.error('No Parent Project Selected');
           }
@@ -485,7 +485,7 @@ const ProjectGanttChartPage: FC = () => {
         handleClose={() => setShowSelectionModal(false)}
         onWorkPackageSelected={handleWorkPackageSelected}
         onTaskSelected={handleTaskSelected}
-        projectName={selectedProject?.name || 'Project'}
+        projectName={selectedProjectRef.current?.name || 'Project'}
       />
     );
   };
@@ -617,6 +617,8 @@ const ProjectGanttChartPage: FC = () => {
     </Box>
   );
 
+  console.log('whole page rerender!');
+
   return (
     <>
       <AddProjectModal />
@@ -636,7 +638,7 @@ const ProjectGanttChartPage: FC = () => {
           startDate={startDate}
           endDate={endDate}
           editability={{
-            onEditPressed: (collection) => setSelectedTeam(collection.element),
+            onEditPressed: (collection) => { selectedTeamRef.current = collection.element; },
             onCancelChanges: handleCancel,
             onCreateChange: createChangeHandler,
             highlightedChange: requestEventChanges[requestEventChanges.length - 1],
