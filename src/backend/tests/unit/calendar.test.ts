@@ -1737,6 +1737,7 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
+          [],
           true
         )
       ).rejects.toThrow(new DeletedException('Event', event.eventId));
@@ -2014,8 +2015,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         false,
-        true,
-        false
+        true
       );
     });
 
@@ -2072,8 +2072,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         false,
-        true,
-        false
+        true
       );
 
       await expect(CalendarService.deleteEventType(adminUser, otherOrgEventType.eventTypeId, organization)).rejects.toThrow(
