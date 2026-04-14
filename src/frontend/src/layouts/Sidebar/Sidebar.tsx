@@ -148,7 +148,8 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           name: 'Divisions',
           icon: <GroupIcon />,
           route: routes.TEAMS,
-          subItems: allTeams
+          subItems: allTeams,
+          isClickableWithSubitems: true
         },
     !onGuestHomePage && {
       name: 'Calendar',
