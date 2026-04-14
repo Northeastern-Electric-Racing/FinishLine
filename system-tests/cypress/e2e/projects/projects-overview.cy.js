@@ -36,7 +36,7 @@ describe('Projects Overview', () => {
     // Fill in Project Name
     cy.get('[placeholder="Enter project name..."]').type(projectName);
 
-    // Car is pre-selected (Miles), keep default
+    // Car is pre-selected (NER-25), keep default
 
     // Select a Team
     // Target the Teams label (not the sidebar link) and find its sibling combobox

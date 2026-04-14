@@ -16,7 +16,7 @@ export default class ChangeRequestsController {
 
   static async getAllChangeRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const changeRequests = await ChangeRequestsService.getAllChangeRequests(req.organization);
+      const changeRequests = await ChangeRequestsService.getAllChangeRequests(req.organization, req.currentCar?.carId);
       res.status(200).json(changeRequests);
     } catch (error: unknown) {
       next(error);
@@ -34,7 +34,11 @@ export default class ChangeRequestsController {
 
   static async getToReviewChangeRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const changeRequests = await ChangeRequestsService.getToReviewChangeRequests(req.currentUser, req.organization);
+      const changeRequests = await ChangeRequestsService.getToReviewChangeRequests(
+        req.currentUser,
+        req.organization,
+        req.currentCar?.carId
+      );
       res.status(200).json(changeRequests);
     } catch (error: unknown) {
       next(error);
@@ -50,7 +54,8 @@ export default class ChangeRequestsController {
       const changeRequests = await ChangeRequestsService.getUnreviewedChangeRequests(
         req.currentUser,
         validatedWbs,
-        req.organization
+        req.organization,
+        req.currentCar?.carId
       );
       res.status(200).json(changeRequests);
     } catch (error: unknown) {
@@ -67,7 +72,8 @@ export default class ChangeRequestsController {
       const changeRequests = await ChangeRequestsService.getApprovedChangeRequests(
         req.currentUser,
         validatedWbs,
-        req.organization
+        req.organization,
+        req.currentCar?.carId
       );
       res.status(200).json(changeRequests);
     } catch (error: unknown) {

@@ -15,11 +15,17 @@ export interface FrequentlyAskedQuestion {
   dateDeleted?: Date;
 }
 
+export enum GuestDefinitionType {
+  PROJECT_MANAGEMENT = 'PROJECT_MANAGEMENT',
+  INFO_PAGE = 'INFO_PAGE'
+}
+
 export interface GuestDefinition {
   definitionId: string;
   term: string;
   description: string;
   order: number;
+  type: GuestDefinitionType;
   buttonText?: string;
   buttonLink?: string;
   icon?: string;

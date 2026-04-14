@@ -6,14 +6,28 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { AxiosResponse } from 'axios';
 import { WorkPackage } from 'shared';
-import wrapper from '../../app/AppContextQuery';
+import AppContextQuery from '../../app/AppContextQuery';
+import { GlobalCarFilterProvider } from '../../app/AppGlobalCarFilterContext';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import { exampleAllWorkPackages, exampleResearchWorkPackage } from '../test-support/test-data/work-packages.stub';
 import { exampleWbsWorkPackage1 } from '../test-support/test-data/wbs-numbers.stub';
 import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
 import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/work-packages.hooks';
+import * as carsHooks from '../../hooks/cars.hooks';
+import { exampleAllCars } from '../test-support/test-data/cars.stub';
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <AppContextQuery>
+    <GlobalCarFilterProvider>{children}</GlobalCarFilterProvider>
+  </AppContextQuery>
+);
 
 vi.mock('../../apis/work-packages.api');
+vi.mock('../../hooks/cars.hooks');
+
+beforeEach(() => {
+  vi.mocked(carsHooks.useGetAllCars).mockReturnValue({ data: exampleAllCars, isLoading: false, error: null } as any);
+});
 
 describe('work package hooks', () => {
   it('handles getting a list of work packages', async () => {

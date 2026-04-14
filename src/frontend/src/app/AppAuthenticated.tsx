@@ -24,6 +24,7 @@ import Finance from '../pages/FinancePage/Finance';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import { useCurrentOrganization } from '../hooks/organizations.hooks';
+import { GlobalCarFilterProvider } from './AppGlobalCarFilterContext';
 import Statistics from '../pages/StatisticsPage/Statistics';
 import RetrospectiveGanttChartPage from '../pages/RetrospectivePage/Retrospective';
 import Calendar from '../pages/CalendarPage/Calendar';
@@ -59,33 +60,36 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
     return <ErrorPage error={error as Error} message={(error as Error).message} />;
   }
 
-  return userSettingsData.slackId || isGuest(userRole) ? (
-    <AppContextUser>
-      <SidebarLayout>
-        <Switch>
-          <Route path={routes.PROJECTS} component={Projects} />
-          <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
-          <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
-          <Route path={routes.GANTT} component={GanttChartPage} />
-          <Route path={routes.TEAMS} component={Teams} />
-          <Route path={routes.SETTINGS} component={Settings} />
-          <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
-          <Route path={routes.INFO} component={InfoPage} />
-          <Route path={routes.CREDITS} component={Credits} />
-          <Route path={routes.FINANCE} component={Finance} />
-          <Route path={routes.CALENDAR} component={Calendar} />
-          <Route path={routes.STATISTICS} component={Statistics} />
-          <Route path={routes.HOME} component={Home} />
-          <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
-          <Route path={routes.EVENTS} component={GuestEventPage} />
-          <Route path={routes.PROJECT_MANAGEMENT} component={ProjectManagementPage} />
-          <Redirect from={routes.BASE} to={routes.HOME} />
-          <Route path="*" component={PageNotFound} />
-        </Switch>
-      </SidebarLayout>
-    </AppContextUser>
-  ) : (
-    <SetUserPreferences userSettings={userSettingsData} />
+  return (
+    <GlobalCarFilterProvider>
+      {userSettingsData.slackId || isGuest(userRole) ? (
+        <AppContextUser>
+          <SidebarLayout>
+            <Switch>
+              <Route path={routes.PROJECTS} component={Projects} />
+              <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
+              <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
+              <Route path={routes.GANTT} component={GanttChartPage} />
+              <Route path={routes.TEAMS} component={Teams} />
+              <Route path={routes.SETTINGS} component={Settings} />
+              <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
+              <Route path={routes.INFO} component={InfoPage} />
+              <Route path={routes.CREDITS} component={Credits} />
+              <Route path={routes.FINANCE} component={Finance} />
+              <Route path={routes.CALENDAR} component={Calendar} />
+              <Route path={routes.STATISTICS} component={Statistics} />
+              <Route path={routes.HOME} component={Home} />
+              <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
+              <Route path={routes.EVENTS} component={GuestEventPage} />
+              <Redirect from={routes.BASE} to={routes.HOME} />
+              <Route path="*" component={PageNotFound} />
+            </Switch>
+          </SidebarLayout>
+        </AppContextUser>
+      ) : (
+        <SetUserPreferences userSettings={userSettingsData} />
+      )}
+    </GlobalCarFilterProvider>
   );
 };
 

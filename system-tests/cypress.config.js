@@ -11,6 +11,7 @@ module.exports = {
     defaultCommandTimeout: 10000
   },
   env: {
-    base_url: 'http://localhost:3000'
+    base_url: 'http://localhost:3000',
+    backend_url: 'http://localhost:3001'
   }
 };
