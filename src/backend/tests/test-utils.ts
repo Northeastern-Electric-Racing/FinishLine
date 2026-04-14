@@ -577,7 +577,6 @@ export const createTestDesignReviewEvent = async () => {
     'Design Review',
     [], // No calendar IDs for now
     organization,
-    true, // schedule
     true, // requiredMembers
     true, // optionalMembers
     false, // teams
