@@ -392,14 +392,14 @@ describe('Recruitment Tests', () => {
         'buttonTxt',
         'buttonLink'
       );
-      const result = await RecruitmentServices.getGuestDefinition(organization, guestDefinition.definitionId);
+      const result = await RecruitmentServices.getSingleGuestDefinition(organization, guestDefinition.definitionId);
       expect(result).toStrictEqual(guestDefinition);
     });
 
     it('Get a single guest definition fails', async () => {
       const nonExistingDefinitionId = 'nonExistingDefinition';
       await expect(async () =>
-        RecruitmentServices.getGuestDefinition(organization, nonExistingDefinitionId)
+        RecruitmentServices.getSingleGuestDefinition(organization, nonExistingDefinitionId)
       ).rejects.toThrow(new NotFoundException('Guest Definition', nonExistingDefinitionId));
     });
   });
