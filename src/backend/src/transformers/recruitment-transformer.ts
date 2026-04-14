@@ -28,5 +28,5 @@ export const guestDefinitionTransformer = (guestDefinition: Prisma.Guest_Definit
   buttonText: guestDefinition.buttonText ?? undefined,
   buttonLink: guestDefinition.buttonLink ?? undefined,
   icon: guestDefinition.icon ?? undefined,
-  type: definitionTypeTransformer(guestDefinition.type) ?? GuestDefinitionType.INFO_PAGE
+  type: definitionTypeTransformer(guestDefinition.type)
 });
