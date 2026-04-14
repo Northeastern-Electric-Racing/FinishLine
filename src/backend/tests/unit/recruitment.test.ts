@@ -379,6 +379,30 @@ describe('Recruitment Tests', () => {
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a guest definition'));
     });
   });
+
+  describe('Get a single guest definition', () => {
+    it('Get a single guest definition works', async () => {
+      const guestDefinition = await RecruitmentServices.createGuestDefinition(
+        superman,
+        organization,
+        'test term',
+        'test description',
+        2,
+        'iconname',
+        'buttonTxt',
+        'buttonLink'
+      );
+      const result = await RecruitmentServices.getSingleGuestDefinition(organization, guestDefinition.definitionId);
+      expect(result).toStrictEqual(guestDefinition);
+    });
+
+    it('Get a single guest definition fails', async () => {
+      const nonExistingDefinitionId = 'nonExistingDefinition';
+      await expect(async () =>
+        RecruitmentServices.getSingleGuestDefinition(organization, nonExistingDefinitionId)
+      ).rejects.toThrow(new NotFoundException('Guest Definition', nonExistingDefinitionId));
+    });
+  });
   describe('Edit Guest Definition', () => {
     it('Fails if user is not an admin', async () => {
       await expect(

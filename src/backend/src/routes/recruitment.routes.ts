@@ -64,6 +64,8 @@ recruitmentRouter.post(
   RecruitmentController.createGuestDefinition
 );
 
+recruitmentRouter.get('/guestdefinition/:definitionId', RecruitmentController.getSingleGuestDefinition);
+
 recruitmentRouter.post(
   '/guestDefinition/:guestId/edit',
   nonEmptyString(body('term')),

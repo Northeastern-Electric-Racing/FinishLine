@@ -116,6 +116,17 @@ export default class RecruitmentController {
     }
   }
 
+  static async getSingleGuestDefinition(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { definitionId } = req.params as Record<string, string>;
+
+      const definition = await RecruitmentServices.getSingleGuestDefinition(req.organization, definitionId);
+      res.status(200).json(definition);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async editGuestDefinition(req: Request, res: Response, next: NextFunction) {
     try {
       const { definitionId } = req.params as Record<string, string>;

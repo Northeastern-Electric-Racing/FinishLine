@@ -338,4 +338,23 @@ export default class RecruitmentServices {
     });
     return guestDefinitionTransformer(updatedGuest);
   }
+
+  /**
+   * Gets a single guest definition with the given user, organization, and definition ids
+   * @param organization the organization the user is currently in
+   * @param definitionId the id of the specific definition being found
+   * @returns a definition
+   * @throws if the definition is not found in the db
+   */
+  static async getSingleGuestDefinition(organization: Organization, definitionId: string) {
+    const guest = await prisma.guest_Definition.findUnique({
+      where: { organization, definitionId }
+    });
+
+    if (!guest) {
+      throw new NotFoundException('Guest Definition', definitionId);
+    }
+
+    return guestDefinitionTransformer(guest);
+  }
 }
