@@ -3576,7 +3576,6 @@ const performSeed: () => Promise<void> = async () => {
     false,
     true,
     false,
-    false,
     false
   );
 
@@ -3599,7 +3598,6 @@ const performSeed: () => Promise<void> = async () => {
     true,
     true,
     false,
-    true,
     true
   );
 
@@ -3622,7 +3620,6 @@ const performSeed: () => Promise<void> = async () => {
     true,
     false,
     false,
-    false,
     false
   );
 
@@ -3640,7 +3637,6 @@ const performSeed: () => Promise<void> = async () => {
     false,
     false,
     true,
-    false,
     false,
     false,
     false,
@@ -3668,6 +3664,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    true,
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -3709,6 +3706,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    false,
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -3735,6 +3733,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    false,
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -3761,6 +3760,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    true,
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -3787,6 +3787,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    true,
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -3813,6 +3814,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    false,
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -3833,6 +3835,7 @@ const performSeed: () => Promise<void> = async () => {
     [workPackage1.id],
     [],
     weeksFromNow(1),
+    true,
     software.teamTypeId,
     'https://docs.google.com/document/d/2_example',
     'Conference Room B',
@@ -3859,6 +3862,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    true,
     electrical.teamTypeId,
     'https://docs.google.com/document/d/3_example',
     undefined,
@@ -3885,6 +3889,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    false,
     mechanical.teamTypeId,
     undefined,
     undefined,
