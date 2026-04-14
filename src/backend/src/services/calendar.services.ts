@@ -305,8 +305,7 @@ export default class CalendarService {
       location,
       zoomLink,
       questionDocumentLink,
-      description,
-      sendSlackNotifications
+      description
     });
 
     // Validate required memberIds
