@@ -297,6 +297,7 @@ const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
 };
 const getAllSponsorTiers = () => `${financeRoutesEndpoints()}/sponsorTiers`;
 const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/edit`;
+const uploadSponsorLogo = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/uploadLogo`;
 const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
 const deleteSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}`;
 const editSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}/edit`;
@@ -692,6 +693,7 @@ export const apiUrls = {
   getAllSpendingBarData,
   getAllSponsorTiers,
   editSponsor,
+  uploadSponsorLogo,
   financeGetUsersTeamsReimbursementRequests,
   deleteSponsorTier,
   editSponsorTier,
