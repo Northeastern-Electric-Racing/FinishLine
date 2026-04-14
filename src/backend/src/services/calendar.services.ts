@@ -1474,11 +1474,6 @@ export default class CalendarService {
       });
     }
 
-    const { eventTypeId } = updatedEvent;
-    const foundEventType = await prisma.event_Type.findUnique({
-      where: { eventTypeId }
-    });
-
     if (updatedEvent.sendSlackNotifications) {
       await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, eventTransformer(updatedEvent));
     }
