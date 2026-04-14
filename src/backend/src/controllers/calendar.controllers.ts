@@ -304,7 +304,7 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description,
+        description
       );
       res.status(200).json(event);
     } catch (error: unknown) {
