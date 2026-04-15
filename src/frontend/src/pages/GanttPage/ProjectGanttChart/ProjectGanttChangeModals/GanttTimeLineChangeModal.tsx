@@ -25,9 +25,7 @@ import { useSingleProject } from '../../../../hooks/projects.hooks';
 interface GanttTimeLineChangeModalProps extends GanttRequestChangeModalProps {}
 
 export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTimeLineChangeModalProps) => {
-  const toast = useToast();
-  const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Estimation);
-  const [explanationForChange, setExplanationForChange] = useState('');
+
   const {
     data: originalProject,
     isLoading: originalProjectIsLoading,
@@ -48,8 +46,33 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     isLoadingTaskEdit
   )
     return <LoadingIndicator />;
-  if (originalProjectIsError) return <ErrorPage error={originalProjectError} />;
+  if (originalProjectIsError) return <ErrorPage error={originalProjectError} />; 
+  return <GanttTimeLineChangeModalDataProps 
+    originalProject={originalProject}
+    change={change}
+    handleClose={handleClose}
+    open={open}
+  createStandardChangeRequest={createStandardChangeRequest}
+  createSingleWorkPackage={createSingleWorkPackage}
+  createTask={createTask}
+  editTask={editTask}
+}
+/>;
 
+}
+
+interface GanttTimeLineChangeModalDataProps extends GanttRequestChangeModalProps {
+  originalProject: ProjectGantt;
+  createStandardChangeRequest: (payload: CreateStandardChangeRequestPayload) => Promise<void>;
+  createSingleWorkPackage: (payload: any) => Promise<void>;
+  createTask: (payload: CreateTaskPayload) => Promise<void>;
+  editTask: (payload: TaskPayload) => Promise<void>;
+}
+
+export const GanttTimeLineChangeModalDataProps = ({originalProject, change, handleClose, open, createStandardChangeRequest, createSingleWorkPackage, createTask, editTask}: GanttTimeLineChangeModalDataProps) => {
+  const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Estimation);
+  const [explanationForChange, setExplanationForChange] = useState('');
+  const toast = useToast();
   const handleReasonChange = useCallback((event: SelectChangeEvent<ChangeRequestReason>) => {
     setReasonForChange(event.target.value as ChangeRequestReason);
   }, []);

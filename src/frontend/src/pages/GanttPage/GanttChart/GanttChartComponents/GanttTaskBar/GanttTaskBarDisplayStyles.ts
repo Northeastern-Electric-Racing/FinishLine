@@ -1,7 +1,7 @@
-import { CSSProperties } from 'react';
+import { CSSProperties, useCallback } from 'react';
 import { GanttTask, GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../../../utils/gantt.utils';
 
-export const ganttTaskBarBackgroundStyles = (numDays: number): CSSProperties => {
+export const ganttTaskBarBackgroundStyles = useCallback((numDays: number): CSSProperties => {
   return {
     width: '100%',
     display: 'grid',
@@ -12,17 +12,17 @@ export const ganttTaskBarBackgroundStyles = (numDays: number): CSSProperties => 
     //  top: 0,
     //  left: 0
   };
-};
+}, []);
 
-export const ganttTaskBarContainerStyles = (): CSSProperties => {
+export const ganttTaskBarContainerStyles = useCallback((): CSSProperties => {
   return {
     position: 'relative',
     width: '100%',
     marginTop: 10
   };
-};
+}, []);
 
-export const webKitBoxContainerStyles = (): CSSProperties => {
+export const webKitBoxContainerStyles = useCallback((): CSSProperties => {
   return {
     height: '100%',
     width: '100%',
@@ -31,9 +31,9 @@ export const webKitBoxContainerStyles = (): CSSProperties => {
     alignItems: 'center',
     overflow: 'visible'
   };
-};
+}, []);
 
-export const webKitBoxStyles = (): CSSProperties => {
+export const webKitBoxStyles = useCallback((): CSSProperties => {
   return {
     padding: '0.25rem',
     overflow: 'hidden',
@@ -42,7 +42,7 @@ export const webKitBoxStyles = (): CSSProperties => {
     WebkitLineClamp: 1,
     userSelect: 'none'
   };
-};
+}, []);
 
 export const taskNameContainerStyles = <T>(task: GanttTask<T>): CSSProperties => {
   return {
