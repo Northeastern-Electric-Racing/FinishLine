@@ -4,7 +4,7 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Reimbursement_Request, Reimbursement_Status_Type, Organization, Prisma } from '@prisma/client';
+import { Reimbursement_Request, Reimbursement_Status_Type, Organization } from '@prisma/client';
 import {
   Reimbursement,
   ReimbursementReceiptCreateArgs,

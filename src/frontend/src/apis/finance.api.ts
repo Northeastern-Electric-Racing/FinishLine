@@ -363,7 +363,7 @@ export const getPendingAdvisorList = () => {
  * @param saboNumber the SABO number to set
  */
 export const setSaboNumber = async (requestId: string, saboNumber: string) => {
-  await axios.post(apiUrls.financeSetSaboNumber(requestId), {
+  return axios.post(apiUrls.financeSetSaboNumber(requestId), {
     saboNumber
   });
 };
