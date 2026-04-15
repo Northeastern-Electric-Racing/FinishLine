@@ -48,7 +48,7 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
       return (
         <Box
           onMouseEnter={onSubmenuHover}
-          onClick={() => route && history.push(route)}
+          onClick={() => history.push(route)}
           sx={{
             textDecoration: 'none',
             color: theme.palette.text.primary,
