@@ -8,7 +8,6 @@ import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../utils/form';
 import { GuestDefinitionPayload } from '../../../hooks/recruitment.hooks';
 import { GuestDefinition, GuestDefinitionType } from 'shared';
-import { useEffect } from 'react';
 
 interface GuestDefinitionFormModalProps {
   open: boolean;
@@ -67,17 +66,6 @@ const GuestDefinitionFormModal: React.FC<GuestDefinitionFormModalProps> = ({
   const formStorageKey = defaultValues ? FormStorageKey.EDIT_GUEST_DEFINITION : FormStorageKey.CREATE_GUEST_DEFINITION;
 
   useFormPersist(formStorageKey, { watch, setValue });
-
-  useEffect(() => {
-    reset({
-      term: defaultValues?.term ?? '',
-      description: defaultValues?.description ?? '',
-      order: defaultValues?.order ?? 0,
-      icon: defaultValues?.icon ?? '',
-      buttonText: defaultValues?.buttonText ?? '',
-      buttonLink: defaultValues?.buttonLink ?? ''
-    });
-  }, [defaultValues, reset]);
 
   const handleCancel = () => {
     reset({ term: '', description: '', order: 0, icon: '', buttonText: '', buttonLink: '' });
