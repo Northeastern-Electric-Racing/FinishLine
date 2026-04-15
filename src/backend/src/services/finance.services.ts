@@ -34,6 +34,7 @@ import {
   getReimbursementRequestWhereInput
 } from '../utils/finance.utils.js';
 import { notifySponsorTaskAssignee } from '../utils/slack.utils.js';
+import { uploadFile } from '../utils/google-integration.utils.js';
 import { isUserFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
 
 export default class FinanceServices {
@@ -56,7 +57,7 @@ export default class FinanceServices {
    * @param contactPosition The position of the sponsor contact.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being created.
-   *
+   * @param logoImage An optional logo image file for the sponsor.
    * @returns The created sponsor object, including associated tasks.
    *
    * @throws AccessDeniedAdminOnlyException If the submitter does not have permission to create a sponsor.
@@ -80,7 +81,8 @@ export default class FinanceServices {
     contactPhone?: string,
     contactPosition?: string,
     stockDescription?: string,
-    discountDescription?: string
+    discountDescription?: string,
+    logoImage?: Express.Multer.File
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can create a sponsor');
@@ -104,6 +106,8 @@ export default class FinanceServices {
       data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
     });
 
+    const { id: logoImageId } = logoImage ? await uploadFile(logoImage) : { id: undefined };
+
     const sponsor = await prisma.sponsor.create({
       data: {
         name,
@@ -118,6 +122,7 @@ export default class FinanceServices {
         taxExempt,
         discountCode,
         sponsorNotes,
+        logoImageId,
         contactId: contact.sponsorContactId,
         sponsorTasks: {
           create: sponsorTasks.map((task) => ({
@@ -520,6 +525,10 @@ export default class FinanceServices {
     return data;
   }
 
+  // Finance data filters by carNumber (integer) rather than carId (UUID) because the
+  // finance schema links through WbsElement, which owns carNumber directly. Filtering
+  // by carId would require nested Prisma joins across every finance utility function.
+  // carNumber is sourced from req.currentCar?.wbsElement.carNumber via middleware.
   static async getReimbursementRequestTeamData(
     organization: Organization,
     teamId: string,
@@ -1139,7 +1148,12 @@ export default class FinanceServices {
     return data;
   }
 
-  static async getSpendingBarCategoryData(organization: Organization): Promise<SpendingBarData> {
+  static async getSpendingBarCategoryData(
+    organization: Organization,
+    startDate?: Date,
+    endDate?: Date,
+    carNumber?: number
+  ): Promise<SpendingBarData> {
     const { organizationId } = organization;
     const otherReasons = await prisma.reimbursement_Product_Other_Reason.findMany({
       where: {
@@ -1151,7 +1165,13 @@ export default class FinanceServices {
     });
 
     const spendingInfoPromises = otherReasons.map((r) =>
-      this.getReimbursementRequestCategoryData(r.otherReimbursementProductReasonId, organization)
+      this.getReimbursementRequestCategoryData(
+        r.otherReimbursementProductReasonId,
+        organization,
+        startDate,
+        endDate,
+        carNumber
+      )
     );
     const spendingInfos = await Promise.all(spendingInfoPromises);
 
@@ -1185,6 +1205,8 @@ export default class FinanceServices {
    * @param contactPosition The position of the sponsor contact.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being edited.
+   * @param logoImage An optional logo image file for the sponsor.
+   *
    * @returns the edited sponsor.
    */
 
@@ -1208,7 +1230,8 @@ export default class FinanceServices {
     contactPhone?: string,
     contactPosition?: string,
     stockDescription?: string,
-    discountDescription?: string
+    discountDescription?: string,
+    logoImage?: Express.Multer.File
   ): Promise<Sponsor> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can edit sponsors.');
@@ -1306,6 +1329,8 @@ export default class FinanceServices {
       data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
     });
 
+    const { id: logoImageId } = logoImage ? await uploadFile(logoImage) : { id: undefined };
+
     const updatedSponsor = await prisma.sponsor.update({
       where: { sponsorId: oldSponsor.sponsorId },
       data: {
@@ -1320,7 +1345,8 @@ export default class FinanceServices {
         tier: sponsorTierId ? { connect: { sponsorTierId } } : { disconnect: true },
         taxExempt,
         discountCode,
-        sponsorNotes
+        sponsorNotes,
+        ...(logoImageId && { logoImageId })
       },
       ...getSponsorQueryArgs(organization.organizationId)
     });

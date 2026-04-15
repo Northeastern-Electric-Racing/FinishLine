@@ -24,7 +24,8 @@ export const prodHeaders = [
   'XMLHttpRequest',
   'X-Auth-Token',
   'Client-Security-Token',
-  'organizationId'
+  'organizationId',
+  'carId'
 ];
 
 // middleware function for production that will enforce jwt authorization
