@@ -238,7 +238,7 @@ const ReimbursementRequests: React.FC = () => {
             blurOnSelect={true}
             id={'project-filter-autocomplete'}
             size={'small'}
-            onChange={(event, newValue) => {
+            onChange={(_event, newValue) => {
               setSelectedProjectFilter(newValue);
             }}
             renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select Project" fullWidth />}
