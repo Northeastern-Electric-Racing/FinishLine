@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FormControl, FormHelperText, FormLabel, MenuItem, TextField, Autocomplete, Grid } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isUnderWordCount, TaskPriority, TaskStatus } from 'shared';
+import { countWords, isUnderWordCount, TaskPriority, TaskStatus, User } from 'shared';
 import * as yup from 'yup';
 import NERFormModal from '../../../components/NERFormModal';
 import { useAllMembers } from '../../../hooks/users.hooks';
@@ -40,7 +40,21 @@ interface AddGanttTaskModalProps {
 const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handleClose, addTask }) => {
   const { isLoading: usersIsLoading, isError: usersIsError, data: users, error: usersError } = useAllMembers();
 
-  const unUpperCase = (str: string) => str.charAt(0) + str.slice(1).toLowerCase();
+  if (!users || usersIsLoading) return <LoadingIndicator />;
+  if (usersIsError) return <ErrorPage message={usersError?.message} />;
+
+  return <AddGanttTaskModalContent showModal={showModal} handleClose={handleClose} addTask={addTask} users={users} />;
+};
+
+interface AddGanttTaskModalContentProps {
+  showModal: boolean;
+  handleClose: () => void;
+  addTask: (task: CreateTaskFormData) => void;
+  users: User[];
+}
+
+const AddGanttTaskModalContent: React.FC<AddGanttTaskModalContentProps> = ({ showModal, handleClose, addTask, users }) => {
+  const unUpperCase = useCallback((str: string) => str.charAt(0) + str.slice(1).toLowerCase(), []);
 
   const {
     handleSubmit,
@@ -60,9 +74,6 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
     }
   });
 
-  if (!users || usersIsLoading) return <LoadingIndicator />;
-  if (usersIsError) return <ErrorPage message={usersError?.message} />;
-
   const options: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
 
   const onSubmit = async (data: CreateTaskFormData) => {
@@ -70,13 +81,10 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
     handleClose();
   };
 
-  const handleModalClose = () => {
+  const handleModalClose = useCallback(() => {
     reset();
     handleClose();
-  };
-
-  if (usersIsError) return <ErrorPage message={usersError} />;
-  if (usersIsLoading) return <LoadingIndicator />;
+  }, [reset, handleClose]);
 
   return (
     <NERFormModal
