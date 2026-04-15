@@ -1,9 +1,16 @@
 import { Box, Tooltip, IconButton } from '@mui/material';
 import { useLocation, useHistory, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { isGuest, ReimbursementRequest } from 'shared';
+import { equalsWbsNumber, isGuest, ReimbursementRequest, validateWBS, WBSElementData } from 'shared';
 import { ReimbursementProduct, ReimbursementStatusType } from 'shared';
-import { undefinedPipe, fullNamePipe, centsToDollar, datePipe, dateUndefinedPipe } from '../../../utils/pipes';
+import {
+  undefinedPipe,
+  fullNamePipe,
+  centsToDollar,
+  datePipe,
+  dateUndefinedPipe,
+  projectWbsPipe
+} from '../../../utils/pipes';
 import {
   createReimbursementRequestRowData,
   cleanReimbursementRequestStatus
@@ -25,6 +32,7 @@ interface ReimbursementRequestInfoProps {
   statuses?: ReimbursementStatusType[];
   startDate?: Date | null;
   endDate?: Date | null;
+  selectedProject?: { label: string; id: string };
   onCloseSidePage: () => void;
 }
 
@@ -37,6 +45,7 @@ const ReimbursementRequestInfo = ({
   statuses,
   startDate,
   endDate,
+  selectedProject,
   onCloseSidePage
 }: ReimbursementRequestInfoProps) => {
   const user = useCurrentUser();
@@ -69,6 +78,22 @@ const ReimbursementRequestInfo = ({
 
     if (statuses && statuses.length > 0 && !statuses.includes(row.status)) {
       return false;
+    }
+
+    if (selectedProject) {
+      const filterWbsNum = validateWBS(selectedProject.id);
+
+      const matchesProject = request.reimbursementProducts.some((product) => {
+        const reason = product.reimbursementProductReason;
+        if ((reason as WBSElementData).wbsNum) {
+          return equalsWbsNumber(
+            { ...(reason as WBSElementData).wbsNum, workPackageNumber: 0 },
+            { ...filterWbsNum, workPackageNumber: 0 }
+          );
+        }
+        return false;
+      });
+      if (!matchesProject) return false;
     }
 
     return true;
