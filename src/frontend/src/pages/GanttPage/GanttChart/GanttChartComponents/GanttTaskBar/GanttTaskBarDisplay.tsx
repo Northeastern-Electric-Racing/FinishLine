@@ -19,7 +19,7 @@ import {
   webKitBoxContainerStyles,
   webKitBoxStyles
 } from './GanttTaskBarDisplayStyles';
-import { CSSProperties } from 'react';
+import { CSSProperties, useCallback } from 'react';
 import { ArcherElement } from 'react-archer';
 
 interface GanttTaskBarDisplayProps<T> {
@@ -78,74 +78,86 @@ const GanttTaskBarDisplay = <T,>({
     width: hasOverlays ? 'fit-content' : '100%'
   };
 
-  const ganttTaskBarChildOverlayStyles = (child: GanttTask<T>): CSSProperties => {
-    return {
-      position: 'absolute',
-      left: `calc(${getStartCol(child.start) - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}))`,
-      width: `calc(${getEndCol(child.end) - getStartCol(child.start)} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) - ${GANTT_CHART_GAP_SIZE})`,
-      height: '2rem',
-      border: `1px solid ${theme.palette.divider}`,
-      borderRadius: '0.25rem',
-      backgroundColor: child.styles ? child.styles.backgroundColor : grey[700],
-      cursor: 'pointer',
-      gridRow: 1,
-      zIndex: 2
-    };
-  };
+  const ganttTaskBarChildOverlayStyles = useCallback(
+    (child: GanttTask<T>): CSSProperties => {
+      return {
+        position: 'absolute',
+        left: `calc(${getStartCol(child.start) - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}))`,
+        width: `calc(${getEndCol(child.end) - getStartCol(child.start)} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) - ${GANTT_CHART_GAP_SIZE})`,
+        height: '2rem',
+        border: `1px solid ${theme.palette.divider}`,
+        borderRadius: '0.25rem',
+        backgroundColor: child.styles ? child.styles.backgroundColor : grey[700],
+        cursor: 'pointer',
+        gridRow: 1,
+        zIndex: 2
+      };
+    },
+    [theme.palette.divider]
+  );
 
-  const ganttTaskBarEventOverlayStyles = (event: GanttEvent): CSSProperties => {
-    return {
-      gridColumnStart: getStartCol(event.date),
-      gridColumnEnd: getEndCol(addWeeksToDate(event.date, 1)),
-      height: '2rem',
-      border: `1px solid ${theme.palette.divider}`,
-      borderRadius: '0.25rem',
-      backgroundColor: event.color,
-      cursor: 'pointer',
-      gridRow: 1,
-      zIndex: 5
-    };
-  };
+  const ganttTaskBarEventOverlayStyles = useCallback(
+    (event: GanttEvent): CSSProperties => {
+      return {
+        gridColumnStart: getStartCol(event.date),
+        gridColumnEnd: getEndCol(addWeeksToDate(event.date, 1)),
+        height: '2rem',
+        border: `1px solid ${theme.palette.divider}`,
+        borderRadius: '0.25rem',
+        backgroundColor: event.color,
+        cursor: 'pointer',
+        gridRow: 1,
+        zIndex: 5
+      };
+    },
+    [theme.palette.divider]
+  );
 
-  const highlightedChangeBoxStyles = (highlightedChange: RequestEventChange<T>): CSSProperties => {
-    return {
-      paddingTop: '2px',
-      paddingLeft: '5px',
-      gridColumnStart: getStartCol(highlightedChange.newStart),
-      gridColumnEnd: getEndCol(highlightedChange.newEnd),
-      height: '2rem',
-      border: `1px solid ${theme.palette.text.primary}`,
-      borderRadius: '0.25rem',
-      backgroundColor: '#ef4345',
-      cursor: 'pointer',
-      gridRow: 1,
-      zIndex: 6
-    };
-  };
+  const highlightedChangeBoxStyles = useCallback(
+    (highlightedChange: RequestEventChange<T>): CSSProperties => {
+      return {
+        paddingTop: '2px',
+        paddingLeft: '5px',
+        gridColumnStart: getStartCol(highlightedChange.newStart),
+        gridColumnEnd: getEndCol(highlightedChange.newEnd),
+        height: '2rem',
+        border: `1px solid ${theme.palette.text.primary}`,
+        borderRadius: '0.25rem',
+        backgroundColor: '#ef4345',
+        cursor: 'pointer',
+        gridRow: 1,
+        zIndex: 6
+      };
+    },
+    [theme.palette.text.primary]
+  );
 
-  const retroOverlayBoxStyles = (retro: { comparativeStart?: Date; comparativeEnd?: Date }): CSSProperties => {
-    if (!retro.comparativeStart || !retro.comparativeEnd) {
-      return {};
-    }
+  const retroOverlayBoxStyles = useCallback(
+    (retro: { comparativeStart?: Date; comparativeEnd?: Date }): CSSProperties => {
+      if (!retro.comparativeStart || !retro.comparativeEnd) {
+        return {};
+      }
 
-    return {
-      paddingTop: '2px',
-      paddingLeft: '5px',
-      gridColumnStart: getStartCol(retro.comparativeStart),
-      gridColumnEnd: getEndCol(retro.comparativeEnd),
-      height: '2rem',
-      border: `1px solid ${theme.palette.text.primary}`,
-      borderRadius: '0.25rem',
-      backgroundImage: `
+      return {
+        paddingTop: '2px',
+        paddingLeft: '5px',
+        gridColumnStart: getStartCol(retro.comparativeStart),
+        gridColumnEnd: getEndCol(retro.comparativeEnd),
+        height: '2rem',
+        border: `1px solid ${theme.palette.text.primary}`,
+        borderRadius: '0.25rem',
+        backgroundImage: `
         repeating-linear-gradient(-45deg, #000 0, #000 1px, transparent 1px, transparent 10px)
       `,
-      backgroundColor: grey[100],
-      opacity: 0.3,
-      cursor: 'pointer',
-      gridRow: 1,
-      zIndex: 1
-    };
-  };
+        backgroundColor: grey[100],
+        opacity: 0.3,
+        cursor: 'pointer',
+        gridRow: 1,
+        zIndex: 1
+      };
+    },
+    [theme.palette.text.primary, grey[100]]
+  );
 
   return (
     <div style={ganttTaskBarContainerStyles()}>

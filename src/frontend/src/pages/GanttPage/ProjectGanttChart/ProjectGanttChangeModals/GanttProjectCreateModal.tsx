@@ -11,6 +11,7 @@ import { WorkPackageApiInputs } from '../../../../apis/work-packages.api';
 import { useCreateSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
 import { GanttRequestChangeModalProps } from './GanttRequestChangeModal';
 import { useCreateTask } from '../../../../hooks/tasks.hooks';
+import { useState } from 'react';
 
 interface GanttProjectCreateModalProps extends GanttRequestChangeModalProps {}
 
@@ -28,7 +29,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
   const changeInTimeline = `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(latestEndDate).format('MMMM D, YYYY')}`;
 
   const handleSubmit = async () => {
-    const [selectedTeam] = project.teams;
+    const [selectedTeam] = useState(project.teams[0]);
 
     const teamIds: string[] = selectedTeam ? [selectedTeam.teamId] : [];
 

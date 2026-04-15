@@ -336,13 +336,13 @@ const ProjectGanttChartPageData: FC<ProjectGanttChartPageDataProps> = ({ project
     return existingCarProjects + 1;
   };
 
-  const handleWorkPackageSelected = () => {
+  const handleWorkPackageSelected = useCallback(() => {
     setShowAddWorkPackageModal(true);
-  };
+  }, []);
 
-  const handleTaskSelected = () => {
+  const handleTaskSelected = useCallback(() => {
     setShowAddTaskModal(true);
-  };
+  }, []);
 
   const handleAddTaskInfo = (
     taskInfo: {

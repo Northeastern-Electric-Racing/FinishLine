@@ -10,7 +10,7 @@ import {
   WbsElementPreview,
   WorkPackage
 } from 'shared';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import dayjs from 'dayjs';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
@@ -50,19 +50,19 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     return <LoadingIndicator />;
   if (originalProjectIsError) return <ErrorPage error={originalProjectError} />;
 
-  const handleReasonChange = (event: SelectChangeEvent<ChangeRequestReason>) => {
+  const handleReasonChange = useCallback((event: SelectChangeEvent<ChangeRequestReason>) => {
     setReasonForChange(event.target.value as ChangeRequestReason);
-  };
+  }, []);
 
-  const handleExplanationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExplanationChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setExplanationForChange(event.target.value);
-  };
+  }, []);
 
-  const changeInTimeline = (startDate: Date, endDate: Date) => {
+  const changeInTimeline = useCallback((startDate: Date, endDate: Date) => {
     return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`;
-  };
+  }, []);
 
-  const createWhatMessage = (editedWorkPackages: WorkPackage[]): string => {
+  const createWhatMessage = useCallback((editedWorkPackages: WorkPackage[]): string => {
     return (
       'Adjusted Timelines for WorkPackages: \n' +
       editedWorkPackages
@@ -75,15 +75,15 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
         )
         .join('\n')
     );
-  };
+  }, []);
 
-  const transformLinkToLinkCreateArgs = (link: Link): LinkCreateArgs => {
+  const transformLinkToLinkCreateArgs = useCallback((link: Link): LinkCreateArgs => {
     return {
       linkId: link.linkId,
       linkTypeName: link.linkType.name,
       url: link.url
     };
-  };
+  }, []);
 
   const project = change.element as ProjectGantt;
 
