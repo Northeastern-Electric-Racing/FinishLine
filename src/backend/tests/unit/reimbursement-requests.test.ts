@@ -785,4 +785,28 @@ describe('Reimbursement Requests', () => {
       ).rejects.toThrow(new NotFoundException('Reimbursement Product Other Reason', 'bad id'));
     });
   });
+
+  describe('Setting the SABO number on a reimbursement request', () => {
+    test('Fails when SABO number is already assigned to a request', async () => {
+      await ReimbursementRequestService.setSaboNumber(
+        reimbursementRequest.reimbursementRequestId,
+        'SABO-001',
+        createdUser,
+        org
+      );
+      await expect(
+        ReimbursementRequestService.setSaboNumber(reimbursementRequest.reimbursementRequestId, 'SABO-001', createdUser, org)
+      ).rejects.toThrow(new HttpException(400, 'This SABO number is already assigned to another reimbursement request.'));
+    });
+
+    test('Successfully sets the SABO number', async () => {
+      const result = await ReimbursementRequestService.setSaboNumber(
+        reimbursementRequest.reimbursementRequestId,
+        'SABO-001',
+        createdUser,
+        org
+      );
+      expect(result.saboId).toEqual('SABO-001');
+    });
+  });
 });
