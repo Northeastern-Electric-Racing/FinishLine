@@ -26,10 +26,10 @@ const GuestDefinitionsTable = ({ type }: GuestDefinitionsTableProps) => {
 
   const { isLoading, isError, error, data: allDefinitions } = useAllGuestDefinitions();
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     setDefinitionToDelete(undefined);
     try {
-      deleteGuestDefinition(id);
+      await deleteGuestDefinition(id);
       toast.success('Guest definition deleted successfully');
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -38,8 +38,8 @@ const GuestDefinitionsTable = ({ type }: GuestDefinitionsTableProps) => {
     }
   };
 
-  if (!allDefinitions || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
+  if (!allDefinitions || isLoading) return <LoadingIndicator />;
 
   const definitions = allDefinitions.filter((d) => d.type === type);
 
@@ -75,7 +75,9 @@ const GuestDefinitionsTable = ({ type }: GuestDefinitionsTableProps) => {
 
   return (
     <Box>
-      <CreateGuestDefinitionFormModal open={createModalShow} handleClose={() => setCreateModalShow(false)} type={type} />
+      {createModalShow && (
+        <CreateGuestDefinitionFormModal open={createModalShow} handleClose={() => setCreateModalShow(false)} type={type} />
+      )}
       {definitionEditing && (
         <EditGuestDefinitionFormModal
           open={!!definitionEditing}
@@ -117,17 +119,17 @@ const GuestDefinitionsTable = ({ type }: GuestDefinitionsTableProps) => {
           Add Guest Definition
         </NERButton>
       </Box>
-      <NERDeleteModal
-        open={!!definitionToDelete}
-        onHide={() => setDefinitionToDelete(undefined)}
-        formId="delete-guest-definition-form"
-        dataType="Guest Definition"
-        onFormSubmit={() => {
-          if (definitionToDelete) {
+      {definitionToDelete && (
+        <NERDeleteModal
+          open={!!definitionToDelete}
+          onHide={() => setDefinitionToDelete(undefined)}
+          formId="delete-guest-definition-form"
+          dataType="Guest Definition"
+          onFormSubmit={() => {
             handleDelete(definitionToDelete.definitionId);
-          }
-        }}
-      />
+          }}
+        />
+      )}
     </Box>
   );
 };
