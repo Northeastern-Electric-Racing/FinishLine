@@ -3529,7 +3529,6 @@ const performSeed: () => Promise<void> = async () => {
     'abcdef',
     new Decimal(20),
     30,
-    600,
     'Here are some notes',
     assembly1.assemblyId,
     undefined,
@@ -3552,7 +3551,6 @@ const performSeed: () => Promise<void> = async () => {
     'bacfed',
     new Decimal(10),
     7,
-    70,
     'Here are some more notes',
     undefined,
     undefined,
@@ -3575,7 +3573,6 @@ const performSeed: () => Promise<void> = async () => {
     'lalsd',
     new Decimal(5),
     10,
-    50,
     undefined,
     undefined,
     undefined

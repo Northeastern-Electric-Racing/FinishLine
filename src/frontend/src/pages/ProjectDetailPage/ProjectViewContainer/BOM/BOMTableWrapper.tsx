@@ -129,13 +129,13 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
 
   const processRowUpdate = async (newRow: BomRow, oldRow: BomRow): Promise<BomRow> => {
     // assemblies are not editable
-    if (String(newRow.id).startsWith('assembly')) return newRow;
+    if (newRow.id.startsWith('assembly')) return newRow;
 
     const material = materials.find((m) => m.materialId === newRow.materialId);
     if (!material) return newRow;
 
-    const newQuantity = typeof newRow.quantity === 'number' ? (newRow.quantity as number) : null;
-    const newPriceDollars = typeof newRow.price === 'number' ? (newRow.price as number) : null;
+    const quantityChanged = newRow.quantityRaw !== oldRow.quantityRaw;
+    const priceChanged = newRow.priceRaw !== oldRow.priceRaw;
 
     if (
       newRow.name === oldRow.name &&
@@ -143,8 +143,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       newRow.manufacturer === oldRow.manufacturer &&
       newRow.manufacturerPN === oldRow.manufacturerPN &&
       newRow.pdmFileName === oldRow.pdmFileName &&
-      newQuantity === null &&
-      newPriceDollars === null
+      !quantityChanged &&
+      !priceChanged
     )
       return newRow;
 
@@ -152,11 +152,11 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       toast.error('Name cannot be empty');
       return oldRow;
     }
-    if (newQuantity !== null && (isNaN(newQuantity) || newQuantity <= 0)) {
+    if (quantityChanged && newRow.quantityRaw !== undefined && (isNaN(newRow.quantityRaw) || newRow.quantityRaw <= 0)) {
       toast.error('Quantity must be a positive number');
       return oldRow;
     }
-    if (newPriceDollars !== null && (isNaN(newPriceDollars) || newPriceDollars < 0)) {
+    if (priceChanged && newRow.priceRaw !== undefined && (isNaN(newRow.priceRaw) || newRow.priceRaw < 0)) {
       toast.error('Price must be a non-negative number');
       return oldRow;
     }
@@ -167,11 +167,12 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     if (newRow.manufacturer !== oldRow.manufacturer) changedFields.push('Manufacturer');
     if (newRow.manufacturerPN !== oldRow.manufacturerPN) changedFields.push('Manufacturer PN');
     if (newRow.pdmFileName !== oldRow.pdmFileName) changedFields.push('PDM File Name');
-    if (newQuantity !== null) changedFields.push('Quantity');
-    if (newPriceDollars !== null) changedFields.push('Price');
+    if (quantityChanged) changedFields.push('Quantity');
+    if (priceChanged) changedFields.push('Price');
 
-    const priceInCents = newPriceDollars !== null ? Math.round(newPriceDollars * 100) : material.price;
-    const quantityValue = newQuantity !== null ? newQuantity : Number(material.quantity);
+    const priceInCents = priceChanged && newRow.priceRaw !== undefined ? Math.round(newRow.priceRaw * 100) : material.price;
+    const quantityValue =
+      quantityChanged && newRow.quantityRaw != null ? new Decimal(newRow.quantityRaw) : material.quantity;
 
     try {
       await editMaterial({
@@ -183,8 +184,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
           manufacturerName: newRow.manufacturer || undefined,
           manufacturerPartNumber: newRow.manufacturerPN || undefined,
           pdmFileName: newRow.pdmFileName,
-          price: priceInCents,
-          quantity: new Decimal(quantityValue),
+          price: priceInCents, 
+          quantity: quantityValue,
           unitName: material.unitName,
           linkUrl: material.linkUrl,
           notes: material.notes,
@@ -195,7 +196,6 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       return {
         ...newRow,
         quantity: material.unitName ? `${quantityValue} ${material.unitName}` : `${quantityValue}`,
-        quantityRaw: quantityValue,
         price: priceInCents !== undefined ? `$${centsToDollar(priceInCents)}` : newRow.price,
         priceRaw: priceInCents !== undefined ? priceInCents / 100 : newRow.priceRaw
       };
@@ -209,7 +209,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
 
   const getActions = (params: GridRowParams) => {
     const actions: JSX.Element[] = [];
-    const rowId = String(params.row.id);
+    const rowId = params.row.id;
     const material = materials.find((mat) => mat.materialId === params.row.materialId);
     const shouldShowInMenu = windowWidth < 1000;
 
@@ -371,7 +371,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       headerName: 'Status',
       renderCell: (params) => {
         // assemblies are not editable
-        if (!params.value || String(params.row.id).startsWith('assembly')) return null;
+        if (!params.value || params.row.id.startsWith('assembly')) return null;
         const material = materials.find((m) => m.materialId === params.row.materialId);
         if (!material) return null;
         return (
@@ -483,11 +483,10 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     },
     {
       ...bomBaseColDef,
-      field: 'quantity',
+      field: 'quantityRaw',
       headerName: 'Quantity',
       type: 'number',
       editable: editPerms,
-      valueGetter: (params) => params.row.quantityRaw,
       renderCell: (params) => params.row.quantity,
       sortable: false,
       filterable: false,
@@ -495,11 +494,10 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     },
     {
       ...bomBaseColDef,
-      field: 'price',
+      field: 'priceRaw',
       headerName: 'Price per Unit',
       type: 'number',
       editable: editPerms,
-      valueGetter: (params) => params.row.priceRaw,
       renderCell: (params) => params.row.price,
       sortable: false,
       filterable: false,
