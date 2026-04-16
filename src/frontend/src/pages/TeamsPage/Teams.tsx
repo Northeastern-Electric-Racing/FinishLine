@@ -13,6 +13,7 @@ import { isGuest } from 'shared';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import GuestTeamPage from '../GuestTeamsPage/GuestTeamPage';
 import GuestDivisionPage from '../GuestDivisionsPage/GuestDivisionPage';
+import GuestTeamSpecificPage from '../GuestTeamsPage/GuestTeamSpecificPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 
@@ -24,8 +25,11 @@ const TeamOrDivisionPage: React.FC = () => {
   if (isTeamsError) return <ErrorPage message={teamsError.message} />;
   if (teamsLoading || !teamTypes) return <LoadingIndicator />;
 
-  if (isGuest(user.role) && teamTypes?.some((t) => t.teamTypeId === teamId)) {
-    return <GuestTeamPage teamTypeId={teamId} />;
+  if (isGuest(user.role)) {
+    if (teamTypes?.some((t) => t.teamTypeId === teamId)) {
+      return <GuestTeamPage teamTypeId={teamId} />;
+    }
+    return <GuestTeamSpecificPage />;
   }
   return <TeamSpecificPage />;
 };
