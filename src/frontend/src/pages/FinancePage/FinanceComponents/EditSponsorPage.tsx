@@ -90,7 +90,13 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       title="Edit Sponsor"
       component={
         <Box display="flex" flexDirection="column" alignItems="flex-end">
-          <SponsorForm control={control} errors={errors} setValue={setValue} defaultValues={sponsor} onLogoImageChange={setLogoImage} />
+          <SponsorForm
+            control={control}
+            errors={errors}
+            setValue={setValue}
+            defaultValues={sponsor}
+            onLogoImageChange={setLogoImage}
+          />
           {submitError && (
             <Box color="error.main" mb={2} fontWeight="bold">
               {submitError}
