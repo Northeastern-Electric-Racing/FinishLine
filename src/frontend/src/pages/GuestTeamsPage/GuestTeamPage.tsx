@@ -30,7 +30,7 @@ const GuestTeamPage: React.FC<GuestTeamPageProps> = ({ teamTypeId }) => {
 
   if (teams.length === 0) {
     return (
-      <PageLayout title={teamTypeName}>
+      <PageLayout title={teamTypeName} previousPages={[{ name: 'Divisions', route: '/teams' }]}>
         <Box
           sx={{
             display: 'flex',
@@ -46,7 +46,7 @@ const GuestTeamPage: React.FC<GuestTeamPageProps> = ({ teamTypeId }) => {
   }
 
   return (
-    <PageLayout title={teamTypeName}>
+    <PageLayout title={teamTypeName} previousPages={[{ name: 'Divisions', route: '/teams' }]}>
       <Box
         sx={{
           display: 'grid',

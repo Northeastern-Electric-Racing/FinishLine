@@ -395,6 +395,10 @@ const allFaqs = () => `${recruitment()}/faqs`;
 const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
+const allGuestDefinitions = () => `${recruitment()}/guestdefinitions`;
+const guestDefinitionDelete = (id: string) => `${recruitment()}/guestdefinition/${id}/delete`;
+const guestDefinitionCreate = () => `${recruitment()}/guestdefinition/create`;
+const guestDefintionEdit = (id: string) => `${recruitment()}/guestdefinition/${id}/edit`;
 
 /************** Onboarding Endpoints ***************/
 const onboarding = () => `${API_URL}/onboarding`;
@@ -782,6 +786,10 @@ export const apiUrls = {
   imageById,
   reorderTasks,
   reorderChecklistItems,
+  allGuestDefinitions,
+  guestDefinitionDelete,
+  guestDefinitionCreate,
+  guestDefintionEdit,
 
   popUps,
   popUpsCurrentUser,

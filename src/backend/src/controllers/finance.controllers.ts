@@ -43,7 +43,8 @@ export default class FinanceController {
         contactPhone,
         contactPosition,
         stockDescription,
-        discountDescription
+        discountDescription,
+        req.file
       );
       res.status(200).json(sponsor);
     } catch (error: unknown) {
@@ -383,7 +384,8 @@ export default class FinanceController {
         contactPhone,
         contactPosition,
         stockDescription,
-        discountDescription
+        discountDescription,
+        req.file
       );
 
       res.status(200).json(updatedSponsor);

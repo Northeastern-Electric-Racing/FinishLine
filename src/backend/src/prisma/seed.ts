@@ -22,7 +22,15 @@ import { dbSeedAllTeams } from './seed-data/teams.seed.js';
 import { seedReimbursementRequests } from './seed-data/reimbursement-requests.seed.js';
 import ChangeRequestsService from '../services/change-requests.services.js';
 import TeamsService from '../services/teams.services.js';
-import { DayOfWeek, MaterialStatus, RoleEnum, StandardChangeRequest, WbsElementStatus, WorkPackageStage } from 'shared';
+import {
+  DayOfWeek,
+  GuestDefinitionType,
+  MaterialStatus,
+  RoleEnum,
+  StandardChangeRequest,
+  WbsElementStatus,
+  WorkPackageStage
+} from 'shared';
 import TasksService from '../services/tasks.services.js';
 import { seedProject } from './seed-data/projects.seed.js';
 import { seedWorkPackage } from './seed-data/work-packages.seed.js';
@@ -5117,6 +5125,7 @@ const performSeed: () => Promise<void> = async () => {
       term: 'NER',
       description: 'A really awesome organization!',
       order: 0,
+      type: 'INFO_PAGE',
       organizationId,
       userCreatedId: batman.userId
     }
@@ -5128,6 +5137,7 @@ const performSeed: () => Promise<void> = async () => {
     'Projects',
     'This is the definition of a project. Projects are blah blah blah',
     0,
+    GuestDefinitionType.PROJECT_MANAGEMENT,
     'bar_chart',
     'Click here to view all our projects!',
     '/projects'
@@ -5139,6 +5149,7 @@ const performSeed: () => Promise<void> = async () => {
     'Change Requests',
     'This is the definiton for a change request. Changes requests are blah blah blah',
     0,
+    GuestDefinitionType.PROJECT_MANAGEMENT,
     'bar_chart',
     'Click here to view all our change requests!',
     '/change-requests'
@@ -5150,6 +5161,7 @@ const performSeed: () => Promise<void> = async () => {
     'Gantt Chart',
     'This is the definiton for a change request. Changes requests are blah blah blah',
     0,
+    GuestDefinitionType.PROJECT_MANAGEMENT,
     'bar_chart',
     'Click here to view all our projects!',
     '/gantt'
@@ -5161,6 +5173,7 @@ const performSeed: () => Promise<void> = async () => {
     'Design Reviews',
     'This is the definiton for a design review. Design reviews are blah blah blah',
     0,
+    GuestDefinitionType.PROJECT_MANAGEMENT,
     'bar_chart',
     'Click here to view all our design reviews!',
     '/design-reviews'
