@@ -37,6 +37,10 @@ export const GanttTaskBarEditView = <T,>({
   onAddTaskPressed
 }: GanttTaskBarEditProps<T>) => {
   const theme = useTheme();
+  // Local start/end so the bar can jump to its new position immediately on drop,
+  // before the expensive createChange cascade (applyChangesToWBSElement + setCollections) re-renders.
+  const [localStart, setLocalStart] = useState(task.start);
+  const [localEnd, setLocalEnd] = useState(task.end);
   const [showDropPoints, setShowDropPoints] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [width, setWidth] = useState(0);
@@ -45,9 +49,16 @@ export const GanttTaskBarEditView = <T,>({
   const hasMeasuredRef = useRef(false);
   const boxRef = useRef<HTMLDivElement | null>(null);
 
+  // Sync when the task's real dates change from an outside update (e.g. cascade after save).
+  // The functional-updater form avoids needing localStart/localEnd in the deps array.
+  useEffect(() => {
+    setLocalStart((prev) => (prev.getTime() !== task.start.getTime() ? task.start : prev));
+    setLocalEnd((prev) => (prev.getTime() !== task.end.getTime() ? task.end : prev));
+  }, [task.start, task.end]);
+
   const taskBarDisplayStyles: CSSProperties = {
-    gridColumnStart: getStartCol(task.start),
-    gridColumnEnd: getEndCol(task.end),
+    gridColumnStart: getStartCol(localStart),
+    gridColumnEnd: getEndCol(localEnd),
     height: '2rem',
     width: task.root ? 'unset' : correctWidth > 0 ? `${correctWidth}px` : 'auto',
     border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
@@ -146,8 +157,11 @@ export const GanttTaskBarEditView = <T,>({
     e.preventDefault();
   };
   const onDrop = (day: Date) => {
-    const days = ceilToMultipleOf7(differenceInDays(day, task.start));
-    createChange({ id: uuidv4(), element: task.element, type: 'shift-by-days', days });
+    const shiftDays = ceilToMultipleOf7(differenceInDays(day, localStart));
+    setShowDropPoints(false);
+    setLocalStart(addDaysToDate(localStart, shiftDays));
+    setLocalEnd(addDaysToDate(localEnd, shiftDays));
+    createChange({ id: uuidv4(), element: task.element, type: 'shift-by-days', days: shiftDays });
   };
 
   return (
