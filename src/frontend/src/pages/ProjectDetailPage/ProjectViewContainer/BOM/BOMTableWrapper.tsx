@@ -184,7 +184,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
           manufacturerName: newRow.manufacturer || undefined,
           manufacturerPartNumber: newRow.manufacturerPN || undefined,
           pdmFileName: newRow.pdmFileName,
-          price: priceInCents, 
+          price: priceInCents,
           quantity: quantityValue,
           unitName: material.unitName,
           linkUrl: material.linkUrl,
