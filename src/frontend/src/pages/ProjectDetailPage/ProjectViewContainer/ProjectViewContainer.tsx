@@ -179,6 +179,39 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
 
   const wbsNum = wbsPipe(project.wbsNum);
 
+  if (user.role === RoleEnum.GUEST) return (
+    <PageLayout
+      title={pageTitle}
+      headerRight={headerRight}
+      tabs={
+        <FullPageTabs
+          setTab={setTab}
+          tabsLabels={[
+            { tabUrlValue: 'overview', tabName: 'Overview' },
+            { tabUrlValue: 'tasks', tabName: 'Tasks' },
+            { tabUrlValue: 'changes', tabName: 'Changes' },
+            { tabUrlValue: 'gantt', tabName: 'Gantt' }
+          ]}
+          baseUrl={`${routes.PROJECTS}/${wbsNum}`}
+          defaultTab='overview'
+          id='project-detail-tabs'
+        />
+      }
+      previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
+    >
+      {tab === 0 ? (
+        <ProjectDetails project={project} />
+      ) : tab === 1 ? (
+        <TaskList project={project} isGuest={user.role === RoleEnum.GUEST} />
+      ) : tab === 2 ? (
+        <ChangesList changes={project.changes} />
+      ) : (
+        <ProjectGantt workPackages={project.workPackages} />
+      ) 
+      }
+    </PageLayout>
+  )
+
   return (
     <PageLayout
       title={pageTitle}
