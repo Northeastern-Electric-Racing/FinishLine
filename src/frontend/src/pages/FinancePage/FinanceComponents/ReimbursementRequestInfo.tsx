@@ -243,6 +243,15 @@ const ReimbursementRequestInfo = ({
     const query = term.trim().toLowerCase().split(/\s+/);
     return query.every((q: string) => {
       const lowercase_query = q.toLowerCase();
+
+      let projectsString = '';
+      for (const product of rowData.reimbursementProducts) {
+        const reason = product.reimbursementProductReason;
+        if ((reason as WBSElementData).wbsNum) {
+          projectsString += (reason as WBSElementData).wbsName;
+        }
+      }
+
       return (
         (rowData as any).status.toLowerCase().includes(lowercase_query) ||
         ('' + (rowData as any).identifier).toLowerCase().includes(lowercase_query) ||
@@ -254,7 +263,8 @@ const ReimbursementRequestInfo = ({
         ('' + (rowData as any).reimbursementProducts.map((product: any) => product.name))
           .toLowerCase()
           .includes(lowercase_query) ||
-        ('' + (rowData as any).description).toLowerCase().includes(lowercase_query)
+        ('' + (rowData as any).description).toLowerCase().includes(lowercase_query) ||
+        projectsString.toLowerCase().includes(lowercase_query)
       );
     });
   };
