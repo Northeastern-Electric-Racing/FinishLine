@@ -1,4 +1,5 @@
-import { Box, Grid, Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
+import { useMediaQuery } from '@mui/system';
 import { useSingleTeam } from '../../hooks/teams.hooks';
 import { useParams } from 'react-router-dom';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -10,6 +11,7 @@ import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import GuestProjectsCard from '../GuestProjectsPage/GuestProjectsCard';
+import NERMarkdown from '../../components/NERMarkdown';
 
 interface ParamTypes {
   teamId: string;
@@ -18,6 +20,7 @@ interface ParamTypes {
 const GuestTeamSpecificPage: React.FC = () => {
   const { teamId } = useParams<ParamTypes>();
   const { isLoading, isError, data, error } = useSingleTeam(teamId);
+  const isMobilePortrait = useMediaQuery('(max-width:480px)');
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading || !data) return <LoadingIndicator />;
@@ -40,9 +43,7 @@ const GuestTeamSpecificPage: React.FC = () => {
       }
     >
       <Box sx={{ mb: 3 }}>
-        <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-          {data.description}
-        </Typography>
+        <NERMarkdown markdown={data.description} />
       </Box>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
@@ -92,13 +93,19 @@ const GuestTeamSpecificPage: React.FC = () => {
         <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
           Active Projects
         </Typography>
-        <Grid container spacing={2}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: isMobilePortrait ? '1fr' : 'repeat(3, 1fr)',
+            gap: isMobilePortrait ? 2 : 3,
+            width: '100%',
+            px: isMobilePortrait ? 1 : 0
+          }}
+        >
           {activeProjects.map((project) => (
-            <Grid item xs={12} sm={6} md={4} key={project.id}>
-              <GuestProjectsCard project={{ ...project, teamTypes: [] }} />
-            </Grid>
+            <GuestProjectsCard key={project.id} project={{ ...project, teamTypes: [] }} />
           ))}
-        </Grid>
+        </Box>
       </Box>
     </PageLayout>
   );
