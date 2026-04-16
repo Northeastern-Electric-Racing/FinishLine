@@ -37,8 +37,6 @@ export const GanttTaskBarEditView = <T,>({
   onAddTaskPressed
 }: GanttTaskBarEditProps<T>) => {
   const theme = useTheme();
-  // Local start/end so the bar can jump to its new position immediately on drop,
-  // before the expensive createChange cascade (applyChangesToWBSElement + setCollections) re-renders.
   const [localStart, setLocalStart] = useState(task.start);
   const [localEnd, setLocalEnd] = useState(task.end);
   const [showDropPoints, setShowDropPoints] = useState(false);
@@ -49,8 +47,6 @@ export const GanttTaskBarEditView = <T,>({
   const hasMeasuredRef = useRef(false);
   const boxRef = useRef<HTMLDivElement | null>(null);
 
-  // Sync when the task's real dates change from an outside update (e.g. cascade after save).
-  // The functional-updater form avoids needing localStart/localEnd in the deps array.
   useEffect(() => {
     setLocalStart((prev) => (prev.getTime() !== task.start.getTime() ? task.start : prev));
     setLocalEnd((prev) => (prev.getTime() !== task.end.getTime() ? task.end : prev));
