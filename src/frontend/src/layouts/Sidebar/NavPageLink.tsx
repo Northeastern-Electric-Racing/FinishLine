@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, useHistory } from 'react-router-dom';
 import { LinkItem } from '../../utils/types';
 import { routes } from '../../utils/routes';
 import { Box, Typography, useTheme, Collapse } from '@mui/material';
@@ -28,6 +28,7 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
   isClickableWithSubitems
 }) => {
   const theme = useTheme();
+  const history = useHistory();
 
   const renderLink = () => {
     const content = (
@@ -47,6 +48,7 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
       return (
         <Box
           onMouseEnter={onSubmenuHover}
+          onClick={() => history.push(route)}
           sx={{
             textDecoration: 'none',
             color: theme.palette.text.primary,

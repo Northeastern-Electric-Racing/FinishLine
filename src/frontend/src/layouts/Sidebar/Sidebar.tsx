@@ -85,7 +85,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       : {
           name: 'Project Management',
           icon: <DashboardIcon />,
-          route: routes.PROJECTS,
+          route: routes.PROJECT_MANAGEMENT,
           subItems: [
             {
               name: 'Gantt',
