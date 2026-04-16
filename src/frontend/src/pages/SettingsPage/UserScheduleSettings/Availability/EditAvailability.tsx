@@ -40,6 +40,8 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
 
   const [isDragging, setIsDragging] = useState(false);
 
+  const [displayedDate, setDisplayedDate] = useState(initialDate);
+
   const handleMouseDown = (event: any, availability: Availability, selectedTime: number) => {
     event.preventDefault();
     toggleTimeSlot(availability, selectedTime);
@@ -49,6 +51,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   const increaseDateRange = () => {
     const lastDate = currentlyDisplayedAvailabilities[currentlyDisplayedAvailabilities.length - 1].dateSet;
     const newDate = addDaysToDate(lastDate, 1);
+    setDisplayedDate(newDate);
 
     const newAvailabilities = getMostRecentAvailabilities(totalAvailabilities, newDate);
     newAvailabilities.forEach((availability) => {
@@ -64,6 +67,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   const decreaseDateRange = () => {
     const firstDate = currentlyDisplayedAvailabilities[0].dateSet;
     const newDate = addDaysToDate(firstDate, -7);
+    setDisplayedDate(newDate);
 
     const newAvailabilities = getMostRecentAvailabilities(totalAvailabilities, newDate);
     newAvailabilities.forEach((availability) => {
@@ -106,7 +110,9 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     editedAvailabilities.set(availability.dateSet.getTime(), availability);
     setEditedAvailabilities(editedAvailabilities);
 
-    setCurrentlyDisplayedAvailabilities(getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), initialDate));
+    setCurrentlyDisplayedAvailabilities(
+      getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), displayedDate)
+    );
   };
 
   const stickyLeft = {
