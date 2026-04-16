@@ -30,15 +30,17 @@ interface GanttChartSectionProps<T> {
 }
 
 interface GanttTooltipLayerProps {
-  updateRef: MutableRefObject<(options: OnMouseOverOptions | undefined, y?: number) => void>;
+  updateRef: MutableRefObject<(options: OnMouseOverOptions | undefined, x?: number, y?: number) => void>;
 }
 
 const GanttTooltipLayer: React.FC<GanttTooltipLayerProps> = ({ updateRef }) => {
   const [tooltipOptions, setTooltipOptions] = useState<OnMouseOverOptions | undefined>(undefined);
+  const [cursorX, setCursorX] = useState(0);
   const [cursorY, setCursorY] = useState(0);
 
-  updateRef.current = (options, y = 0) => {
+  updateRef.current = (options, x = 0, y = 0) => {
     setTooltipOptions(options);
+    if (options && x !== undefined && x !== null) setCursorX(x);
     if (options && y !== undefined && y !== null) setCursorY(y);
   };
 
@@ -46,6 +48,7 @@ const GanttTooltipLayer: React.FC<GanttTooltipLayerProps> = ({ updateRef }) => {
 
   return (
     <GanttToolTip
+      xCoordinate={cursorX}
       yCoordinate={cursorY}
       title={tooltipOptions.name}
       startDate={tooltipOptions.start}
@@ -73,11 +76,11 @@ const GanttChartSection = <T,>({
   const archerRef = useRef<ArcherContainerRef>(null);
   const handleToggle = useCallback(() => archerRef.current?.refreshScreen(), []);
 
-  const updateTooltip = useRef<(options: OnMouseOverOptions | undefined, y?: number) => void>(() => {});
+  const updateTooltip = useRef<(options: OnMouseOverOptions | undefined, x?: number, y?: number) => void>(() => {});
 
   const handleOnMouseOver = useCallback(
     (e: React.MouseEvent, task: OnMouseOverOptions) => {
-      if (!isEditMode) updateTooltip.current(task, e.clientY);
+      if (!isEditMode) updateTooltip.current(task, e.clientX, e.clientY);
     },
     [isEditMode]
   );
