@@ -2,7 +2,7 @@ import { Edit } from '@mui/icons-material';
 import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import GanttChartSection from './GanttChartSection';
 import { GanttCollection } from '../../../utils/gantt.utils';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { GanttEditability } from './GanttChart';
 
 interface GanttChartCollectionSectionProps<E, T> {
