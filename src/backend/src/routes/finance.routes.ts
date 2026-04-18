@@ -51,7 +51,12 @@ financeRouter.get('/sponsor/:sponsorId/sponsorTasks', FinanceController.getSpons
 
 financeRouter.post('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
 
-financeRouter.post('/sponsor/:sponsorId/uploadLogo', upload.single('logoImage'), FinanceController.uploadSponsorLogo);
+financeRouter.post(
+  '/sponsor/:sponsorId/uploadLogo',
+  upload.single('logoImage'),
+  validateInputs,
+  FinanceController.uploadSponsorLogo
+);
 
 financeRouter.post(
   '/sponsorTier/create',

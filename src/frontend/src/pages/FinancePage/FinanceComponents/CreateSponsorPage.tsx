@@ -17,7 +17,7 @@ interface CreateSponsorPageProps {
 
 const CreateSponsorPage = ({ showPage, handleClose }: CreateSponsorPageProps) => {
   const toast = useToast();
-  const { isLoading, mutateAsync } = useCreateSponsor();
+  const { isLoading, mutateAsync: createSponsor } = useCreateSponsor();
   const { mutateAsync: uploadLogo } = useUploadSponsorLogo();
 
   const {
@@ -56,7 +56,7 @@ const CreateSponsorPage = ({ showPage, handleClose }: CreateSponsorPageProps) =>
   const onFormSubmit = async (formData: SponsorPayload) => {
     try {
       setSubmitError(null);
-      const sponsor = await mutateAsync(formData);
+      const sponsor = await createSponsor(formData);
       if (logoImage) {
         await uploadLogo({ sponsorId: sponsor.sponsorId, logoImage });
       }
