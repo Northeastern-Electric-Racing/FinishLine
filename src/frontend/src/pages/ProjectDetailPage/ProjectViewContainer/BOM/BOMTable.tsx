@@ -152,7 +152,7 @@ const BOMTable: React.FC<BOMTableProps> = ({
         rows={rows.concat(materialsWithAssemblies.filter(isAssemblyOpen))}
         getRowClassName={(params) => {
           const stripe = params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd';
-          const isAssemblyRow = String(params.row.id).startsWith('assembly-');
+          const isAssemblyRow = params.row.id.startsWith('assembly-');
           return `super-app-theme--${stripe}${isAssemblyRow ? ' super-app-theme--assembly' : ''}`;
         }}
         rowsPerPageOptions={[100]}
@@ -164,7 +164,7 @@ const BOMTable: React.FC<BOMTableProps> = ({
           processRowUpdate as unknown as (newRow: GridValidRowModel, oldRow: GridValidRowModel) => Promise<GridValidRowModel>
         }
         onProcessRowUpdateError={onProcessRowUpdateError}
-        isCellEditable={(params) => editPerms && !String(params.row.id).startsWith('assembly')}
+        isCellEditable={(params) => editPerms && params.row.id.startsWith('assembly')}
         onRowClick={openAssembly}
         componentsProps={{
           row: {

@@ -96,10 +96,11 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     }
   }, [setHideColumn]);
 
-  if (deleteMaterialIsLoading || deleteAssemblyIsLoading || manufacturersIsLoading || materialTypesIsLoading)
-    return <LoadingIndicator />;
   if (manufacturersIsError) return <ErrorPage message={manufacturersError?.message} />;
   if (materialTypesIsError) return <ErrorPage message={materialTypesError?.message} />;
+
+  if (deleteMaterialIsLoading || deleteAssemblyIsLoading || manufacturersIsLoading || materialTypesIsLoading)
+    return <LoadingIndicator />;
 
   const assignMaterial = (materialId: string, assemblyId?: string) => async () => {
     try {
