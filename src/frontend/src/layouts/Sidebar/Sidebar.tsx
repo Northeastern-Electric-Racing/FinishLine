@@ -170,7 +170,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     {
       name: 'Info',
       icon: <QuestionMarkIcon />,
-      route: routes.INFO
+      route: isGuest(user.role) ? routes.GUEST_INFO : routes.INFO
     }
   ].filter(Boolean) as LinkItem[];
 
