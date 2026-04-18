@@ -17,6 +17,7 @@ import {
   useGetAllManufacturers,
   useGetAllMaterialTypes
 } from '../../../../hooks/bom.hooks';
+import ErrorPage from '../../../ErrorPage';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
 import { BomRow, bomBaseColDef } from '../../../../utils/bom.utils';
@@ -54,8 +55,18 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
   const { mutateAsync: deleteAssemblyMutateAsync, isLoading: deleteAssemblyIsLoading } = useDeleteAssembly(project.wbsNum);
   const { mutateAsync: assignMaterialToAssembly } = useAssignMaterialToAssembly();
   const { mutateAsync: editMaterial } = useEditMaterialById(project.wbsNum);
-  const { data: materialTypes } = useGetAllMaterialTypes();
-  const { data: manufacturers } = useGetAllManufacturers();
+  const {
+    data: materialTypes,
+    isLoading: materialTypesIsLoading,
+    isError: materialTypesIsError,
+    error: materialTypesError
+  } = useGetAllMaterialTypes();
+  const {
+    data: manufacturers,
+    isLoading: manufacturersIsLoading,
+    isError: manufacturersIsError,
+    error: manufacturersError
+  } = useGetAllManufacturers();
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -85,7 +96,10 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     }
   }, [setHideColumn]);
 
-  if (deleteMaterialIsLoading || deleteAssemblyIsLoading) return <LoadingIndicator />;
+  if (deleteMaterialIsLoading || deleteAssemblyIsLoading || manufacturersIsLoading || materialTypesIsLoading)
+    return <LoadingIndicator />;
+  if (manufacturersIsError) return <ErrorPage message={manufacturersError?.message} />;
+  if (materialTypesIsError) return <ErrorPage message={materialTypesError?.message} />;
 
   const assignMaterial = (materialId: string, assemblyId?: string) => async () => {
     try {
@@ -134,8 +148,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     const material = materials.find((m) => m.materialId === newRow.materialId);
     if (!material) return newRow;
 
-    const quantityChanged = newRow.quantityRaw !== oldRow.quantityRaw;
-    const priceChanged = newRow.priceRaw !== oldRow.priceRaw;
+    const quantityChanged = newRow.quantity !== oldRow.quantity;
+    const priceChanged = newRow.price !== oldRow.price;
 
     if (
       newRow.name === oldRow.name &&
@@ -152,11 +166,11 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       toast.error('Name cannot be empty');
       return oldRow;
     }
-    if (quantityChanged && newRow.quantityRaw !== undefined && (isNaN(newRow.quantityRaw) || newRow.quantityRaw <= 0)) {
+    if (quantityChanged && newRow.quantity !== undefined && newRow.quantity <= 0) {
       toast.error('Quantity must be a positive number');
       return oldRow;
     }
-    if (priceChanged && newRow.priceRaw !== undefined && (isNaN(newRow.priceRaw) || newRow.priceRaw < 0)) {
+    if (priceChanged && newRow.price !== undefined && newRow.price < 0) {
       toast.error('Price must be a non-negative number');
       return oldRow;
     }
@@ -170,9 +184,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     if (quantityChanged) changedFields.push('Quantity');
     if (priceChanged) changedFields.push('Price');
 
-    const priceInCents = priceChanged && newRow.priceRaw !== undefined ? Math.round(newRow.priceRaw * 100) : material.price;
-    const quantityValue =
-      quantityChanged && newRow.quantityRaw != null ? new Decimal(newRow.quantityRaw) : material.quantity;
+    const priceInCents = priceChanged && newRow.price !== undefined ? Math.round(newRow.price * 100) : material.price;
+    const quantityValue = quantityChanged && newRow.quantity != null ? new Decimal(newRow.quantity) : material.quantity;
 
     try {
       await editMaterial({
@@ -195,9 +208,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       toast.success(`Material ${changedFields.join(', ')} updated successfully`);
       return {
         ...newRow,
-        quantity: material.unitName ? `${quantityValue} ${material.unitName}` : `${quantityValue}`,
-        price: priceInCents !== undefined ? `$${centsToDollar(priceInCents)}` : newRow.price,
-        priceRaw: priceInCents !== undefined ? priceInCents / 100 : newRow.priceRaw
+        quantity: Number(quantityValue),
+        price: priceInCents !== undefined ? priceInCents / 100 : newRow.price
       };
     } catch (e: unknown) {
       if (e instanceof Error) toast.error(e.message, 6000);
@@ -483,22 +495,24 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     },
     {
       ...bomBaseColDef,
-      field: 'quantityRaw',
+      field: 'quantity',
       headerName: 'Quantity',
       type: 'number',
       editable: editPerms,
-      renderCell: (params) => params.row.quantity,
+      renderCell: ({ value, row }) => (value != null ? (row.unitName ? `${value} ${row.unitName}` : `${value}`) : ''), // show unit (e.g. 5 kg) if available
+      valueParser: (value) => (value == null || value === '' ? undefined : Number(value)), // convert back to number for editing
       sortable: false,
       filterable: false,
       hide: hideColumn[7]
     },
     {
       ...bomBaseColDef,
-      field: 'priceRaw',
+      field: 'price',
       headerName: 'Price per Unit',
       type: 'number',
       editable: editPerms,
-      renderCell: (params) => params.row.price,
+      renderCell: ({ value }) => (value != null ? `$${centsToDollar(Math.round(value * 100))}` : ''), // $ formatting with cents to dollar conversion
+      valueParser: (value) => (value == null || value === '' ? undefined : Number(value)), // convert back to number for editing
       sortable: false,
       filterable: false,
       hide: hideColumn[8]

@@ -70,8 +70,9 @@ const BOMTable: React.FC<BOMTableProps> = ({
         assembly.materials.reduce(addMaterialCosts, 0)
       )}  ${arrowSymbol(assembly.assemblyId)}`,
       pdmFileName: '',
-      quantity: '',
-      price: '',
+      quantity: undefined,
+      price: undefined,
+      unitName: undefined,
       subtotal: '',
       link: '',
       notes: '',
