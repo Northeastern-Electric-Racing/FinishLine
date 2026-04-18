@@ -1,4 +1,3 @@
-import { Box, Grid } from '@mui/system';
 import { useAllGuestDefinitions } from '../../hooks/recruitment.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
