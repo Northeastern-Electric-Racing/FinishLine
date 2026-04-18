@@ -30,7 +30,7 @@ export const TaskColumn = ({
   onAddTask: (task: Task) => void;
   onHeightChange: (status: TaskStatus, height: number) => void;
 }) => {
-  const { mutateAsync: createTask } = useCreateTask();
+  const { mutateAsync: createTask, isLoading } = useCreateTask();
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const toast = useToast();
   const theme = useTheme();
@@ -76,6 +76,7 @@ export const TaskColumn = ({
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
         teams={project.teams}
+        isLoading={isLoading}
       />
       <Box
         sx={{
