@@ -53,8 +53,7 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
           gravity: 1.5,
           startVelocity: 35,
           spread: 70,
-          particleCount: 50,
-          zIndex: 1300
+          particleCount: 50
         });
       });
       history.push(`${routes.PROJECTS}/${wbsPipe(wbsNum)}/change-requests`);
