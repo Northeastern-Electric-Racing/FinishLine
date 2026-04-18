@@ -670,8 +670,8 @@ export default class BillOfMaterialsService {
     }
 
     // recalculate subtotal on edits
-    const finalPrice = price !== undefined ? price : (material.price ?? undefined);
-    const finalQuantity = quantity !== undefined ? quantity : (material.quantity ?? undefined);
+    const finalPrice = price ?? material.price ?? undefined;
+    const finalQuantity = quantity ?? material.quantity ?? undefined;
     const computedSubtotal =
       finalPrice !== undefined && finalQuantity !== undefined ? Math.round(finalPrice * Number(finalQuantity)) : undefined;
 
