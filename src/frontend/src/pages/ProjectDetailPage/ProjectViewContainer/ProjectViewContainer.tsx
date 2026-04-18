@@ -4,7 +4,7 @@
  */
 
 import { Link, useHistory } from 'react-router-dom';
-import { Project, isGuest, isAdmin, isLeadership, RoleEnum } from 'shared';
+import { Project, isGuest, isAdmin, isLeadership } from 'shared';
 import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
 import ProjectDetails from './ProjectDetails';
 import { routes } from '../../../utils/routes';
@@ -179,6 +179,39 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
 
   const wbsNum = wbsPipe(project.wbsNum);
 
+  if (isGuest(user.role))
+    return (
+      <PageLayout
+        title={pageTitle}
+        headerRight={headerRight}
+        tabs={
+          <FullPageTabs
+            setTab={setTab}
+            tabsLabels={[
+              { tabUrlValue: 'overview', tabName: 'Overview' },
+              { tabUrlValue: 'tasks', tabName: 'Tasks' },
+              { tabUrlValue: 'changes', tabName: 'Changes' },
+              { tabUrlValue: 'gantt', tabName: 'Gantt' }
+            ]}
+            baseUrl={`${routes.PROJECTS}/${wbsNum}`}
+            defaultTab="overview"
+            id="project-detail-tabs"
+          />
+        }
+        previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
+      >
+        {tab === 0 ? (
+          <ProjectDetails project={project} />
+        ) : tab === 1 ? (
+          <TaskList project={project} isGuest={true} />
+        ) : tab === 2 ? (
+          <ChangesList changes={project.changes} />
+        ) : (
+          <ProjectGantt workPackages={project.workPackages} />
+        )}
+      </PageLayout>
+    );
+
   return (
     <PageLayout
       title={pageTitle}
@@ -207,7 +240,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       {tab === 0 ? (
         <ProjectDetails project={project} />
       ) : tab === 1 ? (
-        <TaskList project={project} isGuest={user.role === RoleEnum.GUEST} />
+        <TaskList project={project} isGuest={false} />
       ) : tab === 2 ? (
         <BOMTab project={project} />
       ) : tab === 3 ? (
