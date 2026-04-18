@@ -2,6 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
+import confetti from 'canvas-confetti';
 import { useHistory, useLocation } from 'react-router-dom';
 import { WbsNumber, CreateRefundSourceArgs, ReimbursementReceiptUploadArgs } from 'shared';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm/ReimbursementRequestForm';
@@ -30,6 +31,17 @@ const CreateReimbursementRequestPage: React.FC = () => {
     await uploadReceipts({
       id: reimbursementRequestId,
       files: data.receiptFiles.map((file) => file.file!)
+    });
+    [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9].forEach((xPos) => {
+      confetti({
+        origin: { y: -0.5, x: xPos },
+        angle: 270,
+        gravity: 1.5,
+        startVelocity: 35,
+        spread: 70,
+        particleCount: 50,
+        zIndex: 1300
+      });
     });
     return reimbursementRequestId;
   };
