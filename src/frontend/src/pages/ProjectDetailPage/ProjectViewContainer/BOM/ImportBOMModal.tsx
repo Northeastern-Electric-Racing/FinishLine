@@ -350,7 +350,6 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
             manufacturerPartNumber: material.manufacturerPartNumber || undefined,
             quantity: new Decimal(material.quantity),
             price: material.unitPrice,
-            subtotal: material.subtotal,
             unitName: material.unit || undefined,
             assemblyId: material.assemblyId || undefined,
             linkUrl: '',

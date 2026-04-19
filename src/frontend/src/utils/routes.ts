@@ -7,6 +7,7 @@
 const BASE = `/`;
 const LOGIN = `/login`;
 const INFO = `/info`;
+const GUEST_INFO = `/guestinfo`;
 const GANTT = `/gantt`;
 const CREDITS = `/credits`;
 
@@ -86,6 +87,7 @@ export const routes = {
   BASE,
   LOGIN,
   INFO,
+  GUEST_INFO,
   CREDITS,
 
   HOME,

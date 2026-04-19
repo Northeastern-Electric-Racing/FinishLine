@@ -81,8 +81,7 @@ export default class FinanceServices {
     contactPhone?: string,
     contactPosition?: string,
     stockDescription?: string,
-    discountDescription?: string,
-    logoImage?: Express.Multer.File
+    discountDescription?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can create a sponsor');
@@ -106,8 +105,6 @@ export default class FinanceServices {
       data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
     });
 
-    const { id: logoImageId } = logoImage ? await uploadFile(logoImage) : { id: undefined };
-
     const sponsor = await prisma.sponsor.create({
       data: {
         name,
@@ -122,7 +119,6 @@ export default class FinanceServices {
         taxExempt,
         discountCode,
         sponsorNotes,
-        logoImageId,
         contactId: contact.sponsorContactId,
         sponsorTasks: {
           create: sponsorTasks.map((task) => ({
@@ -1230,8 +1226,7 @@ export default class FinanceServices {
     contactPhone?: string,
     contactPosition?: string,
     stockDescription?: string,
-    discountDescription?: string,
-    logoImage?: Express.Multer.File
+    discountDescription?: string
   ): Promise<Sponsor> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can edit sponsors.');
@@ -1329,8 +1324,6 @@ export default class FinanceServices {
       data: { name: contactName, email: contactEmail, phone: contactPhone, position: contactPosition }
     });
 
-    const { id: logoImageId } = logoImage ? await uploadFile(logoImage) : { id: undefined };
-
     const updatedSponsor = await prisma.sponsor.update({
       where: { sponsorId: oldSponsor.sponsorId },
       data: {
@@ -1345,9 +1338,43 @@ export default class FinanceServices {
         tier: sponsorTierId ? { connect: { sponsorTierId } } : { disconnect: true },
         taxExempt,
         discountCode,
-        sponsorNotes,
-        ...(logoImageId && { logoImageId })
+        sponsorNotes
       },
+      ...getSponsorQueryArgs(organization.organizationId)
+    });
+
+    return sponsorTransformer(updatedSponsor);
+  }
+
+  /**
+   * Uploads a logo image for a sponsor and stores the resulting image ID.
+   *
+   * @param submitter The user performing the upload
+   * @param organization The organization the sponsor belongs to
+   * @param sponsorId The id of the sponsor
+   * @param logoImage The logo image file to upload
+   * @returns The updated sponsor
+   */
+  static async uploadSponsorLogo(
+    submitter: User,
+    organization: Organization,
+    sponsorId: string,
+    logoImage: Express.Multer.File
+  ): Promise<Sponsor> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
+      throw new AccessDeniedException('Only heads can update a sponsor logo');
+
+    const sponsor = await prisma.sponsor.findUnique({
+      where: { sponsorId, organizationId: organization.organizationId }
+    });
+
+    if (!sponsor) throw new NotFoundException('Sponsor', sponsorId);
+
+    const { id } = await uploadFile(logoImage);
+
+    const updatedSponsor = await prisma.sponsor.update({
+      where: { sponsorId },
+      data: { logoImageId: id },
       ...getSponsorQueryArgs(organization.organizationId)
     });
 

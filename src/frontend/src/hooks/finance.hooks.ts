@@ -69,6 +69,7 @@ import {
   assignMemberToRR,
   setTaxExemptStatus,
   toggleSponsorTaskDone,
+  uploadSponsorLogo,
   getAllProspectiveSponsors,
   createProspectiveSponsor,
   editProspectiveSponsor,
@@ -186,6 +187,7 @@ export interface SponsorPayload {
   sponsorNotes?: string;
   stockDescription?: string;
   discountDescription?: string;
+  logoImageId?: string;
 }
 
 interface EditSponsorPayload extends SponsorPayload {
@@ -1314,6 +1316,27 @@ export const useEditSponsor = () => {
     ['sponsor', 'edit'],
     async ({ sponsorId, ...formData }: EditSponsorPayload) => {
       const { data } = await editSponsor(sponsorId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor']);
+      }
+    }
+  );
+};
+
+interface UploadSponsorLogoPayload {
+  sponsorId: string;
+  logoImage: File;
+}
+
+export const useUploadSponsorLogo = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Sponsor, Error, UploadSponsorLogoPayload>(
+    ['sponsor', 'uploadLogo'],
+    async ({ sponsorId, logoImage }: UploadSponsorLogoPayload) => {
+      const { data } = await uploadSponsorLogo(sponsorId, logoImage);
       return data;
     },
     {
