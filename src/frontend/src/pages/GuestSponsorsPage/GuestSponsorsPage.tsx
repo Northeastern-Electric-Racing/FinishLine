@@ -7,7 +7,16 @@ import PageLayout from '../../components/PageLayout';
 import { useGetImageUrl } from '../../hooks/onboarding.hook';
 
 const SponsorImage: React.FC<{ logoImageId: string; name: string }> = ({ logoImageId, name }) => {
-  const { data: imageUrl } = useGetImageUrl(logoImageId);
+  const { data: imageUrl, isLoading, isError, error } = useGetImageUrl(logoImageId);
+
+  if (isError) {
+    return <ErrorPage message={error.message} />;
+  }
+
+  if (!imageUrl || isLoading) {
+    return <LoadingIndicator />;
+  }
+
   if (!imageUrl) return null;
   return (
     <Box

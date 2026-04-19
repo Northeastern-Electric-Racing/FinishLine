@@ -23,12 +23,9 @@ import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
 import { Cached, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
-// once divisions developed, import TeamType from shared
-import { isGuest } from 'shared';
-// To be uncommented after divisions page is developed
+import { isGuest, TeamType } from 'shared';
 import * as MuiIcons from '@mui/icons-material';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
-import { TeamType } from 'shared';
 import ErrorPage from '../../pages/ErrorPage';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -136,7 +133,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       ]
     },
 
-    // Teams tab here to be replaced with below code once guest divisions is developed
     !onGuestHomePage
       ? {
           name: 'Teams',
