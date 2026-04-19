@@ -83,8 +83,7 @@ export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<Even
     documents: eventType.documents,
     description: eventType.description,
     onlyHeadsOrAboveForEventCreation: eventType.onlyHeadsOrAboveForEventCreation,
-    requiresConfirmation: eventType.requiresConfirmation,
-    sendSlackNotifications: eventType.sendSlackNotifications
+    requiresConfirmation: eventType.requiresConfirmation
   } as EventType;
 };
 
@@ -134,7 +133,8 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     questionDocumentLink: event.questionDocumentLink ?? undefined,
     description: event.description ?? undefined,
     status: eventStatusTransformer(event.status),
-    initialDateScheduled: event.initialDateScheduled ?? undefined
+    initialDateScheduled: event.initialDateScheduled ?? undefined,
+    sendSlackNotifications: event.sendSlackNotifications
   };
 };
 
@@ -178,7 +178,8 @@ export const eventWithMembersTransformer = (event: Prisma.EventGetPayload<EventW
     questionDocumentLink: event.questionDocumentLink ?? undefined,
     description: event.description ?? undefined,
     status: eventStatusTransformer(event.status),
-    initialDateScheduled: event.initialDateScheduled ?? undefined
+    initialDateScheduled: event.initialDateScheduled ?? undefined,
+    sendSlackNotifications: event.sendSlackNotifications
   };
 };
 

@@ -121,7 +121,7 @@ export default class NotificationsService {
   }
 
   /**
-   * Sends Slack notifications for all events scheduled for today whose event type has sendSlackNotifications enabled
+   * Sends Slack notifications for all events scheduled for today that have sendSlackNotifications enabled
    */
   static async sendEventSlackNotifications() {
     const endOfToday = startOfTomorrowEST();
@@ -136,9 +136,7 @@ export default class NotificationsService {
             AND: [{ endTime: { gte: startOfToday } }, { startTime: { lte: endOfToday } }]
           }
         },
-        eventType: {
-          sendSlackNotifications: true
-        }
+        sendSlackNotifications: true
       },
       include: {
         requiredMembers: { include: { userSettings: true } },

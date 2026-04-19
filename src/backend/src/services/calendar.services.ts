@@ -91,7 +91,6 @@ export default class CalendarService {
    * @param description Determines if a description is associated with this event type.
    * @param onlyHeadsOrAbove Determines if events under this event type can only be created by heads or above.
    * @param requiredConfirmation Determines if events under this event type need to be confirmed.
-   * @param sendSlackNotifications Determines if users will be notified via slack
    *
    * @returns The created event type.
    *
@@ -117,8 +116,7 @@ export default class CalendarService {
     documents: boolean,
     description: boolean,
     onlyHeadsOrAbove: boolean,
-    requiresConfirmation: boolean,
-    sendSlackNotifications: boolean
+    requiresConfirmation: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create event type');
@@ -177,7 +175,6 @@ export default class CalendarService {
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications,
         organizationId: organization.organizationId
       },
       ...getEventTypeQueryArgs(organization.organizationId)
@@ -247,6 +244,7 @@ export default class CalendarService {
    * @param location Location of the event.
    * @param zoomLink Zoom Link if the event is online.
    * @param description Describes the event.
+   * @param sendSlackNotifications Determines if this event should receive slack notifications.
    *
    * @returns The created event.
    *
@@ -266,6 +264,7 @@ export default class CalendarService {
     workPackageIds: string[],
     scheduleSlots: ScheduleSlotCreateArgs[],
     initialDateScheduled: Date | undefined,
+    sendSlackNotifications: boolean,
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
@@ -461,7 +460,8 @@ export default class CalendarService {
         location,
         zoomLink,
         questionDocumentLink,
-        description
+        description,
+        sendSlackNotifications
       },
       ...getEventQueryArgs(organization.organizationId)
     });
@@ -494,7 +494,7 @@ export default class CalendarService {
       }
     }
 
-    if (foundEventType.sendSlackNotifications) {
+    if (sendSlackNotifications) {
       const members = await prisma.user.findMany({
         where: { userId: { in: optionalMemberIds.concat(requiredMemberIds) } }
       });
@@ -568,6 +568,7 @@ export default class CalendarService {
    * @param location Location of the event.
    * @param zoomLink Zoom Link if the event is online.
    * @param description Describes the event.
+   * @param sendSlackNotifications Determines if this event should receive slack notifications.
    *
    * @returns The edited event.
    *
@@ -587,6 +588,7 @@ export default class CalendarService {
     machineryIds: string[],
     workPackageIds: string[],
     documents: EventDocumentCreateArgs[],
+    sendSlackNotifications: boolean,
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
@@ -774,7 +776,8 @@ export default class CalendarService {
         location,
         zoomLink,
         questionDocumentLink,
-        description
+        description,
+        sendSlackNotifications
       },
       ...getEventQueryArgs(organization.organizationId)
     });
@@ -784,11 +787,11 @@ export default class CalendarService {
 
     const edittedEvent = eventTransformer(updatedEvent);
 
-    if (status === Event_Status.SCHEDULED && foundEventType.sendSlackNotifications) {
+    if (status === Event_Status.SCHEDULED && sendSlackNotifications) {
       await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent);
     }
 
-    if (status === Event_Status.CONFIRMED && foundEventType.sendSlackNotifications) {
+    if (status === Event_Status.CONFIRMED && sendSlackNotifications) {
       await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
     }
 
@@ -1351,7 +1354,7 @@ export default class CalendarService {
       if (!foundEventType) throw new NotFoundException('Event Type', eventTypeId);
       if (foundEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
 
-      if (foundEventType.sendSlackNotifications) {
+      if (updatedEvent.sendSlackNotifications) {
         await sendEventUserConfirmationToThread(updatedEvent.notificationSlackThreads, submitter);
       }
 
@@ -1367,7 +1370,7 @@ export default class CalendarService {
             status: Event_Status.CONFIRMED
           }
         });
-        if (foundEventType.sendSlackNotifications) {
+        if (updatedEvent.sendSlackNotifications) {
           await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
         }
       }
@@ -1472,12 +1475,7 @@ export default class CalendarService {
       });
     }
 
-    const { eventTypeId } = updatedEvent;
-    const foundEventType = await prisma.event_Type.findUnique({
-      where: { eventTypeId }
-    });
-
-    if (foundEventType?.sendSlackNotifications) {
+    if (updatedEvent.sendSlackNotifications) {
       await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, eventTransformer(updatedEvent));
     }
 
@@ -2210,7 +2208,6 @@ export default class CalendarService {
    * @param description Determines if a description is associated with this event type.
    * @param onlyHeadsOrAbove Determines if events associated with this event type can only be made by heads or above.
    * @param requiredConfirmation Determines if events associated with this event type need to be confirmed.
-   * @param sendSlackNotifications Determines if events associated with this event type should receive slack notifications.
    *
    * @returns The created event type.
    *
@@ -2237,8 +2234,7 @@ export default class CalendarService {
     documents: boolean,
     description: boolean,
     onlyHeadsOrAbove: boolean,
-    requiresConfirmation: boolean,
-    sendSlackNotifications: boolean
+    requiresConfirmation: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('edit event type');
@@ -2296,8 +2292,7 @@ export default class CalendarService {
         documents,
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
-        requiresConfirmation,
-        sendSlackNotifications
+        requiresConfirmation
       },
       ...getEventTypeQueryArgs(organization.organizationId)
     });
