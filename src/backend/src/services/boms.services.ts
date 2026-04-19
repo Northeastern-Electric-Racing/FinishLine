@@ -56,7 +56,6 @@ export default class BillOfMaterialsService {
    * @param manufacturerPartNumber the manufacturer part number for the material (optional)
    * @param quantity the quantity of material as a number (optional)
    * @param price the price of the material in whole cents (optional)
-   * @param subtotal the subtotal of the price for the material in whole cents (optional)
    * @param notes any notes about the material as a string (optional)
    * @param assemblyId the id of the Assembly for the material (optional)
    * @param pdmFileName the name of the pdm file for the material (optional)
@@ -75,7 +74,6 @@ export default class BillOfMaterialsService {
     manufacturerPartNumber?: string,
     quantity?: Decimal,
     price?: number,
-    subtotal?: number,
     notes?: string,
     assemblyId?: string,
     pdmFileName?: string,
@@ -119,6 +117,9 @@ export default class BillOfMaterialsService {
 
     if (!perms) throw new AccessDeniedException('create materials');
 
+    const computedSubtotal =
+      price !== undefined && quantity !== undefined ? Math.round(price * Number(quantity)) : undefined;
+
     const createdMaterial = await prisma.material.create({
       data: {
         userCreatedId: creator.userId,
@@ -132,7 +133,7 @@ export default class BillOfMaterialsService {
         quantity,
         unitId: unit ? unit.id : null,
         price,
-        subtotal,
+        subtotal: computedSubtotal,
         linkUrl,
         notes,
         dateCreated: new Date(),
@@ -611,7 +612,6 @@ export default class BillOfMaterialsService {
    * @param manufacturerPartNumber the manufacturerPartNumber of the edited material (optional)
    * @param quantity the quantity of the edited material (optional)
    * @param price the price of the edited material (optional)
-   * @param subtotal the subtotal of the edited material (optional)
    * @param notes the notes of the edited material (optional)
    * @param unitName the unit name of the edited material (optional)
    * @param assemblyId the assembly id of the edited material (optional)
@@ -631,7 +631,6 @@ export default class BillOfMaterialsService {
     manufacturerPartNumber?: string,
     quantity?: Decimal,
     price?: number,
-    subtotal?: number,
     notes?: string,
     unitName?: string,
     assemblyId?: string,
@@ -670,6 +669,12 @@ export default class BillOfMaterialsService {
       manufacturer = await BillOfMaterialsService.getSingleManufacturerWithQueryArgs(manufacturerName, organization);
     }
 
+    // recalculate subtotal on edits
+    const finalPrice = price ?? material.price ?? undefined;
+    const finalQuantity = quantity ?? material.quantity ?? undefined;
+    const computedSubtotal =
+      finalPrice !== undefined && finalQuantity !== undefined ? Math.round(finalPrice * Number(finalQuantity)) : undefined;
+
     const updatedMaterial = await prisma.material.update({
       where: { materialId },
       data: {
@@ -681,12 +686,12 @@ export default class BillOfMaterialsService {
         quantity,
         unitId: unit ? unit.id : null,
         price,
-        subtotal,
+        subtotal: computedSubtotal,
         linkUrl,
         notes,
         wbsElementId: project.wbsElementId,
         assemblyId,
-        pdmFileName
+        pdmFileName: pdmFileName !== undefined ? pdmFileName || null : undefined
       },
       ...getMaterialQueryArgs(organization.organizationId)
     });
