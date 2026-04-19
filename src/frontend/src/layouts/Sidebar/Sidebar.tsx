@@ -10,8 +10,7 @@ import { Typography, Box, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-// To be uncommented after guest sponsors page is developed
-// import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
+import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import FolderIcon from '@mui/icons-material/Folder';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import GroupIcon from '@mui/icons-material/Group';
@@ -161,12 +160,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       icon: <Cached />,
       route: routes.RETROSPECTIVE
     },
-    // To be uncommented once guest mode sponsors page is developed
-    // onGuestHomePage && {
-    //   name: 'Sponsors',
-    //   icon: <VolunteerActivismIcon />,
-    //   route: routes.RETROSPECTIVE
-    // },
+    onGuestHomePage && {
+      name: 'Sponsors',
+      icon: <VolunteerActivismIcon />,
+      route: routes.SPONSORS
+    },
     {
       name: 'Info',
       icon: <QuestionMarkIcon />,

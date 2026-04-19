@@ -4,6 +4,26 @@ import { useGetAllSponsors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import { Box } from '@mui/system';
 import PageLayout from '../../components/PageLayout';
+import { useGetImageUrl } from '../../hooks/onboarding.hook';
+
+const SponsorImage: React.FC<{ logoImageId: string; name: string }> = ({ logoImageId, name }) => {
+  const { data: imageUrl } = useGetImageUrl(logoImageId);
+  if (!imageUrl) return null;
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 2,
+        p: 2,
+        width: { xs: '100%', sm: 'calc(50% - 8px)', md: 'calc(33.33% - 11px)' }
+      }}
+    >
+      <Box component="img" src={imageUrl} alt={name} sx={{ maxWidth: '100%', maxHeight: 120, objectFit: 'contain' }} />
+    </Box>
+  );
+};
 
 const GuestSponsorsPage: React.FC = () => {
   const theme = useTheme();
@@ -31,9 +51,14 @@ const GuestSponsorsPage: React.FC = () => {
             our sponsors. Thank you for your support!
           </Typography>
         </Box>
-        {sorted.map((sponsor) => {
-          return <Typography>{sponsor.name}</Typography>;
-        })}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
+          {sorted.map(
+            (sponsor) =>
+              sponsor.logoImageId && (
+                <SponsorImage key={sponsor.sponsorId} logoImageId={sponsor.logoImageId} name={sponsor.name} />
+              )
+          )}
+        </Box>
       </Box>
     </PageLayout>
   );
