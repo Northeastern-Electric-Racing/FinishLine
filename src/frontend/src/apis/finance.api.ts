@@ -742,6 +742,12 @@ export const editSponsor = (id: string, formData: SponsorPayload) => {
   return axios.post(apiUrls.editSponsor(id), formData);
 };
 
+export const uploadSponsorLogo = (sponsorId: string, logoImage: File) => {
+  const formData = new FormData();
+  formData.append('logoImage', logoImage);
+  return axios.post<Sponsor>(apiUrls.uploadSponsorLogo(sponsorId), formData);
+};
+
 /**
  * API call to delete a given sponsor task
  *
