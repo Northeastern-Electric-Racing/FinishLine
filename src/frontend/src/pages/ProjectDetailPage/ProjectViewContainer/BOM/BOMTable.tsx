@@ -164,7 +164,7 @@ const BOMTable: React.FC<BOMTableProps> = ({
           processRowUpdate as unknown as (newRow: GridValidRowModel, oldRow: GridValidRowModel) => Promise<GridValidRowModel>
         }
         onProcessRowUpdateError={onProcessRowUpdateError}
-        isCellEditable={(params) => editPerms && params.row.id.startsWith('assembly')}
+        isCellEditable={(params) => editPerms && !params.row.id.startsWith('assembly')}
         onRowClick={openAssembly}
         componentsProps={{
           row: {
