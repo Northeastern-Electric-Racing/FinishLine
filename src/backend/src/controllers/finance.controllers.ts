@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import FinanceServices from '../services/finance.services.js';
+import { HttpException } from '../utils/errors.utils.js';
 
 export default class FinanceController {
   static async createSponsor(req: Request, res: Response, next: NextFunction) {
@@ -43,8 +44,7 @@ export default class FinanceController {
         contactPhone,
         contactPosition,
         stockDescription,
-        discountDescription,
-        req.file
+        discountDescription
       );
       res.status(200).json(sponsor);
     } catch (error: unknown) {
@@ -384,8 +384,7 @@ export default class FinanceController {
         contactPhone,
         contactPosition,
         stockDescription,
-        discountDescription,
-        req.file
+        discountDescription
       );
 
       res.status(200).json(updatedSponsor);
@@ -428,6 +427,17 @@ export default class FinanceController {
       const { sponsorTaskId } = req.params as Record<string, string>;
       const updatedTask = await FinanceServices.toggleSponsorTaskDone(req.currentUser, req.organization, sponsorTaskId);
       res.status(200).json(updatedTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async uploadSponsorLogo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { sponsorId } = req.params as Record<string, string>;
+      if (!req.file) throw new HttpException(400, 'Invalid or undefined image data');
+      const updatedSponsor = await FinanceServices.uploadSponsorLogo(req.currentUser, req.organization, sponsorId, req.file);
+      res.status(200).json(updatedSponsor);
     } catch (error: unknown) {
       next(error);
     }

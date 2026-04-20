@@ -7,6 +7,7 @@
 const BASE = `/`;
 const LOGIN = `/login`;
 const INFO = `/info`;
+const GUEST_INFO = `/guestinfo`;
 const GANTT = `/gantt`;
 const CREDITS = `/credits`;
 
@@ -27,9 +28,11 @@ const REIMBURSEMENT_REQUEST_EDIT = REIMBURSEMENT_REQUEST_BY_ID + `/edit`;
 const NEW_REIMBURSEMENT_REQUEST = REIMBURSEMENT_REQUESTS + `/my-requests/new`;
 const FINANCE_DASHBOARD = FINANCE + `/dashboard`;
 const COMPANIES = FINANCE + `/companies`;
+const SPONSORS = `/sponsors`;
 
 /**************** Projects Section ****************/
 const PROJECTS = `/projects`;
+const PROJECT_MANAGEMENT = `/project-management`;
 const PROJECTS_OVERVIEW = PROJECTS + '/overview';
 const PROJECTS_ALL = PROJECTS + '/all';
 const PROJECTS_BY_WBS = PROJECTS + `/:wbsNum`;
@@ -84,6 +87,7 @@ export const routes = {
   BASE,
   LOGIN,
   INFO,
+  GUEST_INFO,
   CREDITS,
 
   HOME,
@@ -100,6 +104,7 @@ export const routes = {
   GANTT,
 
   PROJECTS,
+  PROJECT_MANAGEMENT,
   PROJECTS_OVERVIEW,
   PROJECTS_ALL,
   PROJECTS_BY_WBS,
@@ -144,6 +149,8 @@ export const routes = {
   CREATE_GRAPH,
   EDIT_GRAPH,
   GRAPH_COLLECTION_BY_ID,
+
+  SPONSORS,
 
   RETROSPECTIVE
 };

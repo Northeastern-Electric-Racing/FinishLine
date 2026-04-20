@@ -60,7 +60,6 @@ export interface MaterialDataSubmission {
   linkUrl?: string;
   notes?: string;
   assemblyId?: string;
-  subtotal?: number;
 }
 
 export interface MaterialFormProps {
@@ -124,8 +123,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({
 
   const onSubmitWrapper = (data: MaterialFormInput): void => {
     const price = data.price != null ? Math.round(data.price * 100) : undefined;
-    const subtotal = price != null && data.quantity != null ? parseFloat((data.quantity * price).toFixed(2)) : undefined;
-    onSubmit({ ...data, subtotal, price, quantity: data.quantity != null ? new Decimal(data.quantity) : undefined });
+    onSubmit({ ...data, price, quantity: data.quantity != null ? new Decimal(data.quantity) : undefined });
   };
 
   const createManufacturerWrapper = async (manufacturerName: string): Promise<void> => {
