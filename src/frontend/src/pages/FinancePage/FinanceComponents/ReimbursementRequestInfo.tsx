@@ -1,7 +1,7 @@
 import { Box, Tooltip, IconButton } from '@mui/material';
 import { useLocation, useHistory, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { equalsWbsNumber, isGuest, ReimbursementRequest, validateWBS, WBSElementData } from 'shared';
+import { equalsWbsNumber, isGuest, ReimbursementRequest, validateWBS } from 'shared';
 import { ReimbursementProduct, ReimbursementStatusType } from 'shared';
 import { undefinedPipe, fullNamePipe, centsToDollar, datePipe, dateUndefinedPipe } from '../../../utils/pipes';
 import {
