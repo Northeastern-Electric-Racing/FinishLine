@@ -17,7 +17,6 @@ const SponsorImage: React.FC<{ logoImageId: string; name: string }> = ({ logoIma
     return <LoadingIndicator />;
   }
 
-  if (!imageUrl) return null;
   return (
     <Box
       sx={{
