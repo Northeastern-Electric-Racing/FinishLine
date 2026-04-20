@@ -155,6 +155,8 @@ const ReimbursementRequests: React.FC = () => {
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (assignedReimbursementRequestIsError) return <ErrorPage message={assignedReimbursementRequestError?.message} />;
   if (createdReimbursementRequestIsError) return <ErrorPage message={createdReimbursementRequestError?.message} />;
+  if (allProjectsIsError) return <ErrorPage message={allProjectsError?.message} />;
+  if (allProjectsIsLoading) return <LoadingIndicator />;
 
   const projectAutocompleteOptions = allProjects
     ? allProjects.map((proj) => ({
@@ -224,26 +226,18 @@ const ReimbursementRequests: React.FC = () => {
             mb: 2
           }}
         />
-        {allProjectsIsLoading ? (
-          <LoadingIndicator />
-        ) : allProjectsIsError ? (
-          <Typography color="error" sx={{ mb: 1 }}>
-            Failed to load projects {allProjectsError?.message}
-          </Typography>
-        ) : (
-          <Autocomplete
-            sx={{ flex: 1 }}
-            options={projectAutocompleteOptions}
-            value={selectedProjectFilter}
-            blurOnSelect={true}
-            id={'project-filter-autocomplete'}
-            size={'small'}
-            onChange={(_event, newValue) => {
-              setSelectedProjectFilter(newValue);
-            }}
-            renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select Project" fullWidth />}
-          />
-        )}
+        <Autocomplete
+          sx={{ flex: 1 }}
+          options={projectAutocompleteOptions}
+          value={selectedProjectFilter}
+          blurOnSelect={true}
+          id={'project-filter-autocomplete'}
+          size={'small'}
+          onChange={(_event, newValue) => {
+            setSelectedProjectFilter(newValue);
+          }}
+          renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select Project" fullWidth />}
+        />
         <Typography sx={{ fontWeight: 'bold', mt: 2, mb: 1 }}>Filter by Date</Typography>
         <Box
           sx={{

@@ -78,11 +78,8 @@ const ReimbursementRequestInfo = ({
 
       const matchesProject = request.reimbursementProducts.some((product) => {
         const reason = product.reimbursementProductReason;
-        if ((reason as WBSElementData).wbsNum) {
-          return equalsWbsNumber(
-            { ...(reason as WBSElementData).wbsNum, workPackageNumber: 0 },
-            { ...filterWbsNum, workPackageNumber: 0 }
-          );
+        if ('wbsNum' in reason) {
+          return equalsWbsNumber({ ...reason.wbsNum, workPackageNumber: 0 }, { ...filterWbsNum, workPackageNumber: 0 });
         }
         return false;
       });
@@ -247,8 +244,8 @@ const ReimbursementRequestInfo = ({
       let projectsString = '';
       for (const product of rowData.reimbursementProducts) {
         const reason = product.reimbursementProductReason;
-        if ((reason as WBSElementData).wbsNum) {
-          projectsString += (reason as WBSElementData).wbsName;
+        if ('wbsNum' in reason) {
+          projectsString += reason.wbsName;
         }
       }
 
