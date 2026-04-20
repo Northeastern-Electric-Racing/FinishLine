@@ -10,8 +10,7 @@ import { Typography, Box, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-// To be uncommented after guest sponsors page is developed
-// import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
+import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import FolderIcon from '@mui/icons-material/Folder';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import GroupIcon from '@mui/icons-material/Group';
@@ -24,12 +23,9 @@ import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
 import { Cached, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
-// once divisions developed, import TeamType from shared
-import { isGuest } from 'shared';
-// To be uncommented after divisions page is developed
+import { isGuest, TeamType } from 'shared';
 import * as MuiIcons from '@mui/icons-material';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
-import { TeamType } from 'shared';
 import ErrorPage from '../../pages/ErrorPage';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -137,7 +133,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       ]
     },
 
-    // Teams tab here to be replaced with below code once guest divisions is developed
     !onGuestHomePage
       ? {
           name: 'Teams',
@@ -161,12 +156,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       icon: <Cached />,
       route: routes.RETROSPECTIVE
     },
-    // To be uncommented once guest mode sponsors page is developed
-    // onGuestHomePage && {
-    //   name: 'Sponsors',
-    //   icon: <VolunteerActivismIcon />,
-    //   route: routes.RETROSPECTIVE
-    // },
+    onGuestHomePage && {
+      name: 'Sponsors',
+      icon: <VolunteerActivismIcon />,
+      route: routes.SPONSORS
+    },
     {
       name: 'Info',
       icon: <QuestionMarkIcon />,

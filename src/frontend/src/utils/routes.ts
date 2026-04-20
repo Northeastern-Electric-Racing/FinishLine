@@ -28,6 +28,7 @@ const REIMBURSEMENT_REQUEST_EDIT = REIMBURSEMENT_REQUEST_BY_ID + `/edit`;
 const NEW_REIMBURSEMENT_REQUEST = REIMBURSEMENT_REQUESTS + `/my-requests/new`;
 const FINANCE_DASHBOARD = FINANCE + `/dashboard`;
 const COMPANIES = FINANCE + `/companies`;
+const SPONSORS = `/sponsors`;
 
 /**************** Projects Section ****************/
 const PROJECTS = `/projects`;
@@ -148,6 +149,8 @@ export const routes = {
   CREATE_GRAPH,
   EDIT_GRAPH,
   GRAPH_COLLECTION_BY_ID,
+
+  SPONSORS,
 
   RETROSPECTIVE
 };
