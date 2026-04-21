@@ -7,10 +7,7 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 import {
   ChangeRequest,
-  ChangeRequestReason,
-  ChangeRequestType,
   ProjectProposedChangesCreateArgs,
-  ProposedSolutionCreateArgs,
   WbsNumber,
   WorkPackageProposedChangesCreateArgs,
   LeadershipChangeCreateArgs,
@@ -154,10 +151,7 @@ export const useDeleteChangeRequest = () => {
 
 export type CreateStandardChangeRequestPayload = {
   wbsNum: WbsNumber;
-  type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
-  what: string;
-  why: { explain: string; type: ChangeRequestReason }[];
-  proposedSolutions: ProposedSolutionCreateArgs[];
+  why: string;
   projectProposedChanges?: ProjectProposedChangesCreateArgs;
   workPackageProposedChanges?: WorkPackageProposedChangesCreateArgs;
 };

@@ -137,9 +137,6 @@ export const resetUsers = async () => {
   await prisma.stage_Gate_CR.deleteMany();
   await prisma.activation_CR.deleteMany();
   await prisma.change.deleteMany();
-  await prisma.proposed_Solution.deleteMany();
-  await prisma.scope_CR_Why.deleteMany();
-  await prisma.scope_CR.deleteMany();
   await prisma.budget_CR.deleteMany();
   await prisma.change_Request.deleteMany();
   await prisma.link.deleteMany();

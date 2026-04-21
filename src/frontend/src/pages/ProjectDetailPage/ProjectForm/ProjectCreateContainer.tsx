@@ -2,7 +2,6 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { wbsTester } from '../../../utils/form';
 import { useAllLinkTypes, useCreateSingleProject } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { CreateSingleProjectPayload } from '../../../utils/types';
@@ -18,15 +17,12 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { FormInput } from '../../CreateChangeRequestPage/CreateChangeRequestView';
-import { StandardChangeRequestType } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
 import { dateToMidnightUTC, ProjectProposedChangesCreateArgs, WbsNumber, WorkPackageStage } from 'shared';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useCreateSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useGlobalCarFilter } from '../../../app/AppGlobalCarFilterContext';
-import { ChangeRequestReason } from 'shared';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ChangeRequestType } from 'shared';
 
 const ProjectCreateContainer: React.FC = () => {
   const toast = useToast();
@@ -71,51 +67,25 @@ const ProjectCreateContainer: React.FC = () => {
   });
 
   const changeRequestSchema = yup.object().shape({
-    type: yup.mixed<StandardChangeRequestType>().required('Type is required'),
-    what: yup.string().required('What is required'),
-    why: yup
-      .array()
-      .min(1, 'At least one Why is required')
-      .required('Why is required')
-      .of(
-        yup.object().shape({
-          type: yup.mixed<ChangeRequestReason>().required('Why Type is required'),
-          explain: yup
-            .string()
-            .required('Why Explain is required')
-            .when('type', ([type], schema) =>
-              type === ChangeRequestReason.OtherProject
-                ? schema.required().test('wbs-num-valid', 'WBS Number is not valid', wbsTester)
-                : yup.string()
-            )
-        })
-      )
+    why: yup.string().required('Why Explain is required')
   });
 
   const { reset: resetChangeRequestForm, ...changeRequestFormMethods } = useForm<FormInput>({
     resolver: yupResolver(changeRequestSchema),
     defaultValues: query.get('budgetChange')
       ? {
-          what: 'Increase the budget to account for the cost of materials',
-          why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
-          type: ChangeRequestType.Issue
+          why: 'The cost of materials ended up exceeding the initial budget'
         }
       : query.get('timelineDelay')
         ? {
-            what: 'Timeline delay',
-            why: [{ type: ChangeRequestReason.Other, explain: 'Decided to extend timeline after design review' }],
-            type: ChangeRequestType.Redefinition
+            why: 'Decided to extend timeline after design review'
           }
         : query.get('createWP')
           ? {
-              what: '',
-              why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
-              type: ChangeRequestType.Redefinition
+              why: 'Creating a Work Package on this Project'
             }
           : {
-              what: '',
-              why: [{ type: ChangeRequestReason.Other, explain: '' }],
-              type: ChangeRequestType.Issue
+              why: ''
             }
   });
 
@@ -140,7 +110,7 @@ const ProjectCreateContainer: React.FC = () => {
   const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
-    const { name, budget, summary, links, teamIds, carNumber, descriptionBullets, type, what, why } = data;
+    const { name, budget, summary, links, teamIds, carNumber, descriptionBullets, why } = data;
 
     // Car number could be zero and a truthy check would fail
     if (carNumber === undefined) throw new Error('Car number is required!');
@@ -160,10 +130,7 @@ const ProjectCreateContainer: React.FC = () => {
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: { carNumber, projectNumber: 0, workPackageNumber: 0 },
-        type,
-        what,
         why,
-        proposedSolutions: [],
         projectProposedChanges: projectPayload
       };
       await mutateCRAsync(changeRequestPayload);

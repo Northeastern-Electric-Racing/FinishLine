@@ -2,35 +2,12 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { Controller, useFieldArray } from 'react-hook-form';
-import {
-  ChangeRequestReason,
-  ChangeRequestType,
-  ProjectPreview,
-  ProposedSolutionFormInput,
-  WbsElementPreview,
-  wbsNamePipe,
-  wbsPipe
-} from 'shared';
+import { ProjectPreview, WbsElementPreview, wbsNamePipe, wbsPipe } from 'shared';
 import { routes } from '../../utils/routes';
-import TextField from '@mui/material/TextField';
-import FormHelperText from '@mui/material/FormHelperText';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import DeleteIcon from '@mui/icons-material/Delete';
 import Grid from '@mui/material/Grid';
-import CreateProposedSolutionsList from './CreateProposedSolutionsList';
+import { FormControl, FormLabel } from '@mui/material';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import {
-  Autocomplete,
-  AutocompleteRenderInputParams,
-  FormControl,
-  FormLabel,
-  IconButton,
-  MenuItem,
-  RadioGroup,
-  Select
-} from '@mui/material';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
@@ -39,16 +16,11 @@ import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
 import { wbsNumComparator } from 'shared';
-import { ChangeEvent } from 'react';
-import { NERButton } from '../../components/NERButton';
 import { UseFormRegister, UseFormHandleSubmit, UseFormWatch, UseFormSetValue, FormState, Control } from 'react-hook-form';
 
-export type StandardChangeRequestType = Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
-
 export interface FormInput {
-  type: StandardChangeRequestType;
-  what: string;
-  why: { type: ChangeRequestReason; explain: string }[];
+  why: string;
+  requestedReviewerId?: string;
 }
 
 export interface ChangeRequestFormReturn {
@@ -64,8 +36,6 @@ interface CreateChangeRequestViewProps {
   wbsNum: string;
   setWbsNum: (val: string) => void;
   onSubmit: (data: FormInput) => Promise<void>;
-  proposedSolutions: ProposedSolutionFormInput[];
-  setProposedSolutions: (ps: ProposedSolutionFormInput[]) => void;
   handleCancel: () => void;
   modalView?: boolean;
   changeRequestFormReturn: ChangeRequestFormReturn;
@@ -75,8 +45,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   wbsNum,
   setWbsNum,
   onSubmit,
-  proposedSolutions,
-  setProposedSolutions,
   handleCancel,
   modalView = false,
   changeRequestFormReturn
@@ -84,36 +52,18 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   const {
     handleSubmit,
     control,
-    formState: { errors },
-    register,
-    watch
+    formState: { errors }
   } = changeRequestFormReturn;
-
-  const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
 
   const { isLoading, isError, error, data: projects } = useAllProjects();
 
-  const permittedTypes = Object.values(ChangeRequestType).filter(
-    (t) =>
-      t !== ChangeRequestType.Activation &&
-      t !== ChangeRequestType.StageGate &&
-      t !== ChangeRequestType.Budget &&
-      t !== ChangeRequestType.Leadership
-  );
-
   if (isLoading || !projects) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
-
-  const projectOptions: { label: string; id: string }[] = [];
 
   const wbsDropdownOptions: { label: string; id: string }[] = [];
 
   projects.forEach((project: ProjectPreview) => {
     wbsDropdownOptions.push({
-      label: `${wbsNamePipe(project)}`,
-      id: wbsPipe(project.wbsNum)
-    });
-    projectOptions.push({
       label: `${wbsNamePipe(project)}`,
       id: wbsPipe(project.wbsNum)
     });
@@ -140,40 +90,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     } else {
       setWbsNum('');
     }
-  };
-
-  const renderReasonInput = (index: number) => {
-    const typeValue = watch(`why.${index}.type`);
-    return typeValue === `${ChangeRequestReason.OtherProject}` ? (
-      <Controller
-        key={index}
-        name={`why.${index}.explain`}
-        control={control}
-        render={({ field: { onChange, value } }) => (
-          <Autocomplete
-            id="other-project-autocomplete"
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            options={projectOptions}
-            size="small"
-            value={projectOptions.find((element) => element.id === value)}
-            sx={{ mx: 1, flex: 1, '.MuiInputBase-input': { height: '39px' } }}
-            renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} placeholder="Select a Project" />}
-            onChange={(_event, value) => (value ? onChange(value?.id) : null)}
-          />
-        )}
-      />
-    ) : (
-      <ReactHookTextField
-        required
-        multiline
-        rows={4}
-        control={control}
-        label="Explain"
-        sx={{ flexGrow: 1, borderRadius: 2, width: '100%' }}
-        {...register(`why.${index}.explain`)}
-        errorMessage={errors.why?.[index]?.explain}
-      />
-    );
   };
 
   return (
@@ -205,7 +121,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
           </Box>
         }
       >
-        <Grid container spacing={2} display="flex" justifyContent="space-between">
+        <Grid container spacing={2}>
           <Grid container item spacing={2} xs={12} md={modalView ? 12 : 6} height="fit-content">
             {!modalView && (
               <Grid item xs={12}>
@@ -220,100 +136,32 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                 />
               </Grid>
             )}
-            <Grid item xs={10}>
-              <FormControl fullWidth>
-                <FormLabel>Type</FormLabel>
-                <Controller
-                  name="type"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field: { onChange, value } }) => (
-                    <RadioGroup onChange={onChange} value={value}>
-                      <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} sx={{ gap: 2 }}>
-                        {permittedTypes.map((t) => (
-                          <NERButton
-                            sx={{
-                              fontSize: { xs: '0.8rem', md: '1rem' },
-                              width: { xs: '83%', md: 'auto' }
-                            }}
-                            key={t}
-                            variant={value === t ? 'contained' : 'outlined'}
-                            onClick={() => onChange(t as 'ISSUE' | ChangeEvent<Element>)}
-                          >
-                            {t}
-                          </NERButton>
-                        ))}
-                      </Box>
-                    </RadioGroup>
-                  )}
-                />
-              </FormControl>
-            </Grid>
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <FormLabel>What needs to be changed?</FormLabel>
+                <FormLabel required>Why are you making this change?</FormLabel>
                 <ReactHookTextField
-                  name="what"
+                  name="why"
                   control={control}
                   multiline
                   rows={4}
-                  errorMessage={errors.what}
-                  placeholder="Explain *"
+                  errorMessage={errors.why}
+                  placeholder="Explain the reason for this change *"
+                  rules={{ required: 'This field is required' }}
                 />
               </FormControl>
             </Grid>
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <FormLabel>Why does this need to be changed?</FormLabel>
-                <Box>
-                  {whys.map((element, index) => (
-                    <Grid container xs={12} display="flex" flexDirection="row" sx={{ mb: 1 }}>
-                      <Grid item xs={12}>
-                        <Select
-                          {...register(`why.${index}.type`)}
-                          sx={{ width: { sx: 'auto', md: 200 }, mr: 2 }}
-                          defaultValue={element.type}
-                          key={element.id}
-                        >
-                          {Object.values(ChangeRequestReason).map((type) => (
-                            <MenuItem key={type} value={type}>
-                              {type}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                        <IconButton color="error" type="button" onClick={() => removeWhy(index)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </Grid>
-                      <Grid item xs={12} sx={{ mt: 1, mb: 1 }}>
-                        {renderReasonInput(index)}
-                      </Grid>
-                    </Grid>
-                  ))}
-                </Box>
-                <FormHelperText>{errors.why?.message}</FormHelperText>
+                <FormLabel>Requested Reviewer (optional)</FormLabel>
+                <ReactHookTextField
+                  name="requestedReviewerId"
+                  control={control}
+                  errorMessage={errors.requestedReviewerId}
+                  placeholder="Reviewer user ID"
+                />
               </FormControl>
             </Grid>
-            <Grid xs={12}>
-              <Button
-                variant="outlined"
-                color="secondary"
-                sx={{ mt: 1 }}
-                onClick={() => appendWhy({ type: ChangeRequestReason.Design, explain: '' })}
-                style={{ marginLeft: '15px' }}
-              >
-                Add Reason
-              </Button>
-            </Grid>
           </Grid>
-          {!modalView && (
-            <Grid item xs={12} md={5} sx={{ mt: -2 }}>
-              <CreateProposedSolutionsList
-                proposedSolutions={proposedSolutions}
-                setProposedSolutions={setProposedSolutions}
-              />
-            </Grid>
-          )}
         </Grid>
       </PageLayout>
     </form>

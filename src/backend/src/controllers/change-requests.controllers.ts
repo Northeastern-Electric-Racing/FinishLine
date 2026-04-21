@@ -83,14 +83,13 @@ export default class ChangeRequestsController {
 
   static async reviewChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { crId, reviewNotes, accepted, psId } = req.body;
+      const { crId, reviewNotes, accepted } = req.body;
       const id = await ChangeRequestsService.reviewChangeRequest(
         req.currentUser,
         crId,
         reviewNotes,
         accepted,
-        req.organization,
-        psId
+        req.organization
       );
       res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
     } catch (error: unknown) {
@@ -176,7 +175,7 @@ export default class ChangeRequestsController {
 
   static async createStandardChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, type, what, why, proposedSolutions, projectProposedChanges, workPackageProposedChanges } = req.body;
+      const { wbsNum, why, requestedReviewerId, projectProposedChanges, workPackageProposedChanges } = req.body;
       if (workPackageProposedChanges && workPackageProposedChanges.stage === 'NONE') {
         workPackageProposedChanges.stage = null;
       }
@@ -186,33 +185,13 @@ export default class ChangeRequestsController {
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
-        type,
-        what,
         why,
-        proposedSolutions,
         req.organization,
+        requestedReviewerId,
         projectProposedChanges,
         workPackageProposedChanges
       );
       res.status(200).json(createdCR);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async addProposedSolution(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { crId, budgetImpact, description, timelineImpact, scopeImpact } = req.body;
-      const id = await ChangeRequestsService.addProposedSolution(
-        req.currentUser,
-        crId,
-        budgetImpact,
-        description,
-        timelineImpact,
-        scopeImpact,
-        req.organization
-      );
-      res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
     } catch (error: unknown) {
       next(error);
     }

@@ -1,17 +1,73 @@
 import { Prisma } from '@prisma/client';
-import { getScopeChangeRequestQueryArgs } from './scope-change-requests.query-args.js';
 import { getUserQueryArgs } from './user.query-args.js';
 import { getWorkPackageQueryArgs } from './work-packages.query-args.js';
 import { getReimbursementProductOtherReasonQueryArgs } from './reimbursement-product-other-reason.query-args.js';
 import { getAccountCodeQueryArgs } from './account-code.query-args.js';
+import { getTeamQueryArgs } from './teams.query-args.js';
 
 export type ChangeRequestQueryArgs = ReturnType<typeof getChangeRequestQueryArgs>;
-
 export type ChangeRequestWithProjectAndWorkPackageQueryArgs = ReturnType<
   typeof getChangeRequestWithProjectAndWorkPackageQueryArgs
 >;
-
+export type WbsProposedChangeQueryArgs = ReturnType<typeof getWbsProposedChangesQueryArgs>;
 export type ChangeRequestManyQueryArgs = ReturnType<typeof getManyChangeRequestQueryArgs>;
+export type WorkPackageProposedChangesQueryArgs = ReturnType<typeof getWorkPackageProposedChangesQueryArgs>;
+export type ProjectProposedChangesQueryArgs = ReturnType<typeof getProjectProposedChangesQueryArgs>;
+
+const getProjectProposedChangesQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Project_Proposed_ChangesDefaultArgs>()({
+    include: {
+      teams: getTeamQueryArgs(organizationId),
+      car: { include: { wbsElement: true } },
+      workPackageProposedChanges: getWorkPackageProposedChangesQueryArgs(organizationId)
+    }
+  });
+
+const getWorkPackageProposedChangesQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Work_Package_Proposed_ChangesDefaultArgs>()({
+    include: {
+      wbsProposedChanges: {
+        include: {
+          links: { where: { dateDeleted: null }, include: { linkType: true } },
+          proposedDescriptionBulletChanges: {
+            where: { dateDeleted: null },
+            include: {
+              descriptionBulletType: true,
+              userChecked: getUserQueryArgs(organizationId)
+            }
+          },
+          lead: getUserQueryArgs(organizationId),
+          manager: getUserQueryArgs(organizationId)
+        }
+      },
+      blockedBy: true
+    }
+  });
+
+const getWbsProposedChangesQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Wbs_Proposed_ChangesDefaultArgs>()({
+    include: {
+      links: { where: { dateDeleted: null }, include: { linkType: true } },
+      proposedDescriptionBulletChanges: {
+        where: { dateDeleted: null },
+        include: { descriptionBulletType: true, userChecked: getUserQueryArgs(organizationId) }
+      },
+      lead: getUserQueryArgs(organizationId),
+      manager: getUserQueryArgs(organizationId),
+      projectProposedChanges: {
+        include: {
+          teams: getTeamQueryArgs(organizationId),
+          car: {
+            include: {
+              wbsElement: true
+            }
+          },
+          workPackageProposedChanges: getWorkPackageProposedChangesQueryArgs(organizationId)
+        }
+      },
+      workPackageProposedChanges: getWorkPackageProposedChangesQueryArgs(organizationId)
+    }
+  });
 
 export const getChangeRequestQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Change_RequestDefaultArgs>()({
@@ -22,17 +78,13 @@ export const getChangeRequestQueryArgs = (organizationId: string) =>
       accountCode: getAccountCodeQueryArgs(organizationId),
       reviewer: getUserQueryArgs(organizationId),
       changes: {
-        where: {
-          wbsElement: {
-            dateDeleted: null
-          }
-        },
+        where: { wbsElement: { dateDeleted: null } },
         include: {
           implementer: getUserQueryArgs(organizationId),
           wbsElement: true
         }
       },
-      scopeChangeRequest: getScopeChangeRequestQueryArgs(organizationId),
+      wbsProposedChanges: getWbsProposedChangesQueryArgs(organizationId),
       stageGateChangeRequest: true,
       activationChangeRequest: {
         include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
@@ -91,9 +143,7 @@ export const getGuestChangeRequestQueryArgs = (organizationId: string) =>
           project: {
             select: {
               wbsElement: { select: { name: true } },
-              teams: {
-                select: { teamType: { select: { name: true } } }
-              }
+              teams: { select: { teamType: { select: { name: true } } } }
             }
           },
           workPackage: {
@@ -101,9 +151,7 @@ export const getGuestChangeRequestQueryArgs = (organizationId: string) =>
               project: {
                 select: {
                   wbsElement: { select: { name: true } },
-                  teams: {
-                    select: { teamType: { select: { name: true } } }
-                  }
+                  teams: { select: { teamType: { select: { name: true } } } }
                 }
               }
             }
@@ -120,11 +168,7 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
       wbsElement: {
         include: {
           workPackage: getWorkPackageQueryArgs(organizationId),
-          project: {
-            include: {
-              teams: true
-            }
-          },
+          project: { include: { teams: true } },
           descriptionBullets: { where: { dateDeleted: null } },
           links: { where: { dateDeleted: null } }
         }
@@ -133,11 +177,7 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
       accountCode: getAccountCodeQueryArgs(organizationId),
       reviewer: getUserQueryArgs(organizationId),
       changes: {
-        where: {
-          wbsElement: {
-            dateDeleted: null
-          }
-        },
+        where: { wbsElement: { dateDeleted: null } },
         include: {
           implementer: getUserQueryArgs(organizationId),
           wbsElement: true,
@@ -145,7 +185,7 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
           accountCode: getAccountCodeQueryArgs(organizationId)
         }
       },
-      scopeChangeRequest: getScopeChangeRequestQueryArgs(organizationId),
+      wbsProposedChanges: getWbsProposedChangesQueryArgs(organizationId),
       stageGateChangeRequest: true,
       activationChangeRequest: {
         include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }

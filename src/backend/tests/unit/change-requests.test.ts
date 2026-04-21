@@ -1,4 +1,4 @@
-import { CR_Type, Organization, Scope_CR_Why_Type, User, WBS_Element_Status } from '@prisma/client';
+import { Organization, User, WBS_Element_Status } from '@prisma/client';
 import { createTestCar, createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils.js';
 import ChangeRequestsService from '../../src/services/change-requests.services.js';
 import {
@@ -8,7 +8,6 @@ import {
   flashAdmin,
   robinMember
 } from '../test-data/users.test-data.js';
-import { ProjectProposedChangesCreateArgs, WorkPackageProposedChangesCreateArgs } from 'shared';
 import prisma from '../../src/prisma/prisma.js';
 import { AccessDeniedException } from '../../src/utils/errors.utils.js';
 
@@ -39,43 +38,14 @@ describe('Change Request Tests', () => {
 
   describe('Create Change Request', () => {
     it('create change request on an inactive project - project changes', async () => {
-      const projPropChanges: ProjectProposedChangesCreateArgs = {
-        name: 'Project name changes',
-        descriptionBullets: [],
-        links: [],
-        budget: 10,
-        summary: 'Summary',
-        teamIds: [],
-        workPackageProposedChanges: []
-      };
-
-      const cr = await ChangeRequestsService.createStandardChangeRequest(
-        user,
-        12,
-        13,
-        14,
-        CR_Type.DEFINITION_CHANGE,
-        'What',
-        [
-          {
-            type: Scope_CR_Why_Type.COMPETITION,
-            explain: 'Explaining'
-          }
-        ],
-        [],
-        organization,
-        projPropChanges,
-        null
-      );
+      const cr = await ChangeRequestsService.createStandardChangeRequest(user, 12, 13, 14, 'Explaining', organization);
 
       expect(cr.submitter.userId).toEqual(user.userId);
       expect(cr.wbsNum?.carNumber).toEqual(12);
       expect(cr.wbsNum?.projectNumber).toEqual(13);
       expect(cr.wbsNum?.workPackageNumber).toEqual(14);
 
-      expect(cr.type).toEqual(CR_Type.DEFINITION_CHANGE);
-      expect(cr.what).toEqual('What');
-      expect(cr.proposedSolutions).toHaveLength(0);
+      expect(cr.why).toEqual('Explaining');
 
       expect(cr.wbsNum).toBeDefined();
       expect(cr.wbsNum).not.toBeNull();
@@ -111,35 +81,7 @@ describe('Change Request Tests', () => {
         }
       });
 
-      const wpPropChanges: WorkPackageProposedChangesCreateArgs = {
-        name: 'wp',
-        descriptionBullets: [],
-        links: [],
-        duration: 3,
-        startDate: '2025-09-13',
-        blockedBy: [],
-        leadId: user.userId,
-        managerId: user.userId
-      };
-
-      await ChangeRequestsService.createStandardChangeRequest(
-        user,
-        12,
-        13,
-        14,
-        CR_Type.DEFINITION_CHANGE,
-        'What',
-        [
-          {
-            type: Scope_CR_Why_Type.COMPETITION,
-            explain: 'Explaining'
-          }
-        ],
-        [],
-        organization,
-        null,
-        wpPropChanges
-      );
+      await ChangeRequestsService.createStandardChangeRequest(user, 12, 13, 14, 'Explaining', organization);
 
       const wbsElement = await prisma.wBS_Element.findUnique({
         where: {
@@ -172,35 +114,7 @@ describe('Change Request Tests', () => {
         }
       });
 
-      const wpPropChanges: WorkPackageProposedChangesCreateArgs = {
-        name: 'wp',
-        descriptionBullets: [],
-        links: [],
-        duration: 3,
-        startDate: '2025-09-13',
-        blockedBy: [],
-        leadId: user.userId,
-        managerId: user.userId
-      };
-
-      const cr = await ChangeRequestsService.createStandardChangeRequest(
-        user,
-        12,
-        13,
-        14,
-        CR_Type.DEFINITION_CHANGE,
-        'What',
-        [
-          {
-            type: Scope_CR_Why_Type.COMPETITION,
-            explain: 'Explaining'
-          }
-        ],
-        [],
-        organization,
-        null,
-        wpPropChanges
-      );
+      const cr = await ChangeRequestsService.createStandardChangeRequest(user, 12, 13, 14, 'Explaining', organization);
 
       const wbsElement = await prisma.wBS_Element.findUnique({
         where: {
@@ -217,9 +131,7 @@ describe('Change Request Tests', () => {
       expect(cr.wbsNum?.projectNumber).toEqual(13);
       expect(cr.wbsNum?.workPackageNumber).toEqual(14);
 
-      expect(cr.type).toEqual(CR_Type.DEFINITION_CHANGE);
-      expect(cr.what).toEqual('What');
-      expect(cr.proposedSolutions).toHaveLength(0);
+      expect(cr.why).toEqual('Explaining');
 
       expect(cr.wbsNum).toBeDefined();
       expect(cr.wbsNum).not.toBeNull();
@@ -244,35 +156,7 @@ describe('Change Request Tests', () => {
         }
       });
 
-      const wpPropChanges: WorkPackageProposedChangesCreateArgs = {
-        name: 'wp',
-        descriptionBullets: [],
-        links: [],
-        duration: 3,
-        startDate: '2025-09-13',
-        blockedBy: [],
-        leadId: user.userId,
-        managerId: user.userId
-      };
-
-      await ChangeRequestsService.createStandardChangeRequest(
-        user,
-        12,
-        13,
-        14,
-        CR_Type.DEFINITION_CHANGE,
-        'What',
-        [
-          {
-            type: Scope_CR_Why_Type.COMPETITION,
-            explain: 'Explaining'
-          }
-        ],
-        [],
-        organization,
-        null,
-        wpPropChanges
-      );
+      await ChangeRequestsService.createStandardChangeRequest(user, 12, 13, 14, 'Explaining', organization);
 
       const wbsElement = await prisma.wBS_Element.findUnique({
         where: {
@@ -334,20 +218,8 @@ describe('Change Request Tests', () => {
         12,
         13,
         14,
-        CR_Type.ISSUE,
-        'What is being changed',
-        [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'Why it is being changed' }],
-        [
-          {
-            description: 'Proposed solution',
-            scopeImpact: 'Low impact',
-            timelineImpact: 0,
-            budgetImpact: 0
-          }
-        ],
-        organization,
-        null,
-        null
+        'Why it is being changed',
+        organization
       );
 
       changeRequestId = cr.crId;
@@ -359,8 +231,7 @@ describe('Change Request Tests', () => {
         changeRequestId,
         'Looks good',
         false,
-        organization,
-        null
+        organization
       );
 
       expect(reviewResult).toBe(changeRequestId);
@@ -386,8 +257,7 @@ describe('Change Request Tests', () => {
         changeRequestId,
         'Approved',
         false,
-        organization,
-        null
+        organization
       );
 
       expect(reviewResult).toBe(changeRequestId);
@@ -414,8 +284,7 @@ describe('Change Request Tests', () => {
           changeRequestId,
           'I want to review this',
           true,
-          organization,
-          null
+          organization
         )
       ).rejects.toThrow(AccessDeniedException);
 
@@ -425,8 +294,7 @@ describe('Change Request Tests', () => {
           changeRequestId,
           'I want to review this',
           true,
-          organization,
-          null
+          organization
         )
       ).rejects.toThrow('Only requested reviewers can review this change request!');
     });
@@ -444,8 +312,7 @@ describe('Change Request Tests', () => {
         changeRequestId,
         'Approved by second reviewer',
         false,
-        organization,
-        null
+        organization
       );
 
       expect(reviewResult).toBe(changeRequestId);
@@ -488,8 +355,7 @@ describe('Change Request Tests', () => {
           changeRequestId,
           'Rejecting this',
           false,
-          organization,
-          null
+          organization
         )
       ).rejects.toThrow(AccessDeniedException);
     });
@@ -499,19 +365,6 @@ describe('Change Request Tests', () => {
     let carAId: string;
     let carBId: string;
     let otherUser: User;
-
-    const solutionArgs = [{ description: 'Solution', scopeImpact: 'Low', timelineImpact: 0, budgetImpact: 0 }];
-
-    // projPropChanges makes a CR a scope CR
-    const projPropChanges = {
-      name: 'Updated project',
-      descriptionBullets: [],
-      links: [],
-      budget: 100,
-      summary: 'Summary',
-      teamIds: [],
-      workPackageProposedChanges: []
-    };
 
     beforeEach(async () => {
       // The reviewing user (user) cannot be the submitter of scope CRs they review so otherUser is used  .
@@ -530,32 +383,8 @@ describe('Change Request Tests', () => {
 
     describe('getAllChangeRequests', () => {
       it('respects the global car filter and returns only CRs for the selected car', async () => {
-        await ChangeRequestsService.createStandardChangeRequest(
-          user,
-          0,
-          1,
-          0,
-          CR_Type.ISSUE,
-          'CR on car A',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          solutionArgs,
-          organization,
-          null,
-          null
-        );
-        await ChangeRequestsService.createStandardChangeRequest(
-          user,
-          0,
-          2,
-          0,
-          CR_Type.ISSUE,
-          'CR on car B',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          solutionArgs,
-          organization,
-          null,
-          null
-        );
+        await ChangeRequestsService.createStandardChangeRequest(user, 0, 1, 0, 'reason', organization);
+        await ChangeRequestsService.createStandardChangeRequest(user, 0, 2, 0, 'reason', organization);
 
         const results = await ChangeRequestsService.getAllChangeRequests(organization, carAId);
 
@@ -564,32 +393,8 @@ describe('Change Request Tests', () => {
       });
 
       it('returns all CRs when no car is selected', async () => {
-        await ChangeRequestsService.createStandardChangeRequest(
-          user,
-          0,
-          1,
-          0,
-          CR_Type.ISSUE,
-          'CR on car A',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          solutionArgs,
-          organization,
-          null,
-          null
-        );
-        await ChangeRequestsService.createStandardChangeRequest(
-          user,
-          0,
-          2,
-          0,
-          CR_Type.ISSUE,
-          'CR on car B',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          solutionArgs,
-          organization,
-          null,
-          null
-        );
+        await ChangeRequestsService.createStandardChangeRequest(user, 0, 1, 0, 'reason', organization);
+        await ChangeRequestsService.createStandardChangeRequest(user, 0, 2, 0, 'reason', organization);
 
         const results = await ChangeRequestsService.getAllChangeRequests(organization);
 
@@ -599,32 +404,8 @@ describe('Change Request Tests', () => {
 
     describe('getToReviewChangeRequests', () => {
       it('respects the global car filter and returns only to-review CRs for the selected car', async () => {
-        await ChangeRequestsService.createStandardChangeRequest(
-          otherUser,
-          0,
-          1,
-          0,
-          CR_Type.DEFINITION_CHANGE,
-          'Scope CR on car A',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          [],
-          organization,
-          projPropChanges,
-          null
-        );
-        await ChangeRequestsService.createStandardChangeRequest(
-          otherUser,
-          0,
-          2,
-          0,
-          CR_Type.DEFINITION_CHANGE,
-          'Scope CR on car B',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          [],
-          organization,
-          projPropChanges,
-          null
-        );
+        await ChangeRequestsService.createStandardChangeRequest(otherUser, 0, 1, 0, 'reason', organization);
+        await ChangeRequestsService.createStandardChangeRequest(otherUser, 0, 2, 0, 'reason', organization);
 
         const results = await ChangeRequestsService.getToReviewChangeRequests(user, organization, carAId);
 
@@ -633,32 +414,8 @@ describe('Change Request Tests', () => {
       });
 
       it('returns all to-review CRs when no car is selected', async () => {
-        await ChangeRequestsService.createStandardChangeRequest(
-          otherUser,
-          0,
-          1,
-          0,
-          CR_Type.DEFINITION_CHANGE,
-          'Scope CR on car A',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          [],
-          organization,
-          projPropChanges,
-          null
-        );
-        await ChangeRequestsService.createStandardChangeRequest(
-          otherUser,
-          0,
-          2,
-          0,
-          CR_Type.DEFINITION_CHANGE,
-          'Scope CR on car B',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          [],
-          organization,
-          projPropChanges,
-          null
-        );
+        await ChangeRequestsService.createStandardChangeRequest(otherUser, 0, 1, 0, 'reason', organization);
+        await ChangeRequestsService.createStandardChangeRequest(otherUser, 0, 2, 0, 'reason', organization);
 
         const results = await ChangeRequestsService.getToReviewChangeRequests(user, organization);
 
@@ -668,32 +425,8 @@ describe('Change Request Tests', () => {
 
     describe('getUnreviewedChangeRequests', () => {
       it('respects the global car filter and returns only unreviewed CRs for the selected car', async () => {
-        await ChangeRequestsService.createStandardChangeRequest(
-          user,
-          0,
-          1,
-          0,
-          CR_Type.ISSUE,
-          'Unreviewed CR on car A',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          solutionArgs,
-          organization,
-          null,
-          null
-        );
-        await ChangeRequestsService.createStandardChangeRequest(
-          user,
-          0,
-          2,
-          0,
-          CR_Type.ISSUE,
-          'Unreviewed CR on car B',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          solutionArgs,
-          organization,
-          null,
-          null
-        );
+        await ChangeRequestsService.createStandardChangeRequest(user, 0, 1, 0, 'reason', organization);
+        await ChangeRequestsService.createStandardChangeRequest(user, 0, 2, 0, 'reason', organization);
 
         const results = await ChangeRequestsService.getUnreviewedChangeRequests(user, undefined, organization, carAId);
 
@@ -702,32 +435,8 @@ describe('Change Request Tests', () => {
       });
 
       it('ignores the global car filter when a wbsNum is provided and returns CRs matching the wbsNum', async () => {
-        await ChangeRequestsService.createStandardChangeRequest(
-          user,
-          0,
-          1,
-          0,
-          CR_Type.ISSUE,
-          'Unreviewed CR on car A',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          solutionArgs,
-          organization,
-          null,
-          null
-        );
-        await ChangeRequestsService.createStandardChangeRequest(
-          user,
-          0,
-          2,
-          0,
-          CR_Type.ISSUE,
-          'Unreviewed CR on car B',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          solutionArgs,
-          organization,
-          null,
-          null
-        );
+        await ChangeRequestsService.createStandardChangeRequest(user, 0, 1, 0, 'reason', organization);
+        await ChangeRequestsService.createStandardChangeRequest(user, 0, 2, 0, 'reason', organization);
 
         // wbsNum scopes to car A's project; carId points to car B - car filter should be ignored
         const wbsNum = { carNumber: 0, projectNumber: 1, workPackageNumber: 0 };
@@ -740,36 +449,12 @@ describe('Change Request Tests', () => {
 
     describe('getApprovedChangeRequests', () => {
       it('respects the global car filter and returns only recent CRs for the selected car', async () => {
-        const crA = await ChangeRequestsService.createStandardChangeRequest(
-          user,
-          0,
-          1,
-          0,
-          CR_Type.ISSUE,
-          'Recent CR on car A',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          solutionArgs,
-          organization,
-          null,
-          null
-        );
-        const crB = await ChangeRequestsService.createStandardChangeRequest(
-          user,
-          0,
-          2,
-          0,
-          CR_Type.ISSUE,
-          'Recent CR on car B',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          solutionArgs,
-          organization,
-          null,
-          null
-        );
+        const crA = await ChangeRequestsService.createStandardChangeRequest(user, 0, 1, 0, 'reason', organization);
+        const crB = await ChangeRequestsService.createStandardChangeRequest(user, 0, 2, 0, 'reason', organization);
 
         // getApprovedChangeRequests requires dateReviewed >= fiveDaysAgo - review both CRs to satisfy this
-        await ChangeRequestsService.reviewChangeRequest(otherUser, crA.crId, '', false, organization, null);
-        await ChangeRequestsService.reviewChangeRequest(otherUser, crB.crId, '', false, organization, null);
+        await ChangeRequestsService.reviewChangeRequest(otherUser, crA.crId, '', false, organization);
+        await ChangeRequestsService.reviewChangeRequest(otherUser, crB.crId, '', false, organization);
 
         const results = await ChangeRequestsService.getApprovedChangeRequests(user, undefined, organization, carAId);
 
@@ -778,36 +463,12 @@ describe('Change Request Tests', () => {
       }, 15000);
 
       it('ignores the global car filter when a wbsNum is provided and returns CRs matching the wbsNum', async () => {
-        const crA = await ChangeRequestsService.createStandardChangeRequest(
-          user,
-          0,
-          1,
-          0,
-          CR_Type.ISSUE,
-          'Recent CR on car A',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          solutionArgs,
-          organization,
-          null,
-          null
-        );
-        const crB = await ChangeRequestsService.createStandardChangeRequest(
-          user,
-          0,
-          2,
-          0,
-          CR_Type.ISSUE,
-          'Recent CR on car B',
-          [{ type: Scope_CR_Why_Type.COMPETITION, explain: 'reason' }],
-          solutionArgs,
-          organization,
-          null,
-          null
-        );
+        const crA = await ChangeRequestsService.createStandardChangeRequest(user, 0, 1, 0, 'reason', organization);
+        const crB = await ChangeRequestsService.createStandardChangeRequest(user, 0, 2, 0, 'reason', organization);
 
         // getApprovedChangeRequests requires dateReviewed >= fiveDaysAgo - review both CRs to satisfy this
-        await ChangeRequestsService.reviewChangeRequest(otherUser, crA.crId, '', false, organization, null);
-        await ChangeRequestsService.reviewChangeRequest(otherUser, crB.crId, '', false, organization, null);
+        await ChangeRequestsService.reviewChangeRequest(otherUser, crA.crId, '', false, organization);
+        await ChangeRequestsService.reviewChangeRequest(otherUser, crB.crId, '', false, organization);
 
         // wbsNum scopes to car A's project; carId points to car B - car filter should be ignored
         const wbsNum = { carNumber: 0, projectNumber: 1, workPackageNumber: 0 };
