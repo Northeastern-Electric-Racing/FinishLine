@@ -177,10 +177,16 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const [pendingMaterialIndices, setPendingMaterialIndices] = useState<Set<number>>(new Set());
 
   const onCostBlurHandler = (value: number, index: number) => {
-    setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
+    const roundedValue = parseFloat((value || 0).toFixed(2));
+    const shippingCost = Number((watch(`reimbursementProducts.${index}` as const) as any)?.__shippingCost ?? 0);
+    const totalRowCost = roundedValue + shippingCost;
+
+    setValue(`reimbursementProducts.${index}.cost`, roundedValue);
 
     if (firstRefundSourceIndexCode) {
-      setValue(`reimbursementProducts.${index}.refundSources`, [{ indexCode: firstRefundSourceIndexCode, amount: value }]);
+      setValue(`reimbursementProducts.${index}.refundSources`, [
+        { indexCode: firstRefundSourceIndexCode, amount: totalRowCost }
+      ]);
     }
   };
   const totalShipping = watch('splitShipping');
@@ -218,6 +224,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     if (hasMultipleRefundSources) {
       const firstSourceAmount = Number(watch(`reimbursementProducts.${index}.refundSources.${0}.amount`)) || 0;
       const secondSourceAmount = Number(watch(`reimbursementProducts.${index}.refundSources.${1}.amount`)) || 0;
+      const shippingCost = Number((watch(`reimbursementProducts.${index}` as const) as any)?.__shippingCost ?? 0);
 
       if (firstRefundSourceIndexCode !== undefined) {
         setValue(`reimbursementProducts.${index}.refundSources.${0}.indexCode`, firstRefundSourceIndexCode);
@@ -227,7 +234,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
         setValue(`reimbursementProducts.${index}.refundSources.${1}.indexCode`, secondRefundSourceIndexCode);
       }
 
-      setValue(`reimbursementProducts.${index}.cost`, firstSourceAmount + secondSourceAmount);
+      setValue(`reimbursementProducts.${index}.cost`, firstSourceAmount + secondSourceAmount - shippingCost);
     }
   };
 
@@ -662,18 +669,40 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                       <Controller
                                         name={`reimbursementProducts.${product.index}.cost`}
                                         control={control}
-                                        render={({ field }) => (
-                                          <TextField
-                                            {...field}
-                                            variant="outlined"
-                                            value={field.value === 0 ? '' : field.value}
-                                            placeholder={'$ Cost'}
-                                            type="number"
-                                            fullWidth
-                                            onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
-                                            error={!!errors.reimbursementProducts?.[product.index]?.cost}
-                                          />
-                                        )}
+                                        render={({ field }) => {
+                                          const shippingCost = Number(
+                                            (watch(`reimbursementProducts.${product.index}` as const) as any)
+                                              ?.__shippingCost ?? 0
+                                          );
+                                          const rowTotal = Number(field.value || 0) + shippingCost;
+
+                                          return (
+                                            <>
+                                              <TextField
+                                                {...field}
+                                                variant="outlined"
+                                                value={field.value === 0 ? '' : field.value}
+                                                placeholder={'$ Cost'}
+                                                type="number"
+                                                fullWidth
+                                                onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
+                                                error={!!errors.reimbursementProducts?.[product.index]?.cost}
+                                              />
+                                              {shippingCost > 0 && (
+                                                <TextField
+                                                  value={shippingCost.toFixed(2)}
+                                                  variant="outlined"
+                                                  size="small"
+                                                  fullWidth
+                                                  disabled
+                                                  margin="dense"
+                                                  label="Shipping"
+                                                  helperText={`Shipping + $${shippingCost.toFixed(2)} · Row total $${rowTotal.toFixed(2)}`}
+                                                />
+                                              )}
+                                            </>
+                                          );
+                                        }}
                                       />
                                       <FormHelperText error>
                                         {errors.reimbursementProducts?.[product.index]?.cost?.message}
@@ -791,6 +820,26 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                         </FormControl>
                                       </Box>
                                     )}
+
+                                    {Number(
+                                      (watch(`reimbursementProducts.${product.index}` as const) as any)?.__shippingCost ?? 0
+                                    ) > 0 && (
+                                      <Box sx={{ width: '100%', mt: 1 }}>
+                                        <TextField
+                                          value={Number(
+                                            (watch(`reimbursementProducts.${product.index}` as const) as any)
+                                              ?.__shippingCost ?? 0
+                                          ).toFixed(2)}
+                                          variant="outlined"
+                                          size="small"
+                                          fullWidth
+                                          disabled
+                                          label="Shipping"
+                                          helperText={`Shipping + $${Number((watch(`reimbursementProducts.${product.index}` as const) as any)?.__shippingCost ?? 0).toFixed(2)} · Row total $${Number(watch(`reimbursementProducts.${product.index}.cost`) || 0).toFixed(2)}`}
+                                        />
+                                      </Box>
+                                    )}
+
                                     <Box
                                       sx={{
                                         display: { xs: 'block', md: 'none' },
@@ -811,13 +860,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                   }
                                 }}
                                 onClick={() => {
-                                  const isShippingProduct = product.name === 'Split Shipping';
-
                                   removeProduct(product.index);
-
-                                  if (!isShippingProduct) {
-                                    setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
-                                  }
+                                  setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
                                 }}
                               >
                                 <RemoveCircleOutline />

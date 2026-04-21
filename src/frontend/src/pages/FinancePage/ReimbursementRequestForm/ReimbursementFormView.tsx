@@ -153,16 +153,16 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const secondRefundSourceId = watch('secondaryAccount');
   const hasPreFilledData = useRef(true);
 
-  const nonShippingProducts = products?.filter((product) => product.name !== 'Split Shipping') ?? [];
+  const shippableProducts = products?.filter((product) => !!product.materialId) ?? [];
 
-  const allNonShippingProductsHaveCosts =
-    nonShippingProducts.length > 0 &&
-    nonShippingProducts.every(
-      (product) =>
-        product.cost !== undefined && product.cost !== null && String(product.cost) !== '' && Number(product.cost) > 0
-    );
+  const allShippableProductsHaveCosts =
+    shippableProducts.length > 0 &&
+    shippableProducts.every((product) => {
+      const baseCost = Number((product as any).__baseCost ?? product.cost ?? 0);
+      return baseCost > 0;
+    });
 
-  const canApplyProportionalSplit = Number(splitShippingValue) > 0 && allNonShippingProductsHaveCosts;
+  const canApplyProportionalSplit = Number(splitShippingValue) > 0 && allShippableProductsHaveCosts;
 
   useEffect(() => {
     if (!hasPreFilledData.current) return;
@@ -249,7 +249,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
   const remainingRefundSources = indexCodes.filter((code) => code.indexCodeId !== firstRefundSourceId);
   const calculatedTotalCost = products
-    .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost), 0)
+    .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost || 0), 0)
     .toFixed(2);
 
   const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();

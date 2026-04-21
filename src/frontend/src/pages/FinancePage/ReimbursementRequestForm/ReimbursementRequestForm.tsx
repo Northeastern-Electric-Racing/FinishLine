@@ -197,105 +197,46 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     name: 'reimbursementProducts'
   });
 
-  const applySplitShippingToProducts = (totalShipping?: number) => {
-    const currentProducts = watch('reimbursementProducts') ?? [];
+  const getGroupKey = (product: ReimbursementProductFormArgs) =>
+    'otherProductReasonId' in product.reason
+      ? `other-${product.reason.otherProductReasonId}`
+      : `wbs-${product.reason.carNumber}-${product.reason.projectNumber}`;
 
-    const nonShippingProducts = currentProducts.filter((product) => product.name !== 'Split Shipping');
+  const getBaseCost = (product: ReimbursementProductFormArgs) => Number((product as any).__baseCost ?? product.cost ?? 0);
 
-    if (!totalShipping || totalShipping <= 0 || nonShippingProducts.length === 0) {
-      reimbursementProductReplace(nonShippingProducts);
-      return;
-    }
+  const getShippingCost = (product: ReimbursementProductFormArgs) => Number((product as any).__shippingCost ?? 0);
 
-    const groupedProducts = new Map<string, ReimbursementProductFormArgs[]>();
+  const resetProductCosts = (product: ReimbursementProductFormArgs): ReimbursementProductFormArgs =>
+    ({
+      ...product,
+      __baseCost: getBaseCost(product),
+      __shippingCost: 0,
+      cost: getBaseCost(product)
+    }) as ReimbursementProductFormArgs;
 
-    nonShippingProducts.forEach((product) => {
-      const key =
-        'otherProductReasonId' in product.reason
-          ? `other-${product.reason.otherProductReasonId}`
-          : `wbs-${product.reason.carNumber}-${product.reason.projectNumber}`;
-
-      if (!groupedProducts.has(key)) {
-        groupedProducts.set(key, []);
-      }
-
-      groupedProducts.get(key)!.push(product);
-    });
-
-    const groupedEntries = Array.from(groupedProducts.values());
-
-    const totalShippingCents = Math.round(totalShipping * 100);
-    const baseShippingCents = Math.floor(totalShippingCents / groupedEntries.length);
-    const remainderCents = totalShippingCents % groupedEntries.length;
-
-    const updatedProducts: ReimbursementProductFormArgs[] = [];
-
-    groupedEntries.forEach((productsInGroup, index) => {
-      productsInGroup.forEach((product) => updatedProducts.push(product));
-
-      const shippingCents = baseShippingCents + (index < remainderCents ? 1 : 0);
-
-      updatedProducts.push({
-        name: 'Split Shipping',
-        reason: productsInGroup[0].reason,
-        cost: shippingCents / 100,
-        refundSources: []
-      });
-    });
-
-    reimbursementProductReplace(updatedProducts);
+  const allocateEvenly = (totalCents: number, count: number): number[] => {
+    if (count <= 0) return [];
+    const base = Math.floor(totalCents / count);
+    const remainder = totalCents % count;
+    return Array.from({ length: count }, (_, index) => base + (index < remainder ? 1 : 0));
   };
 
-  const applyProportionalShippingToProducts = (totalShipping?: number) => {
-    const currentProducts = watch('reimbursementProducts') ?? [];
+  const allocateProportionally = (totalCents: number, weights: number[]): number[] => {
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
 
-    const nonShippingProducts = currentProducts.filter((product) => product.name !== 'Split Shipping');
+    if (totalCents <= 0 || weights.length === 0) return weights.map(() => 0);
+    if (totalWeight <= 0) return allocateEvenly(totalCents, weights.length);
 
-    if (!totalShipping || totalShipping <= 0 || nonShippingProducts.length === 0) {
-      reimbursementProductReplace(nonShippingProducts);
-      return;
-    }
-
-    const groupedProducts = new Map<string, ReimbursementProductFormArgs[]>();
-
-    nonShippingProducts.forEach((product) => {
-      const key =
-        'otherProductReasonId' in product.reason
-          ? `other-${product.reason.otherProductReasonId}`
-          : `wbs-${product.reason.carNumber}-${product.reason.projectNumber}`;
-
-      if (!groupedProducts.has(key)) {
-        groupedProducts.set(key, []);
-      }
-
-      groupedProducts.get(key)!.push(product);
-    });
-
-    const groupedEntries = Array.from(groupedProducts.values());
-
-    const totalShippingCents = Math.round(totalShipping * 100);
-
-    const groupCosts = groupedEntries.map((productsInGroup) =>
-      productsInGroup.reduce((sum, product) => sum + Math.round(Number(product.cost || 0) * 100), 0)
-    );
-
-    const totalCostCents = groupCosts.reduce((sum, cost) => sum + cost, 0);
-
-    if (totalCostCents <= 0) {
-      reimbursementProductReplace(nonShippingProducts);
-      return;
-    }
-
-    const exactShares = groupCosts.map((groupCost) => (groupCost / totalCostCents) * totalShippingCents);
+    const exactShares = weights.map((weight) => (weight / totalWeight) * totalCents);
     const flooredShares = exactShares.map((share) => Math.floor(share));
-    let remainingCents = totalShippingCents - flooredShares.reduce((sum, cents) => sum + cents, 0);
+    let remainingCents = totalCents - flooredShares.reduce((sum, cents) => sum + cents, 0);
 
-    const remainders = exactShares.map((share, index) => ({
-      index,
-      remainder: share - Math.floor(share)
-    }));
-
-    remainders.sort((a, b) => b.remainder - a.remainder);
+    const remainders = exactShares
+      .map((share, index) => ({
+        index,
+        remainder: share - Math.floor(share)
+      }))
+      .sort((a, b) => b.remainder - a.remainder);
 
     remainders.forEach(({ index }) => {
       if (remainingCents > 0) {
@@ -304,20 +245,91 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       }
     });
 
-    const updatedProducts: ReimbursementProductFormArgs[] = [];
+    return flooredShares;
+  };
 
-    groupedEntries.forEach((productsInGroup, index) => {
-      productsInGroup.forEach((product) => updatedProducts.push(product));
+  const applySplitShippingToProducts = (totalShipping?: number) => {
+    const currentProducts = watch('reimbursementProducts') ?? [];
+    const resetProducts = currentProducts.map(resetProductCosts);
 
-      updatedProducts.push({
-        name: 'Split Shipping',
-        reason: productsInGroup[0].reason,
-        cost: flooredShares[index] / 100,
-        refundSources: []
+    const shippableProducts = resetProducts.filter((product) => !!product.materialId);
+
+    if (!totalShipping || totalShipping <= 0 || shippableProducts.length === 0) {
+      reimbursementProductReplace(resetProducts);
+      return;
+    }
+
+    const groupedProducts = new Map<string, ReimbursementProductFormArgs[]>();
+
+    shippableProducts.forEach((product) => {
+      const key = getGroupKey(product);
+      if (!groupedProducts.has(key)) {
+        groupedProducts.set(key, []);
+      }
+      groupedProducts.get(key)!.push(product);
+    });
+
+    const groupedEntries = Array.from(groupedProducts.values());
+    const totalShippingCents = Math.round(totalShipping * 100);
+
+    const projectShippingAllocations = allocateEvenly(totalShippingCents, groupedEntries.length);
+
+    groupedEntries.forEach((productsInGroup, groupIndex) => {
+      const materialShippingAllocations = allocateEvenly(projectShippingAllocations[groupIndex], productsInGroup.length);
+
+      productsInGroup.forEach((product, productIndex) => {
+        const baseCostCents = Math.round(getBaseCost(product) * 100);
+        product.cost = (baseCostCents + materialShippingAllocations[productIndex]) / 100;
       });
     });
 
-    reimbursementProductReplace(updatedProducts);
+    reimbursementProductReplace(resetProducts);
+  };
+
+  const applyProportionalShippingToProducts = (totalShipping?: number) => {
+    const currentProducts = watch('reimbursementProducts') ?? [];
+    const resetProducts = currentProducts.map(resetProductCosts);
+
+    const shippableProducts = resetProducts.filter((product) => !!product.materialId);
+
+    if (!totalShipping || totalShipping <= 0 || shippableProducts.length === 0) {
+      reimbursementProductReplace(resetProducts);
+      return;
+    }
+
+    const groupedProducts = new Map<string, ReimbursementProductFormArgs[]>();
+
+    shippableProducts.forEach((product) => {
+      const key = getGroupKey(product);
+      if (!groupedProducts.has(key)) {
+        groupedProducts.set(key, []);
+      }
+      groupedProducts.get(key)!.push(product);
+    });
+
+    const groupedEntries = Array.from(groupedProducts.values());
+    const totalShippingCents = Math.round(totalShipping * 100);
+
+    const projectBaseCosts = groupedEntries.map((productsInGroup) =>
+      productsInGroup.reduce((sum, product) => sum + Math.round(getBaseCost(product) * 100), 0)
+    );
+
+    const projectShippingAllocations = allocateProportionally(totalShippingCents, projectBaseCosts);
+
+    groupedEntries.forEach((productsInGroup, groupIndex) => {
+      const materialBaseCosts = productsInGroup.map((product) => Math.round(getBaseCost(product) * 100));
+      const materialShippingAllocations = allocateProportionally(projectShippingAllocations[groupIndex], materialBaseCosts);
+
+      productsInGroup.forEach((product, productIndex) => {
+        const shippingAmount = materialShippingAllocations[productIndex] / 100;
+        const baseCost = getBaseCost(product);
+
+        (product as any).__shippingCost = shippingAmount;
+        product.cost = baseCost + shippingAmount;
+      });
+    });
+
+    reimbursementProductReplace(resetProducts);
   };
 
   const {
@@ -372,8 +384,13 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
         const anyNonZero = product.refundSources.some((rs) => Number(rs.amount) > 0);
         const formattedRefundSources = anyNonZero ? product.refundSources : [];
+        const { __baseCost, __shippingCost, ...rest } = product as ReimbursementProductFormArgs & {
+          __baseCost?: number;
+          __shippingCost?: number;
+        };
+
         return {
-          ...product,
+          ...rest,
           cost: Math.round(product.cost * 100),
           refundSources: formattedRefundSources.map((rs) => ({
             ...rs,
@@ -430,8 +447,13 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
           const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
             const anyNonZero = product.refundSources.some((rs) => Number(rs.amount) > 0);
             const formattedRefundSources = anyNonZero ? product.refundSources : [];
+            const { __baseCost, __shippingCost, ...rest } = product as ReimbursementProductFormArgs & {
+              __baseCost?: number;
+              __shippingCost?: number;
+            };
+
             return {
-              ...product,
+              ...rest,
               cost: Math.round(product.cost * 100),
               refundSources: formattedRefundSources.map((rs) => ({
                 ...rs,
