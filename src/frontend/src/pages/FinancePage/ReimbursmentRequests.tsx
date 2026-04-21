@@ -156,14 +156,12 @@ const ReimbursementRequests: React.FC = () => {
   if (assignedReimbursementRequestIsError) return <ErrorPage message={assignedReimbursementRequestError?.message} />;
   if (createdReimbursementRequestIsError) return <ErrorPage message={createdReimbursementRequestError?.message} />;
   if (allProjectsIsError) return <ErrorPage message={allProjectsError?.message} />;
-  if (allProjectsIsLoading) return <LoadingIndicator />;
+  if (allProjectsIsLoading || !allProjects) return <LoadingIndicator />;
 
-  const projectAutocompleteOptions = allProjects
-    ? allProjects.map((proj) => ({
-        label: wbsPipe(proj.wbsNum) + ' - ' + proj.name,
-        id: wbsPipe(proj.wbsNum)
-      }))
-    : [];
+  const projectAutocompleteOptions = allProjects.map((proj) => ({
+    label: wbsPipe(proj.wbsNum) + ' - ' + proj.name,
+    id: wbsPipe(proj.wbsNum)
+  }));
 
   const filterMenu = (
     <Menu
