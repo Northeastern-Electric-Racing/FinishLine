@@ -204,7 +204,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
   const getBaseCost = (product: ReimbursementProductFormArgs) => Number((product as any).__baseCost ?? product.cost ?? 0);
 
-
   const resetProductCosts = (product: ReimbursementProductFormArgs): ReimbursementProductFormArgs =>
     ({
       ...product,
