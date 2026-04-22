@@ -248,7 +248,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     return flooredShares;
   };
 
- 
   const applySplitShippingToProducts = (totalShipping?: number) => {
     const currentProducts = watch('reimbursementProducts') ?? [];
     const resetProducts = currentProducts.map(resetProductCosts);
@@ -274,10 +273,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     const projectShippingAllocations = allocateEvenly(totalShippingCents, groupedEntries.length);
 
     groupedEntries.forEach((productsInGroup, groupIndex) => {
-      const materialShippingAllocations = allocateEvenly(
-        projectShippingAllocations[groupIndex],
-        productsInGroup.length
-      );
+      const materialShippingAllocations = allocateEvenly(projectShippingAllocations[groupIndex], productsInGroup.length);
 
       productsInGroup.forEach((product, productIndex) => {
         const shippingAmount = materialShippingAllocations[productIndex] / 100;

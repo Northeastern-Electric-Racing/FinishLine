@@ -160,10 +160,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
       return baseCost > 0;
     });
 
-  const canApplyProportionalSplit =
-    Number(splitShippingValue) > 0 &&
-    allProductsHaveCosts;
-  
+  const canApplyProportionalSplit = Number(splitShippingValue) > 0 && allProductsHaveCosts;
 
   useEffect(() => {
     if (!hasPreFilledData.current) return;

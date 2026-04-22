@@ -42,8 +42,6 @@ import ErrorPage from '../../ErrorPage';
 import { formatReasonName } from '../../../utils/reimbursement-request.utils';
 import CreateMaterialModal from '../../ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/CreateMaterialModal';
 
-
-
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
   removeProduct: (index: number) => void;
@@ -215,7 +213,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     recalculateRowTotal(index);
   };
 
-
   const updateSingleSourceRefund = (index: number, totalRowCost: number) => {
     if (firstRefundSourceIndexCode && !hasMultipleRefundSources) {
       setValue(`reimbursementProducts.${index}.refundSources`, [
@@ -260,14 +257,13 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     secondRefundSourceName = formatSourceName(secondRefundSourceName);
   }
 
- const onAmountBlurHandler = (
+  const onAmountBlurHandler = (
     value: string,
     index: number,
     fieldName: 'refundSources.0.amount' | 'refundSources.1.amount'
   ) => {
     const parsedValue = value ? parseFloat(value) : 0;
 
-   
     setValue(`reimbursementProducts.${index}.${fieldName}`, parsedValue, {
       shouldDirty: true,
       shouldValidate: true
@@ -276,15 +272,12 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     if (hasMultipleRefundSources) {
       const product = (watch(`reimbursementProducts.${index}` as const) as any) ?? {};
 
-      const firstSourceAmount =
-        Number(product?.refundSources?.[0]?.amount ?? 0);
+      const firstSourceAmount = Number(product?.refundSources?.[0]?.amount ?? 0);
 
-      const secondSourceAmount =
-        Number(product?.refundSources?.[1]?.amount ?? 0);
+      const secondSourceAmount = Number(product?.refundSources?.[1]?.amount ?? 0);
 
       const totalRowCost = Number((firstSourceAmount + secondSourceAmount).toFixed(2));
 
-      
       setValue(`reimbursementProducts.${index}.cost`, totalRowCost, {
         shouldDirty: true,
         shouldValidate: true
@@ -728,66 +721,69 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                         name={`reimbursementProducts.${product.index}.cost`}
                                         control={control}
                                         render={() => {
-                                              const productRow = (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
-                                              const baseCost = Number(productRow.__baseCost ?? 0);
-                                              const shippingCost = Number(productRow.__shippingCost ?? 0);
-                                              const rowTotal = Number(productRow.cost ?? baseCost + shippingCost);
+                                          const productRow =
+                                            (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
+                                          const baseCost = Number(productRow.__baseCost ?? 0);
+                                          const shippingCost = Number(productRow.__shippingCost ?? 0);
+                                          const rowTotal = Number(productRow.cost ?? baseCost + shippingCost);
 
-                                              return (
-                                                <>
-                                                  <TextField
-                                                    variant="outlined"
-                                                    value={baseCost === 0 ? '' : baseCost}
-                                                    placeholder={'$ Cost'}
-                                                    type="number"
-                                                    fullWidth
-                                                    onChange={(e) => {
-                                                      const productRow = (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
+                                          return (
+                                            <>
+                                              <TextField
+                                                variant="outlined"
+                                                value={baseCost === 0 ? '' : baseCost}
+                                                placeholder={'$ Cost'}
+                                                type="number"
+                                                fullWidth
+                                                onChange={(e) => {
+                                                  const productRow =
+                                                    (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
 
-                                                      setValue(
-                                                        `reimbursementProducts.${product.index}`,
-                                                        {
-                                                          ...productRow,
-                                                          __baseCost: e.target.value === '' ? 0 : Number(e.target.value)
-                                                        } as any,
-                                                        {
-                                                          shouldDirty: true
-                                                        }
-                                                      );
-                                                    }}
-                                                    onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
-                                                    error={!!errors.reimbursementProducts?.[product.index]?.cost}
-                                                  />
-                                                  <TextField
-                                                    value={shippingCost === 0 ? '' : shippingCost}
-                                                    variant="outlined"
-                                                    size="small"
-                                                    fullWidth
-                                                    margin="dense"
-                                                    label="Shipping"
-                                                    type="number"
-                                                    onChange={(e) => {
-                                                      const productRow = (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
+                                                  setValue(
+                                                    `reimbursementProducts.${product.index}`,
+                                                    {
+                                                      ...productRow,
+                                                      __baseCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                                    } as any,
+                                                    {
+                                                      shouldDirty: true
+                                                    }
+                                                  );
+                                                }}
+                                                onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
+                                                error={!!errors.reimbursementProducts?.[product.index]?.cost}
+                                              />
+                                              <TextField
+                                                value={shippingCost === 0 ? '' : shippingCost}
+                                                variant="outlined"
+                                                size="small"
+                                                fullWidth
+                                                margin="dense"
+                                                label="Shipping"
+                                                type="number"
+                                                onChange={(e) => {
+                                                  const productRow =
+                                                    (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
 
-                                                      setValue(
-                                                        `reimbursementProducts.${product.index}`,
-                                                        {
-                                                          ...productRow,
-                                                          __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
-                                                        } as any,
-                                                        {
-                                                          shouldDirty: true
-                                                        }
-                                                      );
-                                                    }}
-                                                    onBlur={(e) => onShippingBlurHandler(parseFloat(e.target.value), product.index)}
-                                                    helperText={`Row total $${Number(rowTotal || 0).toFixed(2)}`}
-                                                  />
-                                                </>
-                                              );
-                                            }}
-                                            
-                                        
+                                                  setValue(
+                                                    `reimbursementProducts.${product.index}`,
+                                                    {
+                                                      ...productRow,
+                                                      __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                                    } as any,
+                                                    {
+                                                      shouldDirty: true
+                                                    }
+                                                  );
+                                                }}
+                                                onBlur={(e) =>
+                                                  onShippingBlurHandler(parseFloat(e.target.value), product.index)
+                                                }
+                                                helperText={`Row total $${Number(rowTotal || 0).toFixed(2)}`}
+                                              />
+                                            </>
+                                          );
+                                        }}
                                       />
                                       <FormHelperText error>
                                         {errors.reimbursementProducts?.[product.index]?.cost?.message}
@@ -912,9 +908,15 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                       <Box sx={{ width: '100%', mt: 1 }}>
                                         <TextField
                                           value={
-                                            Number((watch(`reimbursementProducts.${product.index}` as const) as any)?.__shippingCost ?? 0) === 0
+                                            Number(
+                                              (watch(`reimbursementProducts.${product.index}` as const) as any)
+                                                ?.__shippingCost ?? 0
+                                            ) === 0
                                               ? ''
-                                              : Number((watch(`reimbursementProducts.${product.index}` as const) as any)?.__shippingCost ?? 0)
+                                              : Number(
+                                                  (watch(`reimbursementProducts.${product.index}` as const) as any)
+                                                    ?.__shippingCost ?? 0
+                                                )
                                           }
                                           variant="outlined"
                                           size="small"
@@ -922,7 +924,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                           label="Shipping"
                                           type="number"
                                           onChange={(e) => {
-                                            const currentProduct = (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
+                                            const currentProduct =
+                                              (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
 
                                             setValue(
                                               `reimbursementProducts.${product.index}`,
