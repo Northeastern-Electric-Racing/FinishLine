@@ -153,16 +153,17 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const secondRefundSourceId = watch('secondaryAccount');
   const hasPreFilledData = useRef(true);
 
-  const shippableProducts = products?.filter((product) => !!product.materialId) ?? [];
-
-  const allShippableProductsHaveCosts =
-    shippableProducts.length > 0 &&
-    shippableProducts.every((product) => {
-      const baseCost = Number((product as any).__baseCost ?? product.cost ?? 0);
+  const allProductsHaveCosts =
+    products.length > 0 &&
+    products.every((product) => {
+      const baseCost = Number((product as any).__baseCost ?? 0);
       return baseCost > 0;
     });
 
-  const canApplyProportionalSplit = Number(splitShippingValue) > 0 && allShippableProductsHaveCosts;
+  const canApplyProportionalSplit =
+    Number(splitShippingValue) > 0 &&
+    allProductsHaveCosts;
+  
 
   useEffect(() => {
     if (!hasPreFilledData.current) return;
@@ -180,10 +181,13 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
       if (secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
         setValue('secondaryAccount', undefined);
 
-        reimbursementProducts.forEach((_, index) => {
+        reimbursementProducts.forEach((product, index) => {
+          const baseCost = Number((product as any).__baseCost ?? product.cost ?? 0);
+          const shippingCost = Number((product as any).__shippingCost ?? 0);
+
           setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, 0);
           setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
-          setValue(`reimbursementProducts.${index}.cost`, 0);
+          setValue(`reimbursementProducts.${index}.cost`, Number((baseCost + shippingCost).toFixed(2)));
         });
       }
     }
@@ -932,7 +936,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           onChange={(e) => {
                             onChange(e);
                           }}
-                          onBlur={() => applySplitShippingToProducts(Number(value))}
+                          onBlur={() => applySplitShippingToProducts(value ? Number(value) : undefined)}
                           placeholder="Enter total shipping cost"
                           type="number"
                           inputProps={{ min: 0, step: 0.01 }}
@@ -959,7 +963,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                             textTransform: 'none'
                           }}
                           disabled={!canApplyProportionalSplit}
-                          onClick={() => applyProportionalShippingToProducts(Number(value))}
+                          onClick={() => applyProportionalShippingToProducts(value ? Number(value) : undefined)}
                         >
                           Split proportional to cost
                         </Button>

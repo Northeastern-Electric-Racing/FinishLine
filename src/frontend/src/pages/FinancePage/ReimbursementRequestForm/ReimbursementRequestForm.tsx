@@ -248,11 +248,12 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     return flooredShares;
   };
 
+ 
   const applySplitShippingToProducts = (totalShipping?: number) => {
     const currentProducts = watch('reimbursementProducts') ?? [];
     const resetProducts = currentProducts.map(resetProductCosts);
 
-    const shippableProducts = resetProducts.filter((product) => !!product.materialId);
+    const shippableProducts = resetProducts.filter((product) => !!product.name?.trim());
 
     if (!totalShipping || totalShipping <= 0 || shippableProducts.length === 0) {
       reimbursementProductReplace(resetProducts);
@@ -263,9 +264,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
     shippableProducts.forEach((product) => {
       const key = getGroupKey(product);
-      if (!groupedProducts.has(key)) {
-        groupedProducts.set(key, []);
-      }
+      if (!groupedProducts.has(key)) groupedProducts.set(key, []);
       groupedProducts.get(key)!.push(product);
     });
 
@@ -275,11 +274,17 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     const projectShippingAllocations = allocateEvenly(totalShippingCents, groupedEntries.length);
 
     groupedEntries.forEach((productsInGroup, groupIndex) => {
-      const materialShippingAllocations = allocateEvenly(projectShippingAllocations[groupIndex], productsInGroup.length);
+      const materialShippingAllocations = allocateEvenly(
+        projectShippingAllocations[groupIndex],
+        productsInGroup.length
+      );
 
       productsInGroup.forEach((product, productIndex) => {
-        const baseCostCents = Math.round(getBaseCost(product) * 100);
-        product.cost = (baseCostCents + materialShippingAllocations[productIndex]) / 100;
+        const shippingAmount = materialShippingAllocations[productIndex] / 100;
+        const baseCost = getBaseCost(product);
+
+        (product as any).__shippingCost = shippingAmount;
+        product.cost = baseCost + shippingAmount;
       });
     });
 
@@ -290,7 +295,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     const currentProducts = watch('reimbursementProducts') ?? [];
     const resetProducts = currentProducts.map(resetProductCosts);
 
-    const shippableProducts = resetProducts.filter((product) => !!product.materialId);
+    const shippableProducts = resetProducts.filter((product) => !!product.name?.trim());
 
     if (!totalShipping || totalShipping <= 0 || shippableProducts.length === 0) {
       reimbursementProductReplace(resetProducts);

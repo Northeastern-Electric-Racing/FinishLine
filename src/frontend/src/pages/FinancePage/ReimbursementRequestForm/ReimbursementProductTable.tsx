@@ -42,6 +42,8 @@ import ErrorPage from '../../ErrorPage';
 import { formatReasonName } from '../../../utils/reimbursement-request.utils';
 import CreateMaterialModal from '../../ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/CreateMaterialModal';
 
+
+
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
   removeProduct: (index: number) => void;
@@ -177,19 +179,64 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const [pendingMaterialIndices, setPendingMaterialIndices] = useState<Set<number>>(new Set());
 
   const onCostBlurHandler = (value: number, index: number) => {
-    const roundedValue = parseFloat((value || 0).toFixed(2));
-    const shippingCost = Number((watch(`reimbursementProducts.${index}` as const) as any)?.__shippingCost ?? 0);
-    const totalRowCost = roundedValue + shippingCost;
+    const roundedBaseCost = Number((value || 0).toFixed(2));
+    const product = (watch(`reimbursementProducts.${index}` as const) as any) ?? {};
 
-    setValue(`reimbursementProducts.${index}.cost`, roundedValue);
+    setValue(
+      `reimbursementProducts.${index}`,
+      {
+        ...product,
+        __baseCost: roundedBaseCost
+      } as any,
+      {
+        shouldDirty: true,
+        shouldValidate: true
+      }
+    );
 
-    if (firstRefundSourceIndexCode) {
+    recalculateRowTotal(index);
+  };
+  const totalShipping = watch('splitShipping');
+
+  const onShippingBlurHandler = (value: number, index: number) => {
+    const roundedShippingCost = Number((value || 0).toFixed(2));
+    const product = (watch(`reimbursementProducts.${index}` as const) as any) ?? {};
+
+    const updatedProduct = {
+      ...product,
+      __shippingCost: roundedShippingCost
+    };
+
+    setValue(`reimbursementProducts.${index}`, updatedProduct as any, {
+      shouldDirty: true,
+      shouldValidate: true
+    });
+
+    recalculateRowTotal(index);
+  };
+
+
+  const updateSingleSourceRefund = (index: number, totalRowCost: number) => {
+    if (firstRefundSourceIndexCode && !hasMultipleRefundSources) {
       setValue(`reimbursementProducts.${index}.refundSources`, [
         { indexCode: firstRefundSourceIndexCode, amount: totalRowCost }
       ]);
     }
   };
-  const totalShipping = watch('splitShipping');
+
+  const recalculateRowTotal = (index: number) => {
+    const product = watch(`reimbursementProducts.${index}` as const) as any;
+    const baseCost = Number(product?.__baseCost ?? product?.cost ?? 0);
+    const shippingCost = Number(product?.__shippingCost ?? 0);
+    const totalRowCost = Number((baseCost + shippingCost).toFixed(2));
+
+    setValue(`reimbursementProducts.${index}.cost`, totalRowCost, {
+      shouldDirty: true,
+      shouldValidate: true
+    });
+
+    updateSingleSourceRefund(index, totalRowCost);
+  };
 
   const userTheme = useTheme();
   const hoverColor = userTheme.palette.action.hover;
@@ -213,28 +260,35 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     secondRefundSourceName = formatSourceName(secondRefundSourceName);
   }
 
-  const onAmountBlurHandler = (
+ const onAmountBlurHandler = (
     value: string,
     index: number,
-    fieldName: 'cost' | `refundSources.${0}.amount` | `refundSources.${1}.amount`
+    fieldName: 'refundSources.0.amount' | 'refundSources.1.amount'
   ) => {
     const parsedValue = value ? parseFloat(value) : 0;
-    setValue(`reimbursementProducts.${index}.${fieldName}`, parsedValue);
+
+   
+    setValue(`reimbursementProducts.${index}.${fieldName}`, parsedValue, {
+      shouldDirty: true,
+      shouldValidate: true
+    });
 
     if (hasMultipleRefundSources) {
-      const firstSourceAmount = Number(watch(`reimbursementProducts.${index}.refundSources.${0}.amount`)) || 0;
-      const secondSourceAmount = Number(watch(`reimbursementProducts.${index}.refundSources.${1}.amount`)) || 0;
-      const shippingCost = Number((watch(`reimbursementProducts.${index}` as const) as any)?.__shippingCost ?? 0);
+      const product = (watch(`reimbursementProducts.${index}` as const) as any) ?? {};
 
-      if (firstRefundSourceIndexCode !== undefined) {
-        setValue(`reimbursementProducts.${index}.refundSources.${0}.indexCode`, firstRefundSourceIndexCode);
-      }
+      const firstSourceAmount =
+        Number(product?.refundSources?.[0]?.amount ?? 0);
 
-      if (secondRefundSourceIndexCode !== undefined) {
-        setValue(`reimbursementProducts.${index}.refundSources.${1}.indexCode`, secondRefundSourceIndexCode);
-      }
+      const secondSourceAmount =
+        Number(product?.refundSources?.[1]?.amount ?? 0);
 
-      setValue(`reimbursementProducts.${index}.cost`, firstSourceAmount + secondSourceAmount - shippingCost);
+      const totalRowCost = Number((firstSourceAmount + secondSourceAmount).toFixed(2));
+
+      
+      setValue(`reimbursementProducts.${index}.cost`, totalRowCost, {
+        shouldDirty: true,
+        shouldValidate: true
+      });
     }
   };
 
@@ -417,8 +471,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                           reason: validateWBS(value.id),
                           name: '',
                           cost: 0,
-                          refundSources: []
-                        });
+                          refundSources: [],
+                          __baseCost: 0,
+                          __shippingCost: 0
+                        } as any);
                         setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
                       }
                     }}
@@ -443,8 +499,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                           reason: value,
                           name: '',
                           cost: 0,
-                          refundSources: []
-                        });
+                          refundSources: [],
+                          __baseCost: 0,
+                          __shippingCost: 0
+                        } as any);
                         setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
                       }
                     }}
@@ -669,40 +727,67 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                       <Controller
                                         name={`reimbursementProducts.${product.index}.cost`}
                                         control={control}
-                                        render={({ field }) => {
-                                          const shippingCost = Number(
-                                            (watch(`reimbursementProducts.${product.index}` as const) as any)
-                                              ?.__shippingCost ?? 0
-                                          );
-                                          const rowTotal = Number(field.value || 0) + shippingCost;
+                                        render={() => {
+                                              const productRow = (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
+                                              const baseCost = Number(productRow.__baseCost ?? 0);
+                                              const shippingCost = Number(productRow.__shippingCost ?? 0);
+                                              const rowTotal = Number(productRow.cost ?? baseCost + shippingCost);
 
-                                          return (
-                                            <>
-                                              <TextField
-                                                {...field}
-                                                variant="outlined"
-                                                value={field.value === 0 ? '' : field.value}
-                                                placeholder={'$ Cost'}
-                                                type="number"
-                                                fullWidth
-                                                onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
-                                                error={!!errors.reimbursementProducts?.[product.index]?.cost}
-                                              />
-                                              {shippingCost > 0 && (
-                                                <TextField
-                                                  value={shippingCost.toFixed(2)}
-                                                  variant="outlined"
-                                                  size="small"
-                                                  fullWidth
-                                                  disabled
-                                                  margin="dense"
-                                                  label="Shipping"
-                                                  helperText={`Shipping + $${shippingCost.toFixed(2)} · Row total $${rowTotal.toFixed(2)}`}
-                                                />
-                                              )}
-                                            </>
-                                          );
-                                        }}
+                                              return (
+                                                <>
+                                                  <TextField
+                                                    variant="outlined"
+                                                    value={baseCost === 0 ? '' : baseCost}
+                                                    placeholder={'$ Cost'}
+                                                    type="number"
+                                                    fullWidth
+                                                    onChange={(e) => {
+                                                      const productRow = (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
+
+                                                      setValue(
+                                                        `reimbursementProducts.${product.index}`,
+                                                        {
+                                                          ...productRow,
+                                                          __baseCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                                        } as any,
+                                                        {
+                                                          shouldDirty: true
+                                                        }
+                                                      );
+                                                    }}
+                                                    onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
+                                                    error={!!errors.reimbursementProducts?.[product.index]?.cost}
+                                                  />
+                                                  <TextField
+                                                    value={shippingCost === 0 ? '' : shippingCost}
+                                                    variant="outlined"
+                                                    size="small"
+                                                    fullWidth
+                                                    margin="dense"
+                                                    label="Shipping"
+                                                    type="number"
+                                                    onChange={(e) => {
+                                                      const productRow = (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
+
+                                                      setValue(
+                                                        `reimbursementProducts.${product.index}`,
+                                                        {
+                                                          ...productRow,
+                                                          __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                                        } as any,
+                                                        {
+                                                          shouldDirty: true
+                                                        }
+                                                      );
+                                                    }}
+                                                    onBlur={(e) => onShippingBlurHandler(parseFloat(e.target.value), product.index)}
+                                                    helperText={`Row total $${Number(rowTotal || 0).toFixed(2)}`}
+                                                  />
+                                                </>
+                                              );
+                                            }}
+                                            
+                                        
                                       />
                                       <FormHelperText error>
                                         {errors.reimbursementProducts?.[product.index]?.cost?.message}
@@ -826,16 +911,32 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                     ) > 0 && (
                                       <Box sx={{ width: '100%', mt: 1 }}>
                                         <TextField
-                                          value={Number(
-                                            (watch(`reimbursementProducts.${product.index}` as const) as any)
-                                              ?.__shippingCost ?? 0
-                                          ).toFixed(2)}
+                                          value={
+                                            Number((watch(`reimbursementProducts.${product.index}` as const) as any)?.__shippingCost ?? 0) === 0
+                                              ? ''
+                                              : Number((watch(`reimbursementProducts.${product.index}` as const) as any)?.__shippingCost ?? 0)
+                                          }
                                           variant="outlined"
                                           size="small"
                                           fullWidth
-                                          disabled
                                           label="Shipping"
-                                          helperText={`Shipping + $${Number((watch(`reimbursementProducts.${product.index}` as const) as any)?.__shippingCost ?? 0).toFixed(2)} · Row total $${Number(watch(`reimbursementProducts.${product.index}.cost`) || 0).toFixed(2)}`}
+                                          type="number"
+                                          onChange={(e) => {
+                                            const currentProduct = (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
+
+                                            setValue(
+                                              `reimbursementProducts.${product.index}`,
+                                              {
+                                                ...currentProduct,
+                                                __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                              } as any,
+                                              {
+                                                shouldDirty: true
+                                              }
+                                            );
+                                          }}
+                                          onBlur={(e) => onShippingBlurHandler(parseFloat(e.target.value), product.index)}
+                                          helperText={`Row total $${Number(watch(`reimbursementProducts.${product.index}.cost`) || 0).toFixed(2)}`}
                                         />
                                       </Box>
                                     )}
@@ -895,8 +996,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                             reason: existingProducts[0].reason,
                             name: '',
                             cost: 0,
-                            refundSources: []
-                          });
+                            refundSources: [],
+                            __baseCost: 0,
+                            __shippingCost: 0
+                          } as any);
                           setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
                         }
                         e.currentTarget.blur();
