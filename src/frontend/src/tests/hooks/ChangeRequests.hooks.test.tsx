@@ -13,6 +13,15 @@ import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/change-
 import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/change-requests.hooks';
 
 vi.mock('../../apis/change-requests.api');
+vi.mock('../../app/AppGlobalCarFilterContext', () => ({
+  useGlobalCarFilter: () => ({
+    selectedCar: 'all-cars',
+    allCars: [],
+    setSelectedCar: vi.fn(),
+    isLoading: false,
+    error: null
+  })
+}));
 
 describe('change request hooks', () => {
   it('handles getting a list of change requests', async () => {
@@ -20,7 +29,7 @@ describe('change request hooks', () => {
     mockedGetAllChangeRequests.mockReturnValue(mockPromiseAxiosResponse<ChangeRequest[]>(exampleAllChangeRequests));
 
     const { result } = renderHook(() => useAllChangeRequests(), { wrapper });
-    await waitFor(() => result.current.isSuccess);
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(exampleAllChangeRequests);
   });
 
@@ -29,7 +38,7 @@ describe('change request hooks', () => {
     mockedGetSingleChangeRequest.mockReturnValue(mockPromiseAxiosResponse<ChangeRequest>(exampleStageGateChangeRequest));
 
     const { result } = renderHook(() => useSingleChangeRequest('1'), { wrapper });
-    await waitFor(() => result.current.isSuccess);
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(exampleStageGateChangeRequest);
   });
 });

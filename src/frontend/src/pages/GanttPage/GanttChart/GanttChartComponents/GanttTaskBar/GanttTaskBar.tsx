@@ -22,12 +22,11 @@ interface GanttTaskBarProps<T> {
   isEditMode: boolean;
   handleOnMouseOver: (e: React.MouseEvent, task: OnMouseOverOptions) => void;
   handleOnMouseLeave: () => void;
-  onShowChildrenToggle: () => void;
-  showChildren?: boolean;
   highlightedChange?: RequestEventChange<T>;
   onAddTaskPressed: (parent: GanttTask<T>) => void;
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
+  onToggle?: () => void;
 }
 
 const GanttTaskBar = <T,>({
@@ -36,13 +35,12 @@ const GanttTaskBar = <T,>({
   createChange,
   isEditMode,
   handleOnMouseOver,
-  onShowChildrenToggle,
   handleOnMouseLeave,
-  showChildren = false,
   highlightedChange,
   onAddTaskPressed,
   highlightSubtaskComparator,
-  highlightTaskComparator
+  highlightTaskComparator,
+  onToggle
 }: GanttTaskBarProps<T>) => {
   const getStartCol = (start: Date) => {
     const startCol = days.findIndex((day) => toDateString(day) === toDateString(getMonday(start))) + 1;
@@ -76,12 +74,11 @@ const GanttTaskBar = <T,>({
           getEndCol={getEndCol}
           handleOnMouseOver={handleOnMouseOver}
           handleOnMouseLeave={handleOnMouseLeave}
-          showChildren={showChildren}
-          onShowChildrenToggle={onShowChildrenToggle}
           highlightedChange={highlightedChange}
           onAddTaskPressed={onAddTaskPressed}
           highlightSubtaskComparator={highlightSubtaskComparator}
           highlightTaskComparator={highlightTaskComparator}
+          onToggle={onToggle}
         />
       )}
     </div>

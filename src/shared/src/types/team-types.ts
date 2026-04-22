@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamType } from './calendar-types.js';
 import { ProjectGantt } from './project-types.js';
 import { User } from './user-types.js';
 
@@ -13,7 +12,10 @@ export interface TeamBase {
   slackId: string;
   description: string;
   dateArchived?: Date;
-  teamType?: TeamType;
+  teamType?: {
+    teamTypeId: string;
+    name: string;
+  };
 }
 
 export interface TeamPreview extends TeamBase {

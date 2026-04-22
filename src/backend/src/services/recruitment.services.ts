@@ -1,5 +1,5 @@
 import { Organization } from '@prisma/client';
-import { isAdmin, User } from 'shared';
+import { GuestDefinitionType, isAdmin, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
@@ -221,6 +221,7 @@ export default class RecruitmentServices {
    * @param description the definition of the term
    * @param order the order the term appears on the page
    * @param icon the icon associated with the term
+   * @param type the type of the guest definition
    * @param buttonText the text displayed on the terms button
    * @param buttonLink where the terms button links to
    * @returns
@@ -231,6 +232,7 @@ export default class RecruitmentServices {
     term: string,
     description: string,
     order: number,
+    type: GuestDefinitionType,
     icon?: string,
     buttonText?: string,
     buttonLink?: string
@@ -243,6 +245,7 @@ export default class RecruitmentServices {
         term,
         description,
         order,
+        type,
         userCreatedId: creator.userId,
         organizationId: organization.organizationId,
         buttonText,
@@ -260,5 +263,104 @@ export default class RecruitmentServices {
     });
 
     return allGuestDefintions.map(guestDefinitionTransformer);
+  }
+
+  /**
+   * Deletes a guestDefinition with the given organization Id and definitionId
+   * @param deleter the user requesting to delete the guestDefinition
+   * @param organizationId the organization ID of the deleter
+   */
+  static async deleteGuestDefinition(deleter: User, definitionId: string, organization: Organization): Promise<void> {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete a guestDefinition');
+    }
+
+    const def = await prisma.guest_Definition.findUnique({ where: { definitionId } });
+
+    if (!def) throw new NotFoundException('Guest Definition', definitionId);
+    if (def.dateDeleted) throw new DeletedException('Guest Definition', definitionId);
+
+    await prisma.guest_Definition.update({
+      where: { definitionId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
+  }
+
+  /**
+   * Edits guest definition
+   * @param creator user editing the definition
+   * @param organization org the definition is being edited
+   * @param term the term we are editing
+   * @param description the definition of the term
+   * @param order the order the term appears on the page
+   * @param icon the icon associated with the term
+   * @param type the type of the guest definition
+   * @param buttonText the text displayed on the terms button
+   * @param buttonLink where the terms button links to
+   * @returns
+   */
+  static async editGuestDefinition(
+    creator: User,
+    organization: Organization,
+    term: string,
+    description: string,
+    definitionId: string,
+    order: number,
+    type: GuestDefinitionType,
+    icon?: string,
+    buttonText?: string,
+    buttonLink?: string
+  ) {
+    if (!(await userHasPermission(creator.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit a guest definition');
+
+    const currentGuestDefinition = await prisma.guest_Definition.findUnique({
+      where: {
+        definitionId
+      }
+    });
+
+    if (!currentGuestDefinition) {
+      throw new NotFoundException('Guest Definition', definitionId);
+    }
+
+    if (currentGuestDefinition.dateDeleted) {
+      throw new DeletedException('Guest Definition', definitionId);
+    }
+
+    const updatedGuest = await prisma.guest_Definition.update({
+      where: {
+        definitionId
+      },
+      data: {
+        term,
+        description,
+        order,
+        icon,
+        type,
+        buttonText,
+        buttonLink
+      }
+    });
+    return guestDefinitionTransformer(updatedGuest);
+  }
+
+  /**
+   * Gets a single guest definition with the given user, organization, and definition ids
+   * @param organization the organization the user is currently in
+   * @param definitionId the id of the specific definition being found
+   * @returns a definition
+   * @throws if the definition is not found in the db
+   */
+  static async getSingleGuestDefinition(organization: Organization, definitionId: string) {
+    const guest = await prisma.guest_Definition.findUnique({
+      where: { organization, definitionId }
+    });
+
+    if (!guest) {
+      throw new NotFoundException('Guest Definition', definitionId);
+    }
+
+    return guestDefinitionTransformer(guest);
   }
 }
