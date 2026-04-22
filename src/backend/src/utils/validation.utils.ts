@@ -284,7 +284,6 @@ export const materialValidators = [
   decimalMinZero(body('quantity')).optional(),
   nonEmptyString(body('unitName')).optional(),
   intMinZero(body('price')).optional(), // in cents
-  intMinZero(body('subtotal')).optional(), // in cents
   body('linkUrl').optional().isString(),
   body('notes').isString().optional()
 ];
@@ -317,8 +316,7 @@ export const partPopupValidators = [
 
 export const financeDashboardFilterValidators = [
   nonEmptyString(query('startDate')).optional(),
-  nonEmptyString(query('endDate')).optional(),
-  nonEmptyString(query('carNumber')).optional()
+  nonEmptyString(query('endDate')).optional()
 ];
 
 export const requireFile = (chain: ValidationChain): ValidationChain => {

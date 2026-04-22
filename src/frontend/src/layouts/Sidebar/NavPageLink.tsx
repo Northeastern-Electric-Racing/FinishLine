@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, useHistory } from 'react-router-dom';
 import { LinkItem } from '../../utils/types';
 import { routes } from '../../utils/routes';
 import { Box, Typography, useTheme, Collapse } from '@mui/material';
@@ -13,6 +13,7 @@ export interface NavPageLinkItemProps extends LinkItem {
   onSubmenuHover?: () => void;
   onSubmenuCollapse?: () => void;
   isSubItem?: boolean;
+  isClickableWithSubitems?: boolean;
 }
 
 const NavPageLink: React.FC<NavPageLinkItemProps> = ({
@@ -23,9 +24,11 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
   isSubmenuOpen,
   onSubmenuHover,
   onSubmenuCollapse,
-  isSubItem = false
+  isSubItem = false,
+  isClickableWithSubitems
 }) => {
   const theme = useTheme();
+  const history = useHistory();
 
   const renderLink = () => {
     const content = (
@@ -41,10 +44,11 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
       </>
     );
 
-    if (subItems) {
+    if (subItems && !isClickableWithSubitems) {
       return (
         <Box
           onMouseEnter={onSubmenuHover}
+          onClick={() => history.push(route)}
           sx={{
             textDecoration: 'none',
             color: theme.palette.text.primary,
@@ -68,6 +72,7 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
       <NavLink
         to={route}
         exact={route === routes.HOME}
+        onMouseEnter={subItems && isClickableWithSubitems ? onSubmenuHover : undefined}
         onClick={onSubmenuCollapse}
         style={(isActive) => ({
           textDecoration: 'none',
@@ -94,7 +99,7 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
       {subItems && (
         <Collapse in={isSubmenuOpen} timeout="auto" unmountOnExit>
           {subItems.map((subItem) => (
-            <NavPageLink {...subItem} isSubItem={true} />
+            <NavPageLink key={subItem.route} {...subItem} isSubItem={true} />
           ))}
         </Collapse>
       )}

@@ -34,12 +34,12 @@ const AddSABONumberModal = ({ modalShow, onHide, reimbursementRequestId }: AddSA
   const onSubmit = async (data: { saboNumber: string }) => {
     try {
       await setSaboNumber(data);
+      onHide();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    onHide();
   };
 
   return (

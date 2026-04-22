@@ -26,6 +26,7 @@ export const sponsorTransformer = (sponsor: Prisma.SponsorGetPayload<SponsorQuer
       : undefined,
     sponsorNotes: sponsor.sponsorNotes ?? undefined,
     discountCode: sponsor.discountCode ?? undefined,
+    logoImageId: sponsor.logoImageId ?? undefined,
     sponsorTasks: sponsor.sponsorTasks.map(sponsorTaskTranformer)
   };
 };
