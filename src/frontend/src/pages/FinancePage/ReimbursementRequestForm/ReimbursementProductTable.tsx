@@ -605,10 +605,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                         )}
                       </Box>
                       {uniqueWbsElementsWithProducts.get(key)?.map((product) => {
-                         const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
-                         const currentProduct =
+                        const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
+                        const currentProduct =
                           (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
-                         const currentShippingCost = Number(currentProduct.__shippingCost ?? 0);
+                        const currentShippingCost = Number(currentProduct.__shippingCost ?? 0);
 
                         return (
                           <ListItem key={product.id}>
@@ -733,7 +733,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                         name={`reimbursementProducts.${product.index}.cost`}
                                         control={control}
                                         render={() => {
-                                          const productRow = (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
+                                          const productRow =
+                                            (watch(
+                                              `reimbursementProducts.${product.index}` as const
+                                            ) as ProductWithLocalFields) ?? {};
                                           const baseCost = Number(productRow.__baseCost ?? 0);
                                           const shippingCost = Number(productRow.__shippingCost ?? 0);
                                           const rowTotal = Number(productRow.cost ?? baseCost + shippingCost);
@@ -757,7 +760,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                 }}
                                                 onChange={(e) => {
                                                   const productRow =
-                                                    (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
+                                                    (watch(
+                                                      `reimbursementProducts.${product.index}` as const
+                                                    ) as ProductWithLocalFields) ?? {};
 
                                                   const updatedProduct: ProductWithLocalFields = {
                                                     ...productRow,
@@ -790,7 +795,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                 }}
                                                 onChange={(e) => {
                                                   const productRow =
-                                                    (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
+                                                    (watch(
+                                                      `reimbursementProducts.${product.index}` as const
+                                                    ) as ProductWithLocalFields) ?? {};
 
                                                   const updatedProduct: ProductWithLocalFields = {
                                                     ...productRow,
@@ -938,7 +945,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                           type="number"
                                           onChange={(e) => {
                                             const currentProduct =
-                                              (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
+                                              (watch(
+                                                `reimbursementProducts.${product.index}` as const
+                                              ) as ProductWithLocalFields) ?? {};
 
                                             const updatedProduct: ProductWithLocalFields = {
                                               ...currentProduct,
@@ -1004,19 +1013,19 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       }
                       onClick={(e) => {
                         const existingProducts = uniqueWbsElementsWithProducts.get(key);
-                          if (existingProducts && existingProducts.length > 0) {
-                            const newProduct: ProductWithLocalFields = {
-                              reason: existingProducts[0].reason,
-                              name: '',
-                              cost: 0,
-                              refundSources: [],
-                              __baseCost: 0,
-                              __shippingCost: 0
-                            };
+                        if (existingProducts && existingProducts.length > 0) {
+                          const newProduct: ProductWithLocalFields = {
+                            reason: existingProducts[0].reason,
+                            name: '',
+                            cost: 0,
+                            refundSources: [],
+                            __baseCost: 0,
+                            __shippingCost: 0
+                          };
 
-                            prependProduct(newProduct);
-                          }
-                          e.currentTarget.blur();
+                          prependProduct(newProduct);
+                        }
+                        e.currentTarget.blur();
                       }}
                     >
                       Add Product
