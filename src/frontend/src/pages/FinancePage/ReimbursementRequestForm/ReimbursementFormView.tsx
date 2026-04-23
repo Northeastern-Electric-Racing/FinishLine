@@ -35,7 +35,6 @@ import {
   isHead,
   MAX_FILE_SIZE,
   ProjectPreview,
-  ReimbursementProductFormArgs,
   ReimbursementReceiptUploadArgs,
   Vendor
 } from 'shared';
