@@ -33,8 +33,14 @@ export interface ReimbursementRequestInformation {
   secondaryAccount?: string;
   description?: string;
 }
+
+export type ProductWithLocalFields = ReimbursementProductFormArgs & {
+  __baseCost?: number;
+  __shippingCost?: number;
+};
+
 export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
-  reimbursementProducts: ReimbursementProductFormArgs[];
+  reimbursementProducts: ProductWithLocalFields[];
   splitShipping?: number;
 }
 
@@ -170,7 +176,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       dateOfExpense: defaultValues?.dateOfExpense,
       accountCodeId: defaultValues?.accountCodeId ?? '',
       description: defaultValues?.description?.trim() || '',
-      reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
+      reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ProductWithLocalFields[]),
       receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[]),
       splitShipping: defaultValues?.splitShipping ?? undefined
     }
@@ -197,14 +203,14 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     name: 'reimbursementProducts'
   });
 
-  const getGroupKey = (product: ReimbursementProductFormArgs) =>
+  const getGroupKey = (product: ProductWithLocalFields) =>
     'otherProductReasonId' in product.reason
       ? `other-${product.reason.otherProductReasonId}`
       : `wbs-${product.reason.carNumber}-${product.reason.projectNumber}`;
 
-  const getBaseCost = (product: ReimbursementProductFormArgs) => Number((product as any).__baseCost ?? product.cost ?? 0);
+  const getBaseCost = (product: ProductWithLocalFields) => Number(product.__baseCost ?? product.cost ?? 0);
 
-  const resetProductCosts = (product: ReimbursementProductFormArgs): ReimbursementProductFormArgs =>
+  const resetProductCosts = (product: ProductWithLocalFields): ProductWithLocalFields =>
     ({
       ...product,
       __baseCost: getBaseCost(product),
@@ -257,7 +263,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       return;
     }
 
-    const groupedProducts = new Map<string, ReimbursementProductFormArgs[]>();
+    const groupedProducts = new Map<string, ProductWithLocalFields[]>();
 
     shippableProducts.forEach((product) => {
       const key = getGroupKey(product);
@@ -277,7 +283,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
         const shippingAmount = materialShippingAllocations[productIndex] / 100;
         const baseCost = getBaseCost(product);
 
-        (product as any).__shippingCost = shippingAmount;
+        product.__shippingCost = shippingAmount;
         product.cost = baseCost + shippingAmount;
       });
     });
@@ -380,13 +386,10 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       //total cost, firstSourceAmount and secondSourceAmount is tracked in cents
       const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
 
-      const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
+      const reimbursementProducts = data.reimbursementProducts.map((product: ProductWithLocalFields) => {
         const anyNonZero = product.refundSources.some((rs) => Number(rs.amount) > 0);
         const formattedRefundSources = anyNonZero ? product.refundSources : [];
-        const { __baseCost, __shippingCost, ...rest } = product as ReimbursementProductFormArgs & {
-          __baseCost?: number;
-          __shippingCost?: number;
-        };
+        const { __baseCost, __shippingCost, ...rest } = product;
 
         return {
           ...rest,
@@ -443,13 +446,10 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     ? async (data: ReimbursementRequestFormInput) => {
         try {
           const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
-          const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
+          const reimbursementProducts = data.reimbursementProducts.map((product: ProductWithLocalFields) => {
             const anyNonZero = product.refundSources.some((rs) => Number(rs.amount) > 0);
             const formattedRefundSources = anyNonZero ? product.refundSources : [];
-            const { __baseCost, __shippingCost, ...rest } = product as ReimbursementProductFormArgs & {
-              __baseCost?: number;
-              __shippingCost?: number;
-            };
+            const { __baseCost, __shippingCost, ...rest } = product;
 
             return {
               ...rest,

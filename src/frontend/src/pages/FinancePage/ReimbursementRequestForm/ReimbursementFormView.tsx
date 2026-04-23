@@ -44,7 +44,7 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { NERButton } from '../../../components/NERButton';
-import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
+import { ReimbursementRequestFormInput, ProductWithLocalFields } from './ReimbursementRequestForm';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
@@ -68,10 +68,10 @@ interface ReimbursementRequestFormViewProps {
     id: string;
   }[];
   control: Control<ReimbursementRequestFormInput, any>;
-  reimbursementProducts: ReimbursementProductFormArgs[];
+  reimbursementProducts: ProductWithLocalFields[];
   receiptPrepend: (args: ReimbursementReceiptUploadArgs) => void;
   receiptRemove: (index: number) => void;
-  reimbursementProductPrepend: (args: ReimbursementProductFormArgs) => void;
+  reimbursementProductPrepend: (args: ProductWithLocalFields) => void;
   reimbursementProductRemove: (index: number) => void;
   onSubmit: (data: ReimbursementRequestFormInput) => void;
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
@@ -142,7 +142,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const [hasConfirmedFinance, setHasConfirmedFinance] = useState(refundSources.length > 1);
   const toast = useToast();
   const theme = useTheme();
-  const products = watch('reimbursementProducts') as ReimbursementProductFormArgs[];
+  const products = watch('reimbursementProducts') as ProductWithLocalFields[];
   const accountCodeId = watch('accountCodeId');
   const splitShippingValue = watch('splitShipping');
 
@@ -156,7 +156,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const allProductsHaveCosts =
     products.length > 0 &&
     products.every((product) => {
-      const baseCost = Number((product as any).__baseCost ?? 0);
+      const baseCost = Number(product.__baseCost ?? 0);
       return baseCost > 0;
     });
 
@@ -179,8 +179,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         setValue('secondaryAccount', undefined);
 
         reimbursementProducts.forEach((product, index) => {
-          const baseCost = Number((product as any).__baseCost ?? product.cost ?? 0);
-          const shippingCost = Number((product as any).__shippingCost ?? 0);
+          const baseCost = Number(product.__baseCost ?? product.cost ?? 0);
+          const shippingCost = Number(product.__shippingCost ?? 0);
 
           setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, 0);
           setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
@@ -250,7 +250,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
   const remainingRefundSources = indexCodes.filter((code) => code.indexCodeId !== firstRefundSourceId);
   const calculatedTotalCost = products
-    .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost || 0), 0)
+    .reduce((acc: number, product: ProductWithLocalFields) => acc + Number(product.cost || 0), 0)
     .toFixed(2);
 
   const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();

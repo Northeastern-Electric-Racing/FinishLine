@@ -24,7 +24,6 @@ import {
   WbsNumber,
   validateWBS,
   wbsPipe,
-  ReimbursementProductFormArgs,
   IndexCode,
   CreateRefundSourceArgs,
   Material,
@@ -32,7 +31,7 @@ import {
 } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
+import { ReimbursementRequestFormInput, ProductWithLocalFields } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
@@ -43,9 +42,9 @@ import { formatReasonName } from '../../../utils/reimbursement-request.utils';
 import CreateMaterialModal from '../../ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/CreateMaterialModal';
 
 interface ReimbursementProductTableProps {
-  reimbursementProducts: ReimbursementProductFormArgs[];
+  reimbursementProducts: ProductWithLocalFields[];
+  prependProduct: (args: ProductWithLocalFields) => void;
   removeProduct: (index: number) => void;
-  prependProduct: (args: ReimbursementProductFormArgs) => void;
   projectAutocompleteOptions: {
     label: string;
     id: string;
@@ -178,19 +177,17 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const onCostBlurHandler = (value: number, index: number) => {
     const roundedBaseCost = Number((value || 0).toFixed(2));
-    const product = (watch(`reimbursementProducts.${index}` as const) as any) ?? {};
+    const product = (watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields) ?? {};
 
-    setValue(
-      `reimbursementProducts.${index}`,
-      {
-        ...product,
-        __baseCost: roundedBaseCost
-      } as any,
-      {
-        shouldDirty: true,
-        shouldValidate: true
-      }
-    );
+    const updatedProduct: ProductWithLocalFields = {
+      ...product,
+      __baseCost: roundedBaseCost
+    };
+
+    setValue(`reimbursementProducts.${index}`, updatedProduct, {
+      shouldDirty: true,
+      shouldValidate: true
+    });
 
     recalculateRowTotal(index);
   };
@@ -198,14 +195,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const onShippingBlurHandler = (value: number, index: number) => {
     const roundedShippingCost = Number((value || 0).toFixed(2));
-    const product = (watch(`reimbursementProducts.${index}` as const) as any) ?? {};
+    const product = (watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields) ?? {};
 
-    const updatedProduct = {
+    const updatedProduct: ProductWithLocalFields = {
       ...product,
       __shippingCost: roundedShippingCost
     };
 
-    setValue(`reimbursementProducts.${index}`, updatedProduct as any, {
+    setValue(`reimbursementProducts.${index}`, updatedProduct, {
       shouldDirty: true,
       shouldValidate: true
     });
@@ -222,8 +219,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   };
 
   const recalculateRowTotal = (index: number) => {
-    const product = watch(`reimbursementProducts.${index}` as const) as any;
-    const baseCost = Number(product?.__baseCost ?? product?.cost ?? 0);
+    const product = watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields;
+    const baseCost = Number(product?.__baseCost ?? 0);
     const shippingCost = Number(product?.__shippingCost ?? 0);
     const totalRowCost = Number((baseCost + shippingCost).toFixed(2));
 
@@ -270,8 +267,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     });
 
     if (hasMultipleRefundSources) {
-      const product = (watch(`reimbursementProducts.${index}` as const) as any) ?? {};
-
+      const product = (watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields) ?? {};
       const firstSourceAmount = Number(product?.refundSources?.[0]?.amount ?? 0);
 
       const secondSourceAmount = Number(product?.refundSources?.[1]?.amount ?? 0);
@@ -327,6 +323,18 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const hasPreFilledData = useRef(false);
   const hasInitializedRefundSources = useRef(false);
 
+  const previousProductCount = useRef(reimbursementProducts.length);
+
+  useEffect(() => {
+    const productCountChanged = reimbursementProducts.length !== previousProductCount.current;
+    previousProductCount.current = reimbursementProducts.length;
+
+    if (!productCountChanged) return;
+    if (!totalShipping || Number(totalShipping) <= 0) return;
+
+    applySplitShippingToProducts(Number(totalShipping));
+  }, [reimbursementProducts.length, totalShipping, applySplitShippingToProducts]);
+
   useEffect(() => {
     if (hasInitializedRefundSources.current) return;
 
@@ -344,15 +352,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   // Handle transition from single to multiple refund sources
   useEffect(() => {
     if (hasMultipleRefundSources && !prevHasMultipleRefundSources.current) {
-      setTimeout(() => {
-        const products = watch('reimbursementProducts') || [];
-        products.forEach((product: ReimbursementProductFormArgs, index: number) => {
-          const currentCost = product.cost ?? 0;
-          setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, currentCost);
-          setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
-        });
-      }, 0);
+      const products = watch('reimbursementProducts') || [];
+      products.forEach((product: ProductWithLocalFields, index: number) => {
+        const currentCost = product.cost ?? 0;
+        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, currentCost);
+        setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
+      });
     }
+
     prevHasMultipleRefundSources.current = hasMultipleRefundSources;
   }, [hasMultipleRefundSources, setValue, watch]);
 
@@ -460,15 +467,16 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     options={projectAutocompleteOptions}
                     onChange={(_e, value) => {
                       if (value) {
-                        prependProduct({
+                        const newProduct: ProductWithLocalFields = {
                           reason: validateWBS(value.id),
                           name: '',
                           cost: 0,
                           refundSources: [],
                           __baseCost: 0,
                           __shippingCost: 0
-                        } as any);
-                        setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
+                        };
+
+                        prependProduct(newProduct);
                       }
                     }}
                     value={null}
@@ -488,15 +496,16 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     getOptionLabel={(option) => formatReasonName(option.name)}
                     onChange={(_e, value) => {
                       if (value) {
-                        prependProduct({
+                        const newProduct: ProductWithLocalFields = {
                           reason: value,
                           name: '',
                           cost: 0,
                           refundSources: [],
                           __baseCost: 0,
                           __shippingCost: 0
-                        } as any);
-                        setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
+                        };
+
+                        prependProduct(newProduct);
                       }
                     }}
                     value={null}
@@ -596,7 +605,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                         )}
                       </Box>
                       {uniqueWbsElementsWithProducts.get(key)?.map((product) => {
-                        const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
+                         const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
+                         const currentProduct =
+                          (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
+                         const currentShippingCost = Number(currentProduct.__shippingCost ?? 0);
 
                         return (
                           <ListItem key={product.id}>
@@ -721,8 +733,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                         name={`reimbursementProducts.${product.index}.cost`}
                                         control={control}
                                         render={() => {
-                                          const productRow =
-                                            (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
+                                          const productRow = (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
                                           const baseCost = Number(productRow.__baseCost ?? 0);
                                           const shippingCost = Number(productRow.__shippingCost ?? 0);
                                           const rowTotal = Number(productRow.cost ?? baseCost + shippingCost);
@@ -735,20 +746,27 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                 placeholder={'$ Cost'}
                                                 type="number"
                                                 fullWidth
+                                                sx={{
+                                                  '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                                                    WebkitAppearance: 'none',
+                                                    margin: 0
+                                                  },
+                                                  '& input[type=number]': {
+                                                    MozAppearance: 'textfield'
+                                                  }
+                                                }}
                                                 onChange={(e) => {
                                                   const productRow =
-                                                    (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
+                                                    (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
 
-                                                  setValue(
-                                                    `reimbursementProducts.${product.index}`,
-                                                    {
-                                                      ...productRow,
-                                                      __baseCost: e.target.value === '' ? 0 : Number(e.target.value)
-                                                    } as any,
-                                                    {
-                                                      shouldDirty: true
-                                                    }
-                                                  );
+                                                  const updatedProduct: ProductWithLocalFields = {
+                                                    ...productRow,
+                                                    __baseCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                                  };
+
+                                                  setValue(`reimbursementProducts.${product.index}`, updatedProduct, {
+                                                    shouldDirty: true
+                                                  });
                                                 }}
                                                 onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
                                                 error={!!errors.reimbursementProducts?.[product.index]?.cost}
@@ -761,20 +779,27 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                 margin="dense"
                                                 label="Shipping"
                                                 type="number"
+                                                sx={{
+                                                  '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                                                    WebkitAppearance: 'none',
+                                                    margin: 0
+                                                  },
+                                                  '& input[type=number]': {
+                                                    MozAppearance: 'textfield'
+                                                  }
+                                                }}
                                                 onChange={(e) => {
                                                   const productRow =
-                                                    (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
+                                                    (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
 
-                                                  setValue(
-                                                    `reimbursementProducts.${product.index}`,
-                                                    {
-                                                      ...productRow,
-                                                      __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
-                                                    } as any,
-                                                    {
-                                                      shouldDirty: true
-                                                    }
-                                                  );
+                                                  const updatedProduct: ProductWithLocalFields = {
+                                                    ...productRow,
+                                                    __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                                  };
+
+                                                  setValue(`reimbursementProducts.${product.index}`, updatedProduct, {
+                                                    shouldDirty: true
+                                                  });
                                                 }}
                                                 onBlur={(e) =>
                                                   onShippingBlurHandler(parseFloat(e.target.value), product.index)
@@ -902,22 +927,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                       </Box>
                                     )}
 
-                                    {Number(
-                                      (watch(`reimbursementProducts.${product.index}` as const) as any)?.__shippingCost ?? 0
-                                    ) > 0 && (
+                                    {currentShippingCost > 0 && (
                                       <Box sx={{ width: '100%', mt: 1 }}>
                                         <TextField
-                                          value={
-                                            Number(
-                                              (watch(`reimbursementProducts.${product.index}` as const) as any)
-                                                ?.__shippingCost ?? 0
-                                            ) === 0
-                                              ? ''
-                                              : Number(
-                                                  (watch(`reimbursementProducts.${product.index}` as const) as any)
-                                                    ?.__shippingCost ?? 0
-                                                )
-                                          }
+                                          value={currentShippingCost === 0 ? '' : currentShippingCost}
                                           variant="outlined"
                                           size="small"
                                           fullWidth
@@ -925,18 +938,16 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                           type="number"
                                           onChange={(e) => {
                                             const currentProduct =
-                                              (watch(`reimbursementProducts.${product.index}` as const) as any) ?? {};
+                                              (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
 
-                                            setValue(
-                                              `reimbursementProducts.${product.index}`,
-                                              {
-                                                ...currentProduct,
-                                                __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
-                                              } as any,
-                                              {
-                                                shouldDirty: true
-                                              }
-                                            );
+                                            const updatedProduct: ProductWithLocalFields = {
+                                              ...currentProduct,
+                                              __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                            };
+
+                                            setValue(`reimbursementProducts.${product.index}`, updatedProduct, {
+                                              shouldDirty: true
+                                            });
                                           }}
                                           onBlur={(e) => onShippingBlurHandler(parseFloat(e.target.value), product.index)}
                                           helperText={`Row total $${Number(watch(`reimbursementProducts.${product.index}.cost`) || 0).toFixed(2)}`}
@@ -965,7 +976,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 }}
                                 onClick={() => {
                                   removeProduct(product.index);
-                                  setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
                                 }}
                               >
                                 <RemoveCircleOutline />
@@ -994,18 +1004,19 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       }
                       onClick={(e) => {
                         const existingProducts = uniqueWbsElementsWithProducts.get(key);
-                        if (existingProducts && existingProducts.length > 0) {
-                          prependProduct({
-                            reason: existingProducts[0].reason,
-                            name: '',
-                            cost: 0,
-                            refundSources: [],
-                            __baseCost: 0,
-                            __shippingCost: 0
-                          } as any);
-                          setTimeout(() => applySplitShippingToProducts(Number(totalShipping)), 0);
-                        }
-                        e.currentTarget.blur();
+                          if (existingProducts && existingProducts.length > 0) {
+                            const newProduct: ProductWithLocalFields = {
+                              reason: existingProducts[0].reason,
+                              name: '',
+                              cost: 0,
+                              refundSources: [],
+                              __baseCost: 0,
+                              __shippingCost: 0
+                            };
+
+                            prependProduct(newProduct);
+                          }
+                          e.currentTarget.blur();
                       }}
                     >
                       Add Product
