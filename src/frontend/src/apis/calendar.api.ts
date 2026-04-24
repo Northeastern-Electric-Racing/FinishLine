@@ -274,15 +274,19 @@ export const getAllEventsPaginated = (futureCursor?: Date, pastCursor?: Date) =>
     pastInstances: EventInstance[];
     nextFutureCursor: Date | null;
     nextPastCursor: Date | null;
-  }>(apiUrls.calendarEventsPaginated(), { futureCursor, pastCursor }, {
-    transformResponse: (data) => {
-      const parsed = JSON.parse(data);
-      return {
-        futureInstances: parsed.futureInstances,
-        pastInstances: parsed.pastInstances,
-        nextFutureCursor: parsed.nextFutureCursor ? new Date(parsed.nextFutureCursor) : null,
-        nextPastCursor: parsed.nextPastCursor ? new Date(parsed.nextPastCursor) : null
-      };
+  }>(
+    apiUrls.calendarEventsPaginated(),
+    { futureCursor, pastCursor },
+    {
+      transformResponse: (data) => {
+        const parsed = JSON.parse(data);
+        return {
+          futureInstances: parsed.futureInstances,
+          pastInstances: parsed.pastInstances,
+          nextFutureCursor: parsed.nextFutureCursor ? new Date(parsed.nextFutureCursor) : null,
+          nextPastCursor: parsed.nextPastCursor ? new Date(parsed.nextPastCursor) : null
+        };
+      }
     }
-  });
+  );
 };

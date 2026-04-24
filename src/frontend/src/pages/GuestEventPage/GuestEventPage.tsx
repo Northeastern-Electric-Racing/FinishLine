@@ -105,30 +105,40 @@ const GuestEventPage: React.FC = () => {
       <Button
         onClick={() => todayRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
         startIcon={<TodayIcon />}
-        sx={{ position: 'fixed', bottom: 24, right: 24, bgcolor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(6px)', boxShadow: 3, zIndex: 1, color: '#fff', border: '1px solid rgba(255,255,255,0.35)' }}
+        sx={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          bgcolor: 'rgba(255,255,255,0.2)',
+          backdropFilter: 'blur(6px)',
+          boxShadow: 3,
+          zIndex: 1,
+          color: '#fff',
+          border: '1px solid rgba(255,255,255,0.35)'
+        }}
         variant="contained"
         disableElevation
       >
         Jump to Today
       </Button>
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
-      {data?.nextPastCursor && (
-        <Button variant="outlined" onClick={() => setPastCursor(data.nextPastCursor!)} disabled={isLoading}>
-          {isLoading ? <LoadingIndicator /> : 'Load More Past Events'}
-        </Button>
-      )}
-      {pastGroups.map(([date, instances]) => (
-        <DateGroup key={date} ref={date === todayKey ? todayRef : null} date={date} instances={instances} />
-      ))}
-      {futureGroups.map(([date, instances]) => (
-        <DateGroup key={date} ref={date === todayKey ? todayRef : null} date={date} instances={instances} />
-      ))}
-      {data?.nextFutureCursor && (
-        <Button variant="outlined" onClick={() => setFutureCursor(data.nextFutureCursor!)} disabled={isLoading}>
-          {isLoading ? <LoadingIndicator /> : 'Load More Future Events'}
-        </Button>
-      )}
-    </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
+        {data?.nextPastCursor && (
+          <Button variant="outlined" onClick={() => setPastCursor(data.nextPastCursor!)} disabled={isLoading}>
+            {isLoading ? <LoadingIndicator /> : 'Load More Past Events'}
+          </Button>
+        )}
+        {pastGroups.map(([date, instances]) => (
+          <DateGroup key={date} ref={date === todayKey ? todayRef : null} date={date} instances={instances} />
+        ))}
+        {futureGroups.map(([date, instances]) => (
+          <DateGroup key={date} ref={date === todayKey ? todayRef : null} date={date} instances={instances} />
+        ))}
+        {data?.nextFutureCursor && (
+          <Button variant="outlined" onClick={() => setFutureCursor(data.nextFutureCursor!)} disabled={isLoading}>
+            {isLoading ? <LoadingIndicator /> : 'Load More Future Events'}
+          </Button>
+        )}
+      </Box>
     </Box>
   );
 };
