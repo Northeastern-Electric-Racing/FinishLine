@@ -99,14 +99,13 @@ export default class ChangeRequestsController {
 
   static async createActivationChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, type, leadId, managerId, startDate, confirmDetails } = req.body;
+      const { wbsNum, leadId, managerId, startDate, confirmDetails } = req.body;
 
       const id = await ChangeRequestsService.createActivationChangeRequest(
         req.currentUser,
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
-        type,
         leadId,
         managerId,
         startDate,
@@ -121,13 +120,12 @@ export default class ChangeRequestsController {
 
   static async createStageGateChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, type, confirmDone } = req.body;
+      const { wbsNum, confirmDone } = req.body;
       const id = await ChangeRequestsService.createStageGateChangeRequest(
         req.currentUser,
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
-        type,
         confirmDone,
         req.organization
       );
@@ -139,10 +137,9 @@ export default class ChangeRequestsController {
 
   static async createBudgetChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { otherReasonId, accountCodeId, type, proposedBudget } = req.body;
+      const { otherReasonId, accountCodeId, proposedBudget } = req.body;
       const cr = await ChangeRequestsService.createBudgetChangeRequest(
         req.currentUser,
-        type,
         proposedBudget,
         req.organization,
         otherReasonId,

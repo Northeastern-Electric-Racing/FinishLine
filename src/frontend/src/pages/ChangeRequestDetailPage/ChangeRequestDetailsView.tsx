@@ -148,7 +148,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             </Grid>
           </Grid>
           <Grid item xs={isStandard ? 12 : 0} md={isStandard ? 7 : 0}>
-            {hasProposedChanges(changeRequest as StandardChangeRequest) ?? (
+            {hasProposedChanges(changeRequest as StandardChangeRequest) && (
               <DiffSection changeRequest={changeRequest as StandardChangeRequest} />
             )}
           </Grid>

@@ -539,7 +539,6 @@ export default class ChangeRequestsService {
    * @param carNumber the car number for the wbs element
    * @param projectNumber the project number for the wbs element
    * @param workPackageNumber the work package number for the wbs element
-   * @param type the type of cr
    * @param leadId the id of the project lead
    * @param managerId the id of the project manager
    * @param startDate the start date of the work package/project
@@ -552,7 +551,6 @@ export default class ChangeRequestsService {
     carNumber: number,
     projectNumber: number,
     workPackageNumber: number,
-    type: CR_Type,
     leadId: string,
     managerId: string,
     startDate: Date,
@@ -593,7 +591,7 @@ export default class ChangeRequestsService {
       data: {
         submitter: { connect: { userId: submitter.userId } },
         wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
-        type,
+        type: CR_Type.ACTIVATION,
         activationChangeRequest: {
           create: {
             lead: { connect: { userId: leadId } },
@@ -631,7 +629,6 @@ export default class ChangeRequestsService {
    * @param carNumber the car number for the wbs element
    * @param projectNumber the project number for the wbs element
    * @param workPackageNumber the work package number for the wbs element
-   * @param type the type of cr
    * @param confirmDone whether or not to confirm
    * @param organization the organization the user is currently in
    * @returns the id of the created cr
@@ -641,7 +638,6 @@ export default class ChangeRequestsService {
     carNumber: number,
     projectNumber: number,
     workPackageNumber: number,
-    type: CR_Type,
     confirmDone: boolean,
     organization: Organization
   ): Promise<string> {
@@ -685,7 +681,7 @@ export default class ChangeRequestsService {
       data: {
         submitter: { connect: { userId: submitter.userId } },
         wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
-        type,
+        type: CR_Type.STAGE_GATE,
         stageGateChangeRequest: {
           create: { leftoverBudget: 0, confirmDone }
         },
@@ -715,7 +711,6 @@ export default class ChangeRequestsService {
   /**
    * Validates and creates a budget change request
    * @param submitter The user creating the cr
-   * @param type the type of cr
    * @param proposedBudget the proposed budget
    * @param organization the organization the user is currently in
    * @param otherReasonId the id of the other reason/category to change budget of
@@ -724,7 +719,6 @@ export default class ChangeRequestsService {
    */
   static async createBudgetChangeRequest(
     submitter: User,
-    type: CR_Type,
     proposedBudget: number,
     organization: Organization,
     otherReasonId?: string,
@@ -762,7 +756,7 @@ export default class ChangeRequestsService {
         data: {
           submitter: { connect: { userId: submitter.userId } },
           category: { connect: { otherReimbursementProductReasonId: otherReasonId } },
-          type,
+          type: CR_Type.BUDGET,
           budgetChangeRequest: { create: { proposedBudget } },
           organization: { connect: { organizationId: organization.organizationId } },
           identifier: numChangeRequests + 1
@@ -809,7 +803,7 @@ export default class ChangeRequestsService {
         data: {
           submitter: { connect: { userId: submitter.userId } },
           accountCode: { connect: { accountCodeId } },
-          type,
+          type: CR_Type.BUDGET,
           budgetChangeRequest: { create: { proposedBudget } },
           organization: { connect: { organizationId: organization.organizationId } },
           identifier: numChangeRequests + 1

@@ -1,6 +1,5 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { ChangeRequestType } from 'shared';
 import ChangeRequestsController from '../controllers/change-requests.controllers.js';
 import {
   intMinZero,
@@ -39,7 +38,6 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
-  body('type').custom((value) => value === ChangeRequestType.Activation),
   isDateOnly(body('startDate')),
   nonEmptyString(body('leadId')),
   nonEmptyString(body('managerId')),
@@ -54,7 +52,6 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
-  body('type').custom((value) => value === ChangeRequestType.StageGate),
   body('confirmDone').isBoolean(),
   validateInputs,
   ChangeRequestsController.createStageGateChangeRequest
@@ -65,7 +62,6 @@ changeRequestsRouter.post(
   nonEmptyString(body('submitterId')),
   nonEmptyString(body('otherReasonId')).optional(),
   nonEmptyString(body('accountCodeId')).optional(),
-  body('type').custom((value) => value === ChangeRequestType.Budget),
   intMinZero(body('proposedBudget')),
   validateInputs,
   ChangeRequestsController.createBudgetChangeRequest
@@ -76,9 +72,7 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
-  nonEmptyString(body('submitterId')),
   nonEmptyString(body('why')),
-  body('type').custom((value) => value === ChangeRequestType.Standard),
   nonEmptyString(body('requestedReviewerId')).optional(),
   ...projectProposedChangesValidators,
   ...workPackageProposedChangesValidators('workPackageProposedChanges'),

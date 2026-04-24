@@ -20,7 +20,6 @@ import {
   getAllChangeRequests,
   getSingleChangeRequest,
   reviewChangeRequest,
-  addProposedSolution,
   deleteChangeRequest,
   requestCRReview,
   getToReviewChangeRequests,
@@ -200,15 +199,6 @@ export interface CreateBudgetChangeRequestPayload {
   type: string;
 }
 
-export interface CreateProposedSolutionPayload {
-  submitterId: string;
-  crId: string;
-  description: string;
-  scopeImpact: string;
-  timelineImpact: number;
-  budgetImpact: number;
-}
-
 /**
  * Custom React Hook to create an activation change request.
  */
@@ -282,32 +272,6 @@ export const useCreateLeadershipChangeRequest = () => {
         queryClient.invalidateQueries(['change requests']);
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['work packages']);
-      }
-    }
-  );
-};
-
-/**
- * Custom React Hook to create a proposed solution
- */
-export const useCreateProposeSolution = () => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, CreateProposedSolutionPayload>(
-    ['change requests', 'create', 'propose solution'],
-    async (payload: CreateProposedSolutionPayload) => {
-      const { data } = await addProposedSolution(
-        payload.submitterId,
-        payload.crId,
-        payload.description,
-        payload.scopeImpact,
-        payload.timelineImpact,
-        payload.budgetImpact
-      );
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['change requests']);
       }
     }
   );
