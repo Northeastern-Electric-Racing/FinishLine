@@ -268,18 +268,21 @@ export const scheduleEvent = async (eventId: string, payload: { startTime: Date;
   });
 };
 
-export const getAllEventsPaginated = (cursor?: Date, pageSize?: number) => {
-  return axios.post<{ instances: EventInstance[]; nextCursor: Date | null }>(
-    apiUrls.calendarEventsPaginated(),
-    { cursor, pageSize },
-    {
-      transformResponse: (data) => {
-        const parsed = JSON.parse(data);
-        return {
-          instances: parsed.instances,
-          nextCursor: parsed.nextCursor ? new Date(parsed.nextCursor) : null
-        };
-      }
+export const getAllEventsPaginated = (futureCursor?: Date, pastCursor?: Date) => {
+  return axios.post<{
+    futureInstances: EventInstance[];
+    pastInstances: EventInstance[];
+    nextFutureCursor: Date | null;
+    nextPastCursor: Date | null;
+  }>(apiUrls.calendarEventsPaginated(), { futureCursor, pastCursor }, {
+    transformResponse: (data) => {
+      const parsed = JSON.parse(data);
+      return {
+        futureInstances: parsed.futureInstances,
+        pastInstances: parsed.pastInstances,
+        nextFutureCursor: parsed.nextFutureCursor ? new Date(parsed.nextFutureCursor) : null,
+        nextPastCursor: parsed.nextPastCursor ? new Date(parsed.nextPastCursor) : null
+      };
     }
-  );
+  });
 };

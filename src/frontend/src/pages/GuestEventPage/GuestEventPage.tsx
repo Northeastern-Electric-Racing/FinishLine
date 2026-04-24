@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, forwardRef } from 'react';
 import { Box, Button } from '@mui/material';
 import { Collapse, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import TodayIcon from '@mui/icons-material/Today';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import GuestEventCard from './GuestEventCard';
@@ -18,7 +19,7 @@ const groupInstancesByDate = (instances: EventInstance[]): [string, EventInstanc
     groups.get(key)!.instances.push(instance);
   }
   return Array.from(groups.entries())
-    .sort(([, a], [, b]) => b.date.getTime() - a.date.getTime())
+    .sort(([, a], [, b]) => a.date.getTime() - b.date.getTime())
     .map(([key, { instances }]) => [key, instances]);
 };
 
@@ -27,12 +28,15 @@ interface DateGroupProps {
   instances: EventInstance[];
 }
 
-const DateGroup: React.FC<DateGroupProps> = ({ date, instances }) => {
+const DateGroup = forwardRef<HTMLDivElement, DateGroupProps>(({ date, instances }, ref) => {
   const theme = useTheme();
   const [open, setOpen] = useState(true);
 
+  const todayKey = formatEventDate(new Date());
+  const label = date === todayKey ? `Today: ${date}` : date;
+
   return (
-    <Box>
+    <Box ref={ref}>
       <Stack
         direction="row"
         alignItems="center"
@@ -41,7 +45,7 @@ const DateGroup: React.FC<DateGroupProps> = ({ date, instances }) => {
         onClick={() => setOpen((prev) => !prev)}
       >
         <Typography variant="h6" fontWeight="bold">
-          {date}
+          {label}
         </Typography>
         <IconButton size="small">{open ? <ExpandLessIcon /> : <ExpandMoreIcon />}</IconButton>
       </Stack>
@@ -54,38 +58,77 @@ const DateGroup: React.FC<DateGroupProps> = ({ date, instances }) => {
       </Collapse>
     </Box>
   );
-};
+});
 
 const GuestEventPage: React.FC = () => {
-  const [cursor, setCursor] = useState<Date | undefined>(undefined);
-  const [allInstances, setAllInstances] = useState<EventInstance[]>([]);
-  const { data, isLoading, isError, error } = useAllEventsPaginated(cursor);
+  const [futureCursor, setFutureCursor] = useState<Date | undefined>(undefined);
+  const [pastCursor, setPastCursor] = useState<Date | undefined>(undefined);
+  const [futureInstances, setFutureInstances] = useState<EventInstance[]>([]);
+  const [pastInstances, setPastInstances] = useState<EventInstance[]>([]);
+  const [hasScrolled, setHasScrolled] = useState(false);
+  const todayRef = useRef<HTMLDivElement>(null);
+  const { data, isLoading, isError, error } = useAllEventsPaginated(futureCursor, pastCursor);
 
   useEffect(() => {
-    if (data?.instances) {
-      setAllInstances((prev) => {
+    if (data?.futureInstances) {
+      setFutureInstances((prev) => {
         const existingKeys = new Set(prev.map((i) => `${i.eventId}-${i.scheduleSlotId}`));
-        const newInstances = data.instances.filter((i) => !existingKeys.has(`${i.eventId}-${i.scheduleSlotId}`));
-        return newInstances.length > 0 ? [...prev, ...newInstances] : prev;
+        const next = data.futureInstances.filter((i) => !existingKeys.has(`${i.eventId}-${i.scheduleSlotId}`));
+        return next.length > 0 ? [...prev, ...next] : prev;
+      });
+    }
+    if (data?.pastInstances) {
+      setPastInstances((prev) => {
+        const existingKeys = new Set(prev.map((i) => `${i.eventId}-${i.scheduleSlotId}`));
+        const next = data.pastInstances.filter((i) => !existingKeys.has(`${i.eventId}-${i.scheduleSlotId}`));
+        return next.length > 0 ? [...prev, ...next] : prev;
       });
     }
   }, [data]);
 
-  if (isLoading && allInstances.length === 0) return <LoadingIndicator />;
+  useEffect(() => {
+    if (!hasScrolled && (futureInstances.length > 0 || pastInstances.length > 0)) {
+      todayRef.current?.scrollIntoView({ block: 'start' });
+      setHasScrolled(true);
+    }
+  }, [futureInstances, pastInstances, hasScrolled]);
+
+  if (isLoading && futureInstances.length === 0 && pastInstances.length === 0) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  const groups = groupInstancesByDate(allInstances);
+  const pastGroups = groupInstancesByDate(pastInstances);
+  const futureGroups = groupInstancesByDate(futureInstances);
+  const todayKey = formatEventDate(new Date());
 
   return (
+    <Box sx={{ position: 'relative' }}>
+      <Button
+        onClick={() => todayRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        startIcon={<TodayIcon />}
+        sx={{ position: 'fixed', bottom: 24, right: 24, bgcolor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(6px)', boxShadow: 3, zIndex: 1, color: '#fff', border: '1px solid rgba(255,255,255,0.35)' }}
+        variant="contained"
+        disableElevation
+      >
+        Jump to Today
+      </Button>
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
-      {groups.map(([date, instances]) => (
-        <DateGroup key={date} date={date} instances={instances} />
-      ))}
-      {data?.nextCursor && (
-        <Button variant="outlined" onClick={() => setCursor(data.nextCursor!)} disabled={isLoading}>
-          {isLoading ? <LoadingIndicator /> : 'Load More'}
+      {data?.nextPastCursor && (
+        <Button variant="outlined" onClick={() => setPastCursor(data.nextPastCursor!)} disabled={isLoading}>
+          {isLoading ? <LoadingIndicator /> : 'Load More Past Events'}
         </Button>
       )}
+      {pastGroups.map(([date, instances]) => (
+        <DateGroup key={date} ref={date === todayKey ? todayRef : null} date={date} instances={instances} />
+      ))}
+      {futureGroups.map(([date, instances]) => (
+        <DateGroup key={date} ref={date === todayKey ? todayRef : null} date={date} instances={instances} />
+      ))}
+      {data?.nextFutureCursor && (
+        <Button variant="outlined" onClick={() => setFutureCursor(data.nextFutureCursor!)} disabled={isLoading}>
+          {isLoading ? <LoadingIndicator /> : 'Load More Future Events'}
+        </Button>
+      )}
+    </Box>
     </Box>
   );
 };

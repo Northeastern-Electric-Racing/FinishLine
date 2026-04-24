@@ -667,15 +667,17 @@ export const combinePdfsAndDownload = async (blobData: Blob[], filename: string)
   saveAs(pdfBlob, filename);
 };
 
-/**
- * Custom hook to get all events in a paginated manner, sorted by scheduled date ascending.
- */
-export const useAllEventsPaginated = (cursor?: Date, pageSize?: number) => {
-  return useQuery<{ instances: EventInstance[]; nextCursor: Date | null }, Error>(
-    ['events', 'paginated', cursor, pageSize],
-    async () => {
-      const { data } = await getAllEventsPaginated(cursor, pageSize);
-      return data;
-    }
-  );
+export const useAllEventsPaginated = (futureCursor?: Date, pastCursor?: Date) => {
+  return useQuery<
+    {
+      futureInstances: EventInstance[];
+      pastInstances: EventInstance[];
+      nextFutureCursor: Date | null;
+      nextPastCursor: Date | null;
+    },
+    Error
+  >(['events', 'paginated', futureCursor, pastCursor], async () => {
+    const { data } = await getAllEventsPaginated(futureCursor, pastCursor);
+    return data;
+  });
 };
