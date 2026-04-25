@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, forwardRef } from 'react';
+import { useEffect, useMemo, useRef, useState, forwardRef } from 'react';
 import { Box, Button } from '@mui/material';
 import { Collapse, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -8,7 +8,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import GuestEventCard from './GuestEventCard';
 import { EventInstance, formatEventDate } from 'shared';
-import { useAllEventsPaginated } from '../../hooks/calendar.hooks';
+import { useFutureEventsPaginated, usePastEventsPaginated } from '../../hooks/calendar.hooks';
 
 const groupInstancesByDate = (instances: EventInstance[]): [string, EventInstance[]][] => {
   const groups = new Map<string, { date: Date; instances: EventInstance[] }>();
@@ -61,30 +61,31 @@ const DateGroup = forwardRef<HTMLDivElement, DateGroupProps>(({ date, instances 
 });
 
 const GuestEventPage: React.FC = () => {
-  const [futureCursor, setFutureCursor] = useState<Date | undefined>(undefined);
-  const [pastCursor, setPastCursor] = useState<Date | undefined>(undefined);
-  const [futureInstances, setFutureInstances] = useState<EventInstance[]>([]);
-  const [pastInstances, setPastInstances] = useState<EventInstance[]>([]);
   const [hasScrolled, setHasScrolled] = useState(false);
   const todayRef = useRef<HTMLDivElement>(null);
-  const { data, isLoading, isError, error } = useAllEventsPaginated(futureCursor, pastCursor);
 
-  useEffect(() => {
-    if (data?.futureInstances) {
-      setFutureInstances((prev) => {
-        const existingKeys = new Set(prev.map((i) => `${i.eventId}-${i.scheduleSlotId}`));
-        const next = data.futureInstances.filter((i) => !existingKeys.has(`${i.eventId}-${i.scheduleSlotId}`));
-        return next.length > 0 ? [...prev, ...next] : prev;
-      });
-    }
-    if (data?.pastInstances) {
-      setPastInstances((prev) => {
-        const existingKeys = new Set(prev.map((i) => `${i.eventId}-${i.scheduleSlotId}`));
-        const next = data.pastInstances.filter((i) => !existingKeys.has(`${i.eventId}-${i.scheduleSlotId}`));
-        return next.length > 0 ? [...prev, ...next] : prev;
-      });
-    }
-  }, [data]);
+  const {
+    data: futureData,
+    isLoading: futureLoading,
+    isError: futureIsError,
+    error: futureError,
+    fetchNextPage: fetchNextFuture,
+    hasNextPage: hasNextFuture,
+    isFetchingNextPage: isFetchingNextFuture
+  } = useFutureEventsPaginated();
+
+  const {
+    data: pastData,
+    isLoading: pastLoading,
+    isError: pastIsError,
+    error: pastError,
+    fetchNextPage: fetchNextPast,
+    hasNextPage: hasNextPast,
+    isFetchingNextPage: isFetchingNextPast
+  } = usePastEventsPaginated();
+
+  const futureInstances = useMemo(() => futureData?.pages.flatMap((p) => p.futureInstances) ?? [], [futureData]);
+  const pastInstances = useMemo(() => pastData?.pages.flatMap((p) => p.pastInstances) ?? [], [pastData]);
 
   useEffect(() => {
     if (!hasScrolled && (futureInstances.length > 0 || pastInstances.length > 0)) {
@@ -93,12 +94,13 @@ const GuestEventPage: React.FC = () => {
     }
   }, [futureInstances, pastInstances, hasScrolled]);
 
-  if (isLoading && futureInstances.length === 0 && pastInstances.length === 0) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error.message} />;
+  const isInitialLoading = (futureLoading || pastLoading) && futureInstances.length === 0 && pastInstances.length === 0;
+  if (futureIsError) return <ErrorPage message={futureError!.message} />;
+  if (pastIsError) return <ErrorPage message={pastError!.message} />;
+  if (isInitialLoading) return <LoadingIndicator />;
 
   const pastGroups = groupInstancesByDate(pastInstances);
   const futureGroups = groupInstancesByDate(futureInstances);
-  const todayKey = formatEventDate(new Date());
 
   return (
     <Box sx={{ position: 'relative' }}>
@@ -122,20 +124,21 @@ const GuestEventPage: React.FC = () => {
         Jump to Today
       </Button>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
-        {data?.nextPastCursor && (
-          <Button variant="outlined" onClick={() => setPastCursor(data.nextPastCursor!)} disabled={isLoading}>
-            {isLoading ? <LoadingIndicator /> : 'Load More Past Events'}
+        {hasNextPast && (
+          <Button variant="outlined" onClick={() => fetchNextPast()} disabled={isFetchingNextPast}>
+            {isFetchingNextPast ? <LoadingIndicator /> : 'Load More Past Events'}
           </Button>
         )}
         {pastGroups.map(([date, instances]) => (
-          <DateGroup key={date} ref={date === todayKey ? todayRef : null} date={date} instances={instances} />
+          <DateGroup key={date} date={date} instances={instances} />
         ))}
+        <div ref={todayRef} />
         {futureGroups.map(([date, instances]) => (
-          <DateGroup key={date} ref={date === todayKey ? todayRef : null} date={date} instances={instances} />
+          <DateGroup key={date} date={date} instances={instances} />
         ))}
-        {data?.nextFutureCursor && (
-          <Button variant="outlined" onClick={() => setFutureCursor(data.nextFutureCursor!)} disabled={isLoading}>
-            {isLoading ? <LoadingIndicator /> : 'Load More Future Events'}
+        {hasNextFuture && (
+          <Button variant="outlined" onClick={() => fetchNextFuture()} disabled={isFetchingNextFuture}>
+            {isFetchingNextFuture ? <LoadingIndicator /> : 'Load More Future Events'}
           </Button>
         )}
       </Box>

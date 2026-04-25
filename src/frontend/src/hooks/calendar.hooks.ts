@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   Shop,
   Machinery,
@@ -667,17 +667,24 @@ export const combinePdfsAndDownload = async (blobData: Blob[], filename: string)
   saveAs(pdfBlob, filename);
 };
 
-export const useAllEventsPaginated = (futureCursor?: Date, pastCursor?: Date) => {
-  return useQuery<
-    {
-      futureInstances: EventInstance[];
-      pastInstances: EventInstance[];
-      nextFutureCursor: Date | null;
-      nextPastCursor: Date | null;
+export const useFutureEventsPaginated = () => {
+  return useInfiniteQuery<{ futureInstances: EventInstance[]; nextFutureCursor: Date | null }, Error>(
+    ['events', 'future', 'paginated'],
+    async ({ pageParam }: { pageParam?: Date }) => {
+      const { data } = await getAllEventsPaginated(pageParam, undefined);
+      return { futureInstances: data.futureInstances, nextFutureCursor: data.nextFutureCursor };
     },
-    Error
-  >(['events', 'paginated', futureCursor, pastCursor], async () => {
-    const { data } = await getAllEventsPaginated(futureCursor, pastCursor);
-    return data;
-  });
+    { getNextPageParam: (lastPage) => lastPage.nextFutureCursor ?? undefined }
+  );
+};
+
+export const usePastEventsPaginated = () => {
+  return useInfiniteQuery<{ pastInstances: EventInstance[]; nextPastCursor: Date | null }, Error>(
+    ['events', 'past', 'paginated'],
+    async ({ pageParam }: { pageParam?: Date }) => {
+      const { data } = await getAllEventsPaginated(undefined, pageParam);
+      return { pastInstances: data.pastInstances, nextPastCursor: data.nextPastCursor };
+    },
+    { getNextPageParam: (lastPage) => lastPage.nextPastCursor ?? undefined }
+  );
 };
