@@ -129,12 +129,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     const allSources = reimbursementProducts
       .flatMap((product) => product.refundSources ?? [])
       .filter((source): source is CreateRefundSourceArgs => {
-        return (
-          !!source &&
-          !!source.indexCode &&
-          !!source.indexCode.indexCodeId &&
-          Number(source.amount ?? 0) > 0
-        );
+        return !!source && !!source.indexCode && !!source.indexCode.indexCodeId && Number(source.amount ?? 0) > 0;
       });
 
     const seen = new Set<string>();
@@ -170,7 +165,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     products.every((product) => {
       const baseCost = Number(product.__baseCost ?? product.cost ?? 0);
       return baseCost > 0;
-  });
+    });
 
   const canApplyProportionalSplit = Number(splitShippingValue) > 0 && allProductsHaveCosts;
 
@@ -264,21 +259,13 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const calculatedTotalCost = products
     .reduce((acc: number, product: ProductWithLocalFields) => acc + Number(product.cost || 0), 0)
     .toFixed(2);
-  
+
   const calculatedProductSubtotal = products
-    .reduce(
-      (acc: number, product: ProductWithLocalFields) =>
-        acc + Number(product.__baseCost ?? product.cost ?? 0),
-      0
-    )
+    .reduce((acc: number, product: ProductWithLocalFields) => acc + Number(product.__baseCost ?? product.cost ?? 0), 0)
     .toFixed(2);
 
   const calculatedShippingTotal = products
-    .reduce(
-      (acc: number, product: ProductWithLocalFields) =>
-        acc + Number(product.__shippingCost ?? 0),
-      0
-    )
+    .reduce((acc: number, product: ProductWithLocalFields) => acc + Number(product.__shippingCost ?? 0), 0)
     .toFixed(2);
 
   const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();
@@ -966,6 +953,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           inputProps={{ min: 0, step: 0.01 }}
                           size="small"
                           fullWidth
+                          error={!!errors.splitShipping}
+                          helperText={errors.splitShipping?.message}
                           sx={{
                             '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
                               WebkitAppearance: 'none',

@@ -152,7 +152,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   setValue,
   hasMultipleRefundSources = false,
   firstRefundSourceIndexCode,
-  secondRefundSourceIndexCode,
   firstRefundSourceName,
   secondRefundSourceName,
   watch,
@@ -193,7 +192,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   };
   const totalShipping = watch('splitShipping');
 
- const onShippingBlurHandler = (value: number, index: number) => {
+  const onShippingBlurHandler = (value: number, index: number) => {
     const roundedShippingCost = Number((value || 0).toFixed(2));
     const product = (watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields) ?? {};
 
@@ -211,14 +210,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       const firstSourceAmount = Number(product?.refundSources?.[0]?.amount ?? 0);
       const secondSourceAmount = Number(product?.refundSources?.[1]?.amount ?? 0);
 
-      setValue(
-        `reimbursementProducts.${index}.cost`,
-        Number((firstSourceAmount + secondSourceAmount).toFixed(2)),
-        {
-          shouldDirty: true,
-          shouldValidate: true
-        }
-      );
+      setValue(`reimbursementProducts.${index}.cost`, Number((firstSourceAmount + secondSourceAmount).toFixed(2)), {
+        shouldDirty: true,
+        shouldValidate: true
+      });
     } else {
       recalculateRowTotal(index);
     }
@@ -277,21 +272,17 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     const product = (watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields) ?? {};
 
     const firstSourceAmount =
-      fieldName === 'refundSources.0.amount'
-        ? parsedValue
-        : Number(product?.refundSources?.[0]?.amount ?? 0);
+      fieldName === 'refundSources.0.amount' ? parsedValue : Number(product?.refundSources?.[0]?.amount ?? 0);
 
     const secondSourceAmount =
-      fieldName === 'refundSources.1.amount'
-        ? parsedValue
-        : Number(product?.refundSources?.[1]?.amount ?? 0);
+      fieldName === 'refundSources.1.amount' ? parsedValue : Number(product?.refundSources?.[1]?.amount ?? 0);
 
     setValue(`reimbursementProducts.${index}.${fieldName}`, parsedValue, {
       shouldDirty: true,
       shouldValidate: true
     });
 
-   if (hasMultipleRefundSources) {
+    if (hasMultipleRefundSources) {
       const shippingCost = Number(product.__shippingCost ?? 0);
       const baseCost = Number((firstSourceAmount + secondSourceAmount).toFixed(2));
       const productTotal = Number((baseCost + shippingCost).toFixed(2));
@@ -346,12 +337,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     const allSources = reimbursementProducts
       .flatMap((product) => product.refundSources ?? [])
       .filter((source): source is CreateRefundSourceArgs => {
-        return (
-          !!source &&
-          !!source.indexCode &&
-          !!source.indexCode.indexCodeId &&
-          Number(source.amount ?? 0) > 0
-        );
+        return !!source && !!source.indexCode && !!source.indexCode.indexCodeId && Number(source.amount ?? 0) > 0;
       });
 
     const seen = new Set<string>();
@@ -379,10 +365,12 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     previousProductCount.current = reimbursementProducts.length;
 
     if (!productCountChanged) return;
-    if (!totalShipping || Number(totalShipping) <= 0) return;
 
-    applySplitShippingToProducts(Number(totalShipping));
-  }, [reimbursementProducts.length, applySplitShippingToProducts]);
+    const currentTotalShipping = watch('splitShipping');
+    if (!currentTotalShipping || Number(currentTotalShipping) <= 0) return;
+
+    applySplitShippingToProducts(Number(currentTotalShipping));
+  }, [reimbursementProducts.length, applySplitShippingToProducts, watch]);
 
   useEffect(() => {
     if (hasInitializedRefundSources.current) return;
@@ -916,7 +904,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                     onChange={(e) => {
                                                       field.onChange(e.target.value);
                                                     }}
-                                                    
                                                     variant="outlined"
                                                     placeholder={'$ Amt'}
                                                     type="number"
@@ -929,13 +916,17 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                       )
                                                     }
                                                     error={
-                                                      !!errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount
+                                                      !!errors.reimbursementProducts?.[product.index]?.refundSources?.[0]
+                                                        ?.amount
                                                     }
                                                   />
                                                 )}
                                               />
                                               <FormHelperText error>
-                                                {errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount?.message}
+                                                {
+                                                  errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount
+                                                    ?.message
+                                                }
                                               </FormHelperText>
                                             </FormControl>
                                           </Box>
@@ -966,7 +957,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                     onChange={(e) => {
                                                       field.onChange(e.target.value);
                                                     }}
-                                                   
                                                     variant="outlined"
                                                     placeholder={'$ Amt'}
                                                     type="number"
@@ -979,13 +969,17 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                       )
                                                     }
                                                     error={
-                                                      !!errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount
+                                                      !!errors.reimbursementProducts?.[product.index]?.refundSources?.[1]
+                                                        ?.amount
                                                     }
                                                   />
                                                 )}
                                               />
                                               <FormHelperText error>
-                                                {errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount?.message}
+                                                {
+                                                  errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount
+                                                    ?.message
+                                                }
                                               </FormHelperText>
                                             </FormControl>
                                           </Box>
@@ -993,7 +987,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                       </Box>
 
                                       <Box sx={{ width: '100%' }}>
-                                       <TextField
+                                        <TextField
                                           value={currentShippingCost === 0 ? '' : currentShippingCost}
                                           variant="outlined"
                                           size="small"
@@ -1011,7 +1005,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                           }}
                                           onChange={(e) => {
                                             const currentProduct =
-                                              (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
+                                              (watch(
+                                                `reimbursementProducts.${product.index}` as const
+                                              ) as ProductWithLocalFields) ?? {};
 
                                             const updatedProduct: ProductWithLocalFields = {
                                               ...currentProduct,
