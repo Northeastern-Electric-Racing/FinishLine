@@ -190,7 +190,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
     recalculateRowTotal(index);
   };
-  const totalShipping = watch('splitShipping');
 
   const onShippingBlurHandler = (value: number, index: number) => {
     const roundedShippingCost = Number((value || 0).toFixed(2));
