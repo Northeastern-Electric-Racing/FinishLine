@@ -127,12 +127,25 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   // to grab all the proper refund sources, deduplicated by indexCodeId
   const refundSources: CreateRefundSourceArgs[] = (() => {
     const allSources = reimbursementProducts
-      .flatMap((product) => product.refundSources)
-      .filter((source) => source.amount > 0);
+      .flatMap((product) => product.refundSources ?? [])
+      .filter((source): source is CreateRefundSourceArgs => {
+        return (
+          !!source &&
+          !!source.indexCode &&
+          !!source.indexCode.indexCodeId &&
+          Number(source.amount ?? 0) > 0
+        );
+      });
+
     const seen = new Set<string>();
+
     return allSources.filter((source) => {
       const id = source.indexCode.indexCodeId;
-      if (seen.has(id)) return false;
+
+      if (seen.has(id)) {
+        return false;
+      }
+
       seen.add(id);
       return true;
     });
@@ -155,9 +168,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const allProductsHaveCosts =
     products.length > 0 &&
     products.every((product) => {
-      const baseCost = Number(product.__baseCost ?? 0);
+      const baseCost = Number(product.__baseCost ?? product.cost ?? 0);
       return baseCost > 0;
-    });
+  });
 
   const canApplyProportionalSplit = Number(splitShippingValue) > 0 && allProductsHaveCosts;
 
@@ -250,6 +263,22 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const remainingRefundSources = indexCodes.filter((code) => code.indexCodeId !== firstRefundSourceId);
   const calculatedTotalCost = products
     .reduce((acc: number, product: ProductWithLocalFields) => acc + Number(product.cost || 0), 0)
+    .toFixed(2);
+  
+  const calculatedProductSubtotal = products
+    .reduce(
+      (acc: number, product: ProductWithLocalFields) =>
+        acc + Number(product.__baseCost ?? product.cost ?? 0),
+      0
+    )
+    .toFixed(2);
+
+  const calculatedShippingTotal = products
+    .reduce(
+      (acc: number, product: ProductWithLocalFields) =>
+        acc + Number(product.__shippingCost ?? 0),
+      0
+    )
     .toFixed(2);
 
   const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();
@@ -698,37 +727,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   </FormControl>
                 )}
 
-                {/* Description */}
-                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
-                  <FormLabel
-                    sx={{
-                      color: '#dd524c',
-                      textShadow: '1.5px 0 #dd524c',
-                      letterSpacing: '0.5px',
-                      textDecoration: 'underline',
-                      textUnderlineOffset: '3.5px',
-                      textDecorationThickness: '0.6px',
-                      fontSize: 'x-large',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Description
-                  </FormLabel>
-                  <Controller
-                    name="description"
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <TextField
-                        value={value || ''}
-                        onChange={onChange}
-                        placeholder="Enter Description"
-                        multiline
-                        rows={3}
-                      />
-                    )}
-                  />
-                </FormControl>
-
                 {/* Upload Receipts */}
                 <FormControl sx={{ display: 'flex', borderRadius: '25px', width: '100%' }}>
                   <FormLabel
@@ -963,7 +961,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           onChange={(e) => {
                             onChange(e);
                           }}
-                          onBlur={() => applySplitShippingToProducts(value ? Number(value) : undefined)}
                           placeholder="Enter total shipping cost"
                           type="number"
                           inputProps={{ min: 0, step: 0.01 }}
@@ -1044,6 +1041,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         }}
       >
         <Box>
+          <Typography variant="body2">Product Total: ${calculatedProductSubtotal}</Typography>
+          <Typography variant="body2">Shipping Total: ${calculatedShippingTotal}</Typography>
           <FormLabel>Total Cost</FormLabel>
           <Typography variant="h6">${calculatedTotalCost}</Typography>
         </Box>

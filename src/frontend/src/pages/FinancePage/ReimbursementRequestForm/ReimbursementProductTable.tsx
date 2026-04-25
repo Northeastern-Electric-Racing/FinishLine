@@ -193,7 +193,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   };
   const totalShipping = watch('splitShipping');
 
-  const onShippingBlurHandler = (value: number, index: number) => {
+ const onShippingBlurHandler = (value: number, index: number) => {
     const roundedShippingCost = Number((value || 0).toFixed(2));
     const product = (watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields) ?? {};
 
@@ -207,7 +207,21 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       shouldValidate: true
     });
 
-    recalculateRowTotal(index);
+    if (hasMultipleRefundSources) {
+      const firstSourceAmount = Number(product?.refundSources?.[0]?.amount ?? 0);
+      const secondSourceAmount = Number(product?.refundSources?.[1]?.amount ?? 0);
+
+      setValue(
+        `reimbursementProducts.${index}.cost`,
+        Number((firstSourceAmount + secondSourceAmount).toFixed(2)),
+        {
+          shouldDirty: true,
+          shouldValidate: true
+        }
+      );
+    } else {
+      recalculateRowTotal(index);
+    }
   };
 
   const updateSingleSourceRefund = (index: number, totalRowCost: number) => {
@@ -260,21 +274,34 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     fieldName: 'refundSources.0.amount' | 'refundSources.1.amount'
   ) => {
     const parsedValue = value ? parseFloat(value) : 0;
+    const product = (watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields) ?? {};
+
+    const firstSourceAmount =
+      fieldName === 'refundSources.0.amount'
+        ? parsedValue
+        : Number(product?.refundSources?.[0]?.amount ?? 0);
+
+    const secondSourceAmount =
+      fieldName === 'refundSources.1.amount'
+        ? parsedValue
+        : Number(product?.refundSources?.[1]?.amount ?? 0);
 
     setValue(`reimbursementProducts.${index}.${fieldName}`, parsedValue, {
       shouldDirty: true,
       shouldValidate: true
     });
 
-    if (hasMultipleRefundSources) {
-      const product = (watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields) ?? {};
-      const firstSourceAmount = Number(product?.refundSources?.[0]?.amount ?? 0);
+   if (hasMultipleRefundSources) {
+      const shippingCost = Number(product.__shippingCost ?? 0);
+      const baseCost = Number((firstSourceAmount + secondSourceAmount).toFixed(2));
+      const productTotal = Number((baseCost + shippingCost).toFixed(2));
 
-      const secondSourceAmount = Number(product?.refundSources?.[1]?.amount ?? 0);
+      setValue(`reimbursementProducts.${index}.__baseCost`, baseCost, {
+        shouldDirty: true,
+        shouldValidate: true
+      });
 
-      const totalRowCost = Number((firstSourceAmount + secondSourceAmount).toFixed(2));
-
-      setValue(`reimbursementProducts.${index}.cost`, totalRowCost, {
+      setValue(`reimbursementProducts.${index}.cost`, productTotal, {
         shouldDirty: true,
         shouldValidate: true
       });
@@ -315,9 +342,31 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const prevSecondRefundSourceName = useRef(secondRefundSourceName);
   const prevHasMultipleRefundSources = useRef(hasMultipleRefundSources);
 
-  const refundSources: CreateRefundSourceArgs[] = Array.from(
-    new Set(reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0))
-  );
+  const refundSources: CreateRefundSourceArgs[] = (() => {
+    const allSources = reimbursementProducts
+      .flatMap((product) => product.refundSources ?? [])
+      .filter((source): source is CreateRefundSourceArgs => {
+        return (
+          !!source &&
+          !!source.indexCode &&
+          !!source.indexCode.indexCodeId &&
+          Number(source.amount ?? 0) > 0
+        );
+      });
+
+    const seen = new Set<string>();
+
+    return allSources.filter((source) => {
+      const id = source.indexCode.indexCodeId;
+
+      if (seen.has(id)) {
+        return false;
+      }
+
+      seen.add(id);
+      return true;
+    });
+  })();
 
   // in the event the data was from a prior refund request
   const hasPreFilledData = useRef(false);
@@ -333,7 +382,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     if (!totalShipping || Number(totalShipping) <= 0) return;
 
     applySplitShippingToProducts(Number(totalShipping));
-  }, [reimbursementProducts.length, totalShipping, applySplitShippingToProducts]);
+  }, [reimbursementProducts.length, applySplitShippingToProducts]);
 
   useEffect(() => {
     if (hasInitializedRefundSources.current) return;
@@ -811,7 +860,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                 onBlur={(e) =>
                                                   onShippingBlurHandler(parseFloat(e.target.value), product.index)
                                                 }
-                                                helperText={`Row total $${Number(rowTotal || 0).toFixed(2)}`}
+                                                helperText={`Product total $${Number(rowTotal || 0).toFixed(2)}`}
                                               />
                                             </>
                                           );
@@ -825,129 +874,144 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 )}
                                 {hasMultipleRefundSources && (
                                   <>
-                                    {showFirstSourceFields && (
+                                    <Box
+                                      sx={{
+                                        flex: '3',
+                                        width: '100%',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 1
+                                      }}
+                                    >
                                       <Box
                                         sx={{
-                                          flex: '1.5',
+                                          display: 'grid',
+                                          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                                          gap: 1,
                                           width: '100%'
                                         }}
                                       >
-                                        <Box
-                                          sx={{
-                                            display: { xs: 'block', md: 'none' },
-                                            textAlign: 'left',
-                                            mb: 1,
-                                            color: '#dd524c',
-                                            textShadow: '0.5px 0 #dd524c',
-                                            letterSpacing: '0.5px'
-                                          }}
-                                        >
-                                          <Typography>{firstRefundSourceName}</Typography>
-                                        </Box>
-                                        <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                          <Controller
-                                            name={`reimbursementProducts.${product.index}.refundSources.${0}.amount`}
-                                            control={control}
-                                            render={({ field }) => (
-                                              <TextField
-                                                {...field}
-                                                value={field.value === 0 ? '' : field.value}
-                                                disabled={firstRefundSourceIndexCode === undefined}
-                                                variant="outlined"
-                                                placeholder={'$ Amt'}
-                                                type="number"
-                                                fullWidth
-                                                onBlur={(e) =>
-                                                  onAmountBlurHandler(
-                                                    e.target.value,
-                                                    product.index,
-                                                    `refundSources.${0}.amount`
-                                                  )
-                                                }
-                                                error={
-                                                  !!errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount
-                                                }
+                                        {showFirstSourceFields && (
+                                          <Box>
+                                            <Box
+                                              sx={{
+                                                display: { xs: 'block', md: 'none' },
+                                                textAlign: 'left',
+                                                mb: 1,
+                                                color: '#dd524c',
+                                                textShadow: '0.5px 0 #dd524c',
+                                                letterSpacing: '0.5px'
+                                              }}
+                                            >
+                                              <Typography>{firstRefundSourceName}</Typography>
+                                            </Box>
+                                            <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                              <Controller
+                                                name={`reimbursementProducts.${product.index}.refundSources.${0}.amount`}
+                                                control={control}
+                                                render={({ field }) => (
+                                                  <TextField
+                                                    {...field}
+                                                    value={field.value ?? ''}
+                                                    onChange={(e) => {
+                                                      field.onChange(e.target.value);
+                                                    }}
+                                                    
+                                                    variant="outlined"
+                                                    placeholder={'$ Amt'}
+                                                    type="number"
+                                                    fullWidth
+                                                    onBlur={(e) =>
+                                                      onAmountBlurHandler(
+                                                        e.target.value,
+                                                        product.index,
+                                                        `refundSources.${0}.amount`
+                                                      )
+                                                    }
+                                                    error={
+                                                      !!errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount
+                                                    }
+                                                  />
+                                                )}
                                               />
-                                            )}
-                                          />
-                                          <FormHelperText error>
-                                            {
-                                              errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount
-                                                ?.message
-                                            }
-                                          </FormHelperText>
-                                        </FormControl>
-                                      </Box>
-                                    )}
-                                    {showSecondSourceFields && (
-                                      <Box
-                                        sx={{
-                                          flex: '1.5',
-                                          width: '100%'
-                                        }}
-                                      >
-                                        <Box
-                                          sx={{
-                                            display: { xs: 'block', md: 'none' },
-                                            textAlign: 'left',
-                                            mb: 1,
-                                            color: '#dd524c',
-                                            textShadow: '0.5px 0 #dd524c',
-                                            letterSpacing: '0.5px'
-                                          }}
-                                        >
-                                          <Typography>{secondRefundSourceName}</Typography>
-                                        </Box>
-                                        <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                          <Controller
-                                            name={`reimbursementProducts.${product.index}.refundSources.${1}.amount`}
-                                            control={control}
-                                            render={({ field }) => (
-                                              <TextField
-                                                {...field}
-                                                value={field.value === 0 ? '' : field.value}
-                                                disabled={secondRefundSourceIndexCode === undefined}
-                                                variant="outlined"
-                                                placeholder={'$ Amt'}
-                                                type="number"
-                                                fullWidth
-                                                onBlur={(e) =>
-                                                  onAmountBlurHandler(
-                                                    e.target.value,
-                                                    product.index,
-                                                    `refundSources.${1}.amount`
-                                                  )
-                                                }
-                                                error={
-                                                  !!errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount
-                                                }
-                                              />
-                                            )}
-                                          />
-                                          <FormHelperText error>
-                                            {
-                                              errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount
-                                                ?.message
-                                            }
-                                          </FormHelperText>
-                                        </FormControl>
-                                      </Box>
-                                    )}
+                                              <FormHelperText error>
+                                                {errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount?.message}
+                                              </FormHelperText>
+                                            </FormControl>
+                                          </Box>
+                                        )}
 
-                                    {currentShippingCost > 0 && (
-                                      <Box sx={{ width: '100%', mt: 1 }}>
-                                        <TextField
+                                        {showSecondSourceFields && (
+                                          <Box>
+                                            <Box
+                                              sx={{
+                                                display: { xs: 'block', md: 'none' },
+                                                textAlign: 'left',
+                                                mb: 1,
+                                                color: '#dd524c',
+                                                textShadow: '0.5px 0 #dd524c',
+                                                letterSpacing: '0.5px'
+                                              }}
+                                            >
+                                              <Typography>{secondRefundSourceName}</Typography>
+                                            </Box>
+                                            <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                              <Controller
+                                                name={`reimbursementProducts.${product.index}.refundSources.${1}.amount`}
+                                                control={control}
+                                                render={({ field }) => (
+                                                  <TextField
+                                                    {...field}
+                                                    value={field.value ?? ''}
+                                                    onChange={(e) => {
+                                                      field.onChange(e.target.value);
+                                                    }}
+                                                   
+                                                    variant="outlined"
+                                                    placeholder={'$ Amt'}
+                                                    type="number"
+                                                    fullWidth
+                                                    onBlur={(e) =>
+                                                      onAmountBlurHandler(
+                                                        e.target.value,
+                                                        product.index,
+                                                        `refundSources.${1}.amount`
+                                                      )
+                                                    }
+                                                    error={
+                                                      !!errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount
+                                                    }
+                                                  />
+                                                )}
+                                              />
+                                              <FormHelperText error>
+                                                {errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount?.message}
+                                              </FormHelperText>
+                                            </FormControl>
+                                          </Box>
+                                        )}
+                                      </Box>
+
+                                      <Box sx={{ width: '100%' }}>
+                                       <TextField
                                           value={currentShippingCost === 0 ? '' : currentShippingCost}
                                           variant="outlined"
                                           size="small"
                                           fullWidth
                                           label="Shipping"
                                           type="number"
+                                          sx={{
+                                            '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                                              WebkitAppearance: 'none',
+                                              margin: 0
+                                            },
+                                            '& input[type=number]': {
+                                              MozAppearance: 'textfield'
+                                            }
+                                          }}
                                           onChange={(e) => {
                                             const currentProduct =
-                                              (watch(
-                                                `reimbursementProducts.${product.index}` as const
-                                              ) as ProductWithLocalFields) ?? {};
+                                              (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
 
                                             const updatedProduct: ProductWithLocalFields = {
                                               ...currentProduct,
@@ -959,10 +1023,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                             });
                                           }}
                                           onBlur={(e) => onShippingBlurHandler(parseFloat(e.target.value), product.index)}
-                                          helperText={`Row total $${Number(watch(`reimbursementProducts.${product.index}.cost`) || 0).toFixed(2)}`}
+                                          helperText={`Product total $${Number(watch(`reimbursementProducts.${product.index}.cost`) || 0).toFixed(2)}`}
                                         />
                                       </Box>
-                                    )}
+                                    </Box>
 
                                     <Box
                                       sx={{

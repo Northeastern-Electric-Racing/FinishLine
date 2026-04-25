@@ -62,6 +62,29 @@ interface ReimbursementRequestFormProps {
 
 const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabled';
 
+
+const normalizeProductForForm = (product: ProductWithLocalFields): ProductWithLocalFields => {
+  const totalCost = Number(product.cost ?? 0);
+
+  // If shipping already exists, keep it.
+  if (product.__baseCost !== undefined || product.__shippingCost !== undefined) {
+    return {
+      ...product,
+      __baseCost: Number(product.__baseCost ?? totalCost - Number(product.__shippingCost ?? 0)),
+      __shippingCost: Number(product.__shippingCost ?? 0),
+      cost: totalCost
+    };
+  }
+
+  // Existing requests probably only have total cost persisted.
+  return {
+    ...product,
+    __baseCost: totalCost,
+    __shippingCost: 0,
+    cost: totalCost
+  };
+};
+
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
   splitShipping: yup
@@ -70,7 +93,24 @@ const schema = yup.object().shape({
       return originalValue === '' || originalValue === undefined ? undefined : value;
     })
     .optional()
-    .min(0.01, 'Split shipping must be greater than 0'),
+    .min(0, 'Split shipping cannot be negative')
+    .test(
+      'shipping-sum-matches',
+      'Total shipping must equal the sum of shipping across all items',
+      function (value) {
+        const products = this.parent.reimbursementProducts ?? [];
+
+        const itemShippingTotal = products.reduce(
+          (sum: number, product: ProductWithLocalFields) =>
+            sum + Number(product.__shippingCost ?? 0),
+          0
+        );
+
+        const expected = Number(value ?? 0);
+
+        return Math.abs(itemShippingTotal - expected) < 0.005;
+      }
+    ),
   indexCodeId: yup.string().required('Refund source is required'),
   secondaryAccount: yup.string().test('required-if-split', 'Second refund source is required', function (value) {
     if (!this.parent.$hasConfirmedFinance) return true;
@@ -176,7 +216,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       dateOfExpense: defaultValues?.dateOfExpense,
       accountCodeId: defaultValues?.accountCodeId ?? '',
       description: defaultValues?.description?.trim() || '',
-      reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ProductWithLocalFields[]),
+      reimbursementProducts: defaultValues?.reimbursementProducts?.map(normalizeProductForForm) ??
+        ([] as ProductWithLocalFields[]),
       receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[]),
       splitShipping: defaultValues?.splitShipping ?? undefined
     }
@@ -387,8 +428,9 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
 
       const reimbursementProducts = data.reimbursementProducts.map((product: ProductWithLocalFields) => {
-        const anyNonZero = product.refundSources.some((rs) => Number(rs.amount) > 0);
-        const formattedRefundSources = anyNonZero ? product.refundSources : [];
+        const formattedRefundSources = (product.refundSources ?? []).filter(
+          (rs) => rs?.indexCode?.indexCodeId && Number(rs.amount) > 0
+        );
         const { __baseCost, __shippingCost, ...rest } = product;
 
         return {
