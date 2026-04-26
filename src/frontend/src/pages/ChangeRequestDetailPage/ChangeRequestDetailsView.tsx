@@ -19,7 +19,6 @@ import ImplementedChangesList from './ImplementedChangesList';
 import StandardDetails from './StandardDetails';
 import ReviewChangeRequest from './ReviewChangeRequest';
 import ReviewNotes from './ReviewNotes';
-import ProposedSolutionsList from './ProposedSolutionsList';
 import { Grid, Typography, Link, Box } from '@mui/material';
 import DeleteChangeRequest from './DeleteChangeRequest';
 import PageLayout from '../../components/PageLayout';
@@ -149,16 +148,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             </Grid>
           </Grid>
           <Grid item xs={isStandard ? 12 : 0} md={isStandard ? 7 : 0}>
-            {hasProposedChanges(changeRequest as StandardChangeRequest) ? (
+            {hasProposedChanges(changeRequest as StandardChangeRequest) && (
               <DiffSection changeRequest={changeRequest as StandardChangeRequest} />
-            ) : (
-              isStandard && (
-                <ProposedSolutionsList
-                  proposedSolutions={(changeRequest as StandardChangeRequest).proposedSolutions}
-                  crReviewed={changeRequest.accepted}
-                  crId={changeRequest.crId}
-                />
-              )
             )}
           </Grid>
 

@@ -4,8 +4,6 @@
  */
 
 import {
-  ChangeRequestReason,
-  ChangeRequestType,
   DescriptionBulletPreview,
   User,
   validateWBS,
@@ -41,7 +39,6 @@ import { ObjectSchema } from 'yup';
 import { getMonday } from '../../utils/datetime.utils';
 import { toDateString } from 'shared';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
-import { StandardChangeRequestType } from '../CreateChangeRequestPage/CreateChangeRequestView';
 import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequestView';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
@@ -54,7 +51,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { WorkPackageTemplateSection } from './WorkPackageTemplateSection';
 import { useQuery } from '../../hooks/utils.hooks';
-import { wbsTester } from '../../utils/form';
 import * as yup from 'yup';
 import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeRequestModal';
 import { useQueryClient } from 'react-query';
@@ -166,51 +162,25 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const watchedDescriptionBullets = watch('descriptionBullets');
 
   const changeRequestSchema = yup.object().shape({
-    type: yup.mixed<StandardChangeRequestType>().required('Type is required'),
-    what: yup.string().required('What is required'),
-    why: yup
-      .array()
-      .min(1, 'At least one Why is required')
-      .required('Why is required')
-      .of(
-        yup.object().shape({
-          type: yup.mixed<ChangeRequestReason>().required('Why Type is required'),
-          explain: yup
-            .string()
-            .required('Why Explain is required')
-            .when('type', ([type], schema) =>
-              type === ChangeRequestReason.OtherProject
-                ? schema.required().test('wbs-num-valid', 'WBS Number is not valid', wbsTester)
-                : yup.string()
-            )
-        })
-      )
+    why: yup.string().required('Why Explain is required')
   });
 
   const { reset: resetChangeRequestForm, ...changeRequestFormMethods } = useForm<FormInput>({
     resolver: yupResolver(changeRequestSchema),
     defaultValues: query.get('budgetChange')
       ? {
-          what: 'Increase the budget to account for the cost of materials',
-          why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
-          type: ChangeRequestType.Issue
+          why: 'The cost of materials ended up exceeding the initial budget'
         }
       : query.get('timelineDelay')
         ? {
-            what: 'Timeline delay',
-            why: [{ type: ChangeRequestReason.Other, explain: 'Decided to extend timeline after design review' }],
-            type: ChangeRequestType.Redefinition
+            why: 'Decided to extend timeline after design review'
           }
         : query.get('createWP')
           ? {
-              what: '',
-              why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
-              type: ChangeRequestType.Redefinition
+              why: 'Creating a Work Package on this Project'
             }
           : {
-              what: '',
-              why: [{ type: ChangeRequestReason.Other, explain: '' }],
-              type: ChangeRequestType.Issue
+              why: ''
             }
   });
 
@@ -301,8 +271,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           wbsNum: wbsElement.wbsNum,
           workPackageProposedChanges: {
             ...payload
-          },
-          proposedSolutions: []
+          }
         });
 
         history.push(`${routes.PROJECTS}/${wbsPipe(wbsElement.wbsNum)}/change-requests`);

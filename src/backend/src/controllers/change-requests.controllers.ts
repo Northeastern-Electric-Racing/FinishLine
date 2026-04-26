@@ -83,14 +83,13 @@ export default class ChangeRequestsController {
 
   static async reviewChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { crId, reviewNotes, accepted, psId } = req.body;
+      const { crId, reviewNotes, accepted } = req.body;
       const id = await ChangeRequestsService.reviewChangeRequest(
         req.currentUser,
         crId,
         reviewNotes,
         accepted,
-        req.organization,
-        psId
+        req.organization
       );
       res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
     } catch (error: unknown) {
@@ -100,14 +99,13 @@ export default class ChangeRequestsController {
 
   static async createActivationChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, type, leadId, managerId, startDate, confirmDetails } = req.body;
+      const { wbsNum, leadId, managerId, startDate, confirmDetails } = req.body;
 
       const id = await ChangeRequestsService.createActivationChangeRequest(
         req.currentUser,
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
-        type,
         leadId,
         managerId,
         startDate,
@@ -122,13 +120,12 @@ export default class ChangeRequestsController {
 
   static async createStageGateChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, type, confirmDone } = req.body;
+      const { wbsNum, confirmDone } = req.body;
       const id = await ChangeRequestsService.createStageGateChangeRequest(
         req.currentUser,
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
-        type,
         confirmDone,
         req.organization
       );
@@ -140,10 +137,9 @@ export default class ChangeRequestsController {
 
   static async createBudgetChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { otherReasonId, accountCodeId, type, proposedBudget } = req.body;
+      const { otherReasonId, accountCodeId, proposedBudget } = req.body;
       const cr = await ChangeRequestsService.createBudgetChangeRequest(
         req.currentUser,
-        type,
         proposedBudget,
         req.organization,
         otherReasonId,
@@ -176,7 +172,7 @@ export default class ChangeRequestsController {
 
   static async createStandardChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, type, what, why, proposedSolutions, projectProposedChanges, workPackageProposedChanges } = req.body;
+      const { wbsNum, why, requestedReviewerId, projectProposedChanges, workPackageProposedChanges } = req.body;
       if (workPackageProposedChanges && workPackageProposedChanges.stage === 'NONE') {
         workPackageProposedChanges.stage = null;
       }
@@ -186,33 +182,13 @@ export default class ChangeRequestsController {
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
-        type,
-        what,
         why,
-        proposedSolutions,
         req.organization,
+        requestedReviewerId,
         projectProposedChanges,
         workPackageProposedChanges
       );
       res.status(200).json(createdCR);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async addProposedSolution(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { crId, budgetImpact, description, timelineImpact, scopeImpact } = req.body;
-      const id = await ChangeRequestsService.addProposedSolution(
-        req.currentUser,
-        crId,
-        budgetImpact,
-        description,
-        timelineImpact,
-        scopeImpact,
-        req.organization
-      );
-      res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
     } catch (error: unknown) {
       next(error);
     }

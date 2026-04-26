@@ -2,9 +2,9 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { ChangeRequestReason, ChangeRequestType, Project, ProjectProposedChangesCreateArgs } from 'shared';
+import { Project, ProjectProposedChangesCreateArgs } from 'shared';
 import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.hooks';
-import { bulletsToObject, wbsTester } from '../../../utils/form';
+import { bulletsToObject } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
@@ -14,7 +14,6 @@ import ErrorPage from '../../ErrorPage';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import { useQuery } from '../../../hooks/utils.hooks';
 import * as yup from 'yup';
-import { StandardChangeRequestType } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 import { FormInput, FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 import {
   CreateStandardChangeRequestPayload,
@@ -68,51 +67,25 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   });
 
   const changeRequestSchema = yup.object().shape({
-    type: yup.mixed<StandardChangeRequestType>().required('Type is required'),
-    what: yup.string().required('What is required'),
-    why: yup
-      .array()
-      .min(1, 'At least one Why is required')
-      .required('Why is required')
-      .of(
-        yup.object().shape({
-          type: yup.mixed<ChangeRequestReason>().required('Why Type is required'),
-          explain: yup
-            .string()
-            .required('Why Explain is required')
-            .when('type', ([type], schema) =>
-              type === ChangeRequestReason.OtherProject
-                ? schema.required().test('wbs-num-valid', 'WBS Number is not valid', wbsTester)
-                : yup.string()
-            )
-        })
-      )
+    why: yup.string().required('Why Explain is required')
   });
 
   const { reset: resetChangeRequestForm, ...changeRequestFormMethods } = useForm<FormInput>({
     resolver: yupResolver(changeRequestSchema),
     defaultValues: query.get('budgetChange')
       ? {
-          what: 'Increase the budget to account for the cost of materials',
-          why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
-          type: ChangeRequestType.Issue
+          why: 'The cost of materials ended up exceeding the initial budget'
         }
       : query.get('timelineDelay')
         ? {
-            what: 'Timeline delay',
-            why: [{ type: ChangeRequestReason.Other, explain: 'Decided to extend timeline after design review' }],
-            type: ChangeRequestType.Redefinition
+            why: 'Decided to extend timeline after design review'
           }
         : query.get('createWP')
           ? {
-              what: '',
-              why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
-              type: ChangeRequestType.Redefinition
+              why: 'Creating a Work Package on this Project'
             }
           : {
-              what: '',
-              why: [{ type: ChangeRequestReason.Other, explain: '' }],
-              type: ChangeRequestType.Issue
+              why: ''
             }
   });
 
@@ -193,7 +166,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   };
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
-    const { name, budget, summary, links, type, what, why, descriptionBullets } = data;
+    const { name, budget, summary, links, why, descriptionBullets } = data;
 
     try {
       const projectPayload: ProjectProposedChangesCreateArgs = {
@@ -209,10 +182,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: project.wbsNum,
-        type,
-        what,
         why,
-        proposedSolutions: [],
         projectProposedChanges: projectPayload
       };
       await mutateCRAsync(changeRequestPayload);

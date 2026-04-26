@@ -6,7 +6,6 @@
 import {
   ActivationChangeRequest,
   ChangeRequest,
-  ChangeRequestReason,
   ChangeRequestStatus,
   ChangeRequestType,
   RoleEnum,
@@ -23,44 +22,14 @@ export const exampleStandardChangeRequest: StandardChangeRequest = {
   wbsName: 'Example Work Package 1',
   submitter: exampleAdminUser,
   dateSubmitted: new Date('02/25/21'),
-  type: ChangeRequestType.Issue,
   dateReviewed: new Date('03/01/21'),
   reviewer: exampleAppAdminUser,
   accepted: true,
   reviewNotes: 'Adjust description, increase budget to 200, and add 3 weeks',
   dateImplemented: new Date('03/04/21'),
   status: ChangeRequestStatus.Implemented,
-  what: 'Spacers are needed to prevent the jet fuel from melting the I beams',
-  why: [
-    {
-      type: ChangeRequestReason.Estimation,
-      explain: 'Original estimate did not account for spacers'
-    },
-    {
-      type: ChangeRequestReason.Manufacturing,
-      explain: 'No availibilitiy in Richards'
-    },
-    {
-      type: ChangeRequestReason.Other,
-      explain: "Matt won't shut up"
-    },
-    {
-      type: ChangeRequestReason.OtherProject,
-      explain: '2.2.0'
-    },
-    {
-      type: ChangeRequestReason.Rules,
-      explain: 'Discovered rule EV 5.2.6'
-    },
-    {
-      type: ChangeRequestReason.School,
-      explain: 'All team members had 5 midterms each'
-    }
-  ],
-  scopeImpact: 'Design and machine titanium spacers',
-  budgetImpact: 75,
-  timelineImpact: 2,
-  proposedSolutions: [],
+  type: ChangeRequestType.Standard,
+  why: 'Spacers are needed to prevent the jet fuel from melting the I beams',
   requestedReviewers: []
 };
 
@@ -101,42 +70,13 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
   wbsName: 'Example Work Package 1',
   submitter: exampleAdminUser,
   dateSubmitted: new Date('02/25/21'),
-  type: ChangeRequestType.Issue,
+  type: ChangeRequestType.Standard,
   dateReviewed: new Date('03/01/21'),
   accepted: true,
   reviewNotes: 'Adjust description, increase budget to 200, and add 3 weeks',
   dateImplemented: new Date('03/04/21'),
   status: ChangeRequestStatus.Implemented,
-  what: 'Spacers are needed to prevent the jet fuel from melting the I beams',
-  why: [
-    {
-      type: ChangeRequestReason.Estimation,
-      explain: 'Original estimate did not account for spacers'
-    },
-    {
-      type: ChangeRequestReason.Manufacturing,
-      explain: 'No availibilitiy in Richards'
-    },
-    {
-      type: ChangeRequestReason.Other,
-      explain: "Matt won't shut up"
-    },
-    {
-      type: ChangeRequestReason.OtherProject,
-      explain: '2.2.0'
-    },
-    {
-      type: ChangeRequestReason.Rules,
-      explain: 'Discovered rule EV 5.2.6'
-    },
-    {
-      type: ChangeRequestReason.School,
-      explain: 'All team members had 5 midterms each'
-    }
-  ],
-  scopeImpact: 'Design and machine titanium spacers',
-  budgetImpact: 75,
-  timelineImpact: 2,
+  why: 'Spacers are needed to prevent the jet fuel from melting the I beams. Original estimate did not account for spacers. No availability in Richards.',
   implementedChanges: [
     {
       changeRequestIdentifier: 1,
@@ -196,7 +136,6 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
       dateImplemented: new Date('02/25/21')
     }
   ],
-  proposedSolutions: [],
   requestedReviewers: []
 };
 
