@@ -5,7 +5,6 @@ import {
   isAdmin,
   isGuest,
   isLeadership,
-  isNotLeadership,
   isProjectWbs,
   ProjectProposedChangesCreateArgs,
   StageGateChangeRequest,
@@ -13,7 +12,8 @@ import {
   WbsNumber,
   wbsPipe,
   WorkPackageProposedChangesCreateArgs,
-  User
+  User,
+  isHead
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -259,9 +259,6 @@ export default class ChangeRequestsService {
     accepted: boolean,
     organization: Organization
   ): Promise<string> {
-    if (await userHasPermission(reviewer.userId, organization.organizationId, isNotLeadership))
-      throw new AccessDeniedMemberException('review change requests');
-
     const foundCR = await prisma.change_Request.findUnique({
       where: { crId },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
@@ -273,14 +270,18 @@ export default class ChangeRequestsService {
     if (foundCR.wbsElement?.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(foundCR.wbsElement));
     if (foundCR.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Change Request');
 
-    if (reviewer.userId === foundCR.submitterId)
+    const isHeadOrAdmin = await userHasPermission(reviewer.userId, organization.organizationId, isHead);
+
+    if (reviewer.userId === foundCR.submitterId && !isHeadOrAdmin)
       throw new AccessDeniedException("You can't review your own change request!");
 
     if (foundCR.requestedReviewers.length > 0) {
       const isRequestedReviewer = foundCR.requestedReviewers.some((user) => user.userId === reviewer.userId);
-      if (!isRequestedReviewer) {
-        throw new AccessDeniedException('Only requested reviewers can review this change request!');
+      if (!isRequestedReviewer && !isHeadOrAdmin) {
+        throw new AccessDeniedException('Only the requested reviewer or a head/admin can review this change request!');
       }
+    } else if (!isHeadOrAdmin) {
+      throw new AccessDeniedMemberException('review change requests');
     }
 
     if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
