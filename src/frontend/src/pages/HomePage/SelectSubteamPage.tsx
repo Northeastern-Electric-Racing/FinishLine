@@ -33,7 +33,7 @@ const SelectSubteamPage = () => {
         <NERButton
           variant="contained"
           sx={{ mt: 4, fontSize: '1.3rem', alignSelf: 'center' }}
-          onClick={() => history.push(routes.HOME_GUEST)}
+          onClick={() => history.push(routes.HOME)}
         >
           Return to Home Page
         </NERButton>

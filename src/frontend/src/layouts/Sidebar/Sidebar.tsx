@@ -65,7 +65,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     {
       name: 'Home',
       icon: <HomeIcon />,
-      route: onGuestHomePage ? routes.HOME_GUEST : routes.HOME
+      route: routes.HOME
     },
     !onGuestHomePage && {
       name: 'Gantt',
