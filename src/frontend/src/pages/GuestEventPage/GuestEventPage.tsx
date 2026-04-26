@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, forwardRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Box, Button } from '@mui/material';
 import { Collapse, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -28,7 +28,7 @@ interface DateGroupProps {
   instances: EventInstance[];
 }
 
-const DateGroup = forwardRef<HTMLDivElement, DateGroupProps>(({ date, instances }, ref) => {
+const DateGroup: React.FC<DateGroupProps> = ({ date, instances }) => {
   const theme = useTheme();
   const [open, setOpen] = useState(true);
 
@@ -36,7 +36,7 @@ const DateGroup = forwardRef<HTMLDivElement, DateGroupProps>(({ date, instances 
   const label = date === todayKey ? `Today: ${date}` : date;
 
   return (
-    <Box ref={ref}>
+    <Box>
       <Stack
         direction="row"
         alignItems="center"
@@ -58,10 +58,9 @@ const DateGroup = forwardRef<HTMLDivElement, DateGroupProps>(({ date, instances 
       </Collapse>
     </Box>
   );
-});
+};
 
 const GuestEventPage: React.FC = () => {
-  const [hasScrolled, setHasScrolled] = useState(false);
   const todayRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -87,16 +86,9 @@ const GuestEventPage: React.FC = () => {
   const futureInstances = useMemo(() => futureData?.pages.flatMap((p) => p.futureInstances) ?? [], [futureData]);
   const pastInstances = useMemo(() => pastData?.pages.flatMap((p) => p.pastInstances) ?? [], [pastData]);
 
-  useEffect(() => {
-    if (!hasScrolled && (futureInstances.length > 0 || pastInstances.length > 0)) {
-      todayRef.current?.scrollIntoView({ block: 'start' });
-      setHasScrolled(true);
-    }
-  }, [futureInstances, pastInstances, hasScrolled]);
-
-  const isInitialLoading = (futureLoading || pastLoading) && futureInstances.length === 0 && pastInstances.length === 0;
   if (futureIsError) return <ErrorPage message={futureError!.message} />;
   if (pastIsError) return <ErrorPage message={pastError!.message} />;
+  const isInitialLoading = (futureLoading || pastLoading) && futureInstances.length === 0 && pastInstances.length === 0;
   if (isInitialLoading) return <LoadingIndicator />;
 
   const pastGroups = groupInstancesByDate(pastInstances);
