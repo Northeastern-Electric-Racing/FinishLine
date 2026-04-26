@@ -270,10 +270,10 @@ export default class ChangeRequestsService {
     if (foundCR.wbsElement?.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(foundCR.wbsElement));
     if (foundCR.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Change Request');
 
-    if (reviewer.userId === foundCR.submitterId)
-      throw new AccessDeniedException("You can't review your own change request!");
-
     const isHeadOrAdmin = await userHasPermission(reviewer.userId, organization.organizationId, isHead);
+
+    if (reviewer.userId === foundCR.submitterId && !isHeadOrAdmin)
+      throw new AccessDeniedException("You can't review your own change request!");
 
     if (foundCR.requestedReviewers.length > 0) {
       const isRequestedReviewer = foundCR.requestedReviewers.some((user) => user.userId === reviewer.userId);
