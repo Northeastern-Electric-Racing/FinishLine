@@ -6,7 +6,7 @@
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography, Box, IconButton, Divider } from '@mui/material';
+import { Typography, Box, IconButton, Divider, Drawer, useMediaQuery, useTheme as useMuiTheme } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -46,6 +46,8 @@ interface SidebarProps {
 
 const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  const muiTheme = useMuiTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const user = useCurrentUser();
   const { onGuestHomePage } = useHomePageContext();
@@ -192,6 +194,10 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
   const linkItems = onPNMHomePage || onOnboardingHomePage ? onboardingLinkItems : memberLinkItems;
 
   const handleMoveContent = () => {
+    if (isMobile) {
+      setDrawerOpen(false);
+      return;
+    }
     if (moveContent) {
       setDrawerOpen(false);
     }
@@ -206,14 +212,8 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     setOpenSubmenu(null);
   };
 
-  return (
-    <NERDrawer
-      open={drawerOpen}
-      variant="permanent"
-      onMouseLeave={() => {
-        if (!moveContent) setDrawerOpen(false);
-      }}
-    >
+  const drawerContent = (
+    <>
       <DrawerHeader>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -255,6 +255,31 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           <Typography className={styles.versionNumber}>v5.0.0</Typography>
         </Box>
       </Box>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer
+        variant="temporary"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        slotProps={{ paper: { sx: { width: '100vw', backgroundColor: '#ef4345' } } }}
+      >
+        {drawerContent}
+      </Drawer>
+    );
+  }
+
+  return (
+    <NERDrawer
+      open={drawerOpen}
+      variant="permanent"
+      onMouseLeave={() => {
+        if (!moveContent) setDrawerOpen(false);
+      }}
+    >
+      {drawerContent}
     </NERDrawer>
   );
 };
