@@ -6,10 +6,11 @@ import {
   aquamanLeadership,
   greenlanternHead,
   flashAdmin,
-  robinMember
+  robinMember,
+  batmanAppAdmin
 } from '../test-data/users.test-data.js';
 import prisma from '../../src/prisma/prisma.js';
-import { AccessDeniedException } from '../../src/utils/errors.utils.js';
+import { AccessDeniedException, AccessDeniedMemberException } from '../../src/utils/errors.utils.js';
 
 describe('Change Request Tests', () => {
   let orgId: string;
@@ -270,7 +271,7 @@ describe('Change Request Tests', () => {
       expect(updatedCR?.accepted).toBe(false);
     });
 
-    it('rejects non-requested leadership when reviewers are requested', async () => {
+    it('allows non-requested head/admin to review when reviewers are requested', async () => {
       await ChangeRequestsService.requestCRReview(
         submitterUser,
         [leadershipUser1.userId, leadershipUser2.userId],
@@ -278,25 +279,15 @@ describe('Change Request Tests', () => {
         organization
       );
 
-      await expect(
-        ChangeRequestsService.reviewChangeRequest(
-          nonRequestedLeadership,
-          changeRequestId,
-          'I want to review this',
-          true,
-          organization
-        )
-      ).rejects.toThrow(AccessDeniedException);
+      const reviewResult = await ChangeRequestsService.reviewChangeRequest(
+        nonRequestedLeadership,
+        changeRequestId,
+        'I want to review this',
+        false,
+        organization
+      );
 
-      await expect(
-        ChangeRequestsService.reviewChangeRequest(
-          nonRequestedLeadership,
-          changeRequestId,
-          'I want to review this',
-          true,
-          organization
-        )
-      ).rejects.toThrow('Only requested reviewers can review this change request!');
+      expect(reviewResult).toBe(changeRequestId);
     });
 
     it('allows second requested reviewer to review when reviewers are requested', async () => {
@@ -346,18 +337,23 @@ describe('Change Request Tests', () => {
       ).rejects.toThrow('The following user(s) are not leadership: Dick Grayson');
     });
 
-    it('allows rejection by non-requested leadership when reviewers are requested', async () => {
+    it('allows non-requested head/admin to reject when reviewers are requested', async () => {
       await ChangeRequestsService.requestCRReview(submitterUser, [leadershipUser1.userId], changeRequestId, organization);
 
+      const reviewResult = await ChangeRequestsService.reviewChangeRequest(
+        nonRequestedLeadership,
+        changeRequestId,
+        'Rejecting this',
+        false,
+        organization
+      );
+
+      expect(reviewResult).toBe(changeRequestId);
+    });
+    it('rejects member user from reviewing even when no specific reviewer is requested', async () => {
       await expect(
-        ChangeRequestsService.reviewChangeRequest(
-          nonRequestedLeadership,
-          changeRequestId,
-          'Rejecting this',
-          false,
-          organization
-        )
-      ).rejects.toThrow(AccessDeniedException);
+        ChangeRequestsService.reviewChangeRequest(memberUser, changeRequestId, 'trying to review', false, organization)
+      ).rejects.toThrow(AccessDeniedMemberException);
     });
   });
 
@@ -452,9 +448,11 @@ describe('Change Request Tests', () => {
         const crA = await ChangeRequestsService.createStandardChangeRequest(user, 0, 1, 0, 'reason', organization);
         const crB = await ChangeRequestsService.createStandardChangeRequest(user, 0, 2, 0, 'reason', organization);
 
+        const adminUser = await createTestUser(batmanAppAdmin, orgId);
+
         // getApprovedChangeRequests requires dateReviewed >= fiveDaysAgo - review both CRs to satisfy this
-        await ChangeRequestsService.reviewChangeRequest(otherUser, crA.crId, '', false, organization);
-        await ChangeRequestsService.reviewChangeRequest(otherUser, crB.crId, '', false, organization);
+        await ChangeRequestsService.reviewChangeRequest(adminUser, crA.crId, '', false, organization);
+        await ChangeRequestsService.reviewChangeRequest(adminUser, crB.crId, '', false, organization);
 
         const results = await ChangeRequestsService.getApprovedChangeRequests(user, undefined, organization, carAId);
 
@@ -466,9 +464,11 @@ describe('Change Request Tests', () => {
         const crA = await ChangeRequestsService.createStandardChangeRequest(user, 0, 1, 0, 'reason', organization);
         const crB = await ChangeRequestsService.createStandardChangeRequest(user, 0, 2, 0, 'reason', organization);
 
+        const adminUser = await createTestUser(batmanAppAdmin, orgId);
+
         // getApprovedChangeRequests requires dateReviewed >= fiveDaysAgo - review both CRs to satisfy this
-        await ChangeRequestsService.reviewChangeRequest(otherUser, crA.crId, '', false, organization);
-        await ChangeRequestsService.reviewChangeRequest(otherUser, crB.crId, '', false, organization);
+        await ChangeRequestsService.reviewChangeRequest(adminUser, crA.crId, '', false, organization);
+        await ChangeRequestsService.reviewChangeRequest(adminUser, crB.crId, '', false, organization);
 
         // wbsNum scopes to car A's project; carId points to car B - car filter should be ignored
         const wbsNum = { carNumber: 0, projectNumber: 1, workPackageNumber: 0 };
