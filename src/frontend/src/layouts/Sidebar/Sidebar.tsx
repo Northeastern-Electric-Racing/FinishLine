@@ -50,7 +50,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const user = useCurrentUser();
-  const { onGuestHomePage } = useHomePageContext();
+  const onGuestHomePage = isGuest(user.role);
   const { isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamTypes();
 
   const allTeams: LinkItem[] = (teams ?? []).map((team: TeamType) => {
