@@ -190,8 +190,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             tabsLabels={[
               { tabUrlValue: 'overview', tabName: 'Overview' },
               { tabUrlValue: 'tasks', tabName: 'Tasks' },
-              { tabUrlValue: 'changes', tabName: 'Changes' },
-              { tabUrlValue: 'gantt', tabName: 'Gantt' }
+              { tabUrlValue: 'changes', tabName: 'Changes' }
             ]}
             baseUrl={`${routes.PROJECTS}/${wbsNum}`}
             defaultTab="overview"
@@ -204,10 +203,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
           <ProjectDetails project={project} />
         ) : tab === 1 ? (
           <TaskList project={project} isGuest={true} />
-        ) : tab === 2 ? (
-          <ChangesList changes={project.changes} />
         ) : (
-          <ProjectGantt workPackages={project.workPackages} />
+          <ChangesList changes={project.changes} />
         )}
       </PageLayout>
     );

@@ -2,6 +2,7 @@ import { Box, Card, CardContent, Stack, Typography, useTheme, Link } from '@mui/
 import { TeamType } from 'shared';
 import { NERButton } from '../../components/NERButton';
 import { Link as RouterLink } from 'react-router-dom';
+import NERMarkdown from '../../components/NERMarkdown';
 
 interface GuestTeamCardProps {
   teamType: TeamType;
@@ -36,20 +37,7 @@ const GuestTeamCard: React.FC<GuestTeamCardProps> = ({ teamType }) => {
             </Box>
           </Box>
         </Stack>
-        <Typography
-          sx={{
-            fontSize: 15,
-            lineHeight: 1.4,
-            flexGrow: 1,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical'
-          }}
-        >
-          {teamType.description}
-        </Typography>
+        <NERMarkdown markdown={teamType.description} />
         <Link component={RouterLink} to={`/teams/${teamType.teamTypeId}`} sx={{ width: '100%', textDecoration: 'none' }}>
           <NERButton
             fullWidth
