@@ -599,11 +599,11 @@ export default class CalendarController {
 
   static async getAllEventsPaginated(req: Request, res: Response, next: NextFunction) {
     try {
-      const { cursor, pageSize } = req.body;
+      const { futureCursor, pastCursor } = req.body;
       const paginatedEvents = await CalendarService.getAllEventsPaginated(
         req.organization,
-        cursor ? new Date(cursor) : undefined,
-        pageSize ? parseInt(pageSize) : undefined
+        futureCursor ? new Date(futureCursor) : undefined,
+        pastCursor ? new Date(pastCursor) : undefined
       );
       res.status(200).json(paginatedEvents);
     } catch (error: unknown) {
