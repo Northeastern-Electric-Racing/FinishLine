@@ -66,7 +66,7 @@ export default class NotificationsService {
 
     const teamTaskMap = new Map<string, TaskWithAssignees[]>();
 
-    // group tasks due by team
+    // group tasks due by team in a map
     tasks.forEach((task) => {
       const teamSlackIds = task.wbsElement.project?.teams.map((team) => team.slackId) ?? [];
 
