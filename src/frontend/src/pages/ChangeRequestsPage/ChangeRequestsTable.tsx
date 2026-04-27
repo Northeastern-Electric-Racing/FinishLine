@@ -181,7 +181,7 @@ const ChangeRequestsTable: React.FC = () => {
   let filterValues: { columnField: string; operatorValue: string; value: string };
   try {
     const parsed = JSON.parse(localStorage.getItem('changeRequestsTableFilter') ?? 'null');
-    if (parsed && typeof parsed.columnField === 'string' && typeof parsed.operatorValue === 'string') {
+    if (parsed && typeof parsed.columnField === 'string' && typeof parsed.operatorValue === 'string' && typeof parsed.value === 'string') {
       filterValues = parsed;
     } else {
       localStorage.removeItem('changeRequestsTableFilter');
