@@ -552,8 +552,8 @@ export const sendSlackCRStatusToThread = async (
 /**
  * Sends Slack notifications for a newly created standard (manual) CR:
  * 1. Initial message to each project team channel
- * 2. Thread reply tagging the project head(s) and requested reviewer(s)
- * 3. Thread reply with the why text and field diff
+ * 2. Thread reply with the why text and field diff
+ * 3. Thread reply tagging the project head(s) and requested reviewer(s)
  * Also stores Message_Info records linking threads to the CR.
  */
 export const sendStandardCRCreatedNotification = async (
@@ -583,15 +583,16 @@ export const sendStandardCRCreatedNotification = async (
 
   if (notifications.length === 0) return;
 
+  // add message_Info records for the sent notifications so we can link the CR to the slack threads for future replies
   await addSlackThreadsToChangeRequest(cr.crId, notifications);
 
-  // Thread reply 1: why + diff
+  // Thread reply: why + diff
   const whyAndDiff = diffText
     ? `*Change Justification:*\n${why}\n\n*Proposed Changes:*\n${diffText}`
     : `*Change Justification:*\n${why}`;
   await Promise.all(notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, whyAndDiff)));
 
-  // Thread reply 2: tag project head(s) + requested reviewer
+  // Thread reply: tag project head(s) + requested reviewer
   const headSlackIds = (await Promise.all(teams.filter((t) => t.headId).map((t) => getUserSlackId(t.headId!)))).filter(
     (id): id is string => !!id
   );

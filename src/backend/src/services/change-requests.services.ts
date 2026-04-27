@@ -997,6 +997,7 @@ export default class ChangeRequestsService {
         wbsNumber: { carNumber, projectNumber, workPackageNumber, organizationId: organization.organizationId }
       },
       include: {
+        links: { where: { dateDeleted: null }, include: { linkType: { select: { name: true } } } },
         project: { select: { budget: true, summary: true } },
         workPackage: { select: { startDate: true, duration: true, stage: true } }
       }

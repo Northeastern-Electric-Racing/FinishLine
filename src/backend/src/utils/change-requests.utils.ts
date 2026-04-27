@@ -393,6 +393,7 @@ export const buildCRDiff = (
     name: string;
     leadId: string | null;
     managerId: string | null;
+    links: { url: string; linkType: { name: string } }[];
     project?: { budget: number; summary: string } | null;
     workPackage?: { startDate: Date; duration: number; stage: string | null } | null;
   },
@@ -416,6 +417,22 @@ export const buildCRDiff = (
     if (value !== null && value !== undefined) lines.push(`+ ${label}: ${value}`);
   };
 
+  const addLinkDiffs = (currentLinks: { url: string; linkType: { name: string } }[], proposedLinks: LinkCreateArgs[]) => {
+    const currentMap = new Map(currentLinks.map((l) => [l.linkType.name, l.url]));
+    const proposedMap = new Map(proposedLinks.map((l) => [l.linkTypeName, l.url]));
+    for (const [name, url] of currentMap) {
+      if (!proposedMap.has(name)) lines.push(`− ${name}: ${url}`);
+    }
+    for (const [name, url] of proposedMap) {
+      if (!currentMap.has(name)) {
+        lines.push(`+ ${name}: ${url}`);
+      } else if (currentMap.get(name) !== url) {
+        lines.push(`− ${name}: ${currentMap.get(name)}`);
+        lines.push(`+ ${name}: ${url}`);
+      }
+    }
+  };
+
   if (isWpChange) {
     const wpProposed = proposed as WorkPackageProposedChangesCreateArgs;
     if (!currentWbs.workPackage) {
@@ -425,6 +442,7 @@ export const buildCRDiff = (
       addNew('Start date', wpProposed.startDate);
       addNew('Duration', wpProposed.duration);
       addNew('Stage', wpProposed.stage);
+      wpProposed.links.forEach((l) => addNew(l.linkTypeName, l.url));
     } else {
       addDiff('Name', currentWbs.name, wpProposed.name);
       addDiff('Lead', currentWbs.leadId, wpProposed.leadId);
@@ -432,6 +450,7 @@ export const buildCRDiff = (
       addDiff('Start date', formatDateOnly(currentWbs.workPackage.startDate, 'YYYY-MM-DD'), wpProposed.startDate);
       addDiff('Duration', currentWbs.workPackage.duration, wpProposed.duration);
       addDiff('Stage', currentWbs.workPackage.stage, wpProposed.stage);
+      addLinkDiffs(currentWbs.links, wpProposed.links);
     }
   } else {
     const projProposed = proposed as ProjectProposedChangesCreateArgs;
@@ -441,12 +460,14 @@ export const buildCRDiff = (
       addNew('Manager', projProposed.managerId);
       addNew('Budget', projProposed.budget);
       addNew('Summary', projProposed.summary);
+      projProposed.links.forEach((l) => addNew(l.linkTypeName, l.url));
     } else {
       addDiff('Name', currentWbs.name, projProposed.name);
       addDiff('Lead', currentWbs.leadId, projProposed.leadId);
       addDiff('Manager', currentWbs.managerId, projProposed.managerId);
       addDiff('Budget', currentWbs.project.budget, projProposed.budget);
       addDiff('Summary', currentWbs.project.summary, projProposed.summary);
+      addLinkDiffs(currentWbs.links, projProposed.links);
     }
   }
 
