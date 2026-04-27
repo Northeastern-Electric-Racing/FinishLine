@@ -978,7 +978,7 @@ describe('part review tests', () => {
       const team = await createTestTeam(batman.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, batman.userId);
 
-      const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+      const project = await createTestProject(batman, orgId, team.teamId, car.carId, 0, 1);
       const project1 = await prisma.project.findUnique({
         where: { projectId: project.projectId },
         include: {
@@ -1002,7 +1002,7 @@ describe('part review tests', () => {
       const team = await createTestTeam(batman.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, batman.userId);
 
-      const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+      const project = await createTestProject(batman, orgId, team.teamId, car.carId, 0, 1);
       const project1 = await prisma.project.findUnique({
         where: { projectId: project.projectId },
         include: {
@@ -1024,7 +1024,7 @@ describe('part review tests', () => {
       const car = await createTestCar(orgId, batman.userId);
 
       // Create a project with no parts
-      await createTestProject(batman, orgId, team1.teamId, car.carId, 4);
+      await createTestProject(batman, orgId, team1.teamId, car.carId, 0, 4);
 
       const proj1WbsNum = validateWBS('0.4.0');
 
@@ -1040,8 +1040,8 @@ describe('part review tests', () => {
       const team2 = await createTestTeam(superman.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, batman.userId);
 
-      const project1 = await createTestProject(batman, orgId, team1.teamId, car.carId, 1);
-      const project2 = await createTestProject(superman, orgId, team2.teamId, car.carId, 2);
+      const project1 = await createTestProject(batman, orgId, team1.teamId, car.carId, 0, 1);
+      const project2 = await createTestProject(superman, orgId, team2.teamId, car.carId, 0, 2);
 
       const proj1WbsNum = validateWBS('0.1.0');
       const proj2WbsNum = validateWBS('0.2.0');

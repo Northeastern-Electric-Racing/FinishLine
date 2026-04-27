@@ -1170,8 +1170,7 @@ describe('Reimbursement Requests', () => {
           manufacturerId: manufacturer.id,
           linkUrl: 'https://example.com',
           quantity: 1,
-          price: 100,
-          subtotal: 100
+          price: 100
         }
       });
     });
@@ -1276,8 +1275,7 @@ describe('Reimbursement Requests', () => {
           manufacturerId: material.manufacturerId,
           linkUrl: 'https://example.com',
           quantity: 2,
-          price: 200,
-          subtotal: 400
+          price: 200
         }
       });
 

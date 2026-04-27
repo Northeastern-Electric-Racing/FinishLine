@@ -3,7 +3,7 @@ import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, T
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, TaskStatus, TeamPreview } from 'shared';
-import { useAllUsers, useCurrentUser } from '../../../../hooks/users.hooks';
+import { useAllMembers, useCurrentUser } from '../../../../hooks/users.hooks';
 import * as yup from 'yup';
 import { taskUserToAutocompleteOption } from '../../../../utils/task.utils';
 import NERFormModal from '../../../../components/NERFormModal';
@@ -28,9 +28,10 @@ interface TaskFormModalProps {
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
   onReset?: () => void;
+  isLoading?: boolean;
 }
 
-const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, modalShow, onHide, onReset }) => {
+const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, modalShow, onHide, onReset, isLoading }) => {
   let schema;
 
   if (status === TaskStatus.IN_PROGRESS) {
@@ -71,7 +72,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
 
   const user = useCurrentUser();
 
-  const { data: users, isLoading, isError, error } = useAllUsers();
+  const { data: users, isLoading: usersLoading, isError, error } = useAllMembers();
 
   const {
     handleSubmit,
@@ -92,7 +93,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
   });
 
   if (isError) return <ErrorPage error={error} />;
-  if (isLoading || !users) return <LoadingIndicator />;
+  if (usersLoading || !users) return <LoadingIndicator />;
 
   const options: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
 
@@ -111,6 +112,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       submitText="Save"
+      disabled={isLoading}
     >
       <form
         onSubmit={(e) => {

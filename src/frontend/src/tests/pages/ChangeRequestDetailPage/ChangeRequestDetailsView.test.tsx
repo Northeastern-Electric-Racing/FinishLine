@@ -24,6 +24,15 @@ import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/auth
 
 vi.mock('../../../hooks/projects.hooks');
 vi.mock('../../../hooks/users.hooks');
+vi.mock('../../../app/AppGlobalCarFilterContext', () => ({
+  useGlobalCarFilter: () => ({
+    selectedCar: 'all-cars',
+    allCars: [],
+    setSelectedCar: vi.fn(),
+    isLoading: false,
+    error: null
+  })
+}));
 
 const mockedUseSingleProject = useSingleProject as jest.Mock<UseQueryResult<Project>>;
 const mockSingleProjectHook = (isLoading: boolean, isError: boolean, data?: Project, error?: Error) => {

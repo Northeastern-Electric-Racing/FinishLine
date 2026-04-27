@@ -15,7 +15,8 @@ import {
   Machinery,
   ScheduleSlot,
   notGuest,
-  isSameDay
+  isSameDay,
+  EventInstance
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
@@ -2748,5 +2749,68 @@ export default class CalendarService {
       ...getEventTypeQueryArgs(organization.organizationId)
     });
     return eventTypes.map(eventTypeTransformer);
+  }
+
+  /**
+   * Gets the 25 events on each side of a reference point (defaults to now).
+   * futureCursor paginates forward; pastCursor paginates backward.
+   * @param organization the org the user is currently in
+   * @param futureCursor the startTime of the last future event from the previous page
+   * @param pastCursor the startTime of the last past event from the previous page
+   */
+  static async getAllEventsPaginated(
+    organization: Organization,
+    futureCursor?: Date,
+    pastCursor?: Date
+  ): Promise<{
+    futureInstances: EventInstance[];
+    pastInstances: EventInstance[];
+    nextFutureCursor: Date | null;
+    nextPastCursor: Date | null;
+  }> {
+    const now = new Date();
+
+    const eventFilter = {
+      dateDeleted: null,
+      status: Event_Status.SCHEDULED,
+      eventType: {
+        organizationId: organization.organizationId
+      }
+    };
+
+    const [futureSlots, pastSlots] = await Promise.all([
+      prisma.schedule_Slot.findMany({
+        where: { startTime: { gte: futureCursor ?? now }, event: eventFilter },
+        include: { event: getEventQueryArgs(organization.organizationId) },
+        orderBy: { startTime: 'asc' },
+        take: 25
+      }),
+      prisma.schedule_Slot.findMany({
+        where: { startTime: { lt: pastCursor ?? now }, event: eventFilter },
+        include: { event: getEventQueryArgs(organization.organizationId) },
+        orderBy: { startTime: 'desc' },
+        take: 25
+      })
+    ]);
+
+    const toInstance = (slot: (typeof futureSlots)[0]): EventInstance => {
+      const { scheduledTimes, ...eventWithoutSlots } = eventTransformer(slot.event);
+      return {
+        ...eventWithoutSlots,
+        scheduleSlotId: slot.scheduleSlotId,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        allDay: slot.allDay,
+        recurring: slot.event.scheduledTimes.length > 1,
+        totalScheduledSlots: slot.event.scheduledTimes.length
+      };
+    };
+
+    return {
+      futureInstances: futureSlots.map(toInstance),
+      pastInstances: pastSlots.map(toInstance),
+      nextFutureCursor: futureSlots.length === 25 ? futureSlots[futureSlots.length - 1].startTime : null,
+      nextPastCursor: pastSlots.length === 25 ? pastSlots[pastSlots.length - 1].startTime : null
+    };
   }
 }

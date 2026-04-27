@@ -1,13 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Milestone, FrequentlyAskedQuestion } from 'shared';
+import { Milestone, FrequentlyAskedQuestion, GuestDefinition, GuestDefinitionType } from 'shared';
 import {
   createFaq,
+  createGuestDefinition,
   createMilestone,
   deleteFaq,
+  deleteGuestDefinition,
   deleteMilestone,
   editFaq,
+  editGuestDefinition,
   editMilestone,
   getAllFaqs,
+  getAllGuestDefinitions,
   getAllMilestones
 } from '../apis/recruitment.api';
 
@@ -20,6 +24,16 @@ export interface MilestonePayload {
 export interface FaqPayload {
   question: string;
   answer: string;
+}
+
+export interface GuestDefinitionPayload {
+  term: string;
+  description: string;
+  order: number;
+  type: GuestDefinitionType;
+  icon?: string;
+  buttonText?: string;
+  buttonLink?: string;
 }
 
 export const useAllMilestones = () => {
@@ -127,6 +141,61 @@ export const useDeleteFAQ = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['faqs']);
+      }
+    }
+  );
+};
+
+export const useAllGuestDefinitions = () => {
+  return useQuery<GuestDefinition[], Error>(['guestdefinitions'], async () => {
+    const { data } = await getAllGuestDefinitions();
+    return data;
+  });
+};
+
+export const useDeleteGuestDefinition = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['guestdefinitions', 'delete'],
+    async (definitionId: string) => {
+      const { data } = await deleteGuestDefinition(definitionId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['guestdefinitions']);
+      }
+    }
+  );
+};
+
+export const useCreateGuestDefinition = () => {
+  const queryClient = useQueryClient();
+  return useMutation<GuestDefinition, Error, GuestDefinitionPayload>(
+    ['guestdefinitions', 'create'],
+    async (payload) => {
+      const { data } = await createGuestDefinition(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['guestdefinitions']);
+      }
+    }
+  );
+};
+
+export const useEditGuestDefinitions = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<GuestDefinition, Error, GuestDefinitionPayload>(
+    ['guestdefinitions', 'edit'],
+    async (payload) => {
+      const { data } = await editGuestDefinition(payload, id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['guestdefinitions']);
       }
     }
   );

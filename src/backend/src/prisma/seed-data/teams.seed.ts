@@ -115,4 +115,37 @@ const meanGirls = (headId: string, organizationId: string): Prisma.TeamCreateArg
   };
 };
 
-export const dbSeedAllTeams = { ravens, orioles, justiceLeague, huskies, avatarBenders, plLegends, financeTeam, meanGirls };
+const krustyKrabers = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
+  return {
+    data: {
+      teamName: 'Krusty Krab Crew',
+      slackId: 'C06HR7WTTKM',
+      headId,
+      organizationId
+    }
+  };
+};
+
+const penguinsOfMadagascar = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
+  return {
+    data: {
+      teamName: 'Penguins of Madagascar',
+      slackId: 'C06HR7WTTKM',
+      headId,
+      organizationId
+    }
+  };
+};
+
+export const dbSeedAllTeams = {
+  ravens,
+  orioles,
+  justiceLeague,
+  huskies,
+  avatarBenders,
+  plLegends,
+  financeTeam,
+  meanGirls,
+  krustyKrabers,
+  penguinsOfMadagascar
+};
