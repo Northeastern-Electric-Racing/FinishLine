@@ -1,6 +1,6 @@
 import { CreateSponsorTask, Sponsor } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { SponsorPayload, useEditSponsor } from '../../../hooks/finance.hooks';
+import { SponsorPayload, useEditSponsor, useUploadSponsorLogo } from '../../../hooks/finance.hooks';
 import SidePage from './SidePagePopup';
 import sponsorSchema, { SponsorForm } from './SponsorForm';
 
@@ -21,6 +21,7 @@ interface EditSponsorPageProps {
 const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProps) => {
   const toast = useToast();
   const { isLoading, mutateAsync } = useEditSponsor();
+  const { mutateAsync: uploadLogo } = useUploadSponsorLogo();
 
   const defaultSponsorTasks: CreateSponsorTask[] = (
     sponsor.sponsorTasks?.map((task) => ({
@@ -61,12 +62,17 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
     }
   });
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [logoImage, setLogoImage] = useState<File | null>(null);
+
   if (isLoading) return <LoadingIndicator />;
 
   const onSubmit = async (formData: SponsorPayload) => {
     try {
       setSubmitError(null);
       await mutateAsync({ sponsorId: sponsor.sponsorId, ...formData });
+      if (logoImage) {
+        await uploadLogo({ sponsorId: sponsor.sponsorId, logoImage });
+      }
       toast.success('Sponsor updated successfully!');
       handleClose();
     } catch (err: unknown) {
@@ -84,7 +90,13 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       title="Edit Sponsor"
       component={
         <Box display="flex" flexDirection="column" alignItems="flex-end">
-          <SponsorForm control={control} errors={errors} setValue={setValue} defaultValues={sponsor}></SponsorForm>
+          <SponsorForm
+            control={control}
+            errors={errors}
+            setValue={setValue}
+            defaultValues={sponsor}
+            onLogoImageChange={setLogoImage}
+          />
           {submitError && (
             <Box color="error.main" mb={2} fontWeight="bold">
               {submitError}

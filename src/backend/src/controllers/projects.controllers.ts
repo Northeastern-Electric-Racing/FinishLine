@@ -220,7 +220,6 @@ export default class ProjectsController {
         quantity,
         unitName,
         price,
-        subtotal,
         linkUrl,
         notes
       } = req.body;
@@ -237,7 +236,6 @@ export default class ProjectsController {
         manufacturerPartNumber,
         quantity,
         price,
-        subtotal,
         notes,
         assemblyId,
         pdmFileName,
@@ -397,7 +395,6 @@ export default class ProjectsController {
         quantity,
         unitName,
         price,
-        subtotal,
         linkUrl,
         notes
       } = req.body;
@@ -413,7 +410,6 @@ export default class ProjectsController {
         manufacturerPartNumber,
         quantity,
         price,
-        subtotal,
         notes,
         unitName,
         assemblyId,

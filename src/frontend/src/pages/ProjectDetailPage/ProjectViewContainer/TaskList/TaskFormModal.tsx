@@ -28,9 +28,10 @@ interface TaskFormModalProps {
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
   onReset?: () => void;
+  isLoading?: boolean;
 }
 
-const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, modalShow, onHide, onReset }) => {
+const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, modalShow, onHide, onReset, isLoading }) => {
   let schema;
 
   if (status === TaskStatus.IN_PROGRESS) {
@@ -71,7 +72,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
 
   const user = useCurrentUser();
 
-  const { data: users, isLoading, isError, error } = useAllMembers();
+  const { data: users, isLoading: usersLoading, isError, error } = useAllMembers();
 
   const {
     handleSubmit,
@@ -92,7 +93,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
   });
 
   if (isError) return <ErrorPage error={error} />;
-  if (isLoading || !users) return <LoadingIndicator />;
+  if (usersLoading || !users) return <LoadingIndicator />;
 
   const options: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
 
@@ -111,6 +112,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       submitText="Save"
+      disabled={isLoading}
     >
       <form
         onSubmit={(e) => {

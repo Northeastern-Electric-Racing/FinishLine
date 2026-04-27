@@ -40,8 +40,7 @@ describe('Material Tests', () => {
         manufacturer.name,
         'lalsd',
         new Decimal(5),
-        10,
-        50
+        10
       );
 
       expect(material.name).toEqual('100k Resistor');
@@ -99,7 +98,6 @@ describe('Material Tests', () => {
         'CAP-100UF',
         new Decimal(10),
         50,
-        500,
         'Test notes'
       );
 
@@ -114,8 +112,7 @@ describe('Material Tests', () => {
         manufacturer.name,
         'CAP-220UF',
         new Decimal(5),
-        75,
-        375
+        75
       );
 
       const newMaterialIds = await BillOfMaterials.copyMaterialsToProject(
@@ -185,8 +182,7 @@ describe('Material Tests', () => {
         manufacturer.name,
         'lalsd',
         new Decimal(5),
-        10,
-        50
+        10
       );
 
       const newMaterial = await BillOfMaterials.editMaterial(
@@ -200,8 +196,7 @@ describe('Material Tests', () => {
         manufacturer.name,
         'lalsd',
         new Decimal(5),
-        10,
-        50
+        10
       );
 
       expect(newMaterial.name).toEqual('100k Resistor Updated');

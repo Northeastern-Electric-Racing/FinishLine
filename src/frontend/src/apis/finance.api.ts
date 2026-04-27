@@ -363,7 +363,7 @@ export const getPendingAdvisorList = () => {
  * @param saboNumber the SABO number to set
  */
 export const setSaboNumber = async (requestId: string, saboNumber: string) => {
-  axios.post(apiUrls.financeSetSaboNumber(requestId), {
+  return axios.post(apiUrls.financeSetSaboNumber(requestId), {
     saboNumber
   });
 };
@@ -740,6 +740,12 @@ export const getAllSponsorTiers = () => {
 
 export const editSponsor = (id: string, formData: SponsorPayload) => {
   return axios.post(apiUrls.editSponsor(id), formData);
+};
+
+export const uploadSponsorLogo = (sponsorId: string, logoImage: File) => {
+  const formData = new FormData();
+  formData.append('logoImage', logoImage);
+  return axios.post<Sponsor>(apiUrls.uploadSponsorLogo(sponsorId), formData);
 };
 
 /**

@@ -13,7 +13,7 @@ export const getCurrentCar = async (req: Request, _res: Response, next: NextFunc
     const car = await prisma.car.findUnique({
       where: {
         carId,
-        wbsElement: { organizationId: req.organization.organizationId }
+        wbsElement: { organizationId: req.organization?.organizationId }
       },
       include: { wbsElement: true }
     });
