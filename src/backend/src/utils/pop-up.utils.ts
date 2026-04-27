@@ -3,23 +3,25 @@ import { User } from 'shared';
 import { PopUpService } from '../services/pop-up.services.js';
 
 /**
- * Sends a pop up that a design review event was scheduled
+ * Sends a pop up that an event was scheduled
  * @param event event that was created
  * @param members optional and required members of the event
  * @param submitter the user who created the event
  * @param workPackageName the name of the work package associated witht the event
  * @param organizationId  id of the organization of the event
+ * @param eventTypeName the name of the event type
  */
 export const sendEventPopUp = async (
   event: Event,
   members: User[],
   submitter: User,
   workPackageName: string,
-  organizationId: string
+  organizationId: string,
+  eventTypeName: string
 ) => {
   const designReviewEventLink = `/settings/preferences?eventId=${event.eventId}`;
 
-  const msg = `Design Review for ${workPackageName} is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
+  const msg = `${eventTypeName} for ${workPackageName} is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
   await PopUpService.sendPopUpToUsers(
     msg,
     'calendar_month',

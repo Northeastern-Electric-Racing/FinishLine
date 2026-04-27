@@ -516,14 +516,15 @@ export default class CalendarService {
               memberUserSetting.slackId,
               newEvent.eventId,
               newEvent.title,
-              projects.map((project) => project.wbsElement.name).join(', ')
+              projects.map((project) => project.wbsElement.name).join(', '),
+              foundEventType.requiresConfirmation
             );
           }
         }
       }
 
       // Send popup notification
-      await sendEventPopUp(newEvent, members, submitter, workPackageNames, organization.organizationId);
+      await sendEventPopUp(newEvent, members, submitter, workPackageNames, organization.organizationId, foundEventType.name);
 
       const teamsToNotify = new Set<Team>();
       for (const project of projects) {
