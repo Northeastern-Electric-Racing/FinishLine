@@ -12,7 +12,9 @@ import {
 } from '@prisma/client';
 import {
   DescriptionBulletPreview,
+  formatDateOnly,
   LinkCreateArgs,
+  ProjectProposedChangesCreateArgs,
   WbsNumber,
   wbsPipe,
   WorkPackageProposedChangesCreateArgs,
@@ -380,6 +382,75 @@ export const applyWorkPackageProposedChanges = async (
       organization
     );
   }
+};
+
+/**
+ * Builds a human-readable diff string comparing current WBS state to proposed changes.
+ * Each changed field is shown as two lines: "− Field: old" and "+ Field: new".
+ */
+export const buildCRDiff = (
+  currentWbs: {
+    name: string;
+    leadId: string | null;
+    managerId: string | null;
+    project?: { budget: number; summary: string } | null;
+    workPackage?: { startDate: Date; duration: number; stage: string | null } | null;
+  },
+  proposed: ProjectProposedChangesCreateArgs | WorkPackageProposedChangesCreateArgs | undefined
+): string => {
+  if (!proposed) return '';
+
+  const isWpChange = 'startDate' in proposed;
+  const lines: string[] = [];
+
+  const addDiff = (label: string, before: string | number | null | undefined, after: string | number | null | undefined) => {
+    const b = String(before ?? '(none)');
+    const a = String(after ?? '(none)');
+    if (b !== a) {
+      lines.push(`− ${label}: ${b}`);
+      lines.push(`+ ${label}: ${a}`);
+    }
+  };
+
+  const addNew = (label: string, value: string | number | null | undefined) => {
+    if (value !== null && value !== undefined) lines.push(`+ ${label}: ${value}`);
+  };
+
+  if (isWpChange) {
+    const wpProposed = proposed as WorkPackageProposedChangesCreateArgs;
+    if (!currentWbs.workPackage) {
+      addNew('Name', wpProposed.name);
+      addNew('Lead', wpProposed.leadId);
+      addNew('Manager', wpProposed.managerId);
+      addNew('Start date', wpProposed.startDate);
+      addNew('Duration', wpProposed.duration);
+      addNew('Stage', wpProposed.stage);
+    } else {
+      addDiff('Name', currentWbs.name, wpProposed.name);
+      addDiff('Lead', currentWbs.leadId, wpProposed.leadId);
+      addDiff('Manager', currentWbs.managerId, wpProposed.managerId);
+      addDiff('Start date', formatDateOnly(currentWbs.workPackage.startDate, 'YYYY-MM-DD'), wpProposed.startDate);
+      addDiff('Duration', currentWbs.workPackage.duration, wpProposed.duration);
+      addDiff('Stage', currentWbs.workPackage.stage, wpProposed.stage);
+    }
+  } else {
+    const projProposed = proposed as ProjectProposedChangesCreateArgs;
+    if (!currentWbs.project) {
+      addNew('Name', projProposed.name);
+      addNew('Lead', projProposed.leadId);
+      addNew('Manager', projProposed.managerId);
+      addNew('Budget', projProposed.budget);
+      addNew('Summary', projProposed.summary);
+    } else {
+      addDiff('Name', currentWbs.name, projProposed.name);
+      addDiff('Lead', currentWbs.leadId, projProposed.leadId);
+      addDiff('Manager', currentWbs.managerId, projProposed.managerId);
+      addDiff('Budget', currentWbs.project.budget, projProposed.budget);
+      addDiff('Summary', currentWbs.project.summary, projProposed.summary);
+    }
+  }
+
+  return lines.join('\n');
 };
 
 /**
