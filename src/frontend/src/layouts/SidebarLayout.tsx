@@ -4,18 +4,21 @@
  */
 
 import { Box } from '@mui/system';
-import { Container, IconButton, useTheme } from '@mui/material';
+import { Container, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { useState } from 'react';
 import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
 import Sidebar from './Sidebar/Sidebar';
 import HiddenContentMargin from '../components/HiddenContentMargin';
-import { useHomePageContext } from '../app/HomePageContext';
+import { useCurrentUser } from '../hooks/users.hooks';
+import { isGuest } from 'shared';
 
 const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
-  const { onGuestHomePage } = useHomePageContext();
+  const user = useCurrentUser();
+  const onGuestHomePage = isGuest(user.role);
 
   return (
     <>
@@ -34,7 +37,7 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       <IconButton
         onClick={() => {
           setDrawerOpen(true);
-          setMoveContent(true);
+          if (!isMobile) setMoveContent(true);
         }}
         sx={{ position: 'fixed', left: -8, top: '3%' }}
         id="sidebar-button"
