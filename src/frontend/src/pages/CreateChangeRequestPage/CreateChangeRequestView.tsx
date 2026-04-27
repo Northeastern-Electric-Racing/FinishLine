@@ -10,6 +10,8 @@ import { FormControl, FormLabel } from '@mui/material';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllProjects } from '../../hooks/projects.hooks';
+import { useAllMembers } from '../../hooks/users.hooks';
+import { userToAutocompleteOption } from '../../utils/teams.utils';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import NERFailButton from '../../components/NERFailButton';
@@ -56,9 +58,13 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   } = changeRequestFormReturn;
 
   const { isLoading, isError, error, data: projects } = useAllProjects();
+  const { isLoading: membersIsLoading, isError: membersIsError, error: membersError, data: members } = useAllMembers();
 
-  if (isLoading || !projects) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
+  if (membersIsError) return <ErrorPage message={membersError?.message} />;
+  if (isLoading || !projects || membersIsLoading || !members) return <LoadingIndicator />;
+
+  const memberOptions = members.map(userToAutocompleteOption);
 
   const wbsDropdownOptions: { label: string; id: string }[] = [];
 
@@ -115,8 +121,8 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                 Cancel
               </NERFailButton>
             )}
-            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1, width: 90, mt: { xs: 1, md: 0 } }}>
-              Submit
+            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1, mt: { xs: 1, md: 0 } }}>
+              {'Submit'}
             </NERSuccessButton>
           </Box>
         }
@@ -151,15 +157,17 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </FormControl>
             </Grid>
             <Grid item xs={12}>
-              <FormControl fullWidth>
-                <FormLabel>Requested Reviewer (optional)</FormLabel>
-                <ReactHookTextField
-                  name="requestedReviewerId"
-                  control={control}
-                  errorMessage={errors.requestedReviewerId}
-                  placeholder="Reviewer user ID"
-                />
-              </FormControl>
+              <FormLabel>Requested Reviewer (optional)</FormLabel>
+              <NERAutocomplete
+                id="requested-reviewer-autocomplete"
+                onChange={(_event, value) => {
+                  changeRequestFormReturn.setValue('requestedReviewerId', value?.id ?? undefined);
+                }}
+                options={memberOptions}
+                size="small"
+                placeholder="Select a reviewer"
+                value={memberOptions.find((m) => m.id === changeRequestFormReturn.watch('requestedReviewerId')) ?? null}
+              />
             </Grid>
           </Grid>
         </Grid>
