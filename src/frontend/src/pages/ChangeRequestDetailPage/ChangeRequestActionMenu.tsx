@@ -1,19 +1,16 @@
 import { ChangeRequest, ChangeRequestStatus, isLeadership, User, wbsPipe } from 'shared';
 import ActionsMenu from '../../components/ActionsMenu';
 import { Autocomplete, Checkbox, TextField, Box } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import PostAddIcon from '@mui/icons-material/PostAdd';
-import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
+import EditIcon from '@mui/icons-material/Edit';
 import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { useRequestCRReview } from '../../hooks/change-requests.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser, useAllMembers } from '../../hooks/users.hooks';
-import { projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { useState } from 'react';
 import ErrorPage from '../ErrorPage';
@@ -93,6 +90,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
       />
     </div>
   );
+
   const requestReviewerDropdown = () => (
     <>
       <Autocomplete
@@ -144,22 +142,6 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
     return (
       <ActionsMenu
         buttons={[
-          {
-            title: 'Create New Project',
-            onClick: () =>
-              history.push(`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum!)}`),
-            disabled: !isUserAllowedToImplement,
-            icon: <CreateNewFolderIcon fontSize="small" />
-          },
-          {
-            title: 'Create New Work Package',
-            onClick: () =>
-              history.push(
-                `${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum!)}`
-              ),
-            disabled: !isUserAllowedToImplement,
-            icon: <PostAddIcon fontSize="small" />
-          },
           {
             title: `Edit ${changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}`,
             onClick: () =>

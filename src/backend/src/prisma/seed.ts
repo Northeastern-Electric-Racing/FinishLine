@@ -367,7 +367,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequest1.crId, 'LGTM', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequest1.crId, true, ner, 'LGTM');
 
   /** Set the organization ID in the current process environment and update .env */
   process.env.DEV_ORGANIZATION_ID = organizationId;
@@ -1113,7 +1113,7 @@ const performSeed: () => Promise<void> = async () => {
   const changeRequestProjectHuskies1Id = changeRequestHuskiesProject1.crId;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectHuskies1Id, 'LGTM', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectHuskies1Id, true, ner, 'LGTM');
 
   const changeRequestProjectSlackbot1 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -1127,7 +1127,7 @@ const performSeed: () => Promise<void> = async () => {
   const changeRequestProjectSlackbot1Id = changeRequestProjectSlackbot1.crId;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectSlackbot1Id, 'LGTM', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectSlackbot1Id, true, ner, 'LGTM');
 
   const changeRequestProjectAvatar1 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -1152,10 +1152,10 @@ const performSeed: () => Promise<void> = async () => {
   const changeRequestProjectJustice1Id = changeRequestProjectJustice1.crId;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectJustice1Id, 'LGTM', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectJustice1Id, true, ner, 'LGTM');
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectAvatar1Id, 'LGTM', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectAvatar1Id, true, ner, 'LGTM');
 
   const changeRequestProjectJustice2 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -1169,7 +1169,7 @@ const performSeed: () => Promise<void> = async () => {
   const changeRequestProjectJustice2Id = changeRequestProjectJustice2.crId;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectJustice2Id, 'LGTM', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectJustice2Id, true, ner, 'LGTM');
 
   const changeRequestProjectRavens1 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -1183,7 +1183,7 @@ const performSeed: () => Promise<void> = async () => {
   const changeRequestProjectRavens1Id = changeRequestProjectRavens1.crId;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectRavens1Id, 'LGTM', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectRavens1Id, true, ner, 'LGTM');
 
   const changeRequestProjectSlackbot2 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -1197,7 +1197,7 @@ const performSeed: () => Promise<void> = async () => {
   const changeRequestProjectSlackbot2Id = changeRequestProjectSlackbot2.crId;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectSlackbot2Id, 'LGTM', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectSlackbot2Id, true, ner, 'LGTM');
 
   const changeRequestProjectKrusty1 = await ChangeRequestsService.createStandardChangeRequest(
     squidward,
@@ -1211,7 +1211,7 @@ const performSeed: () => Promise<void> = async () => {
   const changeRequestProjectKrusty1Id = changeRequestProjectKrusty1.crId;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectKrusty1Id, 'LGTM', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectKrusty1Id, true, ner, 'LGTM');
 
   // Project 2
 
@@ -1227,7 +1227,7 @@ const performSeed: () => Promise<void> = async () => {
   const changeRequestProjectKrusty2Id = changeRequestProjectKrusty2.crId;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectKrusty2Id, 'LGTM', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectKrusty2Id, true, ner, 'LGTM');
 
   // Penguins
   // For Project 1
@@ -1243,7 +1243,7 @@ const performSeed: () => Promise<void> = async () => {
   const changeRequestProjectPenguin1Id = changeRequestProjectPenguin1.crId;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectPenguin1Id, 'LGTM', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectPenguin1Id, true, ner, 'LGTM');
 
   // For Project 2
 
@@ -1259,7 +1259,7 @@ const performSeed: () => Promise<void> = async () => {
   const changeRequestProjectPenguin2Id = changeRequestProjectPenguin2.crId;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectPenguin2Id, 'LGTM', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProjectPenguin2Id, true, ner, 'LGTM');
 
   /**
    * Work Packages
@@ -1294,7 +1294,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage1ActivationCrId, 'Looks good to me!', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage1ActivationCrId, true, ner, 'Looks good to me!');
 
   // await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.description[0].descriptionId);
 
@@ -1350,7 +1350,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackageSlackbot1ActivationCrId, 'LGTM!', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackageSlackbot1ActivationCrId, true, ner, 'LGTM!');
 
   /** Work Package Slackbot 2 */
   const { workPackageWbsNumber: workPackageSlackbot2WbsNumber, workPackage: workPackage4 } = await seedWorkPackage(
@@ -1382,7 +1382,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackageSlackbot2ActivationCrId, 'LGTM!', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackageSlackbot2ActivationCrId, true, ner, 'LGTM!');
 
   /** AVATAR TEAM */
   /** Work Packages for Project 1 */
@@ -1420,9 +1420,9 @@ const performSeed: () => Promise<void> = async () => {
   await ChangeRequestsService.reviewChangeRequest(
     joeShmoe,
     workPackageAvatarProject1ActivationCrId,
-    'Very cute LGTM!',
     true,
-    ner
+    ner,
+    'Very cute LGTM!'
   );
 
   /** Work Package 2 */
@@ -1456,7 +1456,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackageAvatarProject2ActivationCrId, 'LGTM!', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackageAvatarProject2ActivationCrId, true, ner, 'LGTM!');
 
   /** Work Package 3 */
   const { workPackageWbsNumber: workPackageAvatarProject3WbsNumber, workPackage: workPackageAvatarProject3 } =
@@ -1489,7 +1489,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackageAvatarProject3ActivationCrId, 'LFG', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackageAvatarProject3ActivationCrId, true, ner, 'LFG');
 
   /** Work Packages for Justice League */
   /** Project 1 */
@@ -1523,7 +1523,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, projectJustice1WP1ActivationCrId, 'Approved!', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, projectJustice1WP1ActivationCrId, true, ner, 'Approved!');
 
   /** Work Package 2 */
   await seedWorkPackage(
@@ -1592,7 +1592,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, projectJustice2WP1ActivationCrId, 'Approved!', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, projectJustice2WP1ActivationCrId, true, ner, 'Approved!');
 
   /** Work Package 2 */
   await seedWorkPackage(
@@ -1643,7 +1643,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, project4WP1ActivationCrId, 'Approved!', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, project4WP1ActivationCrId, true, ner, 'Approved!');
 
   /** Work Package 2 */
   await seedWorkPackage(
@@ -1712,7 +1712,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, projectKrusty1WP1ActivationCrId, 'Approved!', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, projectKrusty1WP1ActivationCrId, true, ner, 'Approved!');
 
   /** Work Package 2 */
   await seedWorkPackage(
@@ -1781,7 +1781,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, projectKrusty2WP1ActivationCrId, 'Approved!', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, projectKrusty2WP1ActivationCrId, true, ner, 'Approved!');
 
   /** Work Package 2 */
   await seedWorkPackage(
@@ -2157,7 +2157,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, projectPenguin1WP1ActivationCrId, 'Approved!', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, projectPenguin1WP1ActivationCrId, true, ner, 'Approved!');
 
   /** Work Packages for Penguin Project 2*/
   /** Work Package 1 */
@@ -2244,7 +2244,7 @@ const performSeed: () => Promise<void> = async () => {
     'Change the bodywork to be hot pink',
     ner
   );
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2.crId, 'What the hell Thomas', false, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2.crId, false, ner, 'What the hell Thomas');
 
   await ChangeRequestsService.createActivationChangeRequest(
     thomasEmrax,
@@ -3136,7 +3136,7 @@ const performSeed: () => Promise<void> = async () => {
     'This is a wpchange test',
     ner
   );
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, newWorkPackageChangeRequest.crId, 'create wp', true, ner);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, newWorkPackageChangeRequest.crId, true, ner, 'create wp');
 
   const { workPackageWbsNumber: workPackage9WbsNumber } = await seedWorkPackage(
     thomasEmrax,

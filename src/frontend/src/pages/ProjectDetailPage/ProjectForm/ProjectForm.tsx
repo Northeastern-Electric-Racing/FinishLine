@@ -240,7 +240,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                   sx={{ mx: 1 }}
                   disabled={changeRequestInputExists || onlyLeadershipChanged}
                 >
-                  Create Change Request
+                  Submit Change Request
                 </NERButton>
               </Box>
             )}
@@ -253,7 +253,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               type="submit"
               sx={{ mx: 1 }}
             >
-              Submit
+              Submit & Implement
             </NERSuccessButton>
           </Box>
         }

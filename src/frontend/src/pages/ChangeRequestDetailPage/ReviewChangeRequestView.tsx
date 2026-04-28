@@ -33,9 +33,8 @@ interface ReviewChangeRequestViewProps {
 }
 
 const schema = yup.object().shape({
-  reviewNotes: yup.string().required(),
-  accepted: yup.boolean().required(),
-  psId: yup.string().optional()
+  reviewNotes: yup.string().optional(),
+  accepted: yup.boolean().required()
 });
 
 const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
@@ -51,17 +50,10 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     resolver: yupResolver(schema)
   });
 
-  /**
-   * Register (or set registered field) to the appropriate boolean based on which action button was clicked
-   * @param value true if review accepted, false if denied
-   */
   const handleAcceptDeny = (value: boolean) => {
     getFieldState('accepted') ? setValue('accepted', value) : register('accepted', { value });
   };
 
-  /**
-   * Wrapper function for onSubmit so that form data is reset after submit
-   */
   const onSubmitWrapper = async (data: FormInput) => {
     await onSubmit(data);
     reset({ reviewNotes: '' });
@@ -90,14 +82,12 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             <Controller
               name="reviewNotes"
               control={control}
-              rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <>
-                  <Typography>{'Additional Comments'}</Typography>
+                  <Typography>{'Additional Comments (optional)'}</Typography>
                   <TextField
                     multiline
                     rows={4}
-                    required
                     id="reviewNotes-input"
                     autoComplete="off"
                     onChange={onChange}

@@ -100,8 +100,7 @@ export interface ReviewPayload {
   reviewerId: string;
   crId: string;
   accepted: boolean;
-  reviewNotes: string;
-  psId?: string;
+  reviewNotes?: string;
 }
 
 /**
@@ -116,8 +115,7 @@ export const useReviewChangeRequest = () => {
         reviewPayload.reviewerId,
         reviewPayload.crId,
         reviewPayload.accepted,
-        reviewPayload.reviewNotes,
-        reviewPayload.psId
+        reviewPayload.reviewNotes
       );
       return data;
     },

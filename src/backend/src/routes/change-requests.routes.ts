@@ -25,9 +25,8 @@ changeRequestsRouter.post(
   '/review',
   nonEmptyString(body('reviewerId')),
   nonEmptyString(body('crId')),
-  body('reviewNotes').isString(),
+  body('reviewNotes').isString().optional(),
   body('accepted').isBoolean(),
-  body('psId').optional().isString().not().isEmpty(),
   validateInputs,
   ChangeRequestsController.reviewChangeRequest
 );

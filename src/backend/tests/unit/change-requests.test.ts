@@ -230,9 +230,9 @@ describe('Change Request Tests', () => {
       const reviewResult = await ChangeRequestsService.reviewChangeRequest(
         nonRequestedLeadership,
         changeRequestId,
-        'Looks good',
         false,
-        organization
+        organization,
+        'Looks good'
       );
 
       expect(reviewResult).toBe(changeRequestId);
@@ -256,9 +256,9 @@ describe('Change Request Tests', () => {
       const reviewResult = await ChangeRequestsService.reviewChangeRequest(
         leadershipUser1,
         changeRequestId,
-        'Approved',
         false,
-        organization
+        organization,
+        'Approved'
       );
 
       expect(reviewResult).toBe(changeRequestId);
@@ -282,9 +282,9 @@ describe('Change Request Tests', () => {
       const reviewResult = await ChangeRequestsService.reviewChangeRequest(
         nonRequestedLeadership,
         changeRequestId,
-        'I want to review this',
         false,
-        organization
+        organization,
+        'I want to review this'
       );
 
       expect(reviewResult).toBe(changeRequestId);
@@ -301,9 +301,9 @@ describe('Change Request Tests', () => {
       const reviewResult = await ChangeRequestsService.reviewChangeRequest(
         leadershipUser2,
         changeRequestId,
-        'Approved by second reviewer',
         false,
-        organization
+        organization,
+        'Approved by second reviewer'
       );
 
       expect(reviewResult).toBe(changeRequestId);
@@ -343,16 +343,16 @@ describe('Change Request Tests', () => {
       const reviewResult = await ChangeRequestsService.reviewChangeRequest(
         nonRequestedLeadership,
         changeRequestId,
-        'Rejecting this',
         false,
-        organization
+        organization,
+        'Rejecting this'
       );
 
       expect(reviewResult).toBe(changeRequestId);
     });
     it('rejects member user from reviewing even when no specific reviewer is requested', async () => {
       await expect(
-        ChangeRequestsService.reviewChangeRequest(memberUser, changeRequestId, 'trying to review', false, organization)
+        ChangeRequestsService.reviewChangeRequest(memberUser, changeRequestId, false, organization, 'trying to review')
       ).rejects.toThrow(AccessDeniedMemberException);
     });
   });
@@ -451,8 +451,8 @@ describe('Change Request Tests', () => {
         const adminUser = await createTestUser(batmanAppAdmin, orgId);
 
         // getApprovedChangeRequests requires dateReviewed >= fiveDaysAgo - review both CRs to satisfy this
-        await ChangeRequestsService.reviewChangeRequest(adminUser, crA.crId, '', false, organization);
-        await ChangeRequestsService.reviewChangeRequest(adminUser, crB.crId, '', false, organization);
+        await ChangeRequestsService.reviewChangeRequest(adminUser, crA.crId, false, organization, '');
+        await ChangeRequestsService.reviewChangeRequest(adminUser, crB.crId, false, organization, '');
 
         const results = await ChangeRequestsService.getApprovedChangeRequests(user, undefined, organization, carAId);
 
@@ -467,8 +467,8 @@ describe('Change Request Tests', () => {
         const adminUser = await createTestUser(batmanAppAdmin, orgId);
 
         // getApprovedChangeRequests requires dateReviewed >= fiveDaysAgo - review both CRs to satisfy this
-        await ChangeRequestsService.reviewChangeRequest(adminUser, crA.crId, '', false, organization);
-        await ChangeRequestsService.reviewChangeRequest(adminUser, crB.crId, '', false, organization);
+        await ChangeRequestsService.reviewChangeRequest(adminUser, crA.crId, false, organization, '');
+        await ChangeRequestsService.reviewChangeRequest(adminUser, crB.crId, false, organization, '');
 
         // wbsNum scopes to car A's project; carId points to car B - car filter should be ignored
         const wbsNum = { carNumber: 0, projectNumber: 1, workPackageNumber: 0 };

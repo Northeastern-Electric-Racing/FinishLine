@@ -243,21 +243,12 @@ export default class ChangeRequestsService {
     return changeRequests.map(changeRequestManyTransformer);
   }
 
-  /**
-   * Reviews the change request for the given Id and automates any changes that are made
-   * @param reviewer The user reviewing the change request
-   * @param crId the change request id
-   * @param reviewNotes any notes passed in by the reviewer
-   * @param accepted whether or not the change request is accepted
-   * @param organization the organization the user is currently in
-   * @returns the id of the reviewed change request
-   */
   static async reviewChangeRequest(
     reviewer: User,
     crId: string,
-    reviewNotes: string,
     accepted: boolean,
-    organization: Organization
+    organization: Organization,
+    reviewNotes?: string
   ): Promise<string> {
     const foundCR = await prisma.change_Request.findUnique({
       where: { crId },
@@ -284,16 +275,7 @@ export default class ChangeRequestsService {
       throw new AccessDeniedMemberException('review change requests');
     }
 
-    if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
-      await this.reviewStageGateChangeRequest(foundCR, reviewer);
-    } else if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
-      await this.reviewActivationChangeRequest(foundCR, reviewer);
-    } else if (foundCR.type === CR_Type.BUDGET && foundCR.budgetChangeRequest && accepted) {
-      await this.reviewBudgetChangeRequest(foundCR, reviewer);
-    } else if (foundCR.type === CR_Type.STANDARD && accepted) {
-      await this.reviewStandardChangeRequest(foundCR, reviewer, organization);
-    }
-
+    // Mark as reviewed FIRST so validateChangeRequestAccepted passes when applying proposed changes
     const updated = await prisma.change_Request.update({
       where: { crId },
       data: {
@@ -307,6 +289,16 @@ export default class ChangeRequestsService {
         notificationSlackThreads: true
       }
     });
+
+    if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
+      await this.reviewStageGateChangeRequest(foundCR, reviewer);
+    } else if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
+      await this.reviewActivationChangeRequest(foundCR, reviewer);
+    } else if (foundCR.type === CR_Type.BUDGET && foundCR.budgetChangeRequest && accepted) {
+      await this.reviewBudgetChangeRequest(foundCR, reviewer);
+    } else if (foundCR.type === CR_Type.STANDARD && accepted) {
+      await this.reviewStandardChangeRequest(foundCR, reviewer, organization);
+    }
 
     await sendCRSubmitterReviewedNotification(updated);
     await sendCrReviewedPopUp(foundCR, updated.submitter, accepted, organization.organizationId);
