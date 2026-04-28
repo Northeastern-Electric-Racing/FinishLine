@@ -994,6 +994,11 @@ export default class ChangeRequestsService {
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
     if (wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('WBS Element');
 
+    if (requestedReviewerId) {
+      const reviewer = await prisma.user.findUnique({ where: { userId: requestedReviewerId } });
+      if (!reviewer) throw new NotFoundException('User', requestedReviewerId);
+    }
+
     if (
       projectNumber !== 0 &&
       !(projectProposedChanges && projectProposedChanges.workPackageProposedChanges.length === 0) &&
