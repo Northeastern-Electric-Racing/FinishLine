@@ -189,6 +189,7 @@ export interface CreateStageGateChangeRequestPayload {
   wbsNum: WbsNumber;
   confirmDone: boolean;
   type: string;
+  dateCompleted: Date;
 }
 
 export interface CreateBudgetChangeRequestPayload {
@@ -226,7 +227,12 @@ export const useCreateStageGateChangeRequest = () => {
   return useMutation<{ message: string }, Error, CreateStageGateChangeRequestPayload>(
     ['change requests', 'create', 'stage gate'],
     async (payload: CreateStageGateChangeRequestPayload) => {
-      const { data } = await createStageGateChangeRequest(payload.submitterId, payload.wbsNum, payload.confirmDone);
+      const { data } = await createStageGateChangeRequest(
+        payload.submitterId,
+        payload.wbsNum,
+        payload.confirmDone,
+        payload.dateCompleted
+      );
       return data;
     }
   );

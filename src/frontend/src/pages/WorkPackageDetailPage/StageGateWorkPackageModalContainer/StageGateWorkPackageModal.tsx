@@ -9,8 +9,9 @@ import { Controller, useForm } from 'react-hook-form';
 import { WbsNumber } from 'shared';
 import { FormInput } from './StageGateWorkPackageModalContainer';
 import { wbsPipe } from '../../../utils/pipes';
-import { FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material';
+import { FormControlLabel, FormHelperText, Radio, RadioGroup, Typography } from '@mui/material';
 import NERFormModal from '../../../components/NERFormModal';
+import { DatePicker } from '@mui/x-date-pickers';
 
 interface StageGateWorkPackageModalProps {
   wbsNum: WbsNumber;
@@ -20,12 +21,24 @@ interface StageGateWorkPackageModalProps {
 }
 
 const schema = yup.object().shape({
-  confirmDone: yup.boolean().required()
+  confirmDone: yup.boolean().required(),
+  dateCompleted: yup
+    .date()
+    .required('Date completed is required')
+    .max(new Date(new Date().setHours(23, 59, 59, 999)), 'Date completed cannot be in the future')
 });
 
 const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ wbsNum, modalShow, onHide, onSubmit }) => {
-  const { reset, handleSubmit, control } = useForm<FormInput>({
-    resolver: yupResolver(schema)
+  const {
+    reset,
+    handleSubmit,
+    control,
+    formState: { errors }
+  } = useForm<FormInput>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      dateCompleted: new Date()
+    }
   });
 
   return (
@@ -44,7 +57,6 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
         rules={{ required: true }}
         render={({ field: { onChange, value } }) => (
           <>
-            {/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */}
             <Typography sx={{ paddingTop: 1 }}>Is everything done?</Typography>
             <ul style={{ marginTop: 0, marginBottom: 2 }}>
               <li>Updated confluence & documentation</li>
@@ -73,6 +85,27 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
           </>
         )}
       />
+      <Typography sx={{ mt: 2, mb: 0.5 }}>Date completed</Typography>
+      <Controller
+        name="dateCompleted"
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <DatePicker
+            value={value}
+            onChange={(newValue) => onChange(newValue ?? new Date())}
+            disableFuture
+            slotProps={{
+              textField: {
+                variant: 'outlined',
+                size: 'small',
+                fullWidth: true,
+                error: !!errors.dateCompleted
+              }
+            }}
+          />
+        )}
+      />
+      {errors.dateCompleted && <FormHelperText error>{errors.dateCompleted.message}</FormHelperText>}
     </NERFormModal>
   );
 };

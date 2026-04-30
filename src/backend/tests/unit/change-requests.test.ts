@@ -1,5 +1,12 @@
 import { Organization, User, WBS_Element_Status } from '@prisma/client';
-import { createTestCar, createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils.js';
+import {
+  createTestCar,
+  createTestOrganization,
+  createTestProject,
+  createTestUser,
+  createTestWorkPackage,
+  resetUsers
+} from '../test-utils.js';
 import ChangeRequestsService from '../../src/services/change-requests.services.js';
 import {
   supermanAdmin,
@@ -16,6 +23,9 @@ describe('Change Request Tests', () => {
   let orgId: string;
   let organization: Organization;
   let user: User;
+  let wpWbsElementId: string;
+  let workPackageId: string;
+  let startDate: Date;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
@@ -31,6 +41,12 @@ describe('Change Request Tests', () => {
         status: WBS_Element_Status.INACTIVE
       }
     });
+    const car = await createTestCar(orgId, user.userId, 2);
+    const project = await createTestProject(user, orgId, undefined, car.carId, 2, 1);
+    const wp = await createTestWorkPackage(user, orgId, project.projectId, 2, 1, 1);
+
+    wpWbsElementId = wp.wbsElement.wbsElementId;
+    ({ workPackageId, startDate } = wp);
   });
 
   afterEach(async () => {
@@ -477,6 +493,98 @@ describe('Change Request Tests', () => {
         expect(results).toHaveLength(1);
         expect(results[0].wbsNum?.projectNumber).toBe(1); // car A's project
       }, 15000);
+    });
+  });
+
+  describe('Stage Gate Change Requests', () => {
+    it('sets work package status to COMPLETE on stage gate', async () => {
+      await ChangeRequestsService.createStageGateChangeRequest(user, 2, 1, 1, true, new Date(), organization);
+
+      const updatedWbs = await prisma.wBS_Element.findUnique({ where: { wbsElementId: wpWbsElementId } });
+      expect(updatedWbs?.status).toEqual(WBS_Element_Status.COMPLETE);
+    });
+
+    it('updates work package duration based on dateCompleted', async () => {
+      const wp = await prisma.work_Package.findUnique({ where: { workPackageId } });
+      const originalDuration = wp!.duration;
+
+      // dateCompleted 2 weeks beyond current end date
+      const dateCompleted = new Date(startDate);
+      dateCompleted.setDate(dateCompleted.getDate() + (originalDuration + 2) * 7);
+
+      await ChangeRequestsService.createStageGateChangeRequest(user, 2, 1, 1, true, dateCompleted, organization);
+
+      const updatedWp = await prisma.work_Package.findUnique({ where: { workPackageId } });
+      expect(updatedWp?.duration).toEqual(originalDuration + 2);
+    });
+
+    it('duration to 1 when dateCompleted is before startDate', async () => {
+      const dateCompleted = new Date(startDate);
+      dateCompleted.setDate(dateCompleted.getDate() - 7);
+
+      await ChangeRequestsService.createStageGateChangeRequest(user, 2, 1, 1, true, dateCompleted, organization);
+
+      const updatedWp = await prisma.work_Package.findUnique({ where: { workPackageId } });
+      expect(updatedWp?.duration).toEqual(1);
+    });
+
+    it('leaves duration unchanged when dateCompleted matches existing end date', async () => {
+      const wp = await prisma.work_Package.findUnique({ where: { workPackageId } });
+      const originalDuration = wp!.duration;
+
+      const dateCompleted = new Date(startDate);
+      dateCompleted.setDate(dateCompleted.getDate() + originalDuration * 7);
+
+      await ChangeRequestsService.createStageGateChangeRequest(user, 2, 1, 1, true, dateCompleted, organization);
+
+      const updatedWp = await prisma.work_Package.findUnique({ where: { workPackageId } });
+      expect(updatedWp?.duration).toEqual(originalDuration);
+    });
+
+    it('creates a change record for duration when it changes', async () => {
+      const wp = await prisma.work_Package.findUnique({ where: { workPackageId } });
+      const originalDuration = wp!.duration;
+
+      const dateCompleted = new Date(startDate);
+      dateCompleted.setDate(dateCompleted.getDate() + (originalDuration + 2) * 7);
+
+      const crId = await ChangeRequestsService.createStageGateChangeRequest(
+        user,
+        2,
+        1,
+        1,
+        true,
+        dateCompleted,
+        organization
+      );
+
+      const changes = await prisma.change.findMany({ where: { changeRequestId: crId } });
+      const durationChange = changes.find((c) => c.detail.includes('duration'));
+      expect(durationChange).toBeDefined();
+      expect(durationChange?.detail).toContain(originalDuration.toString());
+      expect(durationChange?.detail).toContain((originalDuration + 2).toString());
+    });
+
+    it('does not create a duration change record when duration is unchanged', async () => {
+      const wp = await prisma.work_Package.findUnique({ where: { workPackageId } });
+      const originalDuration = wp!.duration;
+
+      const dateCompleted = new Date(startDate);
+      dateCompleted.setDate(dateCompleted.getDate() + originalDuration * 7);
+
+      const crId = await ChangeRequestsService.createStageGateChangeRequest(
+        user,
+        2,
+        1,
+        1,
+        true,
+        dateCompleted,
+        organization
+      );
+
+      const changes = await prisma.change.findMany({ where: { changeRequestId: crId } });
+      const durationChange = changes.find((c) => c.detail.includes('duration'));
+      expect(durationChange).toBeUndefined();
     });
   });
 });

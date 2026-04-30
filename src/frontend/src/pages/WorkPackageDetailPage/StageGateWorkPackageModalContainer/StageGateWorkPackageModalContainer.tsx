@@ -23,6 +23,7 @@ interface StageGateWorkPackageModalContainerProps {
 
 export interface FormInput {
   confirmDone: boolean;
+  dateCompleted: Date;
 }
 
 const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalContainerProps> = ({
@@ -36,7 +37,7 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
   const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useCreateStageGateChangeRequest();
 
-  const handleConfirm = async ({ confirmDone }: FormInput) => {
+  const handleConfirm = async ({ confirmDone, dateCompleted }: FormInput) => {
     handleClose();
     if (auth.user?.userId === undefined) throw new Error('Cannot create stage gate change request without being logged in');
     try {
@@ -44,7 +45,8 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
         submitterId: auth.user?.userId,
         wbsNum,
         type: ChangeRequestType.StageGate,
-        confirmDone
+        confirmDone,
+        dateCompleted
       });
       [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9].forEach((xPos) => {
         confetti({

@@ -2233,6 +2233,7 @@ const performSeed: () => Promise<void> = async () => {
     workPackageHuskies1WbsNumber.projectNumber,
     workPackageHuskies1WbsNumber.workPackageNumber,
     true,
+    new Date(),
     ner
   );
 

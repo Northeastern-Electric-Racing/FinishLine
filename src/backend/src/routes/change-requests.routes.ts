@@ -3,6 +3,7 @@ import { body } from 'express-validator';
 import ChangeRequestsController from '../controllers/change-requests.controllers.js';
 import {
   intMinZero,
+  isDate,
   isDateOnly,
   nonEmptyString,
   projectProposedChangesValidators,
@@ -53,6 +54,7 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
   body('confirmDone').isBoolean(),
+  isDate(body('dateCompleted')),
   validateInputs,
   ChangeRequestsController.createStageGateChangeRequest
 );
