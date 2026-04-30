@@ -8,6 +8,7 @@ import { useHistory } from 'react-router-dom';
 import { ChangeRequestType, WbsNumber, wbsPipe } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { useCreateStageGateChangeRequest } from '../../../hooks/change-requests.hooks';
+import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { routes } from '../../../utils/routes';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -36,6 +37,7 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
   const history = useHistory();
   const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useCreateStageGateChangeRequest();
+  const { isLoading: wpIsLoading, isError: wpIsError, error: wpError, data: workPackage } = useSingleWorkPackage(wbsNum);
 
   const handleConfirm = async ({ confirmDone, dateCompleted }: FormInput) => {
     handleClose();
@@ -67,11 +69,22 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
   };
 
   if (!hideStatus) {
-    if (isLoading) return <LoadingIndicator />;
+    if (isLoading || wpIsLoading) return <LoadingIndicator />;
     if (isError) return <ErrorPage message={error?.message} />;
+    if (wpIsError) return <ErrorPage message={wpError?.message} />;
   }
 
-  return <StageGateWorkPackageModal wbsNum={wbsNum} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
+  if (!workPackage) return <LoadingIndicator />;
+
+  return (
+    <StageGateWorkPackageModal
+      wbsNum={wbsNum}
+      modalShow={modalShow}
+      onHide={handleClose}
+      onSubmit={handleConfirm}
+      startDate={workPackage.startDate}
+    />
+  );
 };
 
 export default StageGateWorkPackageModalContainer;

@@ -389,6 +389,10 @@ export default class ChangeRequestsService {
     const shouldChangeStatus = foundCR.wbsElement.status !== WBS_Element_Status.COMPLETE;
     const changesList = [];
 
+    if (dateCompleted < workPackage.startDate) {
+      throw new HttpException(400, 'Date completed cannot be before the work package start date');
+    }
+
     if (shouldChangeStatus) {
       changesList.push({
         changeRequestId: foundCR.crId,
@@ -399,12 +403,8 @@ export default class ChangeRequestsService {
 
     // Calculate new duration from startDate to dateCompleted if provided
     let newDuration = workPackage.duration;
-    const { startDate } = workPackage;
-
-    // Edge case: dateCompleted before startDate
-    const effectiveDate = dateCompleted < startDate ? startDate : dateCompleted;
     const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-    newDuration = Math.max(1, Math.round((effectiveDate.getTime() - startDate.getTime()) / msPerWeek));
+    newDuration = Math.max(1, Math.round((dateCompleted.getTime() - workPackage.startDate.getTime()) / msPerWeek));
 
     if (newDuration !== workPackage.duration) {
       changesList.push({

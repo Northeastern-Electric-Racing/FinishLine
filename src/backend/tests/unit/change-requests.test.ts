@@ -518,14 +518,13 @@ describe('Change Request Tests', () => {
       expect(updatedWp?.duration).toEqual(originalDuration + 2);
     });
 
-    it('duration to 1 when dateCompleted is before startDate', async () => {
+    it('throws an error when dateCompleted is before startDate', async () => {
       const dateCompleted = new Date(startDate);
       dateCompleted.setDate(dateCompleted.getDate() - 7);
 
-      await ChangeRequestsService.createStageGateChangeRequest(user, 2, 1, 1, true, dateCompleted, organization);
-
-      const updatedWp = await prisma.work_Package.findUnique({ where: { workPackageId } });
-      expect(updatedWp?.duration).toEqual(1);
+      await expect(
+        ChangeRequestsService.createStageGateChangeRequest(user, 2, 1, 1, true, dateCompleted, organization)
+      ).rejects.toThrow('Date completed cannot be before the work package start date');
     });
 
     it('leaves duration unchanged when dateCompleted matches existing end date', async () => {

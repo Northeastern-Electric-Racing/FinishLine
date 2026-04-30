@@ -18,24 +18,33 @@ interface StageGateWorkPackageModalProps {
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
+  startDate: Date;
 }
 
-const schema = yup.object().shape({
-  confirmDone: yup.boolean().required(),
-  dateCompleted: yup
-    .date()
-    .required('Date completed is required')
-    .max(new Date(new Date().setHours(23, 59, 59, 999)), 'Date completed cannot be in the future')
-});
+const buildSchema = (startDate: Date) =>
+  yup.object().shape({
+    confirmDone: yup.boolean().required(),
+    dateCompleted: yup
+      .date()
+      .required('Date completed is required')
+      .min(startDate, 'Date completed cannot be before the start date')
+      .max(new Date(new Date().setHours(23, 59, 59, 999)), 'Date completed cannot be in the future')
+  });
 
-const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ wbsNum, modalShow, onHide, onSubmit }) => {
+const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({
+  wbsNum,
+  modalShow,
+  onHide,
+  onSubmit,
+  startDate
+}) => {
   const {
     reset,
     handleSubmit,
     control,
     formState: { errors }
   } = useForm<FormInput>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(buildSchema(startDate)),
     defaultValues: {
       dateCompleted: new Date()
     }
@@ -94,6 +103,7 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
             value={value}
             onChange={(newValue) => onChange(newValue ?? new Date())}
             disableFuture
+            minDate={startDate}
             slotProps={{
               textField: {
                 variant: 'outlined',
