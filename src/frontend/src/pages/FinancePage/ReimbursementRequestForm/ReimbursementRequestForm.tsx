@@ -341,7 +341,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       return;
     }
 
-    const groupedProducts = new Map<string, ReimbursementProductFormArgs[]>();
+    const groupedProducts = new Map<string, ProductWithLocalFields[]>();
 
     shippableProducts.forEach((product) => {
       const key = getGroupKey(product);
@@ -368,7 +368,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
         const shippingAmount = materialShippingAllocations[productIndex] / 100;
         const baseCost = getBaseCost(product);
 
-        (product as any).__shippingCost = shippingAmount;
+        product.__shippingCost = shippingAmount;
         product.cost = baseCost + shippingAmount;
       });
     });

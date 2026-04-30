@@ -33,7 +33,7 @@ import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { ReimbursementRequestFormInput, ProductWithLocalFields } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -361,17 +361,22 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const previousProductCount = useRef(reimbursementProducts.length);
 
+  const reapplyShippingSplit = useCallback(() => {
+    const currentTotalShipping = watch('splitShipping');
+
+    if (!currentTotalShipping || Number(currentTotalShipping) <= 0) return;
+
+    applySplitShippingToProducts(Number(currentTotalShipping));
+  }, [watch, applySplitShippingToProducts]);
+
   useEffect(() => {
     const productCountChanged = reimbursementProducts.length !== previousProductCount.current;
     previousProductCount.current = reimbursementProducts.length;
 
     if (!productCountChanged) return;
 
-    const currentTotalShipping = watch('splitShipping');
-    if (!currentTotalShipping || Number(currentTotalShipping) <= 0) return;
-
-    applySplitShippingToProducts(Number(currentTotalShipping));
-  }, [reimbursementProducts.length, applySplitShippingToProducts, watch]);
+    reapplyShippingSplit();
+  }, [reimbursementProducts.length, reapplyShippingSplit]);
 
   useEffect(() => {
     if (hasInitializedRefundSources.current) return;
@@ -391,10 +396,13 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   useEffect(() => {
     if (hasMultipleRefundSources && !prevHasMultipleRefundSources.current) {
       const products = watch('reimbursementProducts') || [];
+
       products.forEach((product: ProductWithLocalFields, index: number) => {
-        const currentCost = product.cost ?? 0;
-        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, currentCost);
+        const baseCost = Number(product.__baseCost ?? product.cost ?? 0);
+
+        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, baseCost);
         setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
+        setValue(`reimbursementProducts.${index}.cost`, Number((baseCost + Number(product.__shippingCost ?? 0)).toFixed(2)));
       });
     }
 
