@@ -94,6 +94,10 @@ const schema = yup.object().shape({
     .optional()
     .min(0, 'Split shipping cannot be negative')
     .test('shipping-sum-matches', 'Total shipping must equal the sum of shipping across all items', function (value) {
+      if (value === undefined || value === null) {
+        return true;
+      }
+
       const products = this.parent.reimbursementProducts ?? [];
 
       const itemShippingTotal = products.reduce(
@@ -101,7 +105,7 @@ const schema = yup.object().shape({
         0
       );
 
-      const expected = Number(value ?? 0);
+      const expected = Number(value);
 
       return Math.abs(itemShippingTotal - expected) < 0.005;
     }),
@@ -213,7 +217,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       reimbursementProducts:
         defaultValues?.reimbursementProducts?.map(normalizeProductForForm) ?? ([] as ProductWithLocalFields[]),
       receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[]),
-      splitShipping: defaultValues?.splitShipping ?? undefined
+      splitShipping: undefined
     }
   });
 

@@ -61,6 +61,7 @@ interface ReimbursementProductTableProps {
   secondRefundSourceName?: string;
   allProjects: ProjectPreview[];
   applySplitShippingToProducts: (totalShipping?: number) => void;
+  isEditing?: boolean;
 }
 
 const ListItem = styled('li')(({ theme }) => ({
@@ -156,7 +157,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   secondRefundSourceName,
   watch,
   allProjects,
-  applySplitShippingToProducts
+  applySplitShippingToProducts,
+  isEditing = false
 }) => {
   const uniqueWbsElementsWithProducts = new Map<
     string,
@@ -812,43 +814,46 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                 onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
                                                 error={!!errors.reimbursementProducts?.[product.index]?.cost}
                                               />
-                                              <TextField
-                                                value={shippingCost === 0 ? '' : shippingCost}
-                                                variant="outlined"
-                                                size="small"
-                                                fullWidth
-                                                margin="dense"
-                                                label="Shipping"
-                                                type="number"
-                                                sx={{
-                                                  '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
-                                                    WebkitAppearance: 'none',
-                                                    margin: 0
-                                                  },
-                                                  '& input[type=number]': {
-                                                    MozAppearance: 'textfield'
+                                              {!isEditing && (
+                                                <TextField
+                                                  value={shippingCost === 0 ? '' : shippingCost}
+                                                  variant="outlined"
+                                                  size="small"
+                                                  fullWidth
+                                                  margin="dense"
+                                                  label="Shipping"
+                                                  type="number"
+                                                  sx={{
+                                                    '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button':
+                                                      {
+                                                        WebkitAppearance: 'none',
+                                                        margin: 0
+                                                      },
+                                                    '& input[type=number]': {
+                                                      MozAppearance: 'textfield'
+                                                    }
+                                                  }}
+                                                  onChange={(e) => {
+                                                    const productRow =
+                                                      (watch(
+                                                        `reimbursementProducts.${product.index}` as const
+                                                      ) as ProductWithLocalFields) ?? {};
+
+                                                    const updatedProduct: ProductWithLocalFields = {
+                                                      ...productRow,
+                                                      __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                                    };
+
+                                                    setValue(`reimbursementProducts.${product.index}`, updatedProduct, {
+                                                      shouldDirty: true
+                                                    });
+                                                  }}
+                                                  onBlur={(e) =>
+                                                    onShippingBlurHandler(parseFloat(e.target.value), product.index)
                                                   }
-                                                }}
-                                                onChange={(e) => {
-                                                  const productRow =
-                                                    (watch(
-                                                      `reimbursementProducts.${product.index}` as const
-                                                    ) as ProductWithLocalFields) ?? {};
-
-                                                  const updatedProduct: ProductWithLocalFields = {
-                                                    ...productRow,
-                                                    __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
-                                                  };
-
-                                                  setValue(`reimbursementProducts.${product.index}`, updatedProduct, {
-                                                    shouldDirty: true
-                                                  });
-                                                }}
-                                                onBlur={(e) =>
-                                                  onShippingBlurHandler(parseFloat(e.target.value), product.index)
-                                                }
-                                                helperText={`Product total $${Number(rowTotal || 0).toFixed(2)}`}
-                                              />
+                                                  helperText={`Product total $${Number(rowTotal || 0).toFixed(2)}`}
+                                                />
+                                              )}
                                             </>
                                           );
                                         }}
@@ -907,6 +912,16 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                     placeholder={'$ Amt'}
                                                     type="number"
                                                     fullWidth
+                                                    sx={{
+                                                      '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button':
+                                                        {
+                                                          WebkitAppearance: 'none',
+                                                          margin: 0
+                                                        },
+                                                      '& input[type=number]': {
+                                                        MozAppearance: 'textfield'
+                                                      }
+                                                    }}
                                                     onBlur={(e) =>
                                                       onAmountBlurHandler(
                                                         e.target.value,
@@ -960,6 +975,16 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                                     placeholder={'$ Amt'}
                                                     type="number"
                                                     fullWidth
+                                                    sx={{
+                                                      '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button':
+                                                        {
+                                                          WebkitAppearance: 'none',
+                                                          margin: 0
+                                                        },
+                                                      '& input[type=number]': {
+                                                        MozAppearance: 'textfield'
+                                                      }
+                                                    }}
                                                     onBlur={(e) =>
                                                       onAmountBlurHandler(
                                                         e.target.value,
@@ -984,43 +1009,44 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                           </Box>
                                         )}
                                       </Box>
+                                      {!isEditing && (
+                                        <Box sx={{ width: '100%' }}>
+                                          <TextField
+                                            value={currentShippingCost === 0 ? '' : currentShippingCost}
+                                            variant="outlined"
+                                            size="small"
+                                            fullWidth
+                                            label="Shipping"
+                                            type="number"
+                                            sx={{
+                                              '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                                                WebkitAppearance: 'none',
+                                                margin: 0
+                                              },
+                                              '& input[type=number]': {
+                                                MozAppearance: 'textfield'
+                                              }
+                                            }}
+                                            onChange={(e) => {
+                                              const currentProduct =
+                                                (watch(
+                                                  `reimbursementProducts.${product.index}` as const
+                                                ) as ProductWithLocalFields) ?? {};
 
-                                      <Box sx={{ width: '100%' }}>
-                                        <TextField
-                                          value={currentShippingCost === 0 ? '' : currentShippingCost}
-                                          variant="outlined"
-                                          size="small"
-                                          fullWidth
-                                          label="Shipping"
-                                          type="number"
-                                          sx={{
-                                            '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
-                                              WebkitAppearance: 'none',
-                                              margin: 0
-                                            },
-                                            '& input[type=number]': {
-                                              MozAppearance: 'textfield'
-                                            }
-                                          }}
-                                          onChange={(e) => {
-                                            const currentProduct =
-                                              (watch(
-                                                `reimbursementProducts.${product.index}` as const
-                                              ) as ProductWithLocalFields) ?? {};
+                                              const updatedProduct: ProductWithLocalFields = {
+                                                ...currentProduct,
+                                                __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                              };
 
-                                            const updatedProduct: ProductWithLocalFields = {
-                                              ...currentProduct,
-                                              __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
-                                            };
-
-                                            setValue(`reimbursementProducts.${product.index}`, updatedProduct, {
-                                              shouldDirty: true
-                                            });
-                                          }}
-                                          onBlur={(e) => onShippingBlurHandler(parseFloat(e.target.value), product.index)}
-                                          helperText={`Product total $${Number(watch(`reimbursementProducts.${product.index}.cost`) || 0).toFixed(2)}`}
-                                        />
-                                      </Box>
+                                              setValue(`reimbursementProducts.${product.index}`, updatedProduct, {
+                                                shouldDirty: true
+                                              });
+                                            }}
+                                            onBlur={(e) => onShippingBlurHandler(parseFloat(e.target.value), product.index)}
+                                            helperText={`Product total $${Number(watch(`reimbursementProducts.${product.index}.cost`) || 0).toFixed(2)}`}
+                                          />
+                                        </Box>
+                                      )}
                                     </Box>
 
                                     <Box

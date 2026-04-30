@@ -921,71 +921,71 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   />
                 </FormControl>
                 {/* Total Shipping */}
-                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
-                  <FormLabel
-                    sx={{
-                      color: '#dd524c',
-                      textShadow: '1.5px 0 #dd524c',
-                      letterSpacing: '0.5px',
-                      textDecoration: 'underline',
-                      textUnderlineOffset: '3.5px',
-                      textDecorationThickness: '0.6px',
-                      paddingBottom: '2px',
-                      fontSize: 'x-large',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Total Shipping
-                  </FormLabel>
+                {!isEditing && (
+                  <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                    <FormLabel
+                      sx={{
+                        color: '#dd524c',
+                        textShadow: '1.5px 0 #dd524c',
+                        letterSpacing: '0.5px',
+                        textDecoration: 'underline',
+                        textUnderlineOffset: '3.5px',
+                        textDecorationThickness: '0.6px',
+                        paddingBottom: '2px',
+                        fontSize: 'x-large',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Total Shipping
+                    </FormLabel>
 
-                  <Controller
-                    name="splitShipping"
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <>
-                        <TextField
-                          value={value ?? ''}
-                          onChange={(e) => {
-                            onChange(e);
-                          }}
-                          placeholder="Enter total shipping cost"
-                          type="number"
-                          inputProps={{ min: 0, step: 0.01 }}
-                          size="small"
-                          fullWidth
-                          error={!!errors.splitShipping}
-                          helperText={errors.splitShipping?.message}
-                          sx={{
-                            '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
-                              WebkitAppearance: 'none',
-                              margin: 0
-                            },
-                            '& input[type=number]': {
-                              MozAppearance: 'textfield'
-                            }
-                          }}
-                        />
+                    <Controller
+                      name="splitShipping"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <>
+                          <TextField
+                            value={value ?? ''}
+                            onChange={(e) => {
+                              onChange(e);
+                            }}
+                            placeholder="Enter total shipping cost"
+                            type="number"
+                            inputProps={{ min: 0, step: 0.01 }}
+                            size="small"
+                            fullWidth
+                            error={!!errors.splitShipping}
+                            helperText={errors.splitShipping?.message}
+                            sx={{
+                              '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                                WebkitAppearance: 'none',
+                                margin: 0
+                              },
+                              '& input[type=number]': {
+                                MozAppearance: 'textfield'
+                              }
+                            }}
+                          />
 
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          sx={{
-                            mt: 1,
-                            alignSelf: 'flex-start',
-                            width: 'fit-content',
-                            textTransform: 'none'
-                          }}
-                          disabled={!canApplyProportionalSplit}
-                          onClick={() => applyProportionalShippingToProducts(value ? Number(value) : undefined)}
-                        >
-                          Split proportional to cost
-                        </Button>
-                      </>
-                    )}
-                  />
-
-                  <FormHelperText error>{errors.splitShipping?.message}</FormHelperText>
-                </FormControl>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                              mt: 1,
+                              alignSelf: 'flex-start',
+                              width: 'fit-content',
+                              textTransform: 'none'
+                            }}
+                            disabled={!canApplyProportionalSplit}
+                            onClick={() => applyProportionalShippingToProducts(value ? Number(value) : undefined)}
+                          >
+                            Split proportional to cost
+                          </Button>
+                        </>
+                      )}
+                    />
+                  </FormControl>
+                )}
               </Stack>
             </Grid>
           </Grid>
@@ -1012,6 +1012,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               secondRefundSourceName={secondRefundSource.name}
               allProjects={allProjects}
               applySplitShippingToProducts={applySplitShippingToProducts}
+              isEditing={isEditing}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>
@@ -1030,8 +1031,16 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         }}
       >
         <Box>
-          <Typography variant="body2">Product Total: ${calculatedProductSubtotal}</Typography>
-          <Typography variant="body2">Shipping Total: ${calculatedShippingTotal}</Typography>
+          {!isEditing && (
+            <>
+              <FormLabel>Product Total</FormLabel>
+              <Typography variant="body2">${calculatedProductSubtotal}</Typography>
+
+              <FormLabel>Shipping Total</FormLabel>
+              <Typography variant="body2">${calculatedShippingTotal}</Typography>
+            </>
+          )}
+
           <FormLabel>Total Cost</FormLabel>
           <Typography variant="h6">${calculatedTotalCost}</Typography>
         </Box>
