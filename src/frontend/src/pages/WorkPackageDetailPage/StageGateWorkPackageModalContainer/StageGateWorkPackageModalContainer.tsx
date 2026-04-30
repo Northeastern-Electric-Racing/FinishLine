@@ -69,9 +69,9 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
   };
 
   if (!hideStatus) {
-    if (isLoading || wpIsLoading) return <LoadingIndicator />;
     if (isError) return <ErrorPage message={error?.message} />;
     if (wpIsError) return <ErrorPage message={wpError?.message} />;
+    if (isLoading || wpIsLoading) return <LoadingIndicator />;
   }
 
   if (!workPackage) return <LoadingIndicator />;
