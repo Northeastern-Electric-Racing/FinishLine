@@ -5180,6 +5180,13 @@ const performSeed: () => Promise<void> = async () => {
   );
 };
 
+if (process.env.SEND_SLACK_MESSAGES_IN_DEV === 'true') {
+  console.error(
+    "SEND_SLACK_MESSAGES_IN_DEV is set to true. Set it to 'false' in your backend .env before seeding to avoid sending Slack messages from seed data."
+  );
+  process.exit(1);
+}
+
 performSeed()
   .catch((e) => {
     console.error(e);
