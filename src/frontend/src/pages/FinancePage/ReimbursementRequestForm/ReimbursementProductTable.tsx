@@ -359,7 +359,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const hasPreFilledData = useRef(false);
   const hasInitializedRefundSources = useRef(false);
 
-  const previousProductCount = useRef(reimbursementProducts.length);
 
   const reapplyShippingSplit = useCallback(() => {
     const currentTotalShipping = watch('splitShipping');
@@ -369,14 +368,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     applySplitShippingToProducts(Number(currentTotalShipping));
   }, [watch, applySplitShippingToProducts]);
 
-  useEffect(() => {
-    const productCountChanged = reimbursementProducts.length !== previousProductCount.current;
-    previousProductCount.current = reimbursementProducts.length;
-
-    if (!productCountChanged) return;
-
-    reapplyShippingSplit();
-  }, [reimbursementProducts.length, reapplyShippingSplit]);
 
   useEffect(() => {
     if (hasInitializedRefundSources.current) return;
@@ -523,6 +514,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                         };
 
                         prependProduct(newProduct);
+                        reapplyShippingSplit();
                       }
                     }}
                     value={null}
@@ -552,6 +544,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                         };
 
                         prependProduct(newProduct);
+                        reapplyShippingSplit();
                       }
                     }}
                     value={null}
@@ -1078,6 +1071,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 }}
                                 onClick={() => {
                                   removeProduct(product.index);
+                                  reapplyShippingSplit();
                                 }}
                               >
                                 <RemoveCircleOutline />
@@ -1117,6 +1111,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                           };
 
                           prependProduct(newProduct);
+                          reapplyShippingSplit();
                         }
                         e.currentTarget.blur();
                       }}
