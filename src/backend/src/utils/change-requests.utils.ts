@@ -396,6 +396,7 @@ export const buildCRDiff = (
     links: { url: string; linkType: { name: string } }[];
     project?: { budget: number; summary: string } | null;
     workPackage?: { startDate: Date; duration: number; stage: string | null } | null;
+    descriptionBullets?: { detail: string; descriptionBulletType: { name: string } }[];
   },
   proposed: ProjectProposedChangesCreateArgs | WorkPackageProposedChangesCreateArgs | undefined
 ): string => {
@@ -433,6 +434,30 @@ export const buildCRDiff = (
     }
   };
 
+  const addBulletDiffs = (
+    currentBullets: { detail: string; descriptionBulletType: { name: string } }[],
+    proposedBullets: DescriptionBulletPreview[]
+  ) => {
+    const allBulletTypeNames = new Set([
+      ...currentBullets.map((b) => b.descriptionBulletType.name),
+      ...proposedBullets.map((b) => b.type)
+    ]);
+    for (const bulletTypeName of allBulletTypeNames) {
+      const currentDetails = new Set(
+        currentBullets.filter((b) => b.descriptionBulletType.name === bulletTypeName).map((b) => b.detail)
+      );
+      const proposedDetails = new Set(proposedBullets.filter((b) => b.type === bulletTypeName).map((b) => b.detail));
+      // add "- Type: detail" for each detail of this type that is in current but not proposed
+      for (const detail of currentDetails) {
+        if (!proposedDetails.has(detail)) lines.push(`− ${bulletTypeName}: ${detail}`);
+      }
+      // add "+ Type: detail" for each detail of this type that is in proposed but not current
+      for (const detail of proposedDetails) {
+        if (!currentDetails.has(detail)) lines.push(`+ ${bulletTypeName}: ${detail}`);
+      }
+    }
+  };
+
   if (isWpChange) {
     const wpProposed = proposed as WorkPackageProposedChangesCreateArgs;
     if (!currentWbs.workPackage) {
@@ -443,6 +468,7 @@ export const buildCRDiff = (
       addNew('Duration', wpProposed.duration);
       addNew('Stage', wpProposed.stage);
       wpProposed.links.forEach((l) => addNew(l.linkTypeName, l.url));
+      wpProposed.descriptionBullets.forEach((b) => addNew(b.type, b.detail));
     } else {
       addDiff('Name', currentWbs.name, wpProposed.name);
       addDiff('Lead', currentWbs.leadId, wpProposed.leadId);
@@ -451,6 +477,7 @@ export const buildCRDiff = (
       addDiff('Duration', currentWbs.workPackage.duration, wpProposed.duration);
       addDiff('Stage', currentWbs.workPackage.stage, wpProposed.stage);
       addLinkDiffs(currentWbs.links, wpProposed.links);
+      addBulletDiffs(currentWbs.descriptionBullets ?? [], wpProposed.descriptionBullets);
     }
   } else {
     const projProposed = proposed as ProjectProposedChangesCreateArgs;
@@ -461,6 +488,7 @@ export const buildCRDiff = (
       addNew('Budget', projProposed.budget);
       addNew('Summary', projProposed.summary);
       projProposed.links.forEach((l) => addNew(l.linkTypeName, l.url));
+      projProposed.descriptionBullets.forEach((b) => addNew(b.type, b.detail));
     } else {
       addDiff('Name', currentWbs.name, projProposed.name);
       addDiff('Lead', currentWbs.leadId, projProposed.leadId);
@@ -468,6 +496,7 @@ export const buildCRDiff = (
       addDiff('Budget', currentWbs.project.budget, projProposed.budget);
       addDiff('Summary', currentWbs.project.summary, projProposed.summary);
       addLinkDiffs(currentWbs.links, projProposed.links);
+      addBulletDiffs(currentWbs.descriptionBullets ?? [], projProposed.descriptionBullets);
     }
   }
 

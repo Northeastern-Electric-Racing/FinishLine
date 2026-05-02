@@ -1000,7 +1000,11 @@ export default class ChangeRequestsService {
       include: {
         links: { where: { dateDeleted: null }, include: { linkType: { select: { name: true } } } },
         project: { select: { budget: true, summary: true } },
-        workPackage: { select: { startDate: true, duration: true, stage: true } }
+        workPackage: { select: { startDate: true, duration: true, stage: true } },
+        descriptionBullets: {
+          where: { dateDeleted: null },
+          include: { descriptionBulletType: { select: { name: true } } }
+        }
       }
     });
 
