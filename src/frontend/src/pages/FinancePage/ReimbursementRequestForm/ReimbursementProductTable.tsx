@@ -359,7 +359,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const hasPreFilledData = useRef(false);
   const hasInitializedRefundSources = useRef(false);
 
-
   const reapplyShippingSplit = useCallback(() => {
     const currentTotalShipping = watch('splitShipping');
 
@@ -367,7 +366,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
     applySplitShippingToProducts(Number(currentTotalShipping));
   }, [watch, applySplitShippingToProducts]);
-
 
   useEffect(() => {
     if (hasInitializedRefundSources.current) return;
