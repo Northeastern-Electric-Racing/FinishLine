@@ -402,9 +402,8 @@ export default class ChangeRequestsService {
     }
 
     // Calculate new duration from startDate to dateCompleted if provided
-    let newDuration = workPackage.duration;
     const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-    newDuration = Math.max(1, Math.round((dateCompleted.getTime() - workPackage.startDate.getTime()) / msPerWeek));
+    const newDuration = Math.max(1, Math.round((dateCompleted.getTime() - workPackage.startDate.getTime()) / msPerWeek));
 
     if (newDuration !== workPackage.duration) {
       changesList.push({
