@@ -151,6 +151,7 @@ export const useDeleteChangeRequest = () => {
 export type CreateStandardChangeRequestPayload = {
   wbsNum: WbsNumber;
   why: string;
+  requestedReviewerId?: string;
   projectProposedChanges?: ProjectProposedChangesCreateArgs;
   workPackageProposedChanges?: WorkPackageProposedChangesCreateArgs;
 };

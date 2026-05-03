@@ -26,30 +26,23 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
   const toast = useToast();
   const changeRequestSchema = yup.object().shape({
-    why: yup.string().required('Why Explain is required')
+    why: yup.string().required('Why Explain is required'),
+    requestedReviewerId: yup.string().optional()
   });
 
   const { reset: resetChangeRequestForm, ...changeRequestFormMethods } = useForm<FormInput>({
     resolver: yupResolver(changeRequestSchema),
     defaultValues: query.get('budgetChange')
-      ? {
-          why: 'The cost of materials ended up exceeding the initial budget'
-        }
+      ? { why: 'The cost of materials ended up exceeding the initial budget' }
       : query.get('timelineDelay')
-        ? {
-            why: 'Decided to extend timeline after design review'
-          }
+        ? { why: 'Decided to extend timeline after design review' }
         : query.get('createWP')
-          ? {
-              why: 'Creating a Work Package on this Project'
-            }
-          : {
-              why: ''
-            }
+          ? { why: 'Creating a Work Package on this Project' }
+          : { why: '' }
   });
 
-  if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
+  if (isLoading) return <LoadingIndicator />;
 
   const handleConfirm = async (data: FormInput) => {
     try {
