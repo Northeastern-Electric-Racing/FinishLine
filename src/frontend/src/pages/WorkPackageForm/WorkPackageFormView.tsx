@@ -234,6 +234,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           managerId
         };
         await createLeadershipCR(autoCRPayload);
+        toast.success('Changes submitted successfully');
         await queryClient.refetchQueries(['work packages']);
         exitActiveMode();
         return;
@@ -262,10 +263,11 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
             ...payload
           }
         });
-
+        toast.success('Change request submitted successfully');
         history.push(`${routes.PROJECTS}/${wbsPipe(wbsElement.wbsNum)}/change-requests`);
       } else {
         await workPackageMutateAsync(payload);
+        toast.success('Work package updated successfully');
         exitActiveMode();
       }
     } catch (e) {
@@ -316,41 +318,35 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         stickyHeader
         title={pageTitle}
         headerRight={
-          <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
-            <Box display="inline-flex" alignItems="center">
-              <Tooltip
-                title={
-                  <Typography fontSize={'16px'}>
-                    {`If you don't enter a Change Request ID into this form, you can create one here that when accepted will
-                      ${defaultValues ? `edit the selected Work Package` : `create a new Work Package`} with the inputted values`}
-                  </Typography>
-                }
-                placement="left"
-              >
-                <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
-              </Tooltip>
-              <NERButton
-                disabled={!!changeRequestInputExists || onlyLeadershipChanged}
-                variant="contained"
-                onClick={() => setIsModalOpen(true)}
-                sx={{ mx: 1 }}
-              >
-                Submit Change Request
-              </NERButton>
-            </Box>
-            <Box>
-              <NERButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
-                Cancel
-              </NERButton>
-              <NERSuccessButton
-                variant="contained"
-                type="submit"
-                sx={{ mx: 1 }}
-                disabled={!changeRequestInputExists && !!defaultValues && !onlyLeadershipChanged}
-              >
-                Submit & Implement
-              </NERSuccessButton>
-            </Box>
+          <Box display="inline-flex" alignItems="center" justifyContent="end" flexWrap="nowrap" gap={1}>
+            <Tooltip
+              title={
+                <Typography fontSize={'16px'}>
+                  {`If you don't enter a Change Request ID into this form, you can create one here that when accepted will
+          ${defaultValues ? `edit the selected Work Package` : `create a new Work Package`} with the inputted values`}
+                </Typography>
+              }
+              placement="left"
+            >
+              <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
+            </Tooltip>
+            <NERButton
+              disabled={!!changeRequestInputExists || onlyLeadershipChanged}
+              variant="contained"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Change Request
+            </NERButton>
+            <NERButton variant="contained" onClick={exitActiveMode}>
+              Cancel
+            </NERButton>
+            <NERSuccessButton
+              variant="contained"
+              type="submit"
+              disabled={!changeRequestInputExists && !!defaultValues && !onlyLeadershipChanged}
+            >
+              Implement
+            </NERSuccessButton>
           </Box>
         }
       >

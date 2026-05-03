@@ -134,6 +134,7 @@ const ProjectCreateContainer: React.FC = () => {
         projectProposedChanges: projectPayload
       };
       await mutateCRAsync(changeRequestPayload);
+      toast.success('Change request submitted successfully');
       history.push(routes.CHANGE_REQUESTS_OVERVIEW);
     } catch (e) {
       if (e instanceof Error) {
@@ -222,7 +223,7 @@ const ProjectCreateContainer: React.FC = () => {
 
         idToWbs.set(wp.workPackageId, created.wbsNum);
       }
-
+      toast.success('Project created successfully');
       history.push(routes.PROJECTS_ALL);
     } catch (e) {
       if (e instanceof Error) {

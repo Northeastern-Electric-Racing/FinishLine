@@ -208,6 +208,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           managerId
         };
         await mutateLeadershipCR(autoCRPayload);
+        toast.success('Changes submitted successfully');
         // fixes cache issue
         await queryClient.refetchQueries(['projects']);
         exitEditMode();
@@ -228,6 +229,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         managerId
       };
       await mutateAsync(payload);
+      toast.success('Project updated successfully');
       exitEditMode();
     } catch (e) {
       if (e instanceof Error) {
