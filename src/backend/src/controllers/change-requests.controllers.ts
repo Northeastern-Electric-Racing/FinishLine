@@ -120,13 +120,14 @@ export default class ChangeRequestsController {
 
   static async createStageGateChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, confirmDone } = req.body;
+      const { wbsNum, confirmDone, dateCompleted } = req.body;
       const id = await ChangeRequestsService.createStageGateChangeRequest(
         req.currentUser,
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
         confirmDone,
+        new Date(dateCompleted),
         req.organization
       );
       res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });

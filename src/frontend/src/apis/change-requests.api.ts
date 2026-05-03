@@ -128,13 +128,20 @@ export const createActivationChangeRequest = (
  * @param submitterId The ID of the user creating the change request.
  * @param wbsNumber the wbsNumber of the WBS element the change request is for.
  * @param confirmDone are all details of the WBS element being stage gated fully completed?
+ * @param dateCompleted the date the work package was completed
  */
-export const createStageGateChangeRequest = (submitterId: string, wbsNum: WbsNumber, confirmDone: boolean) => {
+export const createStageGateChangeRequest = (
+  submitterId: string,
+  wbsNum: WbsNumber,
+  confirmDone: boolean,
+  dateCompleted: Date
+) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestsCreateStageGate(), {
     submitterId,
     wbsNum,
     type: ChangeRequestType.StageGate,
-    confirmDone
+    confirmDone,
+    dateCompleted
   });
 };
 
