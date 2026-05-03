@@ -32,6 +32,7 @@ import changeRequestTransformer, {
 } from '../transformers/change-requests.transformer.js';
 import {
   allChangeRequestsReviewed,
+  buildCRDiff,
   validateProposedChangesFields,
   applyProjectProposedChanges,
   applyWorkPackageProposedChanges,
@@ -49,7 +50,8 @@ import {
   addSlackThreadsToChangeRequest,
   sendAndGetSlackCRNotifications,
   sendSlackCRStatusToThread,
-  sendSlackRequestedReviewNotification
+  sendSlackRequestedReviewNotification,
+  sendStandardCRCreatedNotification
 } from '../utils/slack.utils.js';
 import {
   ChangeRequestWithProjectAndWorkPackageQueryArgs,
@@ -994,6 +996,15 @@ export default class ChangeRequestsService {
     const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: { carNumber, projectNumber, workPackageNumber, organizationId: organization.organizationId }
+      },
+      include: {
+        links: { where: { dateDeleted: null }, include: { linkType: { select: { name: true } } } },
+        project: { select: { budget: true, summary: true } },
+        workPackage: { select: { startDate: true, duration: true, stage: true } },
+        descriptionBullets: {
+          where: { dateDeleted: null },
+          include: { descriptionBulletType: { select: { name: true } } }
+        }
       }
     });
 
@@ -1200,14 +1211,17 @@ export default class ChangeRequestsService {
     const project = createdCR.wbsElement?.workPackage?.project || createdCR.wbsElement?.project;
     const teams = project?.teams;
     if (teams && teams.length > 0) {
-      const notifications: { channelId: string; ts: string }[] = await sendAndGetSlackCRNotifications(
-        teams,
+      const diffText = buildCRDiff(wbsElement, projectProposedChanges ?? workPackageProposedChanges);
+      await sendStandardCRCreatedNotification(
         createdCR,
+        wbsElement.name,
+        project.wbsElement.name,
         submitter,
-        wbsElement,
-        project.wbsElement.name
+        teams,
+        why,
+        requestedReviewerId,
+        diffText
       );
-      await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
     }
 
     const finishedCR = await prisma.change_Request.findUnique({
