@@ -27,6 +27,7 @@ import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import FilterModal from './FilterModal';
+import IcsSubscribeModal from './IcsSubscribeModal';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGetUsersTeams } from '../../hooks/teams.hooks';
@@ -129,6 +130,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   const [showInvitedEvents, setShowInvitedEvents] = useState<boolean>(savedFilters.showInvitedEvents ?? true);
   const [showTeamEvents, setShowTeamEvents] = useState<boolean>(savedFilters.showTeamEvents ?? true);
   const [openFilterModal, setOpenFilterModal] = useState(false);
+  const [openSubscribeModal, setOpenSubscribeModal] = useState(false);
   const [additionalMemberIds, setAdditionalMemberIds] = useState<string[]>([user.userId]);
   const [additionalTeamIds, setAdditionalTeamIds] = useState<string[]>([]);
   const [allEventsMode, setAllEventsMode] = useState<boolean>(savedFilters.allEventsMode ?? true);
@@ -907,6 +909,27 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                     label={<Typography sx={{ fontSize: 12, color: 'white', whiteSpace: 'nowrap' }}>Tasks</Typography>}
                     sx={{ mr: 0 }}
                   />
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => setOpenSubscribeModal(true)}
+                    sx={{
+                      px: 1,
+                      py: 0,
+                      color: 'white',
+                      borderColor: 'white',
+                      backgroundColor: 'transparent',
+                      textTransform: 'none',
+                      fontSize: 12,
+                      fontFamily: (t) => t.typography.h4.fontFamily,
+                      '&:hover': {
+                        borderColor: 'white',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
+                  >
+                    Connect With Your Calendar
+                  </Button>
                 </Stack>
               </Stack>
             </Box>
@@ -922,6 +945,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
           setShowInvited={(changed: boolean) => updateAdditionalMemberIds(changed)}
           setShowTeam={(changed: boolean) => updateAdditionalTeamIds(changed)}
         />
+        <IcsSubscribeModal open={openSubscribeModal} onClose={() => setOpenSubscribeModal(false)} />
       </PageLayout>
     </>
   );

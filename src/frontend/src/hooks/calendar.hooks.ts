@@ -50,7 +50,8 @@ import {
   previewScheduleSlotRecurringEdits,
   postDeleteScheduleSlot,
   scheduleEvent,
-  getAllEventsPaginated
+  getAllEventsPaginated,
+  getIcsToken
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 import { PDFDocument } from 'pdf-lib';
@@ -688,3 +689,9 @@ export const usePastEventsPaginated = () => {
     { getNextPageParam: (lastPage) => lastPage.nextPastCursor ?? undefined }
   );
 };
+
+export const useGetIcsToken = () =>
+  useQuery<{ icsToken: string; organizationId: string }, Error>(['icsToken'], async () => {
+    const { data } = await getIcsToken();
+    return data;
+  });

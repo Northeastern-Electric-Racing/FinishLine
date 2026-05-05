@@ -191,6 +191,7 @@ model User {
   additionalPermissions String[]
   userSettings          User_Settings?
   userSecureSettings    User_Secure_Settings?
+  icsToken              String?               @unique
 
   // Relation references
   submittedChangeRequests                 Change_Request[]                     @relation(name: "submittedChangeRequests")
