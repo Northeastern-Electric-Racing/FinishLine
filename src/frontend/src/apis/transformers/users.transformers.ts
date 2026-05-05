@@ -62,8 +62,9 @@ export const userWithScheduleSettingsTransformer = (user: UserWithScheduleSettin
  * @returns the transformed availability
  */
 export const availabilityTransformer = (availability: Availability): Availability => {
+  const utcDate = new Date(availability.dateSet);
   return {
     ...availability,
-    dateSet: new Date(availability.dateSet)
+    dateSet: new Date(utcDate.getUTCFullYear(), utcDate.getUTCMonth(), utcDate.getUTCDate())
   };
 };
