@@ -32,6 +32,7 @@ import changeRequestTransformer, {
 } from '../transformers/change-requests.transformer.js';
 import {
   allChangeRequestsReviewed,
+  buildCRDiff,
   validateProposedChangesFields,
   applyProjectProposedChanges,
   applyWorkPackageProposedChanges,
@@ -49,7 +50,8 @@ import {
   addSlackThreadsToChangeRequest,
   sendAndGetSlackCRNotifications,
   sendSlackCRStatusToThread,
-  sendSlackRequestedReviewNotification
+  sendSlackRequestedReviewNotification,
+  sendStandardCRCreatedNotification
 } from '../utils/slack.utils.js';
 import {
   ChangeRequestWithProjectAndWorkPackageQueryArgs,
@@ -291,7 +293,7 @@ export default class ChangeRequestsService {
     });
 
     if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
-      await this.reviewStageGateChangeRequest(foundCR, reviewer);
+      await this.reviewStageGateChangeRequest(foundCR, reviewer, new Date());
     } else if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
       await this.reviewActivationChangeRequest(foundCR, reviewer);
     } else if (foundCR.type === CR_Type.BUDGET && foundCR.budgetChangeRequest && accepted) {
@@ -364,10 +366,12 @@ export default class ChangeRequestsService {
    * Reviews the stage gate change request and automates any changes that are made
    * @param foundCR the change request to be reviewed
    * @param reviewer the user reviewing the change request
+   * @param dateCompleted the date the work package was completed
    */
   static async reviewStageGateChangeRequest(
     foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
-    reviewer: User
+    reviewer: User,
+    dateCompleted: Date
   ): Promise<void> {
     if (!foundCR.wbsElement?.workPackage) {
       throw new HttpException(400, 'Stage gate can only be made on work packages!');
@@ -375,8 +379,14 @@ export default class ChangeRequestsService {
 
     throwIfUncheckedDescriptionBullets(foundCR.wbsElement.descriptionBullets);
 
+    const { workPackage } = foundCR.wbsElement;
     const shouldChangeStatus = foundCR.wbsElement.status !== WBS_Element_Status.COMPLETE;
     const changesList = [];
+
+    if (dateCompleted < workPackage.startDate) {
+      throw new HttpException(400, 'Date completed cannot be before the work package start date');
+    }
+
     if (shouldChangeStatus) {
       changesList.push({
         changeRequestId: foundCR.crId,
@@ -385,9 +395,22 @@ export default class ChangeRequestsService {
       });
     }
 
+    // Calculate new duration from startDate to dateCompleted if provided
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const newDuration = Math.max(1, Math.round((dateCompleted.getTime() - workPackage.startDate.getTime()) / msPerWeek));
+
+    if (newDuration !== workPackage.duration) {
+      changesList.push({
+        changeRequestId: foundCR.crId,
+        implementerId: reviewer.userId,
+        detail: buildChangeDetail('duration', workPackage.duration.toString(), newDuration.toString())
+      });
+    }
+
     await prisma.work_Package.update({
       where: { wbsElementId: foundCR.wbsElement.wbsElementId },
       data: {
+        duration: newDuration,
         wbsElement: {
           update: {
             status: WBS_Element_Status.COMPLETE,
@@ -632,6 +655,7 @@ export default class ChangeRequestsService {
     projectNumber: number,
     workPackageNumber: number,
     confirmDone: boolean,
+    dateCompleted: Date,
     organization: Organization
   ): Promise<string> {
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
@@ -696,7 +720,7 @@ export default class ChangeRequestsService {
       await addSlackThreadsToChangeRequest(createdChangeRequest.crId, notifications);
     }
 
-    await ChangeRequestsService.reviewStageGateChangeRequest(createdChangeRequest, submitter);
+    await ChangeRequestsService.reviewStageGateChangeRequest(createdChangeRequest, submitter, dateCompleted);
 
     return createdChangeRequest.crId;
   }
@@ -986,6 +1010,15 @@ export default class ChangeRequestsService {
     const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: { carNumber, projectNumber, workPackageNumber, organizationId: organization.organizationId }
+      },
+      include: {
+        links: { where: { dateDeleted: null }, include: { linkType: { select: { name: true } } } },
+        project: { select: { budget: true, summary: true } },
+        workPackage: { select: { startDate: true, duration: true, stage: true } },
+        descriptionBullets: {
+          where: { dateDeleted: null },
+          include: { descriptionBulletType: { select: { name: true } } }
+        }
       }
     });
 
@@ -1197,14 +1230,17 @@ export default class ChangeRequestsService {
     const project = createdCR.wbsElement?.workPackage?.project || createdCR.wbsElement?.project;
     const teams = project?.teams;
     if (teams && teams.length > 0) {
-      const notifications: { channelId: string; ts: string }[] = await sendAndGetSlackCRNotifications(
-        teams,
+      const diffText = buildCRDiff(wbsElement, projectProposedChanges ?? workPackageProposedChanges);
+      await sendStandardCRCreatedNotification(
         createdCR,
+        wbsElement.name,
+        project.wbsElement.name,
         submitter,
-        wbsElement,
-        project.wbsElement.name
+        teams,
+        why,
+        requestedReviewerId,
+        diffText
       );
-      await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
     }
 
     const finishedCR = await prisma.change_Request.findUnique({

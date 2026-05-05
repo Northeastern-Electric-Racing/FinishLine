@@ -183,6 +183,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: project.wbsNum,
         why,
+        requestedReviewerId: data.requestedReviewerId,
         projectProposedChanges: projectPayload
       };
       await mutateCRAsync(changeRequestPayload);

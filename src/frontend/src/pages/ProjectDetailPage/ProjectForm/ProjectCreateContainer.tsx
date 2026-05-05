@@ -131,6 +131,7 @@ const ProjectCreateContainer: React.FC = () => {
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: { carNumber, projectNumber: 0, workPackageNumber: 0 },
         why,
+        requestedReviewerId: data.requestedReviewerId,
         projectProposedChanges: projectPayload
       };
       await mutateCRAsync(changeRequestPayload);

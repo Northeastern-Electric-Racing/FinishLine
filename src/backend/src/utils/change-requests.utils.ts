@@ -12,7 +12,9 @@ import {
 } from '@prisma/client';
 import {
   DescriptionBulletPreview,
+  formatDateOnly,
   LinkCreateArgs,
+  ProjectProposedChangesCreateArgs,
   WbsNumber,
   wbsPipe,
   WorkPackageProposedChangesCreateArgs,
@@ -380,6 +382,125 @@ export const applyWorkPackageProposedChanges = async (
       organization
     );
   }
+};
+
+/**
+ * Builds a human-readable diff string comparing current WBS state to proposed changes.
+ * Each changed field is shown as two lines: "− Field: old" and "+ Field: new".
+ */
+export const buildCRDiff = (
+  currentWbs: {
+    name: string;
+    leadId: string | null;
+    managerId: string | null;
+    links: { url: string; linkType: { name: string } }[];
+    project?: { budget: number; summary: string } | null;
+    workPackage?: { startDate: Date; duration: number; stage: string | null } | null;
+    descriptionBullets?: { detail: string; descriptionBulletType: { name: string } }[];
+  },
+  proposed: ProjectProposedChangesCreateArgs | WorkPackageProposedChangesCreateArgs | undefined
+): string => {
+  if (!proposed) return '';
+
+  const isWpChange = 'startDate' in proposed;
+  const lines: string[] = [];
+
+  const addDiff = (label: string, before: string | number | null | undefined, after: string | number | null | undefined) => {
+    const b = String(before ?? '(none)');
+    const a = String(after ?? '(none)');
+    if (b !== a) {
+      lines.push(`− ${label}: ${b}`);
+      lines.push(`+ ${label}: ${a}`);
+    }
+  };
+
+  const addNew = (label: string, value: string | number | null | undefined) => {
+    if (value !== null && value !== undefined) lines.push(`+ ${label}: ${value}`);
+  };
+
+  const addLinkDiffs = (currentLinks: { url: string; linkType: { name: string } }[], proposedLinks: LinkCreateArgs[]) => {
+    const currentMap = new Map(currentLinks.map((l) => [l.linkType.name, l.url]));
+    const proposedMap = new Map(proposedLinks.map((l) => [l.linkTypeName, l.url]));
+    for (const [name, url] of currentMap) {
+      if (!proposedMap.has(name)) lines.push(`− ${name}: ${url}`);
+    }
+    for (const [name, url] of proposedMap) {
+      if (!currentMap.has(name)) {
+        lines.push(`+ ${name}: ${url}`);
+      } else if (currentMap.get(name) !== url) {
+        lines.push(`− ${name}: ${currentMap.get(name)}`);
+        lines.push(`+ ${name}: ${url}`);
+      }
+    }
+  };
+
+  const addBulletDiffs = (
+    currentBullets: { detail: string; descriptionBulletType: { name: string } }[],
+    proposedBullets: DescriptionBulletPreview[]
+  ) => {
+    const allBulletTypeNames = new Set([
+      ...currentBullets.map((b) => b.descriptionBulletType.name),
+      ...proposedBullets.map((b) => b.type)
+    ]);
+    for (const bulletTypeName of allBulletTypeNames) {
+      const currentDetails = new Set(
+        currentBullets.filter((b) => b.descriptionBulletType.name === bulletTypeName).map((b) => b.detail)
+      );
+      const proposedDetails = new Set(proposedBullets.filter((b) => b.type === bulletTypeName).map((b) => b.detail));
+      // add "- Type: detail" for each detail of this type that is in current but not proposed
+      for (const detail of currentDetails) {
+        if (!proposedDetails.has(detail)) lines.push(`− ${bulletTypeName}: ${detail}`);
+      }
+      // add "+ Type: detail" for each detail of this type that is in proposed but not current
+      for (const detail of proposedDetails) {
+        if (!currentDetails.has(detail)) lines.push(`+ ${bulletTypeName}: ${detail}`);
+      }
+    }
+  };
+
+  if (isWpChange) {
+    const wpProposed = proposed as WorkPackageProposedChangesCreateArgs;
+    if (!currentWbs.workPackage) {
+      addNew('Name', wpProposed.name);
+      addNew('Lead', wpProposed.leadId);
+      addNew('Manager', wpProposed.managerId);
+      addNew('Start date', wpProposed.startDate);
+      addNew('Duration', wpProposed.duration);
+      addNew('Stage', wpProposed.stage);
+      wpProposed.links.forEach((l) => addNew(l.linkTypeName, l.url));
+      wpProposed.descriptionBullets.forEach((b) => addNew(b.type, b.detail));
+    } else {
+      addDiff('Name', currentWbs.name, wpProposed.name);
+      addDiff('Lead', currentWbs.leadId, wpProposed.leadId);
+      addDiff('Manager', currentWbs.managerId, wpProposed.managerId);
+      addDiff('Start date', formatDateOnly(currentWbs.workPackage.startDate, 'YYYY-MM-DD'), wpProposed.startDate);
+      addDiff('Duration', currentWbs.workPackage.duration, wpProposed.duration);
+      addDiff('Stage', currentWbs.workPackage.stage, wpProposed.stage);
+      addLinkDiffs(currentWbs.links, wpProposed.links);
+      addBulletDiffs(currentWbs.descriptionBullets ?? [], wpProposed.descriptionBullets);
+    }
+  } else {
+    const projProposed = proposed as ProjectProposedChangesCreateArgs;
+    if (!currentWbs.project) {
+      addNew('Name', projProposed.name);
+      addNew('Lead', projProposed.leadId);
+      addNew('Manager', projProposed.managerId);
+      addNew('Budget', projProposed.budget);
+      addNew('Summary', projProposed.summary);
+      projProposed.links.forEach((l) => addNew(l.linkTypeName, l.url));
+      projProposed.descriptionBullets.forEach((b) => addNew(b.type, b.detail));
+    } else {
+      addDiff('Name', currentWbs.name, projProposed.name);
+      addDiff('Lead', currentWbs.leadId, projProposed.leadId);
+      addDiff('Manager', currentWbs.managerId, projProposed.managerId);
+      addDiff('Budget', currentWbs.project.budget, projProposed.budget);
+      addDiff('Summary', currentWbs.project.summary, projProposed.summary);
+      addLinkDiffs(currentWbs.links, projProposed.links);
+      addBulletDiffs(currentWbs.descriptionBullets ?? [], projProposed.descriptionBullets);
+    }
+  }
+
+  return lines.join('\n');
 };
 
 /**

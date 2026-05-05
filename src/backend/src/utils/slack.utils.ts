@@ -550,6 +550,67 @@ export const sendSlackCRStatusToThread = async (
 };
 
 /**
+ * Sends Slack notifications for a newly created standard (manual) CR:
+ * 1. Initial message to each project team channel
+ * 2. Thread reply with the why text and field diff
+ * 3. Thread reply tagging the project head(s) and requested reviewer(s)
+ * Also stores Message_Info records linking threads to the CR.
+ */
+export const sendStandardCRCreatedNotification = async (
+  cr: Change_Request,
+  wbsElementName: string,
+  projectWbsName: string,
+  submitter: User,
+  teams: Team[],
+  why: string,
+  requestedReviewerId: string | undefined,
+  diffText: string
+): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return;
+
+  const message =
+    wbsElementName !== projectWbsName
+      ? `${submitter.firstName} ${submitter.lastName} submitted a change request for ${wbsElementName} in ${projectWbsName}`
+      : `${submitter.firstName} ${submitter.lastName} submitted a change request for ${projectWbsName}`;
+  const notifications: { channelId: string; ts: string }[] = [];
+
+  await Promise.all(
+    teams.map(async (team) => {
+      const sent = await sendSlackChangeRequestNotification(team, message, cr.crId, cr.identifier);
+      notifications.push(...sent);
+    })
+  );
+
+  if (notifications.length === 0) return;
+
+  // add message_Info records for the sent notifications so we can link the CR to the slack threads for future replies
+  await addSlackThreadsToChangeRequest(cr.crId, notifications);
+
+  // Thread reply: why + diff
+  const whyAndDiff = diffText
+    ? `*Change Justification:*\n${why}\n\n*Proposed Changes:*\n${diffText}`
+    : `*Change Justification:*\n${why}`;
+  await Promise.all(notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, whyAndDiff)));
+
+  // Thread reply: tag project head(s) + requested reviewer
+  const headSlackIds = (await Promise.all(teams.filter((t) => t.headId).map((t) => getUserSlackId(t.headId!)))).filter(
+    (id): id is string => !!id
+  );
+
+  const reviewerSlackId = requestedReviewerId ? await getUserSlackId(requestedReviewerId) : undefined;
+  const allSlackIds = new Set([...headSlackIds, ...(reviewerSlackId ? [reviewerSlackId] : [])]);
+  const allMentions = [...allSlackIds].map((id) => `<@${id}>`).join(' ');
+
+  if (allMentions) {
+    const reviewMsg = `${allMentions} Your review has been requested on CR #${cr.identifier}!`;
+    const crLink = `https://finishlinebyner.com/cr/${cr.crId}`;
+    await Promise.all(
+      notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, reviewMsg, crLink, `View CR #${cr.identifier}`))
+    );
+  }
+};
+
+/**
  * Adds the relevant slack notifications for a change request to the change request
  *
  * @param crId the change request to add the slack threads to
