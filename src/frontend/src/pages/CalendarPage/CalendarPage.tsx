@@ -864,7 +864,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                 </Box>
 
                 {/* Right column: filters + toggles */}
-                <Stack sx={{ flex: 1, alignItems: 'flex-end', pt: 0.5 }} spacing={0.5}>
+                <Stack sx={{ flex: 1, alignItems: 'flex-end', pt: 0.5, overflowY: 'auto' }} spacing={0.5}>
                   <Button
                     size="small"
                     variant="outlined"
