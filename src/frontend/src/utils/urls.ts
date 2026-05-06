@@ -486,6 +486,13 @@ const calendarDeleteScheduleSlot = (eventId: string, scheduleSlotId: string) =>
 const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
 const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 const calendarScheduleEvent = (eventId: string) => `${calendar()}/event/${eventId}/schedule`;
+const calendarIcsToken = () => `${calendar()}/ics/token`;
+
+// Generates ICS URL to be given to calendars for integration, not directly hit by FL frontend
+const icsFeed = (token: string, organizationId: string, calendarIds: string[]) => {
+  const base = `${API_URL}/ics/${token}?org=${organizationId}`;
+  return calendarIds.length > 0 ? `${base}&calendars=${calendarIds.join(',')}` : base;
+};
 
 /**************** Attendance Endpoints ****************/
 const attendance = () => `${API_URL}/attendance`;
@@ -848,6 +855,8 @@ export const apiUrls = {
   calendarCreateCalendar,
   calendarEditCalendar,
   calendarCalendars,
+  calendarIcsToken,
+  icsFeed,
   calendarCreateEventType,
   calendarEditEventType,
   calendarCreateEvent,

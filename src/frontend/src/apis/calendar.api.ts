@@ -290,3 +290,9 @@ export const getAllEventsPaginated = (futureCursor?: Date, pastCursor?: Date) =>
     }
   );
 };
+
+export const getIcsToken = () => {
+  return axios.get<{ icsToken: string; organizationId: string }>(apiUrls.calendarIcsToken(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};

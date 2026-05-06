@@ -2813,4 +2813,55 @@ export default class CalendarService {
       nextPastCursor: pastSlots.length === 25 ? pastSlots[pastSlots.length - 1].startTime : null
     };
   }
+
+  static async getOrCreateIcsToken(userId: string): Promise<string> {
+    const user = await prisma.user.findUnique({ where: { userId } });
+    if (!user) throw new NotFoundException('User', userId);
+    if (user.icsToken) return user.icsToken;
+
+    const token = crypto.randomUUID();
+    await prisma.user.update({ where: { userId }, data: { icsToken: token } });
+    return token;
+  }
+
+  static async getIcsFeedEvents(icsToken: string, organizationId: string, calendarIds: string[]) {
+    const user = await prisma.user.findUnique({
+      where: { icsToken },
+      include: {
+        teamsAsMember: { select: { teamId: true } },
+        teamsAsLead: { select: { teamId: true } },
+        teamsAsHead: { select: { teamId: true } }
+      }
+    });
+
+    if (!user) throw new NotFoundException('User', 'icsToken');
+
+    const userTeamIds = [
+      ...user.teamsAsMember.map((t) => t.teamId),
+      ...user.teamsAsLead.map((t) => t.teamId),
+      ...user.teamsAsHead.map((t) => t.teamId)
+    ];
+
+    const calendarFilter =
+      calendarIds.length > 0
+        ? [{ eventType: { calendars: { some: { calendarId: { in: calendarIds }, organizationId } } } }]
+        : [];
+
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        status: { in: [Event_Status.CONFIRMED, Event_Status.SCHEDULED, Event_Status.DONE] },
+        scheduledTimes: { some: {} },
+        OR: [
+          { requiredMembers: { some: { userId: user.userId } } },
+          { optionalMembers: { some: { userId: user.userId } } },
+          ...(userTeamIds.length > 0 ? [{ teams: { some: { teamId: { in: userTeamIds } } } }] : []),
+          ...calendarFilter
+        ]
+      },
+      ...getEventQueryArgs(organizationId)
+    });
+
+    return events.map(eventTransformer);
+  }
 }
