@@ -12,10 +12,6 @@ import { Box } from '@mui/material';
 interface StandardDetailsProps {
   cr: StandardChangeRequest;
 }
-const style = {
-  maxWidth: '140px',
-  fontWeight: 'bold'
-};
 const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetailsProps) => {
   return (
     <Box>
@@ -28,7 +24,7 @@ const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetails
         <InfoBlock title="Why">
           {cr.why.map((ele: ChangeRequestExplanation, idx: number) => (
             <Box key={'CRExplanation' + idx} display="flex">
-              <Typography sx={style}>{ele.type + ' '}</Typography>
+              <Typography style={{ fontWeight: 'bold' }}>{ele.type + ' '}</Typography>
               <Typography mx={'10px'}>{' - '}</Typography>
               <Typography>{ele.explain}</Typography>
             </Box>

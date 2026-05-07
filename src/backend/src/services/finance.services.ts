@@ -34,6 +34,7 @@ import {
   getReimbursementRequestWhereInput
 } from '../utils/finance.utils.js';
 import { notifySponsorTaskAssignee } from '../utils/slack.utils.js';
+import { uploadFile } from '../utils/google-integration.utils.js';
 import { isUserFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
 
 export default class FinanceServices {
@@ -56,7 +57,7 @@ export default class FinanceServices {
    * @param contactPosition The position of the sponsor contact.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being created.
-   *
+   * @param logoImage An optional logo image file for the sponsor.
    * @returns The created sponsor object, including associated tasks.
    *
    * @throws AccessDeniedAdminOnlyException If the submitter does not have permission to create a sponsor.
@@ -1200,6 +1201,8 @@ export default class FinanceServices {
    * @param contactPosition The position of the sponsor contact.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being edited.
+   * @param logoImage An optional logo image file for the sponsor.
+   *
    * @returns the edited sponsor.
    */
 
@@ -1337,6 +1340,41 @@ export default class FinanceServices {
         discountCode,
         sponsorNotes
       },
+      ...getSponsorQueryArgs(organization.organizationId)
+    });
+
+    return sponsorTransformer(updatedSponsor);
+  }
+
+  /**
+   * Uploads a logo image for a sponsor and stores the resulting image ID.
+   *
+   * @param submitter The user performing the upload
+   * @param organization The organization the sponsor belongs to
+   * @param sponsorId The id of the sponsor
+   * @param logoImage The logo image file to upload
+   * @returns The updated sponsor
+   */
+  static async uploadSponsorLogo(
+    submitter: User,
+    organization: Organization,
+    sponsorId: string,
+    logoImage: Express.Multer.File
+  ): Promise<Sponsor> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
+      throw new AccessDeniedException('Only heads can update a sponsor logo');
+
+    const sponsor = await prisma.sponsor.findUnique({
+      where: { sponsorId, organizationId: organization.organizationId }
+    });
+
+    if (!sponsor) throw new NotFoundException('Sponsor', sponsorId);
+
+    const { id } = await uploadFile(logoImage);
+
+    const updatedSponsor = await prisma.sponsor.update({
+      where: { sponsorId },
+      data: { logoImageId: id },
       ...getSponsorQueryArgs(organization.organizationId)
     });
 

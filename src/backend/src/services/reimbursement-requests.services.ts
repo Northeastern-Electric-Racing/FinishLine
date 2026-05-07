@@ -35,7 +35,8 @@ import {
   validateRefund,
   validateUserIsPartOfFinanceTeamOrHead,
   isUserFinanceTeamOrHead,
-  updateMaterialStatusesOnPayment
+  updateMaterialStatusesOnPayment,
+  getCarNumberFilter
 } from '../utils/reimbursement-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
@@ -95,12 +96,7 @@ export default class ReimbursementRequestService {
         dateDeleted: null,
         recipientId: recipient.userId,
         organizationId: organization.organizationId,
-        ...(carNumber !== undefined &&
-          carNumber !== null && {
-            reimbursementProducts: {
-              some: { reimbursementProductReason: { wbsElement: { carNumber } } }
-            }
-          })
+        ...getCarNumberFilter(carNumber)
       },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -123,12 +119,7 @@ export default class ReimbursementRequestService {
         dateDeleted: null,
         assigneeId: assignee.userId,
         organizationId: organization.organizationId,
-        ...(carNumber !== undefined &&
-          carNumber !== null && {
-            reimbursementProducts: {
-              some: { reimbursementProductReason: { wbsElement: { carNumber } } }
-            }
-          })
+        ...getCarNumberFilter(carNumber)
       },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -187,12 +178,7 @@ export default class ReimbursementRequestService {
         dateDeleted: null,
         recipientId: { in: Array.from(teamUserIds) },
         organizationId: organization.organizationId,
-        ...(carNumber !== undefined &&
-          carNumber !== null && {
-            reimbursementProducts: {
-              some: { reimbursementProductReason: { wbsElement: { carNumber } } }
-            }
-          })
+        ...getCarNumberFilter(carNumber)
       },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -630,12 +616,7 @@ export default class ReimbursementRequestService {
           }
         },
         accountCode: { organizationId: organization.organizationId },
-        ...(carNumber !== undefined &&
-          carNumber !== null && {
-            reimbursementProducts: {
-              some: { reimbursementProductReason: { wbsElement: { carNumber } } }
-            }
-          })
+        ...getCarNumberFilter(carNumber)
       },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -741,13 +722,19 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
+    const existingWithSaboNumber = await prisma.reimbursement_Request.findFirst({
+      where: { saboId: saboNumber, organizationId: organization.organizationId }
+    });
+    if (existingWithSaboNumber) {
+      throw new HttpException(400, 'This SABO number is already assigned to another reimbursement request.');
+    }
+
     const reimbursementRequestWithSaboNumber = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId },
       data: {
         saboId: saboNumber
       }
     });
-
     return reimbursementRequestWithSaboNumber;
   }
 
@@ -1035,12 +1022,7 @@ export default class ReimbursementRequestService {
       where: {
         dateDeleted: null,
         accountCode: { organizationId: organization.organizationId },
-        ...(carNumber !== undefined &&
-          carNumber !== null && {
-            reimbursementProducts: {
-              some: { reimbursementProductReason: { wbsElement: { carNumber } } }
-            }
-          })
+        ...getCarNumberFilter(carNumber)
       },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });

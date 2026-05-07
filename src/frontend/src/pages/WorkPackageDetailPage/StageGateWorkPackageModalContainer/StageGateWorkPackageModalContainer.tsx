@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import confetti from 'canvas-confetti';
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestType, WbsNumber, wbsPipe } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
@@ -44,6 +45,16 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
         wbsNum,
         type: ChangeRequestType.StageGate,
         confirmDone
+      });
+      [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9].forEach((xPos) => {
+        confetti({
+          origin: { y: -0.5, x: xPos },
+          angle: 270,
+          gravity: 1.5,
+          startVelocity: 35,
+          spread: 70,
+          particleCount: 50
+        });
       });
       history.push(`${routes.PROJECTS}/${wbsPipe(wbsNum)}/change-requests`);
     } catch (e: unknown) {

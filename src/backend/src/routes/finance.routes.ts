@@ -9,8 +9,11 @@ import {
 } from '../utils/validation.utils.js';
 import { body } from 'express-validator';
 import FinanceController from '../controllers/finance.controllers.js';
+import multer, { memoryStorage } from 'multer';
+import { MAX_FILE_SIZE } from 'shared';
 
 const financeRouter = express.Router();
+const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 financeRouter.post(
   '/sponsor/create',
@@ -47,6 +50,13 @@ financeRouter.get('/sponsors', FinanceController.getAllSponsors);
 financeRouter.get('/sponsor/:sponsorId/sponsorTasks', FinanceController.getSponsorTasks);
 
 financeRouter.post('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
+
+financeRouter.post(
+  '/sponsor/:sponsorId/uploadLogo',
+  upload.single('logoImage'),
+  validateInputs,
+  FinanceController.uploadSponsorLogo
+);
 
 financeRouter.post(
   '/sponsorTier/create',

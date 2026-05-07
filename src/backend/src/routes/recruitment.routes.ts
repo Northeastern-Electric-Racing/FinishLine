@@ -57,11 +57,27 @@ recruitmentRouter.post(
   nonEmptyString(body('term')),
   nonEmptyString(body('description')),
   body('order').isInt(),
+  nonEmptyString(body('type')),
   nonEmptyString(body('icon')).optional(),
   nonEmptyString(body('buttonText')).optional(),
   nonEmptyString(body('buttonLink')).optional(),
   validateInputs,
   RecruitmentController.createGuestDefinition
+);
+
+recruitmentRouter.get('/guestdefinition/:definitionId', RecruitmentController.getSingleGuestDefinition);
+
+recruitmentRouter.post(
+  '/guestdefinition/:definitionId/edit',
+  nonEmptyString(body('term')),
+  nonEmptyString(body('description')),
+  body('order').isInt(),
+  nonEmptyString(body('type')),
+  nonEmptyString(body('icon')).optional(),
+  nonEmptyString(body('buttonText')).optional(),
+  nonEmptyString(body('buttonLink')).optional(),
+  validateInputs,
+  RecruitmentController.editGuestDefinition
 );
 
 recruitmentRouter.delete('/guestdefinition/:definitionId/delete', RecruitmentController.deleteGuestDefinition);

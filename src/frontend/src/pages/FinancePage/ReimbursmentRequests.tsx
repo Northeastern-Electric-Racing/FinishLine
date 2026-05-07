@@ -1,4 +1,15 @@
-import { Box, Button, Menu, MenuItem, ListItemIcon, Typography, FormControlLabel, Checkbox } from '@mui/material';
+import {
+  Box,
+  Button,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  Typography,
+  FormControlLabel,
+  Checkbox,
+  Autocomplete,
+  TextField
+} from '@mui/material';
 import { useState } from 'react';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { NERButton } from '../../components/NERButton';
@@ -6,7 +17,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import WorkIcon from '@mui/icons-material/Work';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isAdmin, isGuest, isHead, isLead, ReimbursementStatusType } from 'shared';
+import { isAdmin, isGuest, isHead, isLead, ReimbursementStatusType, wbsPipe } from 'shared';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ReimbursementRequestTable from './ReimbursementRequestsSection';
 import { useToast } from '../../hooks/toasts.hooks';
@@ -20,6 +31,8 @@ import { DatePicker } from '@mui/x-date-pickers';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import ErrorPage from '../ErrorPage';
+import { useAllProjects } from '../../hooks/projects.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 const ReimbursementRequests: React.FC = () => {
   const allStatuses = Object.values(ReimbursementStatusType);
@@ -114,16 +127,24 @@ const ReimbursementRequests: React.FC = () => {
     isError: allReimbursementRequestsIsError,
     error: allReimbursementRequestsError
   } = useAllReimbursementRequests();
+  const {
+    data: allProjects,
+    isLoading: allProjectsIsLoading,
+    isError: allProjectsIsError,
+    error: allProjectsError
+  } = useAllProjects();
 
   const [anchorFilterEl, setAnchorFilterEl] = useState<null | HTMLElement>(null);
   const [selectedStatuses, setSelectedStatuses] = useState<ReimbursementStatusType[]>([]);
   const [startDate, setStartDate] = useState<null | Date>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [selectedProjectFilter, setSelectedProjectFilter] = useState<{ label: string; id: string } | null>(null);
 
   const clearData = () => {
     setSelectedStatuses([]);
     setStartDate(null);
     setEndDate(null);
+    setSelectedProjectFilter(null);
   };
 
   const handleFilterMenuOpen = (e: React.MouseEvent<HTMLElement>) => setAnchorFilterEl(e.currentTarget);
@@ -134,6 +155,13 @@ const ReimbursementRequests: React.FC = () => {
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (assignedReimbursementRequestIsError) return <ErrorPage message={assignedReimbursementRequestError?.message} />;
   if (createdReimbursementRequestIsError) return <ErrorPage message={createdReimbursementRequestError?.message} />;
+  if (allProjectsIsError) return <ErrorPage message={allProjectsError?.message} />;
+  if (allProjectsIsLoading || !allProjects) return <LoadingIndicator />;
+
+  const projectAutocompleteOptions = allProjects.map((proj) => ({
+    label: wbsPipe(proj.wbsNum) + ' - ' + proj.name,
+    id: wbsPipe(proj.wbsNum)
+  }));
 
   const filterMenu = (
     <Menu
@@ -189,6 +217,25 @@ const ReimbursementRequests: React.FC = () => {
             </MenuItem>
           );
         })}
+        <Typography sx={{ fontWeight: 'bold', mt: 2, mb: 1 }}>Filter by Project</Typography>
+        <Box
+          sx={{
+            borderBottom: '2px solid white',
+            mb: 2
+          }}
+        />
+        <Autocomplete
+          sx={{ flex: 1 }}
+          options={projectAutocompleteOptions}
+          value={selectedProjectFilter}
+          blurOnSelect={true}
+          id={'project-filter-autocomplete'}
+          size={'small'}
+          onChange={(_event, newValue) => {
+            setSelectedProjectFilter(newValue);
+          }}
+          renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select Project" fullWidth />}
+        />
         <Typography sx={{ fontWeight: 'bold', mt: 2, mb: 1 }}>Filter by Date</Typography>
         <Box
           sx={{
@@ -271,6 +318,7 @@ const ReimbursementRequests: React.FC = () => {
           statuses={selectedStatuses}
           startDate={startDate}
           endDate={endDate}
+          selectedProject={selectedProjectFilter ?? undefined}
           onCloseSidePage={() => {
             refetchCreatedReimbursementRequests();
             refetchAllReimbursementRequests();

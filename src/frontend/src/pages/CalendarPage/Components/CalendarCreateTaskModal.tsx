@@ -44,7 +44,7 @@ interface CalendarCreateTaskModalProps {
 
 const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open, onClose, defaultDeadline }) => {
   const toast = useToast();
-  const { mutateAsync: createTask } = useCreateTask();
+  const { mutateAsync: createTask, isLoading } = useCreateTask();
   const { data: users, isLoading: usersLoading, isError: usersError, error: usersErr } = useAllMembers();
   const { data: projects, isLoading: projectsLoading, isError: projectsError, error: projectsErr } = useAllProjects();
 
@@ -111,6 +111,7 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
       onFormSubmit={onSubmit}
       submitText="Create"
       showCloseButton
+      disabled={isLoading}
     >
       <Grid container spacing={2} sx={{ minWidth: 450 }}>
         <Grid item xs={12}>

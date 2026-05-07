@@ -191,6 +191,7 @@ model User {
   additionalPermissions String[]
   userSettings          User_Settings?
   userSecureSettings    User_Secure_Settings?
+  icsToken              String?               @unique
 
   // Relation references
   submittedChangeRequests                 Change_Request[]                     @relation(name: "submittedChangeRequests")
@@ -1787,21 +1788,27 @@ model Reimbursement_Request_Comment {
   @@index([reimbursementRequestId])
 }
 
+enum Guest_Definition_Type {
+  PROJECT_MANAGEMENT
+  INFO_PAGE
+}
+
 model Guest_Definition {
-  definitionId   String       @id @default(uuid())
+  definitionId   String                @id @default(uuid())
   term           String
   description    String
   order          Int
+  type           Guest_Definition_Type @default(INFO_PAGE)
   buttonText     String?
   buttonLink     String?
   icon           String?
-  dateCreated    DateTime     @default(now())
+  dateCreated    DateTime              @default(now())
   dateDeleted    DateTime?
-  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "guestDefinitionDeleter")
+  userDeleted    User?                 @relation(fields: [userDeletedId], references: [userId], name: "guestDefinitionDeleter")
   userDeletedId  String?
-  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "guestDefinitionCreator")
+  userCreated    User                  @relation(fields: [userCreatedId], references: [userId], name: "guestDefinitionCreator")
   userCreatedId  String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organization   Organization          @relation(fields: [organizationId], references: [organizationId])
   organizationId String
 
   @@index([organizationId])

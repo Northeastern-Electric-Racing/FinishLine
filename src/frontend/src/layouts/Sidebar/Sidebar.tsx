@@ -6,12 +6,11 @@
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography, Box, IconButton, Divider } from '@mui/material';
+import { Typography, Box, IconButton, Divider, Drawer, useMediaQuery, useTheme as useMuiTheme } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-// To be uncommented after guest sponsors page is developed
-// import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
+import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import FolderIcon from '@mui/icons-material/Folder';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import GroupIcon from '@mui/icons-material/Group';
@@ -24,12 +23,9 @@ import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
 import { Cached, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
-// once divisions developed, import TeamType from shared
-import { isGuest } from 'shared';
-// To be uncommented after divisions page is developed
+import { isGuest, TeamType } from 'shared';
 import * as MuiIcons from '@mui/icons-material';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
-import { TeamType } from 'shared';
 import ErrorPage from '../../pages/ErrorPage';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -50,9 +46,11 @@ interface SidebarProps {
 
 const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  const muiTheme = useMuiTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const user = useCurrentUser();
-  const { onGuestHomePage } = useHomePageContext();
+  const onGuestHomePage = isGuest(user.role);
   const { isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamTypes();
 
   const allTeams: LinkItem[] = (teams ?? []).map((team: TeamType) => {
@@ -69,7 +67,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     {
       name: 'Home',
       icon: <HomeIcon />,
-      route: onGuestHomePage ? routes.HOME_GUEST : routes.HOME
+      route: routes.HOME
     },
     !onGuestHomePage && {
       name: 'Gantt',
@@ -85,7 +83,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       : {
           name: 'Project Management',
           icon: <DashboardIcon />,
-          route: routes.PROJECTS,
+          route: routes.PROJECT_MANAGEMENT,
           subItems: [
             {
               name: 'Gantt',
@@ -137,7 +135,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       ]
     },
 
-    // Teams tab here to be replaced with below code once guest divisions is developed
     !onGuestHomePage
       ? {
           name: 'Teams',
@@ -148,7 +145,8 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           name: 'Divisions',
           icon: <GroupIcon />,
           route: routes.TEAMS,
-          subItems: allTeams
+          subItems: allTeams,
+          isClickableWithSubitems: true
         },
     !onGuestHomePage && {
       name: 'Calendar',
@@ -160,16 +158,15 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       icon: <Cached />,
       route: routes.RETROSPECTIVE
     },
-    // To be uncommented once guest mode sponsors page is developed
-    // onGuestHomePage && {
-    //   name: 'Sponsors',
-    //   icon: <VolunteerActivismIcon />,
-    //   route: routes.RETROSPECTIVE
-    // },
+    onGuestHomePage && {
+      name: 'Sponsors',
+      icon: <VolunteerActivismIcon />,
+      route: routes.SPONSORS
+    },
     {
       name: 'Info',
       icon: <QuestionMarkIcon />,
-      route: routes.INFO
+      route: isGuest(user.role) ? routes.GUEST_INFO : routes.INFO
     }
   ].filter(Boolean) as LinkItem[];
 
@@ -197,6 +194,10 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
   const linkItems = onPNMHomePage || onOnboardingHomePage ? onboardingLinkItems : memberLinkItems;
 
   const handleMoveContent = () => {
+    if (isMobile) {
+      setDrawerOpen(false);
+      return;
+    }
     if (moveContent) {
       setDrawerOpen(false);
     }
@@ -211,14 +212,8 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     setOpenSubmenu(null);
   };
 
-  return (
-    <NERDrawer
-      open={drawerOpen}
-      variant="permanent"
-      onMouseLeave={() => {
-        if (!moveContent) setDrawerOpen(false);
-      }}
-    >
+  const drawerContent = (
+    <>
       <DrawerHeader>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -260,6 +255,31 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           <Typography className={styles.versionNumber}>v5.0.0</Typography>
         </Box>
       </Box>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer
+        variant="temporary"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        slotProps={{ paper: { sx: { width: '100vw', backgroundColor: '#ef4345' } } }}
+      >
+        {drawerContent}
+      </Drawer>
+    );
+  }
+
+  return (
+    <NERDrawer
+      open={drawerOpen}
+      variant="permanent"
+      onMouseLeave={() => {
+        if (!moveContent) setDrawerOpen(false);
+      }}
+    >
+      {drawerContent}
     </NERDrawer>
   );
 };

@@ -1,5 +1,6 @@
 import * as yup from 'yup';
 import { SponsorPayload, useGetAllSponsorTiers } from '../../../hooks/finance.hooks';
+import { useGetImageUrl } from '../../../hooks/onboarding.hook';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { Control, Controller, FieldErrors, FieldValues, UseFormSetValue, useFieldArray, useWatch } from 'react-hook-form';
@@ -14,13 +15,18 @@ import {
   Checkbox,
   Autocomplete,
   TextField,
-  Chip
+  Chip,
+  Stack
 } from '@mui/material';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import ImageIcon from '@mui/icons-material/Image';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useAllMembers } from '../../../hooks/users.hooks';
 import React, { useEffect, useRef, useState } from 'react';
 import { Box } from '@mui/system';
+import { useToast } from '../../../hooks/toasts.hooks';
+import { MAX_FILE_SIZE } from 'shared';
 import { AddCircle } from '@mui/icons-material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import SponsorTaskCard from './SponsorTaskCard';
@@ -31,6 +37,7 @@ interface SponsorFormProps {
   errors: FieldErrors<SponsorPayload>;
   setValue: UseFormSetValue<SponsorPayload>;
   defaultValues?: Sponsor;
+  onLogoImageChange?: (file: File | null) => void;
 }
 
 const getYears = (startYear = 1950) => {
@@ -103,15 +110,25 @@ const sponsorSchema = yup.object().shape(
           done: yup.boolean().optional()
         })
       )
-      .required('Sponsor Tasks are Required')
+      .required('Sponsor Tasks are Required'),
+    logoImageId: yup.string().trim().optional()
   },
   [['contactEmail', 'contactPhone']]
 );
 
-export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, setValue, defaultValues }: SponsorFormProps) => {
+export const SponsorForm: React.FC<SponsorFormProps> = ({
+  control,
+  errors,
+  setValue,
+  defaultValues,
+  onLogoImageChange
+}: SponsorFormProps) => {
   const yearsOptions = getYears();
+  const toast = useToast();
 
+  const [logoImage, setLogoImage] = useState<File | null>(null);
   const [datePickerOpenJoin, setDatePickerOpenJoin] = useState(false);
+  const { data: currentLogoUrl } = useGetImageUrl(defaultValues?.logoImageId ?? null);
 
   const { isLoading: membersLoading, isError: membersIsError, error: membersError, data: members } = useAllMembers();
 
@@ -442,6 +459,49 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, setVa
           </Typography>
           <ReactHookTextField name="discountCode" control={control} sx={{ width: 1 }} placeholder="Enter Code" />
           <FormHelperText error> {errors.discountCode?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <FormControl fullWidth>
+          <Typography variant="h5" color="#EF4345">
+            Sponsor Logo:
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'center', mt: 1 }}>
+            <Button
+              variant="contained"
+              color="error"
+              component="label"
+              startIcon={<FileUploadIcon />}
+              sx={{ width: 'fit-content', textTransform: 'none', color: 'black' }}
+            >
+              Upload Logo
+              <input
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    const [file] = e.target.files;
+                    if (file.size > MAX_FILE_SIZE) {
+                      toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE / 1024 / 1024} MB`);
+                      return;
+                    }
+                    setLogoImage(file);
+                    onLogoImageChange?.(file);
+                  }
+                }}
+                type="file"
+                accept="image/png, image/jpeg"
+                hidden
+              />
+            </Button>
+            {logoImage && (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <ImageIcon />
+                <Typography>{logoImage.name}</Typography>
+              </Stack>
+            )}
+          </Box>
+          {!logoImage && currentLogoUrl && (
+            <Box component="img" src={currentLogoUrl} alt="Sponsor Logo" sx={{ maxWidth: '200px', mt: 1 }} />
+          )}
         </FormControl>
       </Grid>
       <Grid item xs={12}>

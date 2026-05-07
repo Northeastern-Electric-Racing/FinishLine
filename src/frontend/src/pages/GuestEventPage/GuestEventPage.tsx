@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Box, Button } from '@mui/material';
 import { Collapse, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import TodayIcon from '@mui/icons-material/Today';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import GuestEventCard from './GuestEventCard';
 import { EventInstance, formatEventDate } from 'shared';
-import { useAllEventsPaginated } from '../../hooks/calendar.hooks';
+import { useFutureEventsPaginated, usePastEventsPaginated } from '../../hooks/calendar.hooks';
 
 const groupInstancesByDate = (instances: EventInstance[]): [string, EventInstance[]][] => {
   const groups = new Map<string, { date: Date; instances: EventInstance[] }>();
@@ -18,7 +19,7 @@ const groupInstancesByDate = (instances: EventInstance[]): [string, EventInstanc
     groups.get(key)!.instances.push(instance);
   }
   return Array.from(groups.entries())
-    .sort(([, a], [, b]) => b.date.getTime() - a.date.getTime())
+    .sort(([, a], [, b]) => a.date.getTime() - b.date.getTime())
     .map(([key, { instances }]) => [key, instances]);
 };
 
@@ -31,6 +32,9 @@ const DateGroup: React.FC<DateGroupProps> = ({ date, instances }) => {
   const theme = useTheme();
   const [open, setOpen] = useState(true);
 
+  const todayKey = formatEventDate(new Date());
+  const label = date === todayKey ? `Today: ${date}` : date;
+
   return (
     <Box>
       <Stack
@@ -41,7 +45,7 @@ const DateGroup: React.FC<DateGroupProps> = ({ date, instances }) => {
         onClick={() => setOpen((prev) => !prev)}
       >
         <Typography variant="h6" fontWeight="bold">
-          {date}
+          {label}
         </Typography>
         <IconButton size="small">{open ? <ExpandLessIcon /> : <ExpandMoreIcon />}</IconButton>
       </Stack>
@@ -57,35 +61,79 @@ const DateGroup: React.FC<DateGroupProps> = ({ date, instances }) => {
 };
 
 const GuestEventPage: React.FC = () => {
-  const [cursor, setCursor] = useState<Date | undefined>(undefined);
-  const [allInstances, setAllInstances] = useState<EventInstance[]>([]);
-  const { data, isLoading, isError, error } = useAllEventsPaginated(cursor);
+  const todayRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (data?.instances) {
-      setAllInstances((prev) => {
-        const existingKeys = new Set(prev.map((i) => `${i.eventId}-${i.scheduleSlotId}`));
-        const newInstances = data.instances.filter((i) => !existingKeys.has(`${i.eventId}-${i.scheduleSlotId}`));
-        return newInstances.length > 0 ? [...prev, ...newInstances] : prev;
-      });
-    }
-  }, [data]);
+  const {
+    data: futureData,
+    isLoading: futureLoading,
+    isError: futureIsError,
+    error: futureError,
+    fetchNextPage: fetchNextFuture,
+    hasNextPage: hasNextFuture,
+    isFetchingNextPage: isFetchingNextFuture
+  } = useFutureEventsPaginated();
 
-  if (isLoading && allInstances.length === 0) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error.message} />;
+  const {
+    data: pastData,
+    isLoading: pastLoading,
+    isError: pastIsError,
+    error: pastError,
+    fetchNextPage: fetchNextPast,
+    hasNextPage: hasNextPast,
+    isFetchingNextPage: isFetchingNextPast
+  } = usePastEventsPaginated();
 
-  const groups = groupInstancesByDate(allInstances);
+  const futureInstances = useMemo(() => futureData?.pages.flatMap((p) => p.futureInstances) ?? [], [futureData]);
+  const pastInstances = useMemo(() => pastData?.pages.flatMap((p) => p.pastInstances) ?? [], [pastData]);
+
+  if (futureIsError) return <ErrorPage message={futureError!.message} />;
+  if (pastIsError) return <ErrorPage message={pastError!.message} />;
+  const isInitialLoading = (futureLoading || pastLoading) && futureInstances.length === 0 && pastInstances.length === 0;
+  if (isInitialLoading) return <LoadingIndicator />;
+
+  const pastGroups = groupInstancesByDate(pastInstances);
+  const futureGroups = groupInstancesByDate(futureInstances);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
-      {groups.map(([date, instances]) => (
-        <DateGroup key={date} date={date} instances={instances} />
-      ))}
-      {data?.nextCursor && (
-        <Button variant="outlined" onClick={() => setCursor(data.nextCursor!)} disabled={isLoading}>
-          {isLoading ? <LoadingIndicator /> : 'Load More'}
-        </Button>
-      )}
+    <Box sx={{ position: 'relative' }}>
+      <Button
+        onClick={() => todayRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        startIcon={<TodayIcon />}
+        sx={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          bgcolor: 'rgba(255,255,255,0.2)',
+          backdropFilter: 'blur(6px)',
+          boxShadow: 3,
+          zIndex: 1,
+          color: '#fff',
+          border: '1px solid rgba(255,255,255,0.35)'
+        }}
+        variant="contained"
+        disableElevation
+      >
+        Jump to Today
+      </Button>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
+        {hasNextPast && (
+          <Button variant="outlined" onClick={() => fetchNextPast()} disabled={isFetchingNextPast}>
+            {isFetchingNextPast ? <LoadingIndicator /> : 'Load More Past Events'}
+          </Button>
+        )}
+        {pastGroups.map(([date, instances]) => (
+          <DateGroup key={date} date={date} instances={instances} />
+        ))}
+        <div ref={todayRef} />
+        {futureGroups.map(([date, instances]) => (
+          <DateGroup key={date} date={date} instances={instances} />
+        ))}
+        {hasNextFuture && (
+          <Button variant="outlined" onClick={() => fetchNextFuture()} disabled={isFetchingNextFuture}>
+            {isFetchingNextFuture ? <LoadingIndicator /> : 'Load More Future Events'}
+          </Button>
+        )}
+      </Box>
     </Box>
   );
 };

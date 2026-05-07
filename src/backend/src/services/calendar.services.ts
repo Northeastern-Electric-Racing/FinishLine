@@ -2752,42 +2752,48 @@ export default class CalendarService {
   }
 
   /**
-   * Gets all the events paginated, ordered by start time and grouped by date
+   * Gets the 25 events on each side of a reference point (defaults to now).
+   * futureCursor paginates forward; pastCursor paginates backward.
    * @param organization the org the user is currently in
-   * @param cursor the start time of the last event on the prev page
-   * @param pageSize the number of events to return per page
-   * @returns
+   * @param futureCursor the startTime of the last future event from the previous page
+   * @param pastCursor the startTime of the last past event from the previous page
    */
   static async getAllEventsPaginated(
     organization: Organization,
-    cursor?: Date,
-    pageSize: number = 25
-  ): Promise<{ instances: EventInstance[]; nextCursor: Date | null }> {
+    futureCursor?: Date,
+    pastCursor?: Date
+  ): Promise<{
+    futureInstances: EventInstance[];
+    pastInstances: EventInstance[];
+    nextFutureCursor: Date | null;
+    nextPastCursor: Date | null;
+  }> {
     const now = new Date();
 
-    const slots = await prisma.schedule_Slot.findMany({
-      where: {
-        startTime: {
-          lt: cursor ?? now
-        },
-        event: {
-          dateDeleted: null,
-          status: Event_Status.SCHEDULED,
-          eventType: {
-            organizationId: organization.organizationId
-          }
-        }
-      },
-      include: {
-        event: getEventQueryArgs(organization.organizationId)
-      },
-      orderBy: { startTime: 'desc' },
-      take: pageSize
-    });
+    const eventFilter = {
+      dateDeleted: null,
+      status: Event_Status.SCHEDULED,
+      eventType: {
+        organizationId: organization.organizationId
+      }
+    };
 
-    const nextCursor = slots.length === pageSize ? slots[slots.length - 1].startTime : null;
+    const [futureSlots, pastSlots] = await Promise.all([
+      prisma.schedule_Slot.findMany({
+        where: { startTime: { gte: futureCursor ?? now }, event: eventFilter },
+        include: { event: getEventQueryArgs(organization.organizationId) },
+        orderBy: { startTime: 'asc' },
+        take: 25
+      }),
+      prisma.schedule_Slot.findMany({
+        where: { startTime: { lt: pastCursor ?? now }, event: eventFilter },
+        include: { event: getEventQueryArgs(organization.organizationId) },
+        orderBy: { startTime: 'desc' },
+        take: 25
+      })
+    ]);
 
-    const instances: EventInstance[] = slots.map((slot) => {
+    const toInstance = (slot: (typeof futureSlots)[0]): EventInstance => {
       const { scheduledTimes, ...eventWithoutSlots } = eventTransformer(slot.event);
       return {
         ...eventWithoutSlots,
@@ -2798,8 +2804,64 @@ export default class CalendarService {
         recurring: slot.event.scheduledTimes.length > 1,
         totalScheduledSlots: slot.event.scheduledTimes.length
       };
+    };
+
+    return {
+      futureInstances: futureSlots.map(toInstance),
+      pastInstances: pastSlots.map(toInstance),
+      nextFutureCursor: futureSlots.length === 25 ? futureSlots[futureSlots.length - 1].startTime : null,
+      nextPastCursor: pastSlots.length === 25 ? pastSlots[pastSlots.length - 1].startTime : null
+    };
+  }
+
+  static async getOrCreateIcsToken(userId: string): Promise<string> {
+    const user = await prisma.user.findUnique({ where: { userId } });
+    if (!user) throw new NotFoundException('User', userId);
+    if (user.icsToken) return user.icsToken;
+
+    const token = crypto.randomUUID();
+    await prisma.user.update({ where: { userId }, data: { icsToken: token } });
+    return token;
+  }
+
+  static async getIcsFeedEvents(icsToken: string, organizationId: string, calendarIds: string[]) {
+    const user = await prisma.user.findUnique({
+      where: { icsToken },
+      include: {
+        teamsAsMember: { select: { teamId: true } },
+        teamsAsLead: { select: { teamId: true } },
+        teamsAsHead: { select: { teamId: true } }
+      }
     });
 
-    return { instances, nextCursor };
+    if (!user) throw new NotFoundException('User', 'icsToken');
+
+    const userTeamIds = [
+      ...user.teamsAsMember.map((t) => t.teamId),
+      ...user.teamsAsLead.map((t) => t.teamId),
+      ...user.teamsAsHead.map((t) => t.teamId)
+    ];
+
+    const calendarFilter =
+      calendarIds.length > 0
+        ? [{ eventType: { calendars: { some: { calendarId: { in: calendarIds }, organizationId } } } }]
+        : [];
+
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        status: { in: [Event_Status.CONFIRMED, Event_Status.SCHEDULED, Event_Status.DONE] },
+        scheduledTimes: { some: {} },
+        OR: [
+          { requiredMembers: { some: { userId: user.userId } } },
+          { optionalMembers: { some: { userId: user.userId } } },
+          ...(userTeamIds.length > 0 ? [{ teams: { some: { teamId: { in: userTeamIds } } } }] : []),
+          ...calendarFilter
+        ]
+      },
+      ...getEventQueryArgs(organizationId)
+    });
+
+    return events.map(eventTransformer);
   }
 }

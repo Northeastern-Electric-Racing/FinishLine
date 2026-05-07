@@ -29,10 +29,20 @@ interface TaskFormModalProps {
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
   onReset?: () => void;
+  isLoading?: boolean;
   wbsNum: WbsNumber;
 }
 
-const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, modalShow, onHide, onReset, wbsNum }) => {
+const TaskFormModal: React.FC<TaskFormModalProps> = ({
+  task,
+  status,
+  onSubmit,
+  modalShow,
+  onHide,
+  onReset,
+  isLoading,
+  wbsNum
+}) => {
   let schema;
 
   if (status === TaskStatus.IN_PROGRESS) {
@@ -75,7 +85,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
 
   const user = useCurrentUser();
 
-  const { data: users, isLoading, isError, error } = useAllMembers();
+  const { data: users, isLoading: usersLoading, isError, error } = useAllMembers();
 
   const projectWbsNum = { ...wbsNum, workPackageNumber: 0 };
   const { data: workPackages } = useWorkPackagesByProject(projectWbsNum);
@@ -102,7 +112,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
   });
 
   if (isError) return <ErrorPage error={error} />;
-  if (isLoading || !users) return <LoadingIndicator />;
+  if (usersLoading || !users) return <LoadingIndicator />;
 
   const userOptions: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
   const wpOptions: { label: string; wbsNum: WbsNumber }[] = (workPackages ?? []).map((wp) => ({
@@ -125,6 +135,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, status, onSubmit, m
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       submitText="Save"
+      disabled={isLoading}
     >
       <form
         onSubmit={(e) => {

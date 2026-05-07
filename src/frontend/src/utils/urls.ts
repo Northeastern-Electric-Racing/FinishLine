@@ -299,6 +299,7 @@ const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
 };
 const getAllSponsorTiers = () => `${financeRoutesEndpoints()}/sponsorTiers`;
 const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/edit`;
+const uploadSponsorLogo = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/uploadLogo`;
 const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
 const deleteSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}`;
 const editSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}/edit`;
@@ -397,6 +398,10 @@ const allFaqs = () => `${recruitment()}/faqs`;
 const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
+const allGuestDefinitions = () => `${recruitment()}/guestdefinitions`;
+const guestDefinitionDelete = (id: string) => `${recruitment()}/guestdefinition/${id}/delete`;
+const guestDefinitionCreate = () => `${recruitment()}/guestdefinition/create`;
+const guestDefintionEdit = (id: string) => `${recruitment()}/guestdefinition/${id}/edit`;
 
 /************** Onboarding Endpoints ***************/
 const onboarding = () => `${API_URL}/onboarding`;
@@ -483,6 +488,13 @@ const calendarDeleteScheduleSlot = (eventId: string, scheduleSlotId: string) =>
 const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
 const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 const calendarScheduleEvent = (eventId: string) => `${calendar()}/event/${eventId}/schedule`;
+const calendarIcsToken = () => `${calendar()}/ics/token`;
+
+// Generates ICS URL to be given to calendars for integration, not directly hit by FL frontend
+const icsFeed = (token: string, organizationId: string, calendarIds: string[]) => {
+  const base = `${API_URL}/ics/${token}?org=${organizationId}`;
+  return calendarIds.length > 0 ? `${base}&calendars=${calendarIds.join(',')}` : base;
+};
 
 /**************** Attendance Endpoints ****************/
 const attendance = () => `${API_URL}/attendance`;
@@ -696,6 +708,7 @@ export const apiUrls = {
   getAllSpendingBarData,
   getAllSponsorTiers,
   editSponsor,
+  uploadSponsorLogo,
   financeGetUsersTeamsReimbursementRequests,
   deleteSponsorTier,
   editSponsorTier,
@@ -786,6 +799,10 @@ export const apiUrls = {
   imageById,
   reorderTasks,
   reorderChecklistItems,
+  allGuestDefinitions,
+  guestDefinitionDelete,
+  guestDefinitionCreate,
+  guestDefintionEdit,
 
   popUps,
   popUpsCurrentUser,
@@ -842,6 +859,8 @@ export const apiUrls = {
   calendarCreateCalendar,
   calendarEditCalendar,
   calendarCalendars,
+  calendarIcsToken,
+  icsFeed,
   calendarCreateEventType,
   calendarEditEventType,
   calendarCreateEvent,

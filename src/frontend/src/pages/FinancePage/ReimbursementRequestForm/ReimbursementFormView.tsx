@@ -35,7 +35,6 @@ import {
   isHead,
   MAX_FILE_SIZE,
   ProjectPreview,
-  ReimbursementProductFormArgs,
   ReimbursementReceiptUploadArgs,
   Vendor
 } from 'shared';
@@ -44,7 +43,7 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { NERButton } from '../../../components/NERButton';
-import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
+import { ReimbursementRequestFormInput, ProductWithLocalFields } from './ReimbursementRequestForm';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
@@ -68,10 +67,10 @@ interface ReimbursementRequestFormViewProps {
     id: string;
   }[];
   control: Control<ReimbursementRequestFormInput, any>;
-  reimbursementProducts: ReimbursementProductFormArgs[];
+  reimbursementProducts: ProductWithLocalFields[];
   receiptPrepend: (args: ReimbursementReceiptUploadArgs) => void;
   receiptRemove: (index: number) => void;
-  reimbursementProductPrepend: (args: ReimbursementProductFormArgs) => void;
+  reimbursementProductPrepend: (args: ProductWithLocalFields) => void;
   reimbursementProductRemove: (index: number) => void;
   onSubmit: (data: ReimbursementRequestFormInput) => void;
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
@@ -86,6 +85,8 @@ interface ReimbursementRequestFormViewProps {
   isLeadershipApproved?: boolean;
   onSubmitToFinance?: (data: ReimbursementRequestFormInput) => void;
   isSubmitting?: boolean;
+  applySplitShippingToProducts: (totalShipping?: number) => void;
+  applyProportionalShippingToProducts: (totalShipping?: number) => void;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -112,7 +113,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   isEditing = false,
   isLeadershipApproved = false,
   onSubmitToFinance,
-  isSubmitting = false
+  isSubmitting = false,
+  applySplitShippingToProducts,
+  applyProportionalShippingToProducts
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [showAddRefundSourceModal, setShowAddRefundSourceModal] = useState(false);
@@ -124,12 +127,20 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   // to grab all the proper refund sources, deduplicated by indexCodeId
   const refundSources: CreateRefundSourceArgs[] = (() => {
     const allSources = reimbursementProducts
-      .flatMap((product) => product.refundSources)
-      .filter((source) => source.amount > 0);
+      .flatMap((product) => product.refundSources ?? [])
+      .filter((source): source is CreateRefundSourceArgs => {
+        return !!source && !!source.indexCode && !!source.indexCode.indexCodeId && Number(source.amount ?? 0) > 0;
+      });
+
     const seen = new Set<string>();
+
     return allSources.filter((source) => {
       const id = source.indexCode.indexCodeId;
-      if (seen.has(id)) return false;
+
+      if (seen.has(id)) {
+        return false;
+      }
+
       seen.add(id);
       return true;
     });
@@ -138,15 +149,25 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const [hasConfirmedFinance, setHasConfirmedFinance] = useState(refundSources.length > 1);
   const toast = useToast();
   const theme = useTheme();
-  const products = watch('reimbursementProducts') as ReimbursementProductFormArgs[];
+  const products = watch('reimbursementProducts') as ProductWithLocalFields[];
   const accountCodeId = watch('accountCodeId');
+  const splitShippingValue = watch('splitShipping');
 
   const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
-  const indexCodes: IndexCode[] = useMemo(() => selectedAccountCode?.indexCodes ?? [], [selectedAccountCode?.indexCodes]);
+  const indexCodes: IndexCode[] = useMemo(() => selectedAccountCode?.indexCodes ?? [], [selectedAccountCode]);
 
   const firstRefundSourceId = watch('indexCodeId');
   const secondRefundSourceId = watch('secondaryAccount');
   const hasPreFilledData = useRef(true);
+
+  const allProductsHaveCosts =
+    products.length > 0 &&
+    products.every((product) => {
+      const baseCost = Number(product.__baseCost ?? product.cost ?? 0);
+      return baseCost > 0;
+    });
+
+  const canApplyProportionalSplit = Number(splitShippingValue) > 0 && allProductsHaveCosts;
 
   useEffect(() => {
     if (!hasPreFilledData.current) return;
@@ -164,10 +185,13 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
       if (secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
         setValue('secondaryAccount', undefined);
 
-        reimbursementProducts.forEach((_, index) => {
+        reimbursementProducts.forEach((product, index) => {
+          const baseCost = Number(product.__baseCost ?? product.cost ?? 0);
+          const shippingCost = Number(product.__shippingCost ?? 0);
+
           setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, 0);
           setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
-          setValue(`reimbursementProducts.${index}.cost`, 0);
+          setValue(`reimbursementProducts.${index}.cost`, Number((baseCost + shippingCost).toFixed(2)));
         });
       }
     }
@@ -233,7 +257,15 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
   const remainingRefundSources = indexCodes.filter((code) => code.indexCodeId !== firstRefundSourceId);
   const calculatedTotalCost = products
-    .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost), 0)
+    .reduce((acc: number, product: ProductWithLocalFields) => acc + Number(product.cost || 0), 0)
+    .toFixed(2);
+
+  const calculatedProductSubtotal = products
+    .reduce((acc: number, product: ProductWithLocalFields) => acc + Number(product.__baseCost ?? product.cost ?? 0), 0)
+    .toFixed(2);
+
+  const calculatedShippingTotal = products
+    .reduce((acc: number, product: ProductWithLocalFields) => acc + Number(product.__shippingCost ?? 0), 0)
     .toFixed(2);
 
   const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();
@@ -682,37 +714,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   </FormControl>
                 )}
 
-                {/* Description */}
-                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
-                  <FormLabel
-                    sx={{
-                      color: '#dd524c',
-                      textShadow: '1.5px 0 #dd524c',
-                      letterSpacing: '0.5px',
-                      textDecoration: 'underline',
-                      textUnderlineOffset: '3.5px',
-                      textDecorationThickness: '0.6px',
-                      fontSize: 'x-large',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Description
-                  </FormLabel>
-                  <Controller
-                    name="description"
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <TextField
-                        value={value || ''}
-                        onChange={onChange}
-                        placeholder="Enter Description"
-                        multiline
-                        rows={3}
-                      />
-                    )}
-                  />
-                </FormControl>
-
                 {/* Upload Receipts */}
                 <FormControl sx={{ display: 'flex', borderRadius: '25px', width: '100%' }}>
                   <FormLabel
@@ -888,6 +889,103 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     </Box>
                   </Box>
                 </FormControl>
+
+                {/* Description */}
+                <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                  <FormLabel
+                    sx={{
+                      color: '#dd524c',
+                      textShadow: '1.5px 0 #dd524c',
+                      letterSpacing: '0.5px',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3.5px',
+                      textDecorationThickness: '0.6px',
+                      fontSize: 'x-large',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Description
+                  </FormLabel>
+                  <Controller
+                    name="description"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <TextField
+                        value={value || ''}
+                        onChange={onChange}
+                        placeholder="Enter Description"
+                        multiline
+                        rows={3}
+                      />
+                    )}
+                  />
+                </FormControl>
+                {/* Total Shipping */}
+                {!isEditing && (
+                  <FormControl sx={{ borderRadius: '25px', width: '100%' }}>
+                    <FormLabel
+                      sx={{
+                        color: '#dd524c',
+                        textShadow: '1.5px 0 #dd524c',
+                        letterSpacing: '0.5px',
+                        textDecoration: 'underline',
+                        textUnderlineOffset: '3.5px',
+                        textDecorationThickness: '0.6px',
+                        paddingBottom: '2px',
+                        fontSize: 'x-large',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Total Shipping
+                    </FormLabel>
+
+                    <Controller
+                      name="splitShipping"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <>
+                          <TextField
+                            value={value ?? ''}
+                            onChange={(e) => {
+                              onChange(e);
+                            }}
+                            placeholder="Enter total shipping cost"
+                            type="number"
+                            inputProps={{ min: 0, step: 0.01 }}
+                            size="small"
+                            fullWidth
+                            error={!!errors.splitShipping}
+                            helperText={errors.splitShipping?.message}
+                            sx={{
+                              '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                                WebkitAppearance: 'none',
+                                margin: 0
+                              },
+                              '& input[type=number]': {
+                                MozAppearance: 'textfield'
+                              }
+                            }}
+                          />
+
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                              mt: 1,
+                              alignSelf: 'flex-start',
+                              width: 'fit-content',
+                              textTransform: 'none'
+                            }}
+                            disabled={!canApplyProportionalSplit}
+                            onClick={() => applyProportionalShippingToProducts(value ? Number(value) : undefined)}
+                          >
+                            Split proportional to cost
+                          </Button>
+                        </>
+                      )}
+                    />
+                  </FormControl>
+                )}
               </Stack>
             </Grid>
           </Grid>
@@ -913,6 +1011,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               firstRefundSourceName={firstRefundSource.name}
               secondRefundSourceName={secondRefundSource.name}
               allProjects={allProjects}
+              applySplitShippingToProducts={applySplitShippingToProducts}
+              isEditing={isEditing}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>
@@ -931,6 +1031,16 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         }}
       >
         <Box>
+          {!isEditing && (
+            <>
+              <FormLabel>Product Total</FormLabel>
+              <Typography variant="body2">${calculatedProductSubtotal}</Typography>
+
+              <FormLabel>Shipping Total</FormLabel>
+              <Typography variant="body2">${calculatedShippingTotal}</Typography>
+            </>
+          )}
+
           <FormLabel>Total Cost</FormLabel>
           <Typography variant="h6">${calculatedTotalCost}</Typography>
         </Box>

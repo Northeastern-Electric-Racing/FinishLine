@@ -25,7 +25,7 @@ const SingleAvailabilityModal: React.FC<SingleAvailabilityModalProps> = ({
       onSubmit={onHide}
       hideFormButtons
       showCloseButton
-      paperProps={{ maxWidth: '1200px', maxHeight: '680px' }}
+      paperProps={{ maxWidth: '1200px', height: '85vh' }}
     >
       <SingleAvailabilityView totalAvailability={availabilites} initialDate={initialDate} />
     </NERModal>

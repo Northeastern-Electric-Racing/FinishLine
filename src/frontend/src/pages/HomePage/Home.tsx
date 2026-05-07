@@ -23,19 +23,18 @@ const Home: React.FC = () => {
     <Switch>
       {completedOnboarding &&
         !isAdmin(user.role) &&
-        [routes.HOME_GUEST, routes.HOME_PNM, routes.HOME_ONBOARDING, routes.HOME_ACCEPT].map((path) => (
+        [routes.HOME_PNM, routes.HOME_ONBOARDING, routes.HOME_ACCEPT].map((path) => (
           <Redirect exact path={path} to={routes.HOME} />
         ))}
-      {!onOnboarding && !completedOnboarding && isGuest(user.role) && (
-        <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />
-      )}
       {onOnboarding && !completedOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_PNM} />}
       <Route exact path={routes.HOME_SELECT_SUBTEAM} component={SelectSubteamPage} />
       <Route exact path={routes.HOME_ACCEPT} component={AcceptedPage} />
       <Route exact path={routes.HOME_ONBOARDING} component={OnboardingHomePage} />
       <Route exact path={routes.HOME_PNM} component={PNMHomePage} />
       <Route exact path={routes.HOME_MEMBER} component={HomePage} />
-      <Route exact path={routes.HOME_GUEST} component={IntroGuestHomePage} />
+      {!onOnboarding && !completedOnboarding && isGuest(user.role) && (
+        <Route exact path={routes.HOME} component={IntroGuestHomePage} />
+      )}
       <Route path={routes.HOME} component={HomePage} />
     </Switch>
   );

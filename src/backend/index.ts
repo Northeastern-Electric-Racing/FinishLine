@@ -29,6 +29,7 @@ import financeRouter from './src/routes/finance.routes.js';
 import calendarRouter from './src/routes/calendar.routes.js';
 import prospectiveSponsorRouter from './src/routes/prospective-sponsor.routes.js';
 import attendanceRouter from './src/routes/attendance.routes.js';
+import icsRouter from './src/routes/ics.routes.js';
 
 const app = express();
 
@@ -84,6 +85,9 @@ app.use(express.json());
 
 // cors settings
 app.use(cors(options));
+
+// Public ICS feed routes — mounted before JWT middleware so calendar apps can subscribe without auth
+app.use('/ics', icsRouter);
 
 // ensure each request is authorized using JWT
 app.use(isProd ? requireJwtProd : requireJwtDev);

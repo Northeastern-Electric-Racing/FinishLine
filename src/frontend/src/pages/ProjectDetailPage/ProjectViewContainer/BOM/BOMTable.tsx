@@ -13,9 +13,21 @@ interface BOMTableProps {
   columns: GridColumns<BomRow>;
   materials: Material[];
   assemblies: Assembly[];
+  processRowUpdate: (newRow: BomRow, oldRow: BomRow) => Promise<BomRow>;
+  onProcessRowUpdateError: (error: unknown) => void;
+  editPerms: boolean;
 }
 
-const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, columns, materials, assemblies }) => {
+const BOMTable: React.FC<BOMTableProps> = ({
+  setHideColumn,
+  assignMaterial,
+  columns,
+  materials,
+  assemblies,
+  processRowUpdate,
+  onProcessRowUpdateError,
+  editPerms
+}) => {
   const [openRows, setOpenRows] = useState<String[]>([]);
   const [draggedMaterial, setDraggedMaterial] = useState<Material | null>(null);
 
@@ -58,8 +70,9 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
         assembly.materials.reduce(addMaterialCosts, 0)
       )}  ${arrowSymbol(assembly.assemblyId)}`,
       pdmFileName: '',
-      quantity: '',
-      price: '',
+      quantity: undefined,
+      price: undefined,
+      unitName: undefined,
       subtotal: '',
       link: '',
       notes: '',
@@ -139,13 +152,19 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
         rows={rows.concat(materialsWithAssemblies.filter(isAssemblyOpen))}
         getRowClassName={(params) => {
           const stripe = params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd';
-          const isAssemblyRow = String(params.row.id).startsWith('assembly-');
+          const isAssemblyRow = params.row.id.startsWith('assembly-');
           return `super-app-theme--${stripe}${isAssemblyRow ? ' super-app-theme--assembly' : ''}`;
         }}
         rowsPerPageOptions={[100]}
         sx={bomTableStyles.datagrid}
         disableSelectionOnClick
         autoHeight={false}
+        experimentalFeatures={{ newEditingApi: true }}
+        processRowUpdate={
+          processRowUpdate as unknown as (newRow: GridValidRowModel, oldRow: GridValidRowModel) => Promise<GridValidRowModel>
+        }
+        onProcessRowUpdateError={onProcessRowUpdateError}
+        isCellEditable={(params) => editPerms && !params.row.id.startsWith('assembly')}
         onRowClick={openAssembly}
         componentsProps={{
           row: {
