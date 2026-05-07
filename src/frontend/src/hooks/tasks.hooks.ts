@@ -130,6 +130,7 @@ export const useEditTaskAssignees = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['tasks']);
       }
     }
   );
@@ -171,6 +172,7 @@ export const useDeleteTask = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['tasks']);
       }
     }
   );

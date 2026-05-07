@@ -27,11 +27,9 @@ export const TaskListContent = ({ wbsNum }: TaskListContentProps) => {
 
   // initialize tasksByStatus once tasks load, but only once
   useEffect(() => {
-    if (tasks && !tasksByStatus) {
+    if (tasks) {
       setTasksByStatus(getTasksByStatus(tasks));
     }
-    // disable lint check because adding tasksByStatus to deps would cause infinite loop
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tasks]);
 
   const onHeightChange = useCallback((status: TaskStatus, height: number) => {

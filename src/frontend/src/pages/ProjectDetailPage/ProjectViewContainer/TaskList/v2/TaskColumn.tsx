@@ -56,9 +56,8 @@ export const TaskColumn = ({
     wpWbsNum
   }: EditTaskFormInput) => {
     try {
-      const projectWbsNum = { ...wbsNum, workPackageNumber: 0 };
       const task = await createTask({
-        wbsNum: wpWbsNum ?? projectWbsNum,
+        wbsNum: wpWbsNum ?? wbsNum,
         title,
         deadline: deadline ? toDateString(deadline) : undefined,
         startDate: startDate ? toDateString(startDate) : undefined,
