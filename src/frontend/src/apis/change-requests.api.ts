@@ -61,19 +61,12 @@ export const getSingleChangeRequest = (id: string) => {
  * @param accepted Is the change request being accepted?
  * @param reviewNotes The notes attached to reviewing the change request.
  */
-export const reviewChangeRequest = (
-  reviewerId: string,
-  crId: string,
-  accepted: boolean,
-  reviewNotes: string,
-  psId?: string
-) => {
+export const reviewChangeRequest = (reviewerId: string, crId: string, accepted: boolean, reviewNotes?: string) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestsReview(), {
     reviewerId,
     crId,
     accepted,
-    reviewNotes,
-    psId
+    reviewNotes
   });
 };
 

@@ -67,7 +67,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   });
 
   const changeRequestSchema = yup.object().shape({
-    why: yup.string().required('Why Explain is required')
+    why: yup.string().required('Why Explain is required'),
+    requestedReviewerId: yup.string().optional()
   });
 
   const { reset: resetChangeRequestForm, ...changeRequestFormMethods } = useForm<FormInput>({
@@ -209,6 +210,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           managerId
         };
         await mutateLeadershipCR(autoCRPayload);
+        toast.success('Changes submitted successfully');
         // fixes cache issue
         await queryClient.refetchQueries(['projects']);
         exitEditMode();
@@ -229,6 +231,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         managerId
       };
       await mutateAsync(payload);
+      toast.success('Project updated successfully');
       exitEditMode();
     } catch (e) {
       if (e instanceof Error) {

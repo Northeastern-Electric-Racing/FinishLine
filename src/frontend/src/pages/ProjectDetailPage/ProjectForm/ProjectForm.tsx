@@ -220,14 +220,14 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         headerRight={
-          <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
+          <Box display="inline-flex" alignItems="center" justifyContent="end" flexWrap="nowrap" gap={1}>
             {onSubmitChangeRequest && (
-              <Box display="inline-flex" alignItems="center">
+              <>
                 <Tooltip
                   title={
                     <Typography fontSize={'16px'}>
                       {`If you don't enter a Change Request ID into this form, you can create one here that when accepted will
-                      ${project ? `edit the selected Project` : `create a new Project`} with the inputted values`}
+            ${project ? `edit the selected Project` : `create a new Project`} with the inputted values`}
                     </Typography>
                   }
                   placement="left"
@@ -237,23 +237,22 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                 <NERButton
                   variant="contained"
                   onClick={() => setIsModalOpen(true)}
-                  sx={{ mx: 1 }}
                   disabled={changeRequestInputExists || onlyLeadershipChanged}
+                  sx={{ display: project ? 'block' : 'none' }}
                 >
-                  Create Change Request
+                  Change Request
                 </NERButton>
-              </Box>
+              </>
             )}
-            <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+            <NERFailButton variant="contained" onClick={exitEditMode}>
               Cancel
             </NERFailButton>
             <NERSuccessButton
               disabled={!changeRequestInputExists && !!project && !onlyLeadershipChanged}
               variant="contained"
               type="submit"
-              sx={{ mx: 1 }}
             >
-              Submit
+              {project ? 'Implement' : 'Create Project'}
             </NERSuccessButton>
           </Box>
         }

@@ -167,6 +167,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                 size="small"
                 placeholder="Select a reviewer"
                 value={memberOptions.find((m) => m.id === changeRequestFormReturn.watch('requestedReviewerId')) ?? null}
+                required={false}
               />
             </Grid>
           </Grid>

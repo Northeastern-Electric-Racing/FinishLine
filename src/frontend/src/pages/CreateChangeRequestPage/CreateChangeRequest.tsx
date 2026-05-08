@@ -60,7 +60,8 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   };
 
   const handleCancel = () => {
-    history.push(routes.CHANGE_REQUESTS);
+    const returnUrl = query.get('returnUrl');
+    history.push(returnUrl ? decodeURIComponent(returnUrl) : routes.CHANGE_REQUESTS);
   };
 
   return (

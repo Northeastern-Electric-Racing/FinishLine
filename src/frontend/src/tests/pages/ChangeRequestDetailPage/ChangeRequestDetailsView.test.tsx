@@ -78,8 +78,7 @@ describe('Implement change request permission tests', () => {
   });
 
   const actionBtnText = 'Implement Change Request';
-  const newPrjBtnText = 'Create New Project';
-  const newWPBtnText = 'Create New Work Package';
+  const editBtnText = 'Edit Project';
 
   it('Implementation actions disabled when not allowed', () => {
     mockSingleProjectHook(false, false, exampleProject1);
@@ -87,8 +86,7 @@ describe('Implement change request permission tests', () => {
     mockUseLogUserInHook(false, false);
     renderComponent(exampleStandardChangeRequest);
     fireEvent.click(screen.getByText(actionBtnText));
-    expect(screen.getByText(newPrjBtnText)).toHaveAttribute('aria-disabled');
-    expect(screen.getByText(newWPBtnText)).toHaveAttribute('aria-disabled');
+    expect(screen.getByText(editBtnText)).toHaveAttribute('aria-disabled');
   });
 
   it('Implementation actions enabled when allowed', () => {
@@ -97,7 +95,6 @@ describe('Implement change request permission tests', () => {
     mockUseLogUserInHook(false, false);
     renderComponent(exampleStandardChangeRequest, true);
     fireEvent.click(screen.getByText(actionBtnText));
-    expect(screen.getByText(newPrjBtnText)).not.toHaveAttribute('aria-disabled');
-    expect(screen.getByText(newWPBtnText)).not.toHaveAttribute('aria-disabled');
+    expect(screen.getByText(editBtnText)).not.toHaveAttribute('aria-disabled');
   });
 });

@@ -4,7 +4,6 @@
  */
 
 import { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
 import { WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
@@ -13,7 +12,6 @@ import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import EditIcon from '@mui/icons-material/Edit';
-import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import Delete from '@mui/icons-material/Delete';
@@ -33,7 +31,6 @@ interface WorkPackageViewContainerProps {
   allowEdit: boolean;
   allowActivate: boolean;
   allowStageGate: boolean;
-  allowRequestChange: boolean;
   allowDelete: boolean;
 }
 
@@ -43,7 +40,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   allowEdit,
   allowActivate,
   allowStageGate,
-  allowRequestChange,
   allowDelete
 }) => {
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
@@ -108,14 +104,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           },
           ...(workPackage.status === WbsElementStatus.Inactive ? [activateButton] : []),
           ...(workPackage.status === WbsElementStatus.Active ? [stageGateButton] : []),
-          {
-            title: 'Request Change',
-            component: RouterLink,
-            to: routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(workPackage.wbsNum),
-            onClick: handleDropdownClose,
-            disabled: !allowRequestChange,
-            icon: <SyncAltIcon fontSize="small" />
-          },
           {
             title: 'Delete',
             onClick: handleClickDelete,
