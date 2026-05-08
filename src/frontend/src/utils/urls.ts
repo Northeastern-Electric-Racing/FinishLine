@@ -97,6 +97,7 @@ const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assigne
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
+const tasksByWbsNum = (wbsNum: string) => `${tasks()}/by-wbs/${wbsNum}`;
 
 /**************** Work Packages Endpoints ****************/
 const workPackages = (queryParams?: { [field: string]: string }) => {
@@ -108,6 +109,7 @@ const workPackages = (queryParams?: { [field: string]: string }) => {
 };
 
 const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
+const workPackagesByProject = (wbsNum: string) => `${workPackages()}/by-project/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
@@ -588,9 +590,11 @@ export const apiUrls = {
   editTaskAssignees,
   deleteTask,
   overdueTasksByTeamLeadership,
+  tasksByWbsNum,
 
   workPackages,
   workPackagesByWbsNum,
+  workPackagesByProject,
   workPackagesCreate,
   workPackagesEdit,
   workPackagesDelete,

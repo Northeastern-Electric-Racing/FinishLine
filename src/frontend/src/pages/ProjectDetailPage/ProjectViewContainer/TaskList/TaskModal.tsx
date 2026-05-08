@@ -3,9 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamPreview } from 'shared';
 import { fullNamePipe, datePipe } from '../../../../utils/pipes';
-import { Task } from 'shared';
+import { Task, WbsNumber } from 'shared';
 import { Box, Grid, Typography } from '@mui/material';
 import { useState } from 'react';
 import TaskFormModal, { EditTaskFormInput } from './TaskFormModal';
@@ -13,16 +12,20 @@ import NERModal from '../../../../components/NERModal';
 
 interface TaskModalProps {
   task: Task;
-  teams: TeamPreview[];
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
   hasEditPermissions: boolean;
+  wbsNum: WbsNumber;
 }
 
-const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, onSubmit, hasEditPermissions }) => {
+const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit, hasEditPermissions, wbsNum }) => {
   const [isEditMode, setIsEditMode] = useState(false);
+
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
+  const isWpTask = task.wbsNum.workPackageNumber !== 0;
+  const isWpContext = wbsNum.workPackageNumber !== 0;
+
   const ViewModal: React.FC = () => {
     return (
       <NERModal
@@ -70,6 +73,14 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
               <Typography display={'inline'}> {task.assignees.map((user) => fullNamePipe(user)).join(', ')}</Typography>
             </Typography>
           </Grid>
+          {isWpTask && !isWpContext && (
+            <Grid item xs={12} md={6}>
+              <Typography fontWeight={'bold'}>
+                Work Package:
+                <Typography display={'inline'}> {task.wbsName}</Typography>
+              </Typography>
+            </Grid>
+          )}
           <Grid item xs={12} md={6}>
             <Typography fontWeight={'bold'}>Notes:</Typography>
             <Box sx={{ height: 'auto', overflow: 'auto' }}>
@@ -89,13 +100,13 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
   return isEditMode ? (
     <TaskFormModal
       task={task}
-      teams={teams}
       onHide={onHide}
       modalShow={modalShow}
       onSubmit={handleEditSubmit}
       onReset={() => {
         setIsEditMode(false);
       }}
+      wbsNum={wbsNum}
     />
   ) : (
     <ViewModal />

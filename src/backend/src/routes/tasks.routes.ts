@@ -6,7 +6,8 @@ import {
   isTaskPriority,
   isTaskStatus,
   validateInputs,
-  isOptionalDateOnly
+  isOptionalDateOnly,
+  intMinZero
 } from '../utils/validation.utils.js';
 import { isDate } from '../utils/validation.utils.js';
 
@@ -45,20 +46,27 @@ tasksRouter.post(
   isOptionalDateOnly(body('deadline')),
   isOptionalDateOnly(body('startDate')),
   isTaskPriority(body('priority')),
+  intMinZero(body('wbsNum.carNumber')),
+  intMinZero(body('wbsNum.projectNumber')),
+  intMinZero(body('wbsNum.workPackageNumber')),
+  validateInputs,
   TasksController.editTask
 );
 
-tasksRouter.post('/:taskId/edit-status', isTaskStatus(body('status')), TasksController.editTaskStatus);
+tasksRouter.post('/:taskId/edit-status', isTaskStatus(body('status')), validateInputs, TasksController.editTaskStatus);
 
 tasksRouter.post(
   '/:taskId/edit-assignees',
   body('assignees').isArray(),
   nonEmptyString(body('assignees.*')),
+  validateInputs,
   TasksController.editTaskAssignees
 );
 
-tasksRouter.post('/:taskId/delete', TasksController.deleteTask);
+tasksRouter.post('/:taskId/delete', validateInputs, TasksController.deleteTask);
 
 tasksRouter.get('/overdue-by-team-member/:userId', TasksController.getOverdueTasksByTeamLeadership);
+
+tasksRouter.get('/by-wbs/:wbsNum', TasksController.getTasksByWbsNum);
 
 export default tasksRouter;

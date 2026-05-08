@@ -184,6 +184,39 @@ export default class WorkPackagesService {
   }
 
   /**
+   * Retrieve all work packages for a given project
+   * @param projectWbsNum the wbs number of the project
+   * @param organization the organization that the user is currently in
+   * @returns the work packages for the given project
+   * @throws if the project does not exist or is deleted
+   */
+  static async getWorkPackagesByProject(projectWbsNum: WbsNumber, organization: Organization): Promise<WorkPackage[]> {
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElement: {
+          carNumber: projectWbsNum.carNumber,
+          projectNumber: projectWbsNum.projectNumber,
+          workPackageNumber: 0,
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        }
+      }
+    });
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(projectWbsNum));
+
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        projectId: project.projectId,
+        wbsElement: { dateDeleted: null }
+      },
+      ...getWorkPackageQueryArgs(organization.organizationId)
+    });
+
+    return workPackages.map(workPackageTransformer);
+  }
+
+  /**
    * Creates a Work_Package in the database
    * @param user the user creating the work package
    * @param name the name of the new work package

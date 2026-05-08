@@ -235,10 +235,10 @@ export const TaskClickContent: React.FC<TaskClickContentProps> = ({ task, onClos
       {showEditModal && (
         <TaskFormModal
           task={task}
-          teams={[]}
           modalShow={showEditModal}
           onHide={() => setShowEditModal(false)}
           onSubmit={handleEditSubmit}
+          wbsNum={task.wbsNum}
         />
       )}
 

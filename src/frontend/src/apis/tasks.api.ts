@@ -65,6 +65,7 @@ export const createSingleTask = (
  * @param priority the new priority
  * @param deadline the new deadline
  * @param startDate the new start date
+ * @param wbsNum the new wbs element
  * @returns the edited task
  */
 export const editTask = (
@@ -73,14 +74,16 @@ export const editTask = (
   notes: string,
   priority: TaskPriority,
   deadline?: Date,
-  startDate?: Date
+  startDate?: Date,
+  wbsNum?: WbsNumber
 ) => {
   return axios.post<{ message: string }>(apiUrls.editTaskById(taskId), {
     title,
     notes,
     priority,
     deadline: deadline ? dateToMidnightUTC(deadline) : undefined,
-    startDate: startDate ? dateToMidnightUTC(startDate) : undefined
+    startDate: startDate ? dateToMidnightUTC(startDate) : undefined,
+    wbsNum
   });
 };
 
@@ -136,6 +139,19 @@ export const getFilterTasks = (payload: FilterTaskArgs) => {
 
 export const getOverdueTasksByTeamLeader = (userId: string) => {
   return axios.get<TaskCardPreview[]>(apiUrls.overdueTasksByTeamLeadership(userId), {
+    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  });
+};
+
+/**
+ * Gets all tasks for a given WBS element
+ * For projects, returns project tasks merged with all project's wp's tasks
+ * For work packages, returns just that wp's tasks
+ * @param wbsNum the wbs number to fetch tasks for
+ * @returns array of tasks
+ */
+export const getTasksByWbsNum = (wbsNum: WbsNumber) => {
+  return axios.get<Task[]>(apiUrls.tasksByWbsNum(wbsPipe(wbsNum)), {
     transformResponse: (data) => JSON.parse(data).map(taskTransformer)
   });
 };

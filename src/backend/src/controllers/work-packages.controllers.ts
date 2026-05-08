@@ -62,6 +62,17 @@ export default class WorkPackagesController {
     }
   }
 
+  // fetch all work packages for the given project wbs number
+  static async getWorkPackagesByProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const projectWbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
+      const workPackages = await WorkPackagesService.getWorkPackagesByProject(projectWbsNum, req.organization);
+      res.status(200).json(workPackages);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   // Create a work package with the given details
   static async createWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {

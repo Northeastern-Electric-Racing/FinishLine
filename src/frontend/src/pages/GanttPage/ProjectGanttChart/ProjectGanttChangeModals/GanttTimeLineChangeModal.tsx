@@ -193,7 +193,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
       if (createdTasks.length > 0) {
         for (const task of createdTasks) {
           const taskPayload: CreateTaskPayload = {
-            wbsNum: project.wbsNum,
+            wbsNum: task.wbsNum,
             title: task.title,
             priority: task.priority,
             status: task.status,
@@ -216,6 +216,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
       if (editedTasks.length > 0) {
         for (const task of editedTasks) {
           const taskPayload: TaskPayload = {
+            wbsNum: task.wbsNum,
             taskId: task.taskId,
             title: task.title,
             priority: task.priority,

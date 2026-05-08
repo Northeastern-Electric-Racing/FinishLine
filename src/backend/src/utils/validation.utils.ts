@@ -287,6 +287,7 @@ export const materialValidators = [
   body('linkUrl').optional().isString(),
   body('notes').isString().optional()
 ];
+
 export const validateInputs = (req: Request, res: Response, next: Function): void => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
