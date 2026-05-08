@@ -525,19 +525,19 @@ export default class CalendarService {
       // Send popup notification
       await sendEventPopUp(newEvent, members, submitter, workPackageNames, organization.organizationId);
 
-      const teamsToNotify = new Set<Team>();
+      const teamsToNotify = new Map<string, Team>();
       for (const project of projects) {
         for (const team of project.teams) {
-          teamsToNotify.add(team);
+          teamsToNotify.set(team.teamId, team);
         }
       }
 
       for (const team of newEvent.teams) {
-        teamsToNotify.add(team);
+        teamsToNotify.set(team.teamId, team);
       }
 
       await sendSlackEventNotifications(
-        Array.from(teamsToNotify),
+        Array.from(teamsToNotify.values()),
         createdEvent,
         submitter,
         workPackageNames,
