@@ -64,8 +64,8 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
     }
   });
 
-  if (!users || usersIsLoading) return <LoadingIndicator />;
   if (usersIsError) return <ErrorPage message={usersError?.message} />;
+  if (!users || usersIsLoading) return <LoadingIndicator />;
 
   const options: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
   const wpOptions: { label: string; wbsNum: WbsNumber }[] = workPackages.map((wp) => ({

@@ -49,6 +49,7 @@ tasksRouter.post(
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
+  validateInputs,
   TasksController.editTask
 );
 

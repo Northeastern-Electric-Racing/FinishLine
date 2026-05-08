@@ -36,8 +36,8 @@ export const TaskListContent = ({ wbsNum }: TaskListContentProps) => {
     setColumnHeights((prev) => ({ ...prev, [status]: height }));
   }, []);
 
-  if (isLoading || !tasksByStatus) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
+  if (isLoading || !tasksByStatus) return <LoadingIndicator />;
 
   const onDeleteTask = (taskId: string) => {
     setTasksByStatus((prev) => {
