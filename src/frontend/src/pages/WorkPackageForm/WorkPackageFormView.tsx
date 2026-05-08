@@ -161,7 +161,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const watchedDescriptionBullets = watch('descriptionBullets');
 
   const changeRequestSchema = yup.object().shape({
-    why: yup.string().required('Why Explain is required')
+    why: yup.string().required('Why Explain is required'),
+    requestedReviewerId: yup.string().optional()
   });
 
   const { reset: resetChangeRequestForm, ...changeRequestFormMethods } = useForm<FormInput>({

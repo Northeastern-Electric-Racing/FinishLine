@@ -238,6 +238,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                   variant="contained"
                   onClick={() => setIsModalOpen(true)}
                   disabled={changeRequestInputExists || onlyLeadershipChanged}
+                  sx={{ display: project ? 'block' : 'none' }}
                 >
                   Change Request
                 </NERButton>
@@ -251,7 +252,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               variant="contained"
               type="submit"
             >
-              Implement
+              {project ? 'Implement' : 'Create Project'}
             </NERSuccessButton>
           </Box>
         }
