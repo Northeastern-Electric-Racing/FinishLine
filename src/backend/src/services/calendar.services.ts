@@ -2836,6 +2836,18 @@ export default class CalendarService {
 
     if (!user) throw new NotFoundException('User', 'icsToken');
 
+    // specific events case
+    if (eventIds.length > 0) {
+      const events = await prisma.event.findMany({
+        where: {
+          dateDeleted: null,
+          eventId: { in: eventIds }
+        },
+        ...getEventQueryArgs(organizationId)
+      });
+      return events.map(eventTransformer);
+    }
+
     const userTeamIds = [
       ...user.teamsAsMember.map((t) => t.teamId),
       ...user.teamsAsLead.map((t) => t.teamId),
@@ -2847,8 +2859,6 @@ export default class CalendarService {
         ? [{ eventType: { calendars: { some: { calendarId: { in: calendarIds }, organizationId } } } }]
         : [];
 
-    const eventFilter = eventIds.length > 0 ? [{ eventId: { in: eventIds } }] : [];
-
     const events = await prisma.event.findMany({
       where: {
         dateDeleted: null,
@@ -2859,7 +2869,7 @@ export default class CalendarService {
           { optionalMembers: { some: { userId: user.userId } } },
           ...(userTeamIds.length > 0 ? [{ teams: { some: { teamId: { in: userTeamIds } } } }] : []),
           ...calendarFilter,
-          ...eventFilter
+          ...[]
         ]
       },
       ...getEventQueryArgs(organizationId)
