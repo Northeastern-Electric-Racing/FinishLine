@@ -46,7 +46,7 @@ const IcsSubscribeModal: React.FC<IcsSubscribeModalProps> = ({ open, onClose }) 
 
   const handleCopy = async () => {
     if (!tokenData) return;
-    const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, selectedCalendarIds);
+    const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, selectedCalendarIds, []);
     await navigator.clipboard.writeText(feedUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);

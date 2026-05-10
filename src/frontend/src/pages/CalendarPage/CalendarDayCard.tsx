@@ -13,10 +13,11 @@ import EventPartialInfoView from './EventPartialInfoView';
 import EditEventModal from './Components/EditEventModal';
 import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmationModal';
 import NERDeleteModal from '../../components/NERDeleteModal';
-import { useDeleteEvent, useDeleteScheduleSlot } from '../../hooks/calendar.hooks';
+import { useDeleteEvent, useDeleteScheduleSlot, useGetIcsToken } from '../../hooks/calendar.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 import { getMutedColor } from '../../utils/calendar.utils';
 import { TaskClickContent } from './TaskClickPopup';
+import { apiUrls } from '../../utils/urls';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -85,6 +86,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventInstance | null>(null);
+  const { data: tokenData } = useGetIcsToken();
+  const [, setCopied] = useState(false);
   const toast = useToast();
 
   // Ref and state for dynamic event count calculation
@@ -160,6 +163,16 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     }
   };
 
+  const handleExport = (event: EventInstance) => {
+    setSelectedEvent(event);
+    if (!tokenData) return;
+    const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, [], [event.eventId]);
+    navigator.clipboard.writeText(feedUrl);
+    setCopied(true);
+    toast.success('Copied calendar with event to clipboard!');
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const allItems = [...events, ...tasks];
   const totalItems = allItems.length;
 
@@ -168,10 +181,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const tooltipKey = `task-${task.taskId}`;
     const isLocked = lockedTooltipEventId === tooltipKey;
-    const tooltipHoveredRef = useRef(false);
-    tooltipHoveredRef.current = tooltipHovered;
-    const isLockedRef = useRef(false);
-    isLockedRef.current = isLocked;
     const shouldBeOpen = isLocked || isHovered || tooltipHovered;
 
     return (
@@ -181,9 +190,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         marginRight={0.5}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
-          setTooltipHovered(false);
           setTimeout(() => {
-            if (!isLockedRef.current && !tooltipHoveredRef.current) {
+            if (!isLocked && !tooltipHovered) {
               setIsHovered(false);
             }
           }, 100);
@@ -304,10 +312,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
       event.approved === ConflictStatus.DENIED;
     const bgColor = isPending ? getMutedColor(baseColor, 0.35) : baseColor;
     const isLocked = lockedTooltipEventId === event.eventId;
-    const tooltipHoveredRef = useRef(false);
-    tooltipHoveredRef.current = tooltipHovered;
-    const isLockedRef = useRef(false);
-    isLockedRef.current = isLocked;
     const shouldBeOpen = isLocked || isHovered || tooltipHovered;
 
     return (
@@ -317,9 +321,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         marginRight={0.5}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
-          setTooltipHovered(false);
           setTimeout(() => {
-            if (!isLockedRef.current && !tooltipHoveredRef.current) {
+            if (!isLocked && !tooltipHovered) {
               setIsHovered(false);
             }
           }, 100);
@@ -368,6 +371,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                   onClose={() => setLockedTooltipEventId(null)}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  onExport={handleExport}
                   clickedDate={cardDate}
                 />
               </Box>
@@ -424,10 +428,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     const [isHovered, setIsHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const isLocked = lockedTooltipEventId === event.eventId;
-    const tooltipHoveredRef = useRef(false);
-    tooltipHoveredRef.current = tooltipHovered;
-    const isLockedRef = useRef(false);
-    isLockedRef.current = isLocked;
     const shouldBeOpen = isLocked || isHovered || tooltipHovered;
 
     return (
@@ -452,6 +452,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
               onClose={() => setLockedTooltipEventId(null)}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onExport={handleExport}
               clickedDate={cardDate}
             />
           </Box>
@@ -489,9 +490,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         <Box
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => {
-            setTooltipHovered(false);
             setTimeout(() => {
-              if (!isLockedRef.current && !tooltipHoveredRef.current) {
+              if (!isLocked && !tooltipHovered) {
                 setIsHovered(false);
               }
             }, 100);
@@ -512,10 +512,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const tooltipKey = `task-${task.taskId}`;
     const isLocked = lockedTooltipEventId === tooltipKey;
-    const tooltipHoveredRef = useRef(false);
-    tooltipHoveredRef.current = tooltipHovered;
-    const isLockedRef = useRef(false);
-    isLockedRef.current = isLocked;
     const shouldBeOpen = isLocked || isHovered || tooltipHovered;
 
     return (
@@ -566,9 +562,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         <Box
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => {
-            setTooltipHovered(false);
             setTimeout(() => {
-              if (!isLockedRef.current && !tooltipHoveredRef.current) {
+              if (!isLocked && !tooltipHovered) {
                 setIsHovered(false);
               }
             }, 100);

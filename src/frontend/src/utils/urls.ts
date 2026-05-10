@@ -491,9 +491,13 @@ const calendarScheduleEvent = (eventId: string) => `${calendar()}/event/${eventI
 const calendarIcsToken = () => `${calendar()}/ics/token`;
 
 // Generates ICS URL to be given to calendars for integration, not directly hit by FL frontend
-const icsFeed = (token: string, organizationId: string, calendarIds: string[]) => {
+const icsFeed = (token: string, organizationId: string, calendarIds: string[], eventIds: string[]) => {
   const base = `${API_URL}/ics/${token}?org=${organizationId}`;
-  return calendarIds.length > 0 ? `${base}&calendars=${calendarIds.join(',')}` : base;
+  let icsUrl = calendarIds.length > 0 ? `${base}&calendars=${calendarIds.join(',')}` : base;
+  if (eventIds.length > 0) {
+    icsUrl += `&events=${eventIds.join(',')}`;
+  }
+  return icsUrl;
 };
 
 /**************** Attendance Endpoints ****************/

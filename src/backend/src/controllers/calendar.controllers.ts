@@ -624,12 +624,13 @@ export default class CalendarController {
   static async getIcsFeed(req: Request, res: Response, next: NextFunction) {
     try {
       const { token } = req.params as Record<string, string>;
-      const { org, calendars } = req.query as Record<string, string | undefined>;
+      const { org, calendars, events } = req.query as Record<string, string | undefined>;
       const organizationId = org ?? '';
       const calendarIds = calendars ? calendars.split(',').filter(Boolean) : [];
+      const eventIds = events ? events.split(',').filter(Boolean) : [];
 
-      const events = await CalendarService.getIcsFeedEvents(token, organizationId, calendarIds);
-      const icsContent = generateIcsFeed(events);
+      const event = await CalendarService.getIcsFeedEvents(token, organizationId, calendarIds, eventIds);
+      const icsContent = generateIcsFeed(event);
 
       res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
       res.setHeader('Content-Disposition', 'attachment; filename="finishline.ics"');

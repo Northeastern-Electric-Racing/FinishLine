@@ -11,6 +11,7 @@ import {
   isHead,
   wbsPipe
 } from 'shared';
+import { apiUrls } from '../../utils/urls';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../utils/routes';
@@ -24,6 +25,7 @@ import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import LinkIcon from '@mui/icons-material/Link';
 import ArticleIcon from '@mui/icons-material/Article';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -34,12 +36,18 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
-import { useApproveEvent, useDeleteEvent, useDeleteScheduleSlot, useDenyEvent } from '../../hooks/calendar.hooks';
+import {
+  useApproveEvent,
+  useDeleteEvent,
+  useDeleteScheduleSlot,
+  useDenyEvent,
+  useGetIcsToken
+} from '../../hooks/calendar.hooks';
 import EditEventModal from './Components/EditEventModal';
 import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmationModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import NERDeleteModal from '../../components/NERDeleteModal';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+
 import { getPendingReason } from '../../utils/calendar.utils';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
@@ -66,6 +74,7 @@ interface EventClickContentProps {
   onClose: () => void;
   onEdit: (event: EventInstance) => void;
   onDelete: (event: EventInstance) => void;
+  onExport: (event: EventInstance) => void;
   clickedDate?: Date;
 }
 
@@ -87,6 +96,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
   onClose,
   onEdit,
   onDelete,
+  onExport,
   clickedDate
 }) => {
   const { mutateAsync: approveEvent } = useApproveEvent(event.eventId);
@@ -188,8 +198,22 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
             </Typography>
           </Box>
 
-          {!disable && canEditOrDelete && (
-            <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
+          <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                stopClick(e);
+                onExport(event);
+              }}
+              sx={{
+                color: theme.palette.grey[500],
+                '&:hover': { color: theme.palette.common.white, bgcolor: 'transparent' }
+              }}
+            >
+              <ExitToAppIcon fontSize="small" />
+            </IconButton>
+
+            {!disable && canEditOrDelete && (
               <IconButton
                 size="small"
                 onClick={(e) => {
@@ -203,7 +227,9 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
               >
                 <EditIcon fontSize="small" />
               </IconButton>
+            )}
 
+            {!disable && canEditOrDelete && (
               <IconButton
                 size="small"
                 onClick={(e) => {
@@ -217,8 +243,8 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
               >
                 <DeleteIcon fontSize="small" />
               </IconButton>
-            </Stack>
-          )}
+            )}
+          </Stack>
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5, flexWrap: 'wrap' }}>
@@ -436,9 +462,6 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
             <Typography variant="body2" sx={{ flex: 1 }}>
               <b>Status:</b> {event.status}
             </Typography>
-            {specificEventType?.sendSlackNotifications && (event.teams.length > 0 || event.workPackages.length > 0) && (
-              <NotificationsIcon sx={{ color: 'white', fontSize: 18, mt: '3px', flexShrink: 0 }} />
-            )}
           </Stack>
         )}
 
@@ -508,7 +531,8 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
-
+  const { data: tokenData } = useGetIcsToken();
+  const [, setCopied] = useState(false);
   const { mutateAsync: deleteEvent } = useDeleteEvent(clickedEvent?.eventId ?? '');
   const { mutateAsync: deleteScheduleSlot } = useDeleteScheduleSlot(
     clickedEvent?.eventId ?? '',
@@ -559,6 +583,15 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
     }
   };
 
+  const handleExport = (event: EventInstance) => {
+    if (!tokenData) return;
+    const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, [], [event.eventId]);
+    navigator.clipboard.writeText(feedUrl);
+    setCopied(true);
+    toast.success('Copied calendar with event to clipboard!');
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <Popover
       open={Boolean(clickedEvent && anchorPosition)}
@@ -585,6 +618,7 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
           onClose={onClose}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onExport={handleExport}
           clickedDate={clickedDate}
         />
       )}

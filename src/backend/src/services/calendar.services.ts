@@ -2824,7 +2824,7 @@ export default class CalendarService {
     return token;
   }
 
-  static async getIcsFeedEvents(icsToken: string, organizationId: string, calendarIds: string[]) {
+  static async getIcsFeedEvents(icsToken: string, organizationId: string, calendarIds: string[], eventIds: string[] = []) {
     const user = await prisma.user.findUnique({
       where: { icsToken },
       include: {
@@ -2847,6 +2847,8 @@ export default class CalendarService {
         ? [{ eventType: { calendars: { some: { calendarId: { in: calendarIds }, organizationId } } } }]
         : [];
 
+    const eventFilter = eventIds.length > 0 ? [{ eventId: { in: eventIds } }] : [];
+
     const events = await prisma.event.findMany({
       where: {
         dateDeleted: null,
@@ -2856,7 +2858,8 @@ export default class CalendarService {
           { requiredMembers: { some: { userId: user.userId } } },
           { optionalMembers: { some: { userId: user.userId } } },
           ...(userTeamIds.length > 0 ? [{ teams: { some: { teamId: { in: userTeamIds } } } }] : []),
-          ...calendarFilter
+          ...calendarFilter,
+          ...eventFilter
         ]
       },
       ...getEventQueryArgs(organizationId)
