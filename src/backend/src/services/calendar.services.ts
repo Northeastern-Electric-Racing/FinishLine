@@ -2857,7 +2857,7 @@ export default class CalendarService {
     const calendarFilter =
       calendarIds.length > 0
         ? [{ eventType: { calendars: { some: { calendarId: { in: calendarIds }, organizationId } } } }]
-        : [];
+        : [{ eventType: { calendars: { some: { organizationId } } } }];
 
     const events = await prisma.event.findMany({
       where: {
