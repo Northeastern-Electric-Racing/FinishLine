@@ -56,6 +56,8 @@ export interface GanttTaskCreate {
 
 export const GANTT_CHART_CELL_SIZE = '2.375rem';
 
+export const timeFrameOptions = ['Week', 'Month', 'Year'];
+
 export interface GanttCollection<E, T> {
   id: string;
   tasks: GanttTask<T>[];

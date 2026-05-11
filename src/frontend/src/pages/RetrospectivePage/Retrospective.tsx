@@ -9,6 +9,7 @@ import {
   constructCollectionsFromTeamPreviewAndProjects,
   GanttCollection,
   RetroGanttFilters,
+  timeFrameOptions,
   transformRetrospectiveProjectToGanttTask,
   useGanttFilters
 } from '../../utils/gantt.utils';
@@ -128,6 +129,10 @@ const RetrospectivePage = () => {
     };
   };
 
+  const timeFrameFilterHandler = (timeFrame: string) => {
+    return (event: ChangeEvent<HTMLInputElement>) => {};
+  };
+
   const teamTypeHandlers: {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -149,6 +154,18 @@ const RetrospectivePage = () => {
       filterLabel: team.teamName,
       handler: teamFilterHandler(team),
       defaultChecked: filters.showTeams.includes(team.teamName)
+    };
+  });
+
+  const timeFrameHandler: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[] = timeFrameOptions.map((timeFrame, index) => {
+    return {
+      filterLabel: timeFrame,
+      handler: timeFrameFilterHandler(timeFrame),
+      defaultChecked: index === 0
     };
   });
 
@@ -214,6 +231,7 @@ const RetrospectivePage = () => {
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
         resetHandler={resetHandler}
+        timeFrameHandler={timeFrameHandler}
       />
     </Box>
   );

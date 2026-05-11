@@ -19,6 +19,7 @@ import {
   GanttTask,
   isProjectPreview,
   RequestEventChange,
+  timeFrameOptions,
   transformProjectToGanttTask,
   useGanttFilters
 } from '../../../utils/gantt.utils';
@@ -191,6 +192,12 @@ const ProjectGanttChartPage: FC = () => {
     };
   };
 
+  const timeFrameFilterHandler = (timeFrame: string) => {
+    return (event: ChangeEvent<HTMLInputElement>) => {
+      
+    };
+  };
+
   const teamTypeHandlers: {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -235,6 +242,18 @@ const ProjectGanttChartPage: FC = () => {
     localStorage.removeItem('ganttURL');
     setShowCars(selectedCar === 'all-cars' ? allCars.map((car) => car.wbsNum.carNumber) : [selectedCar.wbsNum.carNumber]);
   };
+
+  const timeFrameHandler: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[] = timeFrameOptions.map((timeFrame, index) => {
+    return {
+      filterLabel: timeFrame,
+      handler: timeFrameFilterHandler(timeFrame),
+      defaultChecked: index === 0
+    };
+  });
 
   /* **************************************************** */
   /* ****************** Editability ********************* */
@@ -629,6 +648,7 @@ const ProjectGanttChartPage: FC = () => {
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
         resetHandler={resetHandler}
+        timeFrameHandler={timeFrameHandler}
       />
     </Box>
   );

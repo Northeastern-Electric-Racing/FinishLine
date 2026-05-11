@@ -13,13 +13,19 @@ interface GanttChartFiltersButtonProps {
   }[];
   teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
   resetHandler: () => void;
+  timeFrameHandler: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[];
 }
 
 const GanttChartFiltersButton = ({
   carHandlers,
   teamTypeHandlers,
   teamHandlers,
-  resetHandler
+  resetHandler,
+  timeFrameHandler
 }: GanttChartFiltersButtonProps) => {
   const theme = useTheme();
   const [anchorFilterEl, setAnchorFilterEl] = useState<HTMLButtonElement | null>(null);
@@ -64,6 +70,7 @@ const GanttChartFiltersButton = ({
           teamTypeHandlers={teamTypeHandlers}
           teamHandlers={teamHandlers}
           resetHandler={resetHandler}
+          timeFrameHandler={timeFrameHandler}
           onClose={handleFilterClose}
         />
       </Popover>

@@ -11,35 +11,56 @@ import {
   AccordionSummary,
   AccordionDetails,
   FormControlLabel,
-  IconButton
+  IconButton,
+  Radio
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
 import { ChangeEvent, useState } from 'react';
 
 const FilterCheckboxes = ({
-  handlers
+  handlers,
+  useRadio = false
 }: {
   handlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
-}) => (
-  <Box display="flex" flexDirection="column">
-    {handlers.map((handler) => (
-      <FormControlLabel
-        key={handler.filterLabel}
-        slotProps={{ typography: { fontSize: '14px' } }}
-        control={
-          <Checkbox
-            size="small"
-            onChange={handler.handler}
-            defaultChecked={handler.defaultChecked}
-            sx={{ padding: '2px 7px' }}
-          />
-        }
-        label={handler.filterLabel}
-      />
-    ))}
-  </Box>
-);
+  useRadio?: boolean;
+}) => {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(
+    useRadio ? handlers.findIndex((h) => h.defaultChecked) : null
+  );
+
+  return (
+    <Box display="flex" flexDirection="column">
+      {handlers.map((handler, index) => (
+        <FormControlLabel
+          key={handler.filterLabel}
+          slotProps={{ typography: { fontSize: '14px' } }}
+          control={
+            useRadio ? (
+              <Radio
+                size="small"
+                checked={selectedIndex === index}
+                onChange={(e) => {
+                  setSelectedIndex(index);
+                  handler.handler(e);
+                }}
+                sx={{ padding: '2px 7px' }}
+              />
+            ) : (
+              <Checkbox
+                size="small"
+                onChange={handler.handler}
+                defaultChecked={handler.defaultChecked}
+                sx={{ padding: '2px 7px' }}
+              />
+            )
+          }
+          label={handler.filterLabel}
+        />
+      ))}
+    </Box>
+  );
+};
 
 const FilterAccordion = ({
   label,
@@ -93,6 +114,11 @@ interface GanttChartFiltersProps {
     defaultChecked: boolean;
   }[];
   teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
+  timeFrameHandler: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[];
   resetHandler: () => void;
   onClose: () => void;
 }
@@ -102,6 +128,7 @@ const GanttChartFilters = ({
   teamTypeHandlers,
   teamHandlers,
   resetHandler,
+  timeFrameHandler,
   onClose
 }: GanttChartFiltersProps) => {
   const theme = useTheme();
@@ -109,7 +136,8 @@ const GanttChartFilters = ({
   const [expanded, setExpanded] = useState({
     car: true,
     division: true,
-    team: true
+    team: true,
+    timeFrame: true
   });
 
   const [resetKey, setResetKey] = useState(0);
@@ -150,7 +178,7 @@ const GanttChartFilters = ({
         <Typography
           fontSize="13px"
           sx={{ color: theme.palette.primary.main, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-          onClick={() => setExpanded({ car: true, division: true, team: true })}
+          onClick={() => setExpanded({ car: true, division: true, team: true, timeFrame: true })}
         >
           Expand All
         </Typography>
@@ -158,7 +186,7 @@ const GanttChartFilters = ({
         <Typography
           fontSize="13px"
           sx={{ color: theme.palette.primary.main, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-          onClick={() => setExpanded({ car: false, division: false, team: false })}
+          onClick={() => setExpanded({ car: false, division: false, team: false, timeFrame: false })}
         >
           Collapse All
         </Typography>
@@ -174,6 +202,10 @@ const GanttChartFilters = ({
 
       <FilterAccordion label="Team" expanded={expanded.team} onChange={() => toggle('team')}>
         <FilterCheckboxes key={`team-${resetKey}`} handlers={teamHandlers} />
+      </FilterAccordion>
+
+      <FilterAccordion label="Time Frame" expanded={expanded.timeFrame} onChange={() => toggle('timeFrame')}>
+        <FilterCheckboxes key={`team-${resetKey}`} handlers={timeFrameHandler} useRadio={true} />
       </FilterAccordion>
     </Box>
   );
