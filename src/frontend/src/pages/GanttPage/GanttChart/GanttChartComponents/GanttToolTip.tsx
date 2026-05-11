@@ -4,6 +4,7 @@ import { emDashPipe } from '../../../../utils/pipes';
 import { formatDateOnly } from 'shared';
 
 interface GanttToolTipProps {
+  xCoordinate: number;
   yCoordinate: number;
   title: string;
   startDate?: Date;
@@ -14,6 +15,7 @@ interface GanttToolTipProps {
 }
 
 const GanttToolTip: React.FC<GanttToolTipProps> = ({
+  xCoordinate,
   yCoordinate,
   title,
   startDate,
@@ -22,15 +24,18 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
   lowerRightDisplay
 }) => {
   const theme = useTheme();
-  const xCoordinate = window.innerWidth - 375 - 35;
+  const tooltipWidth = 375;
+  const horizontalPadding = 16;
+  const left = Math.min(Math.max(horizontalPadding, xCoordinate + 12), window.innerWidth - tooltipWidth - horizontalPadding);
+
   return (
     <Box
       style={{
         position: 'fixed',
-        left: `${xCoordinate}px`,
+        left: `${left}px`,
         top: `${yCoordinate + 20}px`,
         zIndex: 4,
-        width: 375
+        width: tooltipWidth
       }}
     >
       <Box color={'white'}>
