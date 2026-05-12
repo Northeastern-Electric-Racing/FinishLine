@@ -11,6 +11,8 @@ import {
 } from '../utils/errors.utils.js';
 import ReimbursementRequestService from './reimbursement-requests.services.js';
 import ChangeRequestsService from './change-requests.services.js';
+import { userTransformer } from '../transformers/user.transformer.js';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 
 /**
  * Represents a slack event for a message in a channel.
@@ -235,7 +237,8 @@ export default class SlackServices {
         userSettings: {
           slackId: userSlackId
         }
-      }
+      },
+      ...getUserQueryArgs()
     });
 
     if (!reviewer) {
@@ -264,7 +267,7 @@ export default class SlackServices {
     }
 
     try {
-      await ChangeRequestsService.reviewChangeRequest(reviewer, crId, '', true, org);
+      await ChangeRequestsService.reviewChangeRequest(userTransformer(reviewer), crId, '', true, org);
       await respond({
         replace_original: true,
         text: `✅ CR #${cr.identifier} approved by ${reviewer.firstName} ${reviewer.lastName}.`
