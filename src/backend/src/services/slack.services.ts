@@ -13,6 +13,7 @@ import ReimbursementRequestService from './reimbursement-requests.services.js';
 import ChangeRequestsService from './change-requests.services.js';
 import { userTransformer } from '../transformers/user.transformer.js';
 import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { User } from 'shared';
 
 /**
  * Represents a slack event for a message in a channel.
@@ -266,8 +267,10 @@ export default class SlackServices {
       throw new NotFoundException('Organization', cr.organizationId);
     }
 
+    const reviewerShared: User = userTransformer(reviewer);
+
     try {
-      await ChangeRequestsService.reviewChangeRequest(userTransformer(reviewer), crId, '', true, org);
+      await ChangeRequestsService.reviewChangeRequest(reviewerShared, crId, '', true, org);
       await respond({
         replace_original: true,
         text: `✅ CR #${cr.identifier} approved by ${reviewer.firstName} ${reviewer.lastName}.`
