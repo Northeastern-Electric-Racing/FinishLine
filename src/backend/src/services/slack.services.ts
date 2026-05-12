@@ -2,7 +2,7 @@ import { getChannelName, getUserName } from '../integrations/slack.js';
 import AnnouncementService from './announcement.services.js';
 import { Announcement, ReimbursementStatusType } from 'shared';
 import prisma from '../prisma/prisma.js';
-import { blockToMentionedUsers, blockToString, getUserIdFromSlackId } from '../utils/slack.utils.js';
+import { blockToMentionedUsers, blockToString } from '../utils/slack.utils.js';
 import {
   AccessDeniedException,
   HttpException,
