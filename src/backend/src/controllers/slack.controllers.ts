@@ -87,7 +87,15 @@ export default class SlackController {
     }
   }
 
-  static async handleApproveCRAction(body: SlackBlockActionBody, respond: any) {
+  static async handleApproveCRAction(
+    body: SlackBlockActionBody,
+    respond: (msg: {
+      response_type?: 'ephemeral';
+      text?: string;
+      replace_original?: boolean;
+      delete_original?: boolean;
+    }) => Promise<unknown>
+  ) {
     const { user, container, actions } = body;
     const channelId = container.channel_id;
     const threadTs = container.thread_ts || container.message_ts;
