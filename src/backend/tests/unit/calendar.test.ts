@@ -17,7 +17,7 @@ import {
 } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { EventType, Machinery, ScheduleSlotCreateArgs, Shop, Event } from 'shared';
+import { EventType, Machinery, ScheduleSlotCreateArgs, Shop, Event, SlackMentionType } from 'shared';
 
 describe('Calendar Tests', () => {
   let orgId: string;
@@ -1266,6 +1266,71 @@ describe('Calendar Tests', () => {
         )
       ).rejects.toThrow(new NotFoundException('Machinery', deletedMachinery.machineryId));
     });
+
+    it('defaults mention to USER when not specified', async () => {
+      const scheduleSlots = [
+        {
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          allDay: false
+        }
+      ];
+
+      const result = await CalendarService.createEvent(
+        adminUser,
+        'User Mention Event',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        scheduleSlots,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
+        undefined, // questionDocumentLink
+        'Conference Room A',
+        undefined, // zoomLink
+        'Test description'
+      );
+
+      expect(result.mention).toBe(SlackMentionType.USER);
+    });
+
+    it('persists CHANNEL mention type when specified', async () => {
+      const scheduleSlots = [
+        {
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          allDay: false
+        }
+      ];
+
+      const result = await CalendarService.createEvent(
+        adminUser,
+        'Channel Mention Event',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        scheduleSlots,
+        undefined, // initialDateScheduled
+        undefined, // teamTypeId
+        undefined, // questionDocumentLink
+        'Conference Room A',
+        undefined, // zoomLink
+        'Test description',
+        SlackMentionType.CHANNEL
+      );
+
+      expect(result.mention).toBe(SlackMentionType.CHANNEL);
+    });
   });
 
   describe('Get Events', () => {
@@ -1898,6 +1963,34 @@ describe('Calendar Tests', () => {
       expect(result.location).toBe('Updated Location');
       expect(result.zoomLink).toBe('https://zoom.us/updated');
       expect(result.description).toBe('Updated description');
+    });
+
+    it('updates mention from USER to CHANNEL', async () => {
+      // event is created with default USER mention in beforeEach
+      expect(event.mention).toBe(SlackMentionType.USER);
+
+      const result = await CalendarService.editEvent(
+        adminUser,
+        event.eventId,
+        event.title,
+        organization,
+        [member.userId],
+        [adminUser.userId],
+        Event_Status.SCHEDULED,
+        [],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        [],
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        SlackMentionType.CHANNEL
+      );
+
+      expect(result.mention).toBe(SlackMentionType.CHANNEL);
     });
   });
 
