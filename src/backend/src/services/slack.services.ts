@@ -270,7 +270,7 @@ export default class SlackServices {
     const reviewerShared: User = userTransformer(reviewer);
 
     try {
-      await ChangeRequestsService.reviewChangeRequest(reviewerShared, crId, '', true, org);
+      await ChangeRequestsService.reviewChangeRequest(reviewerShared, crId, true, org);
       await respond({
         replace_original: true,
         text: `✅ CR #${cr.identifier} approved by ${reviewer.firstName} ${reviewer.lastName}.`
