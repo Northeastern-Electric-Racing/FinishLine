@@ -181,6 +181,10 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const tooltipKey = `task-${task.taskId}`;
     const isLocked = lockedTooltipEventId === tooltipKey;
+    const tooltipHoveredRef = useRef(false);
+    tooltipHoveredRef.current = tooltipHovered;
+    const isLockedRef = useRef(false);
+    isLockedRef.current = isLocked;
     const shouldBeOpen = isLocked || isHovered || tooltipHovered;
 
     return (
@@ -312,6 +316,10 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
       event.approved === ConflictStatus.DENIED;
     const bgColor = isPending ? getMutedColor(baseColor, 0.35) : baseColor;
     const isLocked = lockedTooltipEventId === event.eventId;
+    const tooltipHoveredRef = useRef(false);
+    tooltipHoveredRef.current = tooltipHovered;
+    const isLockedRef = useRef(false);
+    isLockedRef.current = isLocked;
     const shouldBeOpen = isLocked || isHovered || tooltipHovered;
 
     return (
@@ -428,6 +436,10 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     const [isHovered, setIsHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const isLocked = lockedTooltipEventId === event.eventId;
+    const tooltipHoveredRef = useRef(false);
+    tooltipHoveredRef.current = tooltipHovered;
+    const isLockedRef = useRef(false);
+    isLockedRef.current = isLocked;
     const shouldBeOpen = isLocked || isHovered || tooltipHovered;
 
     return (
@@ -512,6 +524,10 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const tooltipKey = `task-${task.taskId}`;
     const isLocked = lockedTooltipEventId === tooltipKey;
+    const tooltipHoveredRef = useRef(false);
+    tooltipHoveredRef.current = tooltipHovered;
+    const isLockedRef = useRef(false);
+    isLockedRef.current = isLocked;
     const shouldBeOpen = isLocked || isHovered || tooltipHovered;
 
     return (
