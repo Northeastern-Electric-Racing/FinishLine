@@ -233,20 +233,6 @@ export default class SlackServices {
       delete_original?: boolean;
     }) => Promise<unknown>
   ): Promise<void> {
-    const reviewer = await prisma.user.findFirst({
-      where: {
-        userSettings: {
-          slackId: userSlackId
-        }
-      },
-      ...getUserQueryArgs()
-    });
-
-    if (!reviewer) {
-      console.error('User not found for slack ID:', userSlackId);
-      throw new NotFoundException('User', userSlackId);
-    }
-
     const cr = await prisma.change_Request.findUnique({
       where: {
         crId
@@ -255,6 +241,20 @@ export default class SlackServices {
 
     if (!cr) {
       throw new NotFoundException('Change Request', crId);
+    }
+
+    const reviewer = await prisma.user.findFirst({
+      where: {
+        userSettings: {
+          slackId: userSlackId
+        }
+      },
+      ...getUserQueryArgs(cr.organizationId)
+    });
+
+    if (!reviewer) {
+      console.error('User not found for slack ID:', userSlackId);
+      throw new NotFoundException('User', userSlackId);
     }
 
     const org = await prisma.organization.findUnique({
