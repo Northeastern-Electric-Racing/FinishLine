@@ -87,9 +87,9 @@ export default class ChangeRequestsController {
       const id = await ChangeRequestsService.reviewChangeRequest(
         req.currentUser,
         crId,
-        reviewNotes,
         accepted,
-        req.organization
+        req.organization,
+        reviewNotes
       );
       res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
     } catch (error: unknown) {

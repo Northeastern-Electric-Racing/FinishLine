@@ -20,9 +20,8 @@ interface ReviewChangeRequestProps {
 }
 
 export interface FormInput {
-  reviewNotes: string;
+  reviewNotes?: string;
   accepted: boolean;
-  psId?: string;
 }
 
 const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
@@ -39,7 +38,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
   const { isLoading, isError, error, mutateAsync } = useReviewChangeRequest();
   const toast = useToast();
 
-  const handleConfirm = async ({ reviewNotes, accepted, psId }: FormInput) => {
+  const handleConfirm = async ({ reviewNotes, accepted }: FormInput) => {
     handleClose();
     if (auth.user?.userId === undefined) throw new Error('Cannot review change request without being logged in');
 
@@ -47,8 +46,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
       reviewerId: auth.user?.userId,
       crId,
       reviewNotes,
-      accepted,
-      psId
+      accepted
     }).catch((error) => {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -56,9 +54,8 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
     });
   };
 
-  if (isLoading) return <LoadingIndicator />;
-
   if (isError) return <ErrorPage message={error?.message} />;
+  if (isLoading) return <LoadingIndicator />;
 
   if (cr.wbsNum) {
     return (
