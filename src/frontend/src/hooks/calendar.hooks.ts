@@ -12,7 +12,8 @@ import {
   ScheduleSlotCreateArgs,
   EventWithMembers,
   ScheduleSlot,
-  EventInstance
+  EventInstance,
+  SlackMentionType
 } from 'shared';
 import {
   getAllShops,
@@ -82,6 +83,7 @@ export interface EventCreateArgs {
   description?: string;
   initialDateScheduled: Date;
   scheduleSlots: ScheduleSlotCreateArgs[];
+  mention?: SlackMentionType;
 }
 
 export interface EditEventArgs {
@@ -99,6 +101,7 @@ export interface EditEventArgs {
   documents: Array<{ name: string; googleFileId: string }>;
   questionDocumentLink?: string;
   description?: string;
+  mention?: SlackMentionType;
 }
 
 export interface EditScheduleSlotArgs {

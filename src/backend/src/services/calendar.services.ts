@@ -16,7 +16,8 @@ import {
   ScheduleSlot,
   notGuest,
   isSameDay,
-  EventInstance
+  EventInstance,
+  SlackMentionType
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
@@ -67,7 +68,7 @@ import {
   updateUserAvailability,
   areUsersinList
 } from '../utils/users.utils.js';
-import { Conflict_Status, Event_Status, Organization, Team } from '@prisma/client';
+import { Conflict_Status, Event_Status, Organization, Team, Slack_Mention_Type } from '@prisma/client';
 
 export default class CalendarService {
   /**
@@ -270,7 +271,8 @@ export default class CalendarService {
     questionDocumentLink?: string,
     location?: string,
     zoomLink?: string,
-    description?: string
+    description?: string,
+    mention?: SlackMentionType
   ): Promise<Event> {
     // Validate eventTypeId
     const foundEventType = await prisma.event_Type.findUnique({
@@ -461,7 +463,8 @@ export default class CalendarService {
         location,
         zoomLink,
         questionDocumentLink,
-        description
+        description,
+        mention: mention === SlackMentionType.CHANNEL ? Slack_Mention_Type.CHANNEL : Slack_Mention_Type.USER
       },
       ...getEventQueryArgs(organization.organizationId)
     });
@@ -541,7 +544,8 @@ export default class CalendarService {
         createdEvent,
         submitter,
         workPackageNames,
-        organization.name
+        organization.name,
+        { memberSlackIds: memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id) }
       );
     }
 
@@ -591,7 +595,8 @@ export default class CalendarService {
     questionDocumentLink?: string,
     location?: string,
     zoomLink?: string,
-    description?: string
+    description?: string,
+    mention?: SlackMentionType
   ): Promise<Event> {
     // validate eventId
     const foundEvent = await prisma.event.findUnique({
@@ -774,7 +779,10 @@ export default class CalendarService {
         location,
         zoomLink,
         questionDocumentLink,
-        description
+        description,
+        ...(mention !== undefined && {
+          mention: mention === SlackMentionType.CHANNEL ? Slack_Mention_Type.CHANNEL : Slack_Mention_Type.USER
+        })
       },
       ...getEventQueryArgs(organization.organizationId)
     });

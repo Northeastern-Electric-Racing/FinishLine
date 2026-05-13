@@ -87,6 +87,11 @@ export enum ConflictStatus {
   NO_CONFLICT = 'NO_CONFLICT'
 }
 
+export enum SlackMentionType {
+  USER = 'user',
+  CHANNEL = 'channel'
+}
+
 export interface Calendar {
   calendarId: string;
   name: string;
@@ -213,6 +218,7 @@ export interface Event {
   description?: string;
   status: EventStatus;
   initialDateScheduled?: Date;
+  mention: SlackMentionType;
 }
 
 export type EventInstance = Omit<Event, 'scheduledTimes'> &
@@ -255,6 +261,7 @@ export interface EventWithMembers {
   description?: string;
   status: EventStatus;
   initialDateScheduled?: Date;
+  mention: SlackMentionType;
 }
 
 export interface TeamType {
