@@ -97,6 +97,7 @@ const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assigne
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
+const tasksByWbsNum = (wbsNum: string) => `${tasks()}/by-wbs/${wbsNum}`;
 
 /**************** Work Packages Endpoints ****************/
 const workPackages = (queryParams?: { [field: string]: string }) => {
@@ -108,6 +109,7 @@ const workPackages = (queryParams?: { [field: string]: string }) => {
 };
 
 const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
+const workPackagesByProject = (wbsNum: string) => `${workPackages()}/by-project/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
@@ -486,6 +488,13 @@ const calendarDeleteScheduleSlot = (eventId: string, scheduleSlotId: string) =>
 const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
 const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 const calendarScheduleEvent = (eventId: string) => `${calendar()}/event/${eventId}/schedule`;
+const calendarIcsToken = () => `${calendar()}/ics/token`;
+
+// Generates ICS URL to be given to calendars for integration, not directly hit by FL frontend
+const icsFeed = (token: string, organizationId: string, calendarIds: string[]) => {
+  const base = `${API_URL}/ics/${token}?org=${organizationId}`;
+  return calendarIds.length > 0 ? `${base}&calendars=${calendarIds.join(',')}` : base;
+};
 
 /**************** Attendance Endpoints ****************/
 const attendance = () => `${API_URL}/attendance`;
@@ -581,9 +590,11 @@ export const apiUrls = {
   editTaskAssignees,
   deleteTask,
   overdueTasksByTeamLeadership,
+  tasksByWbsNum,
 
   workPackages,
   workPackagesByWbsNum,
+  workPackagesByProject,
   workPackagesCreate,
   workPackagesEdit,
   workPackagesDelete,
@@ -848,6 +859,8 @@ export const apiUrls = {
   calendarCreateCalendar,
   calendarEditCalendar,
   calendarCalendars,
+  calendarIcsToken,
+  icsFeed,
   calendarCreateEventType,
   calendarEditEventType,
   calendarCreateEvent,

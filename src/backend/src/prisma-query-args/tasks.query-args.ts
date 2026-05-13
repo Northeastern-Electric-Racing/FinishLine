@@ -27,7 +27,8 @@ export const getCalendarTaskQueryArgs = (organizationId: string) =>
           organizationId: true,
           dateDeleted: true,
           leadId: true,
-          managerId: true
+          managerId: true,
+          name: true
         }
       },
       createdBy: getUserQueryArgs(organizationId),

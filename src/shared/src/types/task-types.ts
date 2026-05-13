@@ -21,6 +21,7 @@ export enum TaskStatus {
 export interface Task {
   taskId: string;
   wbsNum: WbsNumber;
+  wbsName: string;
   title: string;
   notes: string;
   dateDeleted?: Date;

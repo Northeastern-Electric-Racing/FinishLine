@@ -5,11 +5,12 @@ import { convertTaskPriority, convertTaskStatus } from '../utils/tasks.utils.js'
 import { userTransformer } from './user.transformer.js';
 import { CalendarTaskQueryArgs, TaskQueryArgs, TaskPreviewQueryArgs } from '../prisma-query-args/tasks.query-args.js';
 
-const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
+export const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
   const wbsNum = wbsNumOf(task.wbsElement);
   return {
     taskId: task.taskId,
     wbsNum,
+    wbsName: task.wbsElement.name,
     title: task.title,
     notes: task.notes,
     deadline: task.deadline ?? undefined,
@@ -45,6 +46,7 @@ export const calendarTaskTransformer = (task: Prisma.TaskGetPayload<CalendarTask
   return {
     taskId: task.taskId,
     wbsNum,
+    wbsName: task.wbsElement.name,
     title: task.title,
     notes: task.notes,
     deadline: task.deadline ?? undefined,

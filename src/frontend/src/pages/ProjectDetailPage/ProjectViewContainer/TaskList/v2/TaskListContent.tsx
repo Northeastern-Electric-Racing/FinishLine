@@ -1,20 +1,22 @@
 import { DragDropContext, OnDragEndResponder, OnDragStartResponder } from '@hello-pangea/dnd';
 import { Box } from '@mui/material';
-import { useCallback, useState } from 'react';
-import { Project, Task, TaskStatus, TaskWithIndex } from 'shared';
+import { useCallback, useState, useEffect } from 'react';
+import { Task, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
-import { useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
+import { useSetTaskStatus, useTasksByWbsNum } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { TaskColumn } from './TaskColumn';
 import confetti from 'canvas-confetti';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import ErrorPage from '../../../../ErrorPage';
 
-interface TaskListProps {
-  project: Project;
+interface TaskListContentProps {
+  wbsNum: WbsNumber;
 }
 
-export const TaskListContent = ({ project }: TaskListProps) => {
-  const { tasks } = project;
-  const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus>(getTasksByStatus(tasks));
+export const TaskListContent = ({ wbsNum }: TaskListContentProps) => {
+  const { data: tasks, isLoading, isError, error } = useTasksByWbsNum(wbsNum);
+  const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus | undefined>(undefined); // can't use getTasksByStatus since tasks are async
   const { mutateAsync: setTaskStatus } = useSetTaskStatus();
 
   const toast = useToast();
@@ -23,12 +25,23 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   const [columnHeights, setColumnHeights] = useState<Partial<Record<TaskStatus, number>>>({});
   const equalizedHeight = Math.max(...(Object.values(columnHeights) as number[]));
 
+  // initialize tasksByStatus once tasks load, but only once
+  useEffect(() => {
+    if (tasks) {
+      setTasksByStatus(getTasksByStatus(tasks));
+    }
+  }, [tasks]);
+
   const onHeightChange = useCallback((status: TaskStatus, height: number) => {
     setColumnHeights((prev) => ({ ...prev, [status]: height }));
   }, []);
 
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (isLoading || !tasksByStatus) return <LoadingIndicator />;
+
   const onDeleteTask = (taskId: string) => {
     setTasksByStatus((prev) => {
+      if (!prev) return prev;
       const newTasksByStatus = { ...prev };
       for (const status of statuses) {
         const index = newTasksByStatus[status].findIndex((task) => task?.taskId === taskId);
@@ -43,6 +56,7 @@ export const TaskListContent = ({ project }: TaskListProps) => {
 
   const onEditTask = (task: Task) => {
     setTasksByStatus((prev) => {
+      if (!prev) return prev;
       const newTasksByStatus = { ...prev };
       for (const status of statuses) {
         const index = newTasksByStatus[status].findIndex((t) => t?.taskId === task.taskId);
@@ -56,10 +70,13 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   };
 
   const onAddTask = (task: Task) => {
-    setTasksByStatus((prev) => ({
-      ...prev,
-      [task.status]: [...prev[task.status], { ...task, index: prev[task.status].length }]
-    }));
+    setTasksByStatus((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [task.status]: [...prev[task.status], { ...task, index: prev[task.status].length }]
+      };
+    });
   };
 
   const onDragStart: OnDragStartResponder = () => {
@@ -134,7 +151,7 @@ export const TaskListContent = ({ project }: TaskListProps) => {
             status={status}
             tasks={tasksByStatus[status]}
             key={status}
-            project={project}
+            wbsNum={wbsNum}
             equalizedHeight={equalizedHeight}
             isDragging={isDragging}
           />

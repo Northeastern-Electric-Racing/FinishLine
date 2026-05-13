@@ -3,7 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { Redirect, Route, Switch } from 'react-router-dom';
+import { isGuest } from 'shared';
 import { routes } from '../../utils/routes';
+import { useCurrentUser } from '../../hooks/users.hooks';
 import FinanceDashboard from './FinanceDashboard/FinanceDashboard';
 import ReimbursmentRequests from './ReimbursmentRequests';
 import CompaniesPage from './CompaniesPage';
@@ -14,6 +16,10 @@ import EditReimbursementRequestPage from './EditReimbursementRequest/EditReimbur
 // It also allows the side page to stay highlighted for both tabs of the table
 // by directing to just 'reimbursement-requests' and having the redirect occur
 const Finance: React.FC = () => {
+  const user = useCurrentUser();
+
+  if (isGuest(user.role)) return <Redirect to={routes.HOME} />;
+
   return (
     <Switch>
       <Route path={routes.NEW_REIMBURSEMENT_REQUEST} component={CreateReimbursementRequestPage} />

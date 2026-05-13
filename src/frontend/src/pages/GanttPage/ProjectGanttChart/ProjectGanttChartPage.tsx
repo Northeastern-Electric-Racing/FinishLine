@@ -40,7 +40,8 @@ import {
   WbsElementStatus,
   wbsPipe,
   WorkPackage,
-  WorkPackageStage
+  WorkPackageStage,
+  WbsNumber
 } from 'shared';
 import { useAllTeams } from '../../../hooks/teams.hooks';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
@@ -325,6 +326,7 @@ const ProjectGanttChartPage: FC = () => {
       notes: string;
       startDate: Date | null;
       deadline: Date | null;
+      wpWbsNum?: WbsNumber;
     },
     parentProject: ProjectGantt
   ) => {
@@ -336,7 +338,11 @@ const ProjectGanttChartPage: FC = () => {
 
     const newTask: Task = {
       taskId,
-      wbsNum: parentProject.wbsNum,
+      wbsNum: taskInfo.wpWbsNum ?? parentProject.wbsNum,
+      wbsName: taskInfo.wpWbsNum
+        ? (parentProject.workPackages.find((wp) => wp.wbsNum.workPackageNumber === taskInfo.wpWbsNum?.workPackageNumber)
+            ?.name ?? parentProject.name)
+        : parentProject.name,
       title: taskInfo.title,
       notes: taskInfo.notes,
       dateCreated: new Date(),
@@ -363,6 +369,7 @@ const ProjectGanttChartPage: FC = () => {
     });
     setSelectedProject(undefined);
   };
+
   const handleAddProjectInfo = async (
     projectInfo: { name: string; carNumber: number },
     selectedTeam: { teamId: string; teamName: string }
@@ -482,6 +489,7 @@ const ProjectGanttChartPage: FC = () => {
             toast.error('No Parent Project Selected');
           }
         }}
+        workPackages={selectedProject?.workPackages ?? []}
       />
     );
   };

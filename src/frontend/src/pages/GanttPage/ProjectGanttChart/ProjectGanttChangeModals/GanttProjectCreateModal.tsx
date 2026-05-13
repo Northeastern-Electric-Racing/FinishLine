@@ -67,7 +67,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
         for (const task of project.tasks) {
           try {
             await createSingleTask({
-              wbsNum: createdProject.wbsNum,
+              wbsNum: task.wbsNum,
               title: task.title,
               priority: task.priority,
               status: task.status,

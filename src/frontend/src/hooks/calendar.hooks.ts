@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   Shop,
   Machinery,
@@ -50,7 +50,8 @@ import {
   previewScheduleSlotRecurringEdits,
   postDeleteScheduleSlot,
   scheduleEvent,
-  getAllEventsPaginated
+  getAllEventsPaginated,
+  getIcsToken
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 import { PDFDocument } from 'pdf-lib';
@@ -667,15 +668,30 @@ export const combinePdfsAndDownload = async (blobData: Blob[], filename: string)
   saveAs(pdfBlob, filename);
 };
 
-/**
- * Custom hook to get all events in a paginated manner, sorted by scheduled date ascending.
- */
-export const useAllEventsPaginated = (cursor?: Date, pageSize?: number) => {
-  return useQuery<{ instances: EventInstance[]; nextCursor: Date | null }, Error>(
-    ['events', 'paginated', cursor, pageSize],
-    async () => {
-      const { data } = await getAllEventsPaginated(cursor, pageSize);
-      return data;
-    }
+export const useFutureEventsPaginated = () => {
+  return useInfiniteQuery<{ futureInstances: EventInstance[]; nextFutureCursor: Date | null }, Error>(
+    ['events', 'future', 'paginated'],
+    async ({ pageParam }: { pageParam?: Date }) => {
+      const { data } = await getAllEventsPaginated(pageParam, undefined);
+      return { futureInstances: data.futureInstances, nextFutureCursor: data.nextFutureCursor };
+    },
+    { getNextPageParam: (lastPage) => lastPage.nextFutureCursor ?? undefined }
   );
 };
+
+export const usePastEventsPaginated = () => {
+  return useInfiniteQuery<{ pastInstances: EventInstance[]; nextPastCursor: Date | null }, Error>(
+    ['events', 'past', 'paginated'],
+    async ({ pageParam }: { pageParam?: Date }) => {
+      const { data } = await getAllEventsPaginated(undefined, pageParam);
+      return { pastInstances: data.pastInstances, nextPastCursor: data.nextPastCursor };
+    },
+    { getNextPageParam: (lastPage) => lastPage.nextPastCursor ?? undefined }
+  );
+};
+
+export const useGetIcsToken = () =>
+  useQuery<{ icsToken: string; organizationId: string }, Error>(['icsToken'], async () => {
+    const { data } = await getIcsToken();
+    return data;
+  });

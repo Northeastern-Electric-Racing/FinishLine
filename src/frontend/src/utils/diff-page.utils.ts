@@ -315,7 +315,7 @@ export const getChangesForWorkPackage = (
       '',
       originalWorkPackage?.blockedBy.map((wbsNum) => ({ ...wbsNum, value: wbsPipe(wbsNum) })) ?? [],
       proposedChanges?.blockedBy.map((wbsNum) => ({ ...wbsNum, value: wbsPipe(wbsNum) })) ?? [],
-      (a, b) => a !== undefined && b !== undefined && equalsWbsNumber(a, b)
+      (a, b) => a === undefined || b === undefined || !equalsWbsNumber(a, b)
     )
   );
 

@@ -12,8 +12,10 @@ import {
   editTask,
   editTaskAssignees,
   getOverdueTasksByTeamLeader,
-  getFilterTasks
+  getFilterTasks,
+  getTasksByWbsNum
 } from '../apis/tasks.api';
+import { wbsPipe } from '../utils/pipes';
 
 export interface CreateTaskPayload {
   wbsNum: WbsNumber;
@@ -65,6 +67,7 @@ export const useCreateTask = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['tasks']);
       }
     }
   );
@@ -77,11 +80,12 @@ export interface TaskPayload {
   startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
+  wbsNum?: WbsNumber;
 }
 
 /**
  * Custom React Hook for editing a task
- * @returns the edit task mutation'
+ * @returns the edit task mutation
  */
 export const useEditTask = () => {
   const queryClient = useQueryClient();
@@ -94,7 +98,8 @@ export const useEditTask = () => {
         taskPayload.notes ?? '',
         taskPayload.priority,
         taskPayload.deadline,
-        taskPayload.startDate
+        taskPayload.startDate,
+        taskPayload.wbsNum
       );
 
       return data;
@@ -102,6 +107,7 @@ export const useEditTask = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['tasks']);
         queryClient.invalidateQueries(['filter-tasks']);
       }
     }
@@ -124,6 +130,7 @@ export const useEditTaskAssignees = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['tasks']);
       }
     }
   );
@@ -165,6 +172,7 @@ export const useDeleteTask = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['tasks']);
       }
     }
   );
@@ -173,6 +181,20 @@ export const useDeleteTask = () => {
 export const useOverdueTasksByTeamLeader = (userId: string) => {
   return useQuery<TaskCardPreview[], Error>([userId, 'tasks'], async () => {
     const { data } = await getOverdueTasksByTeamLeader(userId);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all tasks for a given wbs element
+ * For projects, returns project tasks merged with all project's wp's tasks
+ * For work packages, returns just that wp's tasks
+ * @param wbsNum the wbs number to fetch tasks for
+ * @returns the tasks query
+ */
+export const useTasksByWbsNum = (wbsNum: WbsNumber) => {
+  return useQuery<Task[], Error>(['tasks', wbsPipe(wbsNum)], async () => {
+    const { data } = await getTasksByWbsNum(wbsNum);
     return data;
   });
 };

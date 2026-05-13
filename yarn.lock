@@ -9270,6 +9270,7 @@ __metadata:
     express-validator: ^6.14.2
     google-auth-library: ^8.1.1
     googleapis: ^118.0.0
+    ical-generator: ^10.2.0
     jsonwebtoken: ^8.5.1
     multer: ^1.4.5-lts.1
     nodemailer: ^6.9.1
@@ -15288,6 +15289,41 @@ __metadata:
   version: 1.2.0
   resolution: "hyperdyperid@npm:1.2.0"
   checksum: 210029d1c86926f09109f6317d143f8b056fc38e8dd11b0c3e3205fc6c6ff8429fb55b4b9c2bce065462719ed9d34366eced387aaa0035d93eb76b306a8547ef
+  languageName: node
+  linkType: hard
+
+"ical-generator@npm:^10.2.0":
+  version: 10.2.0
+  resolution: "ical-generator@npm:10.2.0"
+  peerDependencies:
+    "@touch4it/ical-timezones": ">=1.6.0"
+    "@types/luxon": ">= 1.26.0"
+    "@types/mocha": ">= 8.2.1"
+    dayjs: ">= 1.10.0"
+    luxon: ">= 1.26.0"
+    moment: ">= 2.29.0"
+    moment-timezone: ">= 0.5.33"
+    rrule: ">= 2.6.8"
+  peerDependenciesMeta:
+    "@touch4it/ical-timezones":
+      optional: true
+    "@types/luxon":
+      optional: true
+    "@types/mocha":
+      optional: true
+    "@types/node":
+      optional: true
+    dayjs:
+      optional: true
+    luxon:
+      optional: true
+    moment:
+      optional: true
+    moment-timezone:
+      optional: true
+    rrule:
+      optional: true
+  checksum: 93d7e4a872f19eb0fa271f327eab12768718db96974007c9e3581c13e3b68048c2cb088746b0b88a3c7ae9847a01134673443af9542141b20fc8b64b5be6056f
   languageName: node
   linkType: hard
 

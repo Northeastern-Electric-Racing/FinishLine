@@ -29,7 +29,7 @@ export default class TasksController {
 
   static async editTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, notes, priority, deadline, startDate } = req.body;
+      const { title, notes, priority, deadline, startDate, wbsNum } = req.body;
       const { taskId } = req.params as Record<string, string>;
 
       const updateTask = await TasksService.editTask(
@@ -40,7 +40,8 @@ export default class TasksController {
         notes,
         priority,
         startDate ? new Date(startDate) : undefined,
-        deadline ? new Date(deadline) : undefined
+        deadline ? new Date(deadline) : undefined,
+        wbsNum
       );
 
       res.status(200).json(updateTask);
@@ -117,6 +118,16 @@ export default class TasksController {
       const { userId } = req.params as Record<string, string>;
 
       const tasks = await TasksService.getOverdueTasksByTeamLeadership(userId, req.organization);
+      res.status(200).json(tasks);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getTasksByWbsNum(req: Request, res: Response, next: NextFunction) {
+    try {
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
+      const tasks = await TasksService.getTasksByWbsNum(wbsNum, req.organization);
       res.status(200).json(tasks);
     } catch (error: unknown) {
       next(error);
