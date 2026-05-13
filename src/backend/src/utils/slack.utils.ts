@@ -608,6 +608,35 @@ export const sendStandardCRCreatedNotification = async (
       notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, reviewMsg, crLink, `View CR #${cr.identifier}`))
     );
   }
+
+  // Send the approve button as an ephemeral message to each head and requested reviewer,
+  // so only authorized approvers see it. reviewChangeRequest still enforces auth on click.
+  const approveBlocks = [
+    {
+      type: 'section',
+      text: { type: 'mrkdwn', text: `Approve CR #${cr.identifier}?` }
+    },
+    {
+      type: 'actions',
+      elements: [
+        {
+          type: 'button',
+          text: { type: 'plain_text', text: 'Approve Change Request' },
+          style: 'primary',
+          action_id: 'approve_cr',
+          value: JSON.stringify({ crId: cr.crId, organizationId: cr.organizationId })
+        }
+      ]
+    }
+  ];
+
+  await Promise.all(
+    notifications.flatMap((n) =>
+      [...allSlackIds].map((slackId) =>
+        sendEphemeralMessage(n.channelId, n.ts, slackId, `Approve CR #${cr.identifier}?`, approveBlocks)
+      )
+    )
+  );
 };
 
 /**
