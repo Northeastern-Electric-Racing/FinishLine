@@ -88,8 +88,8 @@ export enum ConflictStatus {
 }
 
 export enum SlackMentionType {
-  USER = 'user',
-  CHANNEL = 'channel'
+  USER = 'USER',
+  CHANNEL = 'CHANNEL'
 }
 
 export interface Calendar {
