@@ -535,7 +535,6 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
   const { data: tokenData } = useGetIcsToken();
-  const [, setCopied] = useState(false);
   const { mutateAsync: deleteEvent } = useDeleteEvent(clickedEvent?.eventId ?? '');
   const { mutateAsync: deleteScheduleSlot } = useDeleteScheduleSlot(
     clickedEvent?.eventId ?? '',
@@ -590,9 +589,7 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
     if (!tokenData) return;
     const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, [], [event.eventId]);
     navigator.clipboard.writeText(feedUrl);
-    setCopied(true);
     toast.success('Copied calendar with event to clipboard!');
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (

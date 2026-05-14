@@ -87,7 +87,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventInstance | null>(null);
   const { data: tokenData } = useGetIcsToken();
-  const [, setCopied] = useState(false);
   const toast = useToast();
 
   // Ref and state for dynamic event count calculation
@@ -168,9 +167,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     if (!tokenData) return;
     const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, [], [event.eventId]);
     navigator.clipboard.writeText(feedUrl);
-    setCopied(true);
     toast.success('Copied calendar with event to clipboard!');
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const allItems = [...events, ...tasks];
@@ -195,7 +192,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
           setTimeout(() => {
-            if (!isLocked && !tooltipHovered) {
+            if (!isLockedRef.current && !tooltipHoveredRef.current) {
               setIsHovered(false);
             }
           }, 100);
@@ -329,8 +326,9 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         marginRight={0.5}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
+          setTooltipHovered(false);
           setTimeout(() => {
-            if (!isLocked && !tooltipHovered) {
+            if (!isLockedRef.current && !tooltipHoveredRef.current) {
               setIsHovered(false);
             }
           }, 100);
@@ -503,7 +501,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => {
             setTimeout(() => {
-              if (!isLocked && !tooltipHovered) {
+              if (!isLockedRef.current && !tooltipHoveredRef.current) {
                 setIsHovered(false);
               }
             }, 100);
@@ -578,8 +576,9 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         <Box
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => {
+            setTooltipHovered(false);
             setTimeout(() => {
-              if (!isLocked && !tooltipHovered) {
+              if (!isLockedRef.current && !tooltipHoveredRef.current) {
                 setIsHovered(false);
               }
             }, 100);

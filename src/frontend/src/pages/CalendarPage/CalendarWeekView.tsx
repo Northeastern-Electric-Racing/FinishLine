@@ -166,7 +166,6 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const { data: tokenData } = useGetIcsToken();
-  const [, setCopied] = useState(false);
 
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef<{ dayIndex: number; dayDate: Date; startMinutes: number } | null>(null);
@@ -382,9 +381,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
     if (!tokenData) return;
     const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, [], [event.eventId]);
     navigator.clipboard.writeText(feedUrl);
-    setCopied(true);
     toast.success('Copied calendar with event to clipboard!');
-    setTimeout(() => setCopied(false), 2000);
   };
 
   // ─── Sub-components ────────────────────────────────────────────────────────
@@ -462,7 +459,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
           onMouseLeave={() => {
             setTooltipHovered(false);
             setTimeout(() => {
-              if (!isLocked && !tooltipHovered) setBlockHovered(false);
+              if (!isLockedRef.current && !tooltipHoveredRef.current) setBlockHovered(false);
             }, 100);
           }}
           onClick={(e) => {
@@ -579,7 +576,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
           onMouseLeave={() => {
             setTooltipHovered(false);
             setTimeout(() => {
-              if (!isLocked && !tooltipHovered) setBlockHovered(false);
+              if (!isLockedRef.current && !tooltipHoveredRef.current) setBlockHovered(false);
             }, 100);
           }}
           onClick={(e) => {
@@ -655,7 +652,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
           onMouseLeave={() => {
             setTooltipHovered(false);
             setTimeout(() => {
-              if (!isLocked && !tooltipHovered) setBlockHovered(false);
+              if (!isLockedRef.current && !tooltipHoveredRef.current) setBlockHovered(false);
             }, 100);
           }}
           onClick={(e) => {
