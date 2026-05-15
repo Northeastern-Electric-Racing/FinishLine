@@ -12,13 +12,12 @@ import { EventClickContent } from './EventClickPopup';
 import EditEventModal from './Components/EditEventModal';
 import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmationModal';
 import NERDeleteModal from '../../components/NERDeleteModal';
-import { useDeleteEvent, useDeleteScheduleSlot, useGetIcsToken } from '../../hooks/calendar.hooks';
+import { useDeleteEvent, useDeleteScheduleSlot } from '../../hooks/calendar.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { getMutedColor } from '../../utils/calendar.utils';
 import { getTeamTypeIcon } from './CalendarDayCard';
 import { TaskClickContent } from './TaskClickPopup';
-import { apiUrls } from '../../utils/urls';
 
 // ─── Layout constants ────────────────────────────────────────────────────────
 
@@ -165,7 +164,6 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
   const [dragState, setDragState] = useState<DragState | null>(null);
-  const { data: tokenData } = useGetIcsToken();
 
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef<{ dayIndex: number; dayDate: Date; startMinutes: number } | null>(null);
@@ -376,14 +374,6 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
     }
   };
 
-  const handleExport = (event: EventInstance) => {
-    setSelectedEvent(event);
-    if (!tokenData) return;
-    const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, [], [event.eventId]);
-    navigator.clipboard.writeText(feedUrl);
-    toast.success('Copied calendar with event to clipboard!');
-  };
-
   // ─── Sub-components ────────────────────────────────────────────────────────
 
   const WeekEventBlock = ({ event, layout }: { event: EventInstance; layout: LayoutEvent }) => {
@@ -433,7 +423,6 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
               onClose={() => setLockedTooltipEventId(null)}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onExport={handleExport}
               clickedDate={new Date(event.startTime)}
             />
           </Box>
@@ -551,7 +540,6 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
               onClose={() => setLockedTooltipEventId(null)}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onExport={handleExport}
               clickedDate={new Date(event.startTime)}
             />
           </Box>

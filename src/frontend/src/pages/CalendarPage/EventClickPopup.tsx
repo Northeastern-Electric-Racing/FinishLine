@@ -74,7 +74,6 @@ interface EventClickContentProps {
   onClose: () => void;
   onEdit: (event: EventInstance) => void;
   onDelete: (event: EventInstance) => void;
-  onExport: (event: EventInstance) => void;
   clickedDate?: Date;
 }
 
@@ -96,7 +95,6 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
   onClose,
   onEdit,
   onDelete,
-  onExport,
   clickedDate
 }) => {
   const { mutateAsync: approveEvent } = useApproveEvent(event.eventId);
@@ -146,6 +144,15 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
   const locationText = (event.location ?? '').trim();
 
   const pendingReason = getPendingReason(event);
+
+  const { data: tokenData } = useGetIcsToken();
+
+  const handleExport = (event: EventInstance) => {
+    if (!tokenData) return;
+    const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, [], [event.eventId]);
+    navigator.clipboard.writeText(feedUrl);
+    toast.success('Copied calendar with event to clipboard!');
+  };
 
   return (
     <Box
@@ -203,7 +210,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
               size="small"
               onClick={(e) => {
                 stopClick(e);
-                onExport(event);
+                handleExport(event);
               }}
               sx={{
                 color: theme.palette.grey[500],
@@ -534,7 +541,6 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
-  const { data: tokenData } = useGetIcsToken();
   const { mutateAsync: deleteEvent } = useDeleteEvent(clickedEvent?.eventId ?? '');
   const { mutateAsync: deleteScheduleSlot } = useDeleteScheduleSlot(
     clickedEvent?.eventId ?? '',
@@ -585,13 +591,6 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
     }
   };
 
-  const handleExport = (event: EventInstance) => {
-    if (!tokenData) return;
-    const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, [], [event.eventId]);
-    navigator.clipboard.writeText(feedUrl);
-    toast.success('Copied calendar with event to clipboard!');
-  };
-
   return (
     <Popover
       open={Boolean(clickedEvent && anchorPosition)}
@@ -618,7 +617,6 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
           onClose={onClose}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          onExport={handleExport}
           clickedDate={clickedDate}
         />
       )}

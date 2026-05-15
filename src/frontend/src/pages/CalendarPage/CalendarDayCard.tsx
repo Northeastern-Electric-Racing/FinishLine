@@ -13,7 +13,7 @@ import EventPartialInfoView from './EventPartialInfoView';
 import EditEventModal from './Components/EditEventModal';
 import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmationModal';
 import NERDeleteModal from '../../components/NERDeleteModal';
-import { useDeleteEvent, useDeleteScheduleSlot, useGetIcsToken } from '../../hooks/calendar.hooks';
+import { useDeleteEvent, useDeleteScheduleSlot } from '../../hooks/calendar.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 import { getMutedColor } from '../../utils/calendar.utils';
 import { TaskClickContent } from './TaskClickPopup';
@@ -86,7 +86,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventInstance | null>(null);
-  const { data: tokenData } = useGetIcsToken();
   const toast = useToast();
 
   // Ref and state for dynamic event count calculation
@@ -160,14 +159,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         toast.error(err.message);
       }
     }
-  };
-
-  const handleExport = (event: EventInstance) => {
-    setSelectedEvent(event);
-    if (!tokenData) return;
-    const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, [], [event.eventId]);
-    navigator.clipboard.writeText(feedUrl);
-    toast.success('Copied calendar with event to clipboard!');
   };
 
   const allItems = [...events, ...tasks];
@@ -377,7 +368,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
                   onClose={() => setLockedTooltipEventId(null)}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
-                  onExport={handleExport}
                   clickedDate={cardDate}
                 />
               </Box>
@@ -462,7 +452,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
               onClose={() => setLockedTooltipEventId(null)}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onExport={handleExport}
               clickedDate={cardDate}
             />
           </Box>

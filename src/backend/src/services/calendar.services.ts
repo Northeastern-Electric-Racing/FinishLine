@@ -2841,7 +2841,8 @@ export default class CalendarService {
       const events = await prisma.event.findMany({
         where: {
           dateDeleted: null,
-          eventId: { in: eventIds }
+          eventId: { in: eventIds },
+          eventType: { calendars: { some: { organizationId } } }
         },
         ...getEventQueryArgs(organizationId)
       });
