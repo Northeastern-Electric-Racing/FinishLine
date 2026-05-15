@@ -9,7 +9,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import ChangeRequestDetailsView from './ChangeRequestDetailsView';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { ChangeRequestStatus, isAdmin, isGuest, isNotLeadership } from 'shared';
+import { ChangeRequestStatus, isAdmin, isGuest, isHead, isNotLeadership } from 'shared';
 
 const ChangeRequestDetails: React.FC = () => {
   interface ParamTypes {
@@ -30,7 +30,10 @@ const ChangeRequestDetails: React.FC = () => {
   const hasRequestedReviewers = data!.requestedReviewers.length > 0;
   const isInRequestedReviewers = data!.requestedReviewers.some((reviewer) => reviewer.userId === auth.user?.userId);
 
-  const isUserAllowedToReview = isLeadership && !isSubmitter && isOpen && (!hasRequestedReviewers || isInRequestedReviewers);
+  const isUserAllowedToReview =
+    !isSubmitter &&
+    isOpen &&
+    (isHead(auth.user?.role) || (isLeadership && (!hasRequestedReviewers || isInRequestedReviewers)));
 
   // Generate tooltip message explaining why review is disabled
   let reviewDisabledTooltip: string | undefined;
@@ -42,7 +45,7 @@ const ChangeRequestDetails: React.FC = () => {
     } else if (!isOpen) {
       reviewDisabledTooltip = 'This change request is not open for review';
     } else if (hasRequestedReviewers && !isInRequestedReviewers) {
-      reviewDisabledTooltip = 'Only requested reviewers can review this change request';
+      reviewDisabledTooltip = 'Only requested reviewers or heads/admins can review this change request';
     }
   }
 

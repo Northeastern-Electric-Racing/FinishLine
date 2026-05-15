@@ -23,16 +23,6 @@ const ChangeRequestsView: React.FC = () => {
   if (isGuest(user.role)) {
     return <GuestChangeRequestsPage />;
   }
-  const headerRight = (
-    <NERButton
-      variant="contained"
-      disabled={isGuest(user.role)}
-      startIcon={<Add />}
-      onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
-    >
-      New Change Request
-    </NERButton>
-  );
 
   return (
     <PageLayout
@@ -51,7 +41,6 @@ const ChangeRequestsView: React.FC = () => {
           id="cr-tabs"
         />
       }
-      headerRight={headerRight}
     >
       {tabIndex === 0 ? <ChangeRequestsOverview /> : <ChangeRequestsTable />}
     </PageLayout>

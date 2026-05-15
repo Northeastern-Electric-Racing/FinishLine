@@ -598,7 +598,22 @@ export const sendStandardCRCreatedNotification = async (
   );
 
   const reviewerSlackId = requestedReviewerId ? await getUserSlackId(requestedReviewerId) : undefined;
-  const allSlackIds = new Set([...headSlackIds, ...(reviewerSlackId ? [reviewerSlackId] : [])]);
+
+  // Also include admins
+  const admins = await prisma.user.findMany({
+    where: {
+      roles: {
+        some: {
+          roleType: { in: ['ADMIN', 'APP_ADMIN'] },
+          organizationId: cr.organizationId
+        }
+      }
+    },
+    include: { userSettings: true }
+  });
+  const adminSlackIds = admins.map((a) => a.userSettings?.slackId).filter((id): id is string => !!id);
+
+  const allSlackIds = new Set([...headSlackIds, ...adminSlackIds, ...(reviewerSlackId ? [reviewerSlackId] : [])]);
   const allMentions = [...allSlackIds].map((id) => `<@${id}>`).join(' ');
 
   if (allMentions) {
