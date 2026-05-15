@@ -1,9 +1,6 @@
-import { useHistory } from 'react-router-dom';
-import { NERButton } from '../../components/NERButton';
 import { useState } from 'react';
 import { routes } from '../../utils/routes';
 import { isGuest } from 'shared';
-import { Add } from '@mui/icons-material';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useGlobalCarFilter } from '../../app/AppGlobalCarFilterContext';
 import ChangeRequestsOverview from './ChangeRequestsOverview';
@@ -13,7 +10,6 @@ import FullPageTabs from '../../components/FullPageTabs';
 import GuestChangeRequestsPage from './GuestChangeRequestsPage';
 
 const ChangeRequestsView: React.FC = () => {
-  const history = useHistory();
   const user = useCurrentUser();
   const { selectedCar } = useGlobalCarFilter();
 

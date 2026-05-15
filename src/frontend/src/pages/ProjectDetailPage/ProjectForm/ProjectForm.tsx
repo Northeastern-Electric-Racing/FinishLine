@@ -30,7 +30,6 @@ import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChange
 import * as React from 'react';
 import { useForm as useFormCR } from 'react-hook-form';
 import { yupResolver as yupResolverCR } from '@hookform/resolvers/yup';
-import { ChangeRequestFormReturn } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 
 export interface ProjectFormInput {
   name: string;

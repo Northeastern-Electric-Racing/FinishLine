@@ -31,12 +31,6 @@ describe('Change Request Overview', () => {
     cy.get(CR_ROW('My Approved Change Requests')).children().should(LENGTH_GREATER_THAN, 2);
   });
 
-  it('New Change Request Button Redirects to New Change Requeest Form', () => {
-    cy.contains(NEW_CHANGE_REQUEST_BUTTON).click();
-
-    cy.url().should(INCLUDE, '/change-requests/new');
-  });
-
   it('Can Switch to All Change Requests Table', () => {
     cy.contains(ALL_CHANGE_REQUESTS_TAB).click();
     cy.url().should(INCLUDE, '/change-requests/all');
