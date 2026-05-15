@@ -181,7 +181,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         marginRight={0.5}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
-          setTooltipHovered(false);
           setTimeout(() => {
             if (!isLockedRef.current && !tooltipHoveredRef.current) {
               setIsHovered(false);
@@ -489,7 +488,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         <Box
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => {
-            setTooltipHovered(false);
             setTimeout(() => {
               if (!isLockedRef.current && !tooltipHoveredRef.current) {
                 setIsHovered(false);

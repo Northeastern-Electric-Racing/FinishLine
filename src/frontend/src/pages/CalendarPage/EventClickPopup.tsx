@@ -11,6 +11,7 @@ import {
   isHead,
   wbsPipe
 } from 'shared';
+import { apiUrls } from '../../utils/urls';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../utils/routes';
@@ -24,6 +25,7 @@ import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import LinkIcon from '@mui/icons-material/Link';
 import ArticleIcon from '@mui/icons-material/Article';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -34,7 +36,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
-import { useApproveEvent, useDeleteEvent, useDeleteScheduleSlot, useDenyEvent } from '../../hooks/calendar.hooks';
+import {
+  useApproveEvent,
+  useDeleteEvent,
+  useDeleteScheduleSlot,
+  useDenyEvent,
+  useGetIcsToken
+} from '../../hooks/calendar.hooks';
 import EditEventModal from './Components/EditEventModal';
 import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmationModal';
 import { useToast } from '../../hooks/toasts.hooks';
@@ -137,6 +145,15 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
 
   const pendingReason = getPendingReason(event);
 
+  const { data: tokenData } = useGetIcsToken();
+
+  const handleExport = (event: EventInstance) => {
+    if (!tokenData) return;
+    const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, [], [event.eventId]);
+    navigator.clipboard.writeText(feedUrl);
+    toast.success('Copied calendar with event to clipboard!');
+  };
+
   return (
     <Box
       sx={{
@@ -188,8 +205,22 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
             </Typography>
           </Box>
 
-          {!disable && canEditOrDelete && (
-            <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
+          <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                stopClick(e);
+                handleExport(event);
+              }}
+              sx={{
+                color: theme.palette.grey[500],
+                '&:hover': { color: theme.palette.common.white, bgcolor: 'transparent' }
+              }}
+            >
+              <ExitToAppIcon fontSize="small" />
+            </IconButton>
+
+            {!disable && canEditOrDelete && (
               <IconButton
                 size="small"
                 onClick={(e) => {
@@ -203,7 +234,9 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
               >
                 <EditIcon fontSize="small" />
               </IconButton>
+            )}
 
+            {!disable && canEditOrDelete && (
               <IconButton
                 size="small"
                 onClick={(e) => {
@@ -217,8 +250,8 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
               >
                 <DeleteIcon fontSize="small" />
               </IconButton>
-            </Stack>
-          )}
+            )}
+          </Stack>
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5, flexWrap: 'wrap' }}>
@@ -508,7 +541,6 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
-
   const { mutateAsync: deleteEvent } = useDeleteEvent(clickedEvent?.eventId ?? '');
   const { mutateAsync: deleteScheduleSlot } = useDeleteScheduleSlot(
     clickedEvent?.eventId ?? '',
