@@ -17,7 +17,6 @@ import { useDeleteEvent, useDeleteScheduleSlot } from '../../hooks/calendar.hook
 import { useToast } from '../../hooks/toasts.hooks';
 import { getMutedColor } from '../../utils/calendar.utils';
 import { TaskClickContent } from './TaskClickPopup';
-import { apiUrls } from '../../utils/urls';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
