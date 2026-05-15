@@ -1,7 +1,6 @@
 /// <reference types="cypress" />
 import {
   CR_ROW,
-  NEW_CHANGE_REQUEST_BUTTON,
   ALL_CHANGE_REQUESTS_TAB,
   CHANGE_REQUEST_TABLE
 } from '../../utils/selectors.utils';
