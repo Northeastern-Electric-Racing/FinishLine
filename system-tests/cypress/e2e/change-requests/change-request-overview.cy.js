@@ -1,9 +1,5 @@
 /// <reference types="cypress" />
-import {
-  CR_ROW,
-  ALL_CHANGE_REQUESTS_TAB,
-  CHANGE_REQUEST_TABLE
-} from '../../utils/selectors.utils';
+import { CR_ROW, ALL_CHANGE_REQUESTS_TAB, CHANGE_REQUEST_TABLE } from '../../utils/selectors.utils';
 
 import { LENGTH_GREATER_THAN, INCLUDE } from '../../utils/cypress-actions.utils';
 
