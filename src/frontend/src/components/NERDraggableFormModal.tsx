@@ -39,20 +39,20 @@ export const NERDraggableFormModal = ({
   return (
     <>
       {open && (
-        <Draggable handle=".draggable-handle" nodeRef={nodeRef}>
-          <Box
-            ref={nodeRef}
-            sx={{
-              position: 'fixed',
-              top: '50%',
-              right: '5%',
-              backgroundColor: theme.palette.background.paper,
-              boxShadow: 24,
-              zIndex: 6,
-              width: '40%',
-              borderRadius: '8px'
-            }}
-          >
+          <Draggable handle=".draggable-handle" nodeRef={nodeRef} positionOffset={{ x: '-50%', y: '-50%' }}>
+            <Box
+              ref={nodeRef}
+              sx={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                backgroundColor: theme.palette.background.paper,
+                boxShadow: 24,
+                zIndex: 6,
+                width: '40%',
+                borderRadius: '8px'
+              }}
+            >
             {showCloseButton && (
               <IconButton
                 aria-label="close"
@@ -81,8 +81,8 @@ export const NERDraggableFormModal = ({
                 </NERSuccessButton>
               </Box>
             )}
-          </Box>
-        </Draggable>
+            </Box>
+          </Draggable>
       )}
     </>
   );
