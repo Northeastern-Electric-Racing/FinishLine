@@ -62,10 +62,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
               — {fullNamePipe(ic.implementer)}
             </Typography>
           </Typography>
-          <Typography
-            variant="caption"
-            sx={{ color: 'text.secondary', whiteSpace: 'nowrap', flexShrink: 0, ml: 'auto' }}
-          >
+          <Typography variant="caption" sx={{ color: 'text.secondary', whiteSpace: 'nowrap', flexShrink: 0, ml: 'auto' }}>
             {datePipe(ic.dateImplemented)}
           </Typography>
         </Box>
