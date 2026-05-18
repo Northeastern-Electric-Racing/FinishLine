@@ -8,7 +8,6 @@ import { ImplementedChange } from 'shared';
 import { datePipe, fullNamePipe } from '../utils/pipes';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../utils/routes';
-import DynamicTooltip from './DynamicTooltip';
 
 interface ChangesListProps {
   changes: ImplementedChange[];
@@ -57,12 +56,16 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
           >
             #{ic.changeRequestIdentifier}
           </Link>
-          <DynamicTooltip title={fullNamePipe(ic.implementer)}>
-            <Typography component="span" sx={{ flexGrow: 1, wordBreak: 'break-word' }}>
-              {renderDetailWithLinks(ic.detail)}
+          <Typography component="span" sx={{ wordBreak: 'break-word' }}>
+            {renderDetailWithLinks(ic.detail)}
+            <Typography component="span" sx={{ color: 'text.secondary', ml: 0.75 }}>
+              — {fullNamePipe(ic.implementer)}
             </Typography>
-          </DynamicTooltip>
-          <Typography variant="caption" sx={{ color: 'text.secondary', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{ color: 'text.secondary', whiteSpace: 'nowrap', flexShrink: 0, ml: 'auto' }}
+          >
             {datePipe(ic.dateImplemented)}
           </Typography>
         </Box>
