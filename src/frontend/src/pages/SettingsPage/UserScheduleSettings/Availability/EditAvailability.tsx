@@ -128,8 +128,10 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
       <TableContainer
         sx={{
           overflowX: 'auto',
-          overflowY: 'hidden',
+          overflowY: 'auto',
           maxWidth: '100%',
+          maxHeight: '100%',
+          scrollSnapType: 'x mandatory',
           flex: 1
         }}
       >
@@ -158,9 +160,9 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
         >
           <TableHead>
             <TableRow>
-              <TableCell sx={stickyLeft}></TableCell>
+              <TableCell sx={{ ...stickyLeft, scrollSnapAlign: 'start' }}></TableCell>
               {currentlyDisplayedAvailabilities.map((availability, idx) => (
-                <TableCell key={idx}>
+                <TableCell key={idx} sx={{ scrollSnapAlign: 'start' }}>
                   <Typography variant="body1" align="center" fontWeight="bold" sx={{ fontSize: 15 }}>
                     {getDayOfWeek(availability.dateSet)}
                     <br />
@@ -173,7 +175,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           <TableBody>
             {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
               <TableRow key={time}>
-                <TableCell sx={{ ...stickyLeft, zIndex: 1 }}>
+                <TableCell sx={{ ...stickyLeft, zIndex: 1, scrollSnapAlign: 'start' }}>
                   <Typography variant="body1" align="center" sx={{ fontSize: 15 }}>
                     {time}
                   </Typography>
@@ -181,7 +183,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
                 {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
                   const isAvailable = availability.availability.includes(timeIndex);
                   return (
-                    <TableCell key={dayIndex} sx={{ p: 0 }}>
+                    <TableCell key={dayIndex} sx={{ p: 0, scrollSnapAlign: 'start' }}>
                       <EventTimeSlot
                         backgroundColor={isAvailable ? HeatmapColors[3] : HeatmapColors[0]}
                         selected={false}
