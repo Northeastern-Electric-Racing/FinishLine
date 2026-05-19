@@ -1,4 +1,14 @@
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  useMediaQuery
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { HeatmapColors, enumToArray, REVIEW_TIMES } from '../../../../utils/design-review.utils';
 import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
@@ -208,5 +218,4 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     </Box>
   );
 };
-
 export default EditAvailability;
