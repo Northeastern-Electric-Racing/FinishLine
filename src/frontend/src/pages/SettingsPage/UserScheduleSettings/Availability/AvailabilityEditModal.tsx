@@ -36,7 +36,6 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
 
   const isMobile = useMediaQuery('(max-width:480px)');
 
-  if (isMobile && !open) return null;
   if (isMobile && open) {
     return (
       <PageLayout title={header}>
