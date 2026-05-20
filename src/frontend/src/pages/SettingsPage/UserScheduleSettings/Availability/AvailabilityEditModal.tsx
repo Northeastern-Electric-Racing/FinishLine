@@ -6,7 +6,6 @@ import PageLayout from '../../../../components/PageLayout';
 import NERFailButton from '../../../../components/NERFailButton';
 import NERSuccessButton from '../../../../components/NERSuccessButton';
 
-
 interface DRCEditModalProps {
   open: boolean;
   header: string;
