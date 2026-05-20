@@ -37,24 +37,10 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
 
   const isMobile = useMediaQuery('(max-width:480px)');
 
-  if (isMobile && !open) return null; // do not want mobile to fall to computer version
+  if (isMobile && !open) return null;
   if (isMobile && open) {
     return (
-      <PageLayout
-        title={header}
-        headerRight={
-          <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
-            <NERFailButton variant="contained" onClick={onCancel}>
-              {' '}
-              CANCEL{' '}
-            </NERFailButton>
-            <NERSuccessButton variant="contained" onClick={onSubmit}>
-              {' '}
-              SAVE{' '}
-            </NERSuccessButton>
-          </Box>
-        }
-      >
+      <PageLayout title={header}>
         <EditAvailability
           editedAvailabilities={confirmedAvailabilities}
           setEditedAvailabilities={setConfirmedAvailabilities}
@@ -62,6 +48,26 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
           canChangeDateRange={canChangeDateRange}
           initialDate={initialDate}
         />
+
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            p: 2,
+            display: 'flex',
+            gap: 2,
+            backgroundColor: 'background.paper'
+          }}
+        >
+          <NERFailButton sx={{ flex: 1 }} onClick={onCancel}>
+            CANCEL
+          </NERFailButton>
+          <NERSuccessButton sx={{ flex: 1 }} onClick={onSubmit}>
+            SAVE
+          </NERSuccessButton>
+        </Box>
       </PageLayout>
     );
   }

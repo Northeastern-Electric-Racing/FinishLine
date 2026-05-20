@@ -126,6 +126,8 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     bgcolor: 'background.paper'
   };
 
+  const isMobile = useMediaQuery('(max-width:480px)');
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Box display="flex" justifyContent="space-between" mb={1}>
@@ -174,9 +176,11 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
               {currentlyDisplayedAvailabilities.map((availability, idx) => (
                 <TableCell key={idx} sx={{ scrollSnapAlign: 'start' }}>
                   <Typography variant="body1" align="center" fontWeight="bold" sx={{ fontSize: 15 }}>
-                    {getDayOfWeek(availability.dateSet)}
+                    {!isMobile && getDayOfWeek(availability.dateSet)}
+                    {isMobile && getDayOfWeek(availability.dateSet).slice(0, 3)}
                     <br />
-                    {datePipe(availability.dateSet)}
+                    {!isMobile && datePipe(availability.dateSet)}
+                    {isMobile && datePipe(availability.dateSet, false)}
                   </Typography>
                 </TableCell>
               ))}
