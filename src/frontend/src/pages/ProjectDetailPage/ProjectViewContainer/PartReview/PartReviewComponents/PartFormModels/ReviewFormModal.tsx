@@ -3,7 +3,7 @@ import { useToast } from '../../../../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import NERFormModal from '../../../../../../components/NERFormModal';
 import { Autocomplete, Button, Grid, IconButton, List, ListItem, Typography } from '@mui/material';
 import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material';
@@ -24,6 +24,13 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const { mutateAsync: uploadFile } = useUploadFile();
+
+  useEffect(() => {
+    if (!open) {
+      setFiles([]);
+      setSelectedPartIndex(undefined);
+    }
+  }, [open]);
 
   const schema = yup.object().shape({
     submissionId: yup.string().required(),

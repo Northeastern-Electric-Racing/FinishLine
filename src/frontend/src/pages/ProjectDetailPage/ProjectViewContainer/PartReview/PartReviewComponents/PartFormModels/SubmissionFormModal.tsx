@@ -39,6 +39,12 @@ const SubmissionFormModal = ({
   const [uploading, setUploading] = useState(false);
   const { mutateAsync: uploadFile } = useUploadFile();
 
+  useEffect(() => {
+    if (!open) {
+      setFiles([]);
+    }
+  }, [open]);
+
   const schema = yup.object().shape({
     partId: yup.string().required(),
     name: yup.string().required(),
