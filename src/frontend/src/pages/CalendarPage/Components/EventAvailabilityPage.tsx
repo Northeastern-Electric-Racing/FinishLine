@@ -150,7 +150,7 @@ export const EventAvailabilityPage: React.FC = () => {
 
   // Reorders users by alphabetical order.
   const reorderAlphabetically = (users: User[]) => {
-    return users.sort((a, b) => a.lastName.localeCompare(b.lastName));
+    return users.sort((a, b) => (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName));
   };
 
   // Reorders users by confirmation or not. All confirmed users are above the unconfirmed users
