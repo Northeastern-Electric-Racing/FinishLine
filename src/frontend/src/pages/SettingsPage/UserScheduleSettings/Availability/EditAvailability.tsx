@@ -116,7 +116,10 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     editedAvailabilities.set(availability.dateSet.getTime(), availability);
     setEditedAvailabilities(editedAvailabilities);
 
-    setCurrentlyDisplayedAvailabilities(getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), initialDate));
+    const currentStartDate = currentlyDisplayedAvailabilities[0]?.dateSet ?? initialDate;
+    setCurrentlyDisplayedAvailabilities(
+      getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), currentStartDate)
+    );
   };
 
   const stickyLeft = {
