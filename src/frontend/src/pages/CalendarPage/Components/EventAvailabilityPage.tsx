@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery as useQueryParam } from '../../../hooks/utils.hooks';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Typography, useMediaQuery, useTheme } from '@mui/material';
 import {
   Availability,
   getMostRecentAvailabilities,
@@ -157,13 +157,15 @@ export const EventAvailabilityPage: React.FC = () => {
     }
   }, [userScheduleSettings, displayDate]);
 
+  const isMobile = useMediaQuery('(max-width:480px)');
+
   // Auto-open modal for users who haven't confirmed (runs once when event loads)
   useEffect(() => {
-    if (!hasAutoOpened && event && !hasConfirmed) {
+    if (!hasAutoOpened && event && !hasConfirmed && !isMobile) {
       setEditAvailabilityOpen(true);
       setHasAutoOpened(true);
     }
-  }, [event, hasAutoOpened, hasConfirmed]);
+  }, [event, hasAutoOpened, hasConfirmed, isMobile]);
 
   if (eventLoading || !event) return <LoadingIndicator />;
   if (eventError) return <ErrorPage error={eventErrorMsg} message={eventErrorMsg?.message} />;
@@ -225,7 +227,24 @@ export const EventAvailabilityPage: React.FC = () => {
     return `${hour}:00 AM`;
   };
 
-  // RENDER
+  // MOBILE EDIT OPEN RENDER
+  if (isMobile && editAvailabilityOpen) {
+    return (
+      <AvailabilityEditModal
+        open={editAvailabilityOpen}
+        onHide={() => setEditAvailabilityOpen(false)}
+        header={editModalTitle}
+        confirmedAvailabilities={confirmedAvailabilities}
+        setConfirmedAvailabilities={setConfirmedAvailabilities}
+        totalAvailabilities={deeplyCopy(userScheduleSettings.availabilities, availabilityTransformer) as Availability[]}
+        initialDate={displayDate}
+        onSubmit={handleConfirm}
+        canChangeDateRange={false}
+      />
+    );
+  }
+
+  // RENDER NORMALLY
   return (
     <PageLayout
       title={workPackageNames}
@@ -356,7 +375,6 @@ export const EventAvailabilityPage: React.FC = () => {
           )}
         </Box>
       </Box>
-
       <SingleAvailabilityModal
         open={viewAvailabilityOpen}
         onHide={() => setViewAvailabilityOpen(false)}
@@ -364,7 +382,6 @@ export const EventAvailabilityPage: React.FC = () => {
         availabilites={userScheduleSettings.availabilities}
         initialDate={displayDate}
       />
-
       <AvailabilityEditModal
         open={editAvailabilityOpen}
         onHide={() => setEditAvailabilityOpen(false)}
@@ -376,7 +393,6 @@ export const EventAvailabilityPage: React.FC = () => {
         onSubmit={handleConfirm}
         canChangeDateRange={false}
       />
-
       {selectedSlot && (
         <ScheduleEventModal
           open={scheduleModalOpen}

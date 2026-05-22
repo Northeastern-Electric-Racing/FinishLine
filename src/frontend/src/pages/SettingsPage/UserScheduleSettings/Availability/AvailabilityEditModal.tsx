@@ -1,6 +1,10 @@
 import { Availability } from 'shared';
 import NERModal from '../../../../components/NERModal';
 import EditAvailability from './EditAvailability';
+import { Box, useMediaQuery } from '@mui/system';
+import PageLayout from '../../../../components/PageLayout';
+import NERFailButton from '../../../../components/NERFailButton';
+import NERSuccessButton from '../../../../components/NERSuccessButton';
 
 interface DRCEditModalProps {
   open: boolean;
@@ -30,6 +34,41 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
     onHide();
   };
 
+  const isMobile = useMediaQuery('(max-width:480px)');
+
+  if (isMobile && open) {
+    return (
+      <PageLayout title={header}>
+        <EditAvailability
+          editedAvailabilities={confirmedAvailabilities}
+          setEditedAvailabilities={setConfirmedAvailabilities}
+          totalAvailabilities={totalAvailabilities}
+          canChangeDateRange={canChangeDateRange}
+          initialDate={initialDate}
+        />
+
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            p: 2,
+            display: 'flex',
+            gap: 2,
+            backgroundColor: 'background.paper'
+          }}
+        >
+          <NERFailButton sx={{ flex: 1 }} onClick={onCancel}>
+            CANCEL
+          </NERFailButton>
+          <NERSuccessButton sx={{ flex: 1 }} onClick={onSubmit}>
+            SAVE
+          </NERSuccessButton>
+        </Box>
+      </PageLayout>
+    );
+  }
   return (
     <NERModal
       open={open}
@@ -49,5 +88,4 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
     </NERModal>
   );
 };
-
 export default AvailabilityEditModal;
