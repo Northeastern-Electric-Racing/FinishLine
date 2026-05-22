@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { DashboardTarget } from './recruitment-types.js';
 import { User } from './user-types.js';
 
 export interface Milestone {
@@ -14,4 +15,5 @@ export interface Milestone {
   userDeleted?: User;
   dateCreated: Date;
   dateDeleted?: Date;
+  dashboardTarget: DashboardTarget;
 }

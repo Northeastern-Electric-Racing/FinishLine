@@ -28,3 +28,14 @@ export interface TeamPreview extends TeamBase {
 export interface Team extends TeamPreview {
   projects: ProjectGantt[];
 }
+
+export type TeamJoinRequestStatus = 'PENDING' | 'APPROVED' | 'DENIED';
+
+export interface TeamJoinRequest {
+  teamJoinRequestId: string;
+  user: User;
+  team: TeamPreview;
+  status: TeamJoinRequestStatus;
+  dateRequested: Date;
+  denialReason?: string;
+}

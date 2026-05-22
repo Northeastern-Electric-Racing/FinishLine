@@ -5,6 +5,8 @@
 
 import { User } from './user-types.js';
 
+export type DashboardTarget = 'RECRUITING' | 'ONBOARDING' | 'BOTH';
+
 export interface FrequentlyAskedQuestion {
   faqId: string;
   question: string;
@@ -13,6 +15,7 @@ export interface FrequentlyAskedQuestion {
   userDeleted?: User;
   dateCreated: Date;
   dateDeleted?: Date;
+  dashboardTarget: DashboardTarget;
 }
 
 export enum GuestDefinitionType {
