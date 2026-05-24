@@ -148,6 +148,20 @@ export const EventAvailabilityPage: React.FC = () => {
     return event.confirmedMembers.some((m) => m.userId === currentUser.userId);
   }, [event, currentUser]);
 
+  // Reorders users by alphabetical order.
+  const reorderAlphabetically = (users: User[]) => {
+    return users.sort((a, b) => (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName));
+  };
+
+  // Reorders users by confirmation or not. All confirmed users are above the unconfirmed users
+  const reorderByConfirmation = (users: User[]) => {
+    return [...reorderAlphabetically(users)].sort((a, b) => {
+      const aConfirmation = event && event.confirmedMembers.some((m) => m.userId === a.userId) ? 1 : 0;
+      const bConfirmation = event && event.confirmedMembers.some((m) => m.userId === b.userId) ? 1 : 0;
+      return bConfirmation - aConfirmation;
+    });
+  };
+
   useEffect(() => {
     if (userScheduleSettings && userScheduleSettings.availabilities.length > 0) {
       const confirmed = getMostRecentAvailabilities(userScheduleSettings.availabilities, displayDate);
@@ -318,11 +332,15 @@ export const EventAvailabilityPage: React.FC = () => {
               </Typography>
               <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
                 {currentAvailableUsers.length > 0 ? (
-                  currentAvailableUsers.map((user) => {
+                  reorderByConfirmation(currentAvailableUsers).map((user) => {
                     const isConfirmed = event.confirmedMembers.some((cm) => cm.userId === user.userId);
-                    const displayName = fullNamePipe(user) + (isConfirmed ? '' : ' *');
+                    const displayName = fullNamePipe(user);
                     return (
-                      <Typography key={user.userId} variant="body2" sx={{ py: 0.25 }}>
+                      <Typography
+                        key={user.userId}
+                        variant="body2"
+                        sx={{ py: 0.25, color: isConfirmed ? 'inherit' : '#ef4345' }}
+                      >
                         {displayName}
                       </Typography>
                     );
@@ -341,11 +359,15 @@ export const EventAvailabilityPage: React.FC = () => {
               </Typography>
               <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
                 {currentUnavailableUsers.length > 0 ? (
-                  currentUnavailableUsers.map((user) => {
+                  reorderByConfirmation(currentUnavailableUsers).map((user) => {
                     const isConfirmed = event.confirmedMembers.some((cm) => cm.userId === user.userId);
-                    const displayName = fullNamePipe(user) + (isConfirmed ? '' : ' *');
+                    const displayName = fullNamePipe(user);
                     return (
-                      <Typography key={user.userId} variant="body2" sx={{ py: 0.25 }}>
+                      <Typography
+                        key={user.userId}
+                        variant="body2"
+                        sx={{ py: 0.25, color: isConfirmed ? 'inherit' : '#ef4345' }}
+                      >
                         {displayName}
                       </Typography>
                     );
@@ -361,7 +383,7 @@ export const EventAvailabilityPage: React.FC = () => {
 
           {(currentAvailableUsers.length > 0 || currentUnavailableUsers.length > 0) && (
             <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-              * has not confirmed availability
+              <span style={{ color: '#ef4345' }}>Red</span> means has not confirmed availability
             </Typography>
           )}
 
