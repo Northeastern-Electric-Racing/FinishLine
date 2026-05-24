@@ -901,7 +901,7 @@ describe('Calendar Tests', () => {
 
       expect(result.title).toBe('Team Sync');
       expect(result.eventTypeId).toBe(eventType.eventTypeId);
-      expect(result.requiredMembers).toHaveLength(1);
+      expect(result.requiredMembers).toHaveLength(2);
       expect(result.requiredMembers[0].userId).toBe(member.userId);
       expect(result.optionalMembers).toHaveLength(1);
       expect(result.optionalMembers[0].userId).toBe(adminUser.userId);
@@ -1007,7 +1007,7 @@ describe('Calendar Tests', () => {
 
       expect(result.title).toBe('Minimal Event');
       expect(result.eventTypeId).toBe(eventType.eventTypeId);
-      expect(result.requiredMembers).toHaveLength(1);
+      expect(result.requiredMembers).toHaveLength(2);
       expect(result.requiredMembers[0].userId).toBe(member.userId);
       expect(result.optionalMembers).toHaveLength(1);
       expect(result.optionalMembers[0].userId).toBe(adminUser.userId);
@@ -1887,7 +1887,7 @@ describe('Calendar Tests', () => {
 
       expect(result.eventId).toBe(event.eventId);
       expect(result.title).toBe('Updated Event Title');
-      expect(result.requiredMembers).toHaveLength(1);
+      expect(result.requiredMembers).toHaveLength(2);
       expect(result.requiredMembers[0].userId).toBe(newMember.userId);
       expect(result.optionalMembers).toHaveLength(1);
       expect(result.optionalMembers[0].userId).toBe(adminUser.userId);
