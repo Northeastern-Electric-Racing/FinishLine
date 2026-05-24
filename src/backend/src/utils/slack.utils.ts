@@ -488,11 +488,12 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
   const location = zoomLink && inPersonLocation ? `${inPersonLocation} and ${zoomLink}` : inPersonLocation || zoomLink || '';
 
   const msg = `:spiral_calendar_pad: ${event.title} for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
+  const eventLink = `https://finishlinebyner.com/calendar/event/${event.eventId}`;
   const docLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Doc Link>` : '';
   const threadMsg = `This event has been Scheduled! \n` + docLink;
 
   if (threads && threads.length !== 0) {
-    const msgs = threads.map((thread) => editMessage(thread.channelId, thread.timestamp, msg));
+    const msgs = threads.map((thread) => editMessage(thread.channelId, thread.timestamp, msg, eventLink, 'View Event'));
     await Promise.all(msgs);
     const threadMsgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, threadMsg));
     await Promise.all(threadMsgs);
