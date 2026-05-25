@@ -115,7 +115,7 @@ export interface EventPayload {
 }
 
 const schema = yup.object().shape({
-  title: yup.string().required('Title is required').matches(/^\S*$/, 'Whitespace is not allowed'),
+  title: yup.string().required('Title is required').trim().min(1, 'Title cannot be only whitespace'),
   eventTypeId: yup.string().required('Event Type is required'),
   requiredMemberIds: yup.array().of(yup.string().required()).default([]),
   optionalMemberIds: yup.array().of(yup.string().required()).default([]),
