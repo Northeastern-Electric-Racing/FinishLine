@@ -421,13 +421,10 @@ export default class CalendarService {
     // Check for conflicts using expanded slots
     const { hasConflict, conflictingEvent } = await checkEventConflicts(scheduleSlots, organization, location, undefined);
 
-    // Returns whether the event creator is part of the list of required members
-    const creatorInRequiredMembers = () => {
-      for (const member of requiredMemberIds) {
-        if (member === submitter.userId) return true;
-      }
-      return false;
-    };
+    const allRequiredMembers = [
+      ...requiredMemberIds,
+      ...(requiredMemberIds.includes(submitter.userId) ? [] : [submitter.userId])
+    ];
 
     const newEvent = await prisma.event.create({
       data: {
@@ -436,9 +433,7 @@ export default class CalendarService {
         title,
         eventTypeId,
         requiredMembers: {
-          connect: requiredMemberIds
-            .concat(creatorInRequiredMembers() ? [] : [submitter.userId])
-            .map((userId) => ({ userId }))
+          connect: allRequiredMembers.map((userId) => ({ userId }))
         },
         optionalMembers: {
           connect: optionalMemberIds.map((userId) => ({ userId }))
@@ -480,11 +475,7 @@ export default class CalendarService {
     let calendarEventIds: string[] = [];
     if (process.env.NODE_ENV === 'production') {
       try {
-        const allMemberIds = [
-          ...requiredMemberIds,
-          ...(creatorInRequiredMembers() ? [] : [submitter.userId]),
-          ...optionalMemberIds
-        ];
+        const allMemberIds = [...allRequiredMembers, ...optionalMemberIds];
         const isInPerson = !!location;
 
         calendarEventIds = await createCalendarEvent(
@@ -511,7 +502,7 @@ export default class CalendarService {
       const members = await prisma.user.findMany({
         where: {
           userId: {
-            in: optionalMemberIds.concat(requiredMemberIds).concat(creatorInRequiredMembers() ? [] : submitter.userId)
+            in: optionalMemberIds.concat(allRequiredMembers)
           }
         }
       });
@@ -756,19 +747,13 @@ export default class CalendarService {
       }
     }
 
-    // Returns whether the event creator is part of the list of required members
-    const creatorInRequiredMembers = () => {
-      for (const member of requiredMemberIds) {
-        if (member === submitter.userId) return true;
-      }
-      return false;
-    };
+    const allRequiredMembers = [
+      ...requiredMemberIds,
+      ...(requiredMemberIds.includes(submitter.userId) ? [] : [submitter.userId])
+    ];
 
     // throw if a user isn't found, then build prisma queries for connecting userIds
-    const updatedRequiredMembers = [
-      ...getPrismaQueryUserIds(await getUsers(requiredMemberIds)),
-      ...(creatorInRequiredMembers() ? [] : [{ userId: submitter.userId }])
-    ];
+    const updatedRequiredMembers = [...getPrismaQueryUserIds(await getUsers(allRequiredMembers))];
     const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
 
     // Update the event with new data (excluding schedule slots)
