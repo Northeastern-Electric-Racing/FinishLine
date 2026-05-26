@@ -271,6 +271,8 @@ export default class CalendarService {
     zoomLink?: string,
     description?: string
   ): Promise<Event> {
+    if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
+
     // Validate eventTypeId
     const foundEventType = await prisma.event_Type.findUnique({
       where: { eventTypeId }
@@ -592,6 +594,8 @@ export default class CalendarService {
     zoomLink?: string,
     description?: string
   ): Promise<Event> {
+    if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
+
     // validate eventId
     const foundEvent = await prisma.event.findUnique({
       where: { eventId },
