@@ -62,7 +62,6 @@ yarn-error.log*
 
 # Lock files (keep package.json though)
 package-lock.json
-yarn.lock
 
 # Prettier
 .prettierrc*
