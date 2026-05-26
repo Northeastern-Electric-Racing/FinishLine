@@ -311,17 +311,16 @@ export default class CalendarService {
     });
 
     // Validate required memberIds
-    if (requiredMemberIds.length > 0) {
-      const foundMembers = await prisma.user.findMany({
-        where: {
-          userId: { in: requiredMemberIds },
-          organizations: { some: { organizationId: organization.organizationId } }
-        }
-      });
-      if (foundMembers.length !== requiredMemberIds.length) {
-        const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
-        throw new NotFoundException('User', missingIds.join(', '));
+
+    const foundMembers = await prisma.user.findMany({
+      where: {
+        userId: { in: requiredMemberIds || submitter.userId },
+        organizations: { some: { organizationId: organization.organizationId } }
       }
+    });
+    if (foundMembers.length !== requiredMemberIds.length) {
+      const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
+      throw new NotFoundException('User', missingIds.join(', '));
     }
 
     // Validate optionals memberIds
@@ -422,6 +421,11 @@ export default class CalendarService {
     // Check for conflicts using expanded slots
     const { hasConflict, conflictingEvent } = await checkEventConflicts(scheduleSlots, organization, location, undefined);
 
+    const allRequiredMembers = [
+      ...requiredMemberIds,
+      ...(requiredMemberIds.includes(submitter.userId) ? [] : [submitter.userId])
+    ];
+
     const newEvent = await prisma.event.create({
       data: {
         userCreatedId: submitter.userId,
@@ -429,7 +433,7 @@ export default class CalendarService {
         title,
         eventTypeId,
         requiredMembers: {
-          connect: requiredMemberIds.map((userId) => ({ userId }))
+          connect: allRequiredMembers.map((userId) => ({ userId }))
         },
         optionalMembers: {
           connect: optionalMemberIds.map((userId) => ({ userId }))
@@ -471,7 +475,7 @@ export default class CalendarService {
     let calendarEventIds: string[] = [];
     if (process.env.NODE_ENV === 'production') {
       try {
-        const allMemberIds = [...requiredMemberIds, ...optionalMemberIds];
+        const allMemberIds = [...allRequiredMembers, ...optionalMemberIds];
         const isInPerson = !!location;
 
         calendarEventIds = await createCalendarEvent(
@@ -496,7 +500,11 @@ export default class CalendarService {
 
     if (foundEventType.sendSlackNotifications) {
       const members = await prisma.user.findMany({
-        where: { userId: { in: optionalMemberIds.concat(requiredMemberIds) } }
+        where: {
+          userId: {
+            in: optionalMemberIds.concat(allRequiredMembers)
+          }
+        }
       });
 
       // get the user settings for all the members invited, who are leaderingship
@@ -633,17 +641,15 @@ export default class CalendarService {
     }
 
     // Validate required memberIds
-    if (requiredMemberIds.length > 0) {
-      const foundMembers = await prisma.user.findMany({
-        where: {
-          userId: { in: requiredMemberIds },
-          organizations: { some: { organizationId: organization.organizationId } }
-        }
-      });
-      if (foundMembers.length !== requiredMemberIds.length) {
-        const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
-        throw new NotFoundException('User', missingIds.join(', '));
+    const foundMembers = await prisma.user.findMany({
+      where: {
+        userId: { in: requiredMemberIds || submitter.userId },
+        organizations: { some: { organizationId: organization.organizationId } }
       }
+    });
+    if (foundMembers.length !== requiredMemberIds.length) {
+      const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
+      throw new NotFoundException('User', missingIds.join(', '));
     }
 
     // Validate optional memberIds
@@ -741,8 +747,13 @@ export default class CalendarService {
       }
     }
 
+    const allRequiredMembers = [
+      ...requiredMemberIds,
+      ...(requiredMemberIds.includes(submitter.userId) ? [] : [submitter.userId])
+    ];
+
     // throw if a user isn't found, then build prisma queries for connecting userIds
-    const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMemberIds));
+    const updatedRequiredMembers = [...getPrismaQueryUserIds(await getUsers(allRequiredMembers))];
     const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
 
     // Update the event with new data (excluding schedule slots)
