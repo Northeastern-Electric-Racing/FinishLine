@@ -334,12 +334,17 @@ export const EventAvailabilityPage: React.FC = () => {
                 {currentAvailableUsers.length > 0 ? (
                   reorderByConfirmation(currentAvailableUsers).map((user) => {
                     const isConfirmed = event.confirmedMembers.some((cm) => cm.userId === user.userId);
+                    const isRequired = event.requiredMembers.some((cm) => cm.userId === user.userId);
                     const displayName = fullNamePipe(user);
                     return (
                       <Typography
                         key={user.userId}
                         variant="body2"
-                        sx={{ py: 0.25, color: isConfirmed ? 'inherit' : '#ef4345' }}
+                        sx={{
+                          py: 0.25,
+                          color: isConfirmed ? 'inherit' : '#ef4345',
+                          textDecoration: isRequired ? 'underline' : 'none'
+                        }}
                       >
                         {displayName}
                       </Typography>
@@ -361,12 +366,17 @@ export const EventAvailabilityPage: React.FC = () => {
                 {currentUnavailableUsers.length > 0 ? (
                   reorderByConfirmation(currentUnavailableUsers).map((user) => {
                     const isConfirmed = event.confirmedMembers.some((cm) => cm.userId === user.userId);
+                    const isRequired = event.requiredMembers.some((cm) => cm.userId === user.userId);
                     const displayName = fullNamePipe(user);
                     return (
                       <Typography
                         key={user.userId}
                         variant="body2"
-                        sx={{ py: 0.25, color: isConfirmed ? 'inherit' : '#ef4345' }}
+                        sx={{
+                          py: 0.25,
+                          color: isConfirmed ? 'inherit' : '#ef4345',
+                          textDecoration: isRequired ? 'underline' : 'none'
+                        }}
                       >
                         {displayName}
                       </Typography>
@@ -388,7 +398,7 @@ export const EventAvailabilityPage: React.FC = () => {
           )}
 
           {/* Schedule button for creators - only show if event is not already scheduled */}
-          {(isCreator || isAdmin(currentUser.role)) && selectedSlot && event.status !== EventStatus.SCHEDULED && (
+          {(isCreator || isAdmin(currentUser.role)) && selectedSlot && (
             <Box sx={{ mt: 3 }}>
               <NERSuccessButton variant="contained" onClick={handleScheduleClick} fullWidth>
                 Schedule Event
@@ -427,6 +437,7 @@ export const EventAvailabilityPage: React.FC = () => {
           selectedDay={selectedSlot.day}
           startHour={selectedSlot.startHour}
           endHour={selectedSlot.endHour}
+          beingRescheduled={event.status === 'SCHEDULED'}
         />
       )}
     </PageLayout>

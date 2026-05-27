@@ -67,7 +67,7 @@ import {
   updateUserAvailability,
   areUsersinList
 } from '../utils/users.utils.js';
-import { Conflict_Status, Event_Status, Organization, Team } from '@prisma/client';
+import { $Enums, Conflict_Status, Event_Status, Organization, Team } from '@prisma/client';
 
 export default class CalendarService {
   /**
@@ -311,17 +311,16 @@ export default class CalendarService {
     });
 
     // Validate required memberIds
-    if (requiredMemberIds.length > 0) {
-      const foundMembers = await prisma.user.findMany({
-        where: {
-          userId: { in: requiredMemberIds },
-          organizations: { some: { organizationId: organization.organizationId } }
-        }
-      });
-      if (foundMembers.length !== requiredMemberIds.length) {
-        const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
-        throw new NotFoundException('User', missingIds.join(', '));
+
+    const foundMembers = await prisma.user.findMany({
+      where: {
+        userId: { in: requiredMemberIds || submitter.userId },
+        organizations: { some: { organizationId: organization.organizationId } }
       }
+    });
+    if (foundMembers.length !== requiredMemberIds.length) {
+      const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
+      throw new NotFoundException('User', missingIds.join(', '));
     }
 
     // Validate optionals memberIds
@@ -422,6 +421,11 @@ export default class CalendarService {
     // Check for conflicts using expanded slots
     const { hasConflict, conflictingEvent } = await checkEventConflicts(scheduleSlots, organization, location, undefined);
 
+    const allRequiredMembers = [
+      ...requiredMemberIds,
+      ...(requiredMemberIds.includes(submitter.userId) ? [] : [submitter.userId])
+    ];
+
     const newEvent = await prisma.event.create({
       data: {
         userCreatedId: submitter.userId,
@@ -429,7 +433,7 @@ export default class CalendarService {
         title,
         eventTypeId,
         requiredMembers: {
-          connect: requiredMemberIds.map((userId) => ({ userId }))
+          connect: allRequiredMembers.map((userId) => ({ userId }))
         },
         optionalMembers: {
           connect: optionalMemberIds.map((userId) => ({ userId }))
@@ -471,7 +475,7 @@ export default class CalendarService {
     let calendarEventIds: string[] = [];
     if (process.env.NODE_ENV === 'production') {
       try {
-        const allMemberIds = [...requiredMemberIds, ...optionalMemberIds];
+        const allMemberIds = [...allRequiredMembers, ...optionalMemberIds];
         const isInPerson = !!location;
 
         calendarEventIds = await createCalendarEvent(
@@ -496,7 +500,7 @@ export default class CalendarService {
 
     if (foundEventType.sendSlackNotifications) {
       const members = await prisma.user.findMany({
-        where: { userId: { in: optionalMemberIds.concat(requiredMemberIds) } }
+        where: { userId: { in: optionalMemberIds.concat(allRequiredMembers) } }
       });
 
       // get the user settings for all the members invited, who are leaderingship
@@ -633,17 +637,16 @@ export default class CalendarService {
     }
 
     // Validate required memberIds
-    if (requiredMemberIds.length > 0) {
-      const foundMembers = await prisma.user.findMany({
-        where: {
-          userId: { in: requiredMemberIds },
-          organizations: { some: { organizationId: organization.organizationId } }
-        }
-      });
-      if (foundMembers.length !== requiredMemberIds.length) {
-        const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
-        throw new NotFoundException('User', missingIds.join(', '));
+
+    const foundMembers = await prisma.user.findMany({
+      where: {
+        userId: { in: requiredMemberIds || submitter.userId },
+        organizations: { some: { organizationId: organization.organizationId } }
       }
+    });
+    if (foundMembers.length !== requiredMemberIds.length) {
+      const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
+      throw new NotFoundException('User', missingIds.join(', '));
     }
 
     // Validate optional memberIds
@@ -741,8 +744,13 @@ export default class CalendarService {
       }
     }
 
+    const allRequiredMembers = [
+      ...requiredMemberIds,
+      ...(requiredMemberIds.includes(submitter.userId) ? [] : [submitter.userId])
+    ];
+
     // throw if a user isn't found, then build prisma queries for connecting userIds
-    const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMemberIds));
+    const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(allRequiredMembers));
     const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
 
     // Update the event with new data (excluding schedule slots)
@@ -927,9 +935,29 @@ export default class CalendarService {
         userCreatedId: true,
         location: true,
         dateDeleted: true,
-        approved: true
+        approved: true,
+        status: true,
+        title: true,
+        workPackages: true,
+        scheduledTimes: true
       }
     });
+
+    // If the event being rescheduled, delete the events existing times
+    if (event?.status == 'SCHEDULED') {
+      const eventScheduled = event.scheduledTimes;
+      const slotsUpdated = eventScheduled.map((slot) => slot.scheduleSlotId);
+      const creator = await prisma.user.findUnique({
+        where: { userId: event.userCreatedId }
+      });
+      if (!creator) throw new NotFoundException('Event', scheduleSlot.eventId);
+
+      for (const slotId of slotsUpdated) {
+        await this.deleteScheduleSlot(creator, slotId, organization);
+      }
+
+      await CalendarService.slackRescheduleNotification(event, organization);
+    }
 
     if (!event) throw new NotFoundException('Event', scheduleSlot.eventId);
     if (event.dateDeleted) throw new DeletedException('Event', scheduleSlot.eventId);
@@ -1061,6 +1089,75 @@ export default class CalendarService {
     if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
 
     return eventTransformer(updatedEvent);
+  }
+
+  private static async slackRescheduleNotification(
+    event: {
+      dateDeleted: Date | null;
+      eventId: string;
+      title: string;
+      userCreatedId: string;
+      approved: $Enums.Conflict_Status;
+      location: string | null;
+      status: $Enums.Event_Status;
+      workPackages: {
+        workPackageId: string;
+        wbsElementId: string;
+        projectId: string;
+        orderInProject: number;
+        startDate: Date;
+        duration: number;
+        stage: $Enums.Work_Package_Stage | null;
+      }[];
+    },
+    organization: {
+      dateDeleted: Date | null;
+      dateCreated: Date;
+      userCreatedId: string;
+      userDeletedId: string | null;
+      description: string;
+      name: string;
+      organizationId: string;
+      treasurerId: string | null;
+      advisorId: string | null;
+      newMemberImageId: string | null;
+      logoImageId: string | null;
+      slackWorkspaceId: string | null;
+      applicationLink: string | null;
+      onboardingText: string | null;
+      partReviewSampleImageId: string | null;
+      partReviewGuideLink: string | null;
+      sponsorshipNotificationsSlackChannelId: string | null;
+      platformDescription: string;
+      platformLogoImageId: string | null;
+    }
+  ) {
+    const foundEvent = await prisma.event.findUnique({
+      where: { eventId: event.eventId },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+    if (!foundEvent) throw new NotFoundException('Event', event.eventId);
+
+    const foundUser = await prisma.user.findUnique({
+      where: { userId: event.userCreatedId }
+    });
+    if (!foundUser) throw new NotFoundException('Event', event.eventId);
+
+    const foundWorkPackage = await prisma.work_Package.findMany({
+      where: { workPackageId: { in: event.workPackages.map((wp) => wp.workPackageId) } }
+    });
+
+    if (!foundWorkPackage) throw new NotFoundException('Event', event.eventId);
+
+    sendSlackEventNotifications(
+      await prisma.team.findMany({
+        where: { organizationId: organization.organizationId }
+      }),
+      eventTransformer(foundEvent),
+      foundUser,
+      '',
+      ' '
+    );
   }
 
   /**
@@ -1408,11 +1505,6 @@ export default class CalendarService {
 
     if (!event) throw new NotFoundException('Event', eventId);
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
-
-    // Cannot schedule an already scheduled event
-    if (event.status === Event_Status.SCHEDULED) {
-      throw new HttpException(400, 'Event is already scheduled');
-    }
 
     // Only the event creator can schedule the event
     if (
