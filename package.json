@@ -180,5 +180,8 @@
   },
   "author": "",
   "license": "ISC",
-  "packageManager": "yarn@4.15.0"
+  "packageManager": "yarn@4.15.0",
+  "engines": {
+    "npm": ">=11.10.0"
+  }
 }
