@@ -335,8 +335,7 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description,
-        mention
+        description
       } = req.body;
 
       const event = await CalendarService.editEvent(
@@ -356,8 +355,7 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description,
-        mention
+        description
       );
       res.status(200).json(event);
     } catch (error: unknown) {

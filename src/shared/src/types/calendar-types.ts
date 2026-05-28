@@ -218,7 +218,6 @@ export interface Event {
   description?: string;
   status: EventStatus;
   initialDateScheduled?: Date;
-  mention: SlackMentionType;
 }
 
 export type EventInstance = Omit<Event, 'scheduledTimes'> &
@@ -261,7 +260,6 @@ export interface EventWithMembers {
   description?: string;
   status: EventStatus;
   initialDateScheduled?: Date;
-  mention: SlackMentionType;
 }
 
 export interface TeamType {

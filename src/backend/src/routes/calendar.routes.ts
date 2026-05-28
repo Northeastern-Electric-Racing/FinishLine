@@ -119,7 +119,7 @@ calendarRouter.post(
   isDate(body('scheduleSlots.*.startTime')),
   isDate(body('scheduleSlots.*.endTime')),
   body('scheduleSlots.*.allDay').isBoolean(),
-  body('SlackMentionType').isIn(['USER', 'CHANNEL']),
+  body('mention').isIn(['USER', 'CHANNEL']),
   validateInputs,
   CalendarController.createEvent
 );
@@ -148,7 +148,6 @@ calendarRouter.post(
   nonEmptyString(body('documents.*.googleFileId')),
   body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),
-  body('SlackMentionType').isIn(['USER', 'CHANNEL']),
   validateInputs,
   CalendarController.editEvent
 );

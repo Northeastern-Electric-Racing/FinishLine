@@ -101,7 +101,6 @@ export interface EditEventArgs {
   documents: Array<{ name: string; googleFileId: string }>;
   questionDocumentLink?: string;
   description?: string;
-  mention?: SlackMentionType;
 }
 
 export interface EditScheduleSlotArgs {

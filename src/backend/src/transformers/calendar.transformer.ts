@@ -2,8 +2,7 @@ import {
   Prisma,
   DayOfWeek as PrismaDayOfWeek,
   Event_Status as PrismaEventStatus,
-  Conflict_Status as PrismaConflictStatus,
-  Slack_Mention_Type as PrismaSlackMentionType
+  Conflict_Status as PrismaConflictStatus
 } from '@prisma/client';
 import {
   Machinery,
@@ -18,8 +17,7 @@ import {
   DayOfWeek,
   ConflictStatus,
   Document,
-  EventWithMembers,
-  SlackMentionType
+  EventWithMembers
 } from 'shared';
 import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
@@ -136,8 +134,7 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     questionDocumentLink: event.questionDocumentLink ?? undefined,
     description: event.description ?? undefined,
     status: eventStatusTransformer(event.status),
-    initialDateScheduled: event.initialDateScheduled ?? undefined,
-    mention: slackMentionTypeTransformer(event.mention)
+    initialDateScheduled: event.initialDateScheduled ?? undefined
   };
 };
 
@@ -181,8 +178,7 @@ export const eventWithMembersTransformer = (event: Prisma.EventGetPayload<EventW
     questionDocumentLink: event.questionDocumentLink ?? undefined,
     description: event.description ?? undefined,
     status: eventStatusTransformer(event.status),
-    initialDateScheduled: event.initialDateScheduled ?? undefined,
-    mention: slackMentionTypeTransformer(event.mention)
+    initialDateScheduled: event.initialDateScheduled ?? undefined
   };
 };
 
@@ -236,10 +232,3 @@ export const eventStatusTransformer = (status: PrismaEventStatus): EventStatus =
   return mapping[status];
 };
 
-export const slackMentionTypeTransformer = (mention: PrismaSlackMentionType): SlackMentionType => {
-  const mapping: Record<PrismaSlackMentionType, SlackMentionType> = {
-    USER: SlackMentionType.USER,
-    CHANNEL: SlackMentionType.CHANNEL
-  };
-  return mapping[mention];
-};

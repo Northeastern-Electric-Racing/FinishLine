@@ -406,6 +406,7 @@ export const sendSlackEventNotification = async (
 
 export interface EventNotificationOptions {
   memberSlackIds?: string[];
+  mention?: SlackMentionType;
 }
 
 export const sendSlackEventNotifications = async (
@@ -419,7 +420,7 @@ export const sendSlackEventNotifications = async (
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return []; // don't send msgs unless in prod
   const notifications: { channelId: string; ts: string }[] = [];
 
-  const mentionPrefix = buildSlackMentionPrefix(event.mention, options.memberSlackIds ?? []);
+  const mentionPrefix = buildSlackMentionPrefix(options.mention ?? SlackMentionType.USER, options.memberSlackIds ?? []);
 
   let message;
   if (workPackageName) {
@@ -504,7 +505,7 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
   const allMembers = [...event.requiredMembers, ...event.optionalMembers];
   const resolvedSlackIds = await Promise.all(allMembers.map((m) => getUserSlackId(m.userId)));
   const validSlackIds = resolvedSlackIds.filter((id): id is string => !!id);
-  const mentionPrefix = buildSlackMentionPrefix(event.mention, validSlackIds);
+  const mentionPrefix = buildSlackMentionPrefix(SlackMentionType.USER, validSlackIds);
 
   const msg = `:spiral_calendar_pad: ${event.title} for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
   const docLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Doc Link>` : '';

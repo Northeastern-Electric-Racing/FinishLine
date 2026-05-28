@@ -68,7 +68,7 @@ import {
   updateUserAvailability,
   areUsersinList
 } from '../utils/users.utils.js';
-import { Conflict_Status, Event_Status, Organization, Team, Slack_Mention_Type } from '@prisma/client';
+import { Conflict_Status, Event_Status, Organization, Team } from '@prisma/client';
 
 export default class CalendarService {
   /**
@@ -463,8 +463,7 @@ export default class CalendarService {
         location,
         zoomLink,
         questionDocumentLink,
-        description,
-        mention: mention === SlackMentionType.CHANNEL ? Slack_Mention_Type.CHANNEL : Slack_Mention_Type.USER
+        description
       },
       ...getEventQueryArgs(organization.organizationId)
     });
@@ -545,7 +544,7 @@ export default class CalendarService {
         submitter,
         workPackageNames,
         organization.name,
-        { memberSlackIds: memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id) }
+        { memberSlackIds: memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id), mention }
       );
     }
 
@@ -595,8 +594,7 @@ export default class CalendarService {
     questionDocumentLink?: string,
     location?: string,
     zoomLink?: string,
-    description?: string,
-    mention?: SlackMentionType
+    description?: string
   ): Promise<Event> {
     // validate eventId
     const foundEvent = await prisma.event.findUnique({
@@ -779,10 +777,7 @@ export default class CalendarService {
         location,
         zoomLink,
         questionDocumentLink,
-        description,
-        ...(mention !== undefined && {
-          mention: mention === SlackMentionType.CHANNEL ? Slack_Mention_Type.CHANNEL : Slack_Mention_Type.USER
-        })
+        description
       },
       ...getEventQueryArgs(organization.organizationId)
     });

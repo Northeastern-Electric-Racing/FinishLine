@@ -297,7 +297,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       recurrenceNumber: 0,
       days: [],
       selectedScheduleSlotId: initialValues?.selectedScheduleSlotId,
-      mention: initialValues?.mention ?? SlackMentionType.USER
+      mention: SlackMentionType.USER
     };
   }, [initialValues, defaultDate, defaultStartTime, defaultEndTime]);
 
@@ -1203,7 +1203,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
               </Tooltip>
 
               {/* Slack Mention Type Toggle */}
-              {selectedEventType.sendSlackNotifications && (
+              {selectedEventType.sendSlackNotifications && !initialValues && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginLeft: 'auto' }}>
                   <Controller
                     name="mention"

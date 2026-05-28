@@ -234,7 +234,6 @@ export const convertEventToFormValues = (event: EventInstance): Partial<EventFor
     recurrenceNumber: 0,
     // No days since this is now a single occurrence
     days: [],
-    selectedScheduleSlotId: event.scheduleSlotId,
-    mention: event.mention
+    selectedScheduleSlotId: event.scheduleSlotId
   };
 };
