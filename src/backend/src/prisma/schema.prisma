@@ -306,6 +306,8 @@ model User {
   prospectiveSponsorsContacted            Prospective_Sponsor[]                @relation(name: "prospectiveSponsorContactor")
   createdMeetingAttendances               Meeting_Attendance[]                 @relation(name: "meetingAttendanceCreated")
   attendedMeetingAttendances              Meeting_Attendance[]                 @relation(name: "meetingAttendees")
+  createdTaskLabels                       Task_Label[]                         @relation(name: "taskLabelCreator")
+  deletedTaskLabels                       Task_Label[]                         @relation(name: "taskLabelDeleter")
 }
 
 model Role {
@@ -705,8 +707,26 @@ model Task {
   dateCreated     DateTime      @default(now())
   wbsElement      WBS_Element   @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId    String
+  labels          Task_Label[]
 
   @@index([wbsElementId])
+}
+
+model Task_Label {
+  taskLabelId    String       @id @default(uuid())
+  name           String
+  colorHexCode   String
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "taskLabelCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "taskLabelDeleter")
+  userDeletedId  String?
+  tasks          Task[]
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@index([organizationId])
 }
 
 model Reimbursement_Status {
@@ -1450,6 +1470,7 @@ model Organization {
   calendars                Calendar[]
   eventTypes               Event_Type[]
   meetingAttendances       Meeting_Attendance[]
+  taskLabels               Task_Label[]
 }
 
 model FrequentlyAskedQuestion {
