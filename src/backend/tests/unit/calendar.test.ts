@@ -1266,7 +1266,6 @@ describe('Calendar Tests', () => {
         )
       ).rejects.toThrow(new NotFoundException('Machinery', deletedMachinery.machineryId));
     });
-
   });
 
   describe('Get Events', () => {
@@ -1900,7 +1899,6 @@ describe('Calendar Tests', () => {
       expect(result.zoomLink).toBe('https://zoom.us/updated');
       expect(result.description).toBe('Updated description');
     });
-
   });
 
   describe('Delete Event', () => {

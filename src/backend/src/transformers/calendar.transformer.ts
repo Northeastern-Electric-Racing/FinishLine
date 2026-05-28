@@ -231,4 +231,3 @@ export const eventStatusTransformer = (status: PrismaEventStatus): EventStatus =
   };
   return mapping[status];
 };
-
