@@ -13,7 +13,10 @@ import {
   Button,
   Stack,
   Checkbox,
-  FormControlLabel
+  FormControlLabel,
+  ToggleButtonGroup,
+  ToggleButton,
+  useTheme
 } from '@mui/material';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
@@ -28,7 +31,8 @@ import {
   isHead,
   MAX_FILE_SIZE,
   getNextSevenDays,
-  getDay
+  getDay,
+  SlackMentionType
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllMembers, useCurrentUser } from '../../../hooks/users.hooks';
@@ -79,6 +83,7 @@ export interface EventFormValues {
   recurrenceNumber: number;
   days: DayOfWeek[];
   selectedScheduleSlotId?: string;
+  mention: SlackMentionType;
 }
 
 export interface EventPayload {
@@ -96,6 +101,7 @@ export interface EventPayload {
   documentFiles: EventDocumentUploadArgs[];
   questionDocumentLink?: string;
   description?: string;
+  mention: SlackMentionType;
   // If the event type requires confirmation, only intialDateScheduled will be populated. If not,
   // scheduleSlots will be populated based on if the event is being editted or created
   initialDateScheduled?: Date;
@@ -144,7 +150,8 @@ const schema = yup.object().shape({
   allDay: yup.boolean().required(),
   recurrenceNumber: yup.number().min(0).required('Recurrence is required'),
   days: yup.array().of(yup.mixed<DayOfWeek>().required()).default([]),
-  selectedScheduleSlotId: yup.string().optional()
+  selectedScheduleSlotId: yup.string().optional(),
+  mention: yup.mixed<SlackMentionType>().required().default(SlackMentionType.USER)
 });
 
 export interface BaseEventModalProps {
@@ -221,6 +228,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   eventId,
   actionsLeftChildren
 }) => {
+  const theme = useTheme();
   const toast = useToast();
   const user = useCurrentUser();
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -288,7 +296,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       allDay: initialValues?.allDay ?? false,
       recurrenceNumber: 0,
       days: [],
-      selectedScheduleSlotId: initialValues?.selectedScheduleSlotId
+      selectedScheduleSlotId: initialValues?.selectedScheduleSlotId,
+      mention: SlackMentionType.USER
     };
   }, [initialValues, defaultDate, defaultStartTime, defaultEndTime]);
 
@@ -506,7 +515,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       workPackageIds: data.workPackageIds,
       documentFiles: data.documentFiles,
       questionDocumentLink: data.questionDocumentLink,
-      description: data.description
+      description: data.description,
+      mention: data.mention
     };
 
     // If the event requires confirmation, only populate initialDateScheduled
@@ -1191,6 +1201,53 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   )}
                 </Box>
               </Tooltip>
+
+              {/* Slack Mention Type Toggle */}
+              {selectedEventType.sendSlackNotifications && !initialValues && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginLeft: 'auto' }}>
+                  <Controller
+                    name="mention"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <ToggleButtonGroup
+                        value={value}
+                        exclusive
+                        onChange={(_, val) => {
+                          if (val) onChange(val);
+                        }}
+                        size="small"
+                        sx={{
+                          '& .MuiToggleButton-root': {
+                            borderRadius: 0,
+                            textTransform: 'none',
+                            py: 0.55,
+                            px: 1.1,
+                            borderColor: theme.palette.divider,
+                            color: theme.palette.text.primary,
+                            '&.Mui-selected': {
+                              bgcolor: theme.palette.primary.main,
+                              color: 'black',
+                              '&:hover': { bgcolor: '#ff0000', color: 'white' }
+                            },
+                            '&:hover': { bgcolor: theme.palette.action.hover }
+                          },
+                          '& .MuiToggleButton-root:first-of-type': {
+                            borderTopLeftRadius: 8,
+                            borderBottomLeftRadius: 8
+                          },
+                          '& .MuiToggleButton-root:last-of-type': {
+                            borderTopRightRadius: 8,
+                            borderBottomRightRadius: 8
+                          }
+                        }}
+                      >
+                        <ToggleButton value={SlackMentionType.USER}>@user</ToggleButton>
+                        <ToggleButton value={SlackMentionType.CHANNEL}>@channel</ToggleButton>
+                      </ToggleButtonGroup>
+                    )}
+                  />
+                </Box>
+              )}
             </Box>
           )}
           {/* Required Members Section */}

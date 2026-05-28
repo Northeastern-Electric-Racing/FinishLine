@@ -279,7 +279,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        mention
       } = req.body;
 
       const parsedScheduleSlots = scheduleSlots.map((slot: any) => ({
@@ -307,7 +308,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        mention
       );
       res.status(200).json(event);
     } catch (error: unknown) {
