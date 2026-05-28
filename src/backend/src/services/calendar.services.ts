@@ -15,7 +15,7 @@ import {
   Machinery,
   ScheduleSlot,
   notGuest,
-  isSameDay,
+  isSameDayUTC,
   EventInstance
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
@@ -793,7 +793,7 @@ export default class CalendarService {
     const edittedEvent = eventTransformer(updatedEvent);
 
     if (status === Event_Status.SCHEDULED && foundEventType.sendSlackNotifications) {
-      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent);
+      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent, true);
     }
 
     if (status === Event_Status.CONFIRMED && foundEventType.sendSlackNotifications) {
@@ -942,22 +942,6 @@ export default class CalendarService {
         scheduledTimes: true
       }
     });
-
-    // If the event being rescheduled, delete the events existing times
-    if (event?.status == 'SCHEDULED') {
-      const eventScheduled = event.scheduledTimes;
-      const slotsUpdated = eventScheduled.map((slot) => slot.scheduleSlotId);
-      const creator = await prisma.user.findUnique({
-        where: { userId: event.userCreatedId }
-      });
-      if (!creator) throw new NotFoundException('Event', scheduleSlot.eventId);
-
-      for (const slotId of slotsUpdated) {
-        await this.deleteScheduleSlot(creator, slotId, organization);
-      }
-
-      await CalendarService.slackRescheduleNotification(event, organization);
-    }
 
     if (!event) throw new NotFoundException('Event', scheduleSlot.eventId);
     if (event.dateDeleted) throw new DeletedException('Event', scheduleSlot.eventId);
@@ -1149,14 +1133,13 @@ export default class CalendarService {
 
     if (!foundWorkPackage) throw new NotFoundException('Event', event.eventId);
 
-    sendSlackEventNotifications(
-      await prisma.team.findMany({
-        where: { organizationId: organization.organizationId }
-      }),
+    await sendSlackEventNotifications(
+      foundEvent.teams,
       eventTransformer(foundEvent),
       foundUser,
-      '',
-      ' '
+      foundEvent.workPackages.map((wp) => wp.wbsElement.name).join(', '),
+      organization.name,
+      true
     );
   }
 
@@ -1506,6 +1489,73 @@ export default class CalendarService {
     if (!event) throw new NotFoundException('Event', eventId);
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
 
+    if (event && event?.status === 'SCHEDULED') {
+      const timeSlots = await prisma.schedule_Slot.findMany({
+        where: { eventId: event.eventId }
+      });
+
+      // Add the old scheduled time from confirmed members' availabilities
+      // so they get their time back from the old scheduled event
+      for (const slot of timeSlots) {
+        if (!slot.startTime || !slot.endTime) continue;
+        const startHour = new Date(slot.startTime).getHours();
+        const endHour = new Date(slot.endTime).getHours();
+
+        for (const member of event.confirmedMembers) {
+          if (!member.drScheduleSettings) continue;
+          const existingAvailability = member.drScheduleSettings.availabilities.find((a) =>
+            isSameDayUTC(a.dateSet, slot.startTime)
+          );
+          if (!existingAvailability) continue;
+          // Availability index i represents local hour (10 + i); remove indices that fall within [startHour, endHour)
+          const returnedAvailability = Array.from({ length: endHour - startHour }, (_, i) => startHour + i - 10).filter(
+            (i) => i >= 0
+          );
+
+          const updatedAvailability = [...new Set([...existingAvailability.availability, ...returnedAvailability])];
+          await prisma.availability.update({
+            where: { availabilityId: existingAvailability.availabilityId },
+            data: { availability: updatedAvailability }
+          });
+        }
+      }
+
+      await prisma.event.update({
+        where: { eventId: event.eventId },
+        data: { status: Event_Status.SCHEDULED }
+      });
+
+      await prisma.schedule_Slot.deleteMany({
+        where: { eventId: event.eventId }
+      });
+
+      const workPackages = await prisma.work_Package.findMany({
+        where: { workPackageId: { in: event.workPackages.map((wp) => wp.workPackageId) } }
+      });
+
+      await CalendarService.slackRescheduleNotification(
+        {
+          eventId: event.eventId,
+          title: event.title,
+          userCreatedId: event.userCreatedId,
+          approved: event.approved,
+          location: event.location,
+          status: event.status,
+          dateDeleted: event.dateDeleted,
+          workPackages: workPackages.map((wp) => ({
+            workPackageId: wp.workPackageId,
+            wbsElementId: wp.wbsElementId,
+            projectId: wp.projectId,
+            orderInProject: wp.orderInProject,
+            startDate: wp.startDate,
+            duration: wp.duration,
+            stage: wp.stage
+          }))
+        },
+        organization
+      );
+    }
+
     // Only the event creator can schedule the event
     if (
       submitter.userId !== event.userCreatedId &&
@@ -1552,7 +1602,7 @@ export default class CalendarService {
     const endHour = endTime.getHours();
     for (const member of event.confirmedMembers) {
       if (!member.drScheduleSettings) continue;
-      const existingAvailability = member.drScheduleSettings.availabilities.find((a) => isSameDay(a.dateSet, startTime));
+      const existingAvailability = member.drScheduleSettings.availabilities.find((a) => isSameDayUTC(a.dateSet, startTime));
       if (!existingAvailability) continue;
       // Availability index i represents local hour (10 + i); remove indices that fall within [startHour, endHour)
       const updatedAvailability = existingAvailability.availability.filter(
@@ -1570,7 +1620,11 @@ export default class CalendarService {
     });
 
     if (foundEventType?.sendSlackNotifications) {
-      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, eventTransformer(updatedEvent));
+      await sendEventScheduledSlackNotif(
+        updatedEvent.notificationSlackThreads,
+        eventTransformer(updatedEvent),
+        event.status === Event_Status.SCHEDULED
+      );
     }
 
     return eventTransformer(updatedEvent);

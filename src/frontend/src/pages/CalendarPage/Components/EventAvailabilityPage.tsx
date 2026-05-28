@@ -12,8 +12,7 @@ import {
   User,
   UserWithScheduleSettings,
   EventWithMembers,
-  isAdmin,
-  EventStatus
+  isAdmin
 } from 'shared';
 import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';

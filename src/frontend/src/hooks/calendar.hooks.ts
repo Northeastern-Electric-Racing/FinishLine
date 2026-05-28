@@ -586,6 +586,7 @@ export const useScheduleEvent = (eventId: string) => {
         queryClient.invalidateQueries(['events', eventId, 'with-members']);
         queryClient.invalidateQueries(['filter-events']);
         queryClient.invalidateQueries(EVENT_KEY);
+        queryClient.invalidateQueries(['users']);
       }
     }
   );

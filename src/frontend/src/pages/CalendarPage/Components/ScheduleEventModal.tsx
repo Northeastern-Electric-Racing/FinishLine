@@ -13,6 +13,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { formatEventTime } from 'shared';
 import { datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface ScheduleEventModalProps {
   open: boolean;
@@ -37,6 +38,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
 }) => {
   const toast = useToast();
   const history = useHistory();
+  const currUser = useCurrentUser();
   const { mutateAsync: scheduleEvent, isLoading } = useScheduleEvent(eventId);
 
   // Compute the full start and end times
@@ -49,7 +51,8 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
   const handleConfirm = async () => {
     try {
       await scheduleEvent({ startTime, endTime });
-      toast.success('Event scheduled successfully!');
+      if (beingRescheduled) toast.success('Event rescheduled successfully!');
+      if (!beingRescheduled) toast.success('Event scheduled successfully!');
       onClose();
       history.push(routes.CALENDAR);
     } catch (e) {
@@ -82,14 +85,14 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
               {formatEventTime(startTime)} - {formatEventTime(endTime)}
             </Typography>
           </Box>
-          {!beingRescheduled && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              This will change the event status to SCHEDULED and notify all members.
-            </Typography>
-          )}
           {beingRescheduled && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
               The event status will still be SCHEDULED however all members will be notified about the rescheduled time.
+            </Typography>
+          )}
+          {!beingRescheduled && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              This will change the event status to SCHEDULED and notify all members.
             </Typography>
           )}
         </Box>
@@ -98,10 +101,17 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
         <NERFailButton onClick={onClose} disabled={isLoading}>
           Cancel
         </NERFailButton>
-        <NERSuccessButton onClick={handleConfirm} disabled={isLoading}>
-          {!beingRescheduled && (isLoading ? 'Scheduling...' : 'Confirm Schedule')}
-          {beingRescheduled && (isLoading ? 'Scheduling...' : 'Confirm Reschedule')}
-        </NERSuccessButton>
+
+        {beingRescheduled && (
+          <NERSuccessButton onClick={handleConfirm} disabled={isLoading}>
+            {isLoading ? 'Scheduling...' : 'Confirm Reschedule'}
+          </NERSuccessButton>
+        )}
+        {!beingRescheduled && (
+          <NERSuccessButton onClick={handleConfirm} disabled={isLoading}>
+            {isLoading ? 'Scheduling...' : 'Confirm Schedule'}
+          </NERSuccessButton>
+        )}
       </DialogActions>
     </Dialog>
   );

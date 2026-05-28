@@ -403,15 +403,23 @@ export const sendSlackEventNotifications = async (
   event: Event,
   submitter: User,
   workPackageName: string,
-  projectName: string
+  projectName: string,
+  beingRescheduled?: boolean
 ) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return []; // don't send msgs unless in prod
   const notifications: { channelId: string; ts: string }[] = [];
+  const scheduledOrRescheduled = beingRescheduled ? 'rescheduled' : 'scheduled';
   let message;
   if (workPackageName) {
-    message = `:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
+    message =
+      `:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being ` +
+      scheduledOrRescheduled +
+      ` by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
   } else {
-    message = `:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
+    message =
+      `:spiral_calendar_pad: ${event.title} is being ` +
+      scheduledOrRescheduled +
+      ` by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
   }
 
   const completion: Promise<void>[] = teams.map(async (team) => {
