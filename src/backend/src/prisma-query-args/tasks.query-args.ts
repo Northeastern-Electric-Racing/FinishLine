@@ -1,6 +1,15 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args.js';
 
+export type TaskLabelQueryArgs = ReturnType<typeof getTaskLabelQueryArgs>;
+
+export const getTaskLabelQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Task_LabelDefaultArgs>()({
+    include: {
+      userCreated: getUserQueryArgs(organizationId)
+    }
+  });
+
 export type TaskQueryArgs = ReturnType<typeof getTaskQueryArgs>;
 export type TaskPreviewQueryArgs = ReturnType<typeof getTaskPreviewQueryArgs>;
 export type CalendarTaskQueryArgs = ReturnType<typeof getCalendarTaskQueryArgs>;

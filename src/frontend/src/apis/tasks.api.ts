@@ -9,6 +9,7 @@ import {
   FilterTaskArgs,
   Task,
   TaskCardPreview,
+  TaskLabel,
   TaskPriority,
   TaskStatus,
   WbsNumber,
@@ -16,7 +17,7 @@ import {
 } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { taskTransformer } from './transformers/tasks.transformers';
+import { taskLabelTransformer, taskTransformer } from './transformers/tasks.transformers';
 
 /**
  * Api call to create a task.
@@ -154,4 +155,26 @@ export const getTasksByWbsNum = (wbsNum: WbsNumber) => {
   return axios.get<Task[]>(apiUrls.tasksByWbsNum(wbsPipe(wbsNum)), {
     transformResponse: (data) => JSON.parse(data).map(taskTransformer)
   });
+};
+
+export const getAllTaskLabels = () => {
+  return axios.get<TaskLabel[]>(apiUrls.taskLabels(), {
+    transformResponse: (data) => JSON.parse(data).map(taskLabelTransformer)
+  });
+};
+
+export const createTaskLabel = (name: string, colorHexCode: string) => {
+  return axios.post<TaskLabel>(apiUrls.taskLabelCreate(), { name, colorHexCode }, {
+    transformResponse: (data) => taskLabelTransformer(JSON.parse(data))
+  });
+};
+
+export const editTaskLabel = (taskLabelId: string, name: string, colorHexCode: string) => {
+  return axios.post<TaskLabel>(apiUrls.taskLabelEdit(taskLabelId), { name, colorHexCode }, {
+    transformResponse: (data) => taskLabelTransformer(JSON.parse(data))
+  });
+};
+
+export const deleteTaskLabel = (taskLabelId: string) => {
+  return axios.post<string>(apiUrls.taskLabelDelete(taskLabelId), {});
 };

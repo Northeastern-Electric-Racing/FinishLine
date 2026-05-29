@@ -69,4 +69,24 @@ tasksRouter.get('/overdue-by-team-member/:userId', TasksController.getOverdueTas
 
 tasksRouter.get('/by-wbs/:wbsNum', TasksController.getTasksByWbsNum);
 
+tasksRouter.get('/task-labels', TasksController.getAllTaskLabels);
+
+tasksRouter.post(
+  '/task-labels/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  TasksController.createTaskLabel
+);
+
+tasksRouter.post(
+  '/task-labels/:taskLabelId/edit',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  TasksController.editTaskLabel
+);
+
+tasksRouter.post('/task-labels/:taskLabelId/delete', TasksController.deleteTaskLabel);
+
 export default tasksRouter;

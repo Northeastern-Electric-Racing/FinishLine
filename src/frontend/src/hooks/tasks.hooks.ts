@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { CalendarTask, FilterTaskArgs, WbsNumber, TaskPriority, TaskStatus, Task, TaskCardPreview } from 'shared';
+import { CalendarTask, FilterTaskArgs, WbsNumber, TaskPriority, TaskStatus, Task, TaskCardPreview, TaskLabel } from 'shared';
 import {
   createSingleTask,
   deleteSingleTask,
@@ -13,7 +13,11 @@ import {
   editTaskAssignees,
   getOverdueTasksByTeamLeader,
   getFilterTasks,
-  getTasksByWbsNum
+  getTasksByWbsNum,
+  getAllTaskLabels,
+  createTaskLabel,
+  editTaskLabel,
+  deleteTaskLabel
 } from '../apis/tasks.api';
 import { wbsPipe } from '../utils/pipes';
 
@@ -197,4 +201,59 @@ export const useTasksByWbsNum = (wbsNum: WbsNumber) => {
     const { data } = await getTasksByWbsNum(wbsNum);
     return data;
   });
+};
+
+export const useAllTaskLabels = () => {
+  return useQuery<TaskLabel[], Error>(['task-labels'], async () => {
+    const { data } = await getAllTaskLabels();
+    return data;
+  });
+};
+
+export const useCreateTaskLabel = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TaskLabel, Error, { name: string; colorHexCode: string }>(
+    ['task-labels', 'create'],
+    async ({ name, colorHexCode }) => {
+      const { data } = await createTaskLabel(name, colorHexCode);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['task-labels']);
+      }
+    }
+  );
+};
+
+export const useEditTaskLabel = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TaskLabel, Error, { taskLabelId: string; name: string; colorHexCode: string }>(
+    ['task-labels', 'edit'],
+    async ({ taskLabelId, name, colorHexCode }) => {
+      const { data } = await editTaskLabel(taskLabelId, name, colorHexCode);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['task-labels']);
+      }
+    }
+  );
+};
+
+export const useDeleteTaskLabel = () => {
+  const queryClient = useQueryClient();
+  return useMutation<string, Error, { taskLabelId: string }>(
+    ['task-labels', 'delete'],
+    async ({ taskLabelId }) => {
+      const { data } = await deleteTaskLabel(taskLabelId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['task-labels']);
+      }
+    }
+  );
 };

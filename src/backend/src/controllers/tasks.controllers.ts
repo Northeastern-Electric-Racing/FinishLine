@@ -133,4 +133,44 @@ export default class TasksController {
       next(error);
     }
   }
+
+  static async getAllTaskLabels(req: Request, res: Response, next: NextFunction) {
+    try {
+      const labels = await TasksService.getAllTaskLabels(req.organization);
+      res.status(200).json(labels);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createTaskLabel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, colorHexCode } = req.body;
+      const label = await TasksService.createTaskLabel(req.currentUser, name, colorHexCode, req.organization);
+      res.status(200).json(label);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editTaskLabel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { taskLabelId } = req.params as Record<string, string>;
+      const { name, colorHexCode } = req.body;
+      const label = await TasksService.editTaskLabel(req.currentUser, taskLabelId, name, colorHexCode, req.organization);
+      res.status(200).json(label);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteTaskLabel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { taskLabelId } = req.params as Record<string, string>;
+      const deletedId = await TasksService.deleteTaskLabel(req.currentUser, taskLabelId, req.organization);
+      res.status(200).json(deletedId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

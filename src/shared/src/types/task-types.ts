@@ -58,3 +58,13 @@ export interface CalendarTask extends Task {
   projectLeadId?: string;
   projectManagerId?: string;
 }
+
+export interface TaskLabel {
+  taskLabelId: string;
+  name: string;
+  colorHexCode: string;
+  dateCreated: Date;
+  dateDeleted?: Date;
+  createdBy: User;
+}
+1

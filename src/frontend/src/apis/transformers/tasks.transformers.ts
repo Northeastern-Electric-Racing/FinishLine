@@ -1,4 +1,4 @@
-import { dbDateToLocalDate, Task } from 'shared';
+import { dbDateToLocalDate, Task, TaskLabel } from 'shared';
 
 /**
  * Transforms a task to ensure deep field transformation of date objects.
@@ -15,3 +15,9 @@ export const taskTransformer = (task: Task): Task => {
     startDate: task.startDate ? dbDateToLocalDate(new Date(task.startDate)) : undefined
   };
 };
+
+export const taskLabelTransformer = (label: TaskLabel): TaskLabel => ({
+  ...label,
+  dateCreated: new Date(label.dateCreated),
+  dateDeleted: label.dateDeleted ? new Date(label.dateDeleted) : undefined
+});

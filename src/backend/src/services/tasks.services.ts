@@ -7,12 +7,17 @@ import {
   notGuest,
   Task,
   TaskCardPreview,
+  TaskLabel,
   WbsNumber,
   wbsPipe,
   User
 } from 'shared';
 import prisma from '../prisma/prisma.js';
-import taskTransformer, { calendarTaskTransformer, taskCardPreviewTransformer } from '../transformers/tasks.transformer.js';
+import taskTransformer, {
+  calendarTaskTransformer,
+  taskCardPreviewTransformer,
+  taskLabelTransformer
+} from '../transformers/tasks.transformer.js';
 import {
   NotFoundException,
   AccessDeniedException,
@@ -26,10 +31,12 @@ import { wbsNumOf } from '../utils/utils.js';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
 import {
   getCalendarTaskQueryArgs,
+  getTaskLabelQueryArgs,
   getTaskPreviewQueryArgs,
   getTaskQueryArgs
 } from '../prisma-query-args/tasks.query-args.js';
 import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args.js';
+import { admin } from 'googleapis/build/src/apis/admin/index.js';
 
 export default class TasksService {
   /**
@@ -490,5 +497,80 @@ export default class TasksService {
     });
 
     return tasks.map(taskTransformer);
+  }
+
+  static async getAllTaskLabels(organization: Organization): Promise<TaskLabel[]> {
+    const labels = await prisma.task_Label.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      ...getTaskLabelQueryArgs(organization.organizationId)
+    });
+
+    return labels.map(taskLabelTransformer);
+  }
+
+  static async createTaskLabel(
+    creator: User,
+    name: string,
+    colorHexCode: string,
+    organization: Organization
+  ): Promise<TaskLabel> {
+    const hasPermission = await userHasPermission(creator.userId, organization.organizationId, isAdmin);
+    if (!hasPermission) throw new AccessDeniedException('Non admins cannot create task labels');
+
+    const label = await prisma.task_Label.create({
+      data: {
+        name,
+        colorHexCode,
+        userCreated: { connect: { userId: creator.userId } },
+        organization: { connect: { organizationId: organization.organizationId } }
+      },
+      ...getTaskLabelQueryArgs(organization.organizationId)
+    });
+
+    return taskLabelTransformer(label);
+  }
+
+  static async editTaskLabel(
+    user: User,
+    taskLabelId: string,
+    name: string,
+    colorHexCode: string,
+    organization: Organization
+  ): Promise<TaskLabel> {
+    const hasPermission = await userHasPermission(user.userId, organization.organizationId, isAdmin);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit task labels');
+
+    const label = await prisma.task_Label.findUnique({ where: { taskLabelId } });
+    if (!label) throw new NotFoundException('Task Label', taskLabelId);
+    if (label.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Task Label');
+    if (label.dateDeleted) throw new DeletedException('Task Label', taskLabelId);
+
+    const updatedLabel = await prisma.task_Label.update({
+      where: { taskLabelId },
+      data: { name, colorHexCode },
+      ...getTaskLabelQueryArgs(organization.organizationId)
+    });
+
+    return taskLabelTransformer(updatedLabel);
+  }
+
+  static async deleteTaskLabel(user: User, taskLabelId: string, organization: Organization): Promise<string> {
+    const hasPermission = await userHasPermission(user.userId, organization.organizationId, isAdmin);
+    if (!hasPermission) throw new AccessDeniedException('Only admins can delete task labels');
+
+    const label = await prisma.task_Label.findUnique({ where: { taskLabelId } });
+    if (!label) throw new NotFoundException('Task Label', taskLabelId);
+    if (label.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Task Label');
+    if (label.dateDeleted) throw new DeletedException('Task Label', taskLabelId);
+
+    await prisma.task_Label.update({
+      where: { taskLabelId },
+      data: {
+        dateDeleted: new Date(),
+        userDeleted: { connect: { userId: user.userId } }
+      }
+    });
+
+    return taskLabelId;
   }
 }
