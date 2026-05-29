@@ -30,6 +30,7 @@ COPY --from=builder /app/src/backend/dist ./src/backend/dist
 COPY --from=builder /app/src/shared/dist ./src/shared/dist
 
 COPY --from=builder /app/src/backend/src/prisma ./src/backend/src/prisma
+COPY --from=builder /app/src/backend/prisma.config.ts ./src/backend/
 
 # Copy Prisma generated client from root node_modules (elevated there by yarn workspaces)
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
