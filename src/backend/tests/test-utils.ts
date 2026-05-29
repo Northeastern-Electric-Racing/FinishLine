@@ -133,6 +133,7 @@ export const resetUsers = async () => {
   await prisma.vendor.deleteMany();
   await prisma.account_Code.deleteMany();
   await prisma.car.deleteMany();
+  await prisma.task_Label.deleteMany();
   await prisma.task.deleteMany();
   await prisma.stage_Gate_CR.deleteMany();
   await prisma.activation_CR.deleteMany();
@@ -794,8 +795,9 @@ export const createTestTaskWithOrganization = async (user: User, organization?: 
     TaskStatus.IN_PROGRESS,
     [user.userId],
     organization,
-    undefined,
-    new Date()
+    [],
+    new Date(),
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
   );
 
   if (!task) throw new Error('Failed to create task');

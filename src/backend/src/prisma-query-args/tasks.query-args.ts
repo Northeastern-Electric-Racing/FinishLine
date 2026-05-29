@@ -6,13 +6,21 @@ export type TaskQueryArgs = ReturnType<typeof getTaskQueryArgs>;
 export type TaskPreviewQueryArgs = ReturnType<typeof getTaskPreviewQueryArgs>;
 export type CalendarTaskQueryArgs = ReturnType<typeof getCalendarTaskQueryArgs>;
 
+export const getTaskLabelQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Task_LabelDefaultArgs>()({
+    include: {
+      userCreated: getUserQueryArgs(organizationId)
+    }
+  });
+
 export const getTaskQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.TaskDefaultArgs>()({
     include: {
       wbsElement: true,
       createdBy: getUserQueryArgs(organizationId),
       deletedBy: getUserQueryArgs(organizationId),
-      assignees: getUserQueryArgs(organizationId)
+      assignees: getUserQueryArgs(organizationId),
+      labels: getTaskLabelQueryArgs(organizationId)
     }
   });
 
@@ -34,7 +42,8 @@ export const getCalendarTaskQueryArgs = (organizationId: string) =>
       },
       createdBy: getUserQueryArgs(organizationId),
       deletedBy: getUserQueryArgs(organizationId),
-      assignees: getUserQueryArgs(organizationId)
+      assignees: getUserQueryArgs(organizationId),
+      labels: getTaskLabelQueryArgs(organizationId)
     }
   });
 
@@ -57,12 +66,5 @@ export const getTaskPreviewQueryArgs = (organizationId: string) =>
       },
       createdBy: getUserQueryArgs(organizationId),
       assignees: getUserQueryArgs(organizationId)
-    }
-  });
-
-export const getTaskLabelQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Task_LabelDefaultArgs>()({
-    include: {
-      userCreated: getUserQueryArgs(organizationId)
     }
   });

@@ -35,6 +35,8 @@ tasksRouter.post(
   isTaskStatus(body('status')),
   body('assignees').isArray(),
   nonEmptyString(body('assignees.*')),
+  body('labelIds').isArray(),
+  body('labelIds.*').isString(),
   validateInputs,
   TasksController.createTask
 );
@@ -49,6 +51,8 @@ tasksRouter.post(
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
+  body('labelIds').isArray(),
+  body('labelIds.*').isString(),
   validateInputs,
   TasksController.editTask
 );

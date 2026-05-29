@@ -19,6 +19,7 @@ export const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Tas
     status: convertTaskStatus(task.status),
     createdBy: userTransformer(task.createdBy),
     assignees: task.assignees.map(userTransformer),
+    labels: task.labels.map(taskLabelTransformer),
     dateDeleted: task.dateDeleted ?? undefined,
     dateCreated: task.dateCreated,
     deletedBy: task.deletedBy ? userTransformer(task.deletedBy) : undefined
@@ -55,6 +56,7 @@ export const calendarTaskTransformer = (task: Prisma.TaskGetPayload<CalendarTask
     status: convertTaskStatus(task.status),
     createdBy: userTransformer(task.createdBy),
     assignees: task.assignees.map(userTransformer),
+    labels: task.labels.map(taskLabelTransformer),
     dateDeleted: task.dateDeleted ?? undefined,
     dateCreated: task.dateCreated,
     deletedBy: task.deletedBy ? userTransformer(task.deletedBy) : undefined,

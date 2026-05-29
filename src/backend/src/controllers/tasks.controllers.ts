@@ -5,7 +5,7 @@ import { validateWBS, WbsNumber } from 'shared';
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, deadline, startDate, priority, status, assignees, notes } = req.body;
+      const { title, deadline, startDate, priority, status, assignees, notes, labelIds } = req.body;
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const task = await TasksService.createTask(
@@ -17,6 +17,7 @@ export default class TasksController {
         status,
         assignees,
         req.organization,
+        labelIds,
         startDate ? new Date(startDate) : undefined,
         deadline ? new Date(deadline) : undefined
       );
@@ -29,7 +30,7 @@ export default class TasksController {
 
   static async editTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, notes, priority, deadline, startDate, wbsNum } = req.body;
+      const { title, notes, priority, deadline, startDate, wbsNum, labelIds } = req.body;
       const { taskId } = req.params as Record<string, string>;
 
       const updateTask = await TasksService.editTask(
@@ -39,6 +40,7 @@ export default class TasksController {
         title,
         notes,
         priority,
+        labelIds,
         startDate ? new Date(startDate) : undefined,
         deadline ? new Date(deadline) : undefined,
         wbsNum
