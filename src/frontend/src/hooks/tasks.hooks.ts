@@ -203,6 +203,10 @@ export const useTasksByWbsNum = (wbsNum: WbsNumber) => {
   });
 };
 
+/**
+ * Custom React Hook to get all task labels for a given organization
+ * @returns the task labels query
+ */
 export const useAllTaskLabels = () => {
   return useQuery<TaskLabel[], Error>(['task-labels'], async () => {
     const { data } = await getAllTaskLabels();
@@ -210,6 +214,10 @@ export const useAllTaskLabels = () => {
   });
 };
 
+/**
+ * Custom React Hook to create a task label
+ * @returns the create task label mutation
+ */
 export const useCreateTaskLabel = () => {
   const queryClient = useQueryClient();
   return useMutation<TaskLabel, Error, { name: string; colorHexCode: string }>(
@@ -226,6 +234,10 @@ export const useCreateTaskLabel = () => {
   );
 };
 
+/**
+ * Custom React Hook to edit a task label
+ * @returns the edit task label mutation
+ */
 export const useEditTaskLabel = () => {
   const queryClient = useQueryClient();
   return useMutation<TaskLabel, Error, { taskLabelId: string; name: string; colorHexCode: string }>(
@@ -242,6 +254,10 @@ export const useEditTaskLabel = () => {
   );
 };
 
+/**
+ * Custom React Hook to delete a task label
+ * @returns the delete task label id
+ */
 export const useDeleteTaskLabel = () => {
   const queryClient = useQueryClient();
   return useMutation<string, Error, { taskLabelId: string }>(

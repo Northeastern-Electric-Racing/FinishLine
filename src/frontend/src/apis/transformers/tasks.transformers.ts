@@ -16,6 +16,12 @@ export const taskTransformer = (task: Task): Task => {
   };
 };
 
+/**
+ * Transforms a task label to ensure deep field transformation of date objects.
+ *
+ * @param label Incoming task label object supplied by the HTTP response.
+ * @returns Properly transformed task label object.
+ */
 export const taskLabelTransformer = (label: TaskLabel): TaskLabel => ({
   ...label,
   dateCreated: new Date(label.dateCreated),

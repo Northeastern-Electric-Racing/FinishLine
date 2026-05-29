@@ -157,24 +157,54 @@ export const getTasksByWbsNum = (wbsNum: WbsNumber) => {
   });
 };
 
+/**
+ * Gets all tasks labels for a given organization
+ * @returns array of task labels
+ */
 export const getAllTaskLabels = () => {
   return axios.get<TaskLabel[]>(apiUrls.taskLabels(), {
     transformResponse: (data) => JSON.parse(data).map(taskLabelTransformer)
   });
 };
 
+/**
+ * Api call to create a task label.
+ * @param name the name of the task label
+ * @param colorHexCode the hex code for the task label color
+ * @returns the created task label
+ */
 export const createTaskLabel = (name: string, colorHexCode: string) => {
-  return axios.post<TaskLabel>(apiUrls.taskLabelCreate(), { name, colorHexCode }, {
-    transformResponse: (data) => taskLabelTransformer(JSON.parse(data))
-  });
+  return axios.post<TaskLabel>(
+    apiUrls.taskLabelCreate(),
+    { name, colorHexCode },
+    {
+      transformResponse: (data) => taskLabelTransformer(JSON.parse(data))
+    }
+  );
 };
 
+/**
+ * Edits the task label.
+ * @param id the id of the task label
+ * @param name the name of the task label
+ * @param colorHexCode the hex code for the task label color
+ * @returns the edited task label
+ */
 export const editTaskLabel = (taskLabelId: string, name: string, colorHexCode: string) => {
-  return axios.post<TaskLabel>(apiUrls.taskLabelEdit(taskLabelId), { name, colorHexCode }, {
-    transformResponse: (data) => taskLabelTransformer(JSON.parse(data))
-  });
+  return axios.post<TaskLabel>(
+    apiUrls.taskLabelEdit(taskLabelId),
+    { name, colorHexCode },
+    {
+      transformResponse: (data) => taskLabelTransformer(JSON.parse(data))
+    }
+  );
 };
 
+/**
+ * Soft deletes a task label.
+ * @param taskLabelId
+ * @returns the deleted taskLabelId
+ */
 export const deleteTaskLabel = (taskLabelId: string) => {
   return axios.post<string>(apiUrls.taskLabelDelete(taskLabelId), {});
 };

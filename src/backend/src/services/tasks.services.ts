@@ -499,6 +499,11 @@ export default class TasksService {
     return tasks.map(taskTransformer);
   }
 
+  /**
+   * Gets all task labels in the database for a given organization
+   * @param organization the organization that the user is currently in
+   * @returns array of task labels
+   */
   static async getAllTaskLabels(organization: Organization): Promise<TaskLabel[]> {
     const labels = await prisma.task_Label.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null },
@@ -508,6 +513,15 @@ export default class TasksService {
     return labels.map(taskLabelTransformer);
   }
 
+  /**
+   * Creates a task label in the database
+   * @param creator the user creating the task label
+   * @param name the name of the task label
+   * @param colorHexCode the hex code for the task label color
+   * @param organization the organization that the user is currently in
+   * @returns the created task label
+   * @throws if the user does not have permission
+   */
   static async createTaskLabel(
     creator: User,
     name: string,
@@ -530,6 +544,16 @@ export default class TasksService {
     return taskLabelTransformer(label);
   }
 
+  /**
+   * Edits a task label in the database
+   * @param user the user creating the task label
+   * @param taskLabelId the id of the task label being edited
+   * @param name the name of the task label
+   * @param colorHexCode the hex code for the task label color
+   * @param organization the organization that the user is currently in
+   * @returns the edited task label
+   * @throws if the user does not have permission
+   */
   static async editTaskLabel(
     user: User,
     taskLabelId: string,
@@ -554,6 +578,14 @@ export default class TasksService {
     return taskLabelTransformer(updatedLabel);
   }
 
+  /**
+   * Deletes a task label in the database
+   * @param user the user creating the task label
+   * @param taskLabelId the id of the task label being deleted
+   * @param organization the organization that the user is currently in
+   * @returns the deleted task label
+   * @throws if the user does not have permission
+   */
   static async deleteTaskLabel(user: User, taskLabelId: string, organization: Organization): Promise<string> {
     const hasPermission = await userHasPermission(user.userId, organization.organizationId, isAdmin);
     if (!hasPermission) throw new AccessDeniedException('Only admins can delete task labels');
