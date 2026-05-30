@@ -71,6 +71,7 @@ tasksRouter.post('/:taskId/delete', validateInputs, TasksController.deleteTask);
 
 tasksRouter.get('/overdue-by-team-member/:userId', TasksController.getOverdueTasksByTeamLeadership);
 
+tasksRouter.get('/by-wbs/:wbsNum/filter-by-labels', TasksController.getTasksByWbsNumAndLabels);
 tasksRouter.get('/by-wbs/:wbsNum', TasksController.getTasksByWbsNum);
 
 tasksRouter.get('/task-labels', TasksController.getAllTaskLabels);

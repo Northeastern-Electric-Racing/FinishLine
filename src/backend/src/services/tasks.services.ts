@@ -510,6 +510,59 @@ export default class TasksService {
   }
 
   /**
+   * Gets tasks for a wbs element filtered to only those containing at least one of the given labels
+   * @param wbsNum the wbs number of the project or work package
+   * @param labelIds the label ids to filter by
+   * @param organization the organization that the user is currently in
+   * @returns array of tasks that have at least one matching label
+   */
+  static async getTasksByWbsNumAndLabels(
+    wbsNum: WbsNumber,
+    labelIds: string[],
+    organization: Organization
+  ): Promise<Task[]> {
+    const wbsElement = await prisma.wBS_Element.findUnique({
+      where: { wbsNumber: { ...wbsNum, organizationId: organization.organizationId } }
+    });
+
+    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+
+    await validateTaskLabels(labelIds, organization.organizationId);
+
+    const labelFilter = { labels: { some: { taskLabelId: { in: labelIds } } } };
+
+    if (wbsNum.workPackageNumber === 0) {
+      const project = await prisma.project.findUnique({
+        where: { wbsElementId: wbsElement.wbsElementId },
+        include: { workPackages: { include: { wbsElement: true } } }
+      });
+
+      if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+
+      const wpWbsElementIds = project.workPackages.map((wp) => wp.wbsElementId);
+
+      const tasks = await prisma.task.findMany({
+        where: {
+          dateDeleted: null,
+          wbsElementId: { in: [wbsElement.wbsElementId, ...wpWbsElementIds] },
+          ...labelFilter
+        },
+        ...getTaskQueryArgs(organization.organizationId)
+      });
+
+      return tasks.map(taskTransformer);
+    }
+
+    const tasks = await prisma.task.findMany({
+      where: { dateDeleted: null, wbsElementId: wbsElement.wbsElementId, ...labelFilter },
+      ...getTaskQueryArgs(organization.organizationId)
+    });
+
+    return tasks.map(taskTransformer);
+  }
+
+  /**
    * Gets all task labels in the database for a given organization
    * @param organization the organization that the user is currently in
    * @returns array of task labels

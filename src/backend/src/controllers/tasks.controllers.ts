@@ -136,6 +136,17 @@ export default class TasksController {
     }
   }
 
+  static async getTasksByWbsNumAndLabels(req: Request, res: Response, next: NextFunction) {
+    try {
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
+      const labelIds = req.query.labelIds ? String(req.query.labelIds).split(',') : [];
+      const tasks = await TasksService.getTasksByWbsNumAndLabels(wbsNum, labelIds, req.organization);
+      res.status(200).json(tasks);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllTaskLabels(req: Request, res: Response, next: NextFunction) {
     try {
       const labels = await TasksService.getAllTaskLabels(req.organization);
