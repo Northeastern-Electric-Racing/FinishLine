@@ -1,11 +1,4 @@
-import {
-  batmanAppAdmin,
-  financeMember,
-  flashAdmin,
-  supermanAdmin,
-  theVisitorGuest,
-  wonderwomanGuest
-} from '../test-data/users.test-data.js';
+import { financeMember, flashAdmin, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data.js';
 import {
   AccessDeniedException,
   HttpException,
@@ -29,21 +22,10 @@ import { Organization } from '@prisma/client';
 describe('Task Tests', () => {
   let organizationId: string;
   let organization: Organization;
-  let taskLabelId: string;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
-    organizationId = organization.organizationId;
-    const admin = await createTestUser(batmanAppAdmin, organizationId);
-    const taskLabel = await prisma.task_Label.create({
-      data: {
-        name: 'Test Label',
-        colorHexCode: '#3B82F6',
-        userCreated: { connect: { userId: admin.userId } },
-        organization: { connect: { organizationId } }
-      }
-    });
-    taskLabelId = taskLabel.taskLabelId;
+    ({ organizationId } = organization);
   });
 
   afterEach(async () => {

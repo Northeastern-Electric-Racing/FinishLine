@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Box, FormControl, FormHelperText, FormLabel, Stack } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ErrorPage from '../../ErrorPage';
@@ -27,6 +27,8 @@ const schema = yup.object().shape({
   colorHexCode: yup.string().required('Color is required')
 });
 
+const emptyValues = { name: '', colorHexCode: '' };
+
 interface TaskLabelFormModalProps {
   showModal: boolean;
   handleClose: () => void;
@@ -35,14 +37,20 @@ interface TaskLabelFormModalProps {
 
 const TaskLabelFormModal: React.FC<TaskLabelFormModalProps> = ({ showModal, handleClose, defaultValues }) => {
   const toast = useToast();
-  const { isLoading: createLoading, isError: createIsError, error: createError, mutateAsync: createMutateAsync } =
-    useCreateTaskLabel();
-  const { isLoading: editLoading, isError: editIsError, error: editError, mutateAsync: editMutateAsync } =
-    useEditTaskLabel();
+  const {
+    isLoading: createLoading,
+    isError: createIsError,
+    error: createError,
+    mutateAsync: createMutateAsync
+  } = useCreateTaskLabel();
+  const {
+    isLoading: editLoading,
+    isError: editIsError,
+    error: editError,
+    mutateAsync: editMutateAsync
+  } = useEditTaskLabel();
 
   const isEditing = !!defaultValues;
-
-  const emptyValues = { name: '', colorHexCode: '' };
 
   const {
     handleSubmit,
@@ -56,16 +64,12 @@ const TaskLabelFormModal: React.FC<TaskLabelFormModalProps> = ({ showModal, hand
     defaultValues: emptyValues
   });
 
-  React.useEffect(() => {
-    if (showModal) {
-      reset({
-        name: defaultValues?.name ?? '',
-        colorHexCode: defaultValues?.colorHexCode ?? ''
-      });
-    } else {
-      reset(emptyValues);
-    }
-  }, [showModal, defaultValues, reset]);
+  const handleReset = useCallback(() => {
+    reset({
+      name: defaultValues?.name ?? '',
+      colorHexCode: defaultValues?.colorHexCode ?? ''
+    });
+  }, [reset, defaultValues]);
 
   const selectedColor = watch('colorHexCode');
 
@@ -93,9 +97,9 @@ const TaskLabelFormModal: React.FC<TaskLabelFormModalProps> = ({ showModal, hand
   return (
     <NERFormModal
       open={showModal}
-      onHide={handleClose}
+      onHide={() => { handleReset(); handleClose(); }}
       title={isEditing ? 'Edit Task Label' : 'New Task Label'}
-      reset={() => reset({ name: defaultValues?.name ?? '', colorHexCode: defaultValues?.colorHexCode ?? '' })}
+      reset={handleReset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       formId="task-label-form"

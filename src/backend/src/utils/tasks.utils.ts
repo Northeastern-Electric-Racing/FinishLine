@@ -2,7 +2,7 @@ import { Task_Priority, Task_Status } from '@prisma/client';
 import { Task, TaskPriority, TaskStatus } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { sendSlackTaskAssignedNotification } from './slack.utils.js';
-import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
+import { DeletedException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
 
 export const convertTaskPriority = (priority: Task_Priority): TaskPriority =>
   ({
