@@ -27,6 +27,7 @@ import { taskLabelTransformer, taskTransformer } from './transformers/tasks.tran
  * @param status the status of the task
  * @param assignees the ids of the users assigned to the task
  * @param notes the notes for the task
+ * @param labelIds the ids of the labels for the task
  * @param deadline the datestring deadline of the task
  * @param startDate the datestring start date of the task
  * @returns
@@ -38,6 +39,7 @@ export const createSingleTask = (
   status: TaskStatus,
   assignees: string[],
   notes: string,
+  labelIds: string[],
   deadline?: string,
   startDate?: string
 ) => {
@@ -50,7 +52,8 @@ export const createSingleTask = (
       priority,
       status,
       assignees,
-      notes
+      notes,
+      labelIds
     },
     {
       transformResponse: (data) => taskTransformer(JSON.parse(data))
@@ -64,6 +67,7 @@ export const createSingleTask = (
  * @param title the new title
  * @param notes the new notes
  * @param priority the new priority
+ * @param labelIds the new label ids
  * @param deadline the new deadline
  * @param startDate the new start date
  * @param wbsNum the new wbs element
@@ -74,6 +78,7 @@ export const editTask = (
   title: string,
   notes: string,
   priority: TaskPriority,
+  labelIds: string[],
   deadline?: Date,
   startDate?: Date,
   wbsNum?: WbsNumber
@@ -82,6 +87,7 @@ export const editTask = (
     title,
     notes,
     priority,
+    labelIds,
     deadline: deadline ? dateToMidnightUTC(deadline) : undefined,
     startDate: startDate ? dateToMidnightUTC(startDate) : undefined,
     wbsNum

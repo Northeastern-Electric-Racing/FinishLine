@@ -64,7 +64,8 @@ export const TaskColumn = ({
         priority,
         status: status as TaskStatus,
         assignees,
-        notes
+        notes,
+        labelIds: []
       });
       onAddTask(task);
       toast.success('Task Successfully Created!');

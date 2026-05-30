@@ -88,6 +88,7 @@ export const TaskCard = ({
         deadline,
         startDate,
         priority,
+        labelIds: task.labels.map((l) => l.taskLabelId),
         wbsNum: targetWbsNum
       });
 

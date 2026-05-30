@@ -354,6 +354,7 @@ const ProjectGanttChartPage: FC = () => {
         role: user.role
       },
       assignees: [],
+      labels: [],
       deadline,
       startDate,
       priority: taskInfo.priority,

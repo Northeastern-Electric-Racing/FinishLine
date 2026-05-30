@@ -199,6 +199,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
             status: task.status,
             assignees: task.assignees?.map((user) => user.userId) || [],
             notes: task.notes || '',
+            labelIds: [],
             deadline: task.deadline ? dateToMidnightUTC(task.deadline).toISOString() : undefined,
             startDate: task.startDate ? dateToMidnightUTC(task.startDate).toISOString() : undefined
           };
@@ -221,6 +222,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
             title: task.title,
             priority: task.priority,
             notes: task.notes || '',
+            labelIds: task.labels.map((l) => l.taskLabelId),
             deadline: task.deadline,
             startDate: task.startDate
           };

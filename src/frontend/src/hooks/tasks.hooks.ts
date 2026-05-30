@@ -30,6 +30,7 @@ export interface CreateTaskPayload {
   status: TaskStatus;
   notes?: string;
   assignees: string[];
+  labelIds: string[];
 }
 
 /**
@@ -62,6 +63,7 @@ export const useCreateTask = () => {
         createTaskPayload.status,
         createTaskPayload.assignees,
         createTaskPayload.notes ?? '',
+        createTaskPayload.labelIds,
         createTaskPayload.deadline,
         createTaskPayload.startDate
       );
@@ -72,6 +74,7 @@ export const useCreateTask = () => {
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['filter-tasks']);
         queryClient.invalidateQueries(['tasks']);
+        queryClient.invalidateQueries(['task-labels']);
       }
     }
   );
@@ -85,6 +88,7 @@ export interface TaskPayload {
   deadline?: Date;
   priority: TaskPriority;
   wbsNum?: WbsNumber;
+  labelIds: string[];
 }
 
 /**
@@ -101,6 +105,7 @@ export const useEditTask = () => {
         taskPayload.title,
         taskPayload.notes ?? '',
         taskPayload.priority,
+        taskPayload.labelIds,
         taskPayload.deadline,
         taskPayload.startDate,
         taskPayload.wbsNum
@@ -113,6 +118,7 @@ export const useEditTask = () => {
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['tasks']);
         queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['task-labels']);
       }
     }
   );

@@ -85,6 +85,7 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
         status: data.status,
         assignees: data.assignees,
         notes: data.notes,
+        labelIds: [],
         deadline: data.deadline ? dateToMidnightUTC(data.deadline).toISOString() : undefined,
         startDate: data.startDate ? dateToMidnightUTC(data.startDate).toISOString() : undefined
       });
