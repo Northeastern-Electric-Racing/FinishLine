@@ -96,10 +96,7 @@ const TaskLabelsTable: React.FC = () => {
       {editingLabel && (
         <TaskLabelFormModal showModal={true} handleClose={() => setEditingLabel(undefined)} defaultValues={editingLabel} />
       )}
-      <NERTable
-        columns={[{ name: 'Label' }, { name: '', width: '10%' }]}
-        rows={rows}
-      />
+      <NERTable columns={[{ name: 'Label' }, { name: '', width: '10%' }]} rows={rows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton variant="contained" onClick={() => setOpenCreateModal(true)}>
           New Label

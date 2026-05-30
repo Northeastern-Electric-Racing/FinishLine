@@ -4,7 +4,12 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import { useCallback, useState, useEffect } from 'react';
 import { Task, TaskLabel, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
-import { useAllTaskLabels, useSetTaskStatus, useTasksByWbsNum, useTasksByWbsNumFilteredByLabels } from '../../../../../hooks/tasks.hooks';
+import {
+  useAllTaskLabels,
+  useSetTaskStatus,
+  useTasksByWbsNum,
+  useTasksByWbsNumFilteredByLabels
+} from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { TaskColumn } from './TaskColumn';
 import confetti from 'canvas-confetti';
@@ -20,9 +25,18 @@ export const TaskListContent = ({ wbsNum }: TaskListContentProps) => {
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
   const isFiltering = selectedLabelIds.length > 0;
 
-  const { data: allTasks, isLoading: allTasksLoading, isError: allTasksIsError, error: allTasksError } = useTasksByWbsNum(wbsNum);
-  const { data: filteredTasks, isLoading: filteredTasksLoading, isError: filteredTasksIsError, error: filteredTasksError } =
-    useTasksByWbsNumFilteredByLabels(wbsNum, selectedLabelIds);
+  const {
+    data: allTasks,
+    isLoading: allTasksLoading,
+    isError: allTasksIsError,
+    error: allTasksError
+  } = useTasksByWbsNum(wbsNum);
+  const {
+    data: filteredTasks,
+    isLoading: filteredTasksLoading,
+    isError: filteredTasksIsError,
+    error: filteredTasksError
+  } = useTasksByWbsNumFilteredByLabels(wbsNum, selectedLabelIds);
   const { data: taskLabels } = useAllTaskLabels();
 
   const tasks = isFiltering ? filteredTasks : allTasks;
@@ -158,7 +172,9 @@ export const TaskListContent = ({ wbsNum }: TaskListContentProps) => {
       <Box display="flex" alignItems="center" mb={1}>
         <Button onClick={() => setShowFilters(!showFilters)} sx={{ height: '2.25rem' }}>
           <FilterListIcon fontSize="medium" />
-          <Typography fontSize="0.75rem" align="center">Filters</Typography>
+          <Typography fontSize="0.75rem" align="center">
+            Filters
+          </Typography>
         </Button>
       </Box>
       {showFilters && (

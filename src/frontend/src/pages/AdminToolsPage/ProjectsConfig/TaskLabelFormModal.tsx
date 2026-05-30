@@ -97,7 +97,10 @@ const TaskLabelFormModal: React.FC<TaskLabelFormModalProps> = ({ showModal, hand
   return (
     <NERFormModal
       open={showModal}
-      onHide={() => { handleReset(); handleClose(); }}
+      onHide={() => {
+        handleReset();
+        handleClose();
+      }}
       title={isEditing ? 'Edit Task Label' : 'New Task Label'}
       reset={handleReset}
       handleUseFormSubmit={handleSubmit}

@@ -233,9 +233,7 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
                       />
                     ))
                   }
-                  renderInput={(params) => (
-                    <TextField {...params} variant="standard" placeholder="Select labels" />
-                  )}
+                  renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select labels" />}
                 />
               )}
             />
