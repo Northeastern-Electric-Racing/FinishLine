@@ -14,6 +14,7 @@ import {
   getOverdueTasksByTeamLeader,
   getFilterTasks,
   getTasksByWbsNum,
+  getTasksByWbsNumFilteredByLabels,
   getAllTaskLabels,
   createTaskLabel,
   editTaskLabel,
@@ -207,6 +208,24 @@ export const useTasksByWbsNum = (wbsNum: WbsNumber) => {
     const { data } = await getTasksByWbsNum(wbsNum);
     return data;
   });
+};
+
+/**
+ * Custom React Hook to get tasks for a wbs element filtered by label ids
+ * Only fires when labelIds is non-empty; returns all tasks when empty
+ * @param wbsNum the wbs number to fetch tasks for
+ * @param labelIds the label ids to filter by
+ * @returns the filtered tasks query
+ */
+export const useTasksByWbsNumFilteredByLabels = (wbsNum: WbsNumber, labelIds: string[]) => {
+  return useQuery<Task[], Error>(
+    ['tasks', wbsPipe(wbsNum), 'filtered-by-labels', labelIds],
+    async () => {
+      const { data } = await getTasksByWbsNumFilteredByLabels(wbsNum, labelIds);
+      return data;
+    },
+    { enabled: labelIds.length > 0 }
+  );
 };
 
 /**

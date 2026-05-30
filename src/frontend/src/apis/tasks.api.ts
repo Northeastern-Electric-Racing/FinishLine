@@ -164,6 +164,18 @@ export const getTasksByWbsNum = (wbsNum: WbsNumber) => {
 };
 
 /**
+ * Gets tasks for a wbs element filtered by label ids (tasks matching any of the given labels)
+ * @param wbsNum the wbs number of the project or work package
+ * @param labelIds the label ids to filter by
+ * @returns filtered array of tasks
+ */
+export const getTasksByWbsNumFilteredByLabels = (wbsNum: WbsNumber, labelIds: string[]) => {
+  return axios.get<Task[]>(apiUrls.tasksByWbsNumFilteredByLabels(wbsPipe(wbsNum), labelIds), {
+    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  });
+};
+
+/**
  * Gets all tasks labels for a given organization
  * @returns array of task labels
  */
