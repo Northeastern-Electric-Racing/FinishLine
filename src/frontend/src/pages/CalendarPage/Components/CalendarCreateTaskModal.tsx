@@ -1,12 +1,21 @@
 import React from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
+import { Autocomplete, Box, Chip, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, dateToMidnightUTC, isUnderWordCount, ProjectPreview, TaskPriority, TaskStatus, wbsPipe } from 'shared';
+import {
+  countWords,
+  dateToMidnightUTC,
+  isUnderWordCount,
+  ProjectPreview,
+  TaskLabel,
+  TaskPriority,
+  TaskStatus,
+  wbsPipe
+} from 'shared';
 import { useAllMembers } from '../../../hooks/users.hooks';
 import { useAllProjects } from '../../../hooks/projects.hooks';
-import { useCreateTask } from '../../../hooks/tasks.hooks';
+import { useAllTaskLabels, useCreateTask } from '../../../hooks/tasks.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { taskUserToAutocompleteOption } from '../../../utils/task.utils';
 import * as yup from 'yup';
@@ -20,6 +29,7 @@ const schema = yup.object().shape({
   priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
   status: yup.mixed<TaskStatus>().oneOf(Object.values(TaskStatus)).required(),
   assignees: yup.array().of(yup.string().required()).required(),
+  labels: yup.array().of(yup.mixed<TaskLabel>().required()).required(),
   startDate: yup.date().optional(),
   deadline: yup.date().optional(),
   notes: yup.string().optional()
@@ -31,6 +41,7 @@ interface CreateTaskFormInput {
   priority: TaskPriority;
   status: TaskStatus;
   assignees: string[];
+  labels: TaskLabel[];
   startDate?: Date;
   deadline?: Date;
   notes?: string;
@@ -47,6 +58,7 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
   const { mutateAsync: createTask, isLoading } = useCreateTask();
   const { data: users, isLoading: usersLoading, isError: usersError, error: usersErr } = useAllMembers();
   const { data: projects, isLoading: projectsLoading, isError: projectsError, error: projectsErr } = useAllProjects();
+  const { data: taskLabels, isLoading: labelsIsLoading, isError: labelsIsError, error: labelsError } = useAllTaskLabels();
 
   const {
     handleSubmit,
@@ -61,6 +73,7 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
       priority: TaskPriority.Medium,
       status: TaskStatus.IN_BACKLOG,
       assignees: [],
+      labels: [],
       startDate: undefined,
       deadline: defaultDeadline,
       notes: ''
@@ -69,7 +82,8 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
 
   if (usersError) return <ErrorPage error={usersErr} />;
   if (projectsError) return <ErrorPage error={projectsErr} />;
-  if (usersLoading || !users || projectsLoading || !projects) return <LoadingIndicator />;
+  if (labelsIsError) return <ErrorPage error={labelsError} />;
+  if (usersLoading || !users || projectsLoading || !projects || labelsIsLoading || !taskLabels) return <LoadingIndicator />;
 
   const userOptions = users.map(taskUserToAutocompleteOption);
 
@@ -85,7 +99,7 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
         status: data.status,
         assignees: data.assignees,
         notes: data.notes,
-        labelIds: [],
+        labelIds: data.labels.map((l) => l.taskLabelId),
         deadline: data.deadline ? dateToMidnightUTC(data.deadline).toISOString() : undefined,
         startDate: data.startDate ? dateToMidnightUTC(data.startDate).toISOString() : undefined
       });
@@ -217,6 +231,60 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
                   renderInput={(params) => (
                     <TextField {...params} variant="standard" placeholder="Select users" error={!!errors.assignees} />
                   )}
+                />
+              )}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12}>
+          <FormControl fullWidth>
+            <FormLabel>Labels</FormLabel>
+            <Controller
+              name="labels"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Autocomplete
+                  multiple
+                  filterSelectedOptions
+                  options={taskLabels ?? []}
+                  getOptionLabel={(option: TaskLabel) => option.name}
+                  isOptionEqualToValue={(option, val) => option.taskLabelId === val.taskLabelId}
+                  onChange={(_, selected) => onChange(selected)}
+                  value={value}
+                  renderOption={(props, option) => (
+                    <li {...props} key={option.taskLabelId}>
+                      <Box
+                        sx={{
+                          display: 'inline-block',
+                          px: 1.5,
+                          py: 0.25,
+                          borderRadius: '999px',
+                          backgroundColor: option.colorHexCode,
+                          color: 'white',
+                          fontWeight: 500,
+                          fontSize: '0.875rem'
+                        }}
+                      >
+                        {option.name}
+                      </Box>
+                    </li>
+                  )}
+                  renderTags={(selected, getTagProps) =>
+                    selected.map((label, index) => (
+                      <Chip
+                        {...getTagProps({ index })}
+                        key={label.taskLabelId}
+                        label={label.name}
+                        sx={{
+                          backgroundColor: label.colorHexCode,
+                          color: 'white',
+                          fontWeight: 500,
+                          '& .MuiChip-deleteIcon': { color: 'rgba(255,255,255,0.7)' }
+                        }}
+                      />
+                    ))
+                  }
+                  renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select labels" />}
                 />
               )}
             />

@@ -51,6 +51,7 @@ export const TaskColumn = ({
     title,
     deadline,
     assignees,
+    labels,
     priority,
     startDate,
     wpWbsNum
@@ -65,7 +66,7 @@ export const TaskColumn = ({
         status: status as TaskStatus,
         assignees,
         notes,
-        labelIds: []
+        labelIds: labels.map((l) => l.taskLabelId)
       });
       onAddTask(task);
       toast.success('Task Successfully Created!');

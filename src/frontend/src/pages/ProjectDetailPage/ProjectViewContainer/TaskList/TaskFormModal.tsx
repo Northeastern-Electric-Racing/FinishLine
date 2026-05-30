@@ -1,8 +1,8 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
+import { Autocomplete, Box, Chip, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, TaskStatus, WbsNumber } from 'shared';
+import { countWords, isGuest, isUnderWordCount, Task, TaskLabel, TaskPriority, TaskStatus, WbsNumber } from 'shared';
 import { useAllMembers, useCurrentUser } from '../../../../hooks/users.hooks';
 import * as yup from 'yup';
 import { taskUserToAutocompleteOption } from '../../../../utils/task.utils';
@@ -10,12 +10,14 @@ import NERFormModal from '../../../../components/NERFormModal';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import { useWorkPackagesByProject } from '../../../../hooks/work-packages.hooks';
+import { useAllTaskLabels } from '../../../../hooks/tasks.hooks';
 
 export interface EditTaskFormInput {
   taskId: string;
   title: string;
   notes?: string;
   assignees: string[];
+  labels: TaskLabel[];
   startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
@@ -59,6 +61,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       deadline: yup.date().required('Deadline is required for In Progress tasks'),
       priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
       assignees: yup.array().required().min(1, 'At least one assignee is required for In Progress tasks'),
+      labels: yup.array().of(yup.mixed<TaskLabel>().required()).required(),
       title: yup.string().required(),
       taskId: yup.string().required(),
       wpWbsNum: yup.mixed<WbsNumber>().optional()
@@ -77,6 +80,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       deadline: yup.date().optional(),
       priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
       assignees: yup.array().required(),
+      labels: yup.array().of(yup.mixed<TaskLabel>().required()).required(),
       title: yup.string().required(),
       taskId: yup.string().required(),
       wpWbsNum: yup.mixed<WbsNumber>().nullable().optional()
@@ -86,6 +90,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
   const user = useCurrentUser();
 
   const { data: users, isLoading: usersLoading, isError, error } = useAllMembers();
+  const { data: taskLabels, isLoading: labelsIsLoading, isError: labelsIsError, error: labelsError } = useAllTaskLabels();
 
   const projectWbsNum = { ...wbsNum, workPackageNumber: 0 };
   const { data: workPackages } = useWorkPackagesByProject(projectWbsNum);
@@ -107,12 +112,14 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       deadline: task?.deadline ?? undefined,
       priority: task?.priority ?? TaskPriority.Low,
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? [],
+      labels: task?.labels ?? [],
       wpWbsNum: task?.wbsNum.workPackageNumber !== 0 ? task?.wbsNum : undefined
     }
   });
 
   if (isError) return <ErrorPage error={error} />;
-  if (usersLoading || !users) return <LoadingIndicator />;
+  if (labelsIsError) return <ErrorPage error={labelsError} />;
+  if (usersLoading || !users || labelsIsLoading || !taskLabels) return <LoadingIndicator />;
 
   const userOptions: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
   const wpOptions: { label: string; wbsNum: WbsNumber }[] = (workPackages ?? []).map((wp) => ({
@@ -242,6 +249,60 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 )}
               />
               <FormHelperText error={!!errors.assignees}>{errors.assignees?.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+          <Grid item md={12}>
+            <FormControl fullWidth>
+              <FormLabel>Labels</FormLabel>
+              <Controller
+                name="labels"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Autocomplete
+                    multiple
+                    filterSelectedOptions
+                    options={taskLabels ?? []}
+                    getOptionLabel={(option: TaskLabel) => option.name}
+                    isOptionEqualToValue={(option, val) => option.taskLabelId === val.taskLabelId}
+                    onChange={(_, selected) => onChange(selected)}
+                    value={value}
+                    renderOption={(props, option) => (
+                      <li {...props} key={option.taskLabelId}>
+                        <Box
+                          sx={{
+                            display: 'inline-block',
+                            px: 1.5,
+                            py: 0.25,
+                            borderRadius: '999px',
+                            backgroundColor: option.colorHexCode,
+                            color: 'white',
+                            fontWeight: 500,
+                            fontSize: '0.875rem'
+                          }}
+                        >
+                          {option.name}
+                        </Box>
+                      </li>
+                    )}
+                    renderTags={(selected, getTagProps) =>
+                      selected.map((label, index) => (
+                        <Chip
+                          {...getTagProps({ index })}
+                          key={label.taskLabelId}
+                          label={label.name}
+                          sx={{
+                            backgroundColor: label.colorHexCode,
+                            color: 'white',
+                            fontWeight: 500,
+                            '& .MuiChip-deleteIcon': { color: 'rgba(255,255,255,0.7)' }
+                          }}
+                        />
+                      ))
+                    }
+                    renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select labels" />}
+                  />
+                )}
+              />
             </FormControl>
           </Grid>
           <Grid item md={6}>
