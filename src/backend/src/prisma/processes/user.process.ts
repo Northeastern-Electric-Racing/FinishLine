@@ -44,7 +44,7 @@ export class UsersProcess extends SeedProcess<{}, UsersOutput> {
     const createUser = async (role: RoleEnum): Promise<FullUser> => {
       const firstName = this.faker.person.firstName();
       const lastName = this.faker.person.lastName();
-      const emailId = `${firstName[0].toLowerCase()}${lastName.toLowerCase()}`;
+      const emailId = `${lastName.toLowerCase()}.${firstName[0].toLowerCase().charAt(0)}`;
       const theme = this.faker.helpers.arrayElement([Theme.DARK, Theme.LIGHT]);
 
       return this.prisma.user.create({
