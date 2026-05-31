@@ -31,7 +31,6 @@ import { wbsNumOf } from '../utils/utils.js';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
 import {
   getCalendarTaskQueryArgs,
-  getTaskLabelQueryArgs,
   getTaskPreviewQueryArgs,
   getTaskQueryArgs
 } from '../prisma-query-args/tasks.query-args.js';
@@ -568,8 +567,7 @@ export default class TasksService {
    */
   static async getAllTaskLabels(organization: Organization): Promise<TaskLabel[]> {
     const labels = await prisma.task_Label.findMany({
-      where: { organizationId: organization.organizationId, dateDeleted: null },
-      ...getTaskLabelQueryArgs(organization.organizationId)
+      where: { organizationId: organization.organizationId, dateDeleted: null }
     });
 
     return labels.map(taskLabelTransformer);
@@ -599,8 +597,7 @@ export default class TasksService {
         colorHexCode,
         userCreated: { connect: { userId: creator.userId } },
         organization: { connect: { organizationId: organization.organizationId } }
-      },
-      ...getTaskLabelQueryArgs(organization.organizationId)
+      }
     });
 
     return taskLabelTransformer(label);
@@ -633,8 +630,7 @@ export default class TasksService {
 
     const updatedLabel = await prisma.task_Label.update({
       where: { taskLabelId },
-      data: { name, colorHexCode },
-      ...getTaskLabelQueryArgs(organization.organizationId)
+      data: { name, colorHexCode }
     });
 
     return taskLabelTransformer(updatedLabel);

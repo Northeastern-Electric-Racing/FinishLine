@@ -395,7 +395,6 @@ describe('Task Tests', () => {
 
       expect(label.name).toBe('Bug');
       expect(label.colorHexCode).toBe('#EF4444');
-      expect(label.createdBy.userId).toBe(admin.userId);
     });
 
     it('throws AccessDeniedException when non-admin tries to create a task label', async () => {

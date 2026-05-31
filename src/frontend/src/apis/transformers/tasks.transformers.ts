@@ -23,8 +23,4 @@ export const taskTransformer = (task: Task): Task => {
  * @param label Incoming task label object supplied by the HTTP response.
  * @returns Properly transformed task label object.
  */
-export const taskLabelTransformer = (label: TaskLabel): TaskLabel => ({
-  ...label,
-  dateCreated: new Date(label.dateCreated),
-  dateDeleted: label.dateDeleted ? new Date(label.dateDeleted) : undefined
-});
+export const taskLabelTransformer = (label: TaskLabel): TaskLabel => ({ ...label });

@@ -1,17 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args.js';
 
-export type TaskLabelQueryArgs = ReturnType<typeof getTaskLabelQueryArgs>;
 export type TaskQueryArgs = ReturnType<typeof getTaskQueryArgs>;
 export type TaskPreviewQueryArgs = ReturnType<typeof getTaskPreviewQueryArgs>;
 export type CalendarTaskQueryArgs = ReturnType<typeof getCalendarTaskQueryArgs>;
-
-export const getTaskLabelQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Task_LabelDefaultArgs>()({
-    include: {
-      userCreated: getUserQueryArgs(organizationId)
-    }
-  });
 
 export const getTaskQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.TaskDefaultArgs>()({
@@ -20,7 +12,7 @@ export const getTaskQueryArgs = (organizationId: string) =>
       createdBy: getUserQueryArgs(organizationId),
       deletedBy: getUserQueryArgs(organizationId),
       assignees: getUserQueryArgs(organizationId),
-      labels: getTaskLabelQueryArgs(organizationId)
+      labels: true
     }
   });
 
@@ -43,7 +35,7 @@ export const getCalendarTaskQueryArgs = (organizationId: string) =>
       createdBy: getUserQueryArgs(organizationId),
       deletedBy: getUserQueryArgs(organizationId),
       assignees: getUserQueryArgs(organizationId),
-      labels: getTaskLabelQueryArgs(organizationId)
+      labels: true
     }
   });
 
