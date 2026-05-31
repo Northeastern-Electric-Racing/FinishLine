@@ -1,4 +1,14 @@
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  useMediaQuery
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { HeatmapColors, enumToArray, REVIEW_TIMES } from '../../../../utils/design-review.utils';
 import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
@@ -106,7 +116,10 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     editedAvailabilities.set(availability.dateSet.getTime(), availability);
     setEditedAvailabilities(editedAvailabilities);
 
-    setCurrentlyDisplayedAvailabilities(getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), initialDate));
+    const currentStartDate = currentlyDisplayedAvailabilities[0]?.dateSet ?? initialDate;
+    setCurrentlyDisplayedAvailabilities(
+      getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), currentStartDate)
+    );
   };
 
   const stickyLeft = {
@@ -115,6 +128,8 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     zIndex: 2,
     bgcolor: 'background.paper'
   };
+
+  const isMobile = useMediaQuery('(max-width:480px)');
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -128,8 +143,10 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
       <TableContainer
         sx={{
           overflowX: 'auto',
-          overflowY: 'hidden',
+          overflowY: 'auto',
           maxWidth: '100%',
+          maxHeight: '100%',
+          scrollSnapType: 'x mandatory',
           flex: 1
         }}
       >
@@ -158,13 +175,15 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
         >
           <TableHead>
             <TableRow>
-              <TableCell sx={stickyLeft}></TableCell>
+              <TableCell sx={{ ...stickyLeft, scrollSnapAlign: 'start' }}></TableCell>
               {currentlyDisplayedAvailabilities.map((availability, idx) => (
-                <TableCell key={idx}>
+                <TableCell key={idx} sx={{ scrollSnapAlign: 'start' }}>
                   <Typography variant="body1" align="center" fontWeight="bold" sx={{ fontSize: 15 }}>
-                    {getDayOfWeek(availability.dateSet)}
+                    {!isMobile && getDayOfWeek(availability.dateSet)}
+                    {isMobile && getDayOfWeek(availability.dateSet).slice(0, 3)}
                     <br />
-                    {datePipe(availability.dateSet)}
+                    {!isMobile && datePipe(availability.dateSet)}
+                    {isMobile && datePipe(availability.dateSet, false)}
                   </Typography>
                 </TableCell>
               ))}
@@ -173,7 +192,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           <TableBody>
             {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
               <TableRow key={time}>
-                <TableCell sx={{ ...stickyLeft, zIndex: 1 }}>
+                <TableCell sx={{ ...stickyLeft, zIndex: 1, scrollSnapAlign: 'start' }}>
                   <Typography variant="body1" align="center" sx={{ fontSize: 15 }}>
                     {time}
                   </Typography>
@@ -181,7 +200,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
                 {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
                   const isAvailable = availability.availability.includes(timeIndex);
                   return (
-                    <TableCell key={dayIndex} sx={{ p: 0 }}>
+                    <TableCell key={dayIndex} sx={{ p: 0, scrollSnapAlign: 'start' }}>
                       <EventTimeSlot
                         backgroundColor={isAvailable ? HeatmapColors[3] : HeatmapColors[0]}
                         selected={false}
@@ -206,5 +225,4 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     </Box>
   );
 };
-
 export default EditAvailability;
