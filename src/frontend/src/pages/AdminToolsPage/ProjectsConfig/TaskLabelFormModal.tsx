@@ -61,7 +61,12 @@ const TaskLabelFormModal: React.FC<TaskLabelFormModalProps> = ({ showModal, hand
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: emptyValues
+    defaultValues: defaultValues
+      ? {
+          name: defaultValues.name,
+          colorHexCode: defaultValues.colorHexCode
+        }
+      : emptyValues
   });
 
   const handleReset = useCallback(() => {
