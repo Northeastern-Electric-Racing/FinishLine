@@ -4147,7 +4147,7 @@ __metadata:
 "@faker-js/faker@npm:^10.4.0":
   version: 10.4.0
   resolution: "@faker-js/faker@npm:10.4.0"
-  checksum: f57d9cce75e967e5c94b80ca3b4d4037147b7688a43d1140eb3319a6b97fb6baaf06fba34c9804cf3441172a1a9ad1724aa7a319cec1f101887c7b3fdc0b4ac3
+  checksum: 10/f57d9cce75e967e5c94b80ca3b4d4037147b7688a43d1140eb3319a6b97fb6baaf06fba34c9804cf3441172a1a9ad1724aa7a319cec1f101887c7b3fdc0b4ac3
   languageName: node
   linkType: hard
 
@@ -13871,31 +13871,32 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "finishline-express@workspace:."
   dependencies:
-    "@babel/core": ^7.20.5
-    "@babel/plugin-transform-object-assign": ^7.18.6
-    "@babel/preset-react": ^7.18.6
-    "@babel/preset-typescript": ^7.18.6
-    "@microsoft/clarity": ^1.0.0
-    "@types/canvas-confetti": ^1.9.0
-    "@types/jest": ^29.5.14
-    "@types/multer": ^1.4.12
-    "@types/node": ^25.0.0
-    "@typescript-eslint/eslint-plugin": 8.20.0
-    "@typescript-eslint/parser": 8.20.0
-    canvas-confetti: ^1.9.3
-    concurrently: ^9.1.0
-    eslint: ^7.0.0
-    eslint-config-prettier: ^10.0.1
-    eslint-config-react-app: ^7.0.1
-    eslint-plugin-cypress: 4.3.0
-    eslint-plugin-prettier: ^5.2.2
-    mitt: ^3.0.1
-    prettier: ^3.4.2
-    react-hook-form-persist: ^3.0.0
-    recharts: ^2.15.3
-    rimraf: ^6.0.1
-    ts-node: ^10.9.1
-    typescript: ^5.7.3
+    "@babel/core": "npm:^7.20.5"
+    "@babel/plugin-transform-object-assign": "npm:^7.18.6"
+    "@babel/preset-react": "npm:^7.18.6"
+    "@babel/preset-typescript": "npm:^7.18.6"
+    "@faker-js/faker": "npm:^10.4.0"
+    "@microsoft/clarity": "npm:^1.0.0"
+    "@types/canvas-confetti": "npm:^1.9.0"
+    "@types/jest": "npm:^29.5.14"
+    "@types/multer": "npm:^1.4.12"
+    "@types/node": "npm:^25.0.0"
+    "@typescript-eslint/eslint-plugin": "npm:8.20.0"
+    "@typescript-eslint/parser": "npm:8.20.0"
+    canvas-confetti: "npm:^1.9.3"
+    concurrently: "npm:^9.1.0"
+    eslint: "npm:^7.0.0"
+    eslint-config-prettier: "npm:^10.0.1"
+    eslint-config-react-app: "npm:^7.0.1"
+    eslint-plugin-cypress: "npm:4.3.0"
+    eslint-plugin-prettier: "npm:^5.2.2"
+    mitt: "npm:^3.0.1"
+    prettier: "npm:^3.4.2"
+    react-hook-form-persist: "npm:^3.0.0"
+    recharts: "npm:^2.15.3"
+    rimraf: "npm:^6.0.1"
+    ts-node: "npm:^10.9.1"
+    typescript: "npm:^5.7.3"
   languageName: unknown
   linkType: soft
 
