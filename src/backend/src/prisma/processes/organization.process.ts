@@ -13,15 +13,18 @@ export class OrganizationProcess extends SeedProcess<{}, OrganizationOutput> {
   }
 
   async run(_deps: {}): Promise<OrganizationOutput> {
-    const bootstrap = await this.prisma.user.create({
-      data: {
-        firstName: this.faker.person.firstName(),
-        lastName: this.faker.person.lastName(),
-        googleAuthId: 'bootstrap-admin',
-        email: 'admin@bootstrap.com',
-        emailId: 'admin',
+    // Kept the GOAT in for old times sake
+    const bootstrap = await this.prisma.user.upsert({
+      where: { googleAuthId: 'thomas-emrax' },
+      update: {},
+      create: {
+        firstName: 'Thomas',
+        lastName: 'Emrax',
+        googleAuthId: 'thomas-emrax',
+        email: 'emrax.t@admin.com',
+        emailId: 'emrax.t',
         userSettings: {
-          create: { defaultTheme: Theme.DARK, slackId: 'admin' }
+          create: { defaultTheme: Theme.DARK, slackId: 'emrax.t' }
         }
       }
     });
