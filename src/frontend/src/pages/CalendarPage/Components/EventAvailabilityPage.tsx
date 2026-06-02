@@ -395,6 +395,11 @@ export const EventAvailabilityPage: React.FC = () => {
               <span style={{ color: '#ef4345' }}>Red</span> means has not confirmed availability
             </Typography>
           )}
+          {(currentAvailableUsers.length > 0 || currentUnavailableUsers.length > 0) && (
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+              <span style={{ textDecoration: 'underline' }}>Underline</span> means required for meeting
+            </Typography>
+          )}
 
           {/* Schedule button for creators - only show if event is not already scheduled */}
           {(isCreator || isAdmin(currentUser.role)) && selectedSlot && (
