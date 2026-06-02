@@ -8,12 +8,11 @@ import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Typography } fr
 import { useHistory } from 'react-router-dom';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import { useEditScheduleSlot, useScheduleEvent } from '../../../hooks/calendar.hooks';
+import { useScheduleEvent } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { formatEventTime } from 'shared';
 import { datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
-import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface ScheduleEventModalProps {
   open: boolean;
@@ -38,7 +37,6 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
 }) => {
   const toast = useToast();
   const history = useHistory();
-  const currUser = useCurrentUser();
   const { mutateAsync: scheduleEvent, isLoading } = useScheduleEvent(eventId);
 
   // Compute the full start and end times

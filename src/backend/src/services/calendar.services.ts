@@ -1494,7 +1494,7 @@ export default class CalendarService {
         where: { eventId: event.eventId }
       });
 
-      // Add the old scheduled time from confirmed members' availabilities
+      // Restore the old scheduled time from confirmed members' availabilities
       // so they get their time back from the old scheduled event
       for (const slot of timeSlots) {
         if (!slot.startTime || !slot.endTime) continue;
@@ -1512,7 +1512,10 @@ export default class CalendarService {
             (i) => i >= 0
           );
 
-          const updatedAvailability = [...new Set([...existingAvailability.availability, ...returnedAvailability])];
+          const updatedAvailability = [...new Set([...existingAvailability.availability, ...returnedAvailability])].sort(
+            (a, b) => a - b
+          );
+
           await prisma.availability.update({
             where: { availabilityId: existingAvailability.availabilityId },
             data: { availability: updatedAvailability }

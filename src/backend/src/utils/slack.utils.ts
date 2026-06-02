@@ -406,21 +406,18 @@ export const sendSlackEventNotifications = async (
   projectName: string,
   beingRescheduled?: boolean
 ) => {
+  const scheduledOrRescheduled = beingRescheduled ? 'rescheduled' : 'scheduled';
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return []; // don't send msgs unless in prod
   const notifications: { channelId: string; ts: string }[] = [];
-  const scheduledOrRescheduled = beingRescheduled ? 'rescheduled' : 'scheduled';
   let message;
-  if (workPackageName) {
-    message =
-      `:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being ` +
-      scheduledOrRescheduled +
-      ` by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
-  } else {
-    message =
-      `:spiral_calendar_pad: ${event.title} is being ` +
-      scheduledOrRescheduled +
-      ` by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
-  }
+  const includeWorkPackage = workPackageName ? `for *${workPackageName}*` : '';
+
+  message =
+    `:spiral_calendar_pad: ${event.title}` +
+    includeWorkPackage +
+    ` is being ` +
+    scheduledOrRescheduled +
+    ` by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
 
   const completion: Promise<void>[] = teams.map(async (team) => {
     const sentNotifications: { channelId: string; ts: string }[] = await sendSlackEventNotification(team, message);
@@ -466,9 +463,13 @@ export const sendEventConfirmationToThread = async (threads: SlackMessageThread[
   }
 };
 
-export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[], event: Event) => {
+export const sendEventScheduledSlackNotif = async (
+  threads: SlackMessageThread[],
+  event: Event,
+  beingRescheduled: boolean = false
+) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
-
+  const scheduledOrRescheduled = beingRescheduled ? 'rescheduled' : 'scheduled';
   // Get work package names
   const wpNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
   const drName = event.title + (wpNames ? ` (${wpNames})` : '');
@@ -495,7 +496,10 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
 
   const location = zoomLink && inPersonLocation ? `${inPersonLocation} and ${zoomLink}` : inPersonLocation || zoomLink || '';
 
-  const msg = `:spiral_calendar_pad: ${event.title} for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
+  const msg =
+    `:spiral_calendar_pad: ${event.title} for *${drName}* has been ` +
+    scheduledOrRescheduled +
+    ` for *${drTime}* ${location} by ${drSubmitter}`;
   const docLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Doc Link>` : '';
   const threadMsg = `This event has been Scheduled! \n` + docLink;
 
