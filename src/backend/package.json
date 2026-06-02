@@ -50,10 +50,6 @@
     "vitest": "^3.0.0"
   },
   "main": "index.ts",
-  "prisma": {
-    "schema": "./src/prisma/schema.prisma",
-    "seed": "tsx ./src/prisma/seed.ts"
-  },
   "testEnvironment": "node",
   "coveragePathIgnorePatterns": [
     "/node_modules/"

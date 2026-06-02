@@ -119,6 +119,7 @@ calendarRouter.post(
   isDate(body('scheduleSlots.*.startTime')),
   isDate(body('scheduleSlots.*.endTime')),
   body('scheduleSlots.*.allDay').isBoolean(),
+  body('mention').isIn(['USER', 'CHANNEL']),
   validateInputs,
   CalendarController.createEvent
 );
