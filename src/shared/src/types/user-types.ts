@@ -117,6 +117,7 @@ export interface UserScheduleSettings {
   personalGmail: string;
   personalZoomLink: string;
   availabilities: Availability[];
+  importedIcsCalendarUrl: string;
 }
 
 export interface Availability {
@@ -132,6 +133,7 @@ export interface SetUserScheduleSettingsArgs {
   personalGmail?: string;
   personalZoomLink?: string;
   availability: AvailabilityCreateArgs[];
+  importedIcsCalendarUrl?: string;
 }
 
 export interface SetUserScheduleSettingsPayload extends SetUserScheduleSettingsArgs {
