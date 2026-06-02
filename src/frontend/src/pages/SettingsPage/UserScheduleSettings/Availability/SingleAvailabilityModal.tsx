@@ -8,6 +8,7 @@ interface SingleAvailabilityModalProps {
   availabilites: Availability[];
   onHide: () => void;
   initialDate?: Date;
+  showImportedCalendarBusy?: boolean;
 }
 
 const SingleAvailabilityModal: React.FC<SingleAvailabilityModalProps> = ({
@@ -15,7 +16,8 @@ const SingleAvailabilityModal: React.FC<SingleAvailabilityModalProps> = ({
   onHide,
   header,
   availabilites,
-  initialDate
+  initialDate,
+  showImportedCalendarBusy
 }) => {
   return (
     <NERModal
@@ -27,7 +29,11 @@ const SingleAvailabilityModal: React.FC<SingleAvailabilityModalProps> = ({
       showCloseButton
       paperProps={{ maxWidth: '1200px', height: '85vh' }}
     >
-      <SingleAvailabilityView totalAvailability={availabilites} initialDate={initialDate} />
+      <SingleAvailabilityView
+        totalAvailability={availabilites}
+        initialDate={initialDate}
+        showImportedCalendarBusy={showImportedCalendarBusy}
+      />
     </NERModal>
   );
 };

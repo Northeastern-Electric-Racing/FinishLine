@@ -173,13 +173,14 @@ export default class UsersController {
 
   static async setUserScheduleSettings(req: Request, res: Response, next: NextFunction) {
     try {
-      const { personalGmail, personalZoomLink, availability } = req.body;
+      const { personalGmail, personalZoomLink, availability, importedIcsCalendarUrl } = req.body;
 
       const updatedScheduleSettings = await UsersService.setUserScheduleSettings(
         req.currentUser,
         personalGmail,
         personalZoomLink,
-        availability
+        availability,
+        importedIcsCalendarUrl
       );
 
       res.status(200).json(updatedScheduleSettings);
@@ -194,6 +195,23 @@ export default class UsersController {
 
       const userScheduleSettings = await UsersService.getUserScheduleSettings(userId, req.currentUser);
       res.status(200).json(userScheduleSettings);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getUserIcsBusyTimes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params as Record<string, string>;
+      const { startDate, endDate } = req.query as Record<string, string>;
+
+      const busyTimes = await UsersService.getUserIcsBusyTimes(
+        userId,
+        req.currentUser,
+        new Date(startDate),
+        new Date(endDate)
+      );
+      res.status(200).json(busyTimes);
     } catch (error: unknown) {
       next(error);
     }

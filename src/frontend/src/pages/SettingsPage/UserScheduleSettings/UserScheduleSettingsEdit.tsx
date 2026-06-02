@@ -26,7 +26,19 @@ interface UserScheduleSettingsEditProps {
 
 const schema = yup.object().shape({
   personalGmail: yup.string().email('Must be an email address').optional(),
-  personalZoomLink: yup.string().optional()
+  personalZoomLink: yup.string().optional(),
+  importedIcsCalendarUrl: yup
+    .string()
+    .optional()
+    .test('is-ics-url', 'Must be a valid http(s):// or webcal:// calendar link', (value) => {
+      if (!value || !value.trim()) return true;
+      try {
+        const { protocol } = new URL(value);
+        return protocol === 'http:' || protocol === 'https:' || protocol === 'webcal:';
+      } catch {
+        return false;
+      }
+    })
 });
 
 const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
@@ -70,7 +82,8 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
     resolver: yupResolver(schema),
     defaultValues: {
       personalGmail: defaultValues?.personalGmail,
-      personalZoomLink: defaultValues?.personalZoomLink
+      personalZoomLink: defaultValues?.personalZoomLink,
+      importedIcsCalendarUrl: defaultValues?.importedIcsCalendarUrl ?? ''
     }
   });
 
@@ -78,7 +91,8 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
     onSubmit({
       availability: Array.from(availabilities.values()),
       personalGmail: watch('personalGmail'),
-      personalZoomLink: watch('personalZoomLink')
+      personalZoomLink: watch('personalZoomLink'),
+      importedIcsCalendarUrl: watch('importedIcsCalendarUrl')
     });
     setEditAvailability(false);
   };
@@ -95,6 +109,7 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
           totalAvailabilities={totalAvailabilities}
           setConfirmedAvailabilities={setAvailabilities}
           initialDate={new Date()}
+          showImportedCalendarBusy={!!defaultValues?.importedIcsCalendarUrl}
         />
         <Grid item sx={{ mb: 1 }} xs={12} sm={4}>
           <FormControl fullWidth>
@@ -143,6 +158,41 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
                   value={value}
                   error={!!errors.personalZoomLink}
                   helperText={errors.personalZoomLink?.message}
+                />
+              )}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={10}>
+          <FormControl fullWidth>
+            <FormLabel sx={{ display: 'flex' }}>
+              <Typography sx={{ whiteSpace: 'nowrap' }}>Imported Calendar Link (ICS)</Typography>
+              <Tooltip
+                title={
+                  <>
+                    Find this on Google Calendar:
+                    <br />
+                    Settings → "Settings for my calendars" → {'{your calendar name}'} → "Integrate calendar" → "Secret
+                    address in iCal format"
+                  </>
+                }
+                placement="right"
+              >
+                <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px', marginTop: '3px' }} />
+              </Tooltip>
+            </FormLabel>
+            <Controller
+              name="importedIcsCalendarUrl"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <TextField
+                  id="ics-calendar-link-input"
+                  autoComplete="off"
+                  placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
+                  onChange={onChange}
+                  value={value ?? ''}
+                  error={!!errors.importedIcsCalendarUrl}
+                  helperText={errors.importedIcsCalendarUrl?.message}
                 />
               )}
             />

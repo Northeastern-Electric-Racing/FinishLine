@@ -12,10 +12,12 @@ import {
   AvailabilityCreateArgs,
   UserWithScheduleSettings,
   ProjectOverview,
-  isAtLeastRank
+  isAtLeastRank,
+  IcsBusySlots
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
+import { busyIntervalsToSlots, fetchIcsBusyTimes, validateIcsUrl } from '../utils/ics.utils.js';
 import { generateAccessToken } from '../utils/auth.utils.js';
 import { projectOverviewTransformer } from '../transformers/projects.transformer.js';
 import { getProjectOverviewQueryArgs } from '../prisma-query-args/projects.query-args.js';
@@ -525,7 +527,8 @@ export default class UsersService {
     user: User,
     personalGmail: string,
     personalZoomLink: string,
-    availabilities: AvailabilityCreateArgs[]
+    availabilities: AvailabilityCreateArgs[],
+    importedIcsCalendarUrl?: string
   ): Promise<UserScheduleSettings> {
     if (personalGmail !== '') {
       const existingUser = await prisma.schedule_Settings.findFirst({
@@ -537,16 +540,20 @@ export default class UsersService {
       }
     }
 
+    if (importedIcsCalendarUrl) validateIcsUrl(importedIcsCalendarUrl);
+
     const newUserScheduleSettings = await prisma.schedule_Settings.upsert({
       where: { userId: user.userId },
       update: {
         personalGmail,
-        personalZoomLink
+        personalZoomLink,
+        importedIcsCalendarUrl
       },
       create: {
         userId: user.userId,
         personalGmail,
-        personalZoomLink
+        personalZoomLink,
+        importedIcsCalendarUrl
       },
       ...getUserScheduleSettingsQueryArgs()
     });
@@ -621,5 +628,50 @@ export default class UsersService {
     }
 
     return users.map(userWithScheduleSettingsTransformer);
+  }
+
+  /**
+   * Read-only busy-times for a user's imported ICS calendar over [startDate, endDate), mapped onto the
+   * 0-11 availability slots per day.
+   *
+   * @param userId the user whose imported calendar is being read
+   * @param submitter the requesting user
+   * @param startDate the first day of the range (inclusive)
+   * @param endDate the day after the last day of the range (exclusive)
+   * @returns the busy slots per day, only including days that have at least one busy slot
+   */
+  static async getUserIcsBusyTimes(
+    userId: string,
+    submitter: User,
+    startDate: Date,
+    endDate: Date
+  ): Promise<IcsBusySlots[]> {
+    if (submitter.userId !== userId) throw new AccessDeniedException('You can only access your own schedule settings');
+
+    const scheduleSettings = await prisma.schedule_Settings.findUnique({ where: { userId } });
+    if (!scheduleSettings?.importedIcsCalendarUrl) return [];
+
+    let busy;
+    try {
+      busy = await fetchIcsBusyTimes(scheduleSettings.importedIcsCalendarUrl, startDate, endDate);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        console.error(
+          `Failed to fetch ICS busy-times for schedule settings ${scheduleSettings.drScheduleSettingsId}: ${error.message}`
+        );
+        return [];
+      }
+      throw error;
+    }
+
+    if (busy.length === 0) return [];
+
+    const busyDays: IcsBusySlots[] = [];
+    for (let day = new Date(startDate); day < endDate; day.setUTCDate(day.getUTCDate() + 1)) {
+      const busySlots = busyIntervalsToSlots(busy, day);
+      if (busySlots.size > 0) busyDays.push({ dateSet: new Date(day), busySlots: Array.from(busySlots) });
+    }
+
+    return busyDays;
   }
 }

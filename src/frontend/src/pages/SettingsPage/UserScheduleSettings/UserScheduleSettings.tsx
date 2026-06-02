@@ -29,6 +29,7 @@ import { availabilityTransformer } from '../../../apis/transformers/users.transf
 export interface ScheduleSettingsFormInput {
   personalGmail?: string;
   personalZoomLink?: string;
+  importedIcsCalendarUrl?: string;
 }
 
 export interface ScheduleSettingsPayload extends ScheduleSettingsFormInput {
@@ -81,6 +82,7 @@ const UserScheduleSettings = ({ user }: { user: AuthenticatedUser }) => {
   const defaultValues: SetUserScheduleSettingsArgs = {
     personalGmail: data.personalGmail,
     personalZoomLink: data.personalZoomLink,
+    importedIcsCalendarUrl: data.importedIcsCalendarUrl,
     availability: getMostRecentAvailabilities(data.availabilities, new Date())
   };
 

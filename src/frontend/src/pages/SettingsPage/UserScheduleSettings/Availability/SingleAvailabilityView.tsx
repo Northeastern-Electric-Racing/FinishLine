@@ -1,17 +1,25 @@
 import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
+import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import NERArrows from '../../../../components/NERArrows';
 import { enumToArray, REVIEW_TIMES, getBackgroundColor } from '../../../../utils/design-review.utils';
 import EventTimeSlot from '../../../CalendarPage/Components/EventTimeSlot';
+import { useCurrentUser, useUserIcsBusyTimes } from '../../../../hooks/users.hooks';
+import { icsBusySlotsByDay, isSlotBusy } from '../../../../utils/ics.utils';
 
 interface SingleAvailabilityViewProps {
   totalAvailability: Availability[];
   initialDate?: Date;
+  showImportedCalendarBusy?: boolean;
 }
 
-const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAvailability, initialDate }) => {
+const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({
+  totalAvailability,
+  initialDate,
+  showImportedCalendarBusy = false
+}) => {
+  const currentUser = useCurrentUser();
   const [startDate, setStartDate] = useState<Date>(initialDate || new Date());
 
   useEffect(() => {
@@ -21,6 +29,14 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
   }, [initialDate]);
 
   const selectedTimes = getMostRecentAvailabilities(totalAvailability, startDate);
+
+  const weekStart = selectedTimes[0]?.dateSet ?? startDate;
+  const weekEnd = addDaysToDate(selectedTimes[selectedTimes.length - 1]?.dateSet ?? startDate, 1);
+  const { data: icsBusy } = useUserIcsBusyTimes(currentUser.userId, weekStart, weekEnd, showImportedCalendarBusy);
+  const busyByDay = useMemo(
+    () => (showImportedCalendarBusy ? icsBusySlotsByDay(icsBusy ?? []) : new Map<number, Set<number>>()),
+    [icsBusy, showImportedCalendarBusy]
+  );
 
   const onArrowIncrease = () => {
     const newDate = new Date(startDate);
@@ -43,6 +59,12 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {showImportedCalendarBusy && (
+        <Typography variant="caption" color="text.secondary" mb={1}>
+          Hatched slots are busy on your imported calendar. Edit your availability and use "Fill from external calendar" to
+          pull in any changes.
+        </Typography>
+      )}
       <TableContainer
         sx={{
           overflowX: 'auto',
@@ -102,6 +124,7 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
                       <EventTimeSlot
                         backgroundColor={isAvailable ? getBackgroundColor(1, 1) : getBackgroundColor(0, 1)}
                         selected={false}
+                        busy={isSlotBusy(busyByDay, availability.dateSet, timeIndex)}
                         onClick={() => {}}
                       />
                     </TableCell>

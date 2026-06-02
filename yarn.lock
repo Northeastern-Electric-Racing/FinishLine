@@ -4714,6 +4714,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@js-temporal/polyfill@npm:^0.5.1":
+  version: 0.5.1
+  resolution: "@js-temporal/polyfill@npm:0.5.1"
+  dependencies:
+    jsbi: ^4.3.0
+  checksum: f87127500d4532034d74836160bc013d02989dfe4f67f9264aeca6b2bb1eaed66e1bdb80e37e6e1c647d698726d317459ff13d8b2aa25b107af24c06590e8bd0
+  languageName: node
+  linkType: hard
+
 "@jsonjoy.com/base64@npm:17.67.0":
   version: 17.67.0
   resolution: "@jsonjoy.com/base64@npm:17.67.0"
@@ -9273,6 +9282,7 @@ __metadata:
     ical-generator: ^10.2.0
     jsonwebtoken: ^8.5.1
     multer: ^1.4.5-lts.1
+    node-ical: ^0.26.1
     nodemailer: ^6.9.1
     nodemon: ^2.0.16
     prisma: ^6.2.1
@@ -16965,6 +16975,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jsbi@npm:^4.3.0":
+  version: 4.3.2
+  resolution: "jsbi@npm:4.3.2"
+  checksum: 58e06ea3328c1f455ab92219254b4ac09257fee2b611f4af73c0a6606022bbf2f5b9bf1f6f713eda3c943a842454e8ee0948b0525362cb0182e54e851e8d67c4
+  languageName: node
+  linkType: hard
+
 "jsdom@npm:^16.6.0":
   version: 16.7.0
   resolution: "jsdom@npm:16.7.0"
@@ -19108,6 +19125,16 @@ __metadata:
   bin:
     node-gyp: bin/node-gyp.js
   checksum: d4ce0acd08bd41004f45e10cef468f4bd15eaafb3acc388a0c567416e1746dc005cc080b8a3495e4e2ae2eed170a2123ff622c2d6614062f4a839837dcf1dd9d
+  languageName: node
+  linkType: hard
+
+"node-ical@npm:^0.26.1":
+  version: 0.26.1
+  resolution: "node-ical@npm:0.26.1"
+  dependencies:
+    rrule-temporal: ^1.5.3
+    temporal-polyfill: ^0.3.2
+  checksum: b3c1c546e0c2b20d9850be9bceebd9e563c876205497c74b7f6a8518ce2e1a01e4752bbd2f60c5da37105e2b44cbc1ed2927ff11ad50a55829e5447adb0bfaa9
   languageName: node
   linkType: hard
 
@@ -23387,6 +23414,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rrule-temporal@npm:^1.5.3":
+  version: 1.5.3
+  resolution: "rrule-temporal@npm:1.5.3"
+  dependencies:
+    "@js-temporal/polyfill": ^0.5.1
+  checksum: a97bec86e1093036632bdb0c90dce2d6b1c7ef4652e5771d70efced38eaa5b96bb6389b212112d9e407931c3a9a6893b19abb03c7a8be73e8ba044a8035075d1
+  languageName: node
+  linkType: hard
+
 "rtlcss@npm:^4.1.0":
   version: 4.3.0
   resolution: "rtlcss@npm:4.3.0"
@@ -24950,6 +24986,22 @@ __metadata:
   version: 2.0.0
   resolution: "temp-dir@npm:2.0.0"
   checksum: cc4f0404bf8d6ae1a166e0e64f3f409b423f4d1274d8c02814a59a5529f07db6cd070a749664141b992b2c1af337fa9bb451a460a43bb9bcddc49f235d3115aa
+  languageName: node
+  linkType: hard
+
+"temporal-polyfill@npm:^0.3.2":
+  version: 0.3.2
+  resolution: "temporal-polyfill@npm:0.3.2"
+  dependencies:
+    temporal-spec: 0.3.1
+  checksum: bd24aa2105e3a4f53fec5d641c4a69f9e0394db04434a83fa1191015b453bc498c21f75bb0cb30a823795db919194ec0e6d7894ae99f03155bec5c7bba1b99f3
+  languageName: node
+  linkType: hard
+
+"temporal-spec@npm:0.3.1":
+  version: 0.3.1
+  resolution: "temporal-spec@npm:0.3.1"
+  checksum: f226a51169e86297a34fbfad3fefceab4a9581744f0e03f45d6d8112b02670d9972a0318edf05ab3500516cb062a331335a579fc2b94ea440f8a6aafa4e4eec2
   languageName: node
   linkType: hard
 

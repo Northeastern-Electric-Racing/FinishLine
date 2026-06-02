@@ -33,6 +33,7 @@
     "ical-generator": "^10.2.0",
     "jsonwebtoken": "^8.5.1",
     "multer": "^1.4.5-lts.1",
+    "node-ical": "^0.26.1",
     "nodemailer": "^6.9.1",
     "prisma": "^6.2.1",
     "shared": "1.0.0"

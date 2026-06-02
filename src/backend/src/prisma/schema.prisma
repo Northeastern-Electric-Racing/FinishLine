@@ -1265,12 +1265,13 @@ model Availability {
 }
 
 model Schedule_Settings {
-  drScheduleSettingsId String         @id @default(uuid())
-  personalGmail        String
-  personalZoomLink     String
-  User                 User           @relation(fields: [userId], references: [userId])
-  userId               String         @unique
-  availabilities       Availability[]
+  drScheduleSettingsId   String         @id @default(uuid())
+  personalGmail          String
+  personalZoomLink       String
+  User                   User           @relation(fields: [userId], references: [userId])
+  userId                 String         @unique
+  availabilities         Availability[]
+  importedIcsCalendarUrl String         @default("")
 }
 
 model Wbs_Proposed_Changes {

@@ -9,7 +9,8 @@ const userScheduleSettingsTransformer = (
     drScheduleSettingsId: settings.drScheduleSettingsId,
     personalGmail: settings.personalGmail,
     personalZoomLink: settings.personalZoomLink,
-    availabilities: settings.availabilities
+    availabilities: settings.availabilities,
+    importedIcsCalendarUrl: settings.importedIcsCalendarUrl
   };
 };
 

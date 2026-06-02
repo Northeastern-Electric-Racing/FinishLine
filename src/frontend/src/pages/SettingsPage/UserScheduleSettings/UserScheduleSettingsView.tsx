@@ -65,6 +65,10 @@ const UserScheduleSettingsView = ({
     }
   }, [confirmedAvailabilities.size, scheduleSettings.availabilities, firstDate]);
 
+  const importedIcsCalendarUrl = scheduleSettings.importedIcsCalendarUrl?.trim();
+  const importedIcsCalendarDisplay =
+    importedIcsCalendarUrl && importedIcsCalendarUrl.length > 0 ? `${importedIcsCalendarUrl.slice(0, 20)}...` : 'None';
+
   return (
     <Grid container rowSpacing={1} columnSpacing={4}>
       <SingleAvailabilityModal
@@ -72,6 +76,7 @@ const UserScheduleSettingsView = ({
         onHide={() => setAvailabilityOpen(false)}
         header={'Availability'}
         availabilites={scheduleSettings.availabilities}
+        showImportedCalendarBusy={!!scheduleSettings.importedIcsCalendarUrl}
       />
       <AvailabilityEditModal
         open={confirmAvailabilityOpen}
@@ -83,12 +88,16 @@ const UserScheduleSettingsView = ({
         initialDate={firstScheduledDate || new Date()}
         onSubmit={() => handleConfirm({ availability: Array.from(confirmedAvailabilities.values()) })}
         canChangeDateRange={false}
+        showImportedCalendarBusy={!!scheduleSettings.importedIcsCalendarUrl}
       />
       <Grid item xs={12} md={'auto'}>
         <DetailDisplay label="Personal Google Email" content={scheduleSettings.personalGmail} />
       </Grid>
       <Grid item xs={12} md={'auto'} pb={-1}>
         <DetailDisplay label="Personal Zoom Link" content={scheduleSettings.personalZoomLink} />
+      </Grid>
+      <Grid item xs={12} md={'auto'} pb={-1}>
+        <DetailDisplay label="Imported Calendar Link (ICS)" content={importedIcsCalendarDisplay} />
       </Grid>
       <Grid item xs={12} md={'auto'} mt={-1} display="flex" justifyContent={'flex-end'}>
         <NERButton variant="contained" onClick={() => setAvailabilityOpen(true)}>

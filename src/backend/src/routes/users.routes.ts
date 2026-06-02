@@ -1,6 +1,6 @@
 import { Theme } from '@prisma/client';
 import express from 'express';
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
 import UsersController from '../controllers/users.controllers.js';
 import { isRole, nonEmptyString, intMinZero, validateInputs, isDateOnly } from '../utils/validation.utils.js';
 
@@ -47,6 +47,7 @@ userRouter.post(
   '/schedule-settings/set',
   body('personalGmail').isString(),
   body('personalZoomLink').isString(),
+  body('importedIcsCalendarUrl').optional().isString(),
   body('availability').isArray(),
   body('availability.*.availability').isArray(),
   intMinZero(body('availability.*.availability.*')),
@@ -57,6 +58,13 @@ userRouter.post(
 
 userRouter.get('/:userId/secure-settings', UsersController.getUserSecureSettings);
 userRouter.get('/:userId/schedule-settings', UsersController.getUserScheduleSettings);
+userRouter.get(
+  '/:userId/schedule-settings/ics-busy',
+  isDateOnly(query('startDate')),
+  isDateOnly(query('endDate')),
+  validateInputs,
+  UsersController.getUserIcsBusyTimes
+);
 userRouter.get('/:userId/tasks', UsersController.getUserTasks);
 userRouter.post(
   '/tasks/get-many',
