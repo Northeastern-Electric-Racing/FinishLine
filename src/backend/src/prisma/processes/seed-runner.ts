@@ -16,14 +16,20 @@ export class SeedRunner {
   }
 
   async run() {
-    if (!this.prisma) {
-      throw new Error('No PrismaClient provided. Call .withPrisma(prisma) before .run()');
-    }
+    const outputs = new Map<string, any>();
 
     for (const instance of this.instances) {
       instance.prisma = this.prisma;
+
+      const depOutputs = instance.dependencies().reduce((acc, depClass) => {
+        const output = outputs.get(depClass.name);
+        if (!output) throw new Error(`Missing output for dependency: ${depClass.name}`);
+        return { ...acc, ...output };
+      }, {});
+
       console.log(`Running ${instance.constructor.name} (seed ${instance.seed})...`);
-      await instance.run({});
+      const output = await instance.run(depOutputs);
+      outputs.set(instance.constructor.name, output);
       console.log(`${instance.constructor.name} complete`);
     }
   }

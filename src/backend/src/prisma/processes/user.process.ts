@@ -2,6 +2,7 @@ import { Prisma, Theme } from '@prisma/client';
 import { RoleEnum } from 'shared';
 import { getUserQueryArgs } from '../../prisma-query-args/user.query-args.js';
 import { SeedProcess } from './seed-process.js';
+import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 
 type FullUser = Prisma.UserGetPayload<ReturnType<typeof getUserQueryArgs>>;
 
@@ -26,25 +27,18 @@ export type UsersOutput = {
   all: FullUser[];
 };
 
-export class UsersProcess extends SeedProcess<{}, UsersOutput> {
-  private organizationId: string;
-
-  constructor(organizationId: string) {
-    super();
-    this.organizationId = organizationId;
-  }
-
+export class UsersProcess extends SeedProcess<OrganizationOutput, UsersOutput> {
   dependencies() {
-    return [];
+    return [OrganizationProcess];
   }
 
-  async run(_deps: {}): Promise<UsersOutput> {
-    const { organizationId } = this;
+  async run({ organization }: OrganizationOutput): Promise<UsersOutput> {
+    const { organizationId } = organization;
 
     const createUser = async (role: RoleEnum): Promise<FullUser> => {
       const firstName = this.faker.person.firstName();
       const lastName = this.faker.person.lastName();
-      const emailId = `${lastName.toLowerCase()}.${firstName[0].toLowerCase().charAt(0)}`;
+      const emailId = `${lastName.toLowerCase()}.${firstName[0].toLowerCase()}.${this.faker.string.nanoid(6)}`;
       const theme = this.faker.helpers.arrayElement([Theme.DARK, Theme.LIGHT]);
 
       return this.prisma.user.create({
