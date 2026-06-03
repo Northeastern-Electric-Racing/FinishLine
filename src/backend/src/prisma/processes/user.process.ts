@@ -2,6 +2,7 @@ import { Prisma, Theme } from '@prisma/client';
 import { RoleEnum } from 'shared';
 import { getUserQueryArgs } from '../../prisma-query-args/user.query-args.js';
 import { SeedProcess } from './seed-process.js';
+import { OrganizationProcess } from './organization.process.js';
 
 type FullUser = Prisma.UserGetPayload<ReturnType<typeof getUserQueryArgs>>;
 
@@ -34,8 +35,8 @@ export class UsersProcess extends SeedProcess<{}, UsersOutput> {
     this.organizationId = organizationId;
   }
 
-  dependencies() {
-    return [];
+ dependencies() {
+    return [OrganizationProcess];
   }
 
   async run(_deps: {}): Promise<UsersOutput> {
