@@ -1,4 +1,3 @@
-// processes/organization.process.ts
 import { Organization } from '@prisma/client';
 import { SeedProcess } from '../processes/seed-process.js';
 import { bootstrapUserCreateInput, organizationCreateInput } from '../factories/organization.factory.js';

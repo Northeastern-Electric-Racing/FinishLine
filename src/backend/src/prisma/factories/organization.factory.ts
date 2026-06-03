@@ -1,4 +1,3 @@
-// factories/organization.factory.ts
 import { Prisma, Theme } from '@prisma/client';
 
 export const bootstrapUserCreateInput = (): Prisma.UserCreateInput => ({
