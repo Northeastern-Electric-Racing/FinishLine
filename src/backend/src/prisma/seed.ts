@@ -58,7 +58,7 @@ import { CarProcess } from './seed/car.process.js';
 
 const prisma = new PrismaClient();
 
-// ORDER MATTERS AT THE MOMENT. I am still looking into topolical sort so that order wont matter here.
+// ORDER MATTERS AT THE MOMENT. I am still looking into topological sort so that order won't matter here.
 await new SeedRunner().withPrisma(prisma).register(new OrganizationProcess(), new CarProcess(), new UsersProcess()).run();
 
 await prisma.$disconnect();
