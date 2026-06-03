@@ -1,5 +1,5 @@
 import { SeedProcess } from '../processes/seed-process.js';
-import { OrganizationOutput, OrganizationProcess } from '../processes/../seed/organization.process.js';
+import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { CAR_CONFIGS, carCreateInput } from '../factories/car.factory.js';
 import { CarContext, CarOutput } from '../context.js';
 
