@@ -8,7 +8,7 @@ const CAR_COUNT = 5;
 const FROM_MONTH = 3; // April
 const FROM_DAY = 1;
 const TO_MONTH = 8; // September
-const TO_DAY = 31;
+const TO_DAY = 30;
 
 export const CAR_CONFIGS = Array.from({ length: CAR_COUNT }, (_, i) => {
   const carYear = CURRENT_YEAR - (CAR_COUNT - 1) + i;
