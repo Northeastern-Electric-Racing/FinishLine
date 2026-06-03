@@ -59,7 +59,7 @@ export const memberLikeCreateInput = (
     },
     userSecureSettings: {
       create: {
-        nuid: faker.string.numeric(9),
+        nuid: `002${faker.string.numeric(6)}`,
         phoneNumber: faker.phone.number(),
         street: faker.location.streetAddress(),
         city: faker.location.city(),
