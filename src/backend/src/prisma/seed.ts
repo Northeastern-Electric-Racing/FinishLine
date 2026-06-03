@@ -52,9 +52,9 @@ import CalendarService from '../services/calendar.services.js';
 import { allChangeRequestsReviewed } from '../utils/change-requests.utils.js';
 import { Theme } from '@prisma/client';
 import { SeedRunner } from './processes/seed-runner.js';
-import { UsersProcess } from './processes/user.process.js';
-import { OrganizationProcess } from './processes/organization.process.js';
-import { CarProcess } from './processes/car.process.js';
+import { UsersProcess } from './processes/seed-data/user.process.js';
+import { OrganizationProcess } from './processes/seed-data/organization.process.js';
+import { CarProcess } from './processes/seed-data/car.process.js';
 
 const prisma = new PrismaClient();
 

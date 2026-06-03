@@ -1,6 +1,7 @@
 // processes/organization.process.ts
-import { Organization, Theme } from '@prisma/client';
-import { SeedProcess } from './seed-process.js';
+import { Organization } from '@prisma/client';
+import { SeedProcess } from '../seed-process.js';
+import { bootstrapUserCreateInput, organizationCreateInput } from '../../factories/organization.factory.js';
 
 export type OrganizationOutput = {
   organization: Organization;
@@ -17,24 +18,11 @@ export class OrganizationProcess extends SeedProcess<{}, OrganizationOutput> {
     const bootstrap = await this.prisma.user.upsert({
       where: { googleAuthId: 'thomas-emrax' },
       update: {},
-      create: {
-        firstName: 'Thomas',
-        lastName: 'Emrax',
-        googleAuthId: 'thomas-emrax',
-        email: 'emrax.t@admin.com',
-        emailId: 'emrax.t',
-        userSettings: {
-          create: { defaultTheme: Theme.DARK, slackId: 'emrax.t' }
-        }
-      }
+      create: bootstrapUserCreateInput()
     });
 
     const organization = await this.prisma.organization.create({
-      data: {
-        name: 'Northeastern Electric Racing',
-        description: 'Student-run electric racing organization at Northeastern University.',
-        userCreatedId: bootstrap.userId
-      }
+      data: organizationCreateInput(bootstrap.userId)
     });
 
     await this.prisma.user.update({
