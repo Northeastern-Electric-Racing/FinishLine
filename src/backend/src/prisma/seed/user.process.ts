@@ -1,7 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { RoleEnum } from 'shared';
-import { getUserQueryArgs } from '../../../prisma-query-args/user.query-args.js';
-import { SeedProcess } from '../seed-process.js';
+import { getUserQueryArgs } from '../../prisma-query-args/user.query-args.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import {
   adminCreateInput,
@@ -10,7 +9,8 @@ import {
   headCreateInput,
   leadCreateInput,
   memberCreateInput
-} from '../../factories/user.factory.js';
+} from '../factories/user.factory.js';
+import { SeedProcess } from '../processes/seed-process.js';
 
 type FullUser = Prisma.UserGetPayload<ReturnType<typeof getUserQueryArgs>>;
 
