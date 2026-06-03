@@ -14,6 +14,6 @@ export const bootstrapUserCreateInput = (): Prisma.UserCreateInput => ({
 
 export const organizationCreateInput = (userCreatedId: string): Prisma.OrganizationCreateInput => ({
   name: 'Northeastern Electric Racing',
-  description: 'Student-run electric racing organization at Northeastern University.',
+  description: 'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).',
   userCreated: { connect: { userId: userCreatedId } }
 });
