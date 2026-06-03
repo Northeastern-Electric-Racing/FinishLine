@@ -16,6 +16,8 @@ export class SeedRunner {
   }
 
   async run() {
+    if (!this.prisma) throw new Error('SeedRunner requires a PrismaClient. Call withPrisma() before run().');
+
     const outputs = new Map<string, any>();
 
     for (const instance of this.instances) {
