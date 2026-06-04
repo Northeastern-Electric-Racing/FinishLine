@@ -10,7 +10,7 @@ import {
   Typography,
   useMediaQuery
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { HeatmapColors, enumToArray, REVIEW_TIMES } from '../../../../utils/design-review.utils';
 import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
