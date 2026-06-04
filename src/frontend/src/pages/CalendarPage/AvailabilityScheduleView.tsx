@@ -31,17 +31,9 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   const totalUsers = usersToAvailabilities.size;
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
 
-  console.log('displayDate prop received:', displayDate);
-  console.log('event.previousDate in view:', event.previousDate);
-
   // Use displayDate if provided, otherwise fall back to event's initial date.
   const initialDate = event.previousDate || displayDate || (event.initialDateScheduled ?? new Date());
   const potentialDays = getNextSevenDays(initialDate);
-  console.log('initialDate:', initialDate);
-  console.log(
-    'potentialDays:',
-    potentialDays.map((d) => d.toDateString())
-  );
 
   // Handle hover - updates the sidebar with available/unavailable users and slot info
   const handleTimeslotHover = (index: number, day: Date, timeIndex: number) => {

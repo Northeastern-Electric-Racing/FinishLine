@@ -134,7 +134,8 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     questionDocumentLink: event.questionDocumentLink ?? undefined,
     description: event.description ?? undefined,
     status: eventStatusTransformer(event.status),
-    initialDateScheduled: event.initialDateScheduled ?? undefined
+    initialDateScheduled: event.initialDateScheduled ?? undefined,
+    previousDate: event.previousDate ?? undefined
   };
 };
 
@@ -178,7 +179,8 @@ export const eventWithMembersTransformer = (event: Prisma.EventGetPayload<EventW
     questionDocumentLink: event.questionDocumentLink ?? undefined,
     description: event.description ?? undefined,
     status: eventStatusTransformer(event.status),
-    initialDateScheduled: event.initialDateScheduled ?? undefined
+    initialDateScheduled: event.initialDateScheduled ?? undefined,
+    previousDate: event.previousDate ?? undefined
   };
 };
 
