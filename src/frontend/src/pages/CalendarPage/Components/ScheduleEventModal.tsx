@@ -85,7 +85,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
           </Box>
           {beingRescheduled && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              The event status will still be SCHEDULED however all members will be notified about the rescheduled time.
+              All members will be notified about the rescheduled time once changed.
             </Typography>
           )}
           {!beingRescheduled && (

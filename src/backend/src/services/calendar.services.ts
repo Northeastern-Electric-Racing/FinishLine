@@ -799,7 +799,6 @@ export default class CalendarService {
     if (status === Event_Status.CONFIRMED && foundEventType.sendSlackNotifications) {
       await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
     }
-
     return edittedEvent;
   }
 
@@ -1531,32 +1530,6 @@ export default class CalendarService {
       await prisma.schedule_Slot.deleteMany({
         where: { eventId: event.eventId }
       });
-
-      const workPackages = await prisma.work_Package.findMany({
-        where: { workPackageId: { in: event.workPackages.map((wp) => wp.workPackageId) } }
-      });
-
-      await CalendarService.slackRescheduleNotification(
-        {
-          eventId: event.eventId,
-          title: event.title,
-          userCreatedId: event.userCreatedId,
-          approved: event.approved,
-          location: event.location,
-          status: event.status,
-          dateDeleted: event.dateDeleted,
-          workPackages: workPackages.map((wp) => ({
-            workPackageId: wp.workPackageId,
-            wbsElementId: wp.wbsElementId,
-            projectId: wp.projectId,
-            orderInProject: wp.orderInProject,
-            startDate: wp.startDate,
-            duration: wp.duration,
-            stage: wp.stage
-          }))
-        },
-        organization
-      );
     }
 
     // Only the event creator can schedule the event
@@ -1593,9 +1566,12 @@ export default class CalendarService {
             allDay: false
           }
         },
+        previousDate: event.previousDate ?? event.initialDateScheduled ?? null,
+        initialDateScheduled: startTime,
         approved: hasConflict ? Conflict_Status.PENDING : event.approved,
         approvalRequiredFromUserId: hasConflict ? conflictingEvent?.userCreated.userId : event.approvalRequiredFromUserId
       },
+
       ...getEventQueryArgs(organization.organizationId)
     });
 
@@ -1629,7 +1605,8 @@ export default class CalendarService {
         event.status === Event_Status.SCHEDULED
       );
     }
-
+    console.log('previousDate set to:', updatedEvent.previousDate);
+    console.log('initialDateScheduled set to:', updatedEvent.initialDateScheduled);
     return eventTransformer(updatedEvent);
   }
 
