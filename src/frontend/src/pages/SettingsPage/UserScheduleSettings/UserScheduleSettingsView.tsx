@@ -76,7 +76,7 @@ const UserScheduleSettingsView = ({
         onHide={() => setAvailabilityOpen(false)}
         header={'Availability'}
         availabilites={scheduleSettings.availabilities}
-        showImportedCalendarBusy={!!scheduleSettings.importedIcsCalendarUrl}
+        showImportedCalendarBusy={!!importedIcsCalendarUrl}
       />
       <AvailabilityEditModal
         open={confirmAvailabilityOpen}
@@ -88,7 +88,7 @@ const UserScheduleSettingsView = ({
         initialDate={firstScheduledDate || new Date()}
         onSubmit={() => handleConfirm({ availability: Array.from(confirmedAvailabilities.values()) })}
         canChangeDateRange={false}
-        showImportedCalendarBusy={!!scheduleSettings.importedIcsCalendarUrl}
+        showImportedCalendarBusy={!!importedIcsCalendarUrl}
       />
       <Grid item xs={12} md={'auto'}>
         <DetailDisplay label="Personal Google Email" content={scheduleSettings.personalGmail} />

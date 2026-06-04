@@ -209,7 +209,8 @@ export default class UsersController {
         userId,
         req.currentUser,
         new Date(startDate),
-        new Date(endDate)
+        new Date(endDate),
+        req.organization
       );
       res.status(200).json(busyTimes);
     } catch (error: unknown) {

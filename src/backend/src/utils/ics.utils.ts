@@ -56,7 +56,11 @@ const isBlockedHost = (host: string): boolean => {
     /^10\./.test(h) ||
     /^192\.168\./.test(h) ||
     /^172\.(1[6-9]|2\d|3[0-1])\./.test(h) ||
-    /^169\.254\./.test(h)
+    /^169\.254\./.test(h) ||
+    h.startsWith('::ffff:') ||
+    /^fe80:/i.test(h) ||
+    /^fc[0-9a-f]{2}:/i.test(h) ||
+    /^fd[0-9a-f]{2}:/i.test(h)
   );
 };
 
@@ -86,7 +90,7 @@ const fetchIcsText = async (url: URL): Promise<string> => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), fetchTimeoutMs);
   try {
-    const res = await fetch(url, { signal: controller.signal, redirect: 'follow' });
+    const res = await fetch(url, { signal: controller.signal, redirect: 'error' });
     if (!res.ok) throw new HttpException(502, `Failed to fetch ICS feed (status ${res.status})`);
     return await res.text();
   } catch (err) {

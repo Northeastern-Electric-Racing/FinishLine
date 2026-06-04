@@ -638,15 +638,21 @@ export default class UsersService {
    * @param submitter the requesting user
    * @param startDate the first day of the range (inclusive)
    * @param endDate the day after the last day of the range (exclusive)
+   * @param organization the organization the requesting user is in
    * @returns the busy slots per day, only including days that have at least one busy slot
    */
   static async getUserIcsBusyTimes(
     userId: string,
     submitter: User,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
+    organization: Organization
   ): Promise<IcsBusySlots[]> {
     if (submitter.userId !== userId) throw new AccessDeniedException('You can only access your own schedule settings');
+    const user = await prisma.user.findUnique({ where: { userId }, include: { organizations: true } });
+    if (!user) throw new NotFoundException('User', userId);
+    if (!user.organizations.map((org) => org.organizationId).includes(organization.organizationId))
+      throw new HttpException(400, `User ${userId} is not apart of the current organization`);
 
     const scheduleSettings = await prisma.schedule_Settings.findUnique({ where: { userId } });
     if (!scheduleSettings?.importedIcsCalendarUrl) return [];
@@ -656,10 +662,7 @@ export default class UsersService {
       busy = await fetchIcsBusyTimes(scheduleSettings.importedIcsCalendarUrl, startDate, endDate);
     } catch (error) {
       if (error instanceof HttpException) {
-        console.error(
-          `Failed to fetch ICS busy-times for schedule settings ${scheduleSettings.drScheduleSettingsId}: ${error.message}`
-        );
-        return [];
+        throw new HttpException(error.status, `Failed to fetch ICS calendar: ${error.message}`);
       }
       throw error;
     }

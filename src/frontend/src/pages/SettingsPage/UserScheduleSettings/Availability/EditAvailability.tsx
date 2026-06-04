@@ -69,10 +69,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     showImportedCalendarBusy
   );
 
-  const busyByDay = useMemo(
-    () => (showImportedCalendarBusy ? icsBusySlotsByDay(icsBusy ?? []) : new Map<number, Set<number>>()),
-    [icsBusy, showImportedCalendarBusy]
-  );
+  const busyByDay = showImportedCalendarBusy ? icsBusySlotsByDay(icsBusy ?? []) : new Map<number, Set<number>>();
 
   const handleMouseDown = (event: any, availability: Availability, selectedTime: number) => {
     event.preventDefault();

@@ -33,10 +33,7 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({
   const weekStart = selectedTimes[0]?.dateSet ?? startDate;
   const weekEnd = addDaysToDate(selectedTimes[selectedTimes.length - 1]?.dateSet ?? startDate, 1);
   const { data: icsBusy } = useUserIcsBusyTimes(currentUser.userId, weekStart, weekEnd, showImportedCalendarBusy);
-  const busyByDay = useMemo(
-    () => (showImportedCalendarBusy ? icsBusySlotsByDay(icsBusy ?? []) : new Map<number, Set<number>>()),
-    [icsBusy, showImportedCalendarBusy]
-  );
+  const busyByDay = showImportedCalendarBusy ? icsBusySlotsByDay(icsBusy ?? []) : new Map<number, Set<number>>();
 
   const onArrowIncrease = () => {
     const newDate = new Date(startDate);
