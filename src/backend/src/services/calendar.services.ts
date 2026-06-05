@@ -16,7 +16,6 @@ import {
   ScheduleSlot,
   notGuest,
   isSameDayUTC,
-  isSameDay,
   EventInstance,
   SlackMentionType
 } from 'shared';
@@ -69,7 +68,7 @@ import {
   updateUserAvailability,
   areUsersinList
 } from '../utils/users.utils.js';
-import { $Enums, Conflict_Status, Event_Status, Organization, Team } from '@prisma/client';
+import { Conflict_Status, Event_Status, Organization, Team } from '@prisma/client';
 
 export default class CalendarService {
   /**
