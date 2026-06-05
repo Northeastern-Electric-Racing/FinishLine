@@ -137,7 +137,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
   const canEditOrDelete =
     event.userCreated.userId === currentUser.userId || isAdmin(currentUser.role) || isHead(currentUser.role);
 
-  const eventDate = clickedDate || event.startTime;
+  const eventDate = event.initialDateScheduled || clickedDate || event.startTime;
 
   const availabilityUrl = `${routes.CALENDAR}/event/${event.eventId}?date=${eventDate.toISOString()}`;
 
