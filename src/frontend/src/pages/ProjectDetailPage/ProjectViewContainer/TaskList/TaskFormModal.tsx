@@ -13,7 +13,14 @@ import ErrorPage from '../../../ErrorPage';
 const schema = yup.object().shape({
   notes: yup.string().optional(),
   startDate: yup.date().optional(),
-  deadline: yup.date().optional(),
+  deadline: yup
+    .date()
+    .optional()
+    .test('deadline-after-start', 'Deadline must be on or after the start date', function (deadline) {
+      const { startDate } = this.parent;
+      if (!startDate || !deadline) return true;
+      return deadline >= startDate;
+    }),
   priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
   assignees: yup.array().required(),
   title: yup.string().required(),
@@ -200,6 +207,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
                   />
                 )}
               />
+              {errors.deadline && <FormHelperText error>{errors.deadline.message}</FormHelperText>}
             </FormControl>
           </Grid>
           <Grid item xs={12} md={12}>

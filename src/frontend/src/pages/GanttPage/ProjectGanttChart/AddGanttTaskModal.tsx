@@ -18,7 +18,14 @@ const schema = yup.object().shape({
   assignees: yup.array().of(yup.string()).min(0, 'At least 0 assignees are required'),
   notes: yup.string(),
   startDate: yup.date().nullable(),
-  deadline: yup.date().nullable()
+  deadline: yup
+    .date()
+    .nullable()
+    .test('deadline-after-start', 'Deadline must be on or after the start date', function (deadline) {
+      const { startDate } = this.parent;
+      if (!startDate || !deadline) return true;
+      return deadline >= startDate;
+    })
 });
 
 interface CreateTaskFormData {
@@ -191,6 +198,7 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
                 />
               )}
             />
+            {errors.deadline && <FormHelperText error>{errors.deadline.message}</FormHelperText>}
           </FormControl>
         </Grid>
         <Grid item xs={12} md={12}>

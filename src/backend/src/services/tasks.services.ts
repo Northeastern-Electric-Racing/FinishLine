@@ -166,6 +166,13 @@ export default class TasksService {
 
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
+    const effectiveStartDate = startDate ?? originalTask.startDate ?? undefined;
+    const effectiveDeadline = deadline ?? originalTask.deadline ?? undefined;
+
+    if (effectiveStartDate && effectiveDeadline && effectiveStartDate > effectiveDeadline) {
+      throw new HttpException(400, 'Start date must be before or on the same day as the deadline');
+    }
+
     const updatedTask = await prisma.task.update({
       where: { taskId },
       data: { title, notes, priority, startDate, deadline },
