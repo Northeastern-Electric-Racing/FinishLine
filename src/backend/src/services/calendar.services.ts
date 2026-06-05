@@ -16,7 +16,9 @@ import {
   ScheduleSlot,
   notGuest,
   isSameDayUTC,
-  EventInstance
+  isSameDay,
+  EventInstance,
+  SlackMentionType
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
@@ -270,7 +272,8 @@ export default class CalendarService {
     questionDocumentLink?: string,
     location?: string,
     zoomLink?: string,
-    description?: string
+    description?: string,
+    mention?: SlackMentionType
   ): Promise<Event> {
     // Validate eventTypeId
     const foundEventType = await prisma.event_Type.findUnique({
@@ -545,7 +548,8 @@ export default class CalendarService {
         createdEvent,
         submitter,
         workPackageNames,
-        organization.name
+        organization.name,
+        { memberSlackIds: memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id), mention }
       );
     }
 
@@ -637,7 +641,6 @@ export default class CalendarService {
     }
 
     // Validate required memberIds
-
     const foundMembers = await prisma.user.findMany({
       where: {
         userId: { in: requiredMemberIds || submitter.userId },
@@ -750,7 +753,7 @@ export default class CalendarService {
     ];
 
     // throw if a user isn't found, then build prisma queries for connecting userIds
-    const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(allRequiredMembers));
+    const updatedRequiredMembers = [...getPrismaQueryUserIds(await getUsers(allRequiredMembers))];
     const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
 
     // Update the event with new data (excluding schedule slots)

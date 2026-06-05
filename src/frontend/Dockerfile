@@ -1,15 +1,18 @@
 # TO BE RUN FROM DOCKER COMPOSE. DO NOT RUN MANUALLY AS CONTEXT IS NOT SET CORRECTLY
-FROM node:20 AS builder
+FROM node:25 AS builder
+
+RUN npm install -g corepack --force && corepack enable
 
 WORKDIR /base
 
-COPY package.json tsconfig.build.json ./
+COPY package.json tsconfig.build.json .yarnrc.yml yarn.lock ./
+COPY .yarn/releases .yarn/releases
 COPY ./src/frontend src/frontend
 COPY ./src/shared src/shared
 
 RUN rm -rf src/frontend/src/tests
 
-RUN yarn install;
+RUN yarn install
 
 RUN yarn build:shared
 RUN yarn build:frontend:dev

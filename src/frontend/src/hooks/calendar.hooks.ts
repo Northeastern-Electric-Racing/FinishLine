@@ -12,7 +12,8 @@ import {
   ScheduleSlotCreateArgs,
   EventWithMembers,
   ScheduleSlot,
-  EventInstance
+  EventInstance,
+  SlackMentionType
 } from 'shared';
 import {
   getAllShops,
@@ -81,6 +82,7 @@ export interface EventCreateArgs {
   description?: string;
   initialDateScheduled: Date;
   scheduleSlots: ScheduleSlotCreateArgs[];
+  mention?: SlackMentionType;
 }
 
 export interface EditEventArgs {

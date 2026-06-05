@@ -392,7 +392,10 @@ export const EventAvailabilityPage: React.FC = () => {
 
           {(currentAvailableUsers.length > 0 || currentUnavailableUsers.length > 0) && (
             <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-              <span style={{ color: '#ef4345' }}>Red</span> means has not confirmed availability
+              <span style={{ color: '#ef4345' }}>Red</span> means that member has not confirmed availability
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+                <span style={{ textDecoration: 'underline' }}>Underline</span> means that member is required for the meeting
+              </Typography>
             </Typography>
           )}
           {(currentAvailableUsers.length > 0 || currentUnavailableUsers.length > 0) && (
