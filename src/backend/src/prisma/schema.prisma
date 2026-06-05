@@ -398,7 +398,6 @@ model Change_Request {
   budgetChangeRequest      Budget_CR?
   leadershipChangeRequest  Leadership_CR?
   notificationSlackThreads Message_Info[]
-  previousDate             DateTime?
 
   @@unique([identifier, organizationId], name: "uniqueChangeRequest")
   @@index([reviewerId])
@@ -1182,7 +1181,6 @@ model Event {
   description                String?
   notificationSlackThreads   Message_Info[]
   calendarEventIds           String[]
-  previousDate               DateTime?
 }
 
 model Calendar {

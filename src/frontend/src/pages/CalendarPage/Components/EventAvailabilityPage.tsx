@@ -404,16 +404,9 @@ export const EventAvailabilityPage: React.FC = () => {
           {/* Schedule button for creators - only show if event is not already scheduled */}
           {(isCreator || isAdmin(currentUser.role)) && selectedSlot && (
             <Box sx={{ mt: 3 }}>
-              {event.status !== 'SCHEDULED' && (
-                <NERSuccessButton variant="contained" onClick={handleScheduleClick} fullWidth>
-                  Schedule Event
-                </NERSuccessButton>
-              )}
-              {event.status === 'SCHEDULED' && (
-                <NERSuccessButton variant="contained" onClick={handleScheduleClick} fullWidth>
-                  Reschedule Event
-                </NERSuccessButton>
-              )}
+              <NERSuccessButton variant="contained" onClick={handleScheduleClick} fullWidth>
+                {event.status === 'SCHEDULED' ? 'Reschedule Event' : 'Schedule Event'}
+              </NERSuccessButton>
             </Box>
           )}
         </Box>

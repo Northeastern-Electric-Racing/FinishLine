@@ -18,7 +18,6 @@ export const filterEventTransformer = (event: Event): Event => {
     ...event,
     initialDateScheduled: event.initialDateScheduled ? new Date(event.initialDateScheduled) : undefined,
     dateCreated: new Date(event.dateCreated),
-    previousDate: event.previousDate ? new Date(event.previousDate) : undefined,
     scheduledTimes: event.scheduledTimes.map((schedule) => ({
       ...schedule,
       startTime: new Date(schedule.startTime),
@@ -36,7 +35,6 @@ export const eventTransformer = (event: Event): Event => {
     ...event,
     dateCreated: new Date(event.dateCreated),
     initialDateScheduled: event.initialDateScheduled ? new Date(event.initialDateScheduled) : undefined,
-    previousDate: event.previousDate ? new Date(event.previousDate) : undefined,
     scheduledTimes: event.scheduledTimes.map((slot: any) => ({
       ...slot,
       startTime: new Date(slot.startTime),
@@ -54,7 +52,6 @@ export const eventWithMembersTransformer = (event: EventWithMembers): EventWithM
     ...event,
     dateCreated: new Date(event.dateCreated),
     initialDateScheduled: event.initialDateScheduled ? new Date(event.initialDateScheduled) : undefined,
-    previousDate: event.previousDate ? new Date(event.previousDate) : undefined,
     scheduledTimes: event.scheduledTimes.map((slot: any) => ({
       ...slot,
       startTime: new Date(slot.startTime),

@@ -1137,8 +1137,7 @@ export default class CalendarService {
       eventTransformer(foundEvent),
       foundUser,
       foundEvent.workPackages.map((wp) => wp.wbsElement.name).join(', '),
-      organization.name,
-      true
+      organization.name
     );
   }
 
@@ -1566,8 +1565,8 @@ export default class CalendarService {
             allDay: false
           }
         },
-        previousDate: event.previousDate ?? event.initialDateScheduled ?? null,
-        initialDateScheduled: startTime,
+
+        initialDateScheduled: event.initialDateScheduled ?? null,
         approved: hasConflict ? Conflict_Status.PENDING : event.approved,
         approvalRequiredFromUserId: hasConflict ? conflictingEvent?.userCreated.userId : event.approvalRequiredFromUserId
       },
@@ -1605,8 +1604,6 @@ export default class CalendarService {
         event.status === Event_Status.SCHEDULED
       );
     }
-    console.log('previousDate set to:', updatedEvent.previousDate);
-    console.log('initialDateScheduled set to:', updatedEvent.initialDateScheduled);
     return eventTransformer(updatedEvent);
   }
 
