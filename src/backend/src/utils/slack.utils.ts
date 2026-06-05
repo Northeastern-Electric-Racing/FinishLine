@@ -505,7 +505,7 @@ export const sendEventScheduledSlackNotif = async (
   const inPersonLocation = event.location && `in ${event.location}`;
 
   const location = zoomLink && inPersonLocation ? `${inPersonLocation} and ${zoomLink}` : inPersonLocation || zoomLink || '';
- 
+
   const allMembers = [...event.requiredMembers, ...event.optionalMembers];
   const resolvedSlackIds = await Promise.all(allMembers.map((m) => getUserSlackId(m.userId)));
   const validSlackIds = resolvedSlackIds.filter((id): id is string => !!id);
