@@ -42,23 +42,37 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
   };
 
   return (
-    <Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <TableContainer
         sx={{
           overflowX: 'auto',
-          overflowY: 'auto',
+          overflowY: 'hidden',
           maxWidth: '100%',
-          maxHeight: 500
+          height: '100%',
+          flex: 1
         }}
       >
         <Table
           stickyHeader
           size="small"
           sx={{
+            height: '100%',
+            tableLayout: 'fixed',
             '& .MuiTableCell-head': {
-              bgcolor: 'background.paper'
+              bgcolor: 'background.paper',
+              px: 0.5,
+              py: 0.5
             },
-            minWidth: 800
+            '& .MuiTableCell-body': {
+              px: 0,
+              py: 0,
+              height: `calc((100% - 50px) / 12)`
+            },
+            '& .MuiTableCell-root': {
+              borderRight: '1px solid',
+              borderColor: 'divider'
+            },
+            minWidth: 700
           }}
         >
           <TableHead>
@@ -66,7 +80,7 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
               <TableCell sx={stickyLeft}></TableCell>
               {selectedTimes.map((availability, idx) => (
                 <TableCell key={idx}>
-                  <Typography variant="body2" align="center" sx={{ fontSize: 12 }}>
+                  <Typography variant="body1" align="center" fontWeight="bold" sx={{ fontSize: 15 }}>
                     {getDayOfWeek(availability.dateSet) + ' ' + datePipe(availability.dateSet)}
                   </Typography>
                 </TableCell>
@@ -77,7 +91,7 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
             {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
               <TableRow key={time}>
                 <TableCell sx={{ ...stickyLeft, zIndex: 1 }}>
-                  <Typography variant="body2" align="center" sx={{ fontSize: 13 }}>
+                  <Typography variant="body1" align="center" sx={{ fontSize: 15 }}>
                     {time}
                   </Typography>
                 </TableCell>

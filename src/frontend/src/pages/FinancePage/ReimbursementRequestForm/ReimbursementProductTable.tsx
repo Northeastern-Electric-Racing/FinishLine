@@ -24,7 +24,6 @@ import {
   WbsNumber,
   validateWBS,
   wbsPipe,
-  ReimbursementProductFormArgs,
   IndexCode,
   CreateRefundSourceArgs,
   Material,
@@ -32,9 +31,9 @@ import {
 } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
+import { ReimbursementRequestFormInput, ProductWithLocalFields } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -43,9 +42,9 @@ import { formatReasonName } from '../../../utils/reimbursement-request.utils';
 import CreateMaterialModal from '../../ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/CreateMaterialModal';
 
 interface ReimbursementProductTableProps {
-  reimbursementProducts: ReimbursementProductFormArgs[];
+  reimbursementProducts: ProductWithLocalFields[];
+  prependProduct: (args: ProductWithLocalFields) => void;
   removeProduct: (index: number) => void;
-  appendProduct: (args: ReimbursementProductFormArgs) => void;
   projectAutocompleteOptions: {
     label: string;
     id: string;
@@ -61,6 +60,8 @@ interface ReimbursementProductTableProps {
   firstRefundSourceName?: string;
   secondRefundSourceName?: string;
   allProjects: ProjectPreview[];
+  applySplitShippingToProducts: (totalShipping?: number) => void;
+  isEditing?: boolean;
 }
 
 const ListItem = styled('li')(({ theme }) => ({
@@ -145,18 +146,19 @@ const MaterialAutocomplete: React.FC<{
 const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   reimbursementProducts,
   removeProduct,
-  appendProduct,
+  prependProduct,
   projectAutocompleteOptions,
   control,
   errors,
   setValue,
   hasMultipleRefundSources = false,
   firstRefundSourceIndexCode,
-  secondRefundSourceIndexCode,
   firstRefundSourceName,
   secondRefundSourceName,
   watch,
-  allProjects
+  allProjects,
+  applySplitShippingToProducts,
+  isEditing = false
 }) => {
   const uniqueWbsElementsWithProducts = new Map<
     string,
@@ -175,11 +177,69 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const [pendingMaterialIndices, setPendingMaterialIndices] = useState<Set<number>>(new Set());
 
   const onCostBlurHandler = (value: number, index: number) => {
-    setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
+    const roundedBaseCost = Number((value || 0).toFixed(2));
+    const product = (watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields) ?? {};
 
-    if (firstRefundSourceIndexCode) {
-      setValue(`reimbursementProducts.${index}.refundSources`, [{ indexCode: firstRefundSourceIndexCode, amount: value }]);
+    const updatedProduct: ProductWithLocalFields = {
+      ...product,
+      __baseCost: roundedBaseCost
+    };
+
+    setValue(`reimbursementProducts.${index}`, updatedProduct, {
+      shouldDirty: true,
+      shouldValidate: true
+    });
+
+    recalculateRowTotal(index);
+  };
+
+  const onShippingBlurHandler = (value: number, index: number) => {
+    const roundedShippingCost = Number((value || 0).toFixed(2));
+    const product = (watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields) ?? {};
+
+    const updatedProduct: ProductWithLocalFields = {
+      ...product,
+      __shippingCost: roundedShippingCost
+    };
+
+    setValue(`reimbursementProducts.${index}`, updatedProduct, {
+      shouldDirty: true,
+      shouldValidate: true
+    });
+
+    if (hasMultipleRefundSources) {
+      const firstSourceAmount = Number(product?.refundSources?.[0]?.amount ?? 0);
+      const secondSourceAmount = Number(product?.refundSources?.[1]?.amount ?? 0);
+
+      setValue(`reimbursementProducts.${index}.cost`, Number((firstSourceAmount + secondSourceAmount).toFixed(2)), {
+        shouldDirty: true,
+        shouldValidate: true
+      });
+    } else {
+      recalculateRowTotal(index);
     }
+  };
+
+  const updateSingleSourceRefund = (index: number, totalRowCost: number) => {
+    if (firstRefundSourceIndexCode && !hasMultipleRefundSources) {
+      setValue(`reimbursementProducts.${index}.refundSources`, [
+        { indexCode: firstRefundSourceIndexCode, amount: totalRowCost }
+      ]);
+    }
+  };
+
+  const recalculateRowTotal = (index: number) => {
+    const product = watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields;
+    const baseCost = Number(product?.__baseCost ?? 0);
+    const shippingCost = Number(product?.__shippingCost ?? 0);
+    const totalRowCost = Number((baseCost + shippingCost).toFixed(2));
+
+    setValue(`reimbursementProducts.${index}.cost`, totalRowCost, {
+      shouldDirty: true,
+      shouldValidate: true
+    });
+
+    updateSingleSourceRefund(index, totalRowCost);
   };
 
   const userTheme = useTheme();
@@ -207,24 +267,36 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const onAmountBlurHandler = (
     value: string,
     index: number,
-    fieldName: 'cost' | `refundSources.${0}.amount` | `refundSources.${1}.amount`
+    fieldName: 'refundSources.0.amount' | 'refundSources.1.amount'
   ) => {
     const parsedValue = value ? parseFloat(value) : 0;
-    setValue(`reimbursementProducts.${index}.${fieldName}`, parsedValue);
+    const product = (watch(`reimbursementProducts.${index}` as const) as ProductWithLocalFields) ?? {};
+
+    const firstSourceAmount =
+      fieldName === 'refundSources.0.amount' ? parsedValue : Number(product?.refundSources?.[0]?.amount ?? 0);
+
+    const secondSourceAmount =
+      fieldName === 'refundSources.1.amount' ? parsedValue : Number(product?.refundSources?.[1]?.amount ?? 0);
+
+    setValue(`reimbursementProducts.${index}.${fieldName}`, parsedValue, {
+      shouldDirty: true,
+      shouldValidate: true
+    });
 
     if (hasMultipleRefundSources) {
-      const firstSourceAmount = Number(watch(`reimbursementProducts.${index}.refundSources.${0}.amount`)) || 0;
-      const secondSourceAmount = Number(watch(`reimbursementProducts.${index}.refundSources.${1}.amount`)) || 0;
+      const shippingCost = Number(product.__shippingCost ?? 0);
+      const baseCost = Number((firstSourceAmount + secondSourceAmount).toFixed(2));
+      const productTotal = Number((baseCost + shippingCost).toFixed(2));
 
-      if (firstRefundSourceIndexCode !== undefined) {
-        setValue(`reimbursementProducts.${index}.refundSources.${0}.indexCode`, firstRefundSourceIndexCode);
-      }
+      setValue(`reimbursementProducts.${index}.__baseCost`, baseCost, {
+        shouldDirty: true,
+        shouldValidate: true
+      });
 
-      if (secondRefundSourceIndexCode !== undefined) {
-        setValue(`reimbursementProducts.${index}.refundSources.${1}.indexCode`, secondRefundSourceIndexCode);
-      }
-
-      setValue(`reimbursementProducts.${index}.cost`, firstSourceAmount + secondSourceAmount);
+      setValue(`reimbursementProducts.${index}.cost`, productTotal, {
+        shouldDirty: true,
+        shouldValidate: true
+      });
     }
   };
 
@@ -262,13 +334,38 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const prevSecondRefundSourceName = useRef(secondRefundSourceName);
   const prevHasMultipleRefundSources = useRef(hasMultipleRefundSources);
 
-  const refundSources: CreateRefundSourceArgs[] = Array.from(
-    new Set(reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0))
-  );
+  const refundSources: CreateRefundSourceArgs[] = (() => {
+    const allSources = reimbursementProducts
+      .flatMap((product) => product.refundSources ?? [])
+      .filter((source): source is CreateRefundSourceArgs => {
+        return !!source && !!source.indexCode && !!source.indexCode.indexCodeId && Number(source.amount ?? 0) > 0;
+      });
+
+    const seen = new Set<string>();
+
+    return allSources.filter((source) => {
+      const id = source.indexCode.indexCodeId;
+
+      if (seen.has(id)) {
+        return false;
+      }
+
+      seen.add(id);
+      return true;
+    });
+  })();
 
   // in the event the data was from a prior refund request
   const hasPreFilledData = useRef(false);
   const hasInitializedRefundSources = useRef(false);
+
+  const reapplyShippingSplit = useCallback(() => {
+    const currentTotalShipping = watch('splitShipping');
+
+    if (!currentTotalShipping || Number(currentTotalShipping) <= 0) return;
+
+    applySplitShippingToProducts(Number(currentTotalShipping));
+  }, [watch, applySplitShippingToProducts]);
 
   useEffect(() => {
     if (hasInitializedRefundSources.current) return;
@@ -287,15 +384,17 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   // Handle transition from single to multiple refund sources
   useEffect(() => {
     if (hasMultipleRefundSources && !prevHasMultipleRefundSources.current) {
-      setTimeout(() => {
-        const products = watch('reimbursementProducts') || [];
-        products.forEach((product: ReimbursementProductFormArgs, index: number) => {
-          const currentCost = product.cost ?? 0;
-          setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, currentCost);
-          setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
-        });
-      }, 0);
+      const products = watch('reimbursementProducts') || [];
+
+      products.forEach((product: ProductWithLocalFields, index: number) => {
+        const baseCost = Number(product.__baseCost ?? product.cost ?? 0);
+
+        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, baseCost);
+        setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
+        setValue(`reimbursementProducts.${index}.cost`, Number((baseCost + Number(product.__shippingCost ?? 0)).toFixed(2)));
+      });
     }
+
     prevHasMultipleRefundSources.current = hasMultipleRefundSources;
   }, [hasMultipleRefundSources, setValue, watch]);
 
@@ -403,12 +502,17 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     options={projectAutocompleteOptions}
                     onChange={(_e, value) => {
                       if (value) {
-                        appendProduct({
+                        const newProduct: ProductWithLocalFields = {
                           reason: validateWBS(value.id),
                           name: '',
                           cost: 0,
-                          refundSources: []
-                        });
+                          refundSources: [],
+                          __baseCost: 0,
+                          __shippingCost: 0
+                        };
+
+                        prependProduct(newProduct);
+                        reapplyShippingSplit();
                       }
                     }}
                     value={null}
@@ -428,12 +532,17 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     getOptionLabel={(option) => formatReasonName(option.name)}
                     onChange={(_e, value) => {
                       if (value) {
-                        appendProduct({
+                        const newProduct: ProductWithLocalFields = {
                           reason: value,
                           name: '',
                           cost: 0,
-                          refundSources: []
-                        });
+                          refundSources: [],
+                          __baseCost: 0,
+                          __shippingCost: 0
+                        };
+
+                        prependProduct(newProduct);
+                        reapplyShippingSplit();
                       }
                     }}
                     value={null}
@@ -534,6 +643,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       </Box>
                       {uniqueWbsElementsWithProducts.get(key)?.map((product) => {
                         const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
+                        const currentProduct =
+                          (watch(`reimbursementProducts.${product.index}` as const) as ProductWithLocalFields) ?? {};
+                        const currentShippingCost = Number(currentProduct.__shippingCost ?? 0);
 
                         return (
                           <ListItem key={product.id}>
@@ -657,18 +769,93 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                       <Controller
                                         name={`reimbursementProducts.${product.index}.cost`}
                                         control={control}
-                                        render={({ field }) => (
-                                          <TextField
-                                            {...field}
-                                            variant="outlined"
-                                            value={field.value === 0 ? '' : field.value}
-                                            placeholder={'$ Cost'}
-                                            type="number"
-                                            fullWidth
-                                            onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
-                                            error={!!errors.reimbursementProducts?.[product.index]?.cost}
-                                          />
-                                        )}
+                                        render={() => {
+                                          const productRow =
+                                            (watch(
+                                              `reimbursementProducts.${product.index}` as const
+                                            ) as ProductWithLocalFields) ?? {};
+                                          const baseCost = Number(productRow.__baseCost ?? 0);
+                                          const shippingCost = Number(productRow.__shippingCost ?? 0);
+                                          const rowTotal = Number(productRow.cost ?? baseCost + shippingCost);
+
+                                          return (
+                                            <>
+                                              <TextField
+                                                variant="outlined"
+                                                value={baseCost === 0 ? '' : baseCost}
+                                                placeholder={'$ Cost'}
+                                                type="number"
+                                                fullWidth
+                                                sx={{
+                                                  '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                                                    WebkitAppearance: 'none',
+                                                    margin: 0
+                                                  },
+                                                  '& input[type=number]': {
+                                                    MozAppearance: 'textfield'
+                                                  }
+                                                }}
+                                                onChange={(e) => {
+                                                  const productRow =
+                                                    (watch(
+                                                      `reimbursementProducts.${product.index}` as const
+                                                    ) as ProductWithLocalFields) ?? {};
+
+                                                  const updatedProduct: ProductWithLocalFields = {
+                                                    ...productRow,
+                                                    __baseCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                                  };
+
+                                                  setValue(`reimbursementProducts.${product.index}`, updatedProduct, {
+                                                    shouldDirty: true
+                                                  });
+                                                }}
+                                                onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
+                                                error={!!errors.reimbursementProducts?.[product.index]?.cost}
+                                              />
+                                              {!isEditing && (
+                                                <TextField
+                                                  value={shippingCost === 0 ? '' : shippingCost}
+                                                  variant="outlined"
+                                                  size="small"
+                                                  fullWidth
+                                                  margin="dense"
+                                                  label="Shipping"
+                                                  type="number"
+                                                  sx={{
+                                                    '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button':
+                                                      {
+                                                        WebkitAppearance: 'none',
+                                                        margin: 0
+                                                      },
+                                                    '& input[type=number]': {
+                                                      MozAppearance: 'textfield'
+                                                    }
+                                                  }}
+                                                  onChange={(e) => {
+                                                    const productRow =
+                                                      (watch(
+                                                        `reimbursementProducts.${product.index}` as const
+                                                      ) as ProductWithLocalFields) ?? {};
+
+                                                    const updatedProduct: ProductWithLocalFields = {
+                                                      ...productRow,
+                                                      __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                                    };
+
+                                                    setValue(`reimbursementProducts.${product.index}`, updatedProduct, {
+                                                      shouldDirty: true
+                                                    });
+                                                  }}
+                                                  onBlur={(e) =>
+                                                    onShippingBlurHandler(parseFloat(e.target.value), product.index)
+                                                  }
+                                                  helperText={`Product total $${Number(rowTotal || 0).toFixed(2)}`}
+                                                />
+                                              )}
+                                            </>
+                                          );
+                                        }}
                                       />
                                       <FormHelperText error>
                                         {errors.reimbursementProducts?.[product.index]?.cost?.message}
@@ -678,114 +865,189 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 )}
                                 {hasMultipleRefundSources && (
                                   <>
-                                    {showFirstSourceFields && (
+                                    <Box
+                                      sx={{
+                                        flex: '3',
+                                        width: '100%',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 1
+                                      }}
+                                    >
                                       <Box
                                         sx={{
-                                          flex: '1.5',
+                                          display: 'grid',
+                                          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                                          gap: 1,
                                           width: '100%'
                                         }}
                                       >
-                                        <Box
-                                          sx={{
-                                            display: { xs: 'block', md: 'none' },
-                                            textAlign: 'left',
-                                            mb: 1,
-                                            color: '#dd524c',
-                                            textShadow: '0.5px 0 #dd524c',
-                                            letterSpacing: '0.5px'
-                                          }}
-                                        >
-                                          <Typography>{firstRefundSourceName}</Typography>
-                                        </Box>
-                                        <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                          <Controller
-                                            name={`reimbursementProducts.${product.index}.refundSources.${0}.amount`}
-                                            control={control}
-                                            render={({ field }) => (
-                                              <TextField
-                                                {...field}
-                                                value={field.value === 0 ? '' : field.value}
-                                                disabled={firstRefundSourceIndexCode === undefined}
-                                                variant="outlined"
-                                                placeholder={'$ Amt'}
-                                                type="number"
-                                                fullWidth
-                                                onBlur={(e) =>
-                                                  onAmountBlurHandler(
-                                                    e.target.value,
-                                                    product.index,
-                                                    `refundSources.${0}.amount`
-                                                  )
-                                                }
-                                                error={
-                                                  !!errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount
-                                                }
+                                        {showFirstSourceFields && (
+                                          <Box>
+                                            <Box
+                                              sx={{
+                                                display: { xs: 'block', md: 'none' },
+                                                textAlign: 'left',
+                                                mb: 1,
+                                                color: '#dd524c',
+                                                textShadow: '0.5px 0 #dd524c',
+                                                letterSpacing: '0.5px'
+                                              }}
+                                            >
+                                              <Typography>{firstRefundSourceName}</Typography>
+                                            </Box>
+                                            <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                              <Controller
+                                                name={`reimbursementProducts.${product.index}.refundSources.${0}.amount`}
+                                                control={control}
+                                                render={({ field }) => (
+                                                  <TextField
+                                                    {...field}
+                                                    value={field.value ?? ''}
+                                                    onChange={(e) => {
+                                                      field.onChange(e.target.value);
+                                                    }}
+                                                    variant="outlined"
+                                                    placeholder={'$ Amt'}
+                                                    type="number"
+                                                    fullWidth
+                                                    sx={{
+                                                      '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button':
+                                                        {
+                                                          WebkitAppearance: 'none',
+                                                          margin: 0
+                                                        },
+                                                      '& input[type=number]': {
+                                                        MozAppearance: 'textfield'
+                                                      }
+                                                    }}
+                                                    onBlur={(e) =>
+                                                      onAmountBlurHandler(
+                                                        e.target.value,
+                                                        product.index,
+                                                        `refundSources.${0}.amount`
+                                                      )
+                                                    }
+                                                    error={
+                                                      !!errors.reimbursementProducts?.[product.index]?.refundSources?.[0]
+                                                        ?.amount
+                                                    }
+                                                  />
+                                                )}
                                               />
-                                            )}
-                                          />
-                                          <FormHelperText error>
-                                            {
-                                              errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount
-                                                ?.message
-                                            }
-                                          </FormHelperText>
-                                        </FormControl>
-                                      </Box>
-                                    )}
-                                    {showSecondSourceFields && (
-                                      <Box
-                                        sx={{
-                                          flex: '1.5',
-                                          width: '100%'
-                                        }}
-                                      >
-                                        <Box
-                                          sx={{
-                                            display: { xs: 'block', md: 'none' },
-                                            textAlign: 'left',
-                                            mb: 1,
-                                            color: '#dd524c',
-                                            textShadow: '0.5px 0 #dd524c',
-                                            letterSpacing: '0.5px'
-                                          }}
-                                        >
-                                          <Typography>{secondRefundSourceName}</Typography>
-                                        </Box>
-                                        <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                          <Controller
-                                            name={`reimbursementProducts.${product.index}.refundSources.${1}.amount`}
-                                            control={control}
-                                            render={({ field }) => (
-                                              <TextField
-                                                {...field}
-                                                value={field.value === 0 ? '' : field.value}
-                                                disabled={secondRefundSourceIndexCode === undefined}
-                                                variant="outlined"
-                                                placeholder={'$ Amt'}
-                                                type="number"
-                                                fullWidth
-                                                onBlur={(e) =>
-                                                  onAmountBlurHandler(
-                                                    e.target.value,
-                                                    product.index,
-                                                    `refundSources.${1}.amount`
-                                                  )
+                                              <FormHelperText error>
+                                                {
+                                                  errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount
+                                                    ?.message
                                                 }
-                                                error={
-                                                  !!errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount
-                                                }
+                                              </FormHelperText>
+                                            </FormControl>
+                                          </Box>
+                                        )}
+
+                                        {showSecondSourceFields && (
+                                          <Box>
+                                            <Box
+                                              sx={{
+                                                display: { xs: 'block', md: 'none' },
+                                                textAlign: 'left',
+                                                mb: 1,
+                                                color: '#dd524c',
+                                                textShadow: '0.5px 0 #dd524c',
+                                                letterSpacing: '0.5px'
+                                              }}
+                                            >
+                                              <Typography>{secondRefundSourceName}</Typography>
+                                            </Box>
+                                            <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                              <Controller
+                                                name={`reimbursementProducts.${product.index}.refundSources.${1}.amount`}
+                                                control={control}
+                                                render={({ field }) => (
+                                                  <TextField
+                                                    {...field}
+                                                    value={field.value ?? ''}
+                                                    onChange={(e) => {
+                                                      field.onChange(e.target.value);
+                                                    }}
+                                                    variant="outlined"
+                                                    placeholder={'$ Amt'}
+                                                    type="number"
+                                                    fullWidth
+                                                    sx={{
+                                                      '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button':
+                                                        {
+                                                          WebkitAppearance: 'none',
+                                                          margin: 0
+                                                        },
+                                                      '& input[type=number]': {
+                                                        MozAppearance: 'textfield'
+                                                      }
+                                                    }}
+                                                    onBlur={(e) =>
+                                                      onAmountBlurHandler(
+                                                        e.target.value,
+                                                        product.index,
+                                                        `refundSources.${1}.amount`
+                                                      )
+                                                    }
+                                                    error={
+                                                      !!errors.reimbursementProducts?.[product.index]?.refundSources?.[1]
+                                                        ?.amount
+                                                    }
+                                                  />
+                                                )}
                                               />
-                                            )}
-                                          />
-                                          <FormHelperText error>
-                                            {
-                                              errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount
-                                                ?.message
-                                            }
-                                          </FormHelperText>
-                                        </FormControl>
+                                              <FormHelperText error>
+                                                {
+                                                  errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount
+                                                    ?.message
+                                                }
+                                              </FormHelperText>
+                                            </FormControl>
+                                          </Box>
+                                        )}
                                       </Box>
-                                    )}
+                                      {!isEditing && (
+                                        <Box sx={{ width: '100%' }}>
+                                          <TextField
+                                            value={currentShippingCost === 0 ? '' : currentShippingCost}
+                                            variant="outlined"
+                                            size="small"
+                                            fullWidth
+                                            label="Shipping"
+                                            type="number"
+                                            sx={{
+                                              '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                                                WebkitAppearance: 'none',
+                                                margin: 0
+                                              },
+                                              '& input[type=number]': {
+                                                MozAppearance: 'textfield'
+                                              }
+                                            }}
+                                            onChange={(e) => {
+                                              const currentProduct =
+                                                (watch(
+                                                  `reimbursementProducts.${product.index}` as const
+                                                ) as ProductWithLocalFields) ?? {};
+
+                                              const updatedProduct: ProductWithLocalFields = {
+                                                ...currentProduct,
+                                                __shippingCost: e.target.value === '' ? 0 : Number(e.target.value)
+                                              };
+
+                                              setValue(`reimbursementProducts.${product.index}`, updatedProduct, {
+                                                shouldDirty: true
+                                              });
+                                            }}
+                                            onBlur={(e) => onShippingBlurHandler(parseFloat(e.target.value), product.index)}
+                                            helperText={`Product total $${Number(watch(`reimbursementProducts.${product.index}.cost`) || 0).toFixed(2)}`}
+                                          />
+                                        </Box>
+                                      )}
+                                    </Box>
+
                                     <Box
                                       sx={{
                                         display: { xs: 'block', md: 'none' },
@@ -805,7 +1067,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                     backgroundColor: hoverColor
                                   }
                                 }}
-                                onClick={() => removeProduct(product.index)}
+                                onClick={() => {
+                                  removeProduct(product.index);
+                                  reapplyShippingSplit();
+                                }}
                               >
                                 <RemoveCircleOutline />
                               </IconButton>
@@ -834,12 +1099,17 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       onClick={(e) => {
                         const existingProducts = uniqueWbsElementsWithProducts.get(key);
                         if (existingProducts && existingProducts.length > 0) {
-                          appendProduct({
+                          const newProduct: ProductWithLocalFields = {
                             reason: existingProducts[0].reason,
                             name: '',
                             cost: 0,
-                            refundSources: []
-                          });
+                            refundSources: [],
+                            __baseCost: 0,
+                            __shippingCost: 0
+                          };
+
+                          prependProduct(newProduct);
+                          reapplyShippingSplit();
                         }
                         e.currentTarget.blur();
                       }}

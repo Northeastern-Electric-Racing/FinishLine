@@ -15,6 +15,7 @@ interface ReimbursementRequestTableProps {
   statuses?: ReimbursementStatusType[];
   startDate?: Date | null;
   endDate?: Date | null;
+  selectedProject?: { label: string; id: string };
 }
 
 const ReimbursementRequestTable = ({
@@ -24,7 +25,8 @@ const ReimbursementRequestTable = ({
   onCloseSidePage,
   statuses,
   startDate,
-  endDate
+  endDate,
+  selectedProject
 }: ReimbursementRequestTableProps) => {
   const defaultTab = '/my-requests';
 
@@ -68,6 +70,7 @@ const ReimbursementRequestTable = ({
         statuses={statuses}
         startDate={startDate}
         endDate={endDate}
+        selectedProject={selectedProject}
         onCloseSidePage={onCloseSidePage}
       />
     </Box>

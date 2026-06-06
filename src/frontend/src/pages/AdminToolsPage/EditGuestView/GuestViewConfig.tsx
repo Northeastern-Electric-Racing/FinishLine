@@ -20,6 +20,8 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { MAX_FILE_SIZE } from 'shared';
 import UsefulLinksTable from '../OnboardingConfig/UsefulLinks/UsefulLinksTable';
 import LinkTypeTable from '../ProjectsConfig/LinkTypes/LinkTypeTable';
+import GuestDefinitionsTable from './GuestDefinitionsTable';
+import { GuestDefinitionType } from 'shared';
 
 const platformDescriptionSchema = yup.object().shape({
   platformDescription: yup.string().required()
@@ -177,6 +179,18 @@ const GuestViewConfig: React.FC = () => {
           Links Config
         </Typography>
         <LinkTypeTable isOnGuestHomePage={true} />
+      </Grid>
+      <Grid item xs={6}>
+        <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+          Project Management Definitions
+        </Typography>
+        <GuestDefinitionsTable type={GuestDefinitionType.PROJECT_MANAGEMENT} />
+      </Grid>
+      <Grid item xs={6}>
+        <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+          Info Page Definitions
+        </Typography>
+        <GuestDefinitionsTable type={GuestDefinitionType.INFO_PAGE} />
       </Grid>
     </Grid>
   );

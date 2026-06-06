@@ -45,6 +45,17 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
     }
   };
 
+  // Boolean check to see if all required users can attend at the time.
+  const allRequiredUsersAvailable = (index: number) => {
+    const currUnavailableUsers: User[] = unavailableUsers.get(index) ?? [];
+    for (const user of currUnavailableUsers) {
+      if (event && event.requiredMembers.some((m) => m.userId === user.userId)) {
+        return false; // there is a required member unavailable
+      }
+    }
+    return true;
+  };
+
   // Handle mouse leave - clears the hover state and shows selected slot's users if any
   const handleMouseLeave = () => {
     if (setCurrentHoveredSlot) {
@@ -160,10 +171,16 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
               {potentialDays.map((day, dayIndex) => {
                 const index = dayIndex * enumToArray(REVIEW_TIMES).length + timeIndex;
                 return (
-                  <TableCell key={index} sx={{ p: 0 }}>
+                  <TableCell
+                    key={index}
+                    sx={{
+                      p: 0
+                    }}
+                  >
                     <EventTimeSlot
                       backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
                       selected={selectedTimeslot === index}
+                      allRequiredAvailable={allRequiredUsersAvailable(index)}
                       onClick={() => handleTimeslotClick(index, day, timeIndex)}
                       onMouseEnter={() => handleTimeslotHover(index, day, timeIndex)}
                     />

@@ -73,15 +73,25 @@ export default class TasksService {
             wbsElement: true,
             workPackages: { include: { wbsElement: true } }
           }
+        },
+        workPackage: {
+          include: {
+            project: {
+              include: {
+                teams: getTeamQueryArgs(organization.organizationId)
+              }
+            }
+          }
         }
       }
     });
     if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
     if (requestedWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
-    const { project } = requestedWbsElement;
-    if (!project) throw new HttpException(400, "This task's wbs element is not linked to a project!");
 
-    const { teams } = project;
+    if (!requestedWbsElement.project && !requestedWbsElement.workPackage)
+      throw new HttpException(400, "This task's wbs element is not linked to a project or work package!");
+
+    const teams = requestedWbsElement.project?.teams ?? requestedWbsElement.workPackage?.project?.teams;
     if (!teams || teams.length === 0)
       throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
 
@@ -140,7 +150,9 @@ export default class TasksService {
    * @param title the new title for the task
    * @param notes the new notes for the task
    * @param priority the new priority for the task
+   * @param startDate the new start date for the task
    * @param deadline the new deadline for the task
+   * @param wbsNum the new wbs element for the task
    * @returns the sucessfully edited task
    */
   static async editTask(
@@ -151,19 +163,20 @@ export default class TasksService {
     notes: string,
     priority: Task_Priority,
     startDate?: Date,
-    deadline?: Date
+    deadline?: Date,
+    wbsNum?: WbsNumber
   ) {
     const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
     if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
 
     const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { wbsElement: true } });
 
+    // error if there's a problem with the task
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (originalTask.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Task');
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
-
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
     const effectiveStartDate = startDate ?? originalTask.startDate ?? undefined;
@@ -173,9 +186,40 @@ export default class TasksService {
       throw new HttpException(400, 'Start date must be before or on the same day as the deadline');
     }
 
+    // if wbsNum passed, error if there's a problem with the wbs element
+    if (wbsNum) {
+      const newWbsElement = await prisma.wBS_Element.findUnique({
+        where: {
+          wbsNumber: {
+            ...wbsNum,
+            organizationId
+          }
+        }
+      });
+      if (!newWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+      if (newWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+    }
+
     const updatedTask = await prisma.task.update({
       where: { taskId },
-      data: { title, notes, priority, startDate, deadline },
+      data: {
+        title,
+        notes,
+        priority,
+        startDate,
+        deadline,
+        // if wbsNum passed, update prisma relation to connect task with wbs element
+        ...(wbsNum && {
+          wbsElement: {
+            connect: {
+              wbsNumber: {
+                ...wbsNum,
+                organizationId
+              }
+            }
+          }
+        })
+      },
       ...getTaskQueryArgs(originalTask.wbsElement.organizationId)
     });
     return taskTransformer(updatedTask);
@@ -184,13 +228,16 @@ export default class TasksService {
   /**
    * Edits the status of a task in the database
    * @param user the user editing the task
-   * @param organizationId the organizqtion Id
+   * @param organizationId the organization Id
    * @param taskId the id of the task
    * @param status the new status
    * @returns the updated task
    * @throws if the task does not exist, the task is already deleted, or if the user does not have permissions
    */
   static async editTaskStatus(user: User, organizationId: string, taskId: string, status: Task_Status) {
+    const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
+
     // Get the original task and check if it exists
     const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { assignees: true, wbsElement: true } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
@@ -200,9 +247,6 @@ export default class TasksService {
     if (status === 'IN_PROGRESS' && (!originalTask.deadline || originalTask.assignees.length === 0)) {
       throw new HttpException(400, 'A task in progress must have a deadline and assignees!');
     }
-
-    const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
-    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
 
     const updatedTask = await prisma.task.update({
       where: { taskId },
@@ -227,6 +271,9 @@ export default class TasksService {
     assignees: string[],
     organization: Organization
   ): Promise<Task> {
+    const hasPermission = await userHasPermission(user.userId, organization.organizationId, notGuest);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
+
     // Get the original task and check if it exists
     const originalTask = await prisma.task.findUnique({
       where: { taskId },
@@ -240,9 +287,6 @@ export default class TasksService {
 
     const originalAssigneeIds = originalTask.assignees.map((assignee) => assignee.userId);
     const newAssigneeIds = assignees.filter((userId) => !originalAssigneeIds.includes(userId));
-
-    const hasPermission = await userHasPermission(user.userId, organization.organizationId, notGuest);
-    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
 
     // this throws if any of the users aren't found
     const assigneeUsers = await getUsers(assignees);
@@ -401,5 +445,61 @@ export default class TasksService {
     });
 
     return tasks.map(taskCardPreviewTransformer);
+  }
+
+  /**
+   * Gets all tasks associated with a wbs element
+   * If the wbs number is a project (workPackageNumber === 0), returns the project's
+   * own tasks merged with all of its work packages' tasks
+   * If the wbs number is a work package, returns just that WP's tasks
+   * @param wbsNum the wbs number to fetch tasks for
+   * @param organization the organization that the user is currently in
+   * @returns array of tasks
+   */
+  static async getTasksByWbsNum(wbsNum: WbsNumber, organization: Organization): Promise<Task[]> {
+    const wbsElement = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsNumber: {
+          ...wbsNum,
+          organizationId: organization.organizationId
+        }
+      }
+    });
+
+    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+
+    // project case, so return project's own tasks and all its wp's tasks
+    if (wbsNum.workPackageNumber === 0) {
+      const project = await prisma.project.findUnique({
+        where: { wbsElementId: wbsElement.wbsElementId },
+        include: { workPackages: { include: { wbsElement: true } } }
+      });
+
+      if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+
+      const wpWbsElementIds = project.workPackages.map((wp) => wp.wbsElementId);
+
+      const tasks = await prisma.task.findMany({
+        where: {
+          dateDeleted: null,
+          wbsElementId: { in: [wbsElement.wbsElementId, ...wpWbsElementIds] }
+        },
+        ...getTaskQueryArgs(organization.organizationId)
+      });
+
+      return tasks.map(taskTransformer);
+    }
+
+    // work package case, so return just that wp's tasks
+    const tasks = await prisma.task.findMany({
+      where: {
+        dateDeleted: null,
+        wbsElementId: wbsElement.wbsElementId
+      },
+      ...getTaskQueryArgs(organization.organizationId)
+    });
+
+    return tasks.map(taskTransformer);
   }
 }

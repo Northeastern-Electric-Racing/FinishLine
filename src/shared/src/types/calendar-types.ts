@@ -87,6 +87,11 @@ export enum ConflictStatus {
   NO_CONFLICT = 'NO_CONFLICT'
 }
 
+export enum SlackMentionType {
+  USER = 'USER',
+  CHANNEL = 'CHANNEL'
+}
+
 export interface Calendar {
   calendarId: string;
   name: string;

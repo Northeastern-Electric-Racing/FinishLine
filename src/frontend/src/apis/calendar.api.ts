@@ -11,7 +11,8 @@ import {
   EventTypeCreateArgs,
   Calendar,
   FilterArgs,
-  ScheduleSlot
+  ScheduleSlot,
+  EventInstance
 } from 'shared';
 import { eventTransformer, eventWithMembersTransformer } from './transformers/calendar.transformer';
 import { EditEventArgs, EditScheduleSlotArgs, EventCreateArgs } from '../hooks/calendar.hooks';
@@ -264,5 +265,34 @@ export const downloadDocumentPdf = async (fileId: string): Promise<Blob> => {
 export const scheduleEvent = async (eventId: string, payload: { startTime: Date; endTime: Date }) => {
   return axios.post<Event>(apiUrls.calendarScheduleEvent(eventId), payload, {
     transformResponse: (data) => eventTransformer(JSON.parse(data))
+  });
+};
+
+export const getAllEventsPaginated = (futureCursor?: Date, pastCursor?: Date) => {
+  return axios.post<{
+    futureInstances: EventInstance[];
+    pastInstances: EventInstance[];
+    nextFutureCursor: Date | null;
+    nextPastCursor: Date | null;
+  }>(
+    apiUrls.calendarEventsPaginated(),
+    { futureCursor, pastCursor },
+    {
+      transformResponse: (data) => {
+        const parsed = JSON.parse(data);
+        return {
+          futureInstances: parsed.futureInstances,
+          pastInstances: parsed.pastInstances,
+          nextFutureCursor: parsed.nextFutureCursor ? new Date(parsed.nextFutureCursor) : null,
+          nextPastCursor: parsed.nextPastCursor ? new Date(parsed.nextPastCursor) : null
+        };
+      }
+    }
+  );
+};
+
+export const getIcsToken = () => {
+  return axios.get<{ icsToken: string; organizationId: string }>(apiUrls.calendarIcsToken(), {
+    transformResponse: (data) => JSON.parse(data)
   });
 };

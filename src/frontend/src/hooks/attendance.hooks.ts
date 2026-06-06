@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { MeetingAttendance } from 'shared';
+import { MeetingAttendance, MeetingAttendanceWithAttendees } from 'shared';
 import {
   getAllAttendances,
+  getAttendanceById,
   getCheckChannelName,
   getOngoingAttendance,
   postCloseAttendance,
@@ -38,6 +39,14 @@ export const useCheckChannelName = (teamId: string, enabled: boolean) => {
 export const useOngoingAttendance = (teamId: string) => {
   return useQuery<MeetingAttendance | null, Error>(['attendance-ongoing', teamId], () =>
     getOngoingAttendance(teamId).then((res) => res.data)
+  );
+};
+
+export const useAttendanceById = (meetingAttendanceId: string, enabled: boolean) => {
+  return useQuery<MeetingAttendanceWithAttendees, Error>(
+    ['attendance', meetingAttendanceId],
+    () => getAttendanceById(meetingAttendanceId).then((res) => res.data),
+    { enabled }
   );
 };
 

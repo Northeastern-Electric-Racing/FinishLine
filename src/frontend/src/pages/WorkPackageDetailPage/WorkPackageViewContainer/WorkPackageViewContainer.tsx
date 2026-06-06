@@ -26,6 +26,7 @@ import ScopeTab from './ScopeTab';
 import FullPageTabs from '../../../components/FullPageTabs';
 import ChangeRequestTab from '../../../components/ChangeRequestTab';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
+import { TaskListContent } from '../../ProjectDetailPage/ProjectViewContainer/TaskList/v2/TaskListContent';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -52,7 +53,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const [, setAnchorEl] = useState<null | HTMLElement>(null);
   const { data: dependencies, isError, isLoading, error } = useGetManyWorkPackages(workPackage.blockedBy);
   const wbsNum = wbsPipe(workPackage.wbsNum);
-
   const [tabValue, setTabValue] = useState<number>(0);
 
   if (!dependencies || isLoading) return <LoadingIndicator />;
@@ -143,6 +143,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           setTab={setTabValue}
           tabsLabels={[
             { tabUrlValue: 'overview', tabName: 'Overview' },
+            { tabUrlValue: 'tasks', tabName: 'Tasks' },
             { tabUrlValue: 'scope', tabName: 'Scope' },
             { tabUrlValue: 'changes', tabName: 'Changes' },
             { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
@@ -156,8 +157,12 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       {tabValue === 0 ? (
         <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
       ) : tabValue === 1 ? (
-        <ScopeTab workPackage={workPackage} />
+        !allowEdit ? null : (
+          <TaskListContent wbsNum={workPackage.wbsNum} />
+        )
       ) : tabValue === 2 ? (
+        <ScopeTab workPackage={workPackage} />
+      ) : tabValue === 3 ? (
         <ChangesList changes={workPackage.changes} />
       ) : (
         <ChangeRequestTab wbsElement={workPackage} />

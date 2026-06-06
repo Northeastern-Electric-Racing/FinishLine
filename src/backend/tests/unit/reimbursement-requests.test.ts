@@ -1,7 +1,7 @@
 import { alfred } from '../test-data/users.test-data.js';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services.js';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
-import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils.js';
+import { createTestCar, createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import { assert } from 'console';
 import { addDaysToDate, IndexCode, ReimbursementRequest, AccountCode, OtherProductReason } from 'shared';
@@ -714,6 +714,202 @@ describe('Reimbursement Requests', () => {
     });
   });
 
+  describe('Car filtering for reimbursement request list endpoints', () => {
+    let car1RR: ReimbursementRequest;
+
+    beforeEach(async () => {
+      await createTestCar(org.organizationId, createdUser.userId, 1);
+      car1RR = await ReimbursementRequestService.createReimbursementRequest(
+        createdUser,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        [],
+        [
+          {
+            name: 'BOLT',
+            reason: { carNumber: 1, projectNumber: 0, workPackageNumber: 0 },
+            cost: 500,
+            refundSources: [{ indexCode: createdIndexCode, amount: 500 }]
+          }
+        ],
+        createdAccountCode.accountCodeId,
+        500,
+        org
+      );
+    });
+
+    describe('getUserReimbursementRequests', () => {
+      test('returns only requests whose products belong to the given car', async () => {
+        const car0Results = await ReimbursementRequestService.getUserReimbursementRequests(createdUser, org, 0);
+        expect(car0Results.map((r) => r.reimbursementRequestId)).toContain(reimbursementRequest.reimbursementRequestId);
+        expect(car0Results.map((r) => r.reimbursementRequestId)).not.toContain(car1RR.reimbursementRequestId);
+
+        const car1Results = await ReimbursementRequestService.getUserReimbursementRequests(createdUser, org, 1);
+        expect(car1Results.map((r) => r.reimbursementRequestId)).toContain(car1RR.reimbursementRequestId);
+        expect(car1Results.map((r) => r.reimbursementRequestId)).not.toContain(reimbursementRequest.reimbursementRequestId);
+      });
+
+      test('returns all requests when no carNumber is provided', async () => {
+        const allResults = await ReimbursementRequestService.getUserReimbursementRequests(createdUser, org);
+        expect(allResults.map((r) => r.reimbursementRequestId)).toContain(reimbursementRequest.reimbursementRequestId);
+        expect(allResults.map((r) => r.reimbursementRequestId)).toContain(car1RR.reimbursementRequestId);
+      });
+
+      test('carNumber 0 filters to only car-0 requests and does not return all requests (Fergus regression)', async () => {
+        const fergusResults = await ReimbursementRequestService.getUserReimbursementRequests(createdUser, org, 0);
+        expect(fergusResults).toHaveLength(1);
+        expect(fergusResults.map((r) => r.reimbursementRequestId)).toContain(reimbursementRequest.reimbursementRequestId);
+        expect(fergusResults.map((r) => r.reimbursementRequestId)).not.toContain(car1RR.reimbursementRequestId);
+      });
+      test('category-only RR does not cause WBS-linked car-1 RR to bleed into car-0 results', async () => {
+        const categoryOnlyRR = await ReimbursementRequestService.createReimbursementRequest(
+          createdUser,
+          createdVendor.vendorId,
+          createdIndexCode.indexCodeId,
+          [
+            {
+              name: 'CONSUMABLES',
+              reason: createdOtherProductReason,
+              cost: 250,
+              refundSources: [{ indexCode: createdIndexCode, amount: 250 }]
+            }
+          ],
+          [],
+          createdAccountCode.accountCodeId,
+          250,
+          org
+        );
+
+        const results = await ReimbursementRequestService.getUserReimbursementRequests(createdUser, org, 0);
+        expect(results.map((r) => r.reimbursementRequestId)).toContain(categoryOnlyRR.reimbursementRequestId);
+        expect(results.map((r) => r.reimbursementRequestId)).not.toContain(car1RR.reimbursementRequestId);
+      });
+
+      test('category-only RR does not cause WBS-linked car-0 RR to bleed into car-1 results', async () => {
+        const categoryOnlyRR = await ReimbursementRequestService.createReimbursementRequest(
+          createdUser,
+          createdVendor.vendorId,
+          createdIndexCode.indexCodeId,
+          [
+            {
+              name: 'CONSUMABLES',
+              reason: createdOtherProductReason,
+              cost: 250,
+              refundSources: [{ indexCode: createdIndexCode, amount: 250 }]
+            }
+          ],
+          [],
+          createdAccountCode.accountCodeId,
+          250,
+          org
+        );
+
+        const results = await ReimbursementRequestService.getUserReimbursementRequests(createdUser, org, 1);
+        expect(results.map((r) => r.reimbursementRequestId)).toContain(categoryOnlyRR.reimbursementRequestId);
+        expect(results.map((r) => r.reimbursementRequestId)).not.toContain(reimbursementRequest.reimbursementRequestId);
+      });
+    });
+
+    describe('getAllReimbursementRequests', () => {
+      test('returns only requests whose products belong to the given car', async () => {
+        const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+
+        const car0Results = await ReimbursementRequestService.getAllReimbursementRequests(financeHead, org, 0);
+        expect(car0Results.map((r) => r.reimbursementRequestId)).toContain(reimbursementRequest.reimbursementRequestId);
+        expect(car0Results.map((r) => r.reimbursementRequestId)).not.toContain(car1RR.reimbursementRequestId);
+
+        const car1Results = await ReimbursementRequestService.getAllReimbursementRequests(financeHead, org, 1);
+        expect(car1Results.map((r) => r.reimbursementRequestId)).toContain(car1RR.reimbursementRequestId);
+        expect(car1Results.map((r) => r.reimbursementRequestId)).not.toContain(reimbursementRequest.reimbursementRequestId);
+      });
+
+      test('returns all requests when no carNumber is provided', async () => {
+        const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+        const allResults = await ReimbursementRequestService.getAllReimbursementRequests(financeHead, org);
+        expect(allResults.map((r) => r.reimbursementRequestId)).toContain(reimbursementRequest.reimbursementRequestId);
+        expect(allResults.map((r) => r.reimbursementRequestId)).toContain(car1RR.reimbursementRequestId);
+      });
+
+      test('carNumber 0 filters to only car-0 requests and does not return all requests (Fergus regression)', async () => {
+        const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+        const fergusResults = await ReimbursementRequestService.getAllReimbursementRequests(financeHead, org, 0);
+        expect(fergusResults).toHaveLength(1);
+        expect(fergusResults.map((r) => r.reimbursementRequestId)).toContain(reimbursementRequest.reimbursementRequestId);
+        expect(fergusResults.map((r) => r.reimbursementRequestId)).not.toContain(car1RR.reimbursementRequestId);
+      });
+    });
+
+    describe('getUserAssignedReimbursementRequests', () => {
+      test('returns only assigned requests whose products belong to the given car', async () => {
+        const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+        const financeMember = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeMember' } });
+        await ReimbursementRequestService.assignFinanceMember(
+          financeHead,
+          org,
+          reimbursementRequest.reimbursementRequestId,
+          financeMember.userId
+        );
+        await ReimbursementRequestService.assignFinanceMember(
+          financeHead,
+          org,
+          car1RR.reimbursementRequestId,
+          financeMember.userId
+        );
+
+        const car0Results = await ReimbursementRequestService.getUserAssignedReimbursementRequests(financeMember, org, 0);
+        expect(car0Results.map((r) => r.reimbursementRequestId)).toContain(reimbursementRequest.reimbursementRequestId);
+        expect(car0Results.map((r) => r.reimbursementRequestId)).not.toContain(car1RR.reimbursementRequestId);
+
+        const car1Results = await ReimbursementRequestService.getUserAssignedReimbursementRequests(financeMember, org, 1);
+        expect(car1Results.map((r) => r.reimbursementRequestId)).toContain(car1RR.reimbursementRequestId);
+        expect(car1Results.map((r) => r.reimbursementRequestId)).not.toContain(reimbursementRequest.reimbursementRequestId);
+      });
+
+      test('carNumber 0 filters to only car-0 assigned requests and does not return all (Fergus regression)', async () => {
+        const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+        const financeMember = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeMember' } });
+        await ReimbursementRequestService.assignFinanceMember(
+          financeHead,
+          org,
+          reimbursementRequest.reimbursementRequestId,
+          financeMember.userId
+        );
+        await ReimbursementRequestService.assignFinanceMember(
+          financeHead,
+          org,
+          car1RR.reimbursementRequestId,
+          financeMember.userId
+        );
+
+        const fergusResults = await ReimbursementRequestService.getUserAssignedReimbursementRequests(financeMember, org, 0);
+        expect(fergusResults).toHaveLength(1);
+        expect(fergusResults[0].reimbursementRequestId).toBe(reimbursementRequest.reimbursementRequestId);
+      });
+    });
+
+    describe('getUsersTeamsReimbursementRequests', () => {
+      test('returns only requests whose products belong to the given car', async () => {
+        const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+
+        const car0Results = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(financeHead, org, 0);
+        expect(car0Results.map((r) => r.reimbursementRequestId)).toContain(reimbursementRequest.reimbursementRequestId);
+        expect(car0Results.map((r) => r.reimbursementRequestId)).not.toContain(car1RR.reimbursementRequestId);
+
+        const car1Results = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(financeHead, org, 1);
+        expect(car1Results.map((r) => r.reimbursementRequestId)).toContain(car1RR.reimbursementRequestId);
+        expect(car1Results.map((r) => r.reimbursementRequestId)).not.toContain(reimbursementRequest.reimbursementRequestId);
+      });
+
+      test('carNumber 0 filters to only car-0 requests and does not return all requests (Fergus regression)', async () => {
+        const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+        const fergusResults = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(financeHead, org, 0);
+        expect(fergusResults).toHaveLength(1);
+        expect(fergusResults.map((r) => r.reimbursementRequestId)).toContain(reimbursementRequest.reimbursementRequestId);
+        expect(fergusResults.map((r) => r.reimbursementRequestId)).not.toContain(car1RR.reimbursementRequestId);
+      });
+    });
+  });
+
   describe('Editing an other reimbursement product reason', () => {
     test('Successfully editing a other reimbursement product reason', async () => {
       const reason = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
@@ -783,6 +979,94 @@ describe('Reimbursement Requests', () => {
           []
         )
       ).rejects.toThrow(new NotFoundException('Reimbursement Product Other Reason', 'bad id'));
+    });
+  });
+
+  describe('Setting the SABO number on a reimbursement request', () => {
+    test('Fails when SABO number is already assigned to a request', async () => {
+      await ReimbursementRequestService.setSaboNumber(
+        reimbursementRequest.reimbursementRequestId,
+        'SABO-001',
+        createdUser,
+        org
+      );
+      await expect(
+        ReimbursementRequestService.setSaboNumber(reimbursementRequest.reimbursementRequestId, 'SABO-001', createdUser, org)
+      ).rejects.toThrow(new HttpException(400, 'This SABO number is already assigned to another reimbursement request.'));
+    });
+
+    test('Successfully sets the SABO number', async () => {
+      const result = await ReimbursementRequestService.setSaboNumber(
+        reimbursementRequest.reimbursementRequestId,
+        'SABO-001',
+        createdUser,
+        org
+      );
+      expect(result.saboId).toEqual('SABO-001');
+    });
+  });
+
+  describe('category-only requests appear under every car', () => {
+    let categoryOnlyRR: ReimbursementRequest;
+
+    beforeEach(async () => {
+      categoryOnlyRR = await ReimbursementRequestService.createReimbursementRequest(
+        createdUser,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        [
+          {
+            name: 'CONSUMABLES',
+            reason: createdOtherProductReason,
+            cost: 250,
+            refundSources: [{ indexCode: createdIndexCode, amount: 250 }]
+          }
+        ],
+        [],
+        createdAccountCode.accountCodeId,
+        250,
+        org
+      );
+    });
+
+    test('category-only RR appears under car 0 for getUserReimbursementRequests', async () => {
+      const results = await ReimbursementRequestService.getUserReimbursementRequests(createdUser, org, 0);
+      expect(results.map((r) => r.reimbursementRequestId)).toContain(categoryOnlyRR.reimbursementRequestId);
+    });
+
+    test('category-only RR appears under car 1 for getUserReimbursementRequests', async () => {
+      const results = await ReimbursementRequestService.getUserReimbursementRequests(createdUser, org, 1);
+      expect(results.map((r) => r.reimbursementRequestId)).toContain(categoryOnlyRR.reimbursementRequestId);
+    });
+
+    test('category-only RR appears under car 0 for getAllReimbursementRequests', async () => {
+      const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+      const results = await ReimbursementRequestService.getAllReimbursementRequests(financeHead, org, 0);
+      expect(results.map((r) => r.reimbursementRequestId)).toContain(categoryOnlyRR.reimbursementRequestId);
+    });
+
+    test('category-only RR appears under car 1 for getAllReimbursementRequests', async () => {
+      const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+      const results = await ReimbursementRequestService.getAllReimbursementRequests(financeHead, org, 1);
+      expect(results.map((r) => r.reimbursementRequestId)).toContain(categoryOnlyRR.reimbursementRequestId);
+    });
+
+    test('category-only RR appears under car 0 for getUsersTeamsReimbursementRequests', async () => {
+      const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+      const results = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(financeHead, org, 0);
+      expect(results.map((r) => r.reimbursementRequestId)).toContain(categoryOnlyRR.reimbursementRequestId);
+    });
+
+    test('category-only RR appears under car 1 for getUsersTeamsReimbursementRequests', async () => {
+      const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+      const results = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(financeHead, org, 1);
+      expect(results.map((r) => r.reimbursementRequestId)).toContain(categoryOnlyRR.reimbursementRequestId);
+    });
+
+    test('category-only RR does not appear under getUserAssignedReimbursementRequests when unassigned', async () => {
+      const financeMember = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeMember' } });
+      const results = await ReimbursementRequestService.getUserAssignedReimbursementRequests(financeMember, org, 0);
+      expect(results.map((r) => r.reimbursementRequestId)).not.toContain(categoryOnlyRR.reimbursementRequestId);
     });
   });
 });

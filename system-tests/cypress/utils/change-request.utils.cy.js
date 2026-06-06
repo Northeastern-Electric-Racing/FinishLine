@@ -32,7 +32,7 @@ const createProposedSolution = ({
 };
 
 export const createChangeRequest = ({
-  wbsTitle = '0.1.0 - Impact Attenuator',
+  wbsTitle = '25.1.0 - Impact Attenuator',
   what = 'test what',
   type = 'ISSUE',
   whys = [
@@ -76,6 +76,6 @@ export const createChangeRequest = ({
   cy.contains(SUBMIT_BUTTON).click();
   cy.url().should(INCLUDE, '/change-requests');
 
-  // Verify the created CR appears in My Un-reviewed Change Requests
-  cy.get(CR_ROW('My Un-reviewed Change Requests')).contains('Change Request').should('exist');
+  // Verify the created CR appears in Un-reviewed Change Requests
+  cy.get(CR_ROW('Un-reviewed Change Requests')).contains('Change Request').should('exist');
 };

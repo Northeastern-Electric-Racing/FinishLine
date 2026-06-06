@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import CalendarService from '../services/calendar.services.js';
 import { getCurrentUserWithUserSettings } from '../utils/auth.utils.js';
+import { generateIcsFeed } from '../utils/ics.utils.js';
 
 export default class CalendarController {
   static async createEventType(req: Request, res: Response, next: NextFunction) {
@@ -278,7 +279,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        mention
       } = req.body;
 
       const parsedScheduleSlots = scheduleSlots.map((slot: any) => ({
@@ -306,7 +308,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        mention
       );
       res.status(200).json(event);
     } catch (error: unknown) {
@@ -592,6 +595,48 @@ export default class CalendarController {
     try {
       const eventTypes = await CalendarService.getAllEventTypes(req.organization);
       res.status(200).json(eventTypes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllEventsPaginated(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { futureCursor, pastCursor } = req.body;
+      const paginatedEvents = await CalendarService.getAllEventsPaginated(
+        req.organization,
+        futureCursor ? new Date(futureCursor) : undefined,
+        pastCursor ? new Date(pastCursor) : undefined
+      );
+      res.status(200).json(paginatedEvents);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getOrCreateIcsToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const icsToken = await CalendarService.getOrCreateIcsToken(req.currentUser.userId);
+      res.status(200).json({ icsToken, organizationId: req.organization.organizationId });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getIcsFeed(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { token } = req.params as Record<string, string>;
+      const { org, calendars, events } = req.query as Record<string, string | undefined>;
+      const organizationId = org ?? '';
+      const calendarIds = calendars ? calendars.split(',').filter(Boolean) : [];
+      const eventIds = events ? events.split(',').filter(Boolean) : [];
+
+      const event = await CalendarService.getIcsFeedEvents(token, organizationId, calendarIds, eventIds);
+      const icsContent = generateIcsFeed(event);
+
+      res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="finishline.ics"');
+      res.send(icsContent);
     } catch (error: unknown) {
       next(error);
     }

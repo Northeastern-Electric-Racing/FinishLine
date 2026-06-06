@@ -40,11 +40,12 @@ import {
   WbsElementStatus,
   wbsPipe,
   WorkPackage,
-  WorkPackageStage
+  WorkPackageStage,
+  WbsNumber
 } from 'shared';
 import { useAllTeams } from '../../../hooks/teams.hooks';
-import { useGetAllCars } from '../../../hooks/cars.hooks';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
+import { useGlobalCarFilter } from '../../../app/AppGlobalCarFilterContext';
 import AddGanttProjectModal from './AddGanttProjectModal';
 import AddGanttWorkPackageModal from './AddGanttWorkPackageModal';
 import AddGanttSelectionModal from './AddGanttSelectionModal';
@@ -78,10 +79,9 @@ const ProjectGanttChartPage: FC = () => {
     error: teamTypesError
   } = useAllTeamTypes();
 
-  const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
+  const { selectedCar, allCars, isLoading: carFilterLoading } = useGlobalCarFilter();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
-  const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
   const [addedProjects, setAddedProjects] = useState<ProjectGantt[]>([]);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
@@ -99,6 +99,13 @@ const ProjectGanttChartPage: FC = () => {
   /******************** Filters ***************************/
   const { filters, setFilters } = useGanttFilters('project-gantt');
 
+  // Local car filter state — resets to global selection whenever global car filter changes
+  const [showCars, setShowCars] = useState<number[]>([]);
+  useEffect(() => {
+    if (carFilterLoading) return;
+    setShowCars(selectedCar === 'all-cars' ? allCars.map((car) => car.wbsNum.carNumber) : [selectedCar.wbsNum.carNumber]);
+  }, [carFilterLoading, selectedCar, allCars]);
+
   useEffect(() => {
     const requestRefresh = (
       projects: ProjectGantt[],
@@ -111,6 +118,7 @@ const ProjectGanttChartPage: FC = () => {
       let allProjects: ProjectGantt[] = JSON.parse(JSON.stringify(projects.concat(addedProjects))).map(
         projectGanttTransformer
       );
+
       allProjects = allProjects.map((project) => {
         const editedProject = editedProjects.find((proj) => proj.id === project.id);
         return editedProject ? editedProject : project;
@@ -129,37 +137,34 @@ const ProjectGanttChartPage: FC = () => {
     };
 
     if (projects && teams) {
-      requestRefresh(projects, teams, editedProjects, addedProjects, filters, searchText);
+      requestRefresh(projects, teams, editedProjects, addedProjects, { ...filters, showCars }, searchText);
     }
-  }, [teams, projects, addedProjects, setAllProjects, setCollections, editedProjects, filters, searchText, history]);
+  }, [
+    teams,
+    projects,
+    addedProjects,
+    setAllProjects,
+    setCollections,
+    editedProjects,
+    filters,
+    showCars,
+    searchText,
+    history
+  ]);
 
   const handleSetGanttFilters = (newFilters: GanttFilters) => {
     setFilters(newFilters);
   };
 
-  if (
-    projectsIsLoading ||
-    teamTypesIsLoading ||
-    teamsIsLoading ||
-    !teams ||
-    !projects ||
-    !teamTypes ||
-    carsIsLoading ||
-    !cars
-  )
+  if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || carFilterLoading || !teams || !projects || !teamTypes)
     return <LoadingIndicator />;
   if (projectsIsError) return <ErrorPage message={projectsError.message} />;
   if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;
-  if (carsIsError) return <ErrorPage message={carsError.message} />;
 
   const carFilterHandler = (car: number) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
-      handleSetGanttFilters(
-        event.target.checked
-          ? { ...filters, showCars: Array.from(new Set([...filters.showCars, car])) }
-          : { ...filters, showCars: filters.showCars.filter((c) => c !== car) }
-      );
+      setShowCars((prev) => (event.target.checked ? Array.from(new Set([...prev, car])) : prev.filter((c) => c !== car)));
     };
   };
 
@@ -210,41 +215,25 @@ const ProjectGanttChartPage: FC = () => {
     };
   });
 
-  const overdueHandler = [
-    {
-      filterLabel: 'Overdue',
-      handler: (event: ChangeEvent<HTMLInputElement>) =>
-        handleSetGanttFilters({ ...filters, showOnlyOverdue: event.target.checked }),
-      defaultChecked: filters.showOnlyOverdue
-    }
-  ];
-
-  const hideTasksHandler = [
-    {
-      filterLabel: 'Hide Tasks',
-      handler: (event: ChangeEvent<HTMLInputElement>) =>
-        handleSetGanttFilters({ ...filters, hideTasks: event.target.checked }),
-      defaultChecked: filters.hideTasks
-    }
-  ];
-
   const carHandlers: {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
     defaultChecked: boolean;
-  }[] = cars.map((car) => {
-    const carNum = car.wbsNum.carNumber;
-    return {
-      filterLabel: carNum === 0 ? 'None' : `Car ${carNum}`,
-      handler: carFilterHandler(carNum),
-      defaultChecked: filters.showCars.includes(carNum)
-    };
-  });
+  }[] = [...allCars]
+    .sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber)
+    .map((car) => {
+      const carNum = car.wbsNum.carNumber;
+      return {
+        filterLabel: car.name,
+        handler: carFilterHandler(carNum),
+        defaultChecked: showCars.includes(carNum)
+      };
+    });
 
   const resetHandler = () => {
     history.push(routes.GANTT);
     localStorage.removeItem('ganttURL');
-    showWorkPackagesMap.clear();
+    setShowCars(selectedCar === 'all-cars' ? allCars.map((car) => car.wbsNum.carNumber) : [selectedCar.wbsNum.carNumber]);
   };
 
   /* **************************************************** */
@@ -337,6 +326,7 @@ const ProjectGanttChartPage: FC = () => {
       notes: string;
       startDate: Date | null;
       deadline: Date | null;
+      wpWbsNum?: WbsNumber;
     },
     parentProject: ProjectGantt
   ) => {
@@ -348,7 +338,11 @@ const ProjectGanttChartPage: FC = () => {
 
     const newTask: Task = {
       taskId,
-      wbsNum: parentProject.wbsNum,
+      wbsNum: taskInfo.wpWbsNum ?? parentProject.wbsNum,
+      wbsName: taskInfo.wpWbsNum
+        ? (parentProject.workPackages.find((wp) => wp.wbsNum.workPackageNumber === taskInfo.wpWbsNum?.workPackageNumber)
+            ?.name ?? parentProject.name)
+        : parentProject.name,
       title: taskInfo.title,
       notes: taskInfo.notes,
       dateCreated: new Date(),
@@ -375,6 +369,7 @@ const ProjectGanttChartPage: FC = () => {
     });
     setSelectedProject(undefined);
   };
+
   const handleAddProjectInfo = async (
     projectInfo: { name: string; carNumber: number },
     selectedTeam: { teamId: string; teamName: string }
@@ -438,10 +433,6 @@ const ProjectGanttChartPage: FC = () => {
       if (ganttChanges.length > 0) {
         const requestEventChanges = constructFinalizedChanges(projects, addedProjects.concat(editedProjects), ganttChanges);
         setRequestEventChanges(requestEventChanges);
-        if (requestEventChanges.length > 0) {
-          const { element } = requestEventChanges[requestEventChanges.length - 1];
-          setShowWorkPackagesMap((prev) => new Map(prev.set(element.id, true)));
-        }
       } else {
         toast.success('Changes saved successfully!');
         handleCancel();
@@ -465,7 +456,7 @@ const ProjectGanttChartPage: FC = () => {
             toast.error('No Team Selected');
           }
         }}
-        cars={cars}
+        cars={allCars}
       />
     );
   };
@@ -498,6 +489,7 @@ const ProjectGanttChartPage: FC = () => {
             toast.error('No Parent Project Selected');
           }
         }}
+        workPackages={selectedProject?.workPackages ?? []}
       />
     );
   };
@@ -530,11 +522,6 @@ const ProjectGanttChartPage: FC = () => {
     setRequestEventChanges(newChanges);
     if (newChanges.length === 0) {
       handleCancel();
-    } else {
-      const change = newChanges[newChanges.length - 1];
-      setShowWorkPackagesMap(
-        (prev) => new Map(prev.set((change.element as Task).taskId ?? (change.element as WbsElementPreview).id, true))
-      );
     }
 
     if (cancelled) {
@@ -634,22 +621,6 @@ const ProjectGanttChartPage: FC = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
-  const collapseHandler = () => {
-    allProjects.forEach((project) => {
-      setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, false)));
-    });
-  };
-
-  const expandHandler = () => {
-    allProjects.forEach((project) => {
-      setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, true)));
-    });
-  };
-
-  const toggleElementShowChildren = (element: WbsElementPreview | Task) => {
-    setShowWorkPackagesMap((prev) => new Map(prev.set(getElementId(element), !prev.get(getElementId(element)))));
-  };
-
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />
@@ -657,11 +628,7 @@ const ProjectGanttChartPage: FC = () => {
         carHandlers={carHandlers}
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
-        overdueHandler={overdueHandler}
-        hideTasksHandler={hideTasksHandler}
         resetHandler={resetHandler}
-        collapseHandler={collapseHandler}
-        expandHandler={expandHandler}
       />
     </Box>
   );
@@ -696,8 +663,6 @@ const ProjectGanttChartPage: FC = () => {
             highlightSubtaskComparator: highlightWorkPackageComparator,
             highlightTaskComparator: highlightProjectComparator
           }}
-          shouldShowChildren={(task) => !!showWorkPackagesMap.get(getElementId(task.element))}
-          onShowChildrenToggle={(task) => toggleElementShowChildren(task.element)}
         />
       </PageLayout>
     </>
