@@ -516,9 +516,7 @@ export const sendEventScheduledSlackNotif = async (
     scheduledOrRescheduled +
     ` for *${drTime}* ${location} by ${drSubmitter}`;
   const docLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Doc Link>` : '';
-  const threadMsg = `${mentionPrefix}This event has been ` + 
-    scheduledOrRescheduled + 
-    ` \n` + docLink;
+  const threadMsg = `${mentionPrefix}This event has been ` + scheduledOrRescheduled + ` \n` + docLink;
 
   if (threads && threads.length !== 0) {
     const msgs = threads.map((thread) => editMessage(thread.channelId, thread.timestamp, msg));
