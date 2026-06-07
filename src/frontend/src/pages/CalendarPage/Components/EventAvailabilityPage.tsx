@@ -12,6 +12,7 @@ import {
   User,
   UserWithScheduleSettings,
   EventWithMembers,
+  EventStatus,
   isAdmin
 } from 'shared';
 import PageLayout from '../../../components/PageLayout';
@@ -398,17 +399,12 @@ export const EventAvailabilityPage: React.FC = () => {
               </Typography>
             </Typography>
           )}
-          {(currentAvailableUsers.length > 0 || currentUnavailableUsers.length > 0) && (
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-              <span style={{ textDecoration: 'underline' }}>Underline</span> means required for meeting
-            </Typography>
-          )}
 
           {/* Schedule button for creators - only show if event is not already scheduled */}
           {(isCreator || isAdmin(currentUser.role)) && selectedSlot && (
             <Box sx={{ mt: 3 }}>
               <NERSuccessButton variant="contained" onClick={handleScheduleClick} fullWidth>
-                {event.status === 'SCHEDULED' ? 'Reschedule Event' : 'Schedule Event'}
+                {event.status === EventStatus.SCHEDULED ? 'Reschedule Event' : 'Schedule Event'}
               </NERSuccessButton>
             </Box>
           )}
@@ -444,7 +440,7 @@ export const EventAvailabilityPage: React.FC = () => {
           selectedDay={selectedSlot.day}
           startHour={selectedSlot.startHour}
           endHour={selectedSlot.endHour}
-          beingRescheduled={event.status === 'SCHEDULED'}
+          beingRescheduled={event.status === EventStatus.SCHEDULED}
         />
       )}
     </PageLayout>
