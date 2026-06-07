@@ -11,7 +11,9 @@ const userScheduleSettingsTransformer = (
     personalGmail: settings.personalGmail,
     personalZoomLink: settings.personalZoomLink,
     availabilities: settings.availabilities,
-    importedIcsCalendarUrl: settings.importedIcsCalendarUrl ? decrypt(settings.importedIcsCalendarUrl) : settings.importedIcsCalendarUrl
+    importedIcsCalendarUrl: settings.importedIcsCalendarUrl
+      ? decrypt(settings.importedIcsCalendarUrl)
+      : settings.importedIcsCalendarUrl
   };
 };
 
