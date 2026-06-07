@@ -60,14 +60,14 @@ export const getStatusIcon = (status: string, isLarge?: boolean) => {
   return statusIcons.get(status);
 };
 
-const getStatusReasoning = (status: string) => {
-  const stringToReason: Map<string, string> = new Map([
-    ['UNCONFIRMED', 'Not all required attendees have confirmed availabilities'],
-    ['CONFIRMED', 'All required attendees have confirmed availabilities'],
-    ['SCHEDULED', 'The event has been scheduled'],
-    ['DONE', 'This event is already finished']
+const getStatusReasoning = (status: EventStatus) => {
+  const statusToReason: Map<EventStatus, string> = new Map([
+    [EventStatus.UNCONFIRMED, 'Not all required attendees have confirmed availabilities'],
+    [EventStatus.CONFIRMED, 'All required attendees have confirmed availabilities'],
+    [EventStatus.SCHEDULED, 'The event has been scheduled'],
+    [EventStatus.DONE, 'This event is already finished']
   ]);
-  return stringToReason.get(status);
+  return statusToReason.get(status);
 };
 
 const stopClick: React.MouseEventHandler<HTMLElement> = (e) => {
@@ -511,7 +511,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
 
         {/* Reschedule */}
 
-        {event.status === 'SCHEDULED' && event.userCreated.userId === currentUser.userId && (
+        {event.status === EventStatus.SCHEDULED && event.userCreated.userId === currentUser.userId && (
           <Stack direction="row" spacing={1} alignItems="center">
             <Tooltip title="Reschedule Event" arrow placement="top">
               <EditIcon fontSize="small" sx={{ mt: 0.1 }} />
