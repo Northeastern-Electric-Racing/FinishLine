@@ -55,11 +55,15 @@ import { SeedRunner } from './processes/seed-runner.js';
 import { UsersProcess } from './seed/user.process.js';
 import { OrganizationProcess } from './seed/organization.process.js';
 import { CarProcess } from './seed/car.process.js';
+import { ConfigDataProcess } from './seed/config-data.process.js';
 
 const prisma = new PrismaClient();
 
 // ORDER MATTERS AT THE MOMENT. I am still looking into topological sort so that order won't matter here.
-await new SeedRunner().withPrisma(prisma).register(new OrganizationProcess(), new CarProcess(), new UsersProcess()).run();
+await new SeedRunner()
+  .withPrisma(prisma)
+  .register(new OrganizationProcess(), new UsersProcess(), new ConfigDataProcess())
+  .run();
 
 await prisma.$disconnect();
 
