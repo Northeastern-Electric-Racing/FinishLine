@@ -52,47 +52,14 @@ import CalendarService from '../services/calendar.services.js';
 import { allChangeRequestsReviewed } from '../utils/change-requests.utils.js';
 import { Theme } from '@prisma/client';
 import { SeedRunner } from './processes/seed-runner.js';
-import { UsersProcess } from './processes/user.process.js';
+import { UsersProcess } from './seed/user.process.js';
+import { OrganizationProcess } from './seed/organization.process.js';
+import { CarProcess } from './seed/car.process.js';
 
 const prisma = new PrismaClient();
 
-// Step 1: bootstrap admin — exists outside any org
-const bootstrap = await prisma.user.create({
-  data: {
-    firstName: 'Thomas',
-    lastName: 'Emrax',
-    googleAuthId: 'bootstrap-admin',
-    email: 'admin@bootstrap.com',
-    emailId: 'admin',
-    userSettings: {
-      create: { defaultTheme: Theme.DARK, slackId: 'admin' }
-    }
-  }
-});
-
-// Step 2: create org with bootstrap user as creator
-const ner = await prisma.organization.create({
-  data: {
-    name: 'Northeastern Electric Racing',
-    description: 'Student-run electric racing organization at Northeastern University.',
-    userCreatedId: bootstrap.userId,
-  }
-});
-
-// Step 3: connect bootstrap user to org and give them APP_ADMIN
-await prisma.user.update({
-  where: { userId: bootstrap.userId },
-  data: {
-    organizations: { connect: { organizationId: ner.organizationId } },
-    roles: { create: { roleType: 'APP_ADMIN', organizationId: ner.organizationId } }
-  }
-});
-
-// Step 4: run all processes with the org now in place
-await new SeedRunner()
-  .withPrisma(prisma)
-  .register(new UsersProcess(ner.organizationId))
-  .run();
+// ORDER MATTERS AT THE MOMENT. I am still looking into topological sort so that order won't matter here.
+await new SeedRunner().withPrisma(prisma).register(new OrganizationProcess(), new CarProcess(), new UsersProcess()).run();
 
 await prisma.$disconnect();
 

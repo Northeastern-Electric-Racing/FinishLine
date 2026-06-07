@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { SeedProcess } from './seed-process.js';
+import { SeedProcess, GLOBAL_SEED } from './seed-process.js';
 
 export class SeedRunner {
   private instances: SeedProcess<any, any>[] = [];
@@ -16,14 +16,22 @@ export class SeedRunner {
   }
 
   async run() {
-    if (!this.prisma) {
-      throw new Error('No PrismaClient provided. Call .withPrisma(prisma) before .run()');
-    }
+    if (!this.prisma) throw new Error('SeedRunner requires a PrismaClient. Call withPrisma() before run().');
+
+    const outputs = new Map<string, any>();
 
     for (const instance of this.instances) {
       instance.prisma = this.prisma;
-      console.log(`Running ${instance.constructor.name} (seed ${instance.seed})...`);
-      await instance.run({});
+
+      const depOutputs = instance.dependencies().reduce((acc, depClass) => {
+        const output = outputs.get(depClass.name);
+        if (!output) throw new Error(`Missing output for dependency: ${depClass.name}`);
+        return { ...acc, ...output };
+      }, {});
+
+      console.log(`Running ${instance.constructor.name} (seed ${GLOBAL_SEED})...`);
+      const output = await instance.run(depOutputs);
+      outputs.set(instance.constructor.name, output);
       console.log(`${instance.constructor.name} complete`);
     }
   }
