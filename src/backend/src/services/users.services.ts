@@ -31,6 +31,7 @@ import authenticatedUserTransformer from '../transformers/auth-user.transformer.
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
 import taskTransformer from '../transformers/tasks.transformer.js';
 import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
+import { encrypt, decrypt } from '../utils/encryption.utils.js';
 
 export default class UsersService {
   /**
@@ -542,18 +543,20 @@ export default class UsersService {
 
     if (importedIcsCalendarUrl) validateIcsUrl(importedIcsCalendarUrl);
 
+    const encryptedIcsUrl = importedIcsCalendarUrl ? encrypt(importedIcsCalendarUrl) : importedIcsCalendarUrl;
+
     const newUserScheduleSettings = await prisma.schedule_Settings.upsert({
       where: { userId: user.userId },
       update: {
         personalGmail,
         personalZoomLink,
-        importedIcsCalendarUrl
+        importedIcsCalendarUrl: encryptedIcsUrl
       },
       create: {
         userId: user.userId,
         personalGmail,
         personalZoomLink,
-        importedIcsCalendarUrl
+        importedIcsCalendarUrl: encryptedIcsUrl
       },
       ...getUserScheduleSettingsQueryArgs()
     });
@@ -659,7 +662,7 @@ export default class UsersService {
 
     let busy;
     try {
-      busy = await fetchIcsBusyTimes(scheduleSettings.importedIcsCalendarUrl, startDate, endDate);
+      busy = await fetchIcsBusyTimes(decrypt(scheduleSettings.importedIcsCalendarUrl), startDate, endDate);
     } catch (error) {
       if (error instanceof HttpException) {
         throw new HttpException(error.status, `Failed to fetch ICS calendar: ${error.message}`);

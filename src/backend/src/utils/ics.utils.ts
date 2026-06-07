@@ -1,5 +1,5 @@
 import ical, { ICalEventStatus } from 'ical-generator';
-import nodeIcal, { CalendarComponent, VEvent } from 'node-ical';
+import nodeIcal, { CalendarComponent, RRule, VEvent } from 'node-ical';
 import { IcsBusyInterval, Event, wbsPipe } from 'shared';
 import { HttpException } from './errors.utils.js';
 
@@ -43,6 +43,17 @@ export const generateIcsFeed = (events: Event[]): string => {
 
   return cal.toString();
 };
+
+interface VEventWithExtras extends Omit<VEvent, 'rrule'> {
+  rrule?: Pick<RRule, 'between'>;
+  transparency?: string;
+  exdate?: Record<string, Date>;
+  recurrences?: Record<string, VEventRecurrenceOverride>;
+}
+
+interface VEventRecurrenceOverride extends VEvent {
+  recurrenceid?: Date;
+}
 
 // checks if a given host is blocked (used to mitigate ssrf attacks)
 const isBlockedHost = (host: string): boolean => {
@@ -124,16 +135,16 @@ export const fetchIcsBusyTimes = async (url: string, rangeStart: Date, rangeEnd:
 
   for (const component of Object.values(parsed)) {
     if (!component || component.type !== 'VEVENT') continue;
-    const ev = component as VEvent;
+    const ev = component as VEventWithExtras;
 
     if (ev.status === 'CANCELLED') continue;
-    if ((ev as unknown as { transparency?: string }).transparency === 'TRANSPARENT') continue;
+    if (ev.transparency === 'TRANSPARENT') continue;
 
     const baseStart = ev.start as Date | undefined;
     const baseEnd = ev.end as Date | undefined;
     if (!baseStart || !baseEnd) continue;
 
-    const { rrule } = ev as unknown as { rrule?: { between: (a: Date, b: Date, inc: boolean) => Date[] } };
+    const { rrule } = ev;
 
     if (!rrule) {
       if (baseEnd > rangeStart && baseStart < rangeEnd) {
@@ -145,13 +156,13 @@ export const fetchIcsBusyTimes = async (url: string, rangeStart: Date, rangeEnd:
     const durationMs = baseEnd.getTime() - baseStart.getTime();
     const occurrences = rrule.between(rangeStart, rangeEnd, true);
 
-    const exdateMap = (ev as unknown as { exdate?: Record<string, Date> }).exdate ?? {};
+    const exdateMap = ev.exdate ?? {};
     const exdateTimes = new Set<number>(Object.values(exdateMap).map((d) => d.getTime()));
 
-    const recurrenceMap = (ev as unknown as { recurrences?: Record<string, VEvent> }).recurrences ?? {};
-    const recurrencesByTime = new Map<number, VEvent>();
+    const recurrenceMap = ev.recurrences ?? {};
+    const recurrencesByTime = new Map<number, VEventRecurrenceOverride>();
     for (const override of Object.values(recurrenceMap)) {
-      const recId = (override as unknown as { recurrenceid?: Date }).recurrenceid ?? (override.start as Date);
+      const recId = override.recurrenceid ?? (override.start as Date);
       if (recId) recurrencesByTime.set(recId.getTime(), override);
     }
 

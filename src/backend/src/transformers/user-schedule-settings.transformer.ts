@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { UserScheduleSettings } from 'shared';
 import { UserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { decrypt } from '../utils/encryption.utils.js';
 
 const userScheduleSettingsTransformer = (
   settings: Prisma.Schedule_SettingsGetPayload<UserScheduleSettingsQueryArgs>
@@ -10,7 +11,7 @@ const userScheduleSettingsTransformer = (
     personalGmail: settings.personalGmail,
     personalZoomLink: settings.personalZoomLink,
     availabilities: settings.availabilities,
-    importedIcsCalendarUrl: settings.importedIcsCalendarUrl
+    importedIcsCalendarUrl: settings.importedIcsCalendarUrl ? decrypt(settings.importedIcsCalendarUrl) : settings.importedIcsCalendarUrl
   };
 };
 
