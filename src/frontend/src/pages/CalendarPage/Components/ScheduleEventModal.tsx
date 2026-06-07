@@ -49,8 +49,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
   const handleConfirm = async () => {
     try {
       await scheduleEvent({ startTime, endTime });
-      if (beingRescheduled) toast.success('Event rescheduled successfully!');
-      if (!beingRescheduled) toast.success('Event scheduled successfully!');
+      toast.success(beingRescheduled ? 'Event rescheduled successfully!' : 'Event scheduled successfully!');
       onClose();
       history.push(routes.CALENDAR);
     } catch (e) {
@@ -62,19 +61,12 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Schedule {eventName}</DialogTitle>
+      <DialogTitle>
+        {beingRescheduled ? 'Reschedule' : 'Schedule'} {eventName}
+      </DialogTitle>
       <DialogContent>
         <Box sx={{ py: 2 }}>
-          {!beingRescheduled && (
-            <Typography variant="body1" gutterBottom>
-              You are about to schedule this event for:
-            </Typography>
-          )}
-          {beingRescheduled && (
-            <Typography variant="body1" gutterBottom>
-              You are about to reschedule this event for:
-            </Typography>
-          )}
+          <Typography>You are about to {beingRescheduled ? 'reschedule' : 'schedule'} this event for:</Typography>
           <Box
             sx={{ mt: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}
           >
@@ -83,16 +75,12 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
               {formatEventTime(startTime)} - {formatEventTime(endTime)}
             </Typography>
           </Box>
-          {beingRescheduled && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              All members will be notified about the rescheduled time once changed.
-            </Typography>
-          )}
-          {!beingRescheduled && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              This will change the event status to SCHEDULED and notify all members.
-            </Typography>
-          )}
+
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            {beingRescheduled
+              ? 'All members will be notified about the rescheduled time once changed.'
+              : 'This will change the event status to SCHEDULED and notify all members.'}
+          </Typography>
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -100,12 +88,11 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
           Cancel
         </NERFailButton>
 
-        {beingRescheduled && (
+        {beingRescheduled ? (
           <NERSuccessButton onClick={handleConfirm} disabled={isLoading}>
             {isLoading ? 'Scheduling...' : 'Confirm Reschedule'}
           </NERSuccessButton>
-        )}
-        {!beingRescheduled && (
+        ) : (
           <NERSuccessButton onClick={handleConfirm} disabled={isLoading}>
             {isLoading ? 'Scheduling...' : 'Confirm Schedule'}
           </NERSuccessButton>
