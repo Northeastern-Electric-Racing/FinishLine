@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import { RoleEnum } from 'shared';
 import { getUserQueryArgs } from '../../prisma-query-args/user.query-args.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
