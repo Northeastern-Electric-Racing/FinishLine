@@ -49,7 +49,7 @@ export class ConfigDataProcess extends SeedProcess<ConfigDataInput, ConfigDataOu
 
   async run({ organization, appAdmins }: ConfigDataInput): Promise<ConfigDataOutput> {
     const { organizationId } = organization;
-    const creator = appAdmins[0];
+    const [creator] = appAdmins;
 
     if (!creator) {
       throw new Error('ConfigDataProcess requires at least one app admin user.');
