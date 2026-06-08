@@ -56,7 +56,7 @@ export type ConfigDataContext = {
 };
 
 // Main Seed Context
-export type SeedContext = OrganizationContext & UsersContext & RoleContext & ConfigDataContext;
+export type SeedContext = OrganizationContext & UsersContext & RoleContext & CarOutput & ConfigDataContext;
 
 // Car Context
 export type DateRange = {

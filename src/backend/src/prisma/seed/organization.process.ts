@@ -1,6 +1,10 @@
 import { Organization } from '@prisma/client';
 import { SeedProcess } from '../processes/seed-process.js';
-import { bootstrapUserCreateInput, organizationCreateInput } from '../factories/organization.factory.js';
+import {
+  BOOTSTRAP_GOOGLE_AUTH_ID,
+  bootstrapUserCreateInput,
+  organizationCreateInput
+} from '../factories/organization.factory.js';
 
 export type OrganizationOutput = {
   organization: Organization;
@@ -13,9 +17,8 @@ export class OrganizationProcess extends SeedProcess<{}, OrganizationOutput> {
   }
 
   async run(_deps: {}): Promise<OrganizationOutput> {
-    // Kept the GOAT in for old times sake
     const bootstrap = await this.prisma.user.upsert({
-      where: { googleAuthId: 'thomas-emrax' },
+      where: { googleAuthId: BOOTSTRAP_GOOGLE_AUTH_ID },
       update: {},
       create: bootstrapUserCreateInput()
     });
