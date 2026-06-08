@@ -10,8 +10,7 @@ import {
   memberCreateInput
 } from '../factories/user.factory.js';
 import { SeedProcess } from '../processes/seed-process.js';
-
-type FullUser = Prisma.UserGetPayload<ReturnType<typeof getUserQueryArgs>>;
+import type { FullUser } from '../context.js';
 
 const TOTAL_USERS = 350;
 const BOOTSTRAP_APP_ADMINS = 1;
