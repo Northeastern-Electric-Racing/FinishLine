@@ -13,7 +13,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { formatEventTime } from 'shared';
 import { datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
-import { formatHourInCurrentTimeZone } from '../../../utils/design-review.utils';
+import { formatHourInCurrentTimeZone, offsetDate } from '../../../utils/design-review.utils';
 
 interface ScheduleEventModalProps {
   open: boolean;
@@ -41,10 +41,10 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
   const { mutateAsync: scheduleEvent, isLoading } = useScheduleEvent(eventId);
 
   // Compute the full start and end times
-  const startTime = new Date(selectedDay);
+  const startTime = new Date(offsetDate(selectedDay));
   startTime.setHours(startHour, 0, 0, 0);
 
-  const endTime = new Date(selectedDay);
+  const endTime = new Date(offsetDate(selectedDay));
   endTime.setHours(endHour, 0, 0, 0);
 
   const handleConfirm = async () => {
@@ -60,6 +60,12 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
     }
   };
 
+  const dateToShow = () => {
+    const newDate = new Date(selectedDay);
+    newDate.setHours(startHour);
+    return newDate;
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
@@ -71,7 +77,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
           <Box
             sx={{ mt: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}
           >
-            <Typography variant="h6">{datePipe(selectedDay)}</Typography>
+            <Typography variant="h6">{datePipe(offsetDate(dateToShow()))}</Typography>
             <Typography variant="body1" color="text.secondary">
               {formatHourInCurrentTimeZone(formatEventTime(startTime))} -
               {formatHourInCurrentTimeZone(formatEventTime(endTime))}

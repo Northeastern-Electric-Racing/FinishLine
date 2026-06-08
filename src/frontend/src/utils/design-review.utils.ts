@@ -103,12 +103,21 @@ const daylightSavings = () => {
   return currDate >= start && currDate < end;
 };
 
-// converts a REVIEW_TIME (That is in string form) to the user's current time
-export const reviewTimesInCurrentTimeZone = (time: string) => {
+export const userOffsetTime = () => {
   const UTCOffset = -new Date().getTimezoneOffset() / 60;
   const EST = daylightSavings() ? -4 : -5;
   const userOffset = UTCOffset - EST;
-  return offsetReviewTime(time, userOffset);
+  return userOffset;
+};
+
+export const offsetDate = (date: Date) => {
+  const hoursOffset = userOffsetTime();
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours() + hoursOffset);
+};
+
+// converts a REVIEW_TIME (That is in string form) to the user's current time
+export const reviewTimesInCurrentTimeZone = (time: string) => {
+  return offsetReviewTime(time, userOffsetTime());
 };
 
 const isTwoDigitHour = (time: string) => !isNaN(Number(time.charAt(1)));
@@ -142,10 +151,7 @@ const AMorPM = (time: string, offset: number) => {
 };
 
 export const formatHourInCurrentTimeZone = (time: string) => {
-  const UTCOffset = -new Date().getTimezoneOffset() / 60;
-  const EST = daylightSavings() ? -4 : -5;
-  const userOffset = UTCOffset - EST;
-  return offsetFormatHour(time, userOffset);
+  return offsetFormatHour(time, userOffsetTime());
 };
 
 const offsetFormatHour = (time: string, offset: number) => {
