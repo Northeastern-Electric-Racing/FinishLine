@@ -62,7 +62,7 @@ const prisma = new PrismaClient();
 // ORDER MATTERS AT THE MOMENT. I am still looking into topological sort so that order won't matter here.
 await new SeedRunner()
   .withPrisma(prisma)
-  .register(new OrganizationProcess(), new UsersProcess(), new ConfigDataProcess())
+  .register(new OrganizationProcess(), new CarProcess(), new UsersProcess(), new ConfigDataProcess())
   .run();
 
 await prisma.$disconnect();

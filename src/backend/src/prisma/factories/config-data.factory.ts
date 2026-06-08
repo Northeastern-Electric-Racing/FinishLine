@@ -1,5 +1,7 @@
 import { Prisma } from '@prisma/client';
 
+const SEED_CREATED_AT = new Date('2024-01-01T00:00:00.000Z');
+
 const connectOrganization = (organizationId: string) => ({
   connect: { organizationId }
 });
@@ -25,6 +27,12 @@ export const teamTypeCreateInputs = (organizationId: string): Prisma.Team_TypeCr
     name: 'Electrical',
     iconName: 'ElectricBolt',
     description: 'This is the electrical team',
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Business',
+    iconName: 'AttachMoney',
+    description: 'This is the business team',
     organization: connectOrganization(organizationId)
   }
 ];
@@ -102,7 +110,7 @@ export const descriptionBulletTypeCreateInputs = (
 export const materialTypeCreateInputs = (userCreatedId: string, organizationId: string): Prisma.Material_TypeCreateInput[] =>
   ['Resistor', 'Aluminum', 'Steel', 'Carbon Fiber', 'Fastener', 'Electronics', 'Sensor'].map((name) => ({
     name,
-    dateCreated: new Date(),
+    dateCreated: SEED_CREATED_AT,
     userCreated: connectUser(userCreatedId),
     organization: connectOrganization(organizationId)
   }));
@@ -110,7 +118,7 @@ export const materialTypeCreateInputs = (userCreatedId: string, organizationId: 
 export const manufacturerCreateInputs = (userCreatedId: string, organizationId: string): Prisma.ManufacturerCreateInput[] =>
   ['Digikey', 'McMaster-Carr', 'Mouser', 'SendCutSend', 'Misumi', 'Amazon Business'].map((name) => ({
     name,
-    dateCreated: new Date(),
+    dateCreated: SEED_CREATED_AT,
     userCreated: connectUser(userCreatedId),
     organization: connectOrganization(organizationId)
   }));
@@ -124,24 +132,45 @@ export const unitCreateInputs = (userCreatedId: string, organizationId: string):
 
 export const accountCodeCreateInputs = (organizationId: string): Prisma.Account_CodeCreateInput[] => [
   {
-    name: 'Equipment',
-    code: 123,
+    name: 'Subscriptions',
+    code: 73201,
     allowed: true,
-    amount: 1050,
+    amount: 5000,
     organization: connectOrganization(organizationId)
   },
   {
-    name: 'Things',
-    code: 456,
-    allowed: false,
-    amount: 2000,
+    name: 'Travel-Auto/Van Rental',
+    code: 73026,
+    allowed: true,
+    amount: 12000,
     organization: connectOrganization(organizationId)
   },
   {
-    name: 'Stuff',
-    code: 789,
+    name: 'Travel-Misc',
+    code: 73030,
     allowed: true,
-    amount: 3010,
+    amount: 8000,
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Competition-Registration',
+    code: 74310,
+    allowed: true,
+    amount: 15000,
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Food',
+    code: 74320,
+    allowed: true,
+    amount: 3000,
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'General Supplies/Tools',
+    code: 73313,
+    allowed: true,
+    amount: 10000,
     organization: connectOrganization(organizationId)
   }
 ];
@@ -159,7 +188,12 @@ export const indexCodeCreateInputs = (
     userCreated: connectUser(userCreatedId),
     organization: connectOrganization(organizationId),
     accountCodes: {
-      connect: [{ accountCodeId: accountCodeIdsByName.Equipment }, { accountCodeId: accountCodeIdsByName.Stuff }]
+      connect: [
+        { accountCodeId: accountCodeIdsByName.Subscriptions },
+        { accountCodeId: accountCodeIdsByName['Travel-Misc'] },
+        { accountCodeId: accountCodeIdsByName.Food },
+        { accountCodeId: accountCodeIdsByName['General Supplies/Tools'] }
+      ]
     }
   },
   {
@@ -168,7 +202,14 @@ export const indexCodeCreateInputs = (
     userCreated: connectUser(userCreatedId),
     organization: connectOrganization(organizationId),
     accountCodes: {
-      connect: [{ accountCodeId: accountCodeIdsByName.Equipment }, { accountCodeId: accountCodeIdsByName.Things }]
+      connect: [
+        { accountCodeId: accountCodeIdsByName.Subscriptions },
+        { accountCodeId: accountCodeIdsByName['Travel-Auto/Van Rental'] },
+        { accountCodeId: accountCodeIdsByName['Travel-Misc'] },
+        { accountCodeId: accountCodeIdsByName['Competition-Registration'] },
+        { accountCodeId: accountCodeIdsByName.Food },
+        { accountCodeId: accountCodeIdsByName['General Supplies/Tools'] }
+      ]
     }
   }
 ];
@@ -224,33 +265,33 @@ type OtherReasonConfig = {
 export const otherReimbursementReasonConfigs: OtherReasonConfig[] = [
   {
     name: 'CONSUMABLES',
-    budget: 10,
+    budget: 500,
     indexCodeName: 'CASH',
-    accountCodeNames: ['Equipment']
+    accountCodeNames: ['Food', 'General Supplies/Tools']
   },
   {
     name: 'TOOLS_AND_EQUIPMENT',
-    budget: 10,
-    indexCodeName: 'CASH',
-    accountCodeNames: []
+    budget: 10000,
+    indexCodeName: 'BUDGET',
+    accountCodeNames: ['General Supplies/Tools', 'Travel-Misc']
   },
   {
     name: 'COMPETITION',
-    budget: 10,
+    budget: 1500,
     indexCodeName: 'BUDGET',
-    accountCodeNames: ['Equipment']
+    accountCodeNames: ['Competition-Registration', 'Travel-Auto/Van Rental', 'Travel-Misc', 'Food']
   },
   {
     name: 'GENERAL_STOCK',
-    budget: 10,
-    indexCodeName: 'BUDGET',
-    accountCodeNames: []
+    budget: 8000,
+    indexCodeName: 'CASH',
+    accountCodeNames: ['General Supplies/Tools']
   },
   {
     name: 'SUBSCRIPTIONS_AND_MEMBERSHIP',
-    budget: 10,
+    budget: 5000,
     indexCodeName: 'CASH',
-    accountCodeNames: []
+    accountCodeNames: ['Subscriptions']
   }
 ];
 
