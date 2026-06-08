@@ -54,10 +54,11 @@ import { Theme } from '@prisma/client';
 import { SeedRunner } from './processes/seed-runner.js';
 import { UsersProcess } from './seed/user.process.js';
 import { OrganizationProcess } from './seed/organization.process.js';
+import { CarProcess } from './seed/car.process.js';
 
 const prisma = new PrismaClient();
 
-await new SeedRunner().withPrisma(prisma).register(new OrganizationProcess(), new UsersProcess()).run();
+await new SeedRunner().withPrisma(prisma).register(new OrganizationProcess(), new CarProcess(), new UsersProcess()).run();
 
 await prisma.$disconnect();
 
