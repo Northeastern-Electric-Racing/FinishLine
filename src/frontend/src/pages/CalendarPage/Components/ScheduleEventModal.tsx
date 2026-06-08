@@ -13,6 +13,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { formatEventTime } from 'shared';
 import { datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
+import { formatHourInCurrentTimeZone } from '../../../utils/design-review.utils';
 
 interface ScheduleEventModalProps {
   open: boolean;
@@ -72,7 +73,8 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
           >
             <Typography variant="h6">{datePipe(selectedDay)}</Typography>
             <Typography variant="body1" color="text.secondary">
-              {formatEventTime(startTime)} - {formatEventTime(endTime)}
+              {formatHourInCurrentTimeZone(formatEventTime(startTime))} -
+              {formatHourInCurrentTimeZone(formatEventTime(endTime))}
             </Typography>
           </Box>
 

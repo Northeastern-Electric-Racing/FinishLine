@@ -18,6 +18,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { getMutedColor } from '../../utils/calendar.utils';
 import { getTeamTypeIcon } from './CalendarDayCard';
 import { TaskClickContent } from './TaskClickPopup';
+import { formatHourInCurrentTimeZone } from '../../utils/design-review.utils';
 
 // ─── Layout constants ────────────────────────────────────────────────────────
 
@@ -870,7 +871,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
                 >
                   {hour > 0 && (
                     <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap' }}>
-                      {formatHour(hour)}
+                      {formatHourInCurrentTimeZone(formatHour(hour))}
                     </Typography>
                   )}
                 </Box>

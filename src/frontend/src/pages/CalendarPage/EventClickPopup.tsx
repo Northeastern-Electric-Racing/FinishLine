@@ -49,6 +49,7 @@ import { useToast } from '../../hooks/toasts.hooks';
 import NERDeleteModal from '../../components/NERDeleteModal';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { getPendingReason } from '../../utils/calendar.utils';
+import { formatHourInCurrentTimeZone } from '../../utils/design-review.utils';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
@@ -278,7 +279,8 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
           )}
           {dayOfWeek && !event.allDay && (
             <Typography variant="body2">
-              {formatEventTime(event.startTime)} – {formatEventTime(event.endTime)}
+              {formatHourInCurrentTimeZone(formatEventTime(event.startTime))} –{' '}
+              {formatHourInCurrentTimeZone(formatEventTime(event.endTime))}
             </Typography>
           )}
           {dayOfWeek && event.allDay && <Typography variant="body2">All day</Typography>}

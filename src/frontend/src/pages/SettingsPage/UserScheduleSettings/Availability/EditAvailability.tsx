@@ -10,7 +10,12 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { HeatmapColors, enumToArray, REVIEW_TIMES } from '../../../../utils/design-review.utils';
+import {
+  HeatmapColors,
+  enumToArray,
+  REVIEW_TIMES,
+  reviewTimesInCurrentTimeZone
+} from '../../../../utils/design-review.utils';
 import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
 import NERArrows from '../../../../components/NERArrows';
@@ -191,10 +196,10 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           </TableHead>
           <TableBody>
             {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
-              <TableRow key={time}>
+              <TableRow key={reviewTimesInCurrentTimeZone(time)}>
                 <TableCell sx={{ ...stickyLeft, zIndex: 1, scrollSnapAlign: 'start' }}>
                   <Typography variant="body1" align="center" sx={{ fontSize: 15 }}>
-                    {time}
+                    {reviewTimesInCurrentTimeZone(time)}
                   </Typography>
                 </TableCell>
                 {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {

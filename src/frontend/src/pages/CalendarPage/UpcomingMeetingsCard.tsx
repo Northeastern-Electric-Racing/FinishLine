@@ -7,6 +7,7 @@ import { Calendar, EventInstance, EventType, formatEventTime } from 'shared';
 import { datePipe } from '../../utils/pipes';
 
 import { getMutedColor, getPendingReason } from '../../utils/calendar.utils';
+import { formatHourInCurrentTimeZone } from '../../utils/design-review.utils';
 
 interface UpcomingMeetingProp {
   calendars: Calendar[];
@@ -72,7 +73,7 @@ const UpcomingMeetingsCard: React.FC<UpcomingMeetingProp> = ({ event, calendars 
 
           {/* Event Time */}
           <Box marginLeft="auto" whiteSpace="nowrap">
-            {formatEventTime(new Date(event.startTime))}
+            {formatHourInCurrentTimeZone(formatEventTime(new Date(event.startTime)))}
           </Box>
         </Box>
 
