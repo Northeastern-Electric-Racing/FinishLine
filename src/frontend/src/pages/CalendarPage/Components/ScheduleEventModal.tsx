@@ -88,15 +88,9 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
           Cancel
         </NERFailButton>
 
-        {beingRescheduled ? (
-          <NERSuccessButton onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? 'Scheduling...' : 'Confirm Reschedule'}
-          </NERSuccessButton>
-        ) : (
-          <NERSuccessButton onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? 'Scheduling...' : 'Confirm Schedule'}
-          </NERSuccessButton>
-        )}
+        <NERSuccessButton onClick={handleConfirm} disabled={isLoading}>
+          {beingRescheduled ? 'Confirm Reschedule' : 'Confirm Schedule'}
+        </NERSuccessButton>
       </DialogActions>
     </Dialog>
   );
