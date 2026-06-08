@@ -1421,7 +1421,7 @@ export default class CalendarService {
 
     if (!event) throw new NotFoundException('Event', eventId);
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
-    if (event?.status === Event_Status.SCHEDULED) {
+    if (event.status === Event_Status.SCHEDULED) {
       const timeSlots = await prisma.schedule_Slot.findMany({
         where: { eventId: event.eventId }
       });
