@@ -473,9 +473,13 @@ export const sendEventConfirmationToThread = async (threads: SlackMessageThread[
   }
 };
 
-export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[], event: Event) => {
+export const sendEventScheduledSlackNotif = async (
+  threads: SlackMessageThread[],
+  event: Event,
+  beingRescheduled: boolean = false
+) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
-
+  const scheduledOrRescheduled = beingRescheduled ? 'rescheduled' : 'scheduled';
   // Get work package names
   const wpNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
   const drName = event.title + (wpNames ? ` (${wpNames})` : '');
@@ -507,9 +511,12 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
   const validSlackIds = resolvedSlackIds.filter((id): id is string => !!id);
   const mentionPrefix = buildSlackMentionPrefix(SlackMentionType.USER, validSlackIds);
 
-  const msg = `:spiral_calendar_pad: ${event.title} for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
+  const msg =
+    `:spiral_calendar_pad: ${event.title} for *${drName}* has been ` +
+    scheduledOrRescheduled +
+    ` for *${drTime}* ${location} by ${drSubmitter}`;
   const docLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Doc Link>` : '';
-  const threadMsg = `${mentionPrefix}This event has been Scheduled! \n` + docLink;
+  const threadMsg = `${mentionPrefix}This event has been ` + scheduledOrRescheduled + ` \n` + docLink;
 
   if (threads && threads.length !== 0) {
     const msgs = threads.map((thread) => editMessage(thread.channelId, thread.timestamp, msg));

@@ -15,7 +15,7 @@ import {
   Machinery,
   ScheduleSlot,
   notGuest,
-  isSameDay,
+  isSameDayUTC,
   EventInstance,
   SlackMentionType
 } from 'shared';
@@ -503,11 +503,7 @@ export default class CalendarService {
 
     if (foundEventType.sendSlackNotifications) {
       const members = await prisma.user.findMany({
-        where: {
-          userId: {
-            in: optionalMemberIds.concat(allRequiredMembers)
-          }
-        }
+        where: { userId: { in: optionalMemberIds.concat(allRequiredMembers) } }
       });
 
       // get the user settings for all the members invited, who are leaderingship
@@ -801,13 +797,12 @@ export default class CalendarService {
     const edittedEvent = eventTransformer(updatedEvent);
 
     if (status === Event_Status.SCHEDULED && foundEventType.sendSlackNotifications) {
-      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent);
+      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent, true);
     }
 
     if (status === Event_Status.CONFIRMED && foundEventType.sendSlackNotifications) {
       await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
     }
-
     return edittedEvent;
   }
 
@@ -943,7 +938,11 @@ export default class CalendarService {
         userCreatedId: true,
         location: true,
         dateDeleted: true,
-        approved: true
+        approved: true,
+        status: true,
+        title: true,
+        workPackages: true,
+        scheduledTimes: true
       }
     });
 
@@ -1424,10 +1423,48 @@ export default class CalendarService {
 
     if (!event) throw new NotFoundException('Event', eventId);
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
-
-    // Cannot schedule an already scheduled event
     if (event.status === Event_Status.SCHEDULED) {
-      throw new HttpException(400, 'Event is already scheduled');
+      const timeSlots = await prisma.schedule_Slot.findMany({
+        where: { eventId: event.eventId }
+      });
+
+      // Restore the old scheduled time from confirmed members' availabilities
+      // so they get their time back from the old scheduled event
+      for (const slot of timeSlots) {
+        if (!slot.startTime || !slot.endTime) continue;
+        const startHour = new Date(slot.startTime).getHours();
+        const endHour = new Date(slot.endTime).getHours();
+
+        for (const member of event.confirmedMembers) {
+          if (!member.drScheduleSettings) continue;
+          const existingAvailability = member.drScheduleSettings.availabilities.find((a) =>
+            isSameDayUTC(a.dateSet, slot.startTime)
+          );
+          if (!existingAvailability) continue;
+          // Availability index i represents local hour (10 + i); remove indices that fall within [startHour, endHour)
+          const returnedAvailability = Array.from({ length: endHour - startHour }, (_, i) => startHour + i - 10).filter(
+            (i) => i >= 0
+          );
+
+          const updatedAvailability = [...new Set([...existingAvailability.availability, ...returnedAvailability])].sort(
+            (a, b) => a - b
+          );
+
+          await prisma.availability.update({
+            where: { availabilityId: existingAvailability.availabilityId },
+            data: { availability: updatedAvailability }
+          });
+        }
+      }
+
+      await prisma.event.update({
+        where: { eventId: event.eventId },
+        data: { status: Event_Status.SCHEDULED }
+      });
+
+      await prisma.schedule_Slot.deleteMany({
+        where: { eventId: event.eventId }
+      });
     }
 
     // Only the event creator can schedule the event
@@ -1464,9 +1501,12 @@ export default class CalendarService {
             allDay: false
           }
         },
+
+        initialDateScheduled: event.initialDateScheduled ?? null,
         approved: hasConflict ? Conflict_Status.PENDING : event.approved,
         approvalRequiredFromUserId: hasConflict ? conflictingEvent?.userCreated.userId : event.approvalRequiredFromUserId
       },
+
       ...getEventQueryArgs(organization.organizationId)
     });
 
@@ -1476,7 +1516,7 @@ export default class CalendarService {
     const endHour = endTime.getHours();
     for (const member of event.confirmedMembers) {
       if (!member.drScheduleSettings) continue;
-      const existingAvailability = member.drScheduleSettings.availabilities.find((a) => isSameDay(a.dateSet, startTime));
+      const existingAvailability = member.drScheduleSettings.availabilities.find((a) => isSameDayUTC(a.dateSet, startTime));
       if (!existingAvailability) continue;
       // Availability index i represents local hour (10 + i); remove indices that fall within [startHour, endHour)
       const updatedAvailability = existingAvailability.availability.filter(
@@ -1494,9 +1534,12 @@ export default class CalendarService {
     });
 
     if (foundEventType?.sendSlackNotifications) {
-      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, eventTransformer(updatedEvent));
+      await sendEventScheduledSlackNotif(
+        updatedEvent.notificationSlackThreads,
+        eventTransformer(updatedEvent),
+        event.status === Event_Status.SCHEDULED
+      );
     }
-
     return eventTransformer(updatedEvent);
   }
 
