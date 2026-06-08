@@ -21,7 +21,14 @@ const schema = yup.object().shape({
   status: yup.mixed<TaskStatus>().oneOf(Object.values(TaskStatus)).required(),
   assignees: yup.array().of(yup.string().required()).required(),
   startDate: yup.date().optional(),
-  deadline: yup.date().optional(),
+  deadline: yup
+    .date()
+    .optional()
+    .test('deadline-after-start', 'Deadline must be on or after the start date', function (deadline) {
+      const { startDate } = this.parent;
+      if (!startDate || !deadline) return true;
+      return deadline >= startDate;
+    }),
   notes: yup.string().optional()
 });
 
@@ -51,6 +58,7 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
   const {
     handleSubmit,
     control,
+    watch,
     formState: { errors },
     reset
   } = useForm<CreateTaskFormInput>({
@@ -66,6 +74,8 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
       notes: ''
     }
   });
+
+  const startDate = watch('startDate');
 
   if (usersError) return <ErrorPage error={usersErr} />;
   if (projectsError) return <ErrorPage error={projectsErr} />;
@@ -249,10 +259,12 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
                   format="MM-dd-yyyy"
                   onChange={(event) => onChange(event ?? undefined)}
                   value={value ?? null}
-                  slotProps={{ textField: { autoComplete: 'off' } }}
+                  minDate={startDate ?? undefined}
+                  slotProps={{ textField: { autoComplete: 'off', error: !!errors.deadline } }}
                 />
               )}
             />
+            {errors.deadline && <FormHelperText error>{errors.deadline.message}</FormHelperText>}
           </FormControl>
         </Grid>
         <Grid item xs={12}>
