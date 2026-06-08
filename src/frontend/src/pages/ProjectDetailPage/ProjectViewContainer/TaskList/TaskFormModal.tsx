@@ -109,6 +109,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
   const {
     handleSubmit,
     control,
+    watch,
     formState: { errors },
     reset
   } = useForm<EditTaskFormInput>({
@@ -124,6 +125,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       wpWbsNum: task?.wbsNum.workPackageNumber !== 0 ? task?.wbsNum : undefined
     }
   });
+
+  const startDate = watch('startDate');
 
   if (isError) return <ErrorPage error={error} />;
   if (usersLoading || !users) return <LoadingIndicator />;
@@ -290,6 +293,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                     onChange={(event) => onChange(event ?? undefined)}
                     className={'padding: 10'}
                     value={value}
+                    minDate={startDate ?? undefined}
                     slotProps={{ textField: { autoComplete: 'off', error: !!errors.deadline } }}
                   />
                 )}

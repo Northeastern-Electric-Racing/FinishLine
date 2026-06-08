@@ -56,6 +56,7 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
     handleSubmit,
     control,
     reset,
+    watch,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
@@ -70,6 +71,8 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
       wpWbsNum: undefined
     }
   });
+
+  const startDate = watch('startDate');
 
   if (usersIsError) return <ErrorPage message={usersError?.message} />;
   if (!users || usersIsLoading) return <LoadingIndicator />;
@@ -221,6 +224,7 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
                   onChange={(event) => onChange(event ?? undefined)}
                   className={'padding: 10'}
                   value={value}
+                  minDate={startDate ?? undefined}
                   slotProps={{ textField: { autoComplete: 'off', error: !!errors.deadline } }}
                 />
               )}

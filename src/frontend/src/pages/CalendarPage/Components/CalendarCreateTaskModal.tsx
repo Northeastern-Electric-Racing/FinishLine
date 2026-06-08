@@ -58,6 +58,7 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
   const {
     handleSubmit,
     control,
+    watch,
     formState: { errors },
     reset
   } = useForm<CreateTaskFormInput>({
@@ -73,6 +74,8 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
       notes: ''
     }
   });
+
+  const startDate = watch('startDate');
 
   if (usersError) return <ErrorPage error={usersErr} />;
   if (projectsError) return <ErrorPage error={projectsErr} />;
@@ -256,6 +259,7 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
                   format="MM-dd-yyyy"
                   onChange={(event) => onChange(event ?? undefined)}
                   value={value ?? null}
+                  minDate={startDate ?? undefined}
                   slotProps={{ textField: { autoComplete: 'off', error: !!errors.deadline } }}
                 />
               )}
