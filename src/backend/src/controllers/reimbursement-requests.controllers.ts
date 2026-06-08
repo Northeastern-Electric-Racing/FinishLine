@@ -496,14 +496,14 @@ export default class ReimbursementRequestsController {
       const editedVendor = await ReimbursementRequestService.editVendor(
         name,
         vendorId,
+        taxExempt,
+        twoFactorContacts,
+        req.currentUser,
+        req.organization,
         username,
         password,
         discountCode,
-        taxExempt,
-        twoFactorContacts,
-        notes,
-        req.currentUser,
-        req.organization
+        notes
       );
       res.status(200).json(editedVendor);
     } catch (error: unknown) {
