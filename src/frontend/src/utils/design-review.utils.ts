@@ -54,43 +54,9 @@ export const HeatmapColors = ['#D9D9D9', '#C1E0C1', '#9BE89B', '#7AE47A', '#45EF
 
 export const NUMBER_OF_TIME_SLOTS = enumToArray(REVIEW_TIMES).length * enumToArray(DAY_NAMES).length;
 
-const monthToIndex = (month: MONTH_NAMES) => {
-  const monthToIndexMap: Map<MONTH_NAMES, number> = new Map([
-    [MONTH_NAMES.January, 0],
-    [MONTH_NAMES.February, 1],
-    [MONTH_NAMES.March, 2],
-    [MONTH_NAMES.April, 3],
-    [MONTH_NAMES.May, 4],
-    [MONTH_NAMES.June, 5],
-    [MONTH_NAMES.July, 6],
-    [MONTH_NAMES.August, 7],
-    [MONTH_NAMES.September, 8],
-    [MONTH_NAMES.October, 9],
-    [MONTH_NAMES.November, 10],
-    [MONTH_NAMES.December, 11]
-  ]);
-  return monthToIndexMap.get(month);
-};
-
-const dayToIndex = (weekday: DAY_NAMES) => {
-  const dayToIndexMap: Map<DAY_NAMES, number> = new Map([
-    [DAY_NAMES.Sunday, 0],
-    [DAY_NAMES.Sunday, 1],
-    [DAY_NAMES.Sunday, 2],
-    [DAY_NAMES.Sunday, 3],
-    [DAY_NAMES.Sunday, 4],
-    [DAY_NAMES.Sunday, 5],
-    [DAY_NAMES.Sunday, 6]
-  ]);
-  return dayToIndexMap.get(weekday);
-};
-
 const nthWeekday = (year: number, month: MONTH_NAMES, weekday: DAY_NAMES, nth: number) => {
-  const monthIndex = monthToIndex(month);
-  const dayIndex = dayToIndex(weekday);
-
-  const day = new Date(year, monthIndex!, 1);
-  const dayDiff = (dayIndex! - day.getDay() + 7) % 7;
+  const day = new Date(year, month!, 1);
+  const dayDiff = (weekday! - day.getDay() + 7) % 7;
 
   return new Date(year, month, 1 + dayDiff + (nth - 1) * 7);
 };
@@ -136,18 +102,13 @@ const offsetReviewTime = (time: string, offset: number) => {
 
 const AMorPM = (time: string, offset: number) => {
   const startTime = Number(time.charAt(0) + (isTwoDigitHour(time) ? time.charAt(1) : ''));
-  let AMorPM = time.charAt(time.length - 2) + time.charAt(time.length - 1);
+  const AMorPM = time.charAt(time.length - 2) + time.charAt(time.length - 1);
+  const startTime24Hour = startTime + (AMorPM === 'PM' && startTime !== 12 ? 12 : 0);
 
-  const flipAMPM = () => {
-    if (AMorPM === 'AM') return 'PM';
-    return 'AM';
-  };
+  const newTime = startTime24Hour + offset;
+  const newHour = (newTime + 24) % 24;
 
-  // if odd, the AM / PM should be flipped
-  const doFlip = Math.floor((startTime + offset - 1) / 12) % 2 === 1;
-  if (doFlip) AMorPM = flipAMPM();
-
-  return AMorPM;
+  return newHour >= 12 ? 'PM' : 'AM';
 };
 
 export const formatHourInCurrentTimeZone = (time: string) => {
