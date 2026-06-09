@@ -1,4 +1,18 @@
-import { Organization, Prisma, Role } from '@prisma/client';
+import {
+  Account_Code,
+  Description_Bullet_Type,
+  Index_Code,
+  Link_Type,
+  Manufacturer,
+  Material_Type,
+  Organization,
+  Prisma,
+  Reimbursement_Product_Other_Reason,
+  Role,
+  Team_Type,
+  Unit,
+  Vendor
+} from '@prisma/client';
 import { RoleEnum } from 'shared';
 import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 
@@ -27,8 +41,22 @@ export type RoleContext = {
   rolesByType: Record<RoleEnum, Role[]>;
 };
 
+// Config Data Context
+export type ConfigDataContext = {
+  teamTypes: Team_Type[];
+  linkTypes: Link_Type[];
+  descriptionBulletTypes: Description_Bullet_Type[];
+  materialTypes: Material_Type[];
+  manufacturers: Manufacturer[];
+  units: Unit[];
+  accountCodes: Account_Code[];
+  indexCodes: Index_Code[];
+  vendors: Vendor[];
+  reimbursementProductOtherReasons: Reimbursement_Product_Other_Reason[];
+};
+
 // Main Seed Context
-export type SeedContext = OrganizationContext & UsersContext & RoleContext;
+export type SeedContext = OrganizationContext & UsersContext & RoleContext & CarOutput & ConfigDataContext;
 
 // Car Context
 export type DateRange = {
