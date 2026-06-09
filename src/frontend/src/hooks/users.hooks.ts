@@ -184,8 +184,7 @@ export const useUserScheduleSettings = (id: string) => {
         drScheduleSettingsId: '',
         personalGmail: '',
         personalZoomLink: '',
-        availabilities: [],
-        importedIcsCalendarUrl: ''
+        availabilities: []
       };
     }
   });

@@ -541,9 +541,11 @@ export default class UsersService {
       }
     }
 
-    if (importedIcsCalendarUrl) validateIcsUrl(importedIcsCalendarUrl);
+    const normalizedIcsUrl = importedIcsCalendarUrl?.trim() || undefined;
 
-    const encryptedIcsUrl = importedIcsCalendarUrl ? encrypt(importedIcsCalendarUrl) : importedIcsCalendarUrl;
+    if (normalizedIcsUrl) validateIcsUrl(normalizedIcsUrl);
+
+    const encryptedIcsUrl = normalizedIcsUrl ? encrypt(normalizedIcsUrl) : null;
 
     const newUserScheduleSettings = await prisma.schedule_Settings.upsert({
       where: { userId: user.userId },

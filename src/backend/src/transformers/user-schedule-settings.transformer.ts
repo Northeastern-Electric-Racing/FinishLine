@@ -13,7 +13,7 @@ const userScheduleSettingsTransformer = (
     availabilities: settings.availabilities,
     importedIcsCalendarUrl: settings.importedIcsCalendarUrl
       ? decrypt(settings.importedIcsCalendarUrl)
-      : settings.importedIcsCalendarUrl
+      : undefined
   };
 };
 

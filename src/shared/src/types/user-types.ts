@@ -117,7 +117,7 @@ export interface UserScheduleSettings {
   personalGmail: string;
   personalZoomLink: string;
   availabilities: Availability[];
-  importedIcsCalendarUrl: string;
+  importedIcsCalendarUrl?: string;
 }
 
 export interface Availability {

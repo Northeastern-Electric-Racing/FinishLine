@@ -1271,7 +1271,7 @@ model Schedule_Settings {
   User                   User           @relation(fields: [userId], references: [userId])
   userId                 String         @unique
   availabilities         Availability[]
-  importedIcsCalendarUrl String         @default("")
+  importedIcsCalendarUrl String?
 }
 
 model Wbs_Proposed_Changes {
