@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Box, Button, IconButton, Link, Popover, Stack, Typography, useTheme } from '@mui/material';
+import { Alert, Box, Button, IconButton, Link, Popover, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import {
   Calendar,
   DayOfWeek,
@@ -58,6 +58,16 @@ export const getStatusIcon = (status: string, isLarge?: boolean) => {
     ['DONE', <CheckCircleIcon fontSize={isLarge ? 'large' : 'small'} />]
   ]);
   return statusIcons.get(status);
+};
+
+const getStatusReasoning = (status: EventStatus) => {
+  const statusToReason: Map<EventStatus, string> = new Map([
+    [EventStatus.UNCONFIRMED, 'Not all required attendees have confirmed availabilities'],
+    [EventStatus.CONFIRMED, 'All required attendees have confirmed availabilities'],
+    [EventStatus.SCHEDULED, 'The event has been scheduled'],
+    [EventStatus.DONE, 'This event is already finished']
+  ]);
+  return statusToReason.get(status);
 };
 
 const stopClick: React.MouseEventHandler<HTMLElement> = (e) => {
@@ -127,7 +137,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
   const canEditOrDelete =
     event.userCreated.userId === currentUser.userId || isAdmin(currentUser.role) || isHead(currentUser.role);
 
-  const eventDate = clickedDate || event.startTime;
+  const eventDate = event.initialDateScheduled || clickedDate || event.startTime;
 
   const availabilityUrl = `${routes.CALENDAR}/event/${event.eventId}?date=${eventDate.toISOString()}`;
 
@@ -206,66 +216,82 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
           </Box>
 
           <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                stopClick(e);
-                handleExport(event);
-              }}
-              sx={{
-                color: theme.palette.grey[500],
-                '&:hover': { color: theme.palette.common.white, bgcolor: 'transparent' }
-              }}
-            >
-              <ExitToAppIcon fontSize="small" />
-            </IconButton>
-
-            {!disable && canEditOrDelete && (
+            <Tooltip title="Export Event" arrow placement="top">
               <IconButton
                 size="small"
                 onClick={(e) => {
                   stopClick(e);
-                  onEdit(event);
+                  handleExport(event);
                 }}
                 sx={{
                   color: theme.palette.grey[500],
                   '&:hover': { color: theme.palette.common.white, bgcolor: 'transparent' }
                 }}
               >
-                <EditIcon fontSize="small" />
+                <ExitToAppIcon fontSize="small" />
               </IconButton>
+            </Tooltip>
+
+            {!disable && canEditOrDelete && (
+              <Tooltip title="Edit Event" arrow placement="top">
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    stopClick(e);
+                    onEdit(event);
+                  }}
+                  sx={{
+                    color: theme.palette.grey[500],
+                    '&:hover': { color: theme.palette.common.white, bgcolor: 'transparent' }
+                  }}
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
             )}
 
             {!disable && canEditOrDelete && (
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  stopClick(e);
-                  onDelete(event);
-                }}
-                sx={{
-                  color: theme.palette.grey[500],
-                  '&:hover': { color: '#ef5350', bgcolor: 'transparent' }
-                }}
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
+              <Tooltip title="Delete Event" arrow placement="top">
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    stopClick(e);
+                    onDelete(event);
+                  }}
+                  sx={{
+                    color: theme.palette.grey[500],
+                    '&:hover': { color: '#ef5350', bgcolor: 'transparent' }
+                  }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
             )}
           </Stack>
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5, flexWrap: 'wrap' }}>
-          {dayOfWeek && <AccessTimeIcon fontSize="small" />}
+          {dayOfWeek && (
+            <Tooltip title="Time" arrow placement="top">
+              <AccessTimeIcon fontSize="small" />
+            </Tooltip>
+          )}
           {dayOfWeek && !event.allDay && (
             <Typography variant="body2">
               {formatEventTime(event.startTime)} – {formatEventTime(event.endTime)}
             </Typography>
           )}
           {dayOfWeek && event.allDay && <Typography variant="body2">All day</Typography>}
-          {!dayOfWeek && <AccessTimeIcon fontSize="small" />}
+          {!dayOfWeek && (
+            <Tooltip title="Time" arrow placement="top">
+              <AccessTimeIcon fontSize="small" />
+            </Tooltip>
+          )}
           {hasValue(locationText) && (
             <>
-              <LocationOnIcon fontSize="small" sx={{ ml: 2 }} />
+              <Tooltip title="Location" arrow placement="top">
+                <LocationOnIcon fontSize="small" sx={{ ml: 2 }} />
+              </Tooltip>
               <Typography variant="body2">{locationText}</Typography>
             </>
           )}
@@ -276,7 +302,9 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
         {/* Required */}
         {hasValue(requiredText) && (
           <Stack direction="row" spacing={1.25} alignItems="flex-start">
-            <GroupIcon fontSize="small" sx={{ mt: 0.3 }} />
+            <Tooltip title="These members must attend the event" arrow placement="top">
+              <GroupIcon fontSize="small" sx={{ mt: 0.3 }} />
+            </Tooltip>
             <Typography variant="body2" sx={{ flex: 1 }}>
               <b>Required:</b> {requiredText}
             </Typography>
@@ -286,7 +314,9 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
         {/* Optional */}
         {hasValue(optionalText) && (
           <Stack direction="row" spacing={1.25} alignItems="flex-start">
-            <GroupIcon fontSize="small" sx={{ mt: 0.3 }} />
+            <Tooltip title="These members are invited to the event" arrow placement="top">
+              <GroupIcon fontSize="small" sx={{ mt: 0.3 }} />
+            </Tooltip>
             <Typography variant="body2" sx={{ flex: 1 }}>
               <b>Optional:</b> {optionalText}
             </Typography>
@@ -315,7 +345,9 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
 
         {specificEventType?.requiresConfirmation && showAvailabilityButton && (
           <Stack direction="row" spacing={1} alignItems="center">
-            <PeopleIcon fontSize="small" sx={{ mt: 0.1 }} />
+            <Tooltip title="Confirm your availability" arrow placement="top">
+              <PeopleIcon fontSize="small" sx={{ mt: 0.1 }} />
+            </Tooltip>
             <Button
               size="small"
               variant="outlined"
@@ -465,13 +497,49 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
         {/* Status */}
         {hasValue(event.status) && (
           <Stack direction="row" spacing={1.25} alignItems="flex-start">
-            {getStatusIcon(event.status!, false) ?? <HelpIcon fontSize="small" sx={{ mt: 0.3 }} />}
+            <Tooltip title={getStatusReasoning(event.status)} arrow placement="top">
+              {getStatusIcon(event.status!, false) ?? <HelpIcon fontSize="small" sx={{ mt: 0.3 }} />}
+            </Tooltip>
             <Typography variant="body2" sx={{ flex: 1 }}>
               <b>Status:</b> {event.status}
             </Typography>
             {specificEventType?.sendSlackNotifications && (event.teams.length > 0 || event.workPackages.length > 0) && (
               <NotificationsIcon sx={{ color: 'white', fontSize: 18, mt: '3px', flexShrink: 0 }} />
             )}
+          </Stack>
+        )}
+
+        {/* Reschedule */}
+
+        {event.status === EventStatus.SCHEDULED && event.userCreated.userId === currentUser.userId && (
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Tooltip title="Reschedule Event" arrow placement="top">
+              <EditIcon fontSize="small" sx={{ mt: 0.1 }} />
+            </Tooltip>
+            <Button
+              size="small"
+              variant="outlined"
+              component={RouterLink}
+              to={availabilityUrl}
+              onClick={stopClick}
+              disabled={disable}
+              sx={{
+                textTransform: 'none',
+                borderRadius: 999,
+                px: 1.5,
+                py: 0.25,
+                minHeight: 24,
+                fontSize: 12,
+                color: theme.palette.common.white,
+                borderColor: theme.palette.grey[700],
+                '&:hover': {
+                  borderColor: theme.palette.grey[500],
+                  bgcolor: 'transparent'
+                }
+              }}
+            >
+              Reschedule Event
+            </Button>
           </Stack>
         )}
 

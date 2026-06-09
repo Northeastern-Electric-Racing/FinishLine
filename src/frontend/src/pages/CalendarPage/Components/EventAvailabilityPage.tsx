@@ -12,8 +12,8 @@ import {
   User,
   UserWithScheduleSettings,
   EventWithMembers,
-  isAdmin,
-  EventStatus
+  EventStatus,
+  isAdmin
 } from 'shared';
 import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -401,10 +401,10 @@ export const EventAvailabilityPage: React.FC = () => {
           )}
 
           {/* Schedule button for creators - only show if event is not already scheduled */}
-          {(isCreator || isAdmin(currentUser.role)) && selectedSlot && event.status !== EventStatus.SCHEDULED && (
+          {(isCreator || isAdmin(currentUser.role)) && selectedSlot && (
             <Box sx={{ mt: 3 }}>
               <NERSuccessButton variant="contained" onClick={handleScheduleClick} fullWidth>
-                Schedule Event
+                {event.status === EventStatus.SCHEDULED ? 'Reschedule Event' : 'Schedule Event'}
               </NERSuccessButton>
             </Box>
           )}
@@ -440,6 +440,7 @@ export const EventAvailabilityPage: React.FC = () => {
           selectedDay={selectedSlot.day}
           startHour={selectedSlot.startHour}
           endHour={selectedSlot.endHour}
+          beingRescheduled={event.status === EventStatus.SCHEDULED}
         />
       )}
     </PageLayout>
