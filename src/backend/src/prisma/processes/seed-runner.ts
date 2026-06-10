@@ -19,6 +19,7 @@ export class SeedRunner {
     if (!this.prisma) throw new Error('SeedRunner requires a PrismaClient. Call withPrisma() before run().');
 
     const outputs = new Map<string, any>();
+    const context: Record<string, any> = {};
 
     for (const instance of this.instances) {
       instance.prisma = this.prisma;
@@ -31,8 +32,13 @@ export class SeedRunner {
 
       console.log(`Running ${instance.constructor.name} (seed ${GLOBAL_SEED})...`);
       const output = await instance.run(depOutputs);
+
       outputs.set(instance.constructor.name, output);
+      Object.assign(context, output);
+
       console.log(`${instance.constructor.name} complete`);
     }
+
+    return context;
   }
 }
