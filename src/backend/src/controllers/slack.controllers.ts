@@ -5,6 +5,7 @@ import SlackServices, {
   SaboSubmissionActionValue,
   CrApprovalActionValue
 } from '../services/slack.services.js';
+import { tryParseJson } from '../utils/slack.utils.js';
 
 export default class SlackController {
   static async processMessageEvent(event: any) {
@@ -34,30 +35,17 @@ export default class SlackController {
     const [firstAction] = actions;
 
     try {
-      // Action-specific validation: verify action_id
-      if (firstAction.action_id !== 'sabo_submitted_confirmation') {
-        console.error('Unexpected action_id:', firstAction.action_id);
-        await replyToMessageInThread(
-          channelId,
-          threadTs,
-          `❌ An error occurred: Unexpected action type "${firstAction.action_id}". Please contact the software team.`
-        );
-        return;
-      }
-
       // Action-specific validation: verify value format
-      let actionValue: SaboSubmissionActionValue;
-      try {
-        actionValue = JSON.parse(firstAction.value);
-      } catch (parseError) {
-        const parseErrorMsg = parseError instanceof Error ? parseError.message : 'Unknown parse error';
+      const parsed = tryParseJson<SaboSubmissionActionValue>(firstAction.value);
+      if (!parsed.ok) {
         await replyToMessageInThread(
           channelId,
           threadTs,
-          `❌ An error occurred: Invalid action data format.\n\n*Error:* ${parseErrorMsg}\n*Value:* \`${firstAction.value}\`\n\nPlease contact the software team.`
+          `❌ An error occurred: Invalid action data format.\n\n*Error:* ${parsed.error}\n*Value:* \`${firstAction.value}\`\n\nPlease contact the software team.`
         );
         return;
       }
+      const actionValue = parsed.data;
 
       // Validate that reimbursementRequestId exists in the parsed value
       if (!actionValue.reimbursementRequestId || typeof actionValue.reimbursementRequestId !== 'string') {
@@ -102,30 +90,17 @@ export default class SlackController {
     const [firstAction] = actions;
 
     try {
-      // Action-specific validation: verify action_id
-      if (firstAction.action_id !== 'approve_cr') {
-        console.error('Unexpected action_id:', firstAction.action_id);
-        await replyToMessageInThread(
-          channelId,
-          threadTs,
-          `❌ An error occurred: Unexpected action type "${firstAction.action_id}". Please contact the software team.`
-        );
-        return;
-      }
-
       // Action-specific validation: verify value format
-      let actionValue: CrApprovalActionValue;
-      try {
-        actionValue = JSON.parse(firstAction.value);
-      } catch (parseError) {
-        const parseErrorMsg = parseError instanceof Error ? parseError.message : 'Unknown parse error';
+      const parsed = tryParseJson<CrApprovalActionValue>(firstAction.value);
+      if (!parsed.ok) {
         await replyToMessageInThread(
           channelId,
           threadTs,
-          `❌ An error occurred: Invalid action data format.\n\n*Error:* ${parseErrorMsg}\n*Value:* \`${firstAction.value}\`\n\nPlease contact the software team.`
+          `❌ An error occurred: Invalid action data format.\n\n*Error:* ${parsed.error}\n*Value:* \`${firstAction.value}\`\n\nPlease contact the software team.`
         );
         return;
       }
+      const actionValue = parsed.data;
 
       // Validate that changeRequestId exists in the parsed value
       if (!actionValue.crId || typeof actionValue.crId !== 'string') {

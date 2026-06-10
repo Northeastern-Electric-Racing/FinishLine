@@ -18,21 +18,39 @@ const getProjectProposedChangesQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Project_Proposed_ChangesDefaultArgs>()({
     include: {
       teams: getTeamQueryArgs(organizationId),
-      car: { include: { wbsElement: true } },
+      car: { select: { wbsElement: { select: { carNumber: true } } } },
       workPackageProposedChanges: getWorkPackageProposedChangesQueryArgs(organizationId)
     }
   });
 
 const getWorkPackageProposedChangesQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Work_Package_Proposed_ChangesDefaultArgs>()({
-    include: {
+    select: {
+      workPackageProposedChangesId: true,
+      startDate: true,
+      duration: true,
+      stage: true,
       wbsProposedChanges: {
-        include: {
-          links: { where: { dateDeleted: null }, include: { linkType: true } },
+        select: {
+          name: true,
+          status: true,
+          links: {
+            where: { dateDeleted: null },
+            select: {
+              linkId: true,
+              url: true,
+              linkType: { select: { name: true, required: true, iconName: true, isOnGuestHomePage: true } }
+            }
+          },
           proposedDescriptionBulletChanges: {
             where: { dateDeleted: null },
-            include: {
-              descriptionBulletType: true,
+            select: {
+              descriptionId: true,
+              detail: true,
+              dateAdded: true,
+              dateDeleted: true,
+              dateTimeChecked: true,
+              descriptionBulletType: { select: { name: true } },
               userChecked: getUserQueryArgs(organizationId)
             }
           },
@@ -46,22 +64,43 @@ const getWorkPackageProposedChangesQueryArgs = (organizationId: string) =>
 
 const getWbsProposedChangesQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Wbs_Proposed_ChangesDefaultArgs>()({
-    include: {
-      links: { where: { dateDeleted: null }, include: { linkType: true } },
+    select: {
+      wbsProposedChangesId: true,
+      name: true,
+      status: true,
+      leadId: true,
+      managerId: true,
+      links: {
+        where: { dateDeleted: null },
+        select: {
+          linkId: true,
+          url: true,
+          linkType: { select: { name: true, required: true, iconName: true, isOnGuestHomePage: true } }
+        }
+      },
       proposedDescriptionBulletChanges: {
         where: { dateDeleted: null },
-        include: { descriptionBulletType: true, userChecked: getUserQueryArgs(organizationId) }
+        select: {
+          descriptionId: true,
+          detail: true,
+          dateAdded: true,
+          dateDeleted: true,
+          dateTimeChecked: true,
+          descriptionBulletType: { select: { name: true } },
+          userChecked: getUserQueryArgs(organizationId)
+        }
       },
       lead: getUserQueryArgs(organizationId),
       manager: getUserQueryArgs(organizationId),
       projectProposedChanges: {
-        include: {
+        select: {
+          projectProposedChangesId: true,
+          wbsProposedChangesId: true,
+          carId: true,
+          summary: true,
+          budget: true,
           teams: getTeamQueryArgs(organizationId),
-          car: {
-            include: {
-              wbsElement: true
-            }
-          },
+          car: { select: { wbsElement: { select: { carNumber: true } } } },
           workPackageProposedChanges: getWorkPackageProposedChangesQueryArgs(organizationId)
         }
       },

@@ -18,7 +18,7 @@ const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetails
     <Box>
       <Box my={1}>
         <InfoBlock title={'Why'}>
-          <Typography>{cr.why}</Typography>
+          <Typography sx={{ whiteSpace: 'pre-line' }}>{cr.why}</Typography>
         </InfoBlock>
       </Box>
     </Box>

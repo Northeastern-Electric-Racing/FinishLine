@@ -25,8 +25,8 @@ UPDATE "Change_Request" cr
 SET 
   why = CONCAT(
     'Type: ', cr.type::text,
-    CASE WHEN sc.what IS NOT NULL THEN CONCAT(' | What: ', sc.what) ELSE '' END,
-    CASE WHEN why_agg.why_text IS NOT NULL THEN CONCAT(' | Why: ', why_agg.why_text) ELSE '' END
+    CASE WHEN sc.what IS NOT NULL THEN CONCAT(E'\nWhat: ', sc.what) ELSE '' END,
+    CASE WHEN why_agg.why_text IS NOT NULL THEN CONCAT(E'\nWhy: ', why_agg.why_text) ELSE '' END
   ),
   type = 'STANDARD'::"CR_Type"
 FROM "Scope_CR" sc

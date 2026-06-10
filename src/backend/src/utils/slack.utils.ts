@@ -41,6 +41,14 @@ interface SlackMessageThread {
 
 const DEV_TESTING_OVERRIDE = process.env.SEND_SLACK_MESSAGES_IN_DEV === 'true';
 
+export function tryParseJson<T>(value: string): { ok: true; data: T } | { ok: false; error: string } {
+  try {
+    return { ok: true, data: JSON.parse(value) as T };
+  } catch (e: unknown) {
+    return { ok: false, error: (e as Error).message };
+  }
+}
+
 // build the "due" string for the upcoming deadlines slack message
 export const buildDueString = (daysUntilDeadline: number): string => {
   if (daysUntilDeadline < 0) return `was due *${daysUntilDeadline * -1} days ago!*`;

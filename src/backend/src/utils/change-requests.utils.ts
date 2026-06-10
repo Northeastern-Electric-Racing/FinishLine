@@ -384,6 +384,14 @@ export const applyWorkPackageProposedChanges = async (
   }
 };
 
+export const isWorkPackageProposedChanges = (
+  cr: ProjectProposedChangesCreateArgs | WorkPackageProposedChangesCreateArgs
+): cr is WorkPackageProposedChangesCreateArgs => 'startDate' in cr;
+
+export const isProjectProposedChanges = (
+  cr: ProjectProposedChangesCreateArgs | WorkPackageProposedChangesCreateArgs
+): cr is ProjectProposedChangesCreateArgs => !('startDate' in cr);
+
 /**
  * Builds a human-readable diff string comparing current WBS state to proposed changes.
  * Each changed field is shown as two lines: "− Field: old" and "+ Field: new".
@@ -402,20 +410,16 @@ export const buildCRDiff = (
 ): string => {
   if (!proposed) return '';
 
-  const isWpChange = 'startDate' in proposed;
+  const isWpChange = isWorkPackageProposedChanges(proposed);
   const lines: string[] = [];
 
   const addDiff = (label: string, before: string | number | null | undefined, after: string | number | null | undefined) => {
-    const b = String(before ?? '(none)');
-    const a = String(after ?? '(none)');
-    if (b !== a) {
-      lines.push(`− ${label}: ${b}`);
-      lines.push(`+ ${label}: ${a}`);
+    const b = before != null ? String(before) : null;
+    const a = after != null ? String(after) : null;
+    if ((b ?? '(none)') !== (a ?? '(none)')) {
+      if (b != null) lines.push(`− ${label}: ${b}`);
+      lines.push(`+ ${label}: ${a ?? '(none)'}`);
     }
-  };
-
-  const addNew = (label: string, value: string | number | null | undefined) => {
-    if (value !== null && value !== undefined) lines.push(`+ ${label}: ${value}`);
   };
 
   const addLinkDiffs = (currentLinks: { url: string; linkType: { name: string } }[], proposedLinks: LinkCreateArgs[]) => {
@@ -459,45 +463,41 @@ export const buildCRDiff = (
   };
 
   if (isWpChange) {
-    const wpProposed = proposed as WorkPackageProposedChangesCreateArgs;
     if (!currentWbs.workPackage) {
-      addNew('Name', wpProposed.name);
-      addNew('Lead', wpProposed.leadId);
-      addNew('Manager', wpProposed.managerId);
-      addNew('Start date', wpProposed.startDate);
-      addNew('Duration', wpProposed.duration);
-      addNew('Stage', wpProposed.stage);
-      wpProposed.links.forEach((l) => addNew(l.linkTypeName, l.url));
-      wpProposed.descriptionBullets.forEach((b) => addNew(b.type, b.detail));
+      addDiff('Name', null, proposed.name);
+      addDiff('Lead', null, proposed.leadId);
+      addDiff('Manager', null, proposed.managerId);
+      addDiff('Start date', null, proposed.startDate);
+      addDiff('Duration', null, proposed.duration);
+      addDiff('Stage', null, proposed.stage);
+      proposed.links.forEach((l) => addDiff(l.linkTypeName, null, l.url));
+      proposed.descriptionBullets.forEach((b) => addDiff(b.type, null, b.detail));
     } else {
-      addDiff('Name', currentWbs.name, wpProposed.name);
-      addDiff('Lead', currentWbs.leadId, wpProposed.leadId);
-      addDiff('Manager', currentWbs.managerId, wpProposed.managerId);
-      addDiff('Start date', formatDateOnly(currentWbs.workPackage.startDate, 'YYYY-MM-DD'), wpProposed.startDate);
-      addDiff('Duration', currentWbs.workPackage.duration, wpProposed.duration);
-      addDiff('Stage', currentWbs.workPackage.stage, wpProposed.stage);
-      addLinkDiffs(currentWbs.links, wpProposed.links);
-      addBulletDiffs(currentWbs.descriptionBullets ?? [], wpProposed.descriptionBullets);
+      addDiff('Name', currentWbs.name, proposed.name);
+      addDiff('Lead', currentWbs.leadId, proposed.leadId);
+      addDiff('Manager', currentWbs.managerId, proposed.managerId);
+      addDiff('Start date', formatDateOnly(currentWbs.workPackage.startDate, 'YYYY-MM-DD'), proposed.startDate);
+      addDiff('Duration', currentWbs.workPackage.duration, proposed.duration);
+      addDiff('Stage', currentWbs.workPackage.stage, proposed.stage);
+      addLinkDiffs(currentWbs.links, proposed.links);
+      addBulletDiffs(currentWbs.descriptionBullets ?? [], proposed.descriptionBullets);
     }
+  } else if (!currentWbs.project) {
+    addDiff('Name', null, proposed.name);
+    addDiff('Lead', null, proposed.leadId);
+    addDiff('Manager', null, proposed.managerId);
+    addDiff('Budget', null, proposed.budget);
+    addDiff('Summary', null, proposed.summary);
+    proposed.links.forEach((l) => addDiff(l.linkTypeName, null, l.url));
+    proposed.descriptionBullets.forEach((b) => addDiff(b.type, null, b.detail));
   } else {
-    const projProposed = proposed as ProjectProposedChangesCreateArgs;
-    if (!currentWbs.project) {
-      addNew('Name', projProposed.name);
-      addNew('Lead', projProposed.leadId);
-      addNew('Manager', projProposed.managerId);
-      addNew('Budget', projProposed.budget);
-      addNew('Summary', projProposed.summary);
-      projProposed.links.forEach((l) => addNew(l.linkTypeName, l.url));
-      projProposed.descriptionBullets.forEach((b) => addNew(b.type, b.detail));
-    } else {
-      addDiff('Name', currentWbs.name, projProposed.name);
-      addDiff('Lead', currentWbs.leadId, projProposed.leadId);
-      addDiff('Manager', currentWbs.managerId, projProposed.managerId);
-      addDiff('Budget', currentWbs.project.budget, projProposed.budget);
-      addDiff('Summary', currentWbs.project.summary, projProposed.summary);
-      addLinkDiffs(currentWbs.links, projProposed.links);
-      addBulletDiffs(currentWbs.descriptionBullets ?? [], projProposed.descriptionBullets);
-    }
+    addDiff('Name', currentWbs.name, proposed.name);
+    addDiff('Lead', currentWbs.leadId, proposed.leadId);
+    addDiff('Manager', currentWbs.managerId, proposed.managerId);
+    addDiff('Budget', currentWbs.project.budget, proposed.budget);
+    addDiff('Summary', currentWbs.project.summary, proposed.summary);
+    addLinkDiffs(currentWbs.links, proposed.links);
+    addBulletDiffs(currentWbs.descriptionBullets ?? [], proposed.descriptionBullets);
   }
 
   return lines.join('\n');
