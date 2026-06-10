@@ -1,6 +1,7 @@
 # Dependencies
 **/node_modules
-.yarn/
+.yarn/*
+!.yarn/releases
 .pnp.*
 
 # Build outputs
@@ -61,8 +62,6 @@ yarn-error.log*
 
 # Lock files (keep package.json though)
 package-lock.json
-yarn.lock
-.yarnrc.yml
 
 # Prettier
 .prettierrc*

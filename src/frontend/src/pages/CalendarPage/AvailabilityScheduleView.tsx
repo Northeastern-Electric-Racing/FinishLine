@@ -30,8 +30,9 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
 }) => {
   const totalUsers = usersToAvailabilities.size;
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
+
   // Use displayDate if provided, otherwise fall back to event's initial date.
-  const initialDate = displayDate || (event.initialDateScheduled ?? new Date());
+  const initialDate = event.initialDateScheduled || displayDate || new Date();
   const potentialDays = getNextSevenDays(initialDate);
 
   // Handle hover - updates the sidebar with available/unavailable users and slot info
@@ -43,6 +44,17 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
       const endHour = 11 + timeIndex;
       setCurrentHoveredSlot({ day, startHour, endHour });
     }
+  };
+
+  // Boolean check to see if all required users can attend at the time.
+  const allRequiredUsersAvailable = (index: number) => {
+    const currUnavailableUsers: User[] = unavailableUsers.get(index) ?? [];
+    for (const user of currUnavailableUsers) {
+      if (event && event.requiredMembers.some((m) => m.userId === user.userId)) {
+        return false; // there is a required member unavailable
+      }
+    }
+    return true;
   };
 
   // Handle mouse leave - clears the hover state and shows selected slot's users if any
@@ -160,10 +172,16 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
               {potentialDays.map((day, dayIndex) => {
                 const index = dayIndex * enumToArray(REVIEW_TIMES).length + timeIndex;
                 return (
-                  <TableCell key={index} sx={{ p: 0 }}>
+                  <TableCell
+                    key={index}
+                    sx={{
+                      p: 0
+                    }}
+                  >
                     <EventTimeSlot
                       backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
                       selected={selectedTimeslot === index}
+                      allRequiredAvailable={allRequiredUsersAvailable(index)}
                       onClick={() => handleTimeslotClick(index, day, timeIndex)}
                       onMouseEnter={() => handleTimeslotHover(index, day, timeIndex)}
                     />

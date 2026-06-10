@@ -23,7 +23,6 @@ export const decimalMinZero = (validationObject: ValidationChain): ValidationCha
     .withMessage('Value must be greater than or equal to zero');
 };
 
-//Const to return if an input is a string and is not empty
 export const nonEmptyString = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().not().isEmpty();
 };

@@ -3287,7 +3287,7 @@ const performSeed: () => Promise<void> = async () => {
 
   await AnnouncementService.createAnnouncement(
     'Welcome to Finishline!',
-    [regina.userId],
+    [regina.userId, thomasEmrax.userId],
     new Date(),
     'Thomas Emrax',
     '1',
@@ -3296,21 +3296,42 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   await AnnouncementService.createAnnouncement(
-    'Welcome to Finishline!',
-    [regina.userId],
+    'I know you are new so I will send you a link of what to do below.',
+    [regina.userId, thomasEmrax.userId, sandy.userId],
+    new Date(),
+    'Thomas Emrax',
+    '2',
+    'software',
+    ner.organizationId
+  );
+
+  await AnnouncementService.createAnnouncement(
+    'I know you are new so I will send you a link of what to do below.',
+    [regina.userId, thomasEmrax.userId, sandy.userId],
+    new Date(),
+    'Thomas Emrax',
+    '3',
+    'software',
+    ner.organizationId
+  );
+
+  await AnnouncementService.createAnnouncement(
+    'The name is Damian, and I have some rules when you schedule a meeting with ' +
+      "me. First you need to wear really nice pants such as jeans or khakis. If you don't, I will immediately shut off the meeting and tell you to change. Second, You must disable and background filter, and your actual room must not have any pink or orange walls. I will ask you to show me your room by rotating your computer 360 degrees and if I see a wall of the two colors I mentioned previously, I will ban you from meeting me for the next 13 days, 17 hours, 8 minutes, 45 seconds and 324 milliseconds. Finally you must rub your head every 20 minutes exactly starting from when you first meet with me. Failure to do so results in me calling out that fact whenever we meet in person.",
+    [regina.userId, thomasEmrax.userId, frankLampard.userId, eddieMurray.userId, sandy.userId],
     new Date(),
     'Damian',
-    '2',
+    '4',
     'mechanical',
     ner.organizationId
   );
 
   await AnnouncementService.createAnnouncement(
-    'Welcome to Finishline!',
-    [regina.userId],
+    'Unlike Damian I write short messages. I am batman.',
+    [regina.userId, sandy.userId],
     new Date(),
     'Batman',
-    '3',
+    '5',
     'powertrain',
     ner.organizationId
   );

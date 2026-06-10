@@ -500,11 +500,11 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   const AllDayEventBlock = ({ event }: { event: EventInstance }) => {
     const [blockHovered, setBlockHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
-    const tooltipHoveredRef = useRef(false);
-    tooltipHoveredRef.current = tooltipHovered;
     const isLocked = lockedTooltipEventId === event.eventId + event.scheduleSlotId;
     const isLockedRef = useRef(false);
     isLockedRef.current = isLocked;
+    const tooltipHoveredRef = useRef(false);
+    tooltipHoveredRef.current = tooltipHovered;
     const isOpen = isLocked || blockHovered || tooltipHovered;
 
     const baseColor = getEventColor(event);

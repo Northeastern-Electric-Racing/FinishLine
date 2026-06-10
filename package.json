@@ -71,6 +71,7 @@
     "@types/react-dom": "17.0.1"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.4.0",
     "@microsoft/clarity": "^1.0.0",
     "@types/multer": "^1.4.12",
     "canvas-confetti": "^1.9.3",
@@ -179,5 +180,9 @@
     ]
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "packageManager": "yarn@4.15.0",
+  "engines": {
+    "npm": ">=11.10.0"
+  }
 }
