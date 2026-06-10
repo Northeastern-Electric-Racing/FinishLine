@@ -68,7 +68,7 @@ import {
   updateUserAvailability,
   areUsersinList
 } from '../utils/users.utils.js';
-import { Conflict_Status, Event_Status, Organization, Team } from '@prisma/client';
+import { Conflict_Status, Event_Status, Organization, Prisma, Team } from '@prisma/client';
 
 export default class CalendarService {
   /**
@@ -595,6 +595,7 @@ export default class CalendarService {
     machineryIds: string[],
     workPackageIds: string[],
     documents: EventDocumentCreateArgs[],
+    scheduledSlots: ScheduleSlot[],
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
@@ -756,7 +757,7 @@ export default class CalendarService {
     // throw if a user isn't found, then build prisma queries for connecting userIds
     const updatedRequiredMembers = [...getPrismaQueryUserIds(await getUsers(allRequiredMembers))];
     const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
-
+    //const updatedScheduledTimes
     // Update the event with new data (excluding schedule slots)
     const updatedEvent = await prisma.event.update({
       where: { eventId },
@@ -768,6 +769,13 @@ export default class CalendarService {
         },
         optionalMembers: {
           set: updatedOptionalMembers
+        },
+        scheduledTimes: {
+          create: scheduledSlots.map((s) => ({
+            startTime: s.startTime,
+            endTime: s.endTime,
+            allDay: s.allDay
+          }))
         },
         teams: {
           set: teamIds.map((teamId) => ({ teamId }))
