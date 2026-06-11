@@ -20,7 +20,14 @@ const schema = yup.object().shape({
   labels: yup.array().of(yup.mixed<TaskLabel>().required()).required(),
   notes: yup.string(),
   startDate: yup.date().nullable(),
-  deadline: yup.date().nullable(),
+  deadline: yup
+    .date()
+    .nullable()
+    .test('deadline-after-start', 'Deadline must be on or after the start date', function (deadline) {
+      const { startDate } = this.parent;
+      if (!startDate || !deadline) return true;
+      return deadline >= startDate;
+    }),
   wpWbsNum: yup.mixed<WbsNumber>().optional()
 });
 
@@ -53,6 +60,7 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
     handleSubmit,
     control,
     reset,
+    watch,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
@@ -68,6 +76,8 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
       wpWbsNum: undefined
     }
   });
+
+  const startDate = watch('startDate');
 
   if (usersIsError) return <ErrorPage message={usersError?.message} />;
   if (labelsIsError) return <ErrorPage message={labelsError?.message} />;
@@ -271,10 +281,12 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
                   onChange={(event) => onChange(event ?? undefined)}
                   className={'padding: 10'}
                   value={value}
+                  minDate={startDate ?? undefined}
                   slotProps={{ textField: { autoComplete: 'off', error: !!errors.deadline } }}
                 />
               )}
             />
+            {errors.deadline && <FormHelperText error>{errors.deadline.message}</FormHelperText>}
           </FormControl>
         </Grid>
         <Grid item xs={12} md={12}>

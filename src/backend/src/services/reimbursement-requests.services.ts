@@ -1510,14 +1510,14 @@ export default class ReimbursementRequestService {
   static async editVendor(
     name: string,
     vendorId: string,
-    username: string,
-    password: string,
-    discountCode: string,
     taxExempt: boolean,
     twoFactorContacts: string[],
-    notes: string,
     submitter: User,
-    organization: Organization
+    organization: Organization,
+    username?: string,
+    password?: string,
+    discountCode?: string,
+    notes?: string
   ): Promise<Vendor> {
     const existingVendor = await prisma.vendor.findUnique({
       where: { vendorId, dateDeleted: null },

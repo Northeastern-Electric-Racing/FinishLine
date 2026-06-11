@@ -7,7 +7,8 @@
     "test": "vitest",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' tsc --noEmit false",
     "start": "node -r dotenv/config dist/backend/index.js",
-    "prisma:manual": "tsx --import dotenv/config ./src/prisma/manual.ts"
+    "prisma:manual": "tsx --import dotenv/config ./src/prisma/manual.ts",
+    "prisma:dev-seed": "tsx --import dotenv/config ./src/prisma/dev-seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",
@@ -49,10 +50,6 @@
     "vitest": "^3.0.0"
   },
   "main": "index.ts",
-  "prisma": {
-    "schema": "./src/prisma/schema.prisma",
-    "seed": "tsx ./src/prisma/seed.ts"
-  },
   "testEnvironment": "node",
   "coveragePathIgnorePatterns": [
     "/node_modules/"

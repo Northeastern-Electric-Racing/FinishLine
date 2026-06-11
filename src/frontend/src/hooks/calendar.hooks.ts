@@ -12,7 +12,8 @@ import {
   ScheduleSlotCreateArgs,
   EventWithMembers,
   ScheduleSlot,
-  EventInstance
+  EventInstance,
+  SlackMentionType
 } from 'shared';
 import {
   getAllShops,
@@ -64,7 +65,6 @@ const SHOP_KEY = ['shops'] as const;
 const CALENDAR_KEY = ['calendars'] as const;
 export const EVENT_TYPE_KEY = ['event-types'] as const;
 export const EVENT_KEY = ['events'] as const;
-
 export interface EventCreateArgs {
   title: string;
   eventTypeId: string;
@@ -82,6 +82,7 @@ export interface EventCreateArgs {
   description?: string;
   initialDateScheduled: Date;
   scheduleSlots: ScheduleSlotCreateArgs[];
+  mention?: SlackMentionType;
 }
 
 export interface EditEventArgs {
