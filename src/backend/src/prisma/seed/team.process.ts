@@ -19,6 +19,10 @@ export type TeamOutput = {
   teamsByName: Record<string, Team>;
 };
 
+const uniqueUsersById = (users: FullUser[]): FullUser[] => {
+  return Array.from(new Map(users.map((user) => [user.userId, user])).values());
+};
+
 export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
   dependencies() {
     return [OrganizationProcess, UsersProcess, ConfigDataProcess];
@@ -27,6 +31,12 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
   async run({ organization, admins, heads, leadership, members, teamTypes }: TeamInput): Promise<TeamOutput> {
     if (admins.length === 0 || heads.length === 0 || leadership.length === 0 || members.length === 0) {
       throw new Error('TeamProcess requires admins, heads, leadership, and members to create teams.');
+    }
+
+    if (members.length < MIN_MEMBERS_PER_TEAM) {
+      throw new Error(
+        `TeamProcess requires at least ${MIN_MEMBERS_PER_TEAM} member candidates, but only found ${members.length}.`
+      );
     }
 
     const teamNames = seedTeamConfigs.map((team) => team.teamName);
@@ -40,31 +50,43 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
       return acc;
     }, {});
 
-    const leadershipCandidates = [...heads, ...admins, ...leadership];
+    const teamLeadershipCandidates = uniqueUsersById([...heads, ...admins, ...leadership]);
 
-    if (leadershipCandidates.length < seedTeamConfigs.length) {
-      throw new Error(`Not enough head candidates (${leadershipCandidates.length}) for ${seedTeamConfigs.length} teams.`);
+    if (teamLeadershipCandidates.length < seedTeamConfigs.length) {
+      throw new Error(
+        `Not enough head candidates (${teamLeadershipCandidates.length}) for ${seedTeamConfigs.length} teams.`
+      );
+    }
+
+    const headCandidates = teamLeadershipCandidates.slice(0, seedTeamConfigs.length);
+    const headIds = new Set(headCandidates.map((head) => head.userId));
+
+    const leadCandidates = teamLeadershipCandidates.filter((candidate) => !headIds.has(candidate.userId));
+
+    if (leadCandidates.length < seedTeamConfigs.length * MIN_LEADS_PER_TEAM) {
+      throw new Error(`Not enough unique lead candidates (${leadCandidates.length}) for ${seedTeamConfigs.length} teams.`);
     }
 
     const usedLeadIds = new Set<string>();
 
-    const getLeadsForTeam = (head: FullUser): FullUser[] => {
-      const unusedLeadPool = leadershipCandidates.filter(
-        (user) => user.userId !== head.userId && !usedLeadIds.has(user.userId)
+    const getLeadsForTeam = (teamIndex: number): FullUser[] => {
+      const remainingTeams = seedTeamConfigs.length - teamIndex;
+      const availableLeads = leadCandidates.filter((candidate) => !usedLeadIds.has(candidate.userId));
+
+      const maxLeadsForThisTeam = Math.min(
+        MAX_LEADS_PER_TEAM,
+        availableLeads.length - (remainingTeams - 1) * MIN_LEADS_PER_TEAM
       );
 
-      const fallbackLeadPool = leadershipCandidates.filter((user) => user.userId !== head.userId);
-      const leadPool = unusedLeadPool.length >= MIN_LEADS_PER_TEAM ? unusedLeadPool : fallbackLeadPool;
-
-      if (leadPool.length < MIN_LEADS_PER_TEAM) {
-        throw new Error('TeamProcess could not find enough leads for a team.');
+      if (maxLeadsForThisTeam < MIN_LEADS_PER_TEAM) {
+        throw new Error('TeamProcess could not assign unique leads to every team.');
       }
 
       const leads = this.faker.helpers.arrayElements(
-        leadPool,
+        availableLeads,
         this.faker.number.int({
           min: MIN_LEADS_PER_TEAM,
-          max: Math.min(MAX_LEADS_PER_TEAM, leadPool.length)
+          max: maxLeadsForThisTeam
         })
       );
 
@@ -74,14 +96,14 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
     };
 
     const teamCreateInputs = seedTeamConfigs.map((config, index) => {
-      const head = leadershipCandidates[index];
-      const leads = getLeadsForTeam(head);
+      const head = headCandidates[index];
+      const leads = getLeadsForTeam(index);
 
       const teamMembers = this.faker.helpers.arrayElements(
         members,
         this.faker.number.int({
           min: MIN_MEMBERS_PER_TEAM,
-          max: MAX_MEMBERS_PER_TEAM
+          max: Math.min(MAX_MEMBERS_PER_TEAM, members.length)
         })
       );
 
