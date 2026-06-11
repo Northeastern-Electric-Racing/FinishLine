@@ -30,6 +30,11 @@ output "eb_versions_bucket_arn" {
   value       = aws_s3_bucket.eb_versions.arn
 }
 
+output "cicd_role_arn" {
+  description = "ARN of the CI/CD role — add this as the AWS_CICD_ROLE_ARN GitHub Actions secret"
+  value       = aws_iam_role.cicd.arn
+}
+
 output "next_steps" {
   description = "Instructions for next steps"
   value       = <<-EOT
