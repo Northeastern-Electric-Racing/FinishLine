@@ -32,7 +32,8 @@ export class SchedulingProcess extends SeedProcess<SchedulingInput, SchedulingOu
       scheduleSettings.flatMap((settings) =>
         Array.from({ length: 7 }, (_, i) => {
           const date = new Date();
-          date.setDate(date.getDate() + i);
+          date.setUTCHours(0, 0, 0, 0);
+          date.setUTCDate(date.getUTCDate() + i);
           return this.prisma.availability.create({
             data: availabilityCreateInput(this.faker, settings.drScheduleSettingsId, date)
           });
