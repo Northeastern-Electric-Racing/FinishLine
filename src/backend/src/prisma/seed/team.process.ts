@@ -5,6 +5,12 @@ import { UsersOutput, UsersProcess } from './user.process.js';
 import { seedTeamConfigs, teamCreateInput } from '../factories/teams.factory.js';
 import { SeedProcess } from '../processes/seed-process.js';
 
+const EXPECTED_TEAM_COUNT = 20;
+const MIN_LEADS_PER_TEAM = 1;
+const MAX_LEADS_PER_TEAM = 3;
+const MIN_MEMBERS_PER_TEAM = 8;
+const MAX_MEMBERS_PER_TEAM = 20;
+
 type TeamInput = OrganizationOutput & UsersOutput & ConfigDataOutput;
 
 export type TeamOutput = {
@@ -19,8 +25,10 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
   }
 
   async run({ organization, admins, heads, leadership, members, teamTypes }: TeamInput): Promise<TeamOutput> {
-    if (seedTeamConfigs.length !== 20) {
-      throw new Error(`TeamProcess expected 20 teams but found ${seedTeamConfigs.length}.`);
+    if (seedTeamConfigs.length !== EXPECTED_TEAM_COUNT) {
+      throw new Error(
+        `TeamProcess expected ${EXPECTED_TEAM_COUNT} teams but found ${seedTeamConfigs.length}.`
+      );
     }
 
     if (admins.length === 0 || heads.length === 0 || leadership.length === 0 || members.length === 0) {
@@ -50,11 +58,33 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
         }
 
         const leadPool = possibleLeads.filter((user) => user.userId !== head.userId);
-        const leads = this.faker.helpers.arrayElements(leadPool, this.faker.number.int({ min: 1, max: 3 }));
-        const teamMembers = this.faker.helpers.arrayElements(members, this.faker.number.int({ min: 8, max: 20 }));
+
+        const leads = this.faker.helpers.arrayElements(
+          leadPool,
+          this.faker.number.int({
+            min: MIN_LEADS_PER_TEAM,
+            max: MAX_LEADS_PER_TEAM
+          })
+        );
+
+        const teamMembers = this.faker.helpers.arrayElements(
+          members,
+          this.faker.number.int({
+            min: MIN_MEMBERS_PER_TEAM,
+            max: MAX_MEMBERS_PER_TEAM
+          })
+        );
 
         return this.prisma.team.create({
-          data: teamCreateInput(this.faker, organization.organizationId, head, leads, teamMembers, teamTypesByName, config)
+          data: teamCreateInput(
+            this.faker,
+            organization.organizationId,
+            head,
+            leads,
+            teamMembers,
+            teamTypesByName,
+            config
+          )
         });
       })
     );

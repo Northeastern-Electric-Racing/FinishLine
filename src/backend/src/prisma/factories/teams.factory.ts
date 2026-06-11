@@ -2,6 +2,8 @@ import { Prisma, Team_Type } from '@prisma/client';
 import { Faker } from '@faker-js/faker';
 import type { FullUser } from '../context.js';
 
+const SLACK_ID_RANDOM_LENGTH = 4;
+
 export type SeedTeamConfig = {
   teamName: string;
   description: string;
@@ -117,7 +119,7 @@ const connectUsers = (users: FullUser[]) => users.map((user) => ({ userId: user.
 
 const slackIdForTeam = (faker: Faker, teamName: string): string => {
   const slug = teamName.toLowerCase().replaceAll(' ', '-').replaceAll('/', '-');
-  return `seed-${slug}-${faker.string.alphanumeric(4).toLowerCase()}`;
+  return `seed-${slug}-${faker.string.alphanumeric(SLACK_ID_RANDOM_LENGTH).toLowerCase()}`;
 };
 
 const findTeamType = (teamTypesByName: Record<string, Team_Type>, teamTypeName: string): Team_Type => {
