@@ -4,8 +4,8 @@ import { OrganizationOutput, OrganizationProcess } from './organization.process.
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { seedTeamConfigs, teamCreateInput } from '../factories/teams.factory.js';
 import { SeedProcess } from '../processes/seed-process.js';
+import type { FullUser } from '../context.js';
 
-const EXPECTED_TEAM_COUNT = 20;
 const MIN_LEADS_PER_TEAM = 1;
 const MAX_LEADS_PER_TEAM = 3;
 const MIN_MEMBERS_PER_TEAM = 8;
@@ -25,10 +25,6 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
   }
 
   async run({ organization, admins, heads, leadership, members, teamTypes }: TeamInput): Promise<TeamOutput> {
-    if (seedTeamConfigs.length !== EXPECTED_TEAM_COUNT) {
-      throw new Error(`TeamProcess expected ${EXPECTED_TEAM_COUNT} teams but found ${seedTeamConfigs.length}.`);
-    }
-
     if (admins.length === 0 || heads.length === 0 || leadership.length === 0 || members.length === 0) {
       throw new Error('TeamProcess requires admins, heads, leadership, and members to create teams.');
     }
@@ -44,40 +40,57 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
       return acc;
     }, {});
 
-    const possibleHeads = [...heads, ...admins, ...leadership];
-    const possibleLeads = [...leadership, ...heads, ...admins];
+    const leadershipCandidates = [...heads, ...admins, ...leadership];
 
-    const teams = await Promise.all(
-      seedTeamConfigs.map((config, index) => {
-        const head = possibleHeads[index % possibleHeads.length];
+    if (leadershipCandidates.length < seedTeamConfigs.length) {
+      throw new Error(
+        `Not enough head candidates (${leadershipCandidates.length}) for ${seedTeamConfigs.length} teams.`
+      );
+    }
 
-        if (!head) {
-          throw new Error('TeamProcess could not find a head for a team.');
-        }
+    const usedLeadIds = new Set<string>();
 
-        const leadPool = possibleLeads.filter((user) => user.userId !== head.userId);
+    const getLeadsForTeam = (head: FullUser): FullUser[] => {
+      const unusedLeadPool = leadershipCandidates.filter(
+        (user) => user.userId !== head.userId && !usedLeadIds.has(user.userId)
+      );
 
-        const leads = this.faker.helpers.arrayElements(
-          leadPool,
-          this.faker.number.int({
-            min: MIN_LEADS_PER_TEAM,
-            max: MAX_LEADS_PER_TEAM
-          })
-        );
+      const fallbackLeadPool = leadershipCandidates.filter((user) => user.userId !== head.userId);
+      const leadPool = unusedLeadPool.length >= MIN_LEADS_PER_TEAM ? unusedLeadPool : fallbackLeadPool;
 
-        const teamMembers = this.faker.helpers.arrayElements(
-          members,
-          this.faker.number.int({
-            min: MIN_MEMBERS_PER_TEAM,
-            max: MAX_MEMBERS_PER_TEAM
-          })
-        );
+      if (leadPool.length < MIN_LEADS_PER_TEAM) {
+        throw new Error('TeamProcess could not find enough leads for a team.');
+      }
 
-        return this.prisma.team.create({
-          data: teamCreateInput(this.faker, organization.organizationId, head, leads, teamMembers, teamTypesByName, config)
-        });
-      })
-    );
+      const leads = this.faker.helpers.arrayElements(
+        leadPool,
+        this.faker.number.int({
+          min: MIN_LEADS_PER_TEAM,
+          max: Math.min(MAX_LEADS_PER_TEAM, leadPool.length)
+        })
+      );
+
+      leads.forEach((lead) => usedLeadIds.add(lead.userId));
+
+      return leads;
+    };
+
+    const teamCreateInputs = seedTeamConfigs.map((config, index) => {
+      const head = leadershipCandidates[index];
+      const leads = getLeadsForTeam(head);
+
+      const teamMembers = this.faker.helpers.arrayElements(
+        members,
+        this.faker.number.int({
+          min: MIN_MEMBERS_PER_TEAM,
+          max: MAX_MEMBERS_PER_TEAM
+        })
+      );
+
+      return teamCreateInput(this.faker, organization.organizationId, head, leads, teamMembers, teamTypesByName, config);
+    });
+
+    const teams = await Promise.all(teamCreateInputs.map((data) => this.prisma.team.create({ data })));
 
     const teamsByName = teams.reduce<Record<string, Team>>((acc, team) => {
       acc[team.teamName] = team;
