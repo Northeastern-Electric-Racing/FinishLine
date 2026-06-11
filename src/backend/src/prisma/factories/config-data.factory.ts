@@ -330,7 +330,7 @@ export const calendarCreateInputs = (userCreatedId: string, organizationId: stri
   },
   {
     name: 'Calendar Improvements Calendar',
-    description: 'Tracks all current improvements and schedulings for the Finishline Calendar.',
+    description: 'Tracks all current improvements and scheduling for the Finishline Calendar.',
     colorHexCode: '#bf40e6',
     userCreated: connectUser(userCreatedId),
     organization: connectOrganization(organizationId)
