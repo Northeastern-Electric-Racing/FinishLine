@@ -312,3 +312,157 @@ export const otherReimbursementReasonCreateInput = (
     connect: accountCodeIds.map((accountCodeId) => ({ accountCodeId }))
   }
 });
+
+export const calendarCreateInputs = (userCreatedId: string, organizationId: string): Prisma.CalendarCreateInput[] => [
+  {
+    name: 'Engineering Team Calendar',
+    description: 'Tracks all engineering team events, meetings, and deadlines.',
+    colorHexCode: '#3498db',
+    userCreated: connectUser(userCreatedId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Finishline Projects Calendar',
+    description: 'Tracks all ongoing projects currently being developed for Finishline.',
+    colorHexCode: '#911111',
+    userCreated: connectUser(userCreatedId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Calendar Improvements Calendar',
+    description: 'Tracks all current improvements and schedulings for the Finishline Calendar.',
+    colorHexCode: '#bf40e6',
+    userCreated: connectUser(userCreatedId),
+    organization: connectOrganization(organizationId)
+  }
+];
+
+type EventTypeConfig = {
+  name: string;
+  calendarNames: string[];
+  requiredMembers: boolean;
+  optionalMembers: boolean;
+  teams: boolean;
+  teamType: boolean;
+  location: boolean;
+  zoomLink: boolean;
+  shop: boolean;
+  machinery: boolean;
+  workPackage: boolean;
+  questionDocument: boolean;
+  documents: boolean;
+  description: boolean;
+  onlyHeadsOrAboveForEventCreation: boolean;
+  requiresConfirmation: boolean;
+  sendSlackNotifications: boolean;
+};
+
+export const eventTypeConfigs: EventTypeConfig[] = [
+  {
+    name: 'Meeting',
+    calendarNames: ['Engineering Team Calendar'],
+    requiredMembers: false,
+    optionalMembers: false,
+    teams: true,
+    teamType: false,
+    location: true,
+    zoomLink: true,
+    shop: false,
+    machinery: false,
+    workPackage: false,
+    questionDocument: false,
+    documents: false,
+    description: true,
+    onlyHeadsOrAboveForEventCreation: false,
+    requiresConfirmation: false,
+    sendSlackNotifications: true
+  },
+  {
+    name: 'Design Review',
+    calendarNames: ['Engineering Team Calendar'],
+    requiredMembers: true,
+    optionalMembers: true,
+    teams: true,
+    teamType: true,
+    location: true,
+    zoomLink: true,
+    shop: false,
+    machinery: false,
+    workPackage: true,
+    questionDocument: true,
+    documents: true,
+    description: true,
+    onlyHeadsOrAboveForEventCreation: false,
+    requiresConfirmation: true,
+    sendSlackNotifications: true
+  },
+  {
+    name: 'Manufacturing',
+    calendarNames: [],
+    requiredMembers: true,
+    optionalMembers: true,
+    teams: true,
+    teamType: true,
+    location: false,
+    zoomLink: false,
+    shop: true,
+    machinery: true,
+    workPackage: true,
+    questionDocument: false,
+    documents: false,
+    description: false,
+    onlyHeadsOrAboveForEventCreation: false,
+    requiresConfirmation: false,
+    sendSlackNotifications: false
+  },
+  {
+    name: 'Bay Time',
+    calendarNames: [],
+    requiredMembers: true,
+    optionalMembers: false,
+    teams: false,
+    teamType: false,
+    location: false,
+    zoomLink: false,
+    shop: false,
+    machinery: true,
+    workPackage: false,
+    questionDocument: false,
+    documents: false,
+    description: false,
+    onlyHeadsOrAboveForEventCreation: false,
+    requiresConfirmation: false,
+    sendSlackNotifications: false
+  }
+];
+
+export const eventTypeCreateInput = (
+  userCreatedId: string,
+  organizationId: string,
+  config: EventTypeConfig,
+  calendarIdsByName: Record<string, string>
+): Prisma.Event_TypeCreateInput => ({
+  name: config.name,
+  userCreated: connectUser(userCreatedId),
+  organization: connectOrganization(organizationId),
+  requiredMembers: config.requiredMembers,
+  optionalMembers: config.optionalMembers,
+  teams: config.teams,
+  teamType: config.teamType,
+  location: config.location,
+  zoomLink: config.zoomLink,
+  shop: config.shop,
+  machinery: config.machinery,
+  workPackage: config.workPackage,
+  questionDocument: config.questionDocument,
+  documents: config.documents,
+  description: config.description,
+  onlyHeadsOrAboveForEventCreation: config.onlyHeadsOrAboveForEventCreation,
+  requiresConfirmation: config.requiresConfirmation,
+  sendSlackNotifications: config.sendSlackNotifications,
+  calendars: {
+    connect: config.calendarNames
+      .filter((name) => calendarIdsByName[name])
+      .map((name) => ({ calendarId: calendarIdsByName[name] }))
+  }
+});

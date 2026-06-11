@@ -1,6 +1,8 @@
 import {
   Account_Code,
+  Calendar,
   Description_Bullet_Type,
+  Event_Type,
   Index_Code,
   Link_Type,
   Manufacturer,
@@ -15,7 +17,10 @@ import { UsersOutput, UsersProcess } from './user.process.js';
 import { SeedProcess } from '../processes/seed-process.js';
 import {
   accountCodeCreateInputs,
+  calendarCreateInputs,
   descriptionBulletTypeCreateInputs,
+  eventTypeConfigs,
+  eventTypeCreateInput,
   indexCodeCreateInputs,
   linkTypeCreateInputs,
   manufacturerCreateInputs,
@@ -40,6 +45,8 @@ export type ConfigDataOutput = {
   indexCodes: Index_Code[];
   vendors: Vendor[];
   reimbursementProductOtherReasons: Reimbursement_Product_Other_Reason[];
+  calendars: Calendar[];
+  eventTypes: Event_Type[];
 };
 
 export class ConfigDataProcess extends SeedProcess<ConfigDataInput, ConfigDataOutput> {
@@ -129,6 +136,23 @@ export class ConfigDataProcess extends SeedProcess<ConfigDataInput, ConfigDataOu
       })
     );
 
+    const calendars = await Promise.all(
+      calendarCreateInputs(creator.userId, organizationId).map((data) => this.prisma.calendar.create({ data }))
+    );
+
+    const calendarIdsByName = calendars.reduce<Record<string, string>>((acc, calendar) => {
+      acc[calendar.name] = calendar.calendarId;
+      return acc;
+    }, {});
+
+    const eventTypes = await Promise.all(
+      eventTypeConfigs.map((config) =>
+        this.prisma.event_Type.create({
+          data: eventTypeCreateInput(creator.userId, organizationId, config, calendarIdsByName)
+        })
+      )
+    );
+
     return {
       teamTypes,
       linkTypes,
@@ -139,7 +163,9 @@ export class ConfigDataProcess extends SeedProcess<ConfigDataInput, ConfigDataOu
       accountCodes,
       indexCodes,
       vendors,
-      reimbursementProductOtherReasons
+      reimbursementProductOtherReasons,
+      calendars,
+      eventTypes
     };
   }
 }
