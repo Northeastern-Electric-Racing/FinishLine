@@ -37,7 +37,12 @@ export const TaskListContent = ({ wbsNum }: TaskListContentProps) => {
     isError: filteredTasksIsError,
     error: filteredTasksError
   } = useTasksByWbsNumFilteredByLabels(wbsNum, selectedLabelIds);
-  const { data: taskLabels } = useAllTaskLabels();
+  const {
+    data: taskLabels,
+    isLoading: taskLabelsLoading,
+    isError: tasklabelsIsError,
+    error: tasksLabelsError
+  } = useAllTaskLabels();
 
   const tasks = isFiltering ? filteredTasks : allTasks;
   const isLoading = isFiltering ? filteredTasksLoading : allTasksLoading;
@@ -65,7 +70,8 @@ export const TaskListContent = ({ wbsNum }: TaskListContentProps) => {
   }, []);
 
   if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading || !tasksByStatus) return <LoadingIndicator />;
+  if (tasklabelsIsError) return <ErrorPage message={tasksLabelsError?.message} />;
+  if (isLoading || taskLabelsLoading || !tasksByStatus) return <LoadingIndicator />;
 
   const onDeleteTask = (taskId: string) => {
     setTasksByStatus((prev) => {

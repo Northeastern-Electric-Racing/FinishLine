@@ -4,6 +4,16 @@ import { getUserQueryArgs } from './user.query-args.js';
 export type TaskQueryArgs = ReturnType<typeof getTaskQueryArgs>;
 export type TaskPreviewQueryArgs = ReturnType<typeof getTaskPreviewQueryArgs>;
 export type CalendarTaskQueryArgs = ReturnType<typeof getCalendarTaskQueryArgs>;
+export type TaskLabelQueryArgs = ReturnType<typeof getTaskLabelQueryArgs>;
+
+export const getTaskLabelQueryArgs = () =>
+  Prisma.validator<Prisma.Task_LabelDefaultArgs>()({
+    select: {
+      taskLabelId: true,
+      name: true,
+      colorHexCode: true
+    }
+  });
 
 export const getTaskQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.TaskDefaultArgs>()({
@@ -12,7 +22,7 @@ export const getTaskQueryArgs = (organizationId: string) =>
       createdBy: getUserQueryArgs(organizationId),
       deletedBy: getUserQueryArgs(organizationId),
       assignees: getUserQueryArgs(organizationId),
-      labels: true
+      labels: getTaskLabelQueryArgs()
     }
   });
 
@@ -35,7 +45,7 @@ export const getCalendarTaskQueryArgs = (organizationId: string) =>
       createdBy: getUserQueryArgs(organizationId),
       deletedBy: getUserQueryArgs(organizationId),
       assignees: getUserQueryArgs(organizationId),
-      labels: true
+      labels: getTaskLabelQueryArgs()
     }
   });
 

@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Box, FormControl, FormHelperText, FormLabel, Stack } from '@mui/material';
+import { Box, FormControl, FormHelperText, FormLabel } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ErrorPage from '../../ErrorPage';
 import { useForm } from 'react-hook-form';
@@ -10,17 +10,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { TaskLabel } from 'shared';
 import NERFormModal from '../../../components/NERFormModal';
-
-const COLOR_OPTIONS: { label: string; value: string }[] = [
-  { label: 'Red', value: '#EF4444' },
-  { label: 'Orange', value: '#F97316' },
-  { label: 'Yellow', value: '#EAB308' },
-  { label: 'Green', value: '#22C55E' },
-  { label: 'Blue', value: '#3B82F6' },
-  { label: 'Purple', value: '#A855F7' },
-  { label: 'Pink', value: '#EC4899' },
-  { label: 'Navy', value: '#1E3A8A' }
-];
+import ColorPickerInput from '../../../components/ColorPickerInput';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -89,10 +79,10 @@ const TaskLabelFormModal: React.FC<TaskLabelFormModalProps> = ({ showModal, hand
       } else {
         await createMutateAsync(data);
       }
+      handleClose();
     } catch (error: unknown) {
       if (error instanceof Error) toast.error(error.message);
     }
-    handleClose();
   };
 
   if (createIsError) return <ErrorPage message={createError?.message} />;
@@ -122,30 +112,7 @@ const TaskLabelFormModal: React.FC<TaskLabelFormModalProps> = ({ showModal, hand
 
         <FormControl fullWidth>
           <FormLabel>Color</FormLabel>
-          <Stack direction="row" spacing={1.2} flexWrap="wrap" sx={{ mt: 0.5 }}>
-            {COLOR_OPTIONS.map((c) => {
-              const isSelected = c.value === selectedColor;
-              return (
-                <Box
-                  key={c.value}
-                  onClick={() => handleColorClick(c.value)}
-                  sx={{
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    px: 1.5,
-                    height: 28,
-                    borderRadius: '999px',
-                    backgroundColor: c.value,
-                    border: isSelected ? '2px solid #ef4345' : '2px solid transparent',
-                    boxSizing: 'border-box',
-                    minWidth: 32
-                  }}
-                />
-              );
-            })}
-          </Stack>
+          <ColorPickerInput selectedColor={selectedColor} onColorClick={handleColorClick} />
           <FormHelperText error>{errors.colorHexCode?.message}</FormHelperText>
         </FormControl>
       </Box>
