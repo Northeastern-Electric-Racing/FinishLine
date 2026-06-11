@@ -114,6 +114,7 @@ module "elasticbeanstalk" {
   enable_https       = false
   health_check_path  = "/health"
   log_retention_days = 7
+  ec2_key_name       = "finishline-sandbox"
 
   environment_variables = {
     DATABASE_URL = module.rds.database_url

@@ -77,6 +77,15 @@ resource "aws_elastic_beanstalk_environment" "main" {
     value     = var.instance_security_group_id
   }
 
+  dynamic "setting" {
+    for_each = var.ec2_key_name != "" ? [1] : []
+    content {
+      namespace = "aws:autoscaling:launchconfiguration"
+      name      = "EC2KeyName"
+      value     = var.ec2_key_name
+    }
+  }
+
   #####################
   # Auto Scaling Configuration
   #####################

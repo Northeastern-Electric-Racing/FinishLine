@@ -1,0 +1,229 @@
+name: Sandbox Spin-Up
+
+on:
+  workflow_dispatch:
+
+# Only one sandbox may exist at a time.
+concurrency:
+  group: sandbox
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  spin-up:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: sandbox
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Fail fast if sandbox already exists
+        run: |
+          STATUS=$(aws elasticbeanstalk describe-environments \
+            --environment-names finishline-sandbox-env \
+            --region us-east-2 \
+            --query "Environments[0].Status" \
+            --output text 2>/dev/null || echo "None")
+
+          if [ "$STATUS" != "None" ] && [ "$STATUS" != "" ] && [ "$STATUS" != "Terminated" ]; then
+            echo "Sandbox already exists with status: $STATUS"
+            echo "Tear it down first with the sandbox-down workflow."
+            exit 1
+          fi
+
+      - name: Take prod RDS snapshot
+        id: snapshot
+        run: |
+          SNAPSHOT_ID="finishline-prod-presandbox-$(date +%Y%m%d%H%M%S)"
+
+          aws rds create-db-snapshot \
+            --db-instance-identifier finishline-production-db \
+            --db-snapshot-identifier "$SNAPSHOT_ID" \
+            --region us-east-1
+
+          echo "Waiting for snapshot to become available (~5 min)..."
+          aws rds wait db-snapshot-available \
+            --db-snapshot-identifier "$SNAPSHOT_ID" \
+            --region us-east-1
+
+          echo "us_east_1_snapshot_id=$SNAPSHOT_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Copy snapshot to us-east-2
+        id: snapshot_copy
+        run: |
+          SOURCE_SNAPSHOT="${{ steps.snapshot.outputs.us_east_1_snapshot_id }}"
+          COPY_ID="${SOURCE_SNAPSHOT}-us-east-2"
+          SOURCE_ARN=$(aws rds describe-db-snapshots \
+            --db-snapshot-identifier "$SOURCE_SNAPSHOT" \
+            --region us-east-1 \
+            --query "DBSnapshots[0].DBSnapshotArn" \
+            --output text)
+
+          aws rds copy-db-snapshot \
+            --source-db-snapshot-identifier "$SOURCE_ARN" \
+            --target-db-snapshot-identifier "$COPY_ID" \
+            --region us-east-2
+
+          echo "Waiting for snapshot copy to become available (~5 min)..."
+          aws rds wait db-snapshot-available \
+            --db-snapshot-identifier "$COPY_ID" \
+            --region us-east-2
+
+          echo "snapshot_id=$COPY_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Pull prod secrets from Secrets Manager
+        run: |
+          fetch() {
+            aws secretsmanager get-secret-value \
+              --secret-id "finishline/production/$1" \
+              --region us-east-1 \
+              --query SecretString \
+              --output text
+          }
+
+          SESSION_SECRET=$(fetch session-secret)
+          ENCRYPTION_KEY=$(fetch encryption-key)
+          GOOGLE_CLIENT_SECRET=$(fetch google-client-secret)
+          DRIVE_REFRESH_TOKEN=$(fetch drive-refresh-token)
+          CALENDAR_REFRESH_TOKEN=$(fetch calendar-refresh-token)
+          SLACK_BOT_TOKEN=$(fetch slack-bot-token)
+          SLACK_TOKEN_SECRET=$(fetch slack-token-secret)
+          SLACK_SIGNING_SECRET=$(fetch slack-signing-secret)
+          NOTIFICATION_ENDPOINT_SECRET=$(fetch notification-endpoint-secret)
+
+          echo "::add-mask::$SESSION_SECRET"
+          echo "::add-mask::$ENCRYPTION_KEY"
+          echo "::add-mask::$GOOGLE_CLIENT_SECRET"
+          echo "::add-mask::$DRIVE_REFRESH_TOKEN"
+          echo "::add-mask::$CALENDAR_REFRESH_TOKEN"
+          echo "::add-mask::$SLACK_BOT_TOKEN"
+          echo "::add-mask::$SLACK_TOKEN_SECRET"
+          echo "::add-mask::$SLACK_SIGNING_SECRET"
+          echo "::add-mask::$NOTIFICATION_ENDPOINT_SECRET"
+
+          {
+            echo "TF_VAR_session_secret=$SESSION_SECRET"
+            echo "TF_VAR_encryption_key=$ENCRYPTION_KEY"
+            echo "TF_VAR_google_client_secret=$GOOGLE_CLIENT_SECRET"
+            echo "TF_VAR_drive_refresh_token=$DRIVE_REFRESH_TOKEN"
+            echo "TF_VAR_calendar_refresh_token=$CALENDAR_REFRESH_TOKEN"
+            echo "TF_VAR_slack_bot_token=$SLACK_BOT_TOKEN"
+            echo "TF_VAR_slack_token_secret=$SLACK_TOKEN_SECRET"
+            echo "TF_VAR_slack_signing_secret=$SLACK_SIGNING_SECRET"
+            echo "TF_VAR_notification_endpoint_secret=$NOTIFICATION_ENDPOINT_SECRET"
+          } >> "$GITHUB_ENV"
+
+      - name: Pull non-secret config from prod EB environment
+        run: |
+          # These public values are already set on the prod EB environment —
+          # no developer setup needed, always in sync with prod.
+          eb_var() {
+            aws elasticbeanstalk describe-configuration-settings \
+              --application-name finishline-production \
+              --environment-name finishline-production-env \
+              --region us-east-1 \
+              --query "ConfigurationSettings[0].OptionSettings[?Namespace=='aws:elasticbeanstalk:application:environment'&&OptionName=='$1'].Value" \
+              --output text
+          }
+
+          {
+            echo "TF_VAR_google_client_id=$(eb_var GOOGLE_CLIENT_ID)"
+            echo "TF_VAR_google_drive_folder_id=$(eb_var GOOGLE_DRIVE_FOLDER_ID)"
+            echo "TF_VAR_slack_id=$(eb_var SLACK_ID)"
+            echo "TF_VAR_user_email=$(eb_var USER_EMAIL)"
+            echo "TF_VAR_admin_user_id=$(eb_var ADMIN_USER_ID)"
+          } >> "$GITHUB_ENV"
+
+      - name: Generate sandbox DB password
+        run: |
+          DB_PASSWORD=$(openssl rand -base64 24 | tr -d "=+/")
+          echo "::add-mask::$DB_PASSWORD"
+          echo "TF_VAR_db_master_password=$DB_PASSWORD" >> "$GITHUB_ENV"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.0"
+          terraform_wrapper: false
+
+      - name: Terraform init
+        working-directory: infrastructure/environments/sandbox
+        run: terraform init
+
+      - name: Terraform apply
+        working-directory: infrastructure/environments/sandbox
+        env:
+          TF_VAR_snapshot_identifier: ${{ steps.snapshot_copy.outputs.snapshot_id }}
+        run: terraform apply -auto-approve
+
+      - name: Get sandbox EB URL
+        id: urls
+        working-directory: infrastructure/environments/sandbox
+        run: |
+          echo "eb_url=$(terraform output -raw eb_environment_url)" >> "$GITHUB_OUTPUT"
+          echo "eb_cname=$(terraform output -raw eb_cname)" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy app to sandbox EB
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          # Log into ECR (prod repo, us-east-1) to get the registry URL
+          ECR_REGISTRY=$(aws ecr get-login-password --region us-east-1 | \
+            docker login --username AWS --password-stdin \
+            "$(aws sts get-caller-identity --query Account --output text).dkr.ecr.us-east-1.amazonaws.com" \
+            2>/dev/null && \
+            echo "$(aws sts get-caller-identity --query Account --output text).dkr.ecr.us-east-1.amazonaws.com")
+
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com"
+          ECR_REPOSITORY="finishline-production"
+
+          # Use the latest prod image — same image tested in sandbox = same image that goes to prod
+          cat > Dockerrun.aws.json <<EOF
+          {
+            "AWSEBDockerrunVersion": "1",
+            "Image": {
+              "Name": "$ECR_REGISTRY/$ECR_REPOSITORY:latest",
+              "Update": "true"
+            },
+            "Ports": [
+              {
+                "ContainerPort": 3001,
+                "HostPort": 3001
+              }
+            ]
+          }
+          EOF
+
+          zip -r deploy.zip Dockerrun.aws.json .ebextensions/ .ebignore
+
+      - name: Deploy to sandbox Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: finishline-sandbox
+          environment_name: finishline-sandbox-env
+          version_label: "sandbox-${{ github.run_id }}"
+          region: us-east-2
+          deployment_package: deploy.zip
+          wait_for_deployment: true
+          wait_for_environment_recovery: 300
+
+      - name: Sandbox is ready
+        run: |
+          echo "Sandbox is up!"
+          echo ""
+          echo "Backend: ${{ steps.urls.outputs.eb_url }}"
+          echo "CNAME:   ${{ steps.urls.outputs.eb_cname }}"
