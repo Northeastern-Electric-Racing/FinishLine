@@ -1,17 +1,8 @@
 import { Team, Team_Type } from '@prisma/client';
-import {
-  ConfigDataOutput,
-  ConfigDataProcess
-} from './config-data.process.js';
-import {
-  OrganizationOutput,
-  OrganizationProcess
-} from './organization.process.js';
+import { ConfigDataOutput, ConfigDataProcess } from './config-data.process.js';
+import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
-import {
-  seedTeamConfigs,
-  teamCreateInput
-} from '../factories/teams.factory.js';
+import { seedTeamConfigs, teamCreateInput } from '../factories/teams.factory.js';
 import { SeedProcess } from '../processes/seed-process.js';
 
 const EXPECTED_TEAM_COUNT = 20;
@@ -33,29 +24,13 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
     return [OrganizationProcess, UsersProcess, ConfigDataProcess];
   }
 
-  async run({
-    organization,
-    admins,
-    heads,
-    leadership,
-    members,
-    teamTypes
-  }: TeamInput): Promise<TeamOutput> {
+  async run({ organization, admins, heads, leadership, members, teamTypes }: TeamInput): Promise<TeamOutput> {
     if (seedTeamConfigs.length !== EXPECTED_TEAM_COUNT) {
-      throw new Error(
-        `TeamProcess expected ${EXPECTED_TEAM_COUNT} teams but found ${seedTeamConfigs.length}.`
-      );
+      throw new Error(`TeamProcess expected ${EXPECTED_TEAM_COUNT} teams but found ${seedTeamConfigs.length}.`);
     }
 
-    if (
-      admins.length === 0 ||
-      heads.length === 0 ||
-      leadership.length === 0 ||
-      members.length === 0
-    ) {
-      throw new Error(
-        'TeamProcess requires admins, heads, leadership, and members to create teams.'
-      );
+    if (admins.length === 0 || heads.length === 0 || leadership.length === 0 || members.length === 0) {
+      throw new Error('TeamProcess requires admins, heads, leadership, and members to create teams.');
     }
 
     const teamNames = seedTeamConfigs.map((team) => team.teamName);
@@ -64,13 +39,10 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
       throw new Error('TeamProcess cannot generate duplicate team names.');
     }
 
-    const teamTypesByName = teamTypes.reduce<Record<string, Team_Type>>(
-      (acc, teamType) => {
-        acc[teamType.name] = teamType;
-        return acc;
-      },
-      {}
-    );
+    const teamTypesByName = teamTypes.reduce<Record<string, Team_Type>>((acc, teamType) => {
+      acc[teamType.name] = teamType;
+      return acc;
+    }, {});
 
     const possibleHeads = [...heads, ...admins, ...leadership];
     const possibleLeads = [...leadership, ...heads, ...admins];
@@ -83,9 +55,7 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
           throw new Error('TeamProcess could not find a head for a team.');
         }
 
-        const leadPool = possibleLeads.filter(
-          (user) => user.userId !== head.userId
-        );
+        const leadPool = possibleLeads.filter((user) => user.userId !== head.userId);
 
         const leads = this.faker.helpers.arrayElements(
           leadPool,
@@ -104,15 +74,7 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
         );
 
         return this.prisma.team.create({
-          data: teamCreateInput(
-            this.faker,
-            organization.organizationId,
-            head,
-            leads,
-            teamMembers,
-            teamTypesByName,
-            config
-          )
+          data: teamCreateInput(this.faker, organization.organizationId, head, leads, teamMembers, teamTypesByName, config)
         });
       })
     );
