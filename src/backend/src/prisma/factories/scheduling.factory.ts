@@ -22,7 +22,7 @@ export const availabilityCreateInput = (
   scheduleSettingsId: string,
   date: Date
 ): Prisma.AvailabilityCreateInput => {
-  const dayOfWeek = date.getDay();
+  const dayOfWeek = date.getUTCDay();
   const availability = dayOfWeek === 0 || dayOfWeek === 6 ? AVAILABILITY_OVER_WEEKENDS : AVAILABILITY_GENERAL;
   return {
     availability: faker.helpers.arrayElements(
