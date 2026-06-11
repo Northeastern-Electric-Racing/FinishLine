@@ -13,7 +13,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { formatEventTime } from 'shared';
 import { datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
-import { formatHourInCurrentTimeZone, offsetDate } from '../../../utils/design-review.utils';
+import { offsetDate } from '../../../utils/design-review.utils';
 
 interface ScheduleEventModalProps {
   open: boolean;
@@ -79,8 +79,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
           >
             <Typography variant="h6">{datePipe(offsetDate(dateToShow()))}</Typography>
             <Typography variant="body1" color="text.secondary">
-              {formatHourInCurrentTimeZone(formatEventTime(startTime))} -
-              {formatHourInCurrentTimeZone(formatEventTime(endTime))}
+              {formatEventTime(startTime)} -{formatEventTime(endTime)}
             </Typography>
           </Box>
 

@@ -7,7 +7,6 @@ import { getTeamTypeIcon } from './CalendarDayCard';
 import { Typography } from '@mui/material';
 
 import { getMutedColor } from '../../utils/calendar.utils';
-import { formatHourInCurrentTimeZone } from '../../utils/design-review.utils';
 
 interface EventInfoProps {
   event: EventInstance;
@@ -78,8 +77,7 @@ const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, cal
             </Typography>
           ) : (
             <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
-              {formatHourInCurrentTimeZone(formatEventTime(event.startTime))} -{' '}
-              {formatHourInCurrentTimeZone(formatEventTime(event.endTime))}
+              {formatEventTime(event.startTime)} - {formatEventTime(event.endTime)}
             </Typography>
           )}
         </Stack>

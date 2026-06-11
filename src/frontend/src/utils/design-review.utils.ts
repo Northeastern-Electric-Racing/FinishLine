@@ -54,24 +54,21 @@ export const HeatmapColors = ['#D9D9D9', '#C1E0C1', '#9BE89B', '#7AE47A', '#45EF
 
 export const NUMBER_OF_TIME_SLOTS = enumToArray(REVIEW_TIMES).length * enumToArray(DAY_NAMES).length;
 
-const nthWeekday = (year: number, month: MONTH_NAMES, weekday: DAY_NAMES, nth: number) => {
-  const day = new Date(year, month!, 1);
-  const dayDiff = (weekday! - day.getDay() + 7) % 7;
+const ESTOffset = () => {
+  const parts = new Intl.DateTimeFormat('en', {
+    timeZone: 'America/New_York',
+    timeZoneName: 'shortOffset'
+  }).formatToParts(new Date());
 
-  return new Date(year, month, 1 + dayDiff + (nth - 1) * 7);
-};
+  const GMTTime = parts.find((t) => t.type === 'timeZoneName');
+  const offsetEST = Number(GMTTime!.value.replace('GMT', ''));
 
-const daylightSavings = () => {
-  const currDate = new Date();
-
-  const start = nthWeekday(currDate.getFullYear(), MONTH_NAMES.March, DAY_NAMES.Sunday, 2);
-  const end = nthWeekday(currDate.getFullYear(), MONTH_NAMES.November, DAY_NAMES.Sunday, 1);
-  return currDate >= start && currDate < end;
+  return offsetEST;
 };
 
 export const userOffsetTime = () => {
   const UTCOffset = -new Date().getTimezoneOffset() / 60;
-  const EST = daylightSavings() ? -4 : -5;
+  const EST = ESTOffset();
   const userOffset = UTCOffset - EST;
   return userOffset;
 };
