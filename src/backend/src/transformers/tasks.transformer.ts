@@ -3,7 +3,12 @@ import { CalendarTask, Task, TaskCardPreview, TaskLabel } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
 import { convertTaskPriority, convertTaskStatus } from '../utils/tasks.utils.js';
 import { userTransformer } from './user.transformer.js';
-import { CalendarTaskQueryArgs, TaskLabelQueryArgs, TaskQueryArgs, TaskPreviewQueryArgs } from '../prisma-query-args/tasks.query-args.js';
+import {
+  CalendarTaskQueryArgs,
+  TaskLabelQueryArgs,
+  TaskQueryArgs,
+  TaskPreviewQueryArgs
+} from '../prisma-query-args/tasks.query-args.js';
 
 export const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
   const wbsNum = wbsNumOf(task.wbsElement);
