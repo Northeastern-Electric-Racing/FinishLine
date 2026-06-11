@@ -43,9 +43,7 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
     const leadershipCandidates = [...heads, ...admins, ...leadership];
 
     if (leadershipCandidates.length < seedTeamConfigs.length) {
-      throw new Error(
-        `Not enough head candidates (${leadershipCandidates.length}) for ${seedTeamConfigs.length} teams.`
-      );
+      throw new Error(`Not enough head candidates (${leadershipCandidates.length}) for ${seedTeamConfigs.length} teams.`);
     }
 
     const usedLeadIds = new Set<string>();
