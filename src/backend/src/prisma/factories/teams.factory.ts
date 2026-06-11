@@ -1,5 +1,5 @@
-import { Prisma, Team_Type } from '@prisma/client';
 import { Faker } from '@faker-js/faker';
+import { Prisma, Team_Type } from '@prisma/client';
 import type { FullUser } from '../context.js';
 
 const SLACK_ID_RANDOM_LENGTH = 4;
@@ -44,7 +44,8 @@ export const seedTeamConfigs: SeedTeamConfig[] = [
   },
   {
     teamName: 'Battery',
-    description: 'Designs and validates the battery pack and accumulator systems.',
+    description:
+      'Designs and validates the battery pack and accumulator systems.',
     teamTypeName: 'Electrical'
   },
   {
@@ -84,7 +85,8 @@ export const seedTeamConfigs: SeedTeamConfig[] = [
   },
   {
     teamName: 'Finance',
-    description: 'Manages purchasing, reimbursements, budgeting, and sponsor funds.',
+    description:
+      'Manages purchasing, reimbursements, budgeting, and sponsor funds.',
     teamTypeName: 'Business',
     financeTeam: true
   },
@@ -115,14 +117,21 @@ export const seedTeamConfigs: SeedTeamConfig[] = [
   }
 ];
 
-const connectUsers = (users: FullUser[]) => users.map((user) => ({ userId: user.userId }));
+const connectUsers = (users: FullUser[]) =>
+  users.map((user) => ({ userId: user.userId }));
 
 const slackIdForTeam = (faker: Faker, teamName: string): string => {
   const slug = teamName.toLowerCase().replaceAll(' ', '-').replaceAll('/', '-');
-  return `seed-${slug}-${faker.string.alphanumeric(SLACK_ID_RANDOM_LENGTH).toLowerCase()}`;
+
+  return `seed-${slug}-${faker.string
+    .alphanumeric(SLACK_ID_RANDOM_LENGTH)
+    .toLowerCase()}`;
 };
 
-const findTeamType = (teamTypesByName: Record<string, Team_Type>, teamTypeName: string): Team_Type => {
+const findTeamType = (
+  teamTypesByName: Record<string, Team_Type>,
+  teamTypeName: string
+): Team_Type => {
   const teamType = teamTypesByName[teamTypeName];
 
   if (!teamType) {
