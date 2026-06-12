@@ -43,3 +43,12 @@ output "eb_cname" {
   description = "Raw CNAME of the sandbox EB environment"
   value       = module.elasticbeanstalk.environment_cname
 }
+
+#####################
+# Frontend Outputs
+#####################
+
+output "frontend_url" {
+  description = "URL of the sandbox Amplify frontend"
+  value       = module.frontend.frontend_url
+}

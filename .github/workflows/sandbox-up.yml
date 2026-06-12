@@ -1,7 +1,10 @@
 name: Sandbox Spin-Up
 
 on:
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - multitenancy
+    types: [opened, synchronize, reopened]
 
 # Only one sandbox may exist at a time.
 concurrency:
@@ -10,6 +13,7 @@ concurrency:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   spin-up:
@@ -98,7 +102,6 @@ jobs:
           DRIVE_REFRESH_TOKEN=$(fetch drive-refresh-token)
           CALENDAR_REFRESH_TOKEN=$(fetch calendar-refresh-token)
           SLACK_BOT_TOKEN=$(fetch slack-bot-token)
-          SLACK_TOKEN_SECRET=$(fetch slack-token-secret)
           SLACK_SIGNING_SECRET=$(fetch slack-signing-secret)
           NOTIFICATION_ENDPOINT_SECRET=$(fetch notification-endpoint-secret)
 
@@ -108,7 +111,6 @@ jobs:
           echo "::add-mask::$DRIVE_REFRESH_TOKEN"
           echo "::add-mask::$CALENDAR_REFRESH_TOKEN"
           echo "::add-mask::$SLACK_BOT_TOKEN"
-          echo "::add-mask::$SLACK_TOKEN_SECRET"
           echo "::add-mask::$SLACK_SIGNING_SECRET"
           echo "::add-mask::$NOTIFICATION_ENDPOINT_SECRET"
 
@@ -119,15 +121,12 @@ jobs:
             echo "TF_VAR_drive_refresh_token=$DRIVE_REFRESH_TOKEN"
             echo "TF_VAR_calendar_refresh_token=$CALENDAR_REFRESH_TOKEN"
             echo "TF_VAR_slack_bot_token=$SLACK_BOT_TOKEN"
-            echo "TF_VAR_slack_token_secret=$SLACK_TOKEN_SECRET"
             echo "TF_VAR_slack_signing_secret=$SLACK_SIGNING_SECRET"
             echo "TF_VAR_notification_endpoint_secret=$NOTIFICATION_ENDPOINT_SECRET"
           } >> "$GITHUB_ENV"
 
       - name: Pull non-secret config from prod EB environment
         run: |
-          # These public values are already set on the prod EB environment —
-          # no developer setup needed, always in sync with prod.
           eb_var() {
             aws elasticbeanstalk describe-configuration-settings \
               --application-name finishline-production \
@@ -137,12 +136,17 @@ jobs:
               --output text
           }
 
+          SLACK_TOKEN_SECRET=$(eb_var SLACK_TOKEN_SECRET)
+          echo "::add-mask::$SLACK_TOKEN_SECRET"
+
           {
+            echo "TF_VAR_slack_token_secret=$SLACK_TOKEN_SECRET"
             echo "TF_VAR_google_client_id=$(eb_var GOOGLE_CLIENT_ID)"
             echo "TF_VAR_google_drive_folder_id=$(eb_var GOOGLE_DRIVE_FOLDER_ID)"
             echo "TF_VAR_slack_id=$(eb_var SLACK_ID)"
             echo "TF_VAR_user_email=$(eb_var USER_EMAIL)"
             echo "TF_VAR_admin_user_id=$(eb_var ADMIN_USER_ID)"
+            echo "TF_VAR_github_access_token=${{ secrets.GITHUB_TOKEN }}"
           } >> "$GITHUB_ENV"
 
       - name: Generate sandbox DB password
@@ -167,12 +171,13 @@ jobs:
           TF_VAR_snapshot_identifier: ${{ steps.snapshot_copy.outputs.snapshot_id }}
         run: terraform apply -auto-approve
 
-      - name: Get sandbox EB URL
+      - name: Get sandbox URLs
         id: urls
         working-directory: infrastructure/environments/sandbox
         run: |
           echo "eb_url=$(terraform output -raw eb_environment_url)" >> "$GITHUB_OUTPUT"
           echo "eb_cname=$(terraform output -raw eb_cname)" >> "$GITHUB_OUTPUT"
+          echo "frontend_url=$(terraform output -raw frontend_url)" >> "$GITHUB_OUTPUT"
 
       - name: Deploy app to sandbox EB
         env:
@@ -225,5 +230,5 @@ jobs:
         run: |
           echo "Sandbox is up!"
           echo ""
-          echo "Backend: ${{ steps.urls.outputs.eb_url }}"
-          echo "CNAME:   ${{ steps.urls.outputs.eb_cname }}"
+          echo "Frontend: ${{ steps.urls.outputs.frontend_url }}"
+          echo "Backend:  ${{ steps.urls.outputs.eb_url }}"

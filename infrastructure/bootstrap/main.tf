@@ -499,6 +499,43 @@ resource "aws_iam_role_policy" "cicd_cloudwatch" {
   })
 }
 
+# Amplify — create/delete the sandbox Amplify app and branch
+resource "aws_iam_role_policy" "cicd_amplify" {
+  name = "sandbox-amplify"
+  role = aws_iam_role.cicd.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AmplifyManage"
+        Effect = "Allow"
+        Action = [
+          "amplify:CreateApp",
+          "amplify:DeleteApp",
+          "amplify:GetApp",
+          "amplify:ListApps",
+          "amplify:UpdateApp",
+          "amplify:CreateBranch",
+          "amplify:DeleteBranch",
+          "amplify:GetBranch",
+          "amplify:ListBranches",
+          "amplify:UpdateBranch",
+          "amplify:StartJob",
+          "amplify:StopJob",
+          "amplify:GetJob",
+          "amplify:ListJobs",
+          "amplify:TagResource",
+          "amplify:ListTagsForResource",
+          "amplify:CreateWebhook",
+          "amplify:DeleteWebhook"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 # Secrets Manager — read prod secrets, write sandbox DATABASE_URL
 resource "aws_iam_role_policy" "cicd_secrets" {
   name = "sandbox-secrets"

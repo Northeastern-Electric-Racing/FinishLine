@@ -129,6 +129,7 @@ module "elasticbeanstalk" {
     SLACK_SIGNING_SECRET         = var.slack_signing_secret
     NOTIFICATION_ENDPOINT_SECRET = var.notification_endpoint_secret
 
+    NODE_ENV                             = "sandbox"
     LOG_LEVEL                            = "info"
     GOOGLE_CLIENT_ID                     = var.google_client_id
     REACT_APP_GOOGLE_AUTH_CLIENT_ID      = var.google_client_id
@@ -137,6 +138,25 @@ module "elasticbeanstalk" {
     USER_EMAIL                           = var.user_email
     ADMIN_USER_ID                        = var.admin_user_id
   }
+}
+
+#############
+# Amplify Frontend Module
+#############
+module "frontend" {
+  source = "../../modules/amplify-frontend"
+
+  project_name        = "finishline"
+  environment         = "sandbox"
+  github_repository   = "https://github.com/Northeastern-Electric-Racing/FinishLine"
+  github_access_token = var.github_access_token
+  main_branch_name    = "develop"
+  backend_api_url     = module.elasticbeanstalk.environment_endpoint_url
+
+  domain_name                 = ""
+  enable_pull_request_preview = false
+  enable_auto_branch_creation = false
+  create_webhook              = false
 }
 
 #############
