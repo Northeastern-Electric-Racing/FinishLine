@@ -112,15 +112,17 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
 
     const teams = await Promise.all(teamCreateInputs.map((data) => this.prisma.team.create({ data })));
 
+    
+
     const teamsByName = teams.reduce<Record<string, Team>>((acc, team) => {
       acc[team.teamName] = team;
       return acc;
     }, {});
 
-    const financeTeam = teamsByName.Finance;
+    const financeTeam = teams.find((_, index) => seedTeamConfigs[index]?.financeTeam);
 
     if (!financeTeam) {
-      throw new Error('TeamProcess expected a Finance team to be generated.');
+      throw new Error('TeamProcess expected one team config to be marked as the finance team.');
     }
 
     return { teams, financeTeam, teamsByName };
