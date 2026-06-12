@@ -14,7 +14,8 @@ import {
   HeatmapColors,
   enumToArray,
   REVIEW_TIMES,
-  reviewTimesInCurrentTimeZone
+  reviewTimesInCurrentTimeZone,
+  yourTimeZoneInitials
 } from '../../../../utils/design-review.utils';
 import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
@@ -139,7 +140,11 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Box display="flex" justifyContent="space-between" mb={1}>
-        <Typography variant="subtitle1">Available times in green</Typography>
+        <Typography variant="subtitle1">
+          Available times in <span style={{ color: HeatmapColors[3] }}>green</span>.&nbsp;&nbsp; All times are in local time,{' '}
+          {yourTimeZoneInitials()}.{' '}
+        </Typography>
+        <Typography variant="subtitle1"></Typography>
         <NERButton variant="outlined" onClick={invertAvailabilities}>
           Invert Availability
         </NERButton>

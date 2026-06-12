@@ -66,6 +66,14 @@ const ESTOffset = () => {
   return offsetEST;
 };
 
+export const yourTimeZoneInitials = () => {
+  const parts = new Intl.DateTimeFormat('en', {
+    timeZoneName: 'short'
+  }).formatToParts(new Date());
+
+  return parts.find((p) => p.type === 'timeZoneName')!.value;
+};
+
 export const userOffsetTime = () => {
   const UTCOffset = -new Date().getTimezoneOffset() / 60;
   const EST = ESTOffset();
