@@ -112,8 +112,6 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
 
     const teams = await Promise.all(teamCreateInputs.map((data) => this.prisma.team.create({ data })));
 
-    
-
     const teamsByName = teams.reduce<Record<string, Team>>((acc, team) => {
       acc[team.teamName] = team;
       return acc;
