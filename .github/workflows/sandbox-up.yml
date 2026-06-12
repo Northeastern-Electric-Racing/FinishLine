@@ -5,6 +5,7 @@ on:
     branches:
       - multitenancy
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
 # Only one sandbox may exist at a time.
 concurrency:
