@@ -32,6 +32,7 @@ import SingleAvailabilityModal from '../../SettingsPage/UserScheduleSettings/Ava
 import AvailabilityEditModal from '../../SettingsPage/UserScheduleSettings/Availability/AvailabilityEditModal';
 import AvailabilityScheduleView from '../AvailabilityScheduleView';
 import ScheduleEventModal from './ScheduleEventModal';
+import { formatHourInCurrentTimeZone, offsetDate } from '../../../utils/design-review.utils';
 
 const isUserOnEvent = (user: User, event: EventWithMembers): boolean => {
   const isDirectMember =
@@ -302,14 +303,24 @@ export const EventAvailabilityPage: React.FC = () => {
           {/* Date/Time display */}
           {(() => {
             const displaySlot = currentHoveredSlot || selectedSlot;
+            const specificTime = () => {
+              const specificDate = new Date(displaySlot!.day);
+              specificDate.setHours(displaySlot!.startHour);
+              return specificDate;
+            };
             if (displaySlot) {
               return (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="h6">
-                    {displaySlot.day.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                    {offsetDate(specificTime()).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    {formatHour(displaySlot.startHour)} - {formatHour(displaySlot.endHour)}
+                    {formatHourInCurrentTimeZone(formatHour(displaySlot.startHour))} -{' '}
+                    {formatHourInCurrentTimeZone(formatHour(displaySlot.endHour))}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                     {currentAvailableUsers.length}/{relevantUsers.length} available

@@ -54,6 +54,73 @@ export const HeatmapColors = ['#D9D9D9', '#C1E0C1', '#9BE89B', '#7AE47A', '#45EF
 
 export const NUMBER_OF_TIME_SLOTS = enumToArray(REVIEW_TIMES).length * enumToArray(DAY_NAMES).length;
 
+const ESTOffset = () => {
+  const parts = new Intl.DateTimeFormat('en', {
+    timeZone: 'America/New_York',
+    timeZoneName: 'shortOffset'
+  }).formatToParts(new Date());
+
+  const GMTTime = parts.find((t) => t.type === 'timeZoneName');
+  const offsetEST = Number(GMTTime!.value.replace('GMT', ''));
+
+  return offsetEST;
+};
+
+export const userOffsetTime = () => {
+  const UTCOffset = -new Date().getTimezoneOffset() / 60;
+  const EST = ESTOffset();
+  const userOffset = UTCOffset - EST;
+  return userOffset;
+};
+
+export const offsetDate = (date: Date) => {
+  const hoursOffset = userOffsetTime();
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours() + hoursOffset);
+};
+
+// converts a REVIEW_TIME (That is in string form) to the user's current time
+export const reviewTimesInCurrentTimeZone = (time: string) => {
+  return offsetReviewTime(time, userOffsetTime());
+};
+
+const isTwoDigitHour = (time: string) => !isNaN(Number(time.charAt(1)));
+
+const offsetReviewTime = (time: string, offset: number) => {
+  // get initialTime
+  const startTime = Number(time.charAt(0) + (isTwoDigitHour(time) ? time.charAt(1) : ''));
+
+  let newStartTime = (startTime + offset + 12) % 12;
+  if (newStartTime === 0) newStartTime = 12;
+  let newEndTime = (startTime + 1 + offset + 12) % 12;
+  if (newEndTime === 0) newEndTime = 12;
+
+  return newStartTime + '-' + newEndTime + ' ' + AMorPM(time, offset);
+};
+
+const AMorPM = (time: string, offset: number) => {
+  const startTime = Number(time.charAt(0) + (isTwoDigitHour(time) ? time.charAt(1) : ''));
+  const AMorPM = time.charAt(time.length - 2) + time.charAt(time.length - 1);
+  const startTime24Hour = startTime + (AMorPM === 'PM' && startTime !== 12 ? 12 : 0);
+
+  const newTime = startTime24Hour + offset;
+  const newHour = (newTime + 24) % 24;
+
+  return newHour >= 12 ? 'PM' : 'AM';
+};
+
+export const formatHourInCurrentTimeZone = (time: string) => {
+  return offsetFormatHour(time, userOffsetTime());
+};
+
+const offsetFormatHour = (time: string, offset: number) => {
+  const hourTime = Number(time.charAt(0) + (isTwoDigitHour(time) ? time.charAt(1) : ''));
+
+  let newHourTime = (((hourTime + offset) % 12) + 12) % 12;
+  if (newHourTime === 0) newHourTime = 12;
+
+  return newHourTime + ':00 ' + AMorPM(time, offset);
+};
+
 export const getBackgroundColor = (frequency: number = 0, totalUsers: number): string => {
   if (frequency === 0) return HeatmapColors[0];
   if (frequency >= totalUsers) return HeatmapColors[5];
