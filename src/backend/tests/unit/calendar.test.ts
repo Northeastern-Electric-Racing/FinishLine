@@ -1701,6 +1701,7 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
+          [],
           []
         )
       ).rejects.toThrow(new NotFoundException('Event', 'non-existent-id'));
@@ -1725,6 +1726,7 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
+          [],
           []
         )
       ).rejects.toThrow(new DeletedException('Event', event.eventId));
@@ -1743,6 +1745,7 @@ describe('Calendar Tests', () => {
           [],
           [shop.shopId],
           [machinery.machineryId],
+          [],
           [],
           [],
           undefined,
@@ -1767,6 +1770,7 @@ describe('Calendar Tests', () => {
           [],
           ['non-existent-shop-id'],
           [machinery.machineryId],
+          [],
           [],
           [],
           undefined,
@@ -1799,6 +1803,7 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
+          [],
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1821,6 +1826,7 @@ describe('Calendar Tests', () => {
           [],
           [shop.shopId],
           ['non-existent-machinery-id'],
+          [],
           [],
           [],
           undefined,
@@ -1853,6 +1859,7 @@ describe('Calendar Tests', () => {
           [deletedMachinery.machineryId],
           [],
           [],
+          [],
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1876,6 +1883,7 @@ describe('Calendar Tests', () => {
         [],
         [shop.shopId],
         [machinery.machineryId],
+        [],
         [],
         [],
         undefined,
