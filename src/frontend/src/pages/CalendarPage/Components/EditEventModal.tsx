@@ -2,7 +2,7 @@ import React from 'react';
 import EventModal, { EventPayload } from './EventModal';
 import type { EventInstance, EventType, EventDocumentUploadArgs } from 'shared';
 import { convertEventToFormValues } from '../../../utils/calendar.utils';
-import { useEditEvent, useEditScheduleSlot, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
+import { useEditEvent, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 export interface EditEventModalProps {
