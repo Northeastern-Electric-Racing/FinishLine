@@ -100,6 +100,7 @@ export interface EditEventArgs {
   documents: Array<{ name: string; googleFileId: string }>;
   questionDocumentLink?: string;
   description?: string;
+  scheduleSlots: ScheduleSlotCreateArgs[];
 }
 
 export interface EditScheduleSlotArgs {

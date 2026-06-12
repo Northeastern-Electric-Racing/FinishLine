@@ -31,20 +31,19 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
         documents: event.documents.map((doc) => ({
           name: doc.name,
           googleFileId: doc.googleFileId
-        }))
+        })),
+        scheduleSlots: payload.editScheduleSlotArgs
+          ? [
+              {
+                startTime: payload.editScheduleSlotArgs.newStartTime,
+                endTime: payload.editScheduleSlotArgs.newEndTime,
+                allDay: payload.editScheduleSlotArgs.newAllDay
+              }
+            ]
+          : []
       };
 
       const editedEvent = await editEvent(editArgs);
-
-      // If there are schedule slot changes, update the schedule slot separately
-      if (editScheduleSlotArgs) {
-        await editScheduleSlot({
-          startTime: editScheduleSlotArgs.newStartTime,
-          endTime: editScheduleSlotArgs.newEndTime,
-          allDay: editScheduleSlotArgs.newAllDay,
-          editAllInSeries: editScheduleSlotArgs.editAllInSeries
-        });
-      }
 
       // Handle document uploads
       const filesToUpload = documentFiles

@@ -595,7 +595,7 @@ export default class CalendarService {
     machineryIds: string[],
     workPackageIds: string[],
     documents: EventDocumentCreateArgs[],
-    scheduledSlots: ScheduleSlot[],
+    scheduleSlots: ScheduleSlotCreateArgs[],
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
@@ -771,10 +771,11 @@ export default class CalendarService {
           set: updatedOptionalMembers
         },
         scheduledTimes: {
-          create: scheduledSlots.map((s) => ({
-            startTime: s.startTime,
-            endTime: s.endTime,
-            allDay: s.allDay
+          deleteMany: {},
+          create: scheduleSlots.map((slot) => ({
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            allDay: slot.allDay
           }))
         },
         teams: {
