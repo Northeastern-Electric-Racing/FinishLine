@@ -897,7 +897,14 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                               open={startTimePickerOpen}
                               onClose={() => setStartTimePickerOpen(false)}
                               onOpen={() => setStartTimePickerOpen(true)}
-                              onChange={(newValue) => onChange(newValue)}
+                              onChange={(newValue) => {
+                                onChange(newValue);
+                                if (newValue) {
+                                  const newEndTime = new Date(newValue);
+                                  newEndTime.setHours(newEndTime.getHours() + 1);
+                                  setValue('endTime', newEndTime);
+                                }
+                              }}
                               slotProps={{
                                 textField: {
                                   variant: 'standard',
