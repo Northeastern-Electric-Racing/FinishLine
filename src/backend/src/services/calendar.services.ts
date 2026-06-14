@@ -757,7 +757,7 @@ export default class CalendarService {
     // throw if a user isn't found, then build prisma queries for connecting userIds
     const updatedRequiredMembers = [...getPrismaQueryUserIds(await getUsers(allRequiredMembers))];
     const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
-    //const updatedScheduledTimes
+
     // Update the event with new data (excluding schedule slots)
     const updatedEvent = await prisma.event.update({
       where: { eventId },
@@ -770,14 +770,17 @@ export default class CalendarService {
         optionalMembers: {
           set: updatedOptionalMembers
         },
-        scheduledTimes: {
-          deleteMany: {},
-          create: scheduleSlots.map((slot) => ({
-            startTime: slot.startTime,
-            endTime: slot.endTime,
-            allDay: slot.allDay
-          }))
-        },
+        scheduledTimes:
+          scheduleSlots.length > 0
+            ? {
+                deleteMany: {},
+                create: scheduleSlots.map((slot) => ({
+                  startTime: slot.startTime,
+                  endTime: slot.endTime,
+                  allDay: slot.allDay
+                }))
+              }
+            : undefined,
         teams: {
           set: teamIds.map((teamId) => ({ teamId }))
         },

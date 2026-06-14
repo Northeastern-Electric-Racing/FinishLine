@@ -283,7 +283,7 @@ export default class CalendarController {
         mention
       } = req.body;
 
-      const parsedScheduleSlots = scheduleSlots.map((slot: any) => ({
+      const parsedScheduleSlots = scheduleSlots.map((slot: { allDay: boolean; startTime?: string; endTime?: string }) => ({
         startTime: slot.startTime ? new Date(slot.startTime) : undefined,
         endTime: slot.endTime ? new Date(slot.endTime) : undefined,
         allDay: slot.allDay
@@ -339,7 +339,7 @@ export default class CalendarController {
         description
       } = req.body;
 
-      const parsedScheduleSlots = scheduleSlots.map((slot: any) => ({
+      const parsedScheduleSlots = scheduleSlots.map((slot: { allDay: boolean; startTime?: string; endTime?: string }) => ({
         startTime: slot.startTime ? new Date(slot.startTime) : undefined,
         endTime: slot.endTime ? new Date(slot.endTime) : undefined,
         allDay: slot.allDay
