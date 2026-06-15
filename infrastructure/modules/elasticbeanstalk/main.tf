@@ -1,5 +1,10 @@
 # Elastic Beanstalk Module
 
+data "aws_elastic_beanstalk_solution_stack" "docker" {
+  most_recent = true
+  name_regex  = "^64bit Amazon Linux 2023 .* running Docker$"
+}
+
 #############
 # Elastic Beanstalk Application
 #############
@@ -26,7 +31,7 @@ resource "aws_elastic_beanstalk_application" "main" {
 resource "aws_elastic_beanstalk_environment" "main" {
   name                = "${var.project_name}-${var.environment}-env"
   application         = aws_elastic_beanstalk_application.main.name
-  solution_stack_name = var.solution_stack_name
+  solution_stack_name = var.solution_stack_name != "" ? var.solution_stack_name : data.aws_elastic_beanstalk_solution_stack.docker.name
   tier                = "WebServer"
 
   #####################

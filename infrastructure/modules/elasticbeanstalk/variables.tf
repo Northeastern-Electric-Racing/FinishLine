@@ -14,7 +14,7 @@ variable "solution_stack_name" {
   description = "Elastic Beanstalk solution stack name"
   type        = string
   # Find the latest: aws elasticbeanstalk list-available-solution-stacks
-  default     = "64bit Amazon Linux 2023 v4.11.0 running Docker"
+  default     = ""
 }
 
 variable "vpc_id" {
