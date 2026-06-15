@@ -5,7 +5,7 @@ import {
   blockedByValidators,
   descriptionBulletsValidators,
   intMinZero,
-  isDate,
+  isDateOnly,
   isWorkPackageStageOrNone,
   nonEmptyString,
   validateInputs
@@ -30,12 +30,15 @@ workPackagesRouter.post(
   WorkPackagesController.getManyWorkPackages
 );
 workPackagesRouter.get('/:wbsNum', WorkPackagesController.getSingleWorkPackage);
+
+workPackagesRouter.get('/by-project/:wbsNum', WorkPackagesController.getWorkPackagesByProject);
+
 workPackagesRouter.post(
   '/create',
   nonEmptyString(body('crId').optional()),
   nonEmptyString(body('name')),
   isWorkPackageStageOrNone(body('stage')),
-  isDate(body('startDate')),
+  isDateOnly(body('startDate')),
   intMinZero(body('duration')),
   intMinZero(body('projectWbsNum.carNumber')),
   intMinZero(body('projectWbsNum.projectNumber')),
@@ -51,7 +54,7 @@ workPackagesRouter.post(
   nonEmptyString(body('workPackageId')),
   nonEmptyString(body('crId')),
   nonEmptyString(body('name')),
-  isDate(body('startDate')),
+  isDateOnly(body('startDate')),
   intMinZero(body('duration')),
   isWorkPackageStageOrNone(body('stage')),
   ...blockedByValidators,
@@ -62,10 +65,12 @@ workPackagesRouter.post(
   WorkPackagesController.editWorkPackage
 );
 workPackagesRouter.delete('/:wbsNum/delete', WorkPackagesController.deleteWorkPackage);
+
 workPackagesRouter.get('/:wbsNum/blocking', WorkPackagesController.getBlockingWorkPackages);
+
 workPackagesRouter.post(
   '/slack-upcoming-deadlines',
-  isDate(body('deadline')),
+  isDateOnly(body('deadline')),
   validateInputs,
   WorkPackagesController.slackMessageUpcomingDeadlines
 );

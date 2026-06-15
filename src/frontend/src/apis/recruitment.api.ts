@@ -1,7 +1,7 @@
 import axios from '../utils/axios';
-import { MilestonePayload, FaqPayload } from '../hooks/recruitment.hooks';
+import { MilestonePayload, FaqPayload, GuestDefinitionPayload } from '../hooks/recruitment.hooks';
 import { apiUrls } from '../utils/urls';
-import { Milestone } from 'shared';
+import { dateToMidnightUTC, GuestDefinition, Milestone } from 'shared';
 import { FrequentlyAskedQuestion } from 'shared';
 
 export const getAllMilestones = () => {
@@ -12,13 +12,15 @@ export const getAllMilestones = () => {
 
 export const createMilestone = (payload: MilestonePayload) => {
   return axios.post(apiUrls.milestoneCreate(), {
-    ...payload
+    ...payload,
+    dateOfEvent: dateToMidnightUTC(payload.dateOfEvent)
   });
 };
 
 export const editMilestone = (payload: MilestonePayload, id: string) => {
   return axios.post(apiUrls.milestoneEdit(id), {
-    ...payload
+    ...payload,
+    dateOfEvent: dateToMidnightUTC(payload.dateOfEvent)
   });
 };
 
@@ -46,4 +48,26 @@ export const editFaq = (payload: FaqPayload, id: string) => {
 
 export const deleteFaq = (faqId: string) => {
   return axios.delete<{ message: string }>(apiUrls.faqDelete(faqId));
+};
+
+export const getAllGuestDefinitions = () => {
+  return axios.get<GuestDefinition[]>(apiUrls.allGuestDefinitions(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const deleteGuestDefinition = (definitionId: string) => {
+  return axios.delete<{ message: string }>(apiUrls.guestDefinitionDelete(definitionId));
+};
+
+export const createGuestDefinition = (payload: GuestDefinitionPayload) => {
+  return axios.post(apiUrls.guestDefinitionCreate(), {
+    ...payload
+  });
+};
+
+export const editGuestDefinition = (payload: GuestDefinitionPayload, id: string) => {
+  return axios.post(apiUrls.guestDefintionEdit(id), {
+    ...payload
+  });
 };

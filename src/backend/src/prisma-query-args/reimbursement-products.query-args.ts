@@ -25,6 +25,7 @@ export const getReimbursementProductQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Reimbursement_ProductDefaultArgs>()({
     include: {
       refundSources: getRefundSourceQueryArgs(organizationId),
-      reimbursementProductReason: getReimbursementProductReasonQueryArgs(organizationId)
+      reimbursementProductReason: getReimbursementProductReasonQueryArgs(organizationId),
+      material: true
     }
   });

@@ -1,4 +1,8 @@
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -11,34 +15,36 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { Assembly, Manufacturer, MaterialType, ReimbursementRequest, Unit } from 'shared';
+import { Assembly, Manufacturer, Material, MaterialType, Unit } from 'shared';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import HelpIcon from '@mui/icons-material/Help';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { displayEnum } from '../../../../../utils/pipes';
 import { MaterialStatus } from 'shared';
-import React from 'react';
+import React, { useState } from 'react';
 import { AddCircle } from '@mui/icons-material';
+import SelectMaterialToCopyModal from '../CopyBOM/SelectMaterialToCopyModal';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
   handleSubmit: UseFormHandleSubmit<MaterialFormInput>;
   onSubmit: (payload: MaterialFormInput) => void;
   onHide: () => void;
-  control: Control<MaterialFormInput, any>;
+  control: Control<MaterialFormInput>;
   errors: FieldErrors<MaterialFormInput>;
-  allMaterialTypes: MaterialType[];
-  allUnits: Unit[];
-  allManufacturers: Manufacturer[];
-  assemblies: Assembly[];
-  reimbursementRequests: ReimbursementRequest[];
+  allMaterialTypes?: MaterialType[];
+  allUnits?: Unit[];
+  allManufacturers?: Manufacturer[];
+  assemblies?: Assembly[];
   open: boolean;
   watch: UseFormWatch<MaterialFormInput>;
   createManufacturer: (name: string) => void;
   setValue: UseFormSetValue<MaterialFormInput>;
+  fromRRForm?: boolean;
 }
 
 const manufacturersToAutocomplete = (manufacturer: Manufacturer): { label: string; id: string } => {
@@ -60,15 +66,315 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   allUnits,
   allManufacturers,
   assemblies,
-  reimbursementRequests,
   open,
   watch,
   createManufacturer,
-  setValue
+  setValue,
+  fromRRForm = false
 }) => {
+  const [additionalDetailsOpen, setAdditionalDetailsOpen] = useState(!fromRRForm);
+
   const quantity = watch('quantity');
   const price = watch('price');
   const subtotal = quantity && price ? quantity * price : 0;
+
+  const [copyModalOpen, setCopyModalOpen] = React.useState(false);
+
+  const handleCopySelect = (m: Material) => {
+    setValue('name', m.name ?? '');
+    setValue('materialTypeName', m.materialTypeName ?? '');
+    setValue('manufacturerName', m.manufacturerName ?? '');
+    setValue('manufacturerPartNumber', m.manufacturerPartNumber ?? '');
+    setValue('pdmFileName', m.pdmFileName ?? '');
+    setValue('linkUrl', m.linkUrl ?? '');
+    setValue('quantity', m.quantity != null ? Number(m.quantity) : undefined);
+    setValue('unitName', m.unitName ?? undefined);
+    setValue('price', m.price != null ? m.price / 100 : undefined);
+    setValue('notes', m.notes ?? '');
+    setValue('assemblyId', undefined);
+
+    setCopyModalOpen(false);
+  };
+  const optionalFields = (
+    <Grid container spacing={2}>
+      <Grid item xs={12}>
+        <FormControl fullWidth>
+          <FormLabel>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.75rem',
+                  color: '#EF4345'
+                }}
+                variant="h5"
+              >
+                Manufacturer:
+              </Typography>
+              <Tooltip
+                title={'Make sure not to enter the distributor (e.g. Amazon)'}
+                style={{ marginRight: '2px' }}
+                placement="right"
+              >
+                <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
+              </Tooltip>
+            </Box>
+          </FormLabel>
+          <Controller
+            name="manufacturerName"
+            control={control}
+            render={({ field: { onChange, value } }) => {
+              const mappedManufacturers = (allManufacturers ?? [])
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(manufacturersToAutocomplete);
+              const onClear = () => {
+                setValue('manufacturerName', '');
+                onChange('');
+              };
+              return (
+                <Box sx={{ alignItems: 'center' }}>
+                  <NERAutocomplete
+                    sx={{ bgcolor: 'inherit' }}
+                    id={'manufacturer'}
+                    size="medium"
+                    disabled={!allManufacturers}
+                    options={mappedManufacturers}
+                    value={mappedManufacturers.find((manufacturer) => manufacturer.label === value) || null}
+                    placeholder={!allManufacturers ? 'Loading...' : 'Select Manufacturer'}
+                    onChange={(_event, newValue) => {
+                      newValue ? onChange(newValue.id) : onClear();
+                    }}
+                    errorMessage={errors.manufacturerName}
+                  />
+                </Box>
+              );
+            }}
+          />
+        </FormControl>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            color: '#EF4345',
+            mt: 1,
+            ml: 0.5
+          }}
+        >
+          <AddCircle
+            sx={{ fontSize: 20, mr: 1, cursor: 'pointer' }}
+            onClick={() => {
+              const newManufacturerName = prompt('Enter New Manufacturer Name');
+              if (newManufacturerName !== null) {
+                createManufacturer(newManufacturerName);
+              }
+            }}
+          />
+          <Typography
+            sx={{
+              fontWeight: 'bold',
+              fontSize: '0.95rem'
+            }}
+          >
+            Add Manufacturer
+          </Typography>
+        </Box>
+      </Grid>
+      <Grid item xs={12}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography
+            sx={{
+              fontWeight: 'bold',
+              fontSize: '1.75rem',
+              color: '#EF4345',
+              mb: -2
+            }}
+            variant="h5"
+          >
+            Part Details:
+          </Typography>
+          <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="right">
+            <HelpIcon sx={{ marginBottom: '-1.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
+          </Tooltip>
+        </Box>
+      </Grid>
+      <Grid item xs={6}>
+        <FormControl fullWidth>
+          <ReactHookTextField
+            name="manufacturerPartNumber"
+            control={control}
+            errorMessage={errors.manufacturerPartNumber}
+            placeholder="Manufacturer Part Number"
+          />
+        </FormControl>
+      </Grid>
+      <Grid item xs={6}>
+        <FormControl fullWidth>
+          <ReactHookTextField
+            required={false}
+            name="pdmFileName"
+            control={control}
+            errorMessage={errors.pdmFileName}
+            placeholder="PDM File Name"
+          />
+        </FormControl>
+      </Grid>
+      <Grid item xs={12}>
+        <FormControl fullWidth>
+          <ReactHookTextField name="linkUrl" control={control} errorMessage={errors.linkUrl} placeholder="Link" />
+        </FormControl>
+      </Grid>
+      <Grid xs={5.75}>
+        <Box display={'flex'} alignItems={'center'} mt={2} ml={2}>
+          <Box mr={2}>
+            <FormControl fullWidth>
+              <ReactHookTextField
+                name="quantity"
+                control={control}
+                errorMessage={errors.quantity}
+                placeholder="Quantity"
+                type="number"
+              />
+            </FormControl>
+          </Box>
+          <FormControl fullWidth>
+            <Controller
+              name="unitName"
+              control={control}
+              defaultValue={control._defaultValues.unitName}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  select
+                  disabled={!allUnits}
+                  variant="outlined"
+                  error={!!errors.unitName}
+                  helperText={errors.unitName?.message}
+                  value={field.value || ''}
+                  SelectProps={{
+                    displayEmpty: true,
+                    renderValue: (selected) =>
+                      !allUnits ? (
+                        <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>Loading...</Typography>
+                      ) : selected ? (
+                        allUnits.find((unit) => unit.name === selected)?.name
+                      ) : (
+                        <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>Unit</Typography>
+                      )
+                  }}
+                >
+                  {!allUnits ? (
+                    <MenuItem disabled value="">
+                      Loading...
+                    </MenuItem>
+                  ) : (
+                    allUnits.map((unit) => (
+                      <MenuItem key={unit.name} value={unit.name}>
+                        {unit.name}
+                      </MenuItem>
+                    ))
+                  )}
+                </TextField>
+              )}
+            />
+          </FormControl>
+        </Box>
+      </Grid>
+      <Grid item xs={3.25}>
+        <FormControl fullWidth>
+          <Controller
+            name={`price`}
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                variant={'outlined'}
+                type="number"
+                autoComplete="off"
+                placeholder="Price Per Unit"
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>
+                }}
+                sx={{ width: '100%' }}
+                error={!!errors.price}
+              />
+            )}
+          />
+          <FormHelperText error>{errors.price?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={3} display="flex" alignItems="center" color="#EF4345">
+        <DetailDisplay label="Subtotal" content={`$${subtotal.toFixed(2)}`} />
+      </Grid>
+      <Grid item xs={12}>
+        <Typography
+          sx={{
+            fontWeight: 'bold',
+            fontSize: '1.75rem',
+            color: '#EF4345',
+            mb: -2
+          }}
+          variant="h5"
+        >
+          Additional Information:
+        </Typography>
+      </Grid>
+      <Grid item xs={12}>
+        <FormControl fullWidth>
+          <ReactHookTextField
+            name="notes"
+            control={control}
+            errorMessage={errors.notes}
+            placeholder="Enter Notes"
+            multiline
+          />
+        </FormControl>
+      </Grid>
+      <Grid item xs={12}>
+        <FormControl fullWidth>
+          <Controller
+            name="assemblyId"
+            control={control}
+            defaultValue={control._defaultValues.assemblyId}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                select
+                disabled={!assemblies}
+                variant="outlined"
+                error={!!errors.assemblyId}
+                helperText={errors.assemblyId?.message}
+                SelectProps={{
+                  displayEmpty: true,
+                  renderValue: (selected) =>
+                    !assemblies ? (
+                      <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>Loading...</Typography>
+                    ) : selected ? (
+                      assemblies.find((a) => a.assemblyId === selected)?.name
+                    ) : (
+                      <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>
+                        Enter Assembly Details
+                      </Typography>
+                    )
+                }}
+              >
+                {!assemblies ? (
+                  <MenuItem disabled value="">
+                    Loading...
+                  </MenuItem>
+                ) : (
+                  assemblies.map((assembly) => (
+                    <MenuItem key={assembly.assemblyId} value={assembly.assemblyId}>
+                      {assembly.name}
+                    </MenuItem>
+                  ))
+                )}
+              </TextField>
+            )}
+          />
+        </FormControl>
+      </Grid>
+    </Grid>
+  );
 
   return (
     <NERFormModal
@@ -82,7 +388,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
       showCloseButton
     >
       <Grid container spacing={2}>
-        <Grid item xs={7}>
+        <Grid item xs={12}>
           <FormControl fullWidth>
             <Typography
               sx={{
@@ -99,51 +405,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               control={control}
               errorMessage={errors.name}
               placeholder="Enter Name for Material"
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={5}>
-          <FormControl fullWidth>
-            <Typography
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.75rem',
-                color: '#EF4345'
-              }}
-              variant="h5"
-            >
-              Reimbursement #:
-            </Typography>
-            <Controller
-              name="reimbursementRequestId"
-              control={control}
-              defaultValue={control._defaultValues.reimbursementRequestId}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  variant="outlined"
-                  error={!!errors.reimbursementRequestId}
-                  helperText={errors.reimbursementRequestId?.message}
-                  SelectProps={{
-                    displayEmpty: true,
-                    renderValue: (selected) =>
-                      selected ? (
-                        reimbursementRequests.find((rr) => rr.reimbursementRequestId === selected)?.identifier
-                      ) : (
-                        <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>
-                          Select Corresponding RR
-                        </Typography>
-                      )
-                  }}
-                >
-                  {reimbursementRequests.map((rr: ReimbursementRequest) => (
-                    <MenuItem key={rr.reimbursementRequestId} value={rr.reimbursementRequestId}>
-                      {rr.identifier}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
             />
           </FormControl>
         </Grid>
@@ -198,7 +459,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               control={control}
               defaultValue=""
               render={({ field: { onChange, value } }) => {
-                const mappedTypes = allMaterialTypes
+                const mappedTypes = (allMaterialTypes ?? [])
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map(materialTypeToAutocomplete);
 
@@ -206,16 +467,16 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   setValue('materialTypeName', '');
                   onChange('');
                 };
-
                 return (
                   <Box sx={{ alignItems: 'center' }}>
                     <NERAutocomplete
                       sx={{ bgcolor: 'inherit' }}
                       id={'material-type'}
                       size="medium"
+                      disabled={!allMaterialTypes}
                       options={mappedTypes}
                       value={mappedTypes.find((type) => type.label === value) || null}
-                      placeholder="Select Material Type"
+                      placeholder={!allMaterialTypes ? 'Loading...' : 'Select Material Type'}
                       onChange={(_event, newValue) => {
                         newValue ? onChange(newValue.id) : onClear();
                       }}
@@ -228,272 +489,69 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           </FormControl>
         </Grid>
         <Grid item xs={12}>
-          <FormControl fullWidth>
-            <FormLabel>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Typography
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: '1.75rem',
-                    color: '#EF4345'
-                  }}
-                  variant="h5"
-                >
-                  Manufacturer:*
-                </Typography>
-                <Tooltip
-                  title={'Make sure not to enter the distributor (e.g. Amazon)'}
-                  style={{ marginRight: '2px' }}
-                  placement="right"
-                >
-                  <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
-                </Tooltip>
-              </Box>
-            </FormLabel>
-            <Controller
-              name="manufacturerName"
-              control={control}
-              render={({ field: { onChange, value } }) => {
-                const mappedManufacturers = allManufacturers
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map(manufacturersToAutocomplete);
-                const onClear = () => {
-                  setValue('manufacturerName', '');
-                  onChange('');
-                };
-                return (
-                  <Box sx={{ alignItems: 'center' }}>
-                    <NERAutocomplete
-                      sx={{ bgcolor: 'inherit' }}
-                      id={'manufacturer'}
-                      size="medium"
-                      options={mappedManufacturers}
-                      value={mappedManufacturers.find((manufacturer) => manufacturer.label === value) || null}
-                      placeholder="Select Manufacturer"
-                      onChange={(_event, newValue) => {
-                        newValue ? onChange(newValue.id) : onClear();
-                      }}
-                      errorMessage={errors.manufacturerName}
-                    />
-                  </Box>
-                );
+          {fromRRForm ? (
+            <Accordion
+              expanded={additionalDetailsOpen}
+              onChange={(_e, isExpanded) => setAdditionalDetailsOpen(isExpanded)}
+              disableGutters
+              elevation={0}
+              sx={{
+                '&:before': { display: 'none' },
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: '8px !important'
               }}
-            />
-          </FormControl>
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                sx={{
+                  flexDirection: 'row-reverse',
+                  gap: 1,
+                  minHeight: '40px',
+                  '& .MuiAccordionSummary-content': { my: '8px' }
+                }}
+              >
+                <Typography variant="body2" fontWeight="bold">
+                  Add Additional Details
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ pt: 0 }}>{optionalFields}</AccordionDetails>
+            </Accordion>
+          ) : (
+            optionalFields
+          )}
+        </Grid>
+      </Grid>
+      {submitText === 'Add' && (
+        <Grid item xs={12} sx={{ pl: 0, pr: 0 }}>
           <Box
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              color: '#EF4345',
-              mt: 1,
-              ml: 0.5
+              pt: 1
             }}
           >
-            <AddCircle
-              sx={{ fontSize: 20, mr: 1, cursor: 'pointer' }}
-              onClick={() => {
-                const newManufacturerName = prompt('Enter New Manufacturer Name');
-                if (newManufacturerName !== null) {
-                  createManufacturer(newManufacturerName);
-                }
-              }}
-            />
-            <Typography
+            <Button
+              variant="contained"
+              disableElevation
+              onClick={() => setCopyModalOpen(true)}
               sx={{
-                fontWeight: 'bold',
-                fontSize: '0.95rem'
+                mx: 0,
+                textTransform: 'none',
+                bgcolor: '#EF4345',
+                color: (t) => t.palette.getContrastText('#EF4345'),
+                '&:hover': { bgcolor: (t) => t.palette.error.dark }
               }}
             >
-              Add Manufacturer
-            </Typography>
+              COPY FROM EXISTING BOM
+            </Button>
           </Box>
         </Grid>
-        <Grid item xs={12}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.75rem',
-                color: '#EF4345',
-                mb: -2
-              }}
-              variant="h5"
-            >
-              Part Details:*
-            </Typography>
-            <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="right">
-              <HelpIcon
-                sx={{
-                  fontSize: 'medium',
-                  ml: 1,
-                  color: 'lightgray',
-                  cursor: 'pointer'
-                }}
-              />
-            </Tooltip>
-          </Box>
-        </Grid>
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <ReactHookTextField
-              name="manufacturerPartNumber"
-              control={control}
-              errorMessage={errors.manufacturerPartNumber}
-              placeholder="Manufacturer Part Number"
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <ReactHookTextField
-              required={false}
-              name="pdmFileName"
-              control={control}
-              errorMessage={errors.pdmFileName}
-              placeholder="PDM File Name"
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12}>
-          <FormControl fullWidth>
-            <ReactHookTextField name="linkUrl" control={control} errorMessage={errors.linkUrl} placeholder="Link" />
-          </FormControl>
-        </Grid>
-        <Grid xs={5.75}>
-          <Box display={'flex'} alignItems={'center'} mt={2} ml={2}>
-            <Box mr={2}>
-              <FormControl fullWidth>
-                <ReactHookTextField
-                  name="quantity"
-                  control={control}
-                  errorMessage={errors.quantity}
-                  placeholder="Quantity"
-                  type="number"
-                />
-              </FormControl>
-            </Box>
-            <FormControl fullWidth>
-              <Controller
-                name="unitName"
-                control={control}
-                defaultValue={control._defaultValues.unitName}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    select
-                    variant="outlined"
-                    error={!!errors.unitName}
-                    helperText={errors.unitName?.message}
-                    value={field.value || ''}
-                    SelectProps={{
-                      displayEmpty: true,
-                      renderValue: (selected) =>
-                        selected ? (
-                          allUnits.find((unit) => unit.name === selected)?.name
-                        ) : (
-                          <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>Unit</Typography>
-                        )
-                    }}
-                  >
-                    {allUnits.map((unit) => (
-                      <MenuItem key={unit.name} value={unit.name}>
-                        {unit.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
-              />
-            </FormControl>
-          </Box>
-        </Grid>
-        <Grid item xs={3.25}>
-          <FormControl fullWidth>
-            <Controller
-              name={`price`}
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  variant={'outlined'}
-                  type="number"
-                  autoComplete="off"
-                  placeholder="Price Per Unit"
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">$</InputAdornment>
-                  }}
-                  sx={{ width: '100%' }}
-                  error={!!errors.price}
-                />
-              )}
-            />
-            <FormHelperText error>{errors.price}</FormHelperText>
-          </FormControl>
-        </Grid>
-        <Grid item xs={3} display="flex" alignItems="center" color="#EF4345">
-          <DetailDisplay label="Subtotal" content={`$${subtotal.toFixed(2)}`} />
-        </Grid>
-        <Grid item xs={12}>
-          <Typography
-            sx={{
-              fontWeight: 'bold',
-              fontSize: '1.75rem',
-              color: '#EF4345',
-              mb: -2
-            }}
-            variant="h5"
-          >
-            Additional Information:
-          </Typography>
-        </Grid>
-        <Grid item xs={12}>
-          <FormControl fullWidth>
-            <ReactHookTextField
-              name="notes"
-              control={control}
-              errorMessage={errors.notes}
-              placeholder="Enter Notes"
-              multiline
-            />
-          </FormControl>
-        </Grid>
-      </Grid>
-      <Grid item xs={12}>
-        <Box display={'flex'} justifyContent={'flex-end'} mt={2}>
-          <FormControl fullWidth>
-            <Controller
-              name="assemblyId"
-              control={control}
-              defaultValue={control._defaultValues.assemblyId}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  variant="outlined"
-                  error={!!errors.assemblyId}
-                  helperText={errors.assemblyId?.message}
-                  SelectProps={{
-                    displayEmpty: true,
-                    renderValue: (selected) =>
-                      selected ? (
-                        assemblies.find((a) => a.assemblyId === selected)?.name
-                      ) : (
-                        <Typography sx={{ fontSize: '1rem', color: 'lightgray', opacity: 0.6 }}>
-                          Enter Assembly Details
-                        </Typography>
-                      )
-                  }}
-                >
-                  {assemblies.map((assembly) => (
-                    <MenuItem key={assembly.assemblyId} value={assembly.assemblyId}>
-                      {assembly.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
-          </FormControl>
-        </Box>
-      </Grid>
+      )}
+      <SelectMaterialToCopyModal
+        open={copyModalOpen}
+        onHide={() => setCopyModalOpen(false)}
+        onSelect={handleCopySelect}
+        assemblies={assemblies ?? []}
+      />
     </NERFormModal>
   );
 };

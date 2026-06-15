@@ -4,7 +4,14 @@
  */
 
 import axios from '../utils/axios';
-import { DescriptionBulletPreview, WbsNumber, WorkPackage, WorkPackagePreview, WorkPackageStage } from 'shared';
+import {
+  dateToMidnightUTC,
+  DescriptionBulletPreview,
+  WbsNumber,
+  WorkPackage,
+  WorkPackagePreview,
+  WorkPackageStage
+} from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackagePreviewTransformer, workPackageTransformer } from './transformers/work-packages.transformers';
@@ -45,6 +52,17 @@ export const getAllWorkPackages = (queryParams?: { [field: string]: string }) =>
 export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
   return axios.get<WorkPackage>(apiUrls.workPackagesByWbsNum(wbsPipe(wbsNum)), {
     transformResponse: (data) => workPackageTransformer(JSON.parse(data))
+  });
+};
+
+/**
+ * Fetch all work packages for a given project
+ * @param projectWbsNum the wbs number of the project
+ * @returns the work packages for the given project
+ */
+export const getWorkPackagesByProject = (projectWbsNum: WbsNumber) => {
+  return axios.get<WorkPackage[]>(apiUrls.workPackagesByProject(wbsPipe(projectWbsNum)), {
+    transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
   });
 };
 
@@ -109,7 +127,7 @@ export const getManyWorkPackages = (wbsNums: WbsNumber[]) => {
  */
 export const slackUpcomingDeadlines = (deadline: Date) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
-    deadline
+    deadline: dateToMidnightUTC(deadline)
   });
 };
 

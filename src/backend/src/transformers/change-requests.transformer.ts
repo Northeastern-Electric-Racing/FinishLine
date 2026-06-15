@@ -8,8 +8,10 @@ import {
   WbsElementStatus,
   WorkPackageProposedChanges,
   WorkPackageStage,
-  isProjectWbs,
-  BudgetChangeRequest
+  BudgetChangeRequest,
+  isWorkPackageWbs,
+  LeadershipChangeRequest,
+  ChangeRequestStatus
 } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
 import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils.js';
@@ -24,10 +26,12 @@ import {
 } from '../prisma-query-args/scope-change-requests.query-args.js';
 import { HttpException } from '../utils/errors.utils.js';
 import {
+  ChangeRequestGuestQueryArgs,
   ChangeRequestManyQueryArgs,
   ChangeRequestWithProjectAndWorkPackageQueryArgs
 } from '../prisma-query-args/change-requests.query-args.js';
 import { accountCodeTransformer, otherProductReasonTransformer } from './reimbursement-requests.transformer.js';
+import { GuestChangeRequest } from '../../../shared/src/types/change-request-types.js';
 
 const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>
@@ -76,7 +80,13 @@ const workPackageProposedChangesTransformer = (
 
 export const changeRequestManyTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestManyQueryArgs>
-): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest => {
+):
+  | ChangeRequest
+  | StandardChangeRequest
+  | ActivationChangeRequest
+  | StageGateChangeRequest
+  | BudgetChangeRequest
+  | LeadershipChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
   return {
@@ -108,13 +118,17 @@ export const changeRequestManyTransformer = (
     proposedSolutions: undefined,
     originalProjectData: undefined,
     originalWorkPackageData: undefined,
-    // activation cr fields
-    lead: changeRequest.activationChangeRequest?.lead
-      ? userTransformer(changeRequest.activationChangeRequest.lead)
-      : undefined,
-    manager: changeRequest.activationChangeRequest?.manager
-      ? userTransformer(changeRequest.activationChangeRequest.manager)
-      : undefined,
+    // activation + leadership cr fields
+    lead: changeRequest.leadershipChangeRequest?.lead
+      ? userTransformer(changeRequest.leadershipChangeRequest.lead)
+      : changeRequest.activationChangeRequest?.lead
+        ? userTransformer(changeRequest.activationChangeRequest.lead)
+        : undefined,
+    manager: changeRequest.leadershipChangeRequest?.manager
+      ? userTransformer(changeRequest.leadershipChangeRequest.manager)
+      : changeRequest.activationChangeRequest?.manager
+        ? userTransformer(changeRequest.activationChangeRequest.manager)
+        : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields
@@ -128,11 +142,17 @@ export const changeRequestManyTransformer = (
 
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>
-): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest => {
+):
+  | ChangeRequest
+  | StandardChangeRequest
+  | ActivationChangeRequest
+  | StageGateChangeRequest
+  | BudgetChangeRequest
+  | LeadershipChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
   const wbsName = changeRequest.wbsElement
-    ? isProjectWbs(changeRequest.wbsElement)
+    ? !isWorkPackageWbs(changeRequest.wbsElement)
       ? changeRequest.wbsElement?.name
       : `${changeRequest.wbsElement?.workPackage?.project.wbsElement.name} - ${changeRequest.wbsElement?.name}`
     : undefined;
@@ -189,13 +209,17 @@ const changeRequestTransformer = (
     originalWorkPackageData: changeRequest.scopeChangeRequest?.wbsOriginalData?.workPackageProposedChanges
       ? workPackageProposedChangesTransformer(changeRequest.scopeChangeRequest.wbsOriginalData.workPackageProposedChanges)
       : undefined,
-    // activation cr fields
-    lead: changeRequest.activationChangeRequest?.lead
-      ? userTransformer(changeRequest.activationChangeRequest.lead)
-      : undefined,
-    manager: changeRequest.activationChangeRequest?.manager
-      ? userTransformer(changeRequest.activationChangeRequest.manager)
-      : undefined,
+    // activation + leadership cr fields
+    lead: changeRequest.leadershipChangeRequest?.lead
+      ? userTransformer(changeRequest.leadershipChangeRequest.lead)
+      : changeRequest.activationChangeRequest?.lead
+        ? userTransformer(changeRequest.activationChangeRequest.lead)
+        : undefined,
+    manager: changeRequest.leadershipChangeRequest?.manager
+      ? userTransformer(changeRequest.leadershipChangeRequest.manager)
+      : changeRequest.activationChangeRequest?.manager
+        ? userTransformer(changeRequest.activationChangeRequest.manager)
+        : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields
@@ -208,3 +232,41 @@ const changeRequestTransformer = (
 };
 
 export default changeRequestTransformer;
+
+export const guestChangeRequestTransformer = (
+  changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestGuestQueryArgs>
+): GuestChangeRequest => {
+  const status = changeRequest.changes.length
+    ? ChangeRequestStatus.Implemented
+    : changeRequest.accepted && changeRequest.dateReviewed
+      ? ChangeRequestStatus.Accepted
+      : changeRequest.dateReviewed
+        ? ChangeRequestStatus.Denied
+        : ChangeRequestStatus.Open;
+
+  const wbsName = changeRequest.wbsElement
+    ? !isWorkPackageWbs(changeRequest.wbsElement)
+      ? changeRequest.wbsElement?.name
+      : `${changeRequest.wbsElement?.workPackage?.project.wbsElement.name} - ${changeRequest.wbsElement?.name}`
+    : undefined;
+
+  return {
+    crId: changeRequest.crId,
+    submitter: userTransformer(changeRequest.submitter),
+    identifier: changeRequest.identifier,
+    type: changeRequest.type,
+    status,
+    teamTypeNames: changeRequest.wbsElement
+      ? isWorkPackageWbs(changeRequest.wbsElement)
+        ? (changeRequest.wbsElement.workPackage?.project?.teams
+            .map((team) => team.teamType?.name)
+            .filter((name) => name !== undefined) ?? [])
+        : (changeRequest.wbsElement.project?.teams.map((team) => team.teamType?.name).filter((name) => name !== undefined) ??
+          [])
+      : [],
+    accepted: changeRequest.accepted ?? undefined,
+    reviewer: changeRequest.reviewer ? userTransformer(changeRequest.reviewer) : undefined,
+    wbsNum: changeRequest.wbsElement ? wbsNumOf(changeRequest.wbsElement) : undefined,
+    wbsName
+  };
+};

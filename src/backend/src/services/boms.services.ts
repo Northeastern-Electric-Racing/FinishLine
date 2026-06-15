@@ -49,19 +49,17 @@ export default class BillOfMaterialsService {
    * @param name the name of the material
    * @param status the Material Status of the material
    * @param materialTypeName the name of the Material Type
-   * @param manufacturerName the name of the material's manufacturer
-   * @param manufacturerPartNumber the manufacturer part number for the material
-   * @param quantity the quantity of material as a number
-   * @param price the price of the material in whole cents
-   * @param subtotal the subtotal of the price for the material in whole cents
    * @param linkUrl the url for the material's link as a string
-   * @param notes any notes about the material as a string
    * @param wbsNumber the WBS number of the project associated with this material
-   * @param organizationId the id of the organization the user is currently in
-   * @param assemblyId the id of the Assembly for the material
-   * @param pdmFileName the name of the pdm file for the material
-   * @param unitName the name of the Quantity Unit the quantity is measured in
-   * @param reimbursementRequestId the id of the Reimbursement Request for the material
+   * @param organization the organization the user is currently in
+   * @param manufacturerName the name of the material's manufacturer (optional)
+   * @param manufacturerPartNumber the manufacturer part number for the material (optional)
+   * @param quantity the quantity of material as a number (optional)
+   * @param price the price of the material in whole cents (optional)
+   * @param notes any notes about the material as a string (optional)
+   * @param assemblyId the id of the Assembly for the material (optional)
+   * @param pdmFileName the name of the pdm file for the material (optional)
+   * @param unitName the name of the Quantity Unit the quantity is measured in (optional)
    * @returns the created material
    */
   static async createMaterial(
@@ -69,19 +67,17 @@ export default class BillOfMaterialsService {
     name: string,
     status: Material_Status,
     materialTypeName: string,
-    manufacturerName: string,
-    manufacturerPartNumber: string,
-    quantity: Decimal,
-    price: number,
-    subtotal: number,
     linkUrl: string,
     wbsNumber: WbsNumber,
     organization: Organization,
+    manufacturerName?: string,
+    manufacturerPartNumber?: string,
+    quantity?: Decimal,
+    price?: number,
     notes?: string,
     assemblyId?: string,
     pdmFileName?: string,
-    unitName?: string,
-    reimbursementRequestId?: string
+    unitName?: string
   ): Promise<Material> {
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
 
@@ -98,11 +94,14 @@ export default class BillOfMaterialsService {
     if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
     if (materialType.dateDeleted) throw new DeletedException('Material Type', materialTypeName);
 
-    const manufacturer = await prisma.manufacturer.findUnique({
-      where: { uniqueManufacturer: { name: manufacturerName, organizationId: organization.organizationId } }
-    });
-    if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
-    if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturerName);
+    let manufacturer = null;
+    if (manufacturerName) {
+      manufacturer = await prisma.manufacturer.findUnique({
+        where: { uniqueManufacturer: { name: manufacturerName, organizationId: organization.organizationId } }
+      });
+      if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
+      if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturerName);
+    }
 
     let unit = null;
     if (unitName) {
@@ -112,21 +111,14 @@ export default class BillOfMaterialsService {
       if (!unit) throw new NotFoundException('Unit', unitName);
     }
 
-    if (reimbursementRequestId) {
-      const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
-        where: { reimbursementRequestId, dateDeleted: null }
-      });
-
-      if (!reimbursementRequest) {
-        throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
-      }
-    }
-
     const perms =
       (await userHasPermission(creator.userId, organization.organizationId, isLeadership)) ||
       isUserPartOfTeams(project.teams, creator);
 
     if (!perms) throw new AccessDeniedException('create materials');
+
+    const computedSubtotal =
+      price !== undefined && quantity !== undefined ? Math.round(price * Number(quantity)) : undefined;
 
     const createdMaterial = await prisma.material.create({
       data: {
@@ -135,23 +127,95 @@ export default class BillOfMaterialsService {
         assemblyId,
         status,
         materialTypeId: materialType.id,
-        manufacturerId: manufacturer.id,
+        manufacturerId: manufacturer ? manufacturer.id : null,
         manufacturerPartNumber,
         pdmFileName,
         quantity,
         unitId: unit ? unit.id : null,
         price,
-        subtotal,
+        subtotal: computedSubtotal,
         linkUrl,
         notes,
         dateCreated: new Date(),
-        wbsElementId: project.wbsElementId,
-        reimbursementRequestId
+        wbsElementId: project.wbsElementId
       },
       ...getMaterialQueryArgs(organization.organizationId)
     });
 
     return materialTransformer(createdMaterial);
+  }
+
+  /**
+   * Copy materials to project
+   * @param user The user making the copy
+   * @param materialIds The ids of the materials to be copied
+   * @param destinationProjectId The id of the project to copy the materials to
+   * @param organization The organization the user is currently in
+   * @returns an array of the newly created material ids
+   * @throws errors that will be added here later
+   */
+  static async copyMaterialsToProject(
+    user: User,
+    materialIds: string[],
+    destinationProjectId: WbsNumber,
+    organization: Organization
+  ): Promise<string[]> {
+    // Fetch materials to be copied
+    const materials = await prisma.material.findMany({
+      where: {
+        materialId: { in: materialIds },
+        dateDeleted: null
+      },
+      ...getMaterialQueryArgs(organization.organizationId)
+    });
+
+    if (materials.length !== materialIds.length) throw new NotFoundException('Material', 'Not all materials found');
+
+    const invalidMaterials = materials.filter(
+      (material) => material.materialType.organizationId !== organization.organizationId
+    );
+    if (invalidMaterials.length > 0) throw new HttpException(400, 'All materials must be from the current organization');
+
+    const destinationProject = await ProjectsService.getSingleProjectWithQueryArgs(destinationProjectId, organization);
+
+    const perms =
+      (await userHasPermission(user.userId, organization.organizationId, isLeadership)) ||
+      isUserPartOfTeams(destinationProject.teams, user);
+
+    if (!perms) throw new AccessDeniedException('Permission to copy materials denied');
+
+    return await prisma.$transaction(async (tx) => {
+      const newMaterialIds: string[] = [];
+
+      for (const material of materials) {
+        const newMaterial = await tx.material.create({
+          data: {
+            name: material.name,
+            status: Material_Status.NOT_READY_TO_ORDER,
+            materialTypeId: material.materialTypeId,
+            manufacturerId: material.manufacturerId,
+            manufacturerPartNumber: material.manufacturerPartNumber,
+            pdmFileName: material.pdmFileName,
+            quantity: material.quantity,
+            unitId: material.unitId,
+            price: material.price,
+            subtotal: material.subtotal,
+            linkUrl: material.linkUrl,
+            notes: material.notes,
+            dateCreated: new Date(),
+            userCreatedId: user.userId,
+            wbsElementId: destinationProject.wbsElementId,
+            assemblyId: null,
+            isCopied: true
+          },
+          ...getMaterialQueryArgs(organization.organizationId)
+        });
+
+        newMaterialIds.push(newMaterial.materialId);
+      }
+
+      return newMaterialIds;
+    });
   }
 
   /**
@@ -542,18 +606,16 @@ export default class BillOfMaterialsService {
    * @param name the name of the edited material
    * @param status the status of the edited material
    * @param materialTypeName the material type of the edited material
-   * @param manufacturerName the manufacturerName of the edited material
-   * @param manufacturerPartNumber the manufacturerPartNumber of the edited material
-   * @param quantity the quantity of the edited material
-   * @param price the price of the edited material
-   * @param subtotal the subtotal of the edited material
    * @param linkUrl the linkUrl of the edited material
-   * @param organizationId the organization the user is currently in
-   * @param notes the notes of the edited material
-   * @param unitName the unit name of the edited material
-   * @param assemblyId the assembly id of the edited material
-   * @param pdmFileName the pdm file name of the edited material
-   * @param reimbursementRequestId the id of the Reimbursement Request for the material
+   * @param organization the organization the user is currently in
+   * @param manufacturerName the manufacturerName of the edited material (optional)
+   * @param manufacturerPartNumber the manufacturerPartNumber of the edited material (optional)
+   * @param quantity the quantity of the edited material (optional)
+   * @param price the price of the edited material (optional)
+   * @param notes the notes of the edited material (optional)
+   * @param unitName the unit name of the edited material (optional)
+   * @param assemblyId the assembly id of the edited material (optional)
+   * @param pdmFileName the pdm file name of the edited material (optional)
    * @throws if permission denied or material's wbsElement is undefined/deleted
    * @returns the updated material
    */
@@ -563,18 +625,16 @@ export default class BillOfMaterialsService {
     name: string,
     status: Material_Status,
     materialTypeName: string,
-    manufacturerName: string,
-    manufacturerPartNumber: string,
-    quantity: Decimal,
-    price: number,
-    subtotal: number,
     linkUrl: string,
     organization: Organization,
+    manufacturerName?: string,
+    manufacturerPartNumber?: string,
+    quantity?: Decimal,
+    price?: number,
     notes?: string,
     unitName?: string,
     assemblyId?: string,
-    pdmFileName?: string,
-    reimbursementRequestId?: string
+    pdmFileName?: string
   ): Promise<Material> {
     const material = await BillOfMaterialsService.getSingleMaterialWithQueryArgs(materialId, organization);
 
@@ -604,17 +664,16 @@ export default class BillOfMaterialsService {
       if (!unit) throw new NotFoundException('Unit', unitName);
     }
 
-    if (reimbursementRequestId) {
-      const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
-        where: { reimbursementRequestId, dateDeleted: null }
-      });
-
-      if (!reimbursementRequest) {
-        throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
-      }
+    let manufacturer = null;
+    if (manufacturerName) {
+      manufacturer = await BillOfMaterialsService.getSingleManufacturerWithQueryArgs(manufacturerName, organization);
     }
 
-    const manufacturer = await BillOfMaterialsService.getSingleManufacturerWithQueryArgs(manufacturerName, organization);
+    // recalculate subtotal on edits
+    const finalPrice = price ?? material.price ?? undefined;
+    const finalQuantity = quantity ?? material.quantity ?? undefined;
+    const computedSubtotal =
+      finalPrice !== undefined && finalQuantity !== undefined ? Math.round(finalPrice * Number(finalQuantity)) : undefined;
 
     const updatedMaterial = await prisma.material.update({
       where: { materialId },
@@ -622,18 +681,17 @@ export default class BillOfMaterialsService {
         name,
         status,
         materialTypeId: materialType.id,
-        manufacturerId: manufacturer.id,
+        manufacturerId: manufacturer ? manufacturer.id : null,
         manufacturerPartNumber,
         quantity,
         unitId: unit ? unit.id : null,
         price,
-        subtotal,
+        subtotal: computedSubtotal,
         linkUrl,
         notes,
         wbsElementId: project.wbsElementId,
         assemblyId,
-        pdmFileName,
-        reimbursementRequestId
+        pdmFileName: pdmFileName !== undefined ? pdmFileName || null : undefined
       },
       ...getMaterialQueryArgs(organization.organizationId)
     });

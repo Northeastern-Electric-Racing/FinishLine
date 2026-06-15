@@ -1,15 +1,18 @@
 # TO BE RUN FROM DOCKER COMPOSE. DO NOT RUN MANUALLY AS CONTEXT IS NOT SET CORRECTLY
-FROM node:20
+FROM platformatic/node-caged:25-slim
+
+RUN npm install -g corepack --force && corepack enable
 
 WORKDIR /base
 
-COPY package.json tsconfig.build.json ./
+COPY package.json tsconfig.build.json .yarnrc.yml yarn.lock ./
+COPY .yarn/releases .yarn/releases
 COPY ./src/backend src/backend
 COPY ./src/shared src/shared
 
 RUN rm -rf src/backend/tests
 
-RUN yarn install --prod;
+RUN yarn install
 
 RUN echo DATABASE_URL=\"postgresql://postgres:docker@database:5432/nerpm?schema=public\" > ./src/backend/.env
 RUN echo NODE_ENV=development >> ./src/backend/.env

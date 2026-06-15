@@ -117,20 +117,8 @@ export function validateEventTypeConfiguration(
   const missingBoth = !eventData.location && !eventData.zoomLink;
 
   // Check required fields
-  if (eventType.requiredMembers && eventData.requiredMemberIds.length === 0) {
-    throw new InvalidEventTypeConfigurationException('at least one required member');
-  }
-  if (eventType.teamType && !eventData.teamTypeId) {
-    throw new InvalidEventTypeConfigurationException('a team type');
-  }
   if (requiresLocationOrZoom && missingBoth) {
     throw new InvalidEventTypeConfigurationException('a location or zoom link');
-  }
-  if (eventType.workPackage && eventData.workPackageIds.length === 0) {
-    throw new InvalidEventTypeConfigurationException('at least one work package');
-  }
-  if (eventType.questionDocument && !eventData.questionDocumentLink) {
-    throw new InvalidEventTypeConfigurationException('a question document');
   }
 
   // For requiresConfirmation events, the event must have an initialDateScheduled

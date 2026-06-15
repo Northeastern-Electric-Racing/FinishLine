@@ -20,9 +20,9 @@ const GeneralBalance = ({ data }: { data: ReimbursementRequestData }) => {
       </Typography>
       <PieChart
         totalBalance={data.totalBudget}
-        pendingLeadership={data.pendingLeadership}
-        pendingFinance={data.pendingFinance}
-        submittedToSABO={data.submittedToSabo}
+        pendingApproval={data.pendingApproval}
+        approved={data.approved}
+        addedToSABO={data.addedToSabo}
         reimbursed={data.reimbursed}
         available={data.available}
       />

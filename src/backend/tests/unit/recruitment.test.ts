@@ -1,8 +1,9 @@
 import prisma from '../../src/prisma/prisma.js';
-import { Organization } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
 import RecruitmentServices from '../../src/services/recruitment.services.js';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../../src/utils/errors.utils.js';
 import {
+  createTestGuestDefinition,
   createTestMilestone,
   createTestFaq,
   createTestFAQ,
@@ -10,6 +11,7 @@ import {
   createTestUser,
   resetUsers
 } from '../test-utils.js';
+import { GuestDefinitionType } from 'shared';
 import {
   batmanAppAdmin,
   wonderwomanGuest,
@@ -23,9 +25,11 @@ import {
 describe('Recruitment Tests', () => {
   let orgId: string;
   let organization: Organization;
+  let superman: User;
   beforeEach(async () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
+    superman = await createTestUser(supermanAdmin, orgId);
   });
 
   afterEach(async () => {
@@ -40,12 +44,7 @@ describe('Recruitment Tests', () => {
         'answer',
         organization
       );
-      const faq2 = await RecruitmentServices.createOrganizationFaq(
-        await createTestUser(supermanAdmin, orgId),
-        'question2',
-        'answer2',
-        organization
-      );
+      const faq2 = await RecruitmentServices.createOrganizationFaq(superman, 'question2', 'answer2', organization);
       const result = await RecruitmentServices.getAllOrganizationFaqs(organization);
       expect(result).toHaveLength(2);
       expect(result[0].question).toEqual(faq1.question);
@@ -172,7 +171,7 @@ describe('Recruitment Tests', () => {
         await expect(
           async () =>
             await RecruitmentServices.editMilestone(
-              await createTestUser(supermanAdmin, orgId),
+              superman,
               'name',
               'description',
               new Date('11/12/24'),
@@ -192,7 +191,7 @@ describe('Recruitment Tests', () => {
         );
 
         const updatedMilestone = await RecruitmentServices.editMilestone(
-          await createTestUser(supermanAdmin, orgId),
+          superman,
           'new name',
           'new description',
           new Date('11/14/24'),
@@ -217,7 +216,7 @@ describe('Recruitment Tests', () => {
         );
 
         const milestone2 = await RecruitmentServices.createMilestone(
-          await createTestUser(supermanAdmin, orgId),
+          superman,
           'name2',
           'description2',
           new Date('1/1/1'),
@@ -257,7 +256,7 @@ describe('Recruitment Tests', () => {
         });
 
         it('Fails if milestone is already deleted', async () => {
-          const testSuperman = await createTestUser(supermanAdmin, orgId);
+          const testSuperman = superman;
           const testMilestone = await createTestMilestone(testSuperman, orgId);
           await RecruitmentServices.deleteMilestone(testSuperman, testMilestone.milestoneId, organization);
 
@@ -267,7 +266,7 @@ describe('Recruitment Tests', () => {
         });
 
         it('Succeeds and deletes milestone', async () => {
-          const testSuperman = await createTestUser(supermanAdmin, orgId);
+          const testSuperman = superman;
           const testMilestone1 = await createTestMilestone(testSuperman, orgId);
 
           await RecruitmentServices.deleteMilestone(testSuperman, testMilestone1.milestoneId, organization);
@@ -327,10 +326,9 @@ describe('Recruitment Tests', () => {
       const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
       await RecruitmentServices.deleteFaq(await createTestUser(flashAdmin, orgId), testFaq.faqId, organization);
 
-      await expect(
-        async () =>
-          await RecruitmentServices.deleteFaq(await createTestUser(supermanAdmin, orgId), testFaq.faqId, organization)
-      ).rejects.toThrow(new DeletedException('Faq', testFaq.faqId));
+      await expect(async () => await RecruitmentServices.deleteFaq(superman, testFaq.faqId, organization)).rejects.toThrow(
+        new DeletedException('Faq', testFaq.faqId)
+      );
     });
 
     it('Succeeds and deletes an FAQ', async () => {
@@ -343,6 +341,274 @@ describe('Recruitment Tests', () => {
       });
 
       expect(deletedTestFaq?.dateDeleted).not.toBe(null);
+    });
+  });
+
+  describe('Create Guest Definitions', () => {
+    it('Successful guest definition creation', async () => {
+      const def = await RecruitmentServices.createGuestDefinition(
+        superman,
+        organization,
+        'test term',
+        'test description',
+        2,
+        GuestDefinitionType.INFO_PAGE,
+        'iconname',
+        'buttonTxt',
+        'buttonLink'
+      );
+
+      expect(def.term).toBe('test term');
+      expect(def.description).toBe('test description');
+      expect(def.order).toBe(2);
+      expect(def.icon).toBe('iconname');
+      expect(def.buttonText).toBe('buttonTxt');
+      expect(def.buttonLink).toBe('buttonLink');
+    });
+    it('Fails when non admin tries to create guest definition', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.createGuestDefinition(
+            await createTestUser(member, orgId),
+            organization,
+            'test term',
+            'test description',
+            2,
+            GuestDefinitionType.INFO_PAGE,
+            'iconname',
+            'buttonTxt',
+            'buttonLink'
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a guest definition'));
+    });
+  });
+
+  describe('Get a single guest definition', () => {
+    it('Get a single guest definition works', async () => {
+      const guestDefinition = await RecruitmentServices.createGuestDefinition(
+        superman,
+        organization,
+        'test term',
+        'test description',
+        2,
+        GuestDefinitionType.INFO_PAGE,
+        'iconname',
+        'buttonTxt',
+        'buttonLink'
+      );
+      const result = await RecruitmentServices.getSingleGuestDefinition(organization, guestDefinition.definitionId);
+      expect(result).toStrictEqual(guestDefinition);
+    });
+
+    it('Get a single guest definition fails', async () => {
+      const nonExistingDefinitionId = 'nonExistingDefinition';
+      await expect(async () =>
+        RecruitmentServices.getSingleGuestDefinition(organization, nonExistingDefinitionId)
+      ).rejects.toThrow(new NotFoundException('Guest Definition', nonExistingDefinitionId));
+    });
+  });
+  describe('Edit Guest Definition', () => {
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editGuestDefinition(
+            await createTestUser(member, orgId),
+            organization,
+            'test term',
+            'test description',
+            'test definition id',
+            2,
+            GuestDefinitionType.INFO_PAGE,
+            'buttonTxt',
+            'buttonLink'
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a guest definition'));
+    });
+
+    it('Fails if guest definition doesn`t exist', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editGuestDefinition(
+            await createTestUser(batmanAppAdmin, orgId),
+            organization,
+            'term',
+            'description',
+            'definition id',
+            2,
+            GuestDefinitionType.INFO_PAGE,
+            'buttonTxt',
+            'buttonLink'
+          )
+      ).rejects.toThrow(new NotFoundException('Guest Definition', 'definition id'));
+    });
+
+    it('Successful edit guest definition', async () => {
+      const def = await RecruitmentServices.createGuestDefinition(
+        superman,
+        organization,
+        'test term',
+        'test description',
+        2,
+        GuestDefinitionType.INFO_PAGE,
+        'iconname',
+        'buttonTxt',
+        'buttonLink'
+      );
+
+      const edited = await RecruitmentServices.editGuestDefinition(
+        await createTestUser(batmanAppAdmin, orgId),
+        organization,
+        'new term',
+        'new description',
+        def.definitionId,
+        4,
+        GuestDefinitionType.INFO_PAGE,
+        'new icon',
+        'new text',
+        'new link'
+      );
+
+      expect(edited.term).toBe('new term');
+      expect(edited.description).toBe('new description');
+      expect(edited.order).toBe(4);
+      expect(edited.icon).toBe('new icon');
+      expect(edited.buttonText).toBe('new text');
+      expect(edited.buttonLink).toBe('new link');
+    });
+
+    it('Edit guest definition fails if defintion is deleted', async () => {
+      const def = await RecruitmentServices.createGuestDefinition(
+        superman,
+        organization,
+        'test term',
+        'test description',
+        2,
+        GuestDefinitionType.INFO_PAGE,
+        'iconname',
+        'buttonTxt',
+        'buttonLink'
+      );
+
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+
+      await RecruitmentServices.deleteGuestDefinition(batman, def.definitionId, organization);
+
+      await expect(
+        async () =>
+          await RecruitmentServices.editGuestDefinition(
+            batman,
+            organization,
+            'term',
+            'description',
+            def.definitionId,
+            2,
+            GuestDefinitionType.INFO_PAGE,
+            'buttonTxt',
+            'buttonLink'
+          )
+      ).rejects.toThrow(new DeletedException('Guest Definition', def.definitionId));
+    });
+
+    it('Fails if milestone is deleted', async () => {
+      const milestone = await RecruitmentServices.createMilestone(
+        await createTestUser(batmanAppAdmin, orgId),
+        'name',
+        'description',
+        new Date('11/12/24'),
+        organization
+      );
+
+      await prisma.milestone.delete({
+        where: {
+          milestoneId: milestone.milestoneId
+        }
+      });
+
+      await expect(
+        async () =>
+          await RecruitmentServices.editMilestone(
+            superman,
+            'name',
+            'description',
+            new Date('11/12/24'),
+            milestone.milestoneId,
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Milestone', milestone.milestoneId));
+    });
+  });
+
+  describe('Delete Guest Definition', () => {
+    it('Fails if user is not an admin', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+      const testDef = await createTestGuestDefinition(admin, orgId);
+
+      await expect(
+        async () => await RecruitmentServices.deleteGuestDefinition(guest, testDef.definitionId, organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete a guestDefinition'));
+    });
+
+    it('Fails if definition does not exist', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+
+      await expect(
+        async () => await RecruitmentServices.deleteGuestDefinition(admin, 'fake-id', organization)
+      ).rejects.toThrow(new NotFoundException('Guest Definition', 'fake-id'));
+    });
+
+    it('Fails if definition is already deleted', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const testDef = await createTestGuestDefinition(admin, orgId);
+      await RecruitmentServices.deleteGuestDefinition(admin, testDef.definitionId, organization);
+
+      await expect(
+        async () => await RecruitmentServices.deleteGuestDefinition(admin, testDef.definitionId, organization)
+      ).rejects.toThrow(new DeletedException('Guest Definition', testDef.definitionId));
+    });
+
+    it('Successfully deletes a guest definition', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const testDef = await createTestGuestDefinition(admin, orgId);
+
+      await RecruitmentServices.deleteGuestDefinition(admin, testDef.definitionId, organization);
+
+      const deletedTestDef = await prisma.guest_Definition.findUnique({
+        where: { definitionId: testDef.definitionId }
+      });
+
+      expect(deletedTestDef?.dateDeleted).not.toBe(null);
+    });
+  });
+
+  describe('Get All Guest Definitions', () => {
+    it('Succeeds and gets all the guest definitions', async () => {
+      const def = await RecruitmentServices.createGuestDefinition(
+        superman,
+        organization,
+        'test term',
+        'test description',
+        2,
+        GuestDefinitionType.INFO_PAGE,
+        'iconname',
+        'buttonTxt',
+        'buttonLink'
+      );
+
+      const def2 = await RecruitmentServices.createGuestDefinition(
+        superman,
+        organization,
+        'test term',
+        'test description',
+        2,
+        GuestDefinitionType.INFO_PAGE,
+        'iconname',
+        'buttonTxt',
+        'buttonLink'
+      );
+
+      const result = await RecruitmentServices.getAllGuestDefinitions(organization);
+      expect(result).toStrictEqual([def, def2]);
     });
   });
 });

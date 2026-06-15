@@ -1,8 +1,9 @@
-import express from 'express';
+import express, { Router } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { getUserAndOrganization, prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils.js';
 import { errorHandler } from './src/utils/errors.utils.js';
+import { getCurrentCar } from './src/utils/car.utils.js';
 import userRouter from './src/routes/users.routes.js';
 import projectRouter from './src/routes/projects.routes.js';
 import teamsRouter from './src/routes/teams.routes.js';
@@ -16,7 +17,8 @@ import wbsElementTemplatesRouter from './src/routes/wbs-element-templates.routes
 import carsRouter from './src/routes/cars.routes.js';
 import organizationRouter from './src/routes/organizations.routes.js';
 import recruitmentRouter from './src/routes/recruitment.routes.js';
-import { slackEvents } from './src/routes/slack.routes.js';
+import { getReceiver } from './src/integrations/slack.js';
+import './src/routes/slack.routes.js';
 import announcementsRouter from './src/routes/announcements.routes.js';
 import onboardingRouter from './src/routes/onboarding.routes.js';
 import popUpsRouter from './src/routes/pop-up.routes.js';
@@ -26,6 +28,9 @@ import partsRouter from './src/routes/parts.routes.js';
 import financeRouter from './src/routes/finance.routes.js';
 import rulesRouter from './src/routes/rules.routes.js';
 import calendarRouter from './src/routes/calendar.routes.js';
+import prospectiveSponsorRouter from './src/routes/prospective-sponsor.routes.js';
+import attendanceRouter from './src/routes/attendance.routes.js';
+import icsRouter from './src/routes/ics.routes.js';
 
 const app = express();
 
@@ -62,9 +67,15 @@ const options: cors.CorsOptions = {
   allowedHeaders
 };
 
-// so we can listen to slack messages
-// NOTE: must be done before using json
-app.use('/slack', slackEvents.requestListener());
+// Mount Slack Bolt receiver BEFORE other middleware to handle raw body parsing
+// Bolt's receiver handles its own body parsing and request verification
+// The receiver is configured to handle requests at /slack/events
+// Only mount if Slack is configured (when SLACK_BOT_TOKEN is set)
+const receiver = getReceiver();
+if (receiver) {
+  app.use(receiver.router as unknown as Router);
+}
+
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'healthy' });
 });
@@ -76,11 +87,17 @@ app.use(express.json());
 // cors settings
 app.use(cors(options));
 
+// Public ICS feed routes — mounted before JWT middleware so calendar apps can subscribe without auth
+app.use('/ics', icsRouter);
+
 // ensure each request is authorized using JWT
 app.use(isProd ? requireJwtProd : requireJwtDev);
 
 // get user and organization
 app.use(getUserAndOrganization);
+
+// get current car
+app.use(getCurrentCar);
 
 // routes
 app.use('/users', userRouter);
@@ -105,6 +122,8 @@ app.use('/parts', partsRouter);
 app.use('/finance', financeRouter);
 app.use('/rules', rulesRouter);
 app.use('/calendar', calendarRouter);
+app.use('/prospective-sponsors', prospectiveSponsorRouter);
+app.use('/attendance', attendanceRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

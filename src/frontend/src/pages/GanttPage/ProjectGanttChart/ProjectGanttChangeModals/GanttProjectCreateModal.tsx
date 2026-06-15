@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { ProjectGantt } from 'shared';
+import { dateToMidnightUTC, ProjectGantt } from 'shared';
 import dayjs from 'dayjs';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useToast } from '../../../../hooks/toasts.hooks';
@@ -46,7 +46,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
 
     const workPackagePayloads: WorkPackageApiInputs[] = project.workPackages.map((workPackage) => ({
       name: workPackage.name,
-      startDate: workPackage.startDate.toISOString(),
+      startDate: dateToMidnightUTC(workPackage.startDate).toISOString(),
       duration: dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week'),
       crId: undefined,
       blockedBy: workPackage.blockedBy,
@@ -67,14 +67,14 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
         for (const task of project.tasks) {
           try {
             await createSingleTask({
-              wbsNum: createdProject.wbsNum,
+              wbsNum: task.wbsNum,
               title: task.title,
               priority: task.priority,
               status: task.status,
               assignees: task.assignees.map((user) => user.userId),
               notes: task.notes || '',
-              deadline: task.deadline ? task.deadline.toISOString() : undefined,
-              startDate: task.startDate ? task.startDate.toISOString() : undefined
+              deadline: task.deadline ? dateToMidnightUTC(task.deadline).toISOString() : undefined,
+              startDate: task.startDate ? dateToMidnightUTC(task.startDate).toISOString() : undefined
             });
             toast.success('All tasks created successfully!');
           } catch (error) {

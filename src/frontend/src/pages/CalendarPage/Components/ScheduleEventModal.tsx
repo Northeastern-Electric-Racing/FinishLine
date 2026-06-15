@@ -10,7 +10,7 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useScheduleEvent } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { formatTime } from '../../../utils/datetime.utils';
+import { formatEventTime } from 'shared';
 import { datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 
@@ -22,6 +22,7 @@ interface ScheduleEventModalProps {
   selectedDay: Date;
   startHour: number;
   endHour: number;
+  beingRescheduled: boolean;
 }
 
 const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
@@ -31,7 +32,8 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
   eventName,
   selectedDay,
   startHour,
-  endHour
+  endHour,
+  beingRescheduled
 }) => {
   const toast = useToast();
   const history = useHistory();
@@ -47,7 +49,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
   const handleConfirm = async () => {
     try {
       await scheduleEvent({ startTime, endTime });
-      toast.success('Event scheduled successfully!');
+      toast.success(beingRescheduled ? 'Event rescheduled successfully!' : 'Event scheduled successfully!');
       onClose();
       history.push(routes.CALENDAR);
     } catch (e) {
@@ -59,22 +61,25 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Schedule {eventName}</DialogTitle>
+      <DialogTitle>
+        {beingRescheduled ? 'Reschedule' : 'Schedule'} {eventName}
+      </DialogTitle>
       <DialogContent>
         <Box sx={{ py: 2 }}>
-          <Typography variant="body1" gutterBottom>
-            You are about to schedule this event for:
-          </Typography>
+          <Typography>You are about to {beingRescheduled ? 'reschedule' : 'schedule'} this event for:</Typography>
           <Box
             sx={{ mt: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}
           >
             <Typography variant="h6">{datePipe(selectedDay)}</Typography>
             <Typography variant="body1" color="text.secondary">
-              {formatTime(startTime)} - {formatTime(endTime)}
+              {formatEventTime(startTime)} - {formatEventTime(endTime)}
             </Typography>
           </Box>
+
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-            This will change the event status to SCHEDULED and notify all members.
+            {beingRescheduled
+              ? 'All members will be notified about the rescheduled time once changed.'
+              : 'This will change the event status to SCHEDULED and notify all members.'}
           </Typography>
         </Box>
       </DialogContent>
@@ -82,8 +87,9 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
         <NERFailButton onClick={onClose} disabled={isLoading}>
           Cancel
         </NERFailButton>
+
         <NERSuccessButton onClick={handleConfirm} disabled={isLoading}>
-          {isLoading ? 'Scheduling...' : 'Confirm Schedule'}
+          {beingRescheduled ? 'Confirm Reschedule' : 'Confirm Schedule'}
         </NERSuccessButton>
       </DialogActions>
     </Dialog>

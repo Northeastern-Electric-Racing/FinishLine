@@ -1,6 +1,10 @@
 import { Decimal } from 'decimal.js';
 import { User } from './user-types.js';
-import { ReimbursementRequest } from './reimbursement-requests-types.js';
+
+export interface MaterialReimbursementRequest {
+  reimbursementRequestId: string;
+  identifier: number;
+}
 
 export enum MaterialStatus {
   Ordered = 'ORDERED',
@@ -61,18 +65,19 @@ export interface Material {
   status: MaterialStatus;
   materialTypeName: string;
   materialType: MaterialTypePreview;
-  manufacturerName: string;
-  manufacturer: ManufacturerPreview;
-  manufacturerPartNumber: string;
+  manufacturerName?: string;
+  manufacturer?: ManufacturerPreview;
+  manufacturerPartNumber?: string;
   pdmFileName?: string;
-  quantity: Decimal;
+  quantity?: Decimal;
   unitName?: string;
   quantityUnit?: UnitPreview;
-  price: number;
-  subtotal: number;
+  price?: number;
+  subtotal?: number;
   linkUrl: string;
   notes?: string;
-  reimbursementRequest?: ReimbursementRequest;
+  reimbursementRequests: MaterialReimbursementRequest[];
+  isCopied: boolean;
 }
 
 export type MaterialPreview = Omit<

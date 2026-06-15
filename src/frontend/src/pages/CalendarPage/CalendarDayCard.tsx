@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Box, Card, CardContent, Grid, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { Calendar, ConflictStatus, DayOfWeek, EventInstance, EventStatus, EventType } from 'shared';
+import { Calendar, CalendarTask, ConflictStatus, DayOfWeek, EventInstance, EventStatus, EventType } from 'shared';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
@@ -15,6 +16,7 @@ import NERDeleteModal from '../../components/NERDeleteModal';
 import { useDeleteEvent, useDeleteScheduleSlot } from '../../hooks/calendar.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 import { getMutedColor } from '../../utils/calendar.utils';
+import { TaskClickContent } from './TaskClickPopup';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -46,6 +48,7 @@ interface CalendarDayCardProps {
   calendars?: Calendar[];
   dayOfWeek?: DayOfWeek;
   onCreateEventClick: (date: Date) => void;
+  tasks?: CalendarTask[];
 }
 
 // Constants for dynamic event display calculation
@@ -60,7 +63,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   eventTypes = [],
   calendars = [],
   dayOfWeek = DayOfWeek.MONDAY,
-  onCreateEventClick
+  onCreateEventClick,
+  tasks = []
 }) => {
   const theme = useTheme();
 
@@ -156,6 +160,114 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     }
   };
 
+  const allItems = [...events, ...tasks];
+  const totalItems = allItems.length;
+
+  const TaskCard = ({ task }: { task: CalendarTask }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const [tooltipHovered, setTooltipHovered] = useState(false);
+    const tooltipKey = `task-${task.taskId}`;
+    const isLocked = lockedTooltipEventId === tooltipKey;
+    const tooltipHoveredRef = useRef(false);
+    tooltipHoveredRef.current = tooltipHovered;
+    const isLockedRef = useRef(false);
+    isLockedRef.current = isLocked;
+    const shouldBeOpen = isLocked || isHovered || tooltipHovered;
+
+    return (
+      <Box
+        marginLeft={0.5}
+        marginBottom={0.25}
+        marginRight={0.5}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => {
+          setTimeout(() => {
+            if (!isLockedRef.current && !tooltipHoveredRef.current) {
+              setIsHovered(false);
+            }
+          }, 100);
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setLockedTooltipEventId(tooltipKey);
+        }}
+        sx={{
+          position: 'relative',
+          zIndex: 2,
+          cursor: 'pointer'
+        }}
+      >
+        <Card
+          sx={{
+            backgroundColor: '#7B68EE',
+            borderRadius: 1,
+            width: '100%',
+            minHeight: EVENT_CARD_HEIGHT,
+            maxHeight: EVENT_CARD_HEIGHT
+          }}
+        >
+          <Tooltip
+            placement="right"
+            arrow
+            open={shouldBeOpen}
+            disableHoverListener
+            disableFocusListener
+            disableTouchListener
+            enterDelay={0}
+            leaveDelay={200}
+            title={
+              <Box onMouseEnter={() => setTooltipHovered(true)} onMouseLeave={() => setTooltipHovered(false)}>
+                <TaskClickContent task={task} onClose={() => setLockedTooltipEventId(null)} />
+              </Box>
+            }
+            slotProps={{
+              popper: { sx: { zIndex: 1200 } },
+              tooltip: {
+                sx: {
+                  maxWidth: 'none',
+                  borderRadius: 4,
+                  p: 0,
+                  cursor: 'pointer',
+                  bgcolor: 'transparent',
+                  boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
+                }
+              },
+              arrow: {
+                sx: {
+                  color: theme.palette.grey[900],
+                  fontSize: 16
+                }
+              }
+            }}
+            PopperProps={{
+              modifiers: [
+                {
+                  name: 'offset',
+                  options: {
+                    offset: [0, 4]
+                  }
+                }
+              ]
+            }}
+          >
+            <Typography
+              marginX={0.5}
+              marginY={0.3}
+              lineHeight="120%"
+              fontSize={14}
+              fontWeight="bold"
+              noWrap
+              align="left"
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+            >
+              <AssignmentIcon sx={{ fontSize: 14 }} /> {task.title}
+            </Typography>
+          </Tooltip>
+        </Card>
+      </Box>
+    );
+  };
+
   const DayCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
       <Grid item xs display="flex" justifyContent="flex-end">
@@ -191,6 +303,10 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
       event.approved === ConflictStatus.DENIED;
     const bgColor = isPending ? getMutedColor(baseColor, 0.35) : baseColor;
     const isLocked = lockedTooltipEventId === event.eventId;
+    const tooltipHoveredRef = useRef(false);
+    tooltipHoveredRef.current = tooltipHovered;
+    const isLockedRef = useRef(false);
+    isLockedRef.current = isLocked;
     const shouldBeOpen = isLocked || isHovered || tooltipHovered;
 
     return (
@@ -200,8 +316,9 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
         marginRight={0.5}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
+          setTooltipHovered(false);
           setTimeout(() => {
-            if (!isLocked && !tooltipHovered) {
+            if (!isLockedRef.current && !tooltipHoveredRef.current) {
               setIsHovered(false);
             }
           }, 100);
@@ -306,6 +423,10 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     const [isHovered, setIsHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const isLocked = lockedTooltipEventId === event.eventId;
+    const tooltipHoveredRef = useRef(false);
+    tooltipHoveredRef.current = tooltipHovered;
+    const isLockedRef = useRef(false);
+    isLockedRef.current = isLocked;
     const shouldBeOpen = isLocked || isHovered || tooltipHovered;
 
     return (
@@ -368,7 +489,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => {
             setTimeout(() => {
-              if (!isLocked && !tooltipHovered) {
+              if (!isLockedRef.current && !tooltipHoveredRef.current) {
                 setIsHovered(false);
               }
             }, 100);
@@ -384,7 +505,98 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     );
   };
 
-  const ExtraEventsCard = ({ extraEvents }: { extraEvents: EventInstance[] }) => {
+  const ExtraTaskItem = ({ task }: { task: CalendarTask }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const [tooltipHovered, setTooltipHovered] = useState(false);
+    const tooltipKey = `task-${task.taskId}`;
+    const isLocked = lockedTooltipEventId === tooltipKey;
+    const tooltipHoveredRef = useRef(false);
+    tooltipHoveredRef.current = tooltipHovered;
+    const isLockedRef = useRef(false);
+    isLockedRef.current = isLocked;
+    const shouldBeOpen = isLocked || isHovered || tooltipHovered;
+
+    return (
+      <Tooltip
+        placement="right"
+        arrow
+        open={shouldBeOpen}
+        disableHoverListener
+        disableFocusListener
+        disableTouchListener
+        enterDelay={0}
+        leaveDelay={200}
+        title={
+          <Box onMouseEnter={() => setTooltipHovered(true)} onMouseLeave={() => setTooltipHovered(false)}>
+            <TaskClickContent task={task} onClose={() => setLockedTooltipEventId(null)} />
+          </Box>
+        }
+        slotProps={{
+          popper: { sx: { zIndex: 1300 } },
+          tooltip: {
+            sx: {
+              maxWidth: 'none',
+              borderRadius: 4,
+              p: 0,
+              cursor: 'pointer',
+              bgcolor: 'transparent',
+              boxShadow: '0 0 15px rgba(255, 255, 255, 1.0)'
+            }
+          },
+          arrow: {
+            sx: {
+              color: theme.palette.grey[900],
+              fontSize: 16
+            }
+          }
+        }}
+        PopperProps={{
+          modifiers: [
+            {
+              name: 'offset',
+              options: {
+                offset: [0, 4]
+              }
+            }
+          ]
+        }}
+      >
+        <Box
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => {
+            setTooltipHovered(false);
+            setTimeout(() => {
+              if (!isLockedRef.current && !tooltipHoveredRef.current) {
+                setIsHovered(false);
+              }
+            }, 100);
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setLockedTooltipEventId(tooltipKey);
+          }}
+        >
+          <Typography
+            fontSize={14}
+            fontWeight="bold"
+            noWrap
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#7B68EE', cursor: 'pointer', py: 0.25 }}
+          >
+            <AssignmentIcon sx={{ fontSize: 14 }} /> {task.title}
+          </Typography>
+        </Box>
+      </Tooltip>
+    );
+  };
+
+  const ExtraEventsCard = ({
+    extraEvents,
+    extraTasks = []
+  }: {
+    extraEvents: EventInstance[];
+    extraTasks?: CalendarTask[];
+  }) => {
+    const totalExtra = extraEvents.length + extraTasks.length;
     return (
       <Box marginLeft={0.5} marginRight={0.5} marginBottom={0.25} sx={{ position: 'relative', zIndex: 2 }}>
         <Tooltip
@@ -396,6 +608,9 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
             <Stack direction="column">
               {extraEvents.map((event) => (
                 <ExtraEventItem key={event.eventId} event={event} />
+              ))}
+              {extraTasks.map((task) => (
+                <ExtraTaskItem key={task.taskId} task={task} />
               ))}
             </Stack>
           }
@@ -441,7 +656,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
             }}
           >
             <Typography fontSize={14} fontWeight="bold">
-              {'+' + extraEvents.length}
+              {'+' + totalExtra}
             </Typography>
           </Card>
         </Tooltip>
@@ -498,19 +713,38 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
 
         <CardContent sx={{ padding: 0 }}>
           <DayCardTitle />
-          {events.length > 0 && (
+          {totalItems > 0 && (
             <>
-              {events.length <= maxVisibleEvents ? (
-                // All events fit - show them all
-                events.map((event) => <EventCard key={event.eventId} event={event} />)
-              ) : (
-                // Too many events - show as many as possible with "+N more"
+              {totalItems <= maxVisibleEvents ? (
+                // All items fit - show them all
                 <>
-                  {events.slice(0, maxVisibleEvents - 1).map((event) => (
+                  {events.map((event) => (
                     <EventCard key={event.eventId} event={event} />
                   ))}
-                  <ExtraEventsCard extraEvents={events.slice(maxVisibleEvents - 1)} />
+                  {tasks.map((task) => (
+                    <TaskCard key={task.taskId} task={task} />
+                  ))}
                 </>
+              ) : (
+                // Too many items - show as many as possible with "+N more"
+                (() => {
+                  const visibleSlots = maxVisibleEvents - 1;
+                  const visibleEventCount = Math.min(events.length, visibleSlots);
+                  const visibleTaskCount = Math.min(tasks.length, visibleSlots - visibleEventCount);
+                  return (
+                    <>
+                      {events.slice(0, visibleEventCount).map((event) => (
+                        <EventCard key={event.eventId} event={event} />
+                      ))}
+                      {visibleTaskCount > 0 &&
+                        tasks.slice(0, visibleTaskCount).map((task) => <TaskCard key={task.taskId} task={task} />)}
+                      <ExtraEventsCard
+                        extraEvents={events.slice(visibleEventCount)}
+                        extraTasks={tasks.slice(visibleTaskCount)}
+                      />
+                    </>
+                  );
+                })()
               )}
             </>
           )}

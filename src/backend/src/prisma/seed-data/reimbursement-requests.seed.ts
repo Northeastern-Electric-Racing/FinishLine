@@ -47,6 +47,10 @@ export const seedReimbursementRequests = async (
     karen: any;
     spongebob: any;
     patrick: any;
+    squidward: any;
+    sandy: any;
+    pearl: any;
+    larry: any;
   },
   vendors: {
     tesla: Vendor;
@@ -81,7 +85,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'High Performance Battery Pack',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -95,9 +99,10 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    3500,
+    350000,
     organization,
-    new Date('2024-10-01')
+    new Date('2024-10-01'),
+    'Reimbursement request for high performance battery pack'
   );
   reimbursementRequests.push(rr1);
 
@@ -111,7 +116,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Development Tools Kit',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -125,7 +130,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    150,
+    15000,
     organization,
     new Date('2024-10-05')
   );
@@ -147,7 +152,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Cloud Storage Subscription',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 2,
           workPackageNumber: 0
         },
@@ -161,7 +166,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    50,
+    5000,
     organization,
     new Date('2024-09-25')
   );
@@ -188,7 +193,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Unnecessary Luxury Item',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -202,7 +207,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    2000,
+    200000,
     organization,
     new Date('2024-09-20')
   );
@@ -219,7 +224,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Safety Equipment - Helmets',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -234,7 +239,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Safety Equipment - Gloves',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -248,7 +253,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    450,
+    45000,
     organization,
     new Date('2024-10-10')
   );
@@ -270,7 +275,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Office Supplies',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 2,
           workPackageNumber: 0
         },
@@ -284,7 +289,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    80,
+    8000,
     organization,
     new Date('2024-09-15')
   );
@@ -311,7 +316,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Testing Equipment',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -325,7 +330,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    1250,
+    125000,
     organization,
     new Date('2024-10-12')
   );
@@ -341,7 +346,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Software Licenses',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 2,
           workPackageNumber: 0
         },
@@ -355,7 +360,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    450,
+    45000,
     organization,
     new Date('2024-09-28')
   );
@@ -382,7 +387,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Training Materials',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -396,7 +401,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    120,
+    12000,
     organization,
     new Date('2024-10-08')
   );
@@ -418,7 +423,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Research Database Access',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 2,
           workPackageNumber: 0
         },
@@ -432,7 +437,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    200,
+    20000,
     organization,
     new Date('2024-09-18')
   );
@@ -459,7 +464,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Workshop Snacks',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -473,7 +478,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    50,
+    5000,
     organization,
     new Date('2024-10-11')
   );
@@ -489,7 +494,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Sensor Components',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -503,7 +508,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    750,
+    75000,
     organization,
     new Date('2024-09-10')
   );
@@ -536,7 +541,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Emergency Replacement Parts',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 2,
           workPackageNumber: 0
         },
@@ -550,7 +555,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    1800,
+    180000,
     organization,
     new Date('2024-10-13')
   );
@@ -572,7 +577,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Team Building Materials',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -586,7 +591,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    250,
+    25000,
     organization,
     new Date('2024-10-07')
   );
@@ -607,7 +612,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Learning Resources',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -621,7 +626,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    90,
+    9000,
     organization,
     new Date('2024-10-09')
   );
@@ -643,7 +648,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Presentation Materials',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 2,
           workPackageNumber: 0
         },
@@ -657,7 +662,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    60,
+    6000,
     organization,
     new Date('2024-10-06')
   );
@@ -684,7 +689,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Personal Electronics',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -698,7 +703,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    1500,
+    150000,
     organization,
     new Date('2024-09-22')
   );
@@ -715,7 +720,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'CAD Software License',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 2,
           workPackageNumber: 0
         },
@@ -729,7 +734,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    550,
+    55000,
     organization,
     new Date('2024-09-29')
   );
@@ -756,7 +761,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Microcontrollers',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -770,7 +775,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    180,
+    18000,
     organization,
     new Date('2024-10-04')
   );
@@ -792,7 +797,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Video Conferencing Equipment',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 2,
           workPackageNumber: 0
         },
@@ -806,7 +811,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    950,
+    95000,
     organization,
     new Date('2024-09-27')
   );
@@ -839,7 +844,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Workshop Cleaning Supplies',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -853,7 +858,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    75,
+    7500,
     organization,
     new Date('2024-10-10')
   );
@@ -869,7 +874,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Hand Tools Set',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -883,7 +888,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    220,
+    22000,
     organization,
     new Date('2024-09-24')
   );
@@ -910,7 +915,7 @@ export const seedReimbursementRequests = async (
       {
         name: '3D Printing Filament',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -924,7 +929,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    140,
+    14000,
     organization,
     new Date('2024-10-02')
   );
@@ -946,7 +951,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Carbon Fiber Sheets',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -961,7 +966,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Epoxy Resin',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -976,7 +981,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Aluminum Stock',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -990,7 +995,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    2350,
+    235000,
     organization,
     new Date('2024-09-12')
   );
@@ -1023,7 +1028,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'High-Speed Data Acquisition System',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 2,
           workPackageNumber: 0
         },
@@ -1037,7 +1042,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    4250,
+    425000,
     organization,
     new Date('2024-10-14')
   );
@@ -1053,7 +1058,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Power Supply Units',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -1067,7 +1072,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    180,
+    18000,
     organization,
     new Date('2024-09-10')
   );
@@ -1104,7 +1109,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Development Software Licenses',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 2,
           workPackageNumber: 0
         },
@@ -1118,7 +1123,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    320,
+    32000,
     organization,
     new Date('2024-09-12')
   );
@@ -1155,7 +1160,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Cloud Computing Credits',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -1169,7 +1174,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    500,
+    50000,
     organization,
     new Date('2024-08-15')
   );
@@ -1212,7 +1217,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Safety Equipment',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -1226,7 +1231,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    120,
+    12000,
     organization,
     new Date('2024-08-18')
   );
@@ -1269,7 +1274,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Tablets for Design Team',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 2,
           workPackageNumber: 0
         },
@@ -1283,7 +1288,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    1500,
+    150000,
     organization,
     new Date('2024-07-10')
   );
@@ -1314,7 +1319,7 @@ export const seedReimbursementRequests = async (
     organization,
     new Date('2024-07-15')
   );
-  await ReimbursementRequestService.setSaboNumber(rr30.reimbursementRequestId, 12345, users.richieRich, organization);
+  await ReimbursementRequestService.setSaboNumber(rr30.reimbursementRequestId, 'abc123', users.richieRich, organization);
   await ReimbursementRequestService.inputReimbursementRequestInSabo(
     rr30.reimbursementRequestId,
     users.richieRich,
@@ -1337,7 +1342,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Bulk Workshop Supplies',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -1351,7 +1356,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    280,
+    28000,
     organization,
     new Date('2024-07-12')
   );
@@ -1382,7 +1387,7 @@ export const seedReimbursementRequests = async (
     organization,
     new Date('2024-07-18')
   );
-  await ReimbursementRequestService.setSaboNumber(rr31.reimbursementRequestId, 12346, users.mrKrabs, organization);
+  await ReimbursementRequestService.setSaboNumber(rr31.reimbursementRequestId, 'sdfkj3', users.mrKrabs, organization);
   await ReimbursementRequestService.inputReimbursementRequestInSabo(
     rr31.reimbursementRequestId,
     users.mrKrabs,
@@ -1405,7 +1410,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Battery Testing Equipment',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -1419,7 +1424,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    2750,
+    275000,
     organization,
     new Date('2024-06-01')
   );
@@ -1450,7 +1455,7 @@ export const seedReimbursementRequests = async (
     organization,
     new Date('2024-06-10')
   );
-  await ReimbursementRequestService.setSaboNumber(rr32.reimbursementRequestId, 12340, users.monopolyMan, organization);
+  await ReimbursementRequestService.setSaboNumber(rr32.reimbursementRequestId, '324jj', users.monopolyMan, organization);
   await ReimbursementRequestService.inputReimbursementRequestInSabo(
     rr32.reimbursementRequestId,
     users.monopolyMan,
@@ -1478,7 +1483,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'PCB Manufacturing',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 2,
           workPackageNumber: 0
         },
@@ -1492,7 +1497,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.equipment.accountCodeId,
-    890,
+    89000,
     organization,
     new Date('2024-05-15')
   );
@@ -1523,7 +1528,7 @@ export const seedReimbursementRequests = async (
     organization,
     new Date('2024-05-20')
   );
-  await ReimbursementRequestService.setSaboNumber(rr33.reimbursementRequestId, 12335, users.johnBoddy, organization);
+  await ReimbursementRequestService.setSaboNumber(rr33.reimbursementRequestId, 'kaljf23', users.johnBoddy, organization);
   await ReimbursementRequestService.inputReimbursementRequestInSabo(
     rr33.reimbursementRequestId,
     users.johnBoddy,
@@ -1551,7 +1556,7 @@ export const seedReimbursementRequests = async (
       {
         name: 'Team Event Supplies',
         reason: {
-          carNumber: 0,
+          carNumber: 25,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -1565,7 +1570,7 @@ export const seedReimbursementRequests = async (
       }
     ],
     accountCodes.stuff.accountCodeId,
-    150,
+    15000,
     organization,
     new Date('2024-05-05')
   );
@@ -1596,7 +1601,7 @@ export const seedReimbursementRequests = async (
     organization,
     new Date('2024-05-08')
   );
-  await ReimbursementRequestService.setSaboNumber(rr34.reimbursementRequestId, 12330, users.richieRich, organization);
+  await ReimbursementRequestService.setSaboNumber(rr34.reimbursementRequestId, 'newklajfd', users.richieRich, organization);
   await ReimbursementRequestService.inputReimbursementRequestInSabo(
     rr34.reimbursementRequestId,
     users.richieRich,

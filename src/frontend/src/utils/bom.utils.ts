@@ -1,11 +1,11 @@
-import { Material } from 'shared';
+import { Material, MaterialReimbursementRequest } from 'shared';
 import { GridColDefStyle } from './tables';
 import { centsToDollar } from './pipes';
 import { DataGrid, GridValidRowModel } from '@mui/x-data-grid';
 import { styled } from '@mui/system';
 
 export interface BomRow extends GridValidRowModel {
-  reimbursementRequestId: number | undefined;
+  reimbursementRequests: MaterialReimbursementRequest[];
   id: string;
   materialId: string;
   status: string;
@@ -14,31 +14,35 @@ export interface BomRow extends GridValidRowModel {
   manufacturer: string;
   manufacturerPN: string;
   pdmFileName: string;
-  quantity: string;
-  price: string;
+  quantity: number | undefined;
+  unitName: string | undefined;
+  price: number | undefined;
   subtotal: string;
   link: string;
   notes: string | undefined;
   assemblyId: string | undefined;
+  isCopied: boolean;
 }
 
 export const materialToRow = (material: Material, idx: number): BomRow => {
   return {
-    reimbursementRequestId: material.reimbursementRequest?.identifier,
+    reimbursementRequests: material.reimbursementRequests,
     id: idx + (material.assemblyId ?? ''),
     materialId: material.materialId,
     status: material.status,
     type: material.materialTypeName,
     name: material.name,
-    manufacturer: material.manufacturerName,
-    manufacturerPN: material.manufacturerPartNumber,
-    pdmFileName: material.pdmFileName ?? 'None',
-    quantity: material.quantity + (material.unitName ? ' ' + material.unitName : ''),
-    price: `$${centsToDollar(material.price)}`,
-    subtotal: `$${centsToDollar(material.subtotal)}`,
+    manufacturer: material.manufacturerName ?? '',
+    manufacturerPN: material.manufacturerPartNumber ?? '',
+    pdmFileName: material.pdmFileName ?? '',
+    quantity: material.quantity !== undefined ? Number(material.quantity) : undefined,
+    unitName: material.unitName,
+    price: material.price !== undefined ? material.price / 100 : undefined,
+    subtotal: material.subtotal !== undefined ? `$${centsToDollar(material.subtotal)}` : '',
     link: material.linkUrl,
     notes: material.notes,
-    assemblyId: material.assemblyId ?? 'assembly-misc'
+    assemblyId: material.assemblyId ?? 'assembly-misc',
+    isCopied: material.isCopied
   };
 };
 

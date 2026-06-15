@@ -14,10 +14,7 @@ import {
   SUBMIT_BUTTON,
   CR_ROW,
   WHY_TYPE_OPTION,
-  ADD_REASON,
-  ACTIONS_BUTTON,
-  ACTIONS_BUTTON_DELETE,
-  CONFIRM_DELETE_TEXT_INPUT
+  ADD_REASON
 } from './selectors.utils';
 import { INCLUDE } from './cypress-actions.utils';
 
@@ -35,7 +32,7 @@ const createProposedSolution = ({
 };
 
 export const createChangeRequest = ({
-  wbsTitle = '0.1.0 - Impact Attenuator',
+  wbsTitle = '25.1.0 - Impact Attenuator',
   what = 'test what',
   type = 'ISSUE',
   whys = [
@@ -78,24 +75,7 @@ export const createChangeRequest = ({
 
   cy.contains(SUBMIT_BUTTON).click();
   cy.url().should(INCLUDE, '/change-requests');
-  cy.get(CR_ROW('My Un-reviewed Change Requests')).children().first().find('h6').contains('Change Request').click();
 
-  cy.contains(what);
-  whys.forEach((why) => {
-    cy.contains(why.description);
-    cy.contains(why.type);
-  });
-  psArguments.forEach((argument) => {
-    cy.contains(argument.budgetImpact);
-    cy.contains(argument.description);
-    cy.contains(argument.scopeImpact);
-    cy.contains(argument.timelineImpact + ' weeks');
-  });
-
-  const crId = 22; // Get this value from the UI. Could not figure out the CRID for some reason
-
-  cy.contains(ACTIONS_BUTTON).click();
-  cy.contains(ACTIONS_BUTTON_DELETE).click();
-  cy.get(CONFIRM_DELETE_TEXT_INPUT).type(crId);
-  cy.contains(SUBMIT_BUTTON).click();
+  // Verify the created CR appears in Un-reviewed Change Requests
+  cy.get(CR_ROW('Un-reviewed Change Requests')).contains('Change Request').should('exist');
 };

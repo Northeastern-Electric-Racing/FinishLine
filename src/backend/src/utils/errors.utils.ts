@@ -213,8 +213,13 @@ export type ExceptionObjectNames =
   | 'Rule'
   | 'Project Rule'
   | 'Ruleset Type'
-  | 'Active Ruleset for given Ruleset Type';
+  | 'Active Ruleset for given Ruleset Type'
   | 'Calendar'
   | 'Event Type'
   | 'Event'
-  | 'Schedule Slot';
+  | 'Schedule Slot'
+  | 'Guest Definition'
+  | 'ProspectiveSponsor'
+  | 'SponsorTier'
+  | 'Guest Definition'
+  | 'Meeting Attendance';

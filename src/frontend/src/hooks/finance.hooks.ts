@@ -67,7 +67,19 @@ import {
   editIndexCode,
   getCurrentUserAssignedReimbursementRequests,
   assignMemberToRR,
-  setTaxExemptStatus
+  setTaxExemptStatus,
+  toggleSponsorTaskDone,
+  uploadSponsorLogo,
+  getAllProspectiveSponsors,
+  createProspectiveSponsor,
+  editProspectiveSponsor,
+  deleteProspectiveSponsor,
+  getProspectiveSponsorTasks,
+  createProspectiveSponsorTask,
+  acceptProspectiveSponsor,
+  CreateProspectiveSponsorPayload,
+  EditProspectiveSponsorPayload,
+  AcceptProspectiveSponsorPayload
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -87,9 +99,11 @@ import {
   ReimbursementRequestComment,
   ReimbursementRequestData,
   SpendingBarData,
-  CreateSponsorTask
+  CreateSponsorTask,
+  ProspectiveSponsor
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Helper function to handle file upload errors with file name context
@@ -158,15 +172,22 @@ export interface MarkDeliveredRequestPayload {
 export interface SponsorPayload {
   name: string;
   activeStatus: boolean;
-  sponsorValue: number;
+  valueTypes: string[];
+  sponsorValue?: number;
   joinDate: Date;
   activeYears: number[];
-  sponsorTierId: string;
+  sponsorTierId?: string;
   taxExempt: boolean;
-  sponsorContact: string;
+  contactName: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactPosition?: string;
   sponsorTasks: CreateSponsorTask[];
   discountCode?: string;
   sponsorNotes?: string;
+  stockDescription?: string;
+  discountDescription?: string;
+  logoImageId?: string;
 }
 
 interface EditSponsorPayload extends SponsorPayload {
@@ -184,6 +205,7 @@ export interface SponsorTaskPayload {
   notes: string;
   notifyDate?: Date;
   assigneeUserId?: string;
+  done?: boolean;
 }
 
 export interface EditSponsorTaskPayload {
@@ -307,47 +329,47 @@ export interface ReimbursementRequestTeamDataPayload {
   teamId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface ReimbursementRequestDataPayload {
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface ReimbursementRequestCategoryDataPayload {
   otherReasonId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface ReimbursementRequestTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface SpendingBarTeamDataPayload {
   teamId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface SpendingBarTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 export interface SpendingBarDataPayload {
   startDate?: Date;
   endDate?: Date;
-  carNumber?: number;
+  overrideCarId?: string | 'all-cars';
 }
 
 /**
@@ -446,30 +468,42 @@ export const useGetAllAccountCodes = () => {
  * Custom React Hook to get the reimbursement requests created by the current user
  */
 export const useCurrentUserReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
-    const { data } = await getCurrentUserReimbursementRequests();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', 'user', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getCurrentUserReimbursementRequests();
+      return data;
+    }
+  );
 };
 
 /**
  * Custom React Hook to get the reimbursement requests assigned to the current user
  */
 export const useCurrentUserAssignedReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'assignee'], async () => {
-    const { data } = await getCurrentUserAssignedReimbursementRequests();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', 'assignee', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getCurrentUserAssignedReimbursementRequests();
+      return data;
+    }
+  );
 };
 
 /**
  * Custom React Hook to get the reimbursement requests for the current user's teams
  */
 export const useCurrentUsersTeamsReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
-    const { data } = await getCurrentUsersTeamsReimbursementRequests();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', 'teams', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getCurrentUsersTeamsReimbursementRequests();
+      return data;
+    }
+  );
 };
 
 /**
@@ -518,10 +552,14 @@ export const useSetTaxExemptStatus = () => {
  * Custom React Hook to get all the reimbursement requests
  */
 export const useAllReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests'], async () => {
-    const { data } = await getAllReimbursementRequests();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllReimbursementRequests();
+      return data;
+    }
+  );
 };
 
 /**
@@ -763,10 +801,14 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
  * @returns the list of Reimbursement Reqeusts that are pending Advisor Approval
  */
 export const useGetPendingAdvisorList = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'pending-advisors'], async () => {
-    const { data } = await getPendingAdvisorList();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ReimbursementRequest[], Error>(
+    ['reimbursement-requests', 'pending-advisors', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getPendingAdvisorList();
+      return data;
+    }
+  );
 };
 
 /**
@@ -775,9 +817,9 @@ export const useGetPendingAdvisorList = () => {
  * @returns the mutation to send the pending advisor list
  */
 export const useSendPendingAdvisorList = () => {
-  return useMutation<{ message: string }, Error, number[]>(
+  return useMutation<{ message: string }, Error, string[]>(
     ['reimbursement-requests', 'send-pending-advisor'],
-    async (saboNumbers: number[]) => {
+    async (saboNumbers: string[]) => {
       const { data } = await sendPendingAdvisorList(saboNumbers);
       return data;
     }
@@ -827,9 +869,9 @@ export const useEditRefund = (id: string) => {
  */
 export const useSetSaboNumber = (reimbursementRequestId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<void, Error, { saboNumber: number }>(
+  return useMutation<void, Error, { saboNumber: string }>(
     ['reimbursement-requests', reimbursementRequestId],
-    async (formData: { saboNumber: number }) => {
+    async (formData: { saboNumber: string }) => {
       await setSaboNumber(reimbursementRequestId, formData.saboNumber);
     },
     {
@@ -1141,7 +1183,7 @@ export const useGetReimbursementRequestTeamData = (reimbursementRequestData: Rei
       'reimbursement-request-team-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
-      reimbursementRequestData.carNumber,
+      reimbursementRequestData.overrideCarId,
       reimbursementRequestData.teamId
     ],
     async () => {
@@ -1156,7 +1198,7 @@ export const useGetReimbursementRequestTeamTypeData = (reimbursementRequestData:
       'reimbursement-request-team-type-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
-      reimbursementRequestData.carNumber,
+      reimbursementRequestData.overrideCarId,
       reimbursementRequestData.teamTypeId
     ],
     async () => {
@@ -1185,7 +1227,7 @@ export const useGetReimbursementRequestCategoryData = (reimbursementRequestData:
       'reimbursement-request-category-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
-      reimbursementRequestData.carNumber,
+      reimbursementRequestData.overrideCarId,
       reimbursementRequestData.otherReasonId
     ],
     async () => {
@@ -1200,7 +1242,7 @@ export const useGetAllReimbursementRequestData = (reimbursementRequestData: Reim
       'reimbursement-request-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
-      reimbursementRequestData.carNumber
+      reimbursementRequestData.overrideCarId
     ],
     async () => {
       const { data } = await getAllReimbursementRequestData(reimbursementRequestData);
@@ -1214,7 +1256,7 @@ export const useGetSpendingBarTeamData = (spendingBarData: SpendingBarTeamDataPa
       'spending-bar-team-data',
       spendingBarData.endDate,
       spendingBarData.startDate,
-      spendingBarData.carNumber,
+      spendingBarData.overrideCarId,
       spendingBarData.teamId
     ],
     async () => {
@@ -1229,7 +1271,7 @@ export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTy
       'spending-bar-team-type-data',
       spendingBarData.endDate,
       spendingBarData.startDate,
-      spendingBarData.carNumber,
+      spendingBarData.overrideCarId,
       spendingBarData.teamTypeId
     ],
     async () => {
@@ -1240,7 +1282,7 @@ export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTy
 
 export const useGetSpendingBarCategoryData = (spendingBarData: SpendingBarDataPayload) =>
   useQuery<SpendingBarData, Error>(
-    ['spending-bar-category-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.carNumber],
+    ['spending-bar-category-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.overrideCarId],
     async () => {
       const { data } = await getSpendingBarCategoryData(spendingBarData);
       return data;
@@ -1249,7 +1291,7 @@ export const useGetSpendingBarCategoryData = (spendingBarData: SpendingBarDataPa
 
 export const useGetAllSpendingBarData = (spendingBarData: SpendingBarDataPayload) =>
   useQuery<SpendingBarData[], Error>(
-    ['spending-bar-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.carNumber],
+    ['spending-bar-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.overrideCarId],
     async () => {
       const { data } = await getAllSpendingBarData(spendingBarData);
       return data;
@@ -1274,6 +1316,27 @@ export const useEditSponsor = () => {
     ['sponsor', 'edit'],
     async ({ sponsorId, ...formData }: EditSponsorPayload) => {
       const { data } = await editSponsor(sponsorId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor']);
+      }
+    }
+  );
+};
+
+interface UploadSponsorLogoPayload {
+  sponsorId: string;
+  logoImage: File;
+}
+
+export const useUploadSponsorLogo = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Sponsor, Error, UploadSponsorLogoPayload>(
+    ['sponsor', 'uploadLogo'],
+    async ({ sponsorId, logoImage }: UploadSponsorLogoPayload) => {
+      const { data } = await uploadSponsorLogo(sponsorId, logoImage);
       return data;
     },
     {
@@ -1341,6 +1404,159 @@ export const useEditSponsorTier = (sponsorTierId: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['sponsor-tiers']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to toggle a sponsor task done status
+ *
+ * @returns the updated sponsor task
+ */
+export const useToggleSponsorTaskDone = () => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTask, Error, string>(
+    ['sponsor-task', 'toggle-done'],
+    async (sponsorTaskId: string) => {
+      const { data } = await toggleSponsorTaskDone(sponsorTaskId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor-task']);
+        queryClient.invalidateQueries(['prospective-sponsor']);
+      }
+    }
+  );
+};
+
+/**************** Prospective Sponsors Hooks ****************/
+
+/**
+ * Custom React Hook to get all prospective sponsors
+ */
+export const useAllProspectiveSponsors = () => {
+  return useQuery<ProspectiveSponsor[], Error>(['prospective-sponsors'], async () => {
+    const { data } = await getAllProspectiveSponsors();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to create a prospective sponsor
+ */
+export const useCreateProspectiveSponsor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ProspectiveSponsor, Error, CreateProspectiveSponsorPayload>(
+    ['prospective-sponsor', 'create'],
+    async (payload: CreateProspectiveSponsorPayload) => {
+      const { data } = await createProspectiveSponsor(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['prospective-sponsors']);
+      }
+    }
+  );
+};
+
+interface EditProspectiveSponsorMutationPayload extends EditProspectiveSponsorPayload {
+  prospectiveSponsorId: string;
+}
+
+/**
+ * Custom React Hook to edit a prospective sponsor
+ */
+export const useEditProspectiveSponsor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ProspectiveSponsor, Error, EditProspectiveSponsorMutationPayload>(
+    ['prospective-sponsor', 'edit'],
+    async ({ prospectiveSponsorId, ...payload }) => {
+      const { data } = await editProspectiveSponsor(prospectiveSponsorId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['prospective-sponsors']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a prospective sponsor
+ */
+export const useDeleteProspectiveSponsor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ProspectiveSponsor, Error, string>(
+    ['prospective-sponsor', 'delete'],
+    async (prospectiveSponsorId: string) => {
+      const { data } = await deleteProspectiveSponsor(prospectiveSponsorId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['prospective-sponsors']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get tasks for a prospective sponsor
+ */
+export const useProspectiveSponsorTasks = (prospectiveSponsorId: string) => {
+  return useQuery<SponsorTask[], Error>(
+    ['prospective-sponsor-tasks', prospectiveSponsorId],
+    async () => {
+      const { data } = await getProspectiveSponsorTasks(prospectiveSponsorId);
+      return data;
+    },
+    { enabled: !!prospectiveSponsorId }
+  );
+};
+
+/**
+ * Custom React Hook to create a task for a prospective sponsor
+ */
+export const useCreateProspectiveSponsorTask = (prospectiveSponsorId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTask, Error, SponsorTaskPayload>(
+    ['prospective-sponsor-task', 'create'],
+    async (payload: SponsorTaskPayload) => {
+      const { data } = await createProspectiveSponsorTask(prospectiveSponsorId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['prospective-sponsor-tasks', prospectiveSponsorId]);
+        queryClient.invalidateQueries(['prospective-sponsors']);
+      }
+    }
+  );
+};
+
+interface AcceptProspectiveSponsorMutationPayload extends AcceptProspectiveSponsorPayload {
+  prospectiveSponsorId: string;
+}
+
+/**
+ * Custom React Hook to accept a prospective sponsor (convert to full sponsor)
+ */
+export const useAcceptProspectiveSponsor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ProspectiveSponsor, Error, AcceptProspectiveSponsorMutationPayload>(
+    ['prospective-sponsor', 'accept'],
+    async ({ prospectiveSponsorId, ...payload }) => {
+      const { data } = await acceptProspectiveSponsor(prospectiveSponsorId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['prospective-sponsors']);
+        queryClient.invalidateQueries(['sponsor']);
       }
     }
   );

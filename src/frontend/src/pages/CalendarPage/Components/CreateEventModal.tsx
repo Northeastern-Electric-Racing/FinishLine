@@ -1,4 +1,6 @@
 import React from 'react';
+import { Button } from '@mui/material';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import EventModal, { EventPayload } from './EventModal';
 import type { EventType, EventDocumentUploadArgs } from 'shared';
 import { useCreateEvent, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
@@ -10,16 +12,27 @@ interface CreateEventModalProps {
   onClose: () => void;
   eventTypes: EventType[];
   defaultDate?: Date;
+  defaultStartTime?: Date;
+  defaultEndTime?: Date;
+  onSwitchToCreateTask?: () => void;
 }
 
-const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, eventTypes, defaultDate }) => {
+const CreateEventModal: React.FC<CreateEventModalProps> = ({
+  open,
+  onClose,
+  eventTypes,
+  defaultDate,
+  defaultStartTime,
+  defaultEndTime,
+  onSwitchToCreateTask
+}) => {
   const toast = useToast();
   const { mutateAsync: createEvent } = useCreateEvent();
   const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
 
   const handleSubmit = async (payload: EventPayload) => {
     try {
-      const { documentFiles, createScheduleSlotArgs, initialDateScheduled, ...eventData } = payload;
+      const { documentFiles, createScheduleSlotArgs, initialDateScheduled, mention, ...eventData } = payload;
 
       const scheduleSlots: Array<{
         startTime: Date;
@@ -69,7 +82,8 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, even
         ...eventData,
         initialDateScheduled: initialDateScheduled ?? new Date(),
         scheduleSlots,
-        documentIds: []
+        documentIds: [],
+        mention
       };
 
       const createdEvent = await createEvent(createArgs);
@@ -103,6 +117,27 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, even
       onSubmit={handleSubmit}
       eventTypes={eventTypes}
       defaultDate={defaultDate}
+      defaultStartTime={defaultStartTime}
+      defaultEndTime={defaultEndTime}
+      actionsLeftChildren={
+        onSwitchToCreateTask ? (
+          <Button
+            size="small"
+            variant="contained"
+            startIcon={<AssignmentIcon />}
+            onClick={onSwitchToCreateTask}
+            sx={{
+              textTransform: 'none',
+              bgcolor: '#7B68EE',
+              '&:hover': {
+                bgcolor: '#6A5ACD'
+              }
+            }}
+          >
+            Create Task
+          </Button>
+        ) : undefined
+      }
     />
   );
 };

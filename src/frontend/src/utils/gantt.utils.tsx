@@ -134,28 +134,21 @@ export type RequestEventChange<T> = {
 };
 
 export const getProjectStartDate = (project: ProjectGantt): Date => {
-  const wpStart = project.workPackages.reduce((acc, current) => {
-    if (current.startDate < acc) return current.startDate;
-    return acc;
-  }, new Date());
-  return project.tasks.reduce((acc, current) => {
-    if (current.startDate && current.startDate < acc) return current.startDate;
-    return acc;
-  }, wpStart);
+  const candidates: Date[] = [
+    ...project.workPackages.map((wp) => wp.startDate),
+    ...project.tasks.map((t) => t.startDate).filter((d): d is Date => !!d)
+  ];
+  if (candidates.length === 0) return project.startDate ?? new Date();
+  return new Date(Math.min(...candidates.map((d) => d.valueOf())));
 };
 
 export const getProjectEndDate = (project: ProjectGantt): Date => {
-  const wpEnd = project.workPackages.reduce(
-    (acc, current) => {
-      if (current.endDate > acc) return current.endDate;
-      return acc;
-    },
-    new Date(Date.now() + 1000 * 60 * 60 * 24 * 7 * 5)
-  );
-  return project.tasks.reduce((acc, current) => {
-    if (current.deadline && current.deadline > acc) return current.deadline;
-    return acc;
-  }, wpEnd);
+  const candidates: Date[] = [
+    ...project.workPackages.map((wp) => wp.endDate),
+    ...project.tasks.map((t) => t.deadline).filter((d): d is Date => !!d)
+  ];
+  if (candidates.length === 0) return project.endDate ?? new Date();
+  return new Date(Math.max(...candidates.map((d) => d.valueOf())));
 };
 
 export const transformDesignReviewEventToGanttEvent = (event: EventPreview): GanttEvent => {
@@ -411,7 +404,7 @@ const getBlockingGanttTasks = <T extends WorkPackage>(
 
 export const transformTaskToGanttTask = <T extends Task>(task: T, end: Date): GanttTask<T> => {
   return {
-    id: uuidv4(),
+    id: task.taskId,
     element: task,
 
     name: task.title,
@@ -441,7 +434,7 @@ export const transformWorkPackageToGanttTask = <T extends WorkPackage>(
   allWorkPackages: T[]
 ): GanttTask<T> => {
   return {
-    id: uuidv4(),
+    id: workPackage.id,
     element: workPackage,
 
     name: workPackage.name,
@@ -477,7 +470,7 @@ export const transformProjectToGanttTask = (
   const taskList = hideTasks ? [] : project.tasks;
 
   return {
-    id: uuidv4(),
+    id: project.id,
     element: project,
 
     name: project.name,
@@ -485,9 +478,7 @@ export const transformProjectToGanttTask = (
     end: endDate,
     blocking: [],
     children: [
-      ...project.workPackages
-        .filter((workPackage) => workPackage.blockedBy.length === 0)
-        .map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
+      ...project.workPackages.map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
       ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
     ],
     overlays: [

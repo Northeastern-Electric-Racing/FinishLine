@@ -45,6 +45,11 @@ export type SubmitText =
   | 'Mark Submitted'
   | 'Create Change Request'
   | 'Update'
-  | 'Submit Vendor';
+  | 'Submit Vendor'
+  | 'Copy'
+  | 'Accept'
+  | 'Send'
+  | 'Close Attendance'
+  | 'Copy BOM';
 
 export type CancelText = 'Cancel' | 'Delete' | 'Exit' | 'No';

@@ -9,7 +9,8 @@ import TimelineDot from '@mui/lab/TimelineDot';
 import { useAllMilestones } from '../../../hooks/recruitment.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { dateMonthDayYear, isPastEvent } from '../../../utils/datetime.utils';
+import { isPastEvent } from '../../../utils/datetime.utils';
+import { formatDateOnly } from 'shared';
 
 const TimelineSection = () => {
   const { isLoading, isError, error, data: milestones } = useAllMilestones();
@@ -63,7 +64,7 @@ const TimelineSection = () => {
                 {milestone.name}
               </Typography>
               <Typography variant="body1" sx={{ fontSize: 20 }}>
-                {dateMonthDayYear(milestone.dateOfEvent)}
+                {formatDateOnly(milestone.dateOfEvent, 'MMMM D, YYYY')}
               </Typography>
               <Typography variant="body2">{milestone.description}</Typography>
             </TimelineContent>

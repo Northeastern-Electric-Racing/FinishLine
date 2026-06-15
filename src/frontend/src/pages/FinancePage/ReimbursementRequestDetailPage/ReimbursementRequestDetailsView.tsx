@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { accountCodePipe, displayEnum, formatSaboIdPipe } from '../../../utils/pipes';
+import { accountCodePipe, displayEnum } from '../../../utils/pipes';
 import { Assignment, ChangeCircle, Edit, Pending } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -19,6 +19,7 @@ import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import StoreIcon from '@mui/icons-material/Store';
 import SellIcon from '@mui/icons-material/Sell';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+import Description from '@mui/icons-material/Description';
 
 import { Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
@@ -435,7 +436,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { label: 'SABO Number', icon: <SellIcon fontSize="small" /> },
     { label: 'Refund Source', icon: <CurrencyExchangeIcon fontSize="small" /> },
     { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> },
-    { label: 'Assigned To', icon: <PersonOutlineIcon fontSize="small" /> }
+    { label: 'Assigned To', icon: <PersonOutlineIcon fontSize="small" /> },
+    { label: 'Description', icon: <Description fontSize="small" /> }
   ];
 
   // grab all unique refund source names
@@ -465,12 +467,13 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     },
     { content: `$${centsToDollar(reimbursementRequest.totalCost)}` },
     { content: reimbursementRequest.vendor.name },
-    { content: `${formatSaboIdPipe(reimbursementRequest.saboId)}` },
+    { content: `${reimbursementRequest.saboId}` },
     {
       content: refundSourceNames.join(', ')
     },
     { content: accountCodePipe(reimbursementRequest.accountCode) },
-    { content: fullNamePipe(reimbursementRequest.assignee) }
+    { content: fullNamePipe(reimbursementRequest.assignee) },
+    { content: reimbursementRequest.description }
   ];
 
   const { id } = useParams<{ id: string }>();
@@ -614,14 +617,14 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             width: 'calc(100% - 40px)'
           }}
         />
-        <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', flexDirection: { xs: 'column', md: 'row' } }}>
           <Box sx={{ mt: -3 }}>
             <ReimbursementRequestTimeline
               reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
               reimbursementRequestComments={reimbursementRequest.comments}
             />
           </Box>
-          <Box sx={{ mt: 2, ml: 2, whiteSpace: 'nowrap' }}>
+          <Box sx={{ mt: 2, ml: { xs: 0, md: 2 }, whiteSpace: { xs: 'normal', md: 'nowrap' } }}>
             <ReimbursementProductsView reimbursementRequest={reimbursementRequest} />
             <Box sx={{ mt: 2 }}>
               <ReceiptsView />

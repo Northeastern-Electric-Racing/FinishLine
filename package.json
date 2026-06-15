@@ -6,14 +6,15 @@
   "workspaces": [
     "src/backend",
     "src/frontend",
-    "src/shared"
+    "src/shared",
+    "src/docs-site"
   ],
   "scripts": {
     "prettier-check": "yarn prettier --check .",
     "frontend": "yarn workspace frontend start",
     "backend": "yarn workspace backend start",
     "backend:dev": "yarn workspace backend dev",
-    "start": "yarn workspace shared build; concurrently --kill-others-on-fail \"yarn backend:dev\"  \"yarn frontend\"",
+    "start": "yarn workspace shared build; concurrently --kill-others-on-fail --hide 2 \"yarn backend:dev\" \"yarn frontend\" \"yarn docs:dev\"",
     "prisma:seed": "cd src/backend; npx prisma db seed",
     "prisma:reset:force": "yarn workspace shared build; cd src/backend; npx prisma migrate reset --force",
     "prisma:reset": "yarn workspace shared build; cd src/backend; npx prisma migrate reset",
@@ -59,13 +60,18 @@
     "docker:i": "cd devContainerization && docker compose -f docker-compose.dev.yml exec -T backend sh -c \"yarn install && cd src/backend && npx prisma generate\" && docker compose -f docker-compose.dev.yml exec -T frontend sh -c \"yarn install\"",
     "docker:test": "yarn test:setup && cd devContainerization && docker compose -f docker-compose.dev.yml exec backend bash -c \"yarn test:backend\" && docker compose -f docker-compose.dev.yml exec frontend sh -c \"yarn test:frontend\" && yarn test:teardown",
     "docker:rebuild": "docker compose -f devContainerization/docker-compose.dev.yml rm -f -s && yarn docker:start",
-    "db:pull": "node scripts/db-pull.mjs"
+    "db:pull": "node scripts/db-pull.mjs",
+    "docs:dev": "yarn workspace finishline-docs docs:dev",
+    "docs:build": "yarn workspace finishline-docs docs:build",
+    "docs:serve": "yarn workspace finishline-docs serve",
+    "skills:sync": "yarn workspace finishline-docs sync-skills"
   },
   "resolutions": {
     "@types/react": "17.0.1",
     "@types/react-dom": "17.0.1"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.4.0",
     "@microsoft/clarity": "^1.0.0",
     "@types/multer": "^1.4.12",
     "canvas-confetti": "^1.9.3",
@@ -81,7 +87,7 @@
     "@babel/preset-typescript": "^7.18.6",
     "@types/canvas-confetti": "^1.9.0",
     "@types/jest": "^29.5.14",
-    "@types/node": "20.0.0",
+    "@types/node": "^25.0.0",
     "@typescript-eslint/eslint-plugin": "8.20.0",
     "@typescript-eslint/parser": "8.20.0",
     "concurrently": "^9.1.0",
@@ -153,6 +159,8 @@
       "build",
       "coverage",
       "docs",
+      "src/docs-site/.docusaurus",
+      "src/docs-site/build",
       "lambda",
       "node_modules",
       "public",
@@ -172,5 +180,9 @@
     ]
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "packageManager": "yarn@4.15.0",
+  "engines": {
+    "npm": ">=11.10.0"
+  }
 }

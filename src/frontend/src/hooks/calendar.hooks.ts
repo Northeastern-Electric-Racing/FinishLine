@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   Shop,
   Machinery,
@@ -11,7 +11,9 @@ import {
   FilterArgs,
   ScheduleSlotCreateArgs,
   EventWithMembers,
-  ScheduleSlot
+  ScheduleSlot,
+  EventInstance,
+  SlackMentionType
 } from 'shared';
 import {
   getAllShops,
@@ -48,7 +50,9 @@ import {
   getSingleEventWithMembers,
   previewScheduleSlotRecurringEdits,
   postDeleteScheduleSlot,
-  scheduleEvent
+  scheduleEvent,
+  getAllEventsPaginated,
+  getIcsToken
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 import { PDFDocument } from 'pdf-lib';
@@ -61,7 +65,6 @@ const SHOP_KEY = ['shops'] as const;
 const CALENDAR_KEY = ['calendars'] as const;
 export const EVENT_TYPE_KEY = ['event-types'] as const;
 export const EVENT_KEY = ['events'] as const;
-
 export interface EventCreateArgs {
   title: string;
   eventTypeId: string;
@@ -79,6 +82,7 @@ export interface EventCreateArgs {
   description?: string;
   initialDateScheduled: Date;
   scheduleSlots: ScheduleSlotCreateArgs[];
+  mention?: SlackMentionType;
 }
 
 export interface EditEventArgs {
@@ -664,3 +668,31 @@ export const combinePdfsAndDownload = async (blobData: Blob[], filename: string)
   const pdfBlob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
   saveAs(pdfBlob, filename);
 };
+
+export const useFutureEventsPaginated = () => {
+  return useInfiniteQuery<{ futureInstances: EventInstance[]; nextFutureCursor: Date | null }, Error>(
+    ['events', 'future', 'paginated'],
+    async ({ pageParam }: { pageParam?: Date }) => {
+      const { data } = await getAllEventsPaginated(pageParam, undefined);
+      return { futureInstances: data.futureInstances, nextFutureCursor: data.nextFutureCursor };
+    },
+    { getNextPageParam: (lastPage) => lastPage.nextFutureCursor ?? undefined }
+  );
+};
+
+export const usePastEventsPaginated = () => {
+  return useInfiniteQuery<{ pastInstances: EventInstance[]; nextPastCursor: Date | null }, Error>(
+    ['events', 'past', 'paginated'],
+    async ({ pageParam }: { pageParam?: Date }) => {
+      const { data } = await getAllEventsPaginated(undefined, pageParam);
+      return { pastInstances: data.pastInstances, nextPastCursor: data.nextPastCursor };
+    },
+    { getNextPageParam: (lastPage) => lastPage.nextPastCursor ?? undefined }
+  );
+};
+
+export const useGetIcsToken = () =>
+  useQuery<{ icsToken: string; organizationId: string }, Error>(['icsToken'], async () => {
+    const { data } = await getIcsToken();
+    return data;
+  });

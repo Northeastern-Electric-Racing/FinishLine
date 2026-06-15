@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Assembly, Manufacturer, Material, MaterialType, Unit, WbsNumber, wbsPipe } from 'shared';
+import { Assembly, Manufacturer, Material, MaterialType, ProjectPreview, Unit, WbsNumber, wbsPipe } from 'shared';
+import { useToast } from '../hooks/toasts.hooks';
 import {
   assignMaterialToAssembly,
   createAssembly,
   createManufacturer,
   deleteManufacturer,
   createMaterial,
+  copyMaterialsToProject,
   createMaterialType,
   createUnit,
   deleteSingleAssembly,
@@ -134,6 +136,32 @@ export const useDeleteMaterial = (wbsNum: WbsNumber) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to copy materials to a project.
+ * @returns the mutation function to copy materials
+ */
+export const useCopyMaterialsToProject = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<string[], Error, { materialIds: string[]; destinationWbsNum: string }>(
+    ['materials', 'copy'],
+    async ({ materialIds, destinationWbsNum }) => {
+      const data = await copyMaterialsToProject(materialIds, destinationWbsNum);
+      return data;
+    },
+    {
+      onSuccess: (newMaterialIds, variables) => {
+        queryClient.invalidateQueries(['materials', variables.destinationWbsNum]);
+        toast.success(`Successfully copied ${newMaterialIds.length} material${newMaterialIds.length !== 1 ? 's' : ''}!`);
+      },
+      onError: () => {
+        toast.error('Failed to copy materials');
       }
     }
   );
@@ -285,6 +313,27 @@ export const useCreateMaterialType = () => {
   );
 };
 
+/**
+ * Custom React hook to edit a material's status inline.
+ * @param wbsNum The wbs element the material belongs to
+ * @returns mutation function to edit a material's status
+ */
+export const useEditMaterialById = (wbsNum: WbsNumber) => {
+  const queryClient = useQueryClient();
+  return useMutation<Material, Error, { materialId: string; payload: MaterialDataSubmission }>(
+    ['materials', 'edit'],
+    async ({ materialId, payload }) => {
+      const data = await editMaterial(materialId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
+      }
+    }
+  );
+};
+
 export const useGetAssembliesForWbsElement = (wbsNum: WbsNumber) => {
   return useQuery<Assembly[], Error>(['assemblies', wbsPipe(wbsNum)], async () => {
     const { data } = await getAssembliesForWbsElement(wbsNum);
@@ -297,4 +346,34 @@ export const useGetMaterialsForWbsElement = (wbsNum: WbsNumber) => {
     const { data } = await getMaterialsForWbsElement(wbsNum);
     return data;
   });
+};
+
+export const useGetMaterialsForCar = (carNumber: number | null, projects: ProjectPreview[]) => {
+  const projectsInCar = projects.filter((p) => p.wbsNum.carNumber === carNumber);
+
+  return useQuery<Material[], Error>(
+    ['materials', 'car', carNumber ?? 'none'],
+    async () => {
+      const results = await Promise.all(
+        projectsInCar.map(async (p) => {
+          const { data } = await getMaterialsForWbsElement({
+            carNumber: p.wbsNum.carNumber,
+            projectNumber: p.wbsNum.projectNumber,
+            workPackageNumber: 0
+          });
+          return data;
+        })
+      );
+
+      const flat = results.flat();
+      const seen = new Set<string>();
+      return flat.filter((material) => {
+        const key = `${material.name.toLowerCase()}-${material.assemblyId ?? 'no-assembly'}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    },
+    { enabled: carNumber !== null && projectsInCar.length > 0 }
+  );
 };

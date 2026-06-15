@@ -1,6 +1,9 @@
-FROM node:20
+FROM node:25
 
-COPY package.json tsconfig.build.json ./
+RUN npm install -g corepack --force && corepack enable
+
+COPY package.json tsconfig.build.json .yarnrc.yml yarn.lock ./
+COPY .yarn/releases .yarn/releases
 COPY ./src/backend/package.json ./src/backend/tsconfig.json src/backend/
 COPY ./src/shared/package.json ./src/shared/tsconfig.json src/shared/
 

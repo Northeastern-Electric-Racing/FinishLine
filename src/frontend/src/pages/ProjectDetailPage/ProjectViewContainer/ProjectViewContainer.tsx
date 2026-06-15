@@ -34,6 +34,7 @@ import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 import ChangeRequestTab from '../../../components/ChangeRequestTab';
 import PartsReviewPage from './PartReview/PartsReviewPage';
 import ActionsMenu from '../../../components/ActionsMenu';
+import ProjectSpendingHistory from '../../ProjectPage/ProjectSpendingHistory';
 import { useMyTeamAsHead } from '../../../hooks/teams.hooks';
 import { ProjectRulesTab } from './ProjectRules/ProjectRulesTab';
 
@@ -179,6 +180,36 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
 
   const wbsNum = wbsPipe(project.wbsNum);
 
+  if (isGuest(user.role))
+    return (
+      <PageLayout
+        title={pageTitle}
+        headerRight={headerRight}
+        tabs={
+          <FullPageTabs
+            setTab={setTab}
+            tabsLabels={[
+              { tabUrlValue: 'overview', tabName: 'Overview' },
+              { tabUrlValue: 'tasks', tabName: 'Tasks' },
+              { tabUrlValue: 'changes', tabName: 'Changes' }
+            ]}
+            baseUrl={`${routes.PROJECTS}/${wbsNum}`}
+            defaultTab="overview"
+            id="project-detail-tabs"
+          />
+        }
+        previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
+      >
+        {tab === 0 ? (
+          <ProjectDetails project={project} />
+        ) : tab === 1 ? (
+          <TaskList project={project} isGuest={true} />
+        ) : (
+          <ChangesList changes={project.changes} />
+        )}
+      </PageLayout>
+    );
+
   return (
     <PageLayout
       title={pageTitle}
@@ -195,6 +226,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             { tabUrlValue: 'gantt', tabName: 'Gantt' },
             { tabUrlValue: 'change-requests', tabName: 'Change Requests' },
             { tabUrlValue: 'parts-review', tabName: 'Parts Review' },
+            { tabUrlValue: 'spending', tabName: 'Budget' },
             { tabUrlValue: 'rules', tabName: 'Rules' }
           ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
@@ -207,7 +239,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       {tab === 0 ? (
         <ProjectDetails project={project} />
       ) : tab === 1 ? (
-        <TaskList project={project} />
+        <TaskList project={project} isGuest={false} />
       ) : tab === 2 ? (
         <BOMTab project={project} />
       ) : tab === 3 ? (
@@ -220,6 +252,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <ChangeRequestTab wbsElement={project} />
       ) : tab === 7 ? (
         <PartsReviewPage project={project} />
+      ) : tab === 8 ? (
+        <ProjectSpendingHistory wbsNum={project.wbsNum} />
       ) : (
         <ProjectRulesTab project={project} />
       )}

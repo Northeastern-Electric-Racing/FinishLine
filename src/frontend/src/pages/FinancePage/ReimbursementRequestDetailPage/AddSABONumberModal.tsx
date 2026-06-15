@@ -8,14 +8,7 @@ import { useSetSaboNumber } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 const schema = yup.object({
-  saboNumber: yup
-    .number()
-    .typeError('The SABO number should be a valid number')
-    .required('The SABO number is required')
-    .test('exact-5-digits', 'The SABO number must be exactly 5 digits', function () {
-      const original = this.originalValue?.toString().trim();
-      return /^\d{5}$/.test(original || '');
-    })
+  saboNumber: yup.string().required('The SABO number is required')
 });
 
 interface AddSABONumberModalProps {
@@ -33,20 +26,20 @@ const AddSABONumberModal = ({ modalShow, onHide, reimbursementRequestId }: AddSA
     control,
     formState: { errors, isValid },
     reset
-  } = useForm<{ saboNumber: number }>({
+  } = useForm<{ saboNumber: string }>({
     resolver: yupResolver(schema),
     mode: 'onChange'
   });
 
-  const onSubmit = async (data: { saboNumber: number }) => {
+  const onSubmit = async (data: { saboNumber: string }) => {
     try {
       await setSaboNumber(data);
+      onHide();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    onHide();
   };
 
   return (

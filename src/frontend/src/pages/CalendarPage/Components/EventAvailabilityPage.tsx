@@ -5,15 +5,15 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery as useQueryParam } from '../../../hooks/utils.hooks';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Typography, useMediaQuery, useTheme } from '@mui/material';
 import {
   Availability,
   getMostRecentAvailabilities,
   User,
   UserWithScheduleSettings,
   EventWithMembers,
-  isAdmin,
-  EventStatus
+  EventStatus,
+  isAdmin
 } from 'shared';
 import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -148,6 +148,20 @@ export const EventAvailabilityPage: React.FC = () => {
     return event.confirmedMembers.some((m) => m.userId === currentUser.userId);
   }, [event, currentUser]);
 
+  // Reorders users by alphabetical order.
+  const reorderAlphabetically = (users: User[]) => {
+    return users.sort((a, b) => (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName));
+  };
+
+  // Reorders users by confirmation or not. All confirmed users are above the unconfirmed users
+  const reorderByConfirmation = (users: User[]) => {
+    return [...reorderAlphabetically(users)].sort((a, b) => {
+      const aConfirmation = event && event.confirmedMembers.some((m) => m.userId === a.userId) ? 1 : 0;
+      const bConfirmation = event && event.confirmedMembers.some((m) => m.userId === b.userId) ? 1 : 0;
+      return bConfirmation - aConfirmation;
+    });
+  };
+
   useEffect(() => {
     if (userScheduleSettings && userScheduleSettings.availabilities.length > 0) {
       const confirmed = getMostRecentAvailabilities(userScheduleSettings.availabilities, displayDate);
@@ -157,13 +171,15 @@ export const EventAvailabilityPage: React.FC = () => {
     }
   }, [userScheduleSettings, displayDate]);
 
+  const isMobile = useMediaQuery('(max-width:480px)');
+
   // Auto-open modal for users who haven't confirmed (runs once when event loads)
   useEffect(() => {
-    if (!hasAutoOpened && event && !hasConfirmed) {
+    if (!hasAutoOpened && event && !hasConfirmed && !isMobile) {
       setEditAvailabilityOpen(true);
       setHasAutoOpened(true);
     }
-  }, [event, hasAutoOpened, hasConfirmed]);
+  }, [event, hasAutoOpened, hasConfirmed, isMobile]);
 
   if (eventLoading || !event) return <LoadingIndicator />;
   if (eventError) return <ErrorPage error={eventErrorMsg} message={eventErrorMsg?.message} />;
@@ -225,7 +241,24 @@ export const EventAvailabilityPage: React.FC = () => {
     return `${hour}:00 AM`;
   };
 
-  // RENDER
+  // MOBILE EDIT OPEN RENDER
+  if (isMobile && editAvailabilityOpen) {
+    return (
+      <AvailabilityEditModal
+        open={editAvailabilityOpen}
+        onHide={() => setEditAvailabilityOpen(false)}
+        header={editModalTitle}
+        confirmedAvailabilities={confirmedAvailabilities}
+        setConfirmedAvailabilities={setConfirmedAvailabilities}
+        totalAvailabilities={deeplyCopy(userScheduleSettings.availabilities, availabilityTransformer) as Availability[]}
+        initialDate={displayDate}
+        onSubmit={handleConfirm}
+        canChangeDateRange={false}
+      />
+    );
+  }
+
+  // RENDER NORMALLY
   return (
     <PageLayout
       title={workPackageNames}
@@ -299,11 +332,20 @@ export const EventAvailabilityPage: React.FC = () => {
               </Typography>
               <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
                 {currentAvailableUsers.length > 0 ? (
-                  currentAvailableUsers.map((user) => {
+                  reorderByConfirmation(currentAvailableUsers).map((user) => {
                     const isConfirmed = event.confirmedMembers.some((cm) => cm.userId === user.userId);
-                    const displayName = fullNamePipe(user) + (isConfirmed ? '' : ' *');
+                    const isRequired = event.requiredMembers.some((cm) => cm.userId === user.userId);
+                    const displayName = fullNamePipe(user);
                     return (
-                      <Typography key={user.userId} variant="body2" sx={{ py: 0.25 }}>
+                      <Typography
+                        key={user.userId}
+                        variant="body2"
+                        sx={{
+                          py: 0.25,
+                          color: isConfirmed ? 'inherit' : '#ef4345',
+                          textDecoration: isRequired ? 'underline' : 'none'
+                        }}
+                      >
                         {displayName}
                       </Typography>
                     );
@@ -322,11 +364,20 @@ export const EventAvailabilityPage: React.FC = () => {
               </Typography>
               <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
                 {currentUnavailableUsers.length > 0 ? (
-                  currentUnavailableUsers.map((user) => {
+                  reorderByConfirmation(currentUnavailableUsers).map((user) => {
                     const isConfirmed = event.confirmedMembers.some((cm) => cm.userId === user.userId);
-                    const displayName = fullNamePipe(user) + (isConfirmed ? '' : ' *');
+                    const isRequired = event.requiredMembers.some((cm) => cm.userId === user.userId);
+                    const displayName = fullNamePipe(user);
                     return (
-                      <Typography key={user.userId} variant="body2" sx={{ py: 0.25 }}>
+                      <Typography
+                        key={user.userId}
+                        variant="body2"
+                        sx={{
+                          py: 0.25,
+                          color: isConfirmed ? 'inherit' : '#ef4345',
+                          textDecoration: isRequired ? 'underline' : 'none'
+                        }}
+                      >
                         {displayName}
                       </Typography>
                     );
@@ -342,21 +393,23 @@ export const EventAvailabilityPage: React.FC = () => {
 
           {(currentAvailableUsers.length > 0 || currentUnavailableUsers.length > 0) && (
             <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-              * has not confirmed availability
+              <span style={{ color: '#ef4345' }}>Red</span> means that member has not confirmed availability
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+                <span style={{ textDecoration: 'underline' }}>Underline</span> means that member is required for the meeting
+              </Typography>
             </Typography>
           )}
 
           {/* Schedule button for creators - only show if event is not already scheduled */}
-          {(isCreator || isAdmin(currentUser.role)) && selectedSlot && event.status !== EventStatus.SCHEDULED && (
+          {(isCreator || isAdmin(currentUser.role)) && selectedSlot && (
             <Box sx={{ mt: 3 }}>
               <NERSuccessButton variant="contained" onClick={handleScheduleClick} fullWidth>
-                Schedule Event
+                {event.status === EventStatus.SCHEDULED ? 'Reschedule Event' : 'Schedule Event'}
               </NERSuccessButton>
             </Box>
           )}
         </Box>
       </Box>
-
       <SingleAvailabilityModal
         open={viewAvailabilityOpen}
         onHide={() => setViewAvailabilityOpen(false)}
@@ -364,7 +417,6 @@ export const EventAvailabilityPage: React.FC = () => {
         availabilites={userScheduleSettings.availabilities}
         initialDate={displayDate}
       />
-
       <AvailabilityEditModal
         open={editAvailabilityOpen}
         onHide={() => setEditAvailabilityOpen(false)}
@@ -376,7 +428,6 @@ export const EventAvailabilityPage: React.FC = () => {
         onSubmit={handleConfirm}
         canChangeDateRange={false}
       />
-
       {selectedSlot && (
         <ScheduleEventModal
           open={scheduleModalOpen}
@@ -389,6 +440,7 @@ export const EventAvailabilityPage: React.FC = () => {
           selectedDay={selectedSlot.day}
           startHour={selectedSlot.startHour}
           endHour={selectedSlot.endHour}
+          beingRescheduled={event.status === EventStatus.SCHEDULED}
         />
       )}
     </PageLayout>

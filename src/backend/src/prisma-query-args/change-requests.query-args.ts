@@ -39,7 +39,10 @@ export const getChangeRequestQueryArgs = (organizationId: string) =>
       },
       budgetChangeRequest: true,
       deletedBy: getUserQueryArgs(organizationId),
-      requestedReviewers: getUserQueryArgs(organizationId)
+      requestedReviewers: getUserQueryArgs(organizationId),
+      leadershipChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      }
     }
   });
 
@@ -58,7 +61,55 @@ export const getManyChangeRequestQueryArgs = (organizationId: string) =>
       },
       budgetChangeRequest: true,
       deletedBy: getUserQueryArgs(organizationId),
-      requestedReviewers: getUserQueryArgs(organizationId)
+      requestedReviewers: getUserQueryArgs(organizationId),
+      leadershipChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      }
+    }
+  });
+
+export type ChangeRequestGuestQueryArgs = ReturnType<typeof getGuestChangeRequestQueryArgs>;
+
+export const getGuestChangeRequestQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Change_RequestDefaultArgs>()({
+    select: {
+      crId: true,
+      identifier: true,
+      dateSubmitted: true,
+      type: true,
+      accepted: true,
+      dateReviewed: true,
+      submitter: getUserQueryArgs(organizationId),
+      reviewer: getUserQueryArgs(organizationId),
+      changes: { select: { changeId: true } },
+      wbsElement: {
+        select: {
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          name: true,
+          project: {
+            select: {
+              wbsElement: { select: { name: true } },
+              teams: {
+                select: { teamType: { select: { name: true } } }
+              }
+            }
+          },
+          workPackage: {
+            select: {
+              project: {
+                select: {
+                  wbsElement: { select: { name: true } },
+                  teams: {
+                    select: { teamType: { select: { name: true } } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   });
 
@@ -101,6 +152,9 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
       },
       budgetChangeRequest: true,
       deletedBy: getUserQueryArgs(organizationId),
-      requestedReviewers: getUserQueryArgs(organizationId)
+      requestedReviewers: getUserQueryArgs(organizationId),
+      leadershipChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      }
     }
   });

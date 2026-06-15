@@ -1,7 +1,52 @@
-import { ChatPostMessageResponse, WebClient } from '@slack/web-api';
+import bolt from '@slack/bolt';
+import type { App, ExpressReceiver } from '@slack/bolt';
 import { HttpException } from '../utils/errors.utils.js';
 
-const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
+const { App: AppClass, ExpressReceiver: ExpressReceiverClass } = bolt;
+
+let receiver: ExpressReceiver | null = null;
+let slackApp: App | null = null;
+let slack: any = null; // Type will be inferred from slackApp.client (WebClient from Bolt)
+
+/**
+ * Initializes the Slack Bolt app, receiver, and client if not already initialized
+ * Only initializes if SLACK_BOT_TOKEN is present
+ */
+const initializeSlack = () => {
+  const { SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET } = process.env;
+
+  // Don't initialize if no token is configured (e.g., in tests)
+  if (!SLACK_BOT_TOKEN) {
+    return;
+  }
+
+  // Don't re-initialize if already initialized
+  if (slackApp) {
+    return;
+  }
+
+  // Initialize the receiver, app, and client
+  receiver = new ExpressReceiverClass({
+    signingSecret: SLACK_SIGNING_SECRET || '',
+    endpoints: '/slack/events'
+  });
+
+  slackApp = new AppClass({
+    token: SLACK_BOT_TOKEN,
+    receiver
+  });
+
+  slack = slackApp.client;
+};
+
+/**
+ * Get the Slack WebClient (initializes Slack if needed)
+ * @returns the Slack WebClient or null if no token is configured
+ */
+const getSlackClient = () => {
+  initializeSlack();
+  return slack;
+};
 
 /**
  * Send a slack message
@@ -12,14 +57,13 @@ const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
  * @returns the channel id and timestamp of the created slack message
  */
 export const sendMessage = async (slackId: string, message: string, link?: string, linkButtonText?: string) => {
-  const { SLACK_BOT_TOKEN } = process.env;
-  if (!SLACK_BOT_TOKEN) return;
+  const client = getSlackClient();
+  if (!client) return;
 
   const block = generateSlackTextBlock(message, link, linkButtonText);
 
   try {
-    const response: ChatPostMessageResponse = await slack.chat.postMessage({
-      token: SLACK_BOT_TOKEN,
+    const response = await client.chat.postMessage({
       channel: slackId,
       text: message,
       blocks: [block],
@@ -28,7 +72,8 @@ export const sendMessage = async (slackId: string, message: string, link?: strin
 
     return response && response.channel && response.ts && { channelId: response.channel, ts: response.ts };
   } catch (error) {
-    throw new HttpException(500, 'Error sending slack message, reason: ' + (error as any).data.error);
+    console.error('Failed to send Slack message:', (error as any)?.data?.error ?? error);
+    return undefined;
   }
 };
 
@@ -47,21 +92,21 @@ export const replyToMessageInThread = async (
   link?: string,
   linkButtonText?: string
 ) => {
-  const { SLACK_BOT_TOKEN } = process.env;
-  if (!SLACK_BOT_TOKEN) return;
+  const client = getSlackClient();
+  if (!client) return;
 
   const block = generateSlackTextBlock(message, link, linkButtonText);
 
   try {
-    await slack.chat.postMessage({
-      token: SLACK_BOT_TOKEN,
+    await client.chat.postMessage({
       channel: slackId,
       thread_ts: parentTimestamp,
       text: message,
       blocks: [block]
     });
   } catch (error) {
-    throw new HttpException(500, 'Error sending slack reply to thread, reason: ' + (error as any).data.error);
+    console.error('Failed to send Slack thread reply:', (error as any)?.data?.error ?? error);
+    return undefined;
   }
 };
 
@@ -80,21 +125,41 @@ export const editMessage = async (
   link?: string,
   linkButtonText?: string
 ) => {
-  const { SLACK_BOT_TOKEN } = process.env;
-  if (!SLACK_BOT_TOKEN) return;
+  const client = getSlackClient();
+  if (!client) return;
 
   const block = generateSlackTextBlock(message, link, linkButtonText);
 
   try {
-    await slack.chat.update({
-      token: SLACK_BOT_TOKEN,
+    await client.chat.update({
       channel: slackId,
       ts: timestamp,
       text: message,
       blocks: [block]
     });
   } catch (error) {
-    throw new HttpException(500, 'Error sending slack reply to thread, reason: ' + (error as any).data.error);
+    console.error('Failed to edit Slack message:', (error as any)?.data?.error ?? error);
+    return undefined;
+  }
+};
+
+/**
+ * Deletes a slack message
+ * @param channelId - the channel id of the channel containing the message
+ * @param timestamp - the timestamp of the message to delete
+ */
+export const deleteMessage = async (channelId: string, timestamp: string) => {
+  const client = getSlackClient();
+  if (!client) return;
+
+  try {
+    await client.chat.delete({
+      channel: channelId,
+      ts: timestamp
+    });
+  } catch (error) {
+    console.error('Failed to delete Slack message:', (error as any)?.data?.error ?? error);
+    return undefined;
   }
 };
 
@@ -105,18 +170,18 @@ export const editMessage = async (
  * @param emoji - the emoji to react with
  */
 export const reactToMessage = async (slackId: string, parentTimestamp: string, emoji: string) => {
-  const { SLACK_BOT_TOKEN } = process.env;
-  if (!SLACK_BOT_TOKEN) return;
+  const client = getSlackClient();
+  if (!client) return;
 
   try {
-    await slack.reactions.add({
-      token: SLACK_BOT_TOKEN,
+    await client.reactions.add({
       channel: slackId,
       timestamp: parentTimestamp,
       name: emoji
     });
   } catch (error) {
-    throw new HttpException(500, 'Error reacting to slack message, reason: ' + (error as any).data.error);
+    console.error('Failed to react to Slack message:', (error as any)?.data?.error ?? error);
+    return undefined;
   }
 };
 
@@ -161,12 +226,15 @@ const generateSlackTextBlock = (message: string, link?: string, linkButtonText?:
  * @returns an array of strings of all the slack ids of the users in the given channel
  */
 export const getUsersInChannel = async (channelId: string) => {
+  const client = getSlackClient();
+  if (!client) return [];
+
   let members: string[] = [];
   let cursor: string | undefined;
 
   try {
     do {
-      const response = await slack.conversations.members({
+      const response = await client.conversations.members({
         channel: channelId,
         cursor,
         limit: 200
@@ -192,11 +260,31 @@ export const getUsersInChannel = async (channelId: string) => {
  * @returns the name of the channel or undefined if it cannot be found
  */
 export const getChannelName = async (channelId: string) => {
+  const client = getSlackClient();
+  if (!client) return undefined;
+
   try {
-    const channelRes = await slack.conversations.info({ channel: channelId });
+    const channelRes = await client.conversations.info({ channel: channelId });
     return channelRes.channel?.name;
   } catch (error) {
     return undefined;
+  }
+};
+
+/**
+ * Checks whether the bot is a member of the given channel
+ * @param channelId the id of the slack channel
+ * @returns true if the bot is a member of the channel, false otherwise
+ */
+export const checkBotInChannel = async (channelId: string): Promise<boolean> => {
+  const client = getSlackClient();
+  if (!client) return false;
+
+  try {
+    const channelRes = await client.conversations.info({ channel: channelId });
+    return channelRes.channel?.is_member ?? false;
+  } catch (error) {
+    return false;
   }
 };
 
@@ -206,8 +294,11 @@ export const getChannelName = async (channelId: string) => {
  * @returns the name of the user (real name if no display name), undefined if cannot be found
  */
 export const getUserName = async (userId: string) => {
+  const client = getSlackClient();
+  if (!client) return undefined;
+
   try {
-    const userRes = await slack.users.info({ user: userId });
+    const userRes = await client.users.info({ user: userId });
     return userRes.user?.profile?.display_name || userRes.user?.real_name;
   } catch (error) {
     return undefined;
@@ -219,8 +310,13 @@ export const getUserName = async (userId: string) => {
  * @returns the id of the workspace
  */
 export const getWorkspaceId = async () => {
+  const client = getSlackClient();
+  if (!client) {
+    throw new HttpException(500, 'Slack client not configured');
+  }
+
   try {
-    const response = await slack.auth.test();
+    const response = await client.auth.test();
     if (response.ok) {
       return response.team_id;
     }
@@ -230,4 +326,57 @@ export const getWorkspaceId = async () => {
   }
 };
 
-export default slack;
+/**
+ * Sends a slack ephemeral message to a user
+ * @param channelId - the channel id of the channel to send to
+ * @param threadTs - the timestamp of the thread to send to
+ * @param userId - the id of the user to send to
+ * @param text - the text of the message to send (should always be populated in case blocks can't be rendered, but if blocks render text will not)
+ * @param blocks - the blocks of the message to send
+ */
+export async function sendEphemeralMessage(
+  channelId: string,
+  threadTs: string,
+  userId: string,
+  text: string,
+  blocks: any[]
+) {
+  const client = getSlackClient();
+  if (!client) return;
+
+  try {
+    await client.chat.postEphemeral({
+      channel: channelId,
+      user: userId,
+      thread_ts: threadTs,
+      text,
+      blocks
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notifications: ${err.message}`);
+    }
+  }
+}
+
+/**
+ * Get the Slack Bolt app instance (initializes Slack if needed)
+ * @returns the Slack Bolt App or null if no token is configured
+ */
+export const getSlackApp = (): App | null => {
+  initializeSlack();
+  return slackApp;
+};
+
+/**
+ * Get the Express receiver instance (initializes Slack if needed)
+ * @returns the ExpressReceiver or null if no token is configured
+ */
+export const getReceiver = (): ExpressReceiver | null => {
+  initializeSlack();
+  return receiver;
+};
+
+// Export the getters for any direct usage if needed
+export { getSlackClient };
+export default getSlackClient;

@@ -9,7 +9,8 @@ import {
 import GanttChartCollectionSection from './GanttChartCollectionSection';
 import { GanttChartTimeline } from './GanttChartComponents/GanttChartTimeline';
 import { eachDayOfInterval, isMonday, differenceInDays } from 'date-fns';
-import { dateToString, getMonday } from '../../../utils/datetime.utils';
+import { getMonday } from '../../../utils/datetime.utils';
+import { toDateString } from 'shared';
 import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../utils/gantt.utils';
 export interface GanttEditability<E, T> {
   highlightTaskComparator: HighlightTaskComparator<T>;
@@ -28,25 +29,15 @@ interface GanttChartProps<E, T> {
   startDate: Date;
   endDate: Date;
   collections: GanttCollection<E, T>[];
-  shouldShowChildren: (task: GanttTask<T>) => boolean;
-  onShowChildrenToggle: (task: GanttTask<T>) => void;
-
   editability?: GanttEditability<E, T>;
 }
 
-const GanttChart = <E, T>({
-  startDate,
-  endDate,
-  collections,
-  shouldShowChildren,
-  onShowChildrenToggle,
-  editability
-}: GanttChartProps<E, T>) => {
+const GanttChart = <E, T>({ startDate, endDate, collections, editability }: GanttChartProps<E, T>) => {
   const theme = useTheme();
   const days = eachDayOfInterval({ start: startDate, end: endDate }).filter((day) => isMonday(day));
 
   const today = new Date(new Date().setHours(0, 0, 0, 0));
-  const currentWeekCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(today))) + 1;
+  const currentWeekCol = days.findIndex((day) => toDateString(day) === toDateString(getMonday(today))) + 1;
 
   const daysIntoWeek = differenceInDays(today, getMonday(today));
   const dailyOffset = daysIntoWeek * (parseFloat(GANTT_CHART_CELL_SIZE) / 7);
@@ -73,8 +64,6 @@ const GanttChart = <E, T>({
               startDate={startDate}
               endDate={endDate}
               collection={collection}
-              shouldShowChildren={shouldShowChildren}
-              onShowChildrenToggle={onShowChildrenToggle}
               editability={editability}
             />
           ) : (

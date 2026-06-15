@@ -13,7 +13,10 @@ import {
   Button,
   Stack,
   Checkbox,
-  FormControlLabel
+  FormControlLabel,
+  ToggleButtonGroup,
+  ToggleButton,
+  useTheme
 } from '@mui/material';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
@@ -28,10 +31,11 @@ import {
   isHead,
   MAX_FILE_SIZE,
   getNextSevenDays,
-  getDay
+  getDay,
+  SlackMentionType
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
+import { useAllMembers, useCurrentUser } from '../../../hooks/users.hooks';
 import { useAllWorkPackagesPreview } from '../../../hooks/work-packages.hooks';
 import { useAllTeamPreviews } from '../../../hooks/teams.hooks';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
@@ -54,6 +58,8 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Tooltip from '@mui/material/Tooltip';
 import { convertDayToInt, convertIntToDay } from '../../../utils/calendar.utils';
 import EditSeriesConfirmationModal from './EditSeriesConfirmationModal';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 export interface EventFormValues {
   title: string;
@@ -77,6 +83,7 @@ export interface EventFormValues {
   recurrenceNumber: number;
   days: DayOfWeek[];
   selectedScheduleSlotId?: string;
+  mention: SlackMentionType;
 }
 
 export interface EventPayload {
@@ -94,6 +101,7 @@ export interface EventPayload {
   documentFiles: EventDocumentUploadArgs[];
   questionDocumentLink?: string;
   description?: string;
+  mention: SlackMentionType;
   // If the event type requires confirmation, only intialDateScheduled will be populated. If not,
   // scheduleSlots will be populated based on if the event is being editted or created
   initialDateScheduled?: Date;
@@ -115,7 +123,7 @@ export interface EventPayload {
 }
 
 const schema = yup.object().shape({
-  title: yup.string().required('Title is required'),
+  title: yup.string().required('Title is required').trim().min(1, 'Title cannot be only whitespace'),
   eventTypeId: yup.string().required('Event Type is required'),
   requiredMemberIds: yup.array().of(yup.string().required()).default([]),
   optionalMemberIds: yup.array().of(yup.string().required()).default([]),
@@ -142,7 +150,8 @@ const schema = yup.object().shape({
   allDay: yup.boolean().required(),
   recurrenceNumber: yup.number().min(0).required('Recurrence is required'),
   days: yup.array().of(yup.mixed<DayOfWeek>().required()).default([]),
-  selectedScheduleSlotId: yup.string().optional()
+  selectedScheduleSlotId: yup.string().optional(),
+  mention: yup.mixed<SlackMentionType>().required().default(SlackMentionType.USER)
 });
 
 export interface BaseEventModalProps {
@@ -152,7 +161,10 @@ export interface BaseEventModalProps {
   initialValues?: Partial<EventFormValues>;
   eventTypes: EventType[];
   defaultDate?: Date;
+  defaultStartTime?: Date; // Pre-fill start time without triggering edit mode (e.g. drag-to-create)
+  defaultEndTime?: Date; // Pre-fill end time without triggering edit mode
   eventId?: string; // Required for edit mode to fetch preview of affected schedule slots
+  actionsLeftChildren?: React.ReactNode;
 }
 
 /**
@@ -211,8 +223,12 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   initialValues,
   eventTypes,
   defaultDate = new Date(),
-  eventId
+  defaultStartTime,
+  defaultEndTime,
+  eventId,
+  actionsLeftChildren
 }) => {
+  const theme = useTheme();
   const toast = useToast();
   const user = useCurrentUser();
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -231,6 +247,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const [pendingPayload, setPendingPayload] = useState<EventPayload | null>(null);
   const [pendingFormData, setPendingFormData] = useState<EventFormValues | null>(null);
 
+  // used in edit mode for ability to send notifs when wp changes
+  const [workPackageIds, setWorkPackageIds] = useState<string[]>(initialValues?.workPackageIds ?? []);
+
   // Fetch preview of other schedule slots that would be affected when editing with "edit all in series"
   const isEditMode = !!initialValues;
   const scheduleSlotId = initialValues?.selectedScheduleSlotId;
@@ -241,7 +260,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   );
 
   // Lazy load all data needed for the form so users can start filling out instantly
-  const { isLoading: usersLoading, isError: usersError, error: usersErrorMsg, data: users } = useAllUsers();
+  const { isLoading: usersLoading, isError: usersError, error: usersErrorMsg, data: users } = useAllMembers();
   const { isLoading: shopsLoading, isError: shopsError, error: shopsErrorMsg, data: shops } = useAllShops();
   const { isError: machineryError, error: machineryErrorMsg, data: machinery } = useAllMachines();
   const {
@@ -272,14 +291,15 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       questionDocumentLink: initialValues?.questionDocumentLink,
       description: initialValues?.description,
       scheduleDate: initialValues?.scheduleDate ?? defaultDate,
-      startTime: initialValues?.startTime ?? defaultTimes.startTime,
-      endTime: initialValues?.endTime ?? defaultTimes.endTime,
+      startTime: initialValues?.startTime ?? defaultStartTime ?? defaultTimes.startTime,
+      endTime: initialValues?.endTime ?? defaultEndTime ?? defaultTimes.endTime,
       allDay: initialValues?.allDay ?? false,
       recurrenceNumber: 0,
       days: [],
-      selectedScheduleSlotId: initialValues?.selectedScheduleSlotId
+      selectedScheduleSlotId: initialValues?.selectedScheduleSlotId,
+      mention: SlackMentionType.USER
     };
-  }, [initialValues, defaultDate]);
+  }, [initialValues, defaultDate, defaultStartTime, defaultEndTime]);
 
   const allowedEventTypes = useMemo(() => {
     return eventTypes.filter((et) => {
@@ -495,7 +515,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       workPackageIds: data.workPackageIds,
       documentFiles: data.documentFiles,
       questionDocumentLink: data.questionDocumentLink,
-      description: data.description
+      description: data.description,
+      mention: data.mention
     };
 
     // If the event requires confirmation, only populate initialDateScheduled
@@ -670,6 +691,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
         onFormSubmit={onFormSubmit}
         formId="event-form"
         showCloseButton
+        actionsLeftChildren={actionsLeftChildren}
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 500, p: 2 }}>
           {/* Title Input with red placeholder styling */}
@@ -875,14 +897,21 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                               open={startTimePickerOpen}
                               onClose={() => setStartTimePickerOpen(false)}
                               onOpen={() => setStartTimePickerOpen(true)}
-                              onChange={(newValue) => onChange(newValue)}
+                              onChange={(newValue) => {
+                                onChange(newValue);
+                                if (newValue) {
+                                  const newEndTime = new Date(newValue);
+                                  newEndTime.setHours(newEndTime.getHours() + 1);
+                                  setValue('endTime', newEndTime);
+                                }
+                              }}
                               slotProps={{
                                 textField: {
                                   variant: 'standard',
                                   error: !!errors.startTime,
                                   helperText: errors.startTime?.message,
                                   onClick: () => setStartTimePickerOpen(true),
-                                  sx: { width: 100 }
+                                  sx: { width: 120 }
                                 },
                                 layout: {
                                   sx: {
@@ -930,7 +959,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                                   error: !!errors.endTime,
                                   helperText: errors.endTime?.message,
                                   onClick: () => setEndTimePickerOpen(true),
-                                  sx: { width: 100 }
+                                  sx: { width: 120 }
                                 },
                                 layout: {
                                   sx: {
@@ -1141,6 +1170,90 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     </Box>
                   )}
                 </>
+              )}
+            </Box>
+          )}
+          {/* Notification Section */}
+          {selectedEventType && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <NotificationsIcon sx={{ color: 'text.secondary' }} />
+              <Tooltip
+                arrow
+                placement="right"
+                title={
+                  !selectedEventType.sendSlackNotifications
+                    ? 'Slack notifications are disabled for this event type.'
+                    : selectedTeams.length || workPackageIds.length
+                      ? 'Slack notifications will be sent for this event.'
+                      : ''
+                }
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'default' }}>
+                  <Typography variant="body2" color={'text.disabled'} fontWeight={500}>
+                    {selectedEventType.sendSlackNotifications ? 'On' : 'Off'}
+                  </Typography>
+                  {selectedEventType.sendSlackNotifications && !selectedTeams.length && !workPackageIds.length && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <WarningAmberIcon sx={{ color: 'error.main', fontSize: 18 }} />
+                      <Typography variant="body2" color="error.main">
+                        Add{' '}
+                        {selectedEventType.teams && selectedEventType.workPackage
+                          ? 'a team or work package'
+                          : selectedEventType.teams
+                            ? 'a team'
+                            : 'a work package'}{' '}
+                        to send notifications
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Tooltip>
+
+              {/* Slack Mention Type Toggle */}
+              {selectedEventType.sendSlackNotifications && !initialValues && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginLeft: 'auto' }}>
+                  <Controller
+                    name="mention"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <ToggleButtonGroup
+                        value={value}
+                        exclusive
+                        onChange={(_, val) => {
+                          if (val) onChange(val);
+                        }}
+                        size="small"
+                        sx={{
+                          '& .MuiToggleButton-root': {
+                            borderRadius: 0,
+                            textTransform: 'none',
+                            py: 0.55,
+                            px: 1.1,
+                            borderColor: theme.palette.divider,
+                            color: theme.palette.text.primary,
+                            '&.Mui-selected': {
+                              bgcolor: theme.palette.primary.main,
+                              color: 'black',
+                              '&:hover': { bgcolor: '#ff0000', color: 'white' }
+                            },
+                            '&:hover': { bgcolor: theme.palette.action.hover }
+                          },
+                          '& .MuiToggleButton-root:first-of-type': {
+                            borderTopLeftRadius: 8,
+                            borderBottomLeftRadius: 8
+                          },
+                          '& .MuiToggleButton-root:last-of-type': {
+                            borderTopRightRadius: 8,
+                            borderBottomRightRadius: 8
+                          }
+                        }}
+                      >
+                        <ToggleButton value={SlackMentionType.USER}>@user</ToggleButton>
+                        <ToggleButton value={SlackMentionType.CHANNEL}>@channel</ToggleButton>
+                      </ToggleButtonGroup>
+                    )}
+                  />
+                </Box>
               )}
             </Box>
           )}
@@ -1410,7 +1523,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     value={workPackageOptions.find((wp) => value?.[0] === wp.id) || null}
                     onChange={(_, newValue) => {
                       if (newValue?.id !== 'loading') {
-                        onChange(newValue ? [newValue.id] : []);
+                        const ids = newValue ? [newValue.id] : [];
+                        onChange(ids);
+                        setWorkPackageIds(ids);
                       }
                     }}
                     getOptionLabel={(option) => option.label}

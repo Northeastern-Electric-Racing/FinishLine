@@ -3,41 +3,38 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import Chart from 'react-google-charts';
 import { WorkPackage } from 'shared';
 import { Box } from '@mui/material';
-
-export const ganttAllColumns = [
-  { type: 'string', label: 'Task ID' },
-  { type: 'string', label: 'Task Name' },
-  { type: 'date', label: 'Start Date' },
-  { type: 'date', label: 'End Date' },
-  { type: 'number', label: 'Duration' },
-  { type: 'number', label: 'Percent Complete' },
-  { type: 'string', label: 'Dependencies' }
-];
+import { add, sub } from 'date-fns';
+import GanttChart from '../../GanttPage/GanttChart/GanttChart';
+import { GanttCollection, transformWorkPackageToGanttTask } from '../../../utils/gantt.utils';
 
 interface ProjectGanttProps {
   workPackages: WorkPackage[];
 }
 
 const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
-  const rows = workPackages.map((wp) => [wp.id, wp.name, wp.startDate, wp.endDate, wp.duration, 100, null]);
-  const data = [ganttAllColumns, ...rows];
-  const options = {
-    height: 30 * rows.length + 50,
-    gantt: {
-      trackHeight: 30,
-      barHeight: 20,
-      labelStyle: {
-        fontName: 'Oswald',
-        fontSize: 14
-      }
-    }
+  if (workPackages.length === 0) return <Box sx={{ my: 2 }} />;
+
+  const startDate = sub(
+    workPackages.map((wp) => wp.startDate).reduce((prev, curr) => (prev < curr ? prev : curr), new Date(8.64e15)),
+    { weeks: 2 }
+  );
+  const endDate = add(
+    workPackages.map((wp) => wp.endDate).reduce((prev, curr) => (prev > curr ? prev : curr), new Date(-8.64e15)),
+    { months: 6 }
+  );
+
+  const collection: GanttCollection<string, WorkPackage> = {
+    id: 'project-gantt',
+    element: 'Work Packages',
+    title: 'Work Packages',
+    tasks: workPackages.map((wp) => transformWorkPackageToGanttTask(wp, workPackages))
   };
+
   return (
     <Box sx={{ my: 2 }}>
-      {workPackages.length > 0 ? <Chart chartType="Gantt" width="100%" height="100%" data={data} options={options} /> : ''}
+      <GanttChart collections={[collection]} startDate={startDate} endDate={endDate} />
     </Box>
   );
 };

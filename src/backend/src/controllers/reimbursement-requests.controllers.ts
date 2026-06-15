@@ -13,9 +13,11 @@ import { HttpException } from '../utils/errors.utils.js';
 export default class ReimbursementRequestsController {
   static async getCurrentUserReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
+      const carNumber = req.currentCar?.wbsElement.carNumber;
       const userReimbursementRequests = await ReimbursementRequestService.getUserReimbursementRequests(
         req.currentUser,
-        req.organization
+        req.organization,
+        carNumber
       );
       res.status(200).json(userReimbursementRequests);
     } catch (error: unknown) {
@@ -25,9 +27,11 @@ export default class ReimbursementRequestsController {
 
   static async getCurrentUserAssignedReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
+      const carNumber = req.currentCar?.wbsElement.carNumber;
       const assignedReimbursementRequests = await ReimbursementRequestService.getUserAssignedReimbursementRequests(
         req.currentUser,
-        req.organization
+        req.organization,
+        carNumber
       );
       res.status(200).json(assignedReimbursementRequests);
     } catch (error: unknown) {
@@ -46,9 +50,11 @@ export default class ReimbursementRequestsController {
 
   static async getCurrentUsersTeamsReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
+      const carNumber = req.currentCar?.wbsElement.carNumber;
       const userTeamsReimbursementRequests = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(
         req.currentUser,
-        req.organization
+        req.organization,
+        carNumber
       );
       res.status(200).json(userTeamsReimbursementRequests);
     } catch (error: unknown) {
@@ -83,7 +89,8 @@ export default class ReimbursementRequestsController {
         otherReimbursementProducts,
         wbsReimbursementProducts,
         accountCodeId,
-        totalCost
+        totalCost,
+        description
       } = req.body;
       const user = await getCurrentUserWithUserSettings(res);
 
@@ -96,7 +103,8 @@ export default class ReimbursementRequestsController {
         accountCodeId,
         totalCost,
         req.organization,
-        dateOfExpense
+        dateOfExpense,
+        description
       );
       res.status(200).json(createdReimbursementRequest);
     } catch (error: unknown) {
@@ -130,7 +138,8 @@ export default class ReimbursementRequestsController {
         totalCost,
         otherReimbursementProducts,
         wbsReimbursementProducts,
-        receiptPictures
+        receiptPictures,
+        description
       } = req.body;
 
       const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
@@ -144,7 +153,8 @@ export default class ReimbursementRequestsController {
         receiptPictures,
         req.currentUser,
         req.organization,
-        dateOfExpense
+        dateOfExpense,
+        description
       );
       res.status(200).json(updatedReimbursementRequestId);
     } catch (error: unknown) {
@@ -204,9 +214,11 @@ export default class ReimbursementRequestsController {
 
   static async getPendingAdvisorList(req: Request, res: Response, next: NextFunction) {
     try {
+      const carNumber = req.currentCar?.wbsElement.carNumber;
       const requestsPendingAdvisors: ReimbursementRequest[] = await ReimbursementRequestService.getPendingAdvisorList(
         req.currentUser,
-        req.organization
+        req.organization,
+        carNumber
       );
       res.status(200).json(requestsPendingAdvisors);
     } catch (error: unknown) {
@@ -304,9 +316,11 @@ export default class ReimbursementRequestsController {
 
   static async getAllReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
+      const carNumber = req.currentCar?.wbsElement.carNumber;
       const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests(
         req.currentUser,
-        req.organization
+        req.organization,
+        carNumber
       );
       res.status(200).json(reimbursementRequests);
     } catch (error: unknown) {
@@ -482,14 +496,14 @@ export default class ReimbursementRequestsController {
       const editedVendor = await ReimbursementRequestService.editVendor(
         name,
         vendorId,
+        taxExempt,
+        twoFactorContacts,
+        req.currentUser,
+        req.organization,
         username,
         password,
         discountCode,
-        taxExempt,
-        twoFactorContacts,
-        notes,
-        req.currentUser,
-        req.organization
+        notes
       );
       res.status(200).json(editedVendor);
     } catch (error: unknown) {

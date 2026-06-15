@@ -4,6 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 import {
   ChangeRequest,
   ChangeRequestReason,
@@ -11,7 +12,9 @@ import {
   ProjectProposedChangesCreateArgs,
   ProposedSolutionCreateArgs,
   WbsNumber,
-  WorkPackageProposedChangesCreateArgs
+  WorkPackageProposedChangesCreateArgs,
+  LeadershipChangeCreateArgs,
+  GuestChangeRequest
 } from 'shared';
 import {
   createActivationChangeRequest,
@@ -26,38 +29,63 @@ import {
   getToReviewChangeRequests,
   getUnreviewedChangeRequests,
   getApprovedChangeRequests,
-  createBudgetChangeRequest
+  createBudgetChangeRequest,
+  createLeadershipChangeRequest,
+  getAllGuestChangeRequests
 } from '../apis/change-requests.api';
 
 /**
  * Custom React Hook to supply all change requests.
  */
 export const useAllChangeRequests = () => {
-  return useQuery<ChangeRequest[], Error>(['change requests'], async () => {
-    const { data } = await getAllChangeRequests();
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ChangeRequest[], Error>(
+    ['change requests', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllChangeRequests();
+      return data;
+    }
+  );
+};
+
+export const useAllGuestChangeRequests = () => {
+  return useQuery<GuestChangeRequest[], Error>(['guest change requests'], async () => {
+    const { data } = await getAllGuestChangeRequests();
     return data;
   });
 };
 
 export const useGetToReviewChangeRequests = () => {
-  return useQuery<ChangeRequest[], Error>(['change requests', 'to-review'], async () => {
-    const { data } = await getToReviewChangeRequests();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ChangeRequest[], Error>(
+    ['change requests', 'to-review', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getToReviewChangeRequests();
+      return data;
+    }
+  );
 };
 
 export const useGetUnreviewedChangeRequests = (wbsNum?: WbsNumber) => {
-  return useQuery<ChangeRequest[], Error>(['change requests', 'unreviewed'], async () => {
-    const { data } = await getUnreviewedChangeRequests(wbsNum);
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ChangeRequest[], Error>(
+    ['change requests', 'unreviewed', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id, wbsNum],
+    async () => {
+      const { data } = await getUnreviewedChangeRequests(wbsNum);
+      return data;
+    }
+  );
 };
 
 export const useGetApprovedChangeRequests = (wbsNum?: WbsNumber) => {
-  return useQuery<ChangeRequest[], Error>(['change requests', 'approved'], async () => {
-    const { data } = await getApprovedChangeRequests(wbsNum);
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ChangeRequest[], Error>(
+    ['change requests', 'approved', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id, wbsNum],
+    async () => {
+      const { data } = await getApprovedChangeRequests(wbsNum);
+      return data;
+    }
+  );
 };
 
 /**
@@ -234,6 +262,33 @@ export const useCreateBudgetChangeRequest = () => {
         payload.accountCodeId
       );
       return data;
+    }
+  );
+};
+
+/**
+ * Custome React hook to create a leadership change request
+ * to change lead and/or manager of a project or work package
+ */
+export const useCreateLeadershipChangeRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, LeadershipChangeCreateArgs>(
+    ['change requests', 'create', 'leadership'],
+    async (payload: LeadershipChangeCreateArgs) => {
+      const { data } = await createLeadershipChangeRequest(
+        payload.submitterId,
+        payload.wbsNum,
+        payload.leadId,
+        payload.managerId
+      );
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['change requests']);
+        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['work packages']);
+      }
     }
   );
 };

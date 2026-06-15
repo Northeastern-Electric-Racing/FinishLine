@@ -16,8 +16,11 @@ const rankTaskPriority = (priority: TaskPriority) => {
   return 0;
 };
 
-const compareTaskPriorities = (priorityA: TaskPriority, priorityB: TaskPriority) => {
-  return rankTaskPriority(priorityA) - rankTaskPriority(priorityB);
+const compareTasks = (taskA: Task, taskB: Task) => {
+  const deadlineA = taskA.deadline ? new Date(taskA.deadline).getTime() : Infinity;
+  const deadlineB = taskB.deadline ? new Date(taskB.deadline).getTime() : Infinity;
+  if (deadlineA !== deadlineB) return deadlineA - deadlineB;
+  return rankTaskPriority(taskB.priority) - rankTaskPriority(taskA.priority);
 };
 
 export const getTasksByStatus = (unorderedTasks: Task[]) => {
@@ -28,11 +31,9 @@ export const getTasksByStatus = (unorderedTasks: Task[]) => {
     },
     statuses.reduce((obj, status) => ({ ...obj, [status]: [] }), {} as TasksByStatus)
   );
-  // order each column by priority
+  // order each column by due date, then priority as tiebreaker
   statuses.forEach((status) => {
-    postsByStatus[status] = postsByStatus[status].sort((recordA: Task, recordB: Task) =>
-      compareTaskPriorities(recordA.priority, recordB.priority)
-    );
+    postsByStatus[status] = postsByStatus[status].sort(compareTasks);
   });
   return postsByStatus;
 };

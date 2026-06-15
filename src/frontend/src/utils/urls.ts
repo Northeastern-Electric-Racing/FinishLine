@@ -95,7 +95,9 @@ const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
 const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
+const tasksFilter = () => `${tasks()}/filter`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
+const tasksByWbsNum = (wbsNum: string) => `${tasks()}/by-wbs/${wbsNum}`;
 
 /**************** Work Packages Endpoints ****************/
 const workPackages = (queryParams?: { [field: string]: string }) => {
@@ -107,6 +109,7 @@ const workPackages = (queryParams?: { [field: string]: string }) => {
 };
 
 const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
+const workPackagesByProject = (wbsNum: string) => `${workPackages()}/by-project/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
@@ -119,6 +122,7 @@ const homePageWorkPackages = (selection: WorkPackageSelection) => `${workPackage
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
+const guestChangeRequests = () => `${API_URL}/change-requests/guest`;
 const toReviewChangeRequests = () => `${API_URL}/change-requests/to-review`;
 const unreviewedChangeRequests = (wbsNum?: WbsNumber) =>
   `${API_URL}/change-requests/unreviewed` + (wbsNum ? `?wbsnum=${wbsPipe(wbsNum)}` : '');
@@ -131,6 +135,7 @@ const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
 const changeRequestsCreateBudget = () => `${changeRequestsCreate()}/budget`;
+const changeRequestsCreateLeadership = () => `${changeRequestsCreate()}/leadership`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
 const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/request-review';
@@ -223,98 +228,98 @@ const financeEditOtherReimbursementProductReason = (id: String) =>
 const getReimbursementRequestProjectData = (projectId: string, startDate?: Date, endDate?: Date): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-project-data/${projectId}`);
   const params = new URLSearchParams();
-  if (startDate) params.set('startDate', startDate.toISOString());
-  if (endDate) params.set('endDate', endDate.toISOString());
+  if (startDate) params.set('startDate', new Date(startDate).toISOString());
+  if (endDate) params.set('endDate', new Date(endDate).toISOString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getReimbursementRequestTeamData = (teamId: string, startDate?: Date, endDate?: Date, carNumber?: number): string => {
+const getReimbursementRequestTeamData = (teamId: string, startDate?: Date, endDate?: Date): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-team-data/${teamId}`);
   const params = new URLSearchParams();
-  if (startDate) params.set('startDate', startDate.toISOString());
-  if (endDate) params.set('endDate', endDate.toISOString());
-  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
+  if (startDate) params.set('startDate', new Date(startDate).toISOString());
+  if (endDate) params.set('endDate', new Date(endDate).toISOString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getReimbursementRequestCategoryData = (
-  otherReasonId: string,
-  startDate?: Date,
-  endDate?: Date,
-  carNumber?: number
-): string => {
+const getReimbursementRequestCategoryData = (otherReasonId: string, startDate?: Date, endDate?: Date): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-category-data/${otherReasonId}`);
   const params = new URLSearchParams();
-  if (startDate) params.set('startDate', startDate.toISOString());
-  if (endDate) params.set('endDate', endDate.toISOString());
-  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
+  if (startDate) params.set('startDate', new Date(startDate).toISOString());
+  if (endDate) params.set('endDate', new Date(endDate).toISOString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getAllReimbursementRequestData = (startDate?: Date, endDate?: Date, carNumber?: number): string => {
+const getAllReimbursementRequestData = (startDate?: Date, endDate?: Date): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-data`);
   const params = new URLSearchParams();
-  if (startDate) params.set('startDate', startDate.toISOString());
-  if (endDate) params.set('endDate', endDate.toISOString());
-  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
+  if (startDate) params.set('startDate', new Date(startDate).toISOString());
+  if (endDate) params.set('endDate', new Date(endDate).toISOString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getReimbursementRequestTeamTypeData = (
-  teamTypeId: string,
-  startDate?: Date,
-  endDate?: Date,
-  carNumber?: number
-): string => {
+const getReimbursementRequestTeamTypeData = (teamTypeId: string, startDate?: Date, endDate?: Date): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-team-type-data/${teamTypeId}`);
   const params = new URLSearchParams();
-  if (startDate) params.set('startDate', startDate.toISOString());
-  if (endDate) params.set('endDate', endDate.toISOString());
-  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
+  if (startDate) params.set('startDate', new Date(startDate).toISOString());
+  if (endDate) params.set('endDate', new Date(endDate).toISOString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getSpendingBarTeamData = (teamId: string, startDate?: Date, endDate?: Date, carNumber?: number): string => {
+const getSpendingBarTeamData = (teamId: string, startDate?: Date, endDate?: Date): string => {
   const url = new URL(`${financeRoutesEndpoints()}/spending-bar-team-data/${teamId}`);
   const params = new URLSearchParams();
-  if (startDate) params.set('startDate', startDate.toISOString());
-  if (endDate) params.set('endDate', endDate.toISOString());
-  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
+  if (startDate) params.set('startDate', new Date(startDate).toISOString());
+  if (endDate) params.set('endDate', new Date(endDate).toISOString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getSpendingBarTeamTypeData = (teamTypeId: string, startDate?: Date, endDate?: Date, carNumber?: number): string => {
+const getSpendingBarTeamTypeData = (teamTypeId: string, startDate?: Date, endDate?: Date): string => {
   const url = new URL(`${financeRoutesEndpoints()}/spending-bar-team-type-data/${teamTypeId}`);
   const params = new URLSearchParams();
-  if (startDate) params.set('startDate', startDate.toISOString());
-  if (endDate) params.set('endDate', endDate.toISOString());
-  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
+  if (startDate) params.set('startDate', new Date(startDate).toISOString());
+  if (endDate) params.set('endDate', new Date(endDate).toISOString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getSpendingBarCategoryData = (startDate?: Date, endDate?: Date, carNumber?: number): string => {
+const getSpendingBarCategoryData = (startDate?: Date, endDate?: Date): string => {
   const url = new URL(`${financeRoutesEndpoints()}/spending-bar-category-data`);
   const params = new URLSearchParams();
-  if (startDate) params.set('startDate', startDate.toISOString());
-  if (endDate) params.set('endDate', endDate.toISOString());
-  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
+  if (startDate) params.set('startDate', new Date(startDate).toISOString());
+  if (endDate) params.set('endDate', new Date(endDate).toISOString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getAllSpendingBarData = (startDate?: Date, endDate?: Date, carNumber?: number): string => {
+const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
   const url = new URL(`${financeRoutesEndpoints()}/spending-bar-data`);
   const params = new URLSearchParams();
-  if (startDate) params.set('startDate', startDate.toISOString());
-  if (endDate) params.set('endDate', endDate.toISOString());
-  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
+  if (startDate) params.set('startDate', new Date(startDate).toISOString());
+  if (endDate) params.set('endDate', new Date(endDate).toISOString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
 const getAllSponsorTiers = () => `${financeRoutesEndpoints()}/sponsorTiers`;
 const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/edit`;
+const uploadSponsorLogo = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/uploadLogo`;
 const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
 const deleteSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}`;
 const editSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}/edit`;
+const toggleSponsorTaskDone = (sponsorTaskId: string) =>
+  `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/toggle-done`;
+
+/**************** Prospective Sponsors Endpoints ****************/
+const prospectiveSponsorsEndpoint = () => `${API_URL}/prospective-sponsors`;
+const getAllProspectiveSponsors = () => `${prospectiveSponsorsEndpoint()}/`;
+const createProspectiveSponsor = () => `${prospectiveSponsorsEndpoint()}/create`;
+const editProspectiveSponsor = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/edit`;
+const deleteProspectiveSponsor = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/delete`;
+const getProspectiveSponsorTasks = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/tasks`;
+const createProspectiveSponsorTask = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/tasks`;
+const acceptProspectiveSponsor = (prospectiveSponsorId: string) =>
+  `${prospectiveSponsorsEndpoint()}/${prospectiveSponsorId}/accept`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -328,6 +333,7 @@ const bomGetAssembliesByWbsNum = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbs
 const bomCreateMaterial = (wbsNum: WbsNumber) => `${materialEndpoints()}/${wbsPipe(wbsNum)}/create`;
 const bomEditMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/edit`;
 const bomDeleteMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/delete`;
+const bomCopyMaterials = () => `${materialEndpoints()}/copy`;
 const bomCreateAssembly = (wbsNum: WbsNumber) => `${assemblyEndpoints()}/${wbsPipe(wbsNum)}/create`;
 const bomDeleteAssembly = (assemblyId: string) => `${assemblyEndpoints()}/${assemblyId}/delete`;
 const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${materialId}/assign-assembly`;
@@ -358,16 +364,18 @@ const organizations = () => `${API_URL}/organizations`;
 const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
-const organizationsSetImages = () => `${organizations()}/images/update`;
 const organizationsUpdateContacts = () => `${organizations()}/contacts/set`;
 const organizationsSetOnboardingText = () => `${organizations()}/onboardingText/set`;
 const organizationsUpdateApplicationLink = () => `${organizations()}/application-link/update`;
 const organizationsSetDescription = () => `${organizations()}/description/set`;
+const organizationsSetPlatformDescription = () => `${organizations()}/platform-description/set`;
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
 const organizationsNewMemberImage = () => `${organizations()}/new-member-image`;
 const organizationsSetNewMemberImage = () => `${organizations()}/new-member-image/update`;
+const organizationsPlatformLogoImage = () => `${organizations()}/platform-logo`;
+const organizationsSetPlatformLogoImage = () => `${organizationsPlatformLogoImage()}/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
@@ -390,6 +398,10 @@ const allFaqs = () => `${recruitment()}/faqs`;
 const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
+const allGuestDefinitions = () => `${recruitment()}/guestdefinitions`;
+const guestDefinitionDelete = (id: string) => `${recruitment()}/guestdefinition/${id}/delete`;
+const guestDefinitionCreate = () => `${recruitment()}/guestdefinition/create`;
+const guestDefintionEdit = (id: string) => `${recruitment()}/guestdefinition/${id}/edit`;
 
 /************** Onboarding Endpoints ***************/
 const onboarding = () => `${API_URL}/onboarding`;
@@ -431,8 +443,8 @@ const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete
 /************** Retrospective Endpoints ***************/
 const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
   `${API_URL}/retrospective/timelines?` +
-  (startDate ? `start=${encodeURIComponent(startDate.toISOString())}` : '') +
-  (endDate ? `end=${encodeURIComponent(endDate.toISOString())}` : '');
+  (startDate ? `start=${encodeURIComponent(new Date(startDate).toISOString())}` : '') +
+  (endDate ? `end=${encodeURIComponent(new Date(endDate).toISOString())}` : '');
 const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 
 /**************** Rules Endpoints ****************/
@@ -469,6 +481,7 @@ const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
 const calendarEvents = () => `${calendar()}/events`;
+const calendarEventsPaginated = () => `${calendar()}/events-paginated`;
 const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
 const calendarFilterEvents = () => `${calendar()}/events/filter`;
@@ -505,6 +518,26 @@ const calendarDeleteScheduleSlot = (eventId: string, scheduleSlotId: string) =>
 const calendarUploadDocument = (eventId: string) => `${calendar()}/event/${eventId}/upload-document`;
 const calendarPDFById = (fileId: string) => `${calendar()}/document/${fileId}`;
 const calendarScheduleEvent = (eventId: string) => `${calendar()}/event/${eventId}/schedule`;
+const calendarIcsToken = () => `${calendar()}/ics/token`;
+
+// Generates ICS URL to be given to calendars for integration, not directly hit by FL frontend
+const icsFeed = (token: string, organizationId: string, calendarIds: string[], eventIds: string[] = []) => {
+  const base = `${API_URL}/ics/${token}?org=${organizationId}`;
+  let icsUrl = calendarIds.length > 0 ? `${base}&calendars=${calendarIds.join(',')}` : base;
+  if (eventIds.length > 0) {
+    icsUrl += `&events=${eventIds.join(',')}`;
+  }
+  return icsUrl;
+};
+
+/**************** Attendance Endpoints ****************/
+const attendance = () => `${API_URL}/attendance`;
+const attendanceTakeAttendance = () => `${attendance()}/`;
+const attendanceGetAll = () => `${attendance()}/`;
+const attendanceCheckChannel = (teamId: string) => `${attendance()}/check-channel/${teamId}`;
+const attendanceGetOngoing = (teamId: string) => `${attendance()}/ongoing/${teamId}`;
+const attendanceCloseOngoing = (teamId: string) => `${attendance()}/close/${teamId}`;
+const attendanceGetById = (meetingAttendanceId: string) => `${attendance()}/${meetingAttendanceId}`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -585,14 +618,17 @@ export const apiUrls = {
 
   tasksCreate,
   tasks,
+  tasksFilter,
   editTaskById,
   taskEditStatus,
   editTaskAssignees,
   deleteTask,
   overdueTasksByTeamLeadership,
+  tasksByWbsNum,
 
   workPackages,
   workPackagesByWbsNum,
+  workPackagesByProject,
   workPackagesCreate,
   workPackagesEdit,
   workPackagesDelete,
@@ -603,6 +639,7 @@ export const apiUrls = {
   homePageWorkPackages,
 
   changeRequests,
+  guestChangeRequests,
   changeRequestsById,
   changeRequestsReview,
   changeRequestDelete,
@@ -610,6 +647,7 @@ export const apiUrls = {
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
   changeRequestsCreateBudget,
+  changeRequestsCreateLeadership,
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
   changeRequestRequestReviewer,
@@ -704,9 +742,19 @@ export const apiUrls = {
   getAllSpendingBarData,
   getAllSponsorTiers,
   editSponsor,
+  uploadSponsorLogo,
   financeGetUsersTeamsReimbursementRequests,
   deleteSponsorTier,
   editSponsorTier,
+  toggleSponsorTaskDone,
+
+  getAllProspectiveSponsors,
+  createProspectiveSponsor,
+  editProspectiveSponsor,
+  deleteProspectiveSponsor,
+  getProspectiveSponsorTasks,
+  createProspectiveSponsorTask,
+  acceptProspectiveSponsor,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,
@@ -717,6 +765,7 @@ export const apiUrls = {
   bomCreateMaterial,
   bomEditMaterial,
   bomDeleteMaterial,
+  bomCopyMaterials,
   bomCreateAssembly,
   bomDeleteAssembly,
   bomAssignAssembly,
@@ -749,16 +798,18 @@ export const apiUrls = {
   currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
-  organizationsSetImages,
   organizationsUpdateContacts,
   organizationsSetOnboardingText,
   organizationsUpdateApplicationLink,
   organizationsFeaturedProjects,
   organizationsSetDescription,
+  organizationsSetPlatformDescription,
   organizationsLogoImage,
   organizationsSetLogoImage,
   organizationsNewMemberImage,
   organizationsSetNewMemberImage,
+  organizationsPlatformLogoImage,
+  organizationsSetPlatformLogoImage,
   organizationsSetFeaturedProjects,
   organizationsSetWorkspaceId,
   organizationsGetPartReviewGuideLink,
@@ -782,6 +833,10 @@ export const apiUrls = {
   imageById,
   reorderTasks,
   reorderChecklistItems,
+  allGuestDefinitions,
+  guestDefinitionDelete,
+  guestDefinitionCreate,
+  guestDefintionEdit,
 
   popUps,
   popUpsCurrentUser,
@@ -856,6 +911,7 @@ export const apiUrls = {
   calendarGetSingleEventWithMembers,
   calendarGetConflictingEvent,
   calendarEvents,
+  calendarEventsPaginated,
   calendarEventTypes,
   calendarDeleteEvent,
   calendarEventSetStatus,
@@ -864,6 +920,8 @@ export const apiUrls = {
   calendarCreateCalendar,
   calendarEditCalendar,
   calendarCalendars,
+  calendarIcsToken,
+  icsFeed,
   calendarCreateEventType,
   calendarEditEventType,
   calendarCreateEvent,
@@ -877,6 +935,13 @@ export const apiUrls = {
   calendarPreviewScheduleSlotRecurringEdits,
   calendarDeleteScheduleSlot,
   calendarScheduleEvent,
+
+  attendanceTakeAttendance,
+  attendanceGetAll,
+  attendanceCheckChannel,
+  attendanceGetOngoing,
+  attendanceCloseOngoing,
+  attendanceGetById,
 
   version
 };
