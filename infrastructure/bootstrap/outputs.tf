@@ -30,28 +30,23 @@ output "eb_versions_bucket_arn" {
   value       = aws_s3_bucket.eb_versions.arn
 }
 
-output "cicd_role_arn" {
-  description = "ARN of the CI/CD role — add this as the AWS_CICD_ROLE_ARN GitHub Actions secret"
-  value       = aws_iam_role.cicd.arn
-}
-
 output "next_steps" {
   description = "Instructions for next steps"
   value       = <<-EOT
     Bootstrap Complete!
-    
+
     The following resources have been created:
     - S3 Bucket for Terraform State: ${aws_s3_bucket.terraform_state.id}
     - DynamoDB Table for State Locking: ${aws_dynamodb_table.terraform_locks.id}
     - S3 Bucket for EB Versions: ${aws_s3_bucket.eb_versions.id}
-    
+
     Next Steps:
     1. The backend configuration in ../backend.tf is already configured to use these resources
     2. Navigate to your environment directory: cd ../environments/production
     3. Initialize Terraform: terraform init
     4. Review the plan: terraform plan
     5. Apply the infrastructure: terraform apply
-    
+
     Note: Keep this bootstrap state file safe! It's stored locally in this directory.
   EOT
 }

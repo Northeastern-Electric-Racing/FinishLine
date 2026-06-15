@@ -24,8 +24,3 @@ variable "eb_versions_bucket_name" {
   default     = "finishline-eb-versions"
 }
 
-variable "github_repo" {
-  description = "GitHub repo in org/name format — used to scope the OIDC trust policy"
-  type        = string
-  default     = "Northeastern-Electric-Racing/FinishLine"
-}
