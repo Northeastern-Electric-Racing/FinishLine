@@ -39,11 +39,10 @@ const SubmissionFormModal = ({
   const [uploading, setUploading] = useState(false);
   const { mutateAsync: uploadFile } = useUploadFile();
 
-  useEffect(() => {
-    if (!open) {
-      setFiles([]);
-    }
-  }, [open]);
+  const handleCloseAndReset = () => {
+    setFiles([]);
+    handleClose();
+  };
 
   const schema = yup.object().shape({
     partId: yup.string().required(),
@@ -108,7 +107,7 @@ const SubmissionFormModal = ({
   return (
     <NERFormModal
       open={open}
-      onHide={handleClose}
+      onHide={handleCloseAndReset}
       title={!!defaultValues ? 'Edit Submission Details' : 'New Submission'}
       reset={() => reset()}
       handleUseFormSubmit={handleSubmit}

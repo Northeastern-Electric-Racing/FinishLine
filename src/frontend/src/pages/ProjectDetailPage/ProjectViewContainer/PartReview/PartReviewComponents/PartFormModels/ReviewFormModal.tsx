@@ -3,7 +3,7 @@ import { useToast } from '../../../../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import NERFormModal from '../../../../../../components/NERFormModal';
 import { Autocomplete, Button, Grid, IconButton, List, ListItem, Typography } from '@mui/material';
 import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material';
@@ -23,14 +23,14 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
   const toast = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [selectedPartIndex, setSelectedPartIndex] = useState<number>();
   const { mutateAsync: uploadFile } = useUploadFile();
 
-  useEffect(() => {
-    if (!open) {
-      setFiles([]);
-      setSelectedPartIndex(undefined);
-    }
-  }, [open]);
+  const handleCloseAndReset = () => {
+    setFiles([]);
+    setSelectedPartIndex(undefined);
+    handleClose();
+  };
 
   const schema = yup.object().shape({
     submissionId: yup.string().required(),
@@ -61,8 +61,6 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
     control,
     name: 'fileIds'
   });
-
-  const [selectedPartIndex, setSelectedPartIndex] = useState<number>();
 
   const onFormSubmit = async (data: { submissionId: string; status: Review_Status; notes?: string; fileIds: string[] }) => {
     try {
@@ -95,7 +93,7 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
   return (
     <NERFormModal
       open={open}
-      onHide={handleClose}
+      onHide={handleCloseAndReset}
       title={!!defaultValues ? 'Edit Review' : 'New Review'}
       reset={() => reset()}
       handleUseFormSubmit={handleSubmit}
