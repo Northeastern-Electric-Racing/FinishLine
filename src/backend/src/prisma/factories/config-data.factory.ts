@@ -461,8 +461,12 @@ export const eventTypeCreateInput = (
   requiresConfirmation: config.requiresConfirmation,
   sendSlackNotifications: config.sendSlackNotifications,
   calendars: {
-    connect: config.calendarNames
-      .filter((name) => calendarIdsByName[name])
-      .map((name) => ({ calendarId: calendarIdsByName[name] }))
+    connect: config.calendarNames.map((name) => {
+      const calendarId = calendarIdsByName[name];
+      if (!calendarId) {
+        throw new Error(`Missing calendar for event type config: ${name}`);
+      }
+      return { calendarId };
+    })
   }
 });

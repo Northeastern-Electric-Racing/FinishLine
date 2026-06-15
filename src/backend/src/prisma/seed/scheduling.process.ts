@@ -14,11 +14,13 @@ export type SchedulingOutput = {
 
 export class SchedulingProcess extends SeedProcess<SchedulingInput, SchedulingOutput> {
   dependencies() {
-    return [OrganizationProcess, UsersProcess, ConfigDataProcess];
+    return [OrganizationProcess, UsersProcess];
   }
 
   async run({ appAdmins, admins, heads, leadership }: SchedulingInput): Promise<SchedulingOutput> {
     const eligibleUsers = [...appAdmins, ...admins, ...heads, ...leadership];
+
+    const seedStartDate = new Date();
 
     const scheduleSettings = await Promise.all(
       eligibleUsers.map((user) =>
@@ -31,9 +33,8 @@ export class SchedulingProcess extends SeedProcess<SchedulingInput, SchedulingOu
     const availabilities = await Promise.all(
       scheduleSettings.flatMap((settings) =>
         Array.from({ length: 7 }, (_, i) => {
-          const date = new Date();
-          date.setUTCHours(0, 0, 0, 0);
-          date.setUTCDate(date.getUTCDate() + i);
+          const date = new Date(seedStartDate);
+          date.setDate(date.getDate() + i);
           return this.prisma.availability.create({
             data: availabilityCreateInput(this.faker, settings.drScheduleSettingsId, date)
           });
