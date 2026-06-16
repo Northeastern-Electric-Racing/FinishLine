@@ -16,20 +16,47 @@ ALTER TABLE "FrequentlyAskedQuestion" DROP CONSTRAINT "FrequentlyAskedQuestion_p
 ALTER TABLE "FrequentlyAskedQuestion" DROP CONSTRAINT "FrequentlyAskedQuestion_regularFaqOrgId_fkey";
 
 -- AlterTable
-ALTER TABLE "FrequentlyAskedQuestion" DROP COLUMN "dashboardTarget",
-DROP COLUMN "partReviewFaqOrgId",
-DROP COLUMN "regularFaqOrgId",
+-- First add new columns
+ALTER TABLE "FrequentlyAskedQuestion"
 ADD COLUMN     "isOnNewMemberDashboard" BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN     "isOnPartReviewPage" BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN     "isOnRecruitingDashboard" BOOLEAN NOT NULL DEFAULT true,
-ADD COLUMN     "organizationId" TEXT NOT NULL;
+ADD COLUMN     "organizationId" TEXT;
+
+-- Populate orgId where available
+UPDATE "FrequentlyAskedQuestion"
+SET "organizationId" = "regularFaqOrgId"
+WHERE "regularFaqOrgId" IS NOT NULL;
+
+UPDATE "FrequentlyAskedQuestion"
+SET "organizationId" = "partReviewFaqOrgId"
+WHERE "organizationId" IS NULL AND "partReviewFaqOrgId" IS NOT NULL;
+
+-- Populate booleans
+UPDATE "FrequentlyAskedQuestion"
+SET "isOnPartReviewPage" = true
+WHERE "partReviewFaqOrgId" IS NOT NULL;
+
+UPDATE "FrequentlyAskedQuestion"
+SET "isOnRecruitingDashboard" = false
+WHERE "regularFaqOrgId" IS NULL AND "partReviewFaqOrgId" IS NOT NULL;
+
+ALTER TABLE "FrequentlyAskedQuestion"
+ALTER COLUMN "organizationId" SET NOT NULL;
+
+-- Drop old columns
+ALTER TABLE "FrequentlyAskedQuestion"
+DROP COLUMN "dashboardTarget",
+DROP COLUMN "partReviewFaqOrgId",
+DROP COLUMN "regularFaqOrgId";
 
 -- AlterTable
 ALTER TABLE "Link_Type" DROP COLUMN "isOnOnboardingDashboard",
 ADD COLUMN     "isOnNewMemberDashboard" BOOLEAN NOT NULL DEFAULT false;
 
 -- AlterTable
-ALTER TABLE "Milestone" DROP COLUMN "dashboardTarget",
+ALTER TABLE "Milestone"
+DROP COLUMN "dashboardTarget",
 ADD COLUMN     "isOnNewMemberDashboard" BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN     "isOnRecruitingDashboard" BOOLEAN NOT NULL DEFAULT true;
 

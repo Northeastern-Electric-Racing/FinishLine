@@ -108,11 +108,37 @@ export default class RecruitmentServices {
    */
   static async getAllOrganizationFaqs(organization: Organization) {
     const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
-      where: { dateDeleted: null, regularFaqOrgId: organization.organizationId },
+      where: { dateDeleted: null, organizationId: organization.organizationId },
       ...getFaqQueryArgs(organization.organizationId)
     });
 
     return allFaqs.map(faqTransformer);
+  }
+
+  /**
+   * Gets all recruiting FAQs for the given organization Id
+   * @param organizationId organization Id of the faq
+   * @returns all the faqs from the given organization
+   */
+  static async getRecruitingFaqs(organization: Organization) {
+    const faqs = await prisma.frequentlyAskedQuestion.findMany({
+      where: { dateDeleted: null, organizationId: organization.organizationId, isOnRecruitingDashboard: true },
+      ...getFaqQueryArgs(organization.organizationId)
+    });
+    return faqs.map(faqTransformer);
+  }
+
+  /**
+   * Gets all new member FAQs for the given organization Id
+   * @param organizationId organization Id of the faq
+   * @returns all the faqs from the given organization
+   */
+  static async getNewMemberFaqs(organization: Organization) {
+    const faqs = await prisma.frequentlyAskedQuestion.findMany({
+      where: { dateDeleted: null, organizationId: organization.organizationId, isOnNewMemberDashboard: true },
+      ...getFaqQueryArgs(organization.organizationId)
+    });
+    return faqs.map(faqTransformer);
   }
 
   /*
@@ -153,8 +179,9 @@ export default class RecruitmentServices {
       data: {
         question,
         answer,
-        regularFaqOrgId: organization.organizationId,
-        userCreatedId: submitter.userId
+        organizationId: organization.organizationId,
+        userCreatedId: submitter.userId,
+        isOnRecruitingDashboard: true
       }
     });
 

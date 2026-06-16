@@ -57,9 +57,12 @@ export default class RecruitmentController {
     }
   }
 
+  // TODO rename this method throughout stack
+  // Changed scope of getAllOrganizationFaqs to include part review, so what this call really wants is
+  // recruiting FAQs, but I'll change this as part of actual work not schema changes
   static async getAllOrganizationFaqs(req: Request, res: Response, next: NextFunction) {
     try {
-      const allFaqs = await RecruitmentServices.getAllOrganizationFaqs(req.organization);
+      const allFaqs = await RecruitmentServices.getRecruitingFaqs(req.organization);
       res.status(200).json(allFaqs);
     } catch (error: unknown) {
       next(error);
