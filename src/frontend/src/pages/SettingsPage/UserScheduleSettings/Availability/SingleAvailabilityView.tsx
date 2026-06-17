@@ -94,7 +94,7 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
           </TableHead>
           <TableBody>
             {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
-              <TableRow key={reviewTimesInCurrentTimeZone(time)}>
+              <TableRow key={time}>
                 <TableCell sx={{ ...stickyLeft, zIndex: 1 }}>
                   <Typography variant="body1" align="center" sx={{ fontSize: 15 }}>
                     {reviewTimesInCurrentTimeZone(time)}

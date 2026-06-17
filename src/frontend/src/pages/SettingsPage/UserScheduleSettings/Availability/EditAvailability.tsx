@@ -55,6 +55,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   });
 
   const [isDragging, setIsDragging] = useState(false);
+  const [isInverted, setIsInverted] = useState(false);
 
   const handleMouseDown = (event: any, availability: Availability, selectedTime: number) => {
     event.preventDefault();
@@ -112,6 +113,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     currentlyDisplayedAvailabilities.forEach((availability) =>
       enumToArray(REVIEW_TIMES).forEach((_time, timeIndex) => toggleTimeSlot(availability, timeIndex))
     );
+    setIsInverted(!isInverted);
   };
 
   const toggleTimeSlot = (availability: Availability, selectedTime: number) => {
@@ -141,8 +143,13 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Box display="flex" justifyContent="space-between" mb={1}>
         <Typography variant="subtitle1">
-          Available times in <span style={{ color: HeatmapColors[3] }}>green</span>.&nbsp;&nbsp; All times are in local time,{' '}
-          {yourTimeZoneInitials()}.{' '}
+          Available times in
+          {isInverted ? (
+            <span style={{ color: HeatmapColors[0] }}> white</span>
+          ) : (
+            <span style={{ color: HeatmapColors[3] }}> green</span>
+          )}
+          . &nbsp;&nbsp; All times are in local time, {yourTimeZoneInitials()}.{' '}
         </Typography>
         <Typography variant="subtitle1"></Typography>
         <NERButton variant="outlined" onClick={invertAvailabilities}>
@@ -201,7 +208,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           </TableHead>
           <TableBody>
             {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
-              <TableRow key={reviewTimesInCurrentTimeZone(time)}>
+              <TableRow key={time}>
                 <TableCell sx={{ ...stickyLeft, zIndex: 1, scrollSnapAlign: 'start' }}>
                   <Typography variant="body1" align="center" sx={{ fontSize: 15 }}>
                     {reviewTimesInCurrentTimeZone(time)}
