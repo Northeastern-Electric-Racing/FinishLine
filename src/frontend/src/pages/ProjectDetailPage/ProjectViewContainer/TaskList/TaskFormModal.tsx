@@ -56,7 +56,14 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
           return wordCount < 250;
         }),
       startDate: yup.date().optional(),
-      deadline: yup.date().required('Deadline is required for In Progress tasks'),
+      deadline: yup
+        .date()
+        .required('Deadline is required for In Progress tasks')
+        .test('deadline-after-start', 'Deadline must be on or after the start date', function (deadline) {
+          const { startDate } = this.parent;
+          if (!startDate || !deadline) return true;
+          return deadline >= startDate;
+        }),
       priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
       assignees: yup.array().required().min(1, 'At least one assignee is required for In Progress tasks'),
       title: yup.string().required(),
@@ -74,7 +81,14 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
           return wordCount < 250;
         }),
       startDate: yup.date().optional(),
-      deadline: yup.date().optional(),
+      deadline: yup
+        .date()
+        .optional()
+        .test('deadline-after-start', 'Deadline must be on or after the start date', function (deadline) {
+          const { startDate } = this.parent;
+          if (!startDate || !deadline) return true;
+          return deadline >= startDate;
+        }),
       priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
       assignees: yup.array().required(),
       title: yup.string().required(),
@@ -95,6 +109,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
   const {
     handleSubmit,
     control,
+    watch,
     formState: { errors },
     reset
   } = useForm<EditTaskFormInput>({
@@ -110,6 +125,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       wpWbsNum: task?.wbsNum.workPackageNumber !== 0 ? task?.wbsNum : undefined
     }
   });
+
+  const startDate = watch('startDate');
 
   if (isError) return <ErrorPage error={error} />;
   if (usersLoading || !users) return <LoadingIndicator />;
@@ -276,6 +293,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                     onChange={(event) => onChange(event ?? undefined)}
                     className={'padding: 10'}
                     value={value}
+                    minDate={startDate ?? undefined}
                     slotProps={{ textField: { autoComplete: 'off', error: !!errors.deadline } }}
                   />
                 )}

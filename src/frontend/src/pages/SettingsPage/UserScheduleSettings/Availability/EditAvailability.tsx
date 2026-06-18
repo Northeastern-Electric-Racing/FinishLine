@@ -10,7 +10,13 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { HeatmapColors, enumToArray, REVIEW_TIMES } from '../../../../utils/design-review.utils';
+import {
+  HeatmapColors,
+  enumToArray,
+  REVIEW_TIMES,
+  reviewTimesInCurrentTimeZone,
+  yourTimeZoneInitials
+} from '../../../../utils/design-review.utils';
 import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
 import NERArrows from '../../../../components/NERArrows';
@@ -49,6 +55,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   });
 
   const [isDragging, setIsDragging] = useState(false);
+  const [isInverted, setIsInverted] = useState(false);
 
   const handleMouseDown = (event: any, availability: Availability, selectedTime: number) => {
     event.preventDefault();
@@ -106,6 +113,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     currentlyDisplayedAvailabilities.forEach((availability) =>
       enumToArray(REVIEW_TIMES).forEach((_time, timeIndex) => toggleTimeSlot(availability, timeIndex))
     );
+    setIsInverted(!isInverted);
   };
 
   const toggleTimeSlot = (availability: Availability, selectedTime: number) => {
@@ -116,7 +124,10 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     editedAvailabilities.set(availability.dateSet.getTime(), availability);
     setEditedAvailabilities(editedAvailabilities);
 
-    setCurrentlyDisplayedAvailabilities(getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), initialDate));
+    const currentStartDate = currentlyDisplayedAvailabilities[0]?.dateSet ?? initialDate;
+    setCurrentlyDisplayedAvailabilities(
+      getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), currentStartDate)
+    );
   };
 
   const stickyLeft = {
@@ -131,7 +142,16 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Box display="flex" justifyContent="space-between" mb={1}>
-        <Typography variant="subtitle1">Available times in green</Typography>
+        <Typography variant="subtitle1">
+          Available times in
+          {isInverted ? (
+            <span style={{ color: HeatmapColors[0] }}> white</span>
+          ) : (
+            <span style={{ color: HeatmapColors[3] }}> green</span>
+          )}
+          . &nbsp;&nbsp; All times are in local time, {yourTimeZoneInitials()}.{' '}
+        </Typography>
+        <Typography variant="subtitle1"></Typography>
         <NERButton variant="outlined" onClick={invertAvailabilities}>
           Invert Availability
         </NERButton>
@@ -191,7 +211,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
               <TableRow key={time}>
                 <TableCell sx={{ ...stickyLeft, zIndex: 1, scrollSnapAlign: 'start' }}>
                   <Typography variant="body1" align="center" sx={{ fontSize: 15 }}>
-                    {time}
+                    {reviewTimesInCurrentTimeZone(time)}
                   </Typography>
                 </TableCell>
                 {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {

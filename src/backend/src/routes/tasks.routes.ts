@@ -42,7 +42,7 @@ tasksRouter.post(
 tasksRouter.post(
   '/:taskId/edit',
   nonEmptyString(body('title')),
-  nonEmptyString(body('notes')),
+  body('notes').isString(),
   isOptionalDateOnly(body('deadline')),
   isOptionalDateOnly(body('startDate')),
   isTaskPriority(body('priority')),

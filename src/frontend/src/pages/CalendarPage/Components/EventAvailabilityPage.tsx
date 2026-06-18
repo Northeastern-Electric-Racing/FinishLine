@@ -12,8 +12,8 @@ import {
   User,
   UserWithScheduleSettings,
   EventWithMembers,
-  isAdmin,
-  EventStatus
+  EventStatus,
+  isAdmin
 } from 'shared';
 import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -32,6 +32,7 @@ import SingleAvailabilityModal from '../../SettingsPage/UserScheduleSettings/Ava
 import AvailabilityEditModal from '../../SettingsPage/UserScheduleSettings/Availability/AvailabilityEditModal';
 import AvailabilityScheduleView from '../AvailabilityScheduleView';
 import ScheduleEventModal from './ScheduleEventModal';
+import { formatHourInCurrentTimeZone, offsetDate, yourTimeZoneInitials } from '../../../utils/design-review.utils';
 
 const isUserOnEvent = (user: User, event: EventWithMembers): boolean => {
   const isDirectMember =
@@ -147,6 +148,20 @@ export const EventAvailabilityPage: React.FC = () => {
     if (!event) return false;
     return event.confirmedMembers.some((m) => m.userId === currentUser.userId);
   }, [event, currentUser]);
+
+  // Reorders users by alphabetical order.
+  const reorderAlphabetically = (users: User[]) => {
+    return users.sort((a, b) => (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName));
+  };
+
+  // Reorders users by confirmation or not. All confirmed users are above the unconfirmed users
+  const reorderByConfirmation = (users: User[]) => {
+    return [...reorderAlphabetically(users)].sort((a, b) => {
+      const aConfirmation = event && event.confirmedMembers.some((m) => m.userId === a.userId) ? 1 : 0;
+      const bConfirmation = event && event.confirmedMembers.some((m) => m.userId === b.userId) ? 1 : 0;
+      return bConfirmation - aConfirmation;
+    });
+  };
 
   useEffect(() => {
     if (userScheduleSettings && userScheduleSettings.availabilities.length > 0) {
@@ -288,14 +303,27 @@ export const EventAvailabilityPage: React.FC = () => {
           {/* Date/Time display */}
           {(() => {
             const displaySlot = currentHoveredSlot || selectedSlot;
+            const specificTime = () => {
+              const specificDate = new Date(displaySlot!.day);
+              specificDate.setHours(displaySlot!.startHour);
+              return specificDate;
+            };
             if (displaySlot) {
               return (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="h6">
-                    {displaySlot.day.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                    {offsetDate(specificTime()).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                    All times are in local timezone, {yourTimeZoneInitials()}.
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    {formatHour(displaySlot.startHour)} - {formatHour(displaySlot.endHour)}
+                    {formatHourInCurrentTimeZone(formatHour(displaySlot.startHour))} -{' '}
+                    {formatHourInCurrentTimeZone(formatHour(displaySlot.endHour))}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                     {currentAvailableUsers.length}/{relevantUsers.length} available
@@ -309,7 +337,6 @@ export const EventAvailabilityPage: React.FC = () => {
               </Typography>
             );
           })()}
-
           {/* Available/Unavailable columns */}
           <Grid container spacing={2}>
             <Grid item xs={6}>
@@ -318,11 +345,20 @@ export const EventAvailabilityPage: React.FC = () => {
               </Typography>
               <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
                 {currentAvailableUsers.length > 0 ? (
-                  currentAvailableUsers.map((user) => {
+                  reorderByConfirmation(currentAvailableUsers).map((user) => {
                     const isConfirmed = event.confirmedMembers.some((cm) => cm.userId === user.userId);
-                    const displayName = fullNamePipe(user) + (isConfirmed ? '' : ' *');
+                    const isRequired = event.requiredMembers.some((cm) => cm.userId === user.userId);
+                    const displayName = fullNamePipe(user);
                     return (
-                      <Typography key={user.userId} variant="body2" sx={{ py: 0.25 }}>
+                      <Typography
+                        key={user.userId}
+                        variant="body2"
+                        sx={{
+                          py: 0.25,
+                          color: isConfirmed ? 'inherit' : '#ef4345',
+                          textDecoration: isRequired ? 'underline' : 'none'
+                        }}
+                      >
                         {displayName}
                       </Typography>
                     );
@@ -341,11 +377,20 @@ export const EventAvailabilityPage: React.FC = () => {
               </Typography>
               <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
                 {currentUnavailableUsers.length > 0 ? (
-                  currentUnavailableUsers.map((user) => {
+                  reorderByConfirmation(currentUnavailableUsers).map((user) => {
                     const isConfirmed = event.confirmedMembers.some((cm) => cm.userId === user.userId);
-                    const displayName = fullNamePipe(user) + (isConfirmed ? '' : ' *');
+                    const isRequired = event.requiredMembers.some((cm) => cm.userId === user.userId);
+                    const displayName = fullNamePipe(user);
                     return (
-                      <Typography key={user.userId} variant="body2" sx={{ py: 0.25 }}>
+                      <Typography
+                        key={user.userId}
+                        variant="body2"
+                        sx={{
+                          py: 0.25,
+                          color: isConfirmed ? 'inherit' : '#ef4345',
+                          textDecoration: isRequired ? 'underline' : 'none'
+                        }}
+                      >
                         {displayName}
                       </Typography>
                     );
@@ -358,18 +403,19 @@ export const EventAvailabilityPage: React.FC = () => {
               </Box>
             </Grid>
           </Grid>
-
           {(currentAvailableUsers.length > 0 || currentUnavailableUsers.length > 0) && (
             <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-              * has not confirmed availability
+              <span style={{ color: '#ef4345' }}>Red</span> means that member has not confirmed availability
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+                <span style={{ textDecoration: 'underline' }}>Underline</span> means that member is required for the meeting
+              </Typography>
             </Typography>
           )}
-
           {/* Schedule button for creators - only show if event is not already scheduled */}
-          {(isCreator || isAdmin(currentUser.role)) && selectedSlot && event.status !== EventStatus.SCHEDULED && (
+          {(isCreator || isAdmin(currentUser.role)) && selectedSlot && (
             <Box sx={{ mt: 3 }}>
               <NERSuccessButton variant="contained" onClick={handleScheduleClick} fullWidth>
-                Schedule Event
+                {event.status === EventStatus.SCHEDULED ? 'Reschedule Event' : 'Schedule Event'}
               </NERSuccessButton>
             </Box>
           )}
@@ -405,6 +451,7 @@ export const EventAvailabilityPage: React.FC = () => {
           selectedDay={selectedSlot.day}
           startHour={selectedSlot.startHour}
           endHour={selectedSlot.endHour}
+          beingRescheduled={event.status === EventStatus.SCHEDULED}
         />
       )}
     </PageLayout>

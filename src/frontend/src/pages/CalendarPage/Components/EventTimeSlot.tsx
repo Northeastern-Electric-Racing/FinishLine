@@ -4,6 +4,7 @@ interface EventTimeSlotProps {
   backgroundColor?: string;
   onClick?: () => void;
   selected?: boolean;
+  allRequiredAvailable?: boolean;
   onMouseDown?: (e: React.MouseEvent) => void;
   onMouseEnter?: (e: React.MouseEvent) => void;
   onMouseUp?: () => void;
@@ -13,17 +14,19 @@ const EventTimeSlot: React.FC<EventTimeSlotProps> = ({
   backgroundColor,
   onClick,
   selected = false,
+  allRequiredAvailable = false,
   onMouseDown,
   onMouseEnter,
   onMouseUp
 }) => {
   const getBorderColor = () => {
     if (selected) return '#ffff8c';
+    if (allRequiredAvailable) return '#216799';
     return 'gray';
   };
 
   const getBorderWidth = () => {
-    if (selected) return '3px';
+    if (selected || allRequiredAvailable) return '3px';
     return '0.1px';
   };
 

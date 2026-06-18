@@ -32,7 +32,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
 
   const handleSubmit = async (payload: EventPayload) => {
     try {
-      const { documentFiles, createScheduleSlotArgs, initialDateScheduled, ...eventData } = payload;
+      const { documentFiles, createScheduleSlotArgs, initialDateScheduled, mention, ...eventData } = payload;
 
       const scheduleSlots: Array<{
         startTime: Date;
@@ -82,7 +82,8 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
         ...eventData,
         initialDateScheduled: initialDateScheduled ?? new Date(),
         scheduleSlots,
-        documentIds: []
+        documentIds: [],
+        mention
       };
 
       const createdEvent = await createEvent(createArgs);
