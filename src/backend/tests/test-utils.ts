@@ -326,7 +326,7 @@ export const createTestFaq = async (user: User, organizationId: string) => {
     data: {
       question: 'Who is Chief Software Engineer of NER?',
       answer: 'Peyton McKee!',
-      organizationId: organizationId,
+      organizationId,
       userCreatedId: user.userId
     }
   });

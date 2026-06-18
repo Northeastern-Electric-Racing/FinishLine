@@ -537,7 +537,7 @@ export default class PartReviewService {
    */
   static async getAllPartReviewFAQs(organizationId: string) {
     const partReviewFAQs = await prisma.frequentlyAskedQuestion.findMany({
-      where: { dateDeleted: null, organizationId: organizationId, isOnPartReviewPage: true },
+      where: { dateDeleted: null, organizationId, isOnPartReviewPage: true },
       ...getFaqQueryArgs(organizationId)
     });
 
