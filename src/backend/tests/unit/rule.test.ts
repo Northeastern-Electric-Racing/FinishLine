@@ -367,6 +367,150 @@ describe('Create Rules Tests', () => {
     });
   });
 
+  describe('Create Project Rule', () => {
+    it('Creates project rules for the full ancestor chain when assigning a nested sub-rule', async () => {
+      const root = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
+      const child = await RulesService.createRule(
+        batman,
+        'T.1.1',
+        'Vehicle Requirements',
+        rulesetId,
+        organization,
+        root.ruleId
+      );
+      const grandchild = await RulesService.createRule(batman, 'T.1.1.1', 'Wheels', rulesetId, organization, child.ruleId);
+
+      const project = await createTestProject(aquaman, orgId, undefined, carId);
+
+      await RulesService.createProjectRule(aquaman, organization, grandchild.ruleId, project.projectId);
+
+      const projectRules = await RulesService.getProjectRules(rulesetId, project.projectId, organization);
+      const assignedRuleIds = projectRules.map((pr) => pr.rule.ruleId);
+      expect(assignedRuleIds).toHaveLength(3);
+      expect(assignedRuleIds).toEqual(expect.arrayContaining([root.ruleId, child.ruleId, grandchild.ruleId]));
+    });
+
+    it('Creates project rules for shared ancestors when adding a sibling sub-rule', async () => {
+      const root = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
+      const child = await RulesService.createRule(
+        batman,
+        'T.1.1',
+        'Vehicle Requirements',
+        rulesetId,
+        organization,
+        root.ruleId
+      );
+      const grandchild1 = await RulesService.createRule(batman, 'T.1.1.1', 'Wheels', rulesetId, organization, child.ruleId);
+      const grandchild2 = await RulesService.createRule(batman, 'T.1.1.2', 'Brakes', rulesetId, organization, child.ruleId);
+
+      const project = await createTestProject(aquaman, orgId, undefined, carId);
+
+      await RulesService.createProjectRule(aquaman, organization, grandchild1.ruleId, project.projectId);
+      // Adding a sibling must not error on the already-present parent/root and must not duplicate them.
+      await RulesService.createProjectRule(aquaman, organization, grandchild2.ruleId, project.projectId);
+
+      const projectRules = await RulesService.getProjectRules(rulesetId, project.projectId, organization);
+      const assignedRuleIds = projectRules.map((pr) => pr.rule.ruleId);
+      expect(assignedRuleIds).toHaveLength(4);
+      expect(assignedRuleIds).toEqual(
+        expect.arrayContaining([root.ruleId, child.ruleId, grandchild1.ruleId, grandchild2.ruleId])
+      );
+    });
+
+    it('does not assign descendants of the selected rule', async () => {
+      const root = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
+      const child = await RulesService.createRule(
+        batman,
+        'T.1.1',
+        'Vehicle Requirements',
+        rulesetId,
+        organization,
+        root.ruleId
+      );
+      await RulesService.createRule(batman, 'T.1.1.1', 'Wheels', rulesetId, organization, child.ruleId);
+
+      const project = await createTestProject(aquaman, orgId, undefined, carId);
+
+      await RulesService.createProjectRule(aquaman, organization, child.ruleId, project.projectId);
+
+      const projectRules = await RulesService.getProjectRules(rulesetId, project.projectId, organization);
+      const assignedRuleIds = projectRules.map((pr) => pr.rule.ruleId);
+      expect(assignedRuleIds).toHaveLength(2);
+      expect(assignedRuleIds).toEqual(expect.arrayContaining([root.ruleId, child.ruleId]));
+    });
+
+    it('does not assign deleted ancestors when assigning a nested sub-rule', async () => {
+      const root = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
+      const child = await RulesService.createRule(
+        batman,
+        'T.1.1',
+        'Vehicle Requirements',
+        rulesetId,
+        organization,
+        root.ruleId
+      );
+      const grandchild = await RulesService.createRule(batman, 'T.1.1.1', 'Wheels', rulesetId, organization, child.ruleId);
+
+      // Soft-delete the immediate parent directly so the grandchild remains assignable
+      await prisma.rule.update({
+        where: { ruleId: child.ruleId },
+        data: { dateDeleted: new Date(), deletedBy: { connect: { userId: batman.userId } } }
+      });
+
+      const project = await createTestProject(aquaman, orgId, undefined, carId);
+
+      await RulesService.createProjectRule(aquaman, organization, grandchild.ruleId, project.projectId);
+
+      // The walk stops at the deleted ancestor, so neither it nor the root above it are assigned.
+      const projectRules = await RulesService.getProjectRules(rulesetId, project.projectId, organization);
+      const assignedRuleIds = projectRules.map((pr) => pr.rule.ruleId);
+      expect(assignedRuleIds).toHaveLength(1);
+      expect(assignedRuleIds).toEqual([grandchild.ruleId]);
+
+      // getProjectRules hides deleted rules, so assert directly that none was created for the deleted ancestor
+      const deletedAncestorProjectRule = await prisma.project_Rule.findUnique({
+        where: { ruleId_projectId: { ruleId: child.ruleId, projectId: project.projectId } }
+      });
+      expect(deletedAncestorProjectRule).toBeNull();
+    });
+
+    it('throws when the rule is already associated with the project', async () => {
+      const rule = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
+      const project = await createTestProject(aquaman, orgId, undefined, carId);
+
+      await RulesService.createProjectRule(aquaman, organization, rule.ruleId, project.projectId);
+
+      await expect(
+        async () => await RulesService.createProjectRule(aquaman, organization, rule.ruleId, project.projectId)
+      ).rejects.toThrow(new HttpException(400, 'This rule is already associated with the project'));
+    });
+
+    it('throws when a guest tries to assign a rule to a project', async () => {
+      const rule = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
+      const project = await createTestProject(aquaman, orgId, undefined, carId);
+
+      await expect(
+        async () => await RulesService.createProjectRule(wonderwoman, organization, rule.ruleId, project.projectId)
+      ).rejects.toThrow(AccessDeniedException);
+    });
+
+    it('throws when the rule does not exist', async () => {
+      const project = await createTestProject(aquaman, orgId, undefined, carId);
+
+      await expect(
+        async () => await RulesService.createProjectRule(aquaman, organization, 'fake-rule-id', project.projectId)
+      ).rejects.toThrow(new NotFoundException('Rule', 'fake-rule-id'));
+    });
+
+    it('throws when the project does not exist', async () => {
+      const rule = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
+
+      await expect(
+        async () => await RulesService.createProjectRule(aquaman, organization, rule.ruleId, 'fake-project-id')
+      ).rejects.toThrow(new NotFoundException('Project', 'fake-project-id'));
+    });
+  });
+
   describe('Get rulesets by ruleset type', () => {
     it('Successful get rulesets by ruleset types', async () => {
       const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);

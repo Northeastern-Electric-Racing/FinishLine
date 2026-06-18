@@ -385,13 +385,55 @@ export default class RulesService {
       throw new HttpException(400, 'This rule is already associated with the project');
     }
 
-    const projectRule = await prisma.project_Rule.create({
-      data: {
-        ruleId,
-        projectId,
-        currentStatus: Rule_Completion.REVIEW,
-        createdByUserId: submitter.userId
-      },
+    // Walk up the parent chain to assign all ancestors of a rule to the project as well.
+    // visited guards against cycles, which editRule does not currently prevent.
+    const ancestorIds: string[] = [];
+    const visited = new Set<string>([ruleId]);
+    let currentParentId = rule.parentRuleId;
+
+    while (currentParentId && !visited.has(currentParentId)) {
+      visited.add(currentParentId);
+      const parent = await prisma.rule.findUnique({
+        where: { ruleId: currentParentId },
+        select: { parentRuleId: true, dateDeleted: true }
+      });
+      // Stop if the ancestor is missing or deleted - deleted rules should not be assigned to projects
+      if (!parent || parent.dateDeleted) break;
+      ancestorIds.push(currentParentId);
+      currentParentId = parent.parentRuleId;
+    }
+
+    // Only create ancestors that aren't already assigned to the project to avoid duplicate assignment issues
+    const existingAncestors = await prisma.project_Rule.findMany({
+      where: { projectId, ruleId: { in: ancestorIds }, dateDeleted: null },
+      select: { ruleId: true }
+    });
+    const existingAncestorIds = new Set(existingAncestors.map((projectRule) => projectRule.ruleId));
+    const ancestorsToCreate = ancestorIds.filter((id) => !existingAncestorIds.has(id));
+
+    await prisma.$transaction([
+      ...ancestorsToCreate.map((ancestorId) =>
+        prisma.project_Rule.create({
+          data: {
+            ruleId: ancestorId,
+            projectId,
+            currentStatus: Rule_Completion.INCOMPLETE,
+            createdByUserId: submitter.userId
+          }
+        })
+      ),
+      prisma.project_Rule.create({
+        data: {
+          ruleId,
+          projectId,
+          currentStatus: Rule_Completion.INCOMPLETE,
+          createdByUserId: submitter.userId
+        }
+      })
+    ]);
+
+    const projectRule = await prisma.project_Rule.findUnique({
+      where: { ruleId_projectId: { ruleId, projectId } },
       ...getProjectRuleQueryArgs()
     });
 
