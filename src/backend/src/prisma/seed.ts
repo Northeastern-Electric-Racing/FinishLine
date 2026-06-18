@@ -112,9 +112,10 @@ export const CreatePartReviewFAQ = async (
     data: {
       question,
       answer,
-      partReviewFaqOrg: {
+      organization: {
         connect: { organizationId }
       },
+      isOnPartReviewPage: true,
       userCreated: {
         connect: { userId: user.userId }
       }
@@ -3807,7 +3808,8 @@ const performSeed: () => Promise<void> = async () => {
       answer: 'answer',
       userCreated: { connect: { userId: batman.userId } },
       dateCreated: new Date(),
-      partReviewFaqOrg: { connect: { organizationId: ner.organizationId } }
+      organization: { connect: { organizationId: ner.organizationId } },
+      isOnPartReviewPage: true
     }
   });
 

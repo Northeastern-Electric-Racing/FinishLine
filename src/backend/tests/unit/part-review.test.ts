@@ -532,8 +532,8 @@ describe('part review tests', () => {
     expect(prismaFaq?.question).toBe('some question');
     expect(prismaFaq?.answer).toBe('some answer');
     expect(prismaFaq?.userCreatedId).toBe(batman.userId);
-    expect(prismaFaq?.partReviewFaqOrgId).toBe(orgId);
-    expect(prismaFaq?.regularFaqOrgId).toBeFalsy();
+    expect(prismaFaq?.isOnPartReviewPage).toBe(true);
+    expect(prismaFaq?.isOnRecruitingDashboard).toBe(false);
     expect(faq?.question).toBe('some question');
     expect(faq?.answer).toBe('some answer');
 
@@ -550,7 +550,7 @@ describe('part review tests', () => {
     expect(prismaFaq2?.question).toBe('some other question');
     expect(prismaFaq2?.answer).toBe('some other answer');
     expect(prismaFaq2?.userCreatedId).toBe(batman.userId);
-    expect(prismaFaq2?.partReviewFaqOrgId).toBe(orgId);
+    expect(prismaFaq2?.isOnPartReviewPage).toBe(true);
     expect(prismaFaq2?.dateDeleted).toBeFalsy();
     expect(updatedFaq?.question).toBe('some other question');
     expect(updatedFaq?.answer).toBe('some other answer');
@@ -792,7 +792,8 @@ describe('part review tests', () => {
           answer: 'answer1',
           userCreated: { connect: { userId: batman.userId } },
           dateCreated: new Date(),
-          partReviewFaqOrg: { connect: { organizationId: orgId } }
+          organization: { connect: { organizationId: orgId } },
+          isOnPartReviewPage: true
         }
       });
       const faq2 = await prisma.frequentlyAskedQuestion.create({
@@ -802,7 +803,8 @@ describe('part review tests', () => {
           answer: 'answer2',
           userCreated: { connect: { userId: batman.userId } },
           dateCreated: new Date(),
-          partReviewFaqOrg: { connect: { organizationId: orgId } }
+          organization: { connect: { organizationId: orgId } },
+          isOnPartReviewPage: true
         }
       });
       const partReviews = await PartReviewService.getAllPartReviewFAQs(orgId);
@@ -826,7 +828,8 @@ describe('part review tests', () => {
           answer: 'faq answer',
           userCreated: { connect: { userId: batman.userId } },
           dateCreated: new Date(),
-          partReviewFaqOrg: { connect: { organizationId: orgId } }
+          organization: { connect: { organizationId: orgId } },
+          isOnPartReviewPage: true
         }
       });
       const regularFaq = await prisma.frequentlyAskedQuestion.create({
@@ -836,7 +839,8 @@ describe('part review tests', () => {
           answer: 'regular answer',
           userCreated: { connect: { userId: batman.userId } },
           dateCreated: new Date(),
-          regularFaqOrg: { connect: { organizationId: orgId } }
+          organization: { connect: { organizationId: orgId } },
+          isOnRecruitingDashboard: true
         }
       });
       const partReviews = await PartReviewService.getAllPartReviewFAQs(orgId);

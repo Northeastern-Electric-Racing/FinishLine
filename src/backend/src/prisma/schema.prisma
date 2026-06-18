@@ -1486,7 +1486,7 @@ model FrequentlyAskedQuestion {
   dateDeleted             DateTime?
   organizationId          String
   organization            Organization @relation(fields: [organizationId], references: [organizationId])
-  isOnRecruitingDashboard Boolean      @default(true)
+  isOnRecruitingDashboard Boolean      @default(false)
   isOnNewMemberDashboard  Boolean      @default(false)
   isOnPartReviewPage      Boolean      @default(false)
 }

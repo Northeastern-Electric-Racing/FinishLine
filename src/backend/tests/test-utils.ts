@@ -241,7 +241,7 @@ export const createTestFAQ = async (orgId: string, faqId: string) => {
           userId: user.userId
         }
       },
-      regularFaqOrg: {
+      organization: {
         connect: {
           organizationId: orgId
         }
@@ -326,7 +326,7 @@ export const createTestFaq = async (user: User, organizationId: string) => {
     data: {
       question: 'Who is Chief Software Engineer of NER?',
       answer: 'Peyton McKee!',
-      regularFaqOrgId: organizationId,
+      organizationId: organizationId,
       userCreatedId: user.userId
     }
   });
