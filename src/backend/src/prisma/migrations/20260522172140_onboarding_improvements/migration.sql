@@ -1,17 +1,55 @@
 -- CreateEnum
-CREATE TYPE "Dashboard_Target" AS ENUM ('RECRUITING', 'ONBOARDING', 'BOTH');
-
--- CreateEnum
 CREATE TYPE "Team_Join_Request_Status" AS ENUM ('PENDING', 'APPROVED', 'DENIED');
 
--- AlterTable
-ALTER TABLE "FrequentlyAskedQuestion" ADD COLUMN     "dashboardTarget" "Dashboard_Target" NOT NULL DEFAULT 'RECRUITING';
+-- AlterTable: FrequentlyAskedQuestion - add new columns (nullable first for data migration)
+ALTER TABLE "FrequentlyAskedQuestion"
+ADD COLUMN "isOnNewMemberDashboard" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "isOnPartReviewPage" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "isOnRecruitingDashboard" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "organizationId" TEXT;
 
--- AlterTable
-ALTER TABLE "Link_Type" ADD COLUMN     "isOnOnboardingDashboard" BOOLEAN NOT NULL DEFAULT false;
+-- Populate organizationId from regularFaqOrgId where available
+UPDATE "FrequentlyAskedQuestion"
+SET "organizationId" = "regularFaqOrgId"
+WHERE "regularFaqOrgId" IS NOT NULL;
 
--- AlterTable
-ALTER TABLE "Milestone" ADD COLUMN     "dashboardTarget" "Dashboard_Target" NOT NULL DEFAULT 'RECRUITING';
+-- Fill remaining rows from partReviewFaqOrgId
+UPDATE "FrequentlyAskedQuestion"
+SET "organizationId" = "partReviewFaqOrgId"
+WHERE "organizationId" IS NULL AND "partReviewFaqOrgId" IS NOT NULL;
+
+-- Populate booleans from old fields
+UPDATE "FrequentlyAskedQuestion"
+SET "isOnPartReviewPage" = true
+WHERE "partReviewFaqOrgId" IS NOT NULL;
+
+UPDATE "FrequentlyAskedQuestion"
+SET "isOnRecruitingDashboard" = true
+WHERE "regularFaqOrgId" IS NOT NULL;
+
+-- Now make organizationId non-nullable
+ALTER TABLE "FrequentlyAskedQuestion"
+ALTER COLUMN "organizationId" SET NOT NULL;
+
+-- Drop old FK constraints
+ALTER TABLE "FrequentlyAskedQuestion" DROP CONSTRAINT "FrequentlyAskedQuestion_partReviewFaqOrgId_fkey";
+ALTER TABLE "FrequentlyAskedQuestion" DROP CONSTRAINT "FrequentlyAskedQuestion_regularFaqOrgId_fkey";
+
+-- Drop old columns
+ALTER TABLE "FrequentlyAskedQuestion"
+DROP COLUMN "partReviewFaqOrgId",
+DROP COLUMN "regularFaqOrgId";
+
+-- AddForeignKey
+ALTER TABLE "FrequentlyAskedQuestion" ADD CONSTRAINT "FrequentlyAskedQuestion_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AlterTable: Link_Type
+ALTER TABLE "Link_Type" ADD COLUMN "isOnNewMemberDashboard" BOOLEAN NOT NULL DEFAULT false;
+
+-- AlterTable: Milestone
+ALTER TABLE "Milestone"
+ADD COLUMN "isOnNewMemberDashboard" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "isOnRecruitingDashboard" BOOLEAN NOT NULL DEFAULT false;
 
 -- CreateTable
 CREATE TABLE "Team_Join_Request" (
@@ -21,7 +59,6 @@ CREATE TABLE "Team_Join_Request" (
     "status" "Team_Join_Request_Status" NOT NULL DEFAULT 'PENDING',
     "dateRequested" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "denialReason" TEXT,
-
     CONSTRAINT "Team_Join_Request_pkey" PRIMARY KEY ("teamJoinRequestId")
 );
 
