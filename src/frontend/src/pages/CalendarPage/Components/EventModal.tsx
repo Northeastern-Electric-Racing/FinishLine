@@ -35,7 +35,7 @@ import {
   SlackMentionType
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useAllMembers, useCurrentUser } from '../../../hooks/users.hooks';
+import { useAllMembers, useCurrentUser, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import { useAllWorkPackagesPreview } from '../../../hooks/work-packages.hooks';
 import { useAllTeamPreviews } from '../../../hooks/teams.hooks';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
@@ -231,6 +231,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const theme = useTheme();
   const toast = useToast();
   const user = useCurrentUser();
+  const { data: scheduleSettings } = useUserScheduleSettings(user.userId);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [startTimePickerOpen, setStartTimePickerOpen] = useState(false);
   const [endTimePickerOpen, setEndTimePickerOpen] = useState(false);
@@ -380,6 +381,16 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       setShowRecurringOptions(true);
     }
   }, [initialValues, users, teams]);
+
+  // When creating a new event, autofill the user's personal zoom link from their schedule settings.
+  // Only fills when the field is still empty so we never overwrite a link the user has typed.
+  useEffect(() => {
+    if (!open || isEditMode) return;
+    const personalZoomLink = scheduleSettings?.personalZoomLink;
+    if (personalZoomLink && !watch('zoomLink')) {
+      setValue('zoomLink', personalZoomLink);
+    }
+  }, [open, isEditMode, scheduleSettings, setValue, watch]);
 
   const computedTitle = isEditMode ? 'Edit Event' : 'Add Event';
 
