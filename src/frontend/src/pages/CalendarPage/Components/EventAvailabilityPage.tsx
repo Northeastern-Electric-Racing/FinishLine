@@ -32,6 +32,7 @@ import SingleAvailabilityModal from '../../SettingsPage/UserScheduleSettings/Ava
 import AvailabilityEditModal from '../../SettingsPage/UserScheduleSettings/Availability/AvailabilityEditModal';
 import AvailabilityScheduleView from '../AvailabilityScheduleView';
 import ScheduleEventModal from './ScheduleEventModal';
+import { formatHourInCurrentTimeZone, offsetDate, yourTimeZoneInitials } from '../../../utils/design-review.utils';
 
 const isUserOnEvent = (user: User, event: EventWithMembers): boolean => {
   const isDirectMember =
@@ -302,14 +303,27 @@ export const EventAvailabilityPage: React.FC = () => {
           {/* Date/Time display */}
           {(() => {
             const displaySlot = currentHoveredSlot || selectedSlot;
+            const specificTime = () => {
+              const specificDate = new Date(displaySlot!.day);
+              specificDate.setHours(displaySlot!.startHour);
+              return specificDate;
+            };
             if (displaySlot) {
               return (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="h6">
-                    {displaySlot.day.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                    {offsetDate(specificTime()).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                    All times are in local timezone, {yourTimeZoneInitials()}.
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    {formatHour(displaySlot.startHour)} - {formatHour(displaySlot.endHour)}
+                    {formatHourInCurrentTimeZone(formatHour(displaySlot.startHour))} -{' '}
+                    {formatHourInCurrentTimeZone(formatHour(displaySlot.endHour))}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                     {currentAvailableUsers.length}/{relevantUsers.length} available
@@ -323,7 +337,6 @@ export const EventAvailabilityPage: React.FC = () => {
               </Typography>
             );
           })()}
-
           {/* Available/Unavailable columns */}
           <Grid container spacing={2}>
             <Grid item xs={6}>
@@ -390,7 +403,6 @@ export const EventAvailabilityPage: React.FC = () => {
               </Box>
             </Grid>
           </Grid>
-
           {(currentAvailableUsers.length > 0 || currentUnavailableUsers.length > 0) && (
             <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
               <span style={{ color: '#ef4345' }}>Red</span> means that member has not confirmed availability
@@ -399,7 +411,6 @@ export const EventAvailabilityPage: React.FC = () => {
               </Typography>
             </Typography>
           )}
-
           {/* Schedule button for creators - only show if event is not already scheduled */}
           {(isCreator || isAdmin(currentUser.role)) && selectedSlot && (
             <Box sx={{ mt: 3 }}>
