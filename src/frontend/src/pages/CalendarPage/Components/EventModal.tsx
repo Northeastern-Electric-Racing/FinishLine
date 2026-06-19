@@ -382,8 +382,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     }
   }, [initialValues, users, teams]);
 
-  // When creating a new event, autofill the user's personal zoom link from their schedule settings.
-  // Only fills when the field is still empty so we never overwrite a link the user has typed.
+  // When creating a new event, autofill personal zoom link from the user's schedule settings
+  // made it so it only fills when the field is empty, that way doesn't overwrite a link or anythingi me
   useEffect(() => {
     if (!open || isEditMode) return;
     const personalZoomLink = scheduleSettings?.personalZoomLink;
