@@ -2,7 +2,7 @@ import { Availability, Schedule_Settings } from '@prisma/client';
 import { SeedProcess } from '../processes/seed-process.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
-import { ConfigDataOutput, ConfigDataProcess } from './config-data.process.js';
+import { ConfigDataOutput } from './config-data.process.js';
 import { availabilityCreateInput, scheduleSettingsCreateInput } from '../factories/scheduling.factory.js';
 
 type SchedulingInput = OrganizationOutput & UsersOutput & ConfigDataOutput;
