@@ -243,6 +243,7 @@ export default class CalendarService {
    * @param shopIds An array of shops associated with the event.
    * @param machineryIds An array of machinery associated with the event.
    * @param workPackageIds An array of work packages associated with the event.
+   * @param scheduleSlots An array of schedule slots associated with the event.
    * @param questionDocumentLink The link to the question document.
    * @param location Location of the event.
    * @param zoomLink Zoom Link if the event is online.
