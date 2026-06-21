@@ -5,6 +5,7 @@ import { convertEventToFormValues } from '../../../utils/calendar.utils';
 import { useEditEvent, useEditScheduleSlot, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { AlertColor } from '@mui/material';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 export interface EditEventModalProps {
   open: boolean;
@@ -19,11 +20,12 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
   const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
   const { mutateAsync: editScheduleSlot } = useEditScheduleSlot(event.eventId, event.scheduleSlotId);
 
-  if (isLoading) {
-    //?
-  }
   if (isError) {
     editEventModalError(error, toast);
+  }
+
+  if (isLoading) {
+    return <LoadingIndicator />;
   }
 
   const initialValues = convertEventToFormValues(event);
