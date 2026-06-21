@@ -14,7 +14,7 @@ export interface EditEventModalProps {
 
 const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, eventTypes }) => {
   const toast = useToast();
-  const { mutateAsync: editEvent } = useEditEvent(event.eventId);
+  const { isLoading, isError, mutateAsync: editEvent } = useEditEvent(event.eventId);
   const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
   const { mutateAsync: editScheduleSlot } = useEditScheduleSlot(event.eventId, event.scheduleSlotId);
 
