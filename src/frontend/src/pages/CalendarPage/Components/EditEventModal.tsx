@@ -2,7 +2,7 @@ import React from 'react';
 import EventModal, { EventPayload } from './EventModal';
 import type { EventInstance, EventType, EventDocumentUploadArgs } from 'shared';
 import { convertEventToFormValues } from '../../../utils/calendar.utils';
-import { useEditEvent, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
+import { useEditEvent, useEditScheduleSlot, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 export interface EditEventModalProps {
@@ -16,6 +16,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
   const toast = useToast();
   const { mutateAsync: editEvent } = useEditEvent(event.eventId);
   const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
+  const { mutateAsync: editScheduleSlot } = useEditScheduleSlot(event.eventId, event.scheduleSlotId);
 
   const initialValues = convertEventToFormValues(event);
 
@@ -30,17 +31,18 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
         documents: event.documents.map((doc) => ({
           name: doc.name,
           googleFileId: doc.googleFileId
-        })),
-        scheduleSlots: payload.editScheduleSlotArgs
-          ? [
-              {
-                startTime: payload.editScheduleSlotArgs.newStartTime,
-                endTime: payload.editScheduleSlotArgs.newEndTime,
-                allDay: payload.editScheduleSlotArgs.newAllDay
-              }
-            ]
-          : []
+        }))
       };
+
+      // If there are schedule slot changes, update the schedule slot separately
+      if (editScheduleSlotArgs) {
+        await editScheduleSlot({
+          startTime: editScheduleSlotArgs.newStartTime,
+          endTime: editScheduleSlotArgs.newEndTime,
+          allDay: editScheduleSlotArgs.newAllDay,
+          editAllInSeries: editScheduleSlotArgs.editAllInSeries
+        });
+      }
 
       const editedEvent = await editEvent(editArgs);
 

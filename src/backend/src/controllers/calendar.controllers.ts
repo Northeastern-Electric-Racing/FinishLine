@@ -332,18 +332,11 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         documents,
-        scheduleSlots,
         questionDocumentLink,
         location,
         zoomLink,
         description
       } = req.body;
-
-      const parsedScheduleSlots = scheduleSlots.map((slot: { allDay: boolean; startTime?: string; endTime?: string }) => ({
-        startTime: slot.startTime ? new Date(slot.startTime) : undefined,
-        endTime: slot.endTime ? new Date(slot.endTime) : undefined,
-        allDay: slot.allDay
-      }));
 
       const event = await CalendarService.editEvent(
         req.currentUser,
@@ -358,7 +351,6 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         documents,
-        parsedScheduleSlots,
         teamTypeId,
         questionDocumentLink,
         location,

@@ -243,7 +243,6 @@ export default class CalendarService {
    * @param shopIds An array of shops associated with the event.
    * @param machineryIds An array of machinery associated with the event.
    * @param workPackageIds An array of work packages associated with the event.
-   * @param scheduleSlots An array of schedule slots associated with the event.
    * @param questionDocumentLink The link to the question document.
    * @param location Location of the event.
    * @param zoomLink Zoom Link if the event is online.
@@ -595,7 +594,6 @@ export default class CalendarService {
     machineryIds: string[],
     workPackageIds: string[],
     documents: EventDocumentCreateArgs[],
-    scheduleSlots: ScheduleSlotCreateArgs[],
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
@@ -770,17 +768,6 @@ export default class CalendarService {
         optionalMembers: {
           set: updatedOptionalMembers
         },
-        scheduledTimes:
-          scheduleSlots.length > 0
-            ? {
-                deleteMany: {},
-                create: scheduleSlots.map((slot) => ({
-                  startTime: slot.startTime,
-                  endTime: slot.endTime,
-                  allDay: slot.allDay
-                }))
-              }
-            : undefined,
         teams: {
           set: teamIds.map((teamId) => ({ teamId }))
         },
@@ -1540,19 +1527,9 @@ export default class CalendarService {
       });
     }
 
-    const { eventTypeId } = updatedEvent;
-    const foundEventType = await prisma.event_Type.findUnique({
-      where: { eventTypeId }
-    });
+    const edittedEvent = eventTransformer(updatedEvent);
 
-    if (foundEventType?.sendSlackNotifications) {
-      await sendEventScheduledSlackNotif(
-        updatedEvent.notificationSlackThreads,
-        eventTransformer(updatedEvent),
-        event.status === Event_Status.SCHEDULED
-      );
-    }
-    return eventTransformer(updatedEvent);
+    return edittedEvent;
   }
 
   /**
