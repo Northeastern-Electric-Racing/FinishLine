@@ -16,12 +16,23 @@ export interface EditEventModalProps {
 
 const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, eventTypes }) => {
   const toast = useToast();
-  const { isLoading, isError, error, mutateAsync: editEvent } = useEditEvent(event.eventId);
+  const {
+    isLoading: editEventIsLoading,
+    isError: editEventIsError,
+    error: editEventError,
+    mutateAsync: editEvent
+  } = useEditEvent(event.eventId);
   const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
-  const { mutateAsync: editScheduleSlot } = useEditScheduleSlot(event.eventId, event.scheduleSlotId);
+  const {
+    isLoading: editScheduleSlotIsLoading,
+    isError: editScheduleSlotIsError,
+    error: editScheduleSlotError,
+    mutateAsync: editScheduleSlot
+  } = useEditScheduleSlot(event.eventId, event.scheduleSlotId);
 
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading) return <LoadingIndicator />;
+  if (editEventIsError) return <ErrorPage message={editEventError?.message} />;
+  if (editScheduleSlotIsError) return <ErrorPage message={editScheduleSlotError?.message} />;
+  if (editEventIsLoading || editScheduleSlotIsLoading) return <LoadingIndicator />;
 
   const initialValues = convertEventToFormValues(event);
 
