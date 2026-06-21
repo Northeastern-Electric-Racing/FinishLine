@@ -4,6 +4,7 @@ import type { EventInstance, EventType, EventDocumentUploadArgs } from 'shared';
 import { convertEventToFormValues } from '../../../utils/calendar.utils';
 import { useEditEvent, useEditScheduleSlot, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { AlertColor } from '@mui/material';
 
 export interface EditEventModalProps {
   open: boolean;
@@ -14,9 +15,16 @@ export interface EditEventModalProps {
 
 const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, eventTypes }) => {
   const toast = useToast();
-  const { isLoading, isError, mutateAsync: editEvent } = useEditEvent(event.eventId);
+  const { isLoading, isError, error, mutateAsync: editEvent } = useEditEvent(event.eventId);
   const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
   const { mutateAsync: editScheduleSlot } = useEditScheduleSlot(event.eventId, event.scheduleSlotId);
+
+  if (isLoading) {
+    //?
+  }
+  if (isError) {
+    editEventModalError(error, toast);
+  }
 
   const initialValues = convertEventToFormValues(event);
 
@@ -59,12 +67,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
 
       toast.success('Event updated successfully!');
     } catch (e: unknown) {
-      if (e instanceof Error) {
-        toast.error(e.message, 5000);
-      } else {
-        toast.error('Failed to update event', 5000);
-      }
-      throw e;
+      editEventModalError(e, toast);
     }
   };
 
@@ -82,3 +85,20 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
 };
 
 export default EditEventModal;
+function editEventModalError(
+  e: unknown,
+  toast: {
+    fire: (message: string, options: { type: AlertColor; autoHideDuration?: number }) => void;
+    info(message: string, autoHideDuration?: number): void;
+    success(message: string, autoHideDuration?: number): void;
+    warning(message: string, autoHideDuration?: number): void;
+    error(message: string, autoHideDuration?: number): void;
+  }
+) {
+  if (e instanceof Error) {
+    toast.error(e.message, 5000);
+  } else {
+    toast.error('Failed to update event', 5000);
+  }
+  throw e;
+}
