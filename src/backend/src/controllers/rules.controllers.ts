@@ -158,19 +158,20 @@ export default class RulesController {
     }
   }
 
-  static async editProjectRuleStatus(req: Request, res: Response, next: NextFunction) {
+  static async setRuleCompletion(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectRuleId } = req.params;
-      const { newStatus } = req.body;
+      const { ruleId } = req.params;
+      const { isComplete, projectId } = req.body;
 
-      const projectRule: ProjectRule = await RulesService.editProjectRuleStatus(
+      const rule: Rule = await RulesService.setRuleCompletion(
         req.currentUser,
         req.organization,
-        projectRuleId as string,
-        newStatus
+        ruleId as string,
+        isComplete,
+        projectId
       );
 
-      res.status(200).json(projectRule);
+      res.status(200).json(rule);
     } catch (error: unknown) {
       next(error);
     }

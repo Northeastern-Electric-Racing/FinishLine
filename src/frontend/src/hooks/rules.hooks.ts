@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { ProjectRule, Rule as SharedRule, RuleCompletion, Ruleset, RulesetType } from 'shared';
+import { ProjectRule, Rule as SharedRule, Ruleset, RulesetType } from 'shared';
 import {
   createRulesetType,
   getAllRulesetTypes,
@@ -13,7 +13,7 @@ import {
   getUnassignedRulesForRuleset,
   createProjectRule,
   deleteProjectRule,
-  editProjectRuleStatus,
+  setRuleCompletion,
   getChildRules,
   getTopLevelRules,
   toggleRuleTeam,
@@ -346,19 +346,20 @@ export const useDeleteProjectRule = (rulesetId: string, projectId: string) => {
 };
 
 /**
- * Hook to update project rule status.
+ * Hook to set a rule's completion. Completion is global to the rule.
  */
-export const useEditProjectRuleStatus = (rulesetId: string, projectId: string) => {
+export const useSetRuleCompletion = (rulesetId: string, projectId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ProjectRule, Error, { projectRuleId: string; newStatus: RuleCompletion }>(
-    ['rules', 'projectRules', 'editStatus'],
-    async ({ projectRuleId, newStatus }) => {
-      const { data } = await editProjectRuleStatus(projectRuleId, newStatus);
+  return useMutation<SharedRule, Error, { ruleId: string; isComplete: boolean; projectId?: string }>(
+    ['rules', 'setCompletion'],
+    async ({ ruleId, isComplete, projectId: pId }) => {
+      const { data } = await setRuleCompletion(ruleId, isComplete, pId);
       return data;
     },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
+        queryClient.invalidateQueries(['rules', 'unassigned']);
       }
     }
   );

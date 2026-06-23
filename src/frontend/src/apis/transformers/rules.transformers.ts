@@ -28,11 +28,7 @@ export const ruleTransformer = (rule: Rule): Rule => {
 export const projectRuleTransformer = (projectRule: ProjectRule): ProjectRule => {
   return {
     ...projectRule,
-    rule: ruleTransformer(projectRule.rule),
-    statusHistory: (projectRule.statusHistory || []).map((history) => ({
-      ...history,
-      dateCreated: new Date(history.dateCreated)
-    }))
+    rule: ruleTransformer(projectRule.rule)
   };
 };
 

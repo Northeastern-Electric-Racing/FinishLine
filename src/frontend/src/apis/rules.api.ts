@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { ProjectRule, Rule as SharedRule, RuleCompletion, RulesetType, Ruleset } from 'shared';
+import { ProjectRule, Rule as SharedRule, RulesetType, Ruleset } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateRulesetPayload, ParseRulesetPayload, CreateRulePayload } from '../hooks/rules.hooks';
 import {
@@ -116,10 +116,13 @@ export const deleteProjectRule = (projectRuleId: string) => {
 };
 
 /**
- * Updates project rule status
+ * Sets a rule's completion. Completion is global to the rule.
+ * @param ruleId the rule to update
+ * @param isComplete whether the rule is complete
+ * @param projectId the project the rule was completed from (optional)
  */
-export const editProjectRuleStatus = (projectRuleId: string, newStatus: RuleCompletion) => {
-  return axios.post<ProjectRule>(apiUrls.rulesEditProjectRuleStatus(projectRuleId), { newStatus });
+export const setRuleCompletion = (ruleId: string, isComplete: boolean, projectId?: string) => {
+  return axios.post<SharedRule>(apiUrls.rulesSetRuleCompletion(ruleId), { isComplete, projectId });
 };
 
 /**

@@ -4,26 +4,26 @@
  */
 
 import { Box, Checkbox, FormControlLabel, Popover, Typography } from '@mui/material';
-import { ProjectRule, RuleCompletion } from 'shared';
+import { ProjectRule } from 'shared';
 
 interface UpdateStatusPopoverProps {
   anchorEl: HTMLElement | null;
   onClose: () => void;
   projectRule: ProjectRule;
-  onStatusChange: (projectRuleId: string, newStatus: RuleCompletion) => void;
+  onStatusChange: (ruleId: string, isComplete: boolean) => void;
 }
 
 const UpdateStatusPopover = ({ anchorEl, onClose, projectRule, onStatusChange }: UpdateStatusPopoverProps) => {
   const open = Boolean(anchorEl);
 
-  const handleStatusChange = (status: RuleCompletion) => {
-    onStatusChange(projectRule.projectRuleId, status);
+  const handleStatusChange = (isComplete: boolean) => {
+    onStatusChange(projectRule.rule.ruleId, isComplete);
     onClose();
   };
 
   const statusOptions = [
-    { value: RuleCompletion.COMPLETED, label: 'Completed' },
-    { value: RuleCompletion.INCOMPLETE, label: 'Incomplete' }
+    { value: true, label: 'Completed' },
+    { value: false, label: 'Incomplete' }
   ];
 
   return (
@@ -51,10 +51,10 @@ const UpdateStatusPopover = ({ anchorEl, onClose, projectRule, onStatusChange }:
       <Box>
         {statusOptions.map((option) => (
           <FormControlLabel
-            key={option.value}
+            key={option.label}
             control={
               <Checkbox
-                checked={projectRule.currentStatus === option.value}
+                checked={projectRule.rule.isComplete === option.value}
                 onChange={() => handleStatusChange(option.value)}
                 sx={{
                   color: 'white',

@@ -17,9 +17,10 @@ import {
   TableContainer,
   Paper,
   useTheme,
-  IconButton
+  IconButton,
+  Tooltip
 } from '@mui/material';
-import { Project, ProjectRule, Rule, RuleCompletion } from 'shared';
+import { Project, ProjectRule, Rule } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
@@ -29,12 +30,11 @@ import {
   useAllRulesetTypes,
   useActiveRuleset,
   useProjectRules,
-  useEditProjectRuleStatus,
+  useSetRuleCompletion,
   useCreateProjectRule
 } from '../../../../hooks/rules.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { InfoOutlined } from '@mui/icons-material';
-import { RuleHistoryModal } from './RuleHistoryModal';
 
 interface ProjectRulesTabProps {
   project: Project;
@@ -43,16 +43,8 @@ interface ProjectRulesTabProps {
 /**
  * Get the status chip configuration
  */
-const getStatusConfig = (status: RuleCompletion) => {
-  switch (status) {
-    case RuleCompletion.COMPLETED:
-      return { label: 'Complete', color: '#4caf50' };
-    case RuleCompletion.INCOMPLETE:
-      return { label: 'Incomplete', color: '#f44336' };
-    case RuleCompletion.REVIEW:
-    default:
-      return { label: 'Review', color: '#ff9800' };
-  }
+const getStatusConfig = (isComplete: boolean) => {
+  return isComplete ? { label: 'Complete', color: '#4caf50' } : { label: 'Incomplete', color: '#f44336' };
 };
 
 export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
@@ -64,9 +56,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
   const [selectedProjectRule, setSelectedProjectRule] = useState<ProjectRule | null>(null);
-
-  const [selectedRuleForHistory, setSelectedRuleForHistory] = useState<Rule | null>(null);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Fetch all ruleset types
   const { data: rulesetTypes, isLoading: rulesetTypesLoading, isError: rulesetTypesError } = useAllRulesetTypes();
@@ -87,7 +76,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   } = useProjectRules(activeRuleset?.rulesetId || '', project.id);
 
   // Mutations
-  const { mutateAsync: editStatusMutation, isLoading: isUpdatingStatus } = useEditProjectRuleStatus(
+  const { mutateAsync: setCompletionMutation, isLoading: isUpdatingStatus } = useSetRuleCompletion(
     activeRuleset?.rulesetId || '',
     project.id
   );
@@ -119,34 +108,21 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     return children.flatMap((child) => getDescendantLeafRules(child));
   };
 
-  // Helper function to calculate aggregated status from leaf rules
-  const getAggregatedStatus = (rule: Rule): RuleCompletion => {
+  // Helper function to calculate aggregated completion from leaf rules.
+  // A parent is complete only if all of its descendant leaf rules are complete.
+  const getAggregatedStatus = (rule: Rule): boolean => {
     const leafRules = getDescendantLeafRules(rule);
     if (leafRules.length === 0) {
-      return RuleCompletion.REVIEW;
+      return false;
     }
-
-    const leafStatuses = leafRules.map((leafRule) => {
-      const projectRule = projectRules?.find((pr) => pr.rule.ruleId === leafRule.ruleId);
-      return projectRule?.currentStatus || RuleCompletion.REVIEW;
-    });
-
-    if (leafStatuses.every((s) => s === RuleCompletion.COMPLETED)) {
-      return RuleCompletion.COMPLETED;
-    }
-
-    if (leafStatuses.some((s) => s === RuleCompletion.INCOMPLETE)) {
-      return RuleCompletion.INCOMPLETE;
-    }
-
-    return RuleCompletion.REVIEW;
+    return leafRules.every((leafRule) => leafRule.isComplete);
   };
 
-  // Handle status update
-  const handleStatusUpdate = async (projectRuleId: string, newStatus: RuleCompletion) => {
+  // Handle completion update
+  const handleStatusUpdate = async (ruleId: string, isComplete: boolean) => {
     try {
-      await editStatusMutation({ projectRuleId, newStatus });
-      toast.success('Rule status updated successfully');
+      await setCompletionMutation({ ruleId, isComplete, projectId: project.id });
+      toast.success('Rule completion updated successfully');
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -221,13 +197,14 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     const hasChildren = allRules.some((r) => r.parentRule?.ruleId === rule.ruleId);
     const isLeafRule = !hasChildren;
 
-    // Get status - for leaf rules use their own status, for parents calculate from children
-    const status = isLeafRule
-      ? projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId)?.currentStatus || RuleCompletion.REVIEW
-      : getAggregatedStatus(rule);
-    const statusConfig = getStatusConfig(status);
+    // Completion - for leaf rules use their own, for parents aggregate from children
+    const isComplete = isLeafRule ? rule.isComplete : getAggregatedStatus(rule);
+    const statusConfig = getStatusConfig(isComplete);
 
-    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
+    const completedByName = rule.completedBy && `${rule.completedBy.firstName} ${rule.completedBy.lastName}`;
+    const completionMessage = completedByName
+      ? `Completed by ${completedByName}${rule.completedInProject ? ` in ${rule.completedInProject.projectName}` : ''}`
+      : '';
 
     return (
       <>
@@ -261,24 +238,22 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         >
           {statusConfig.label}
         </Box>
-        {isLeafRule && projectRule && projectRule.statusHistory && projectRule.statusHistory.length > 0 && (
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedRuleForHistory(rule);
-              setShowHistoryModal(true);
-            }}
-            sx={{
-              padding: '2px',
-              color: 'text.secondary',
-              '&:hover': {
-                color: 'primary.main'
-              }
-            }}
-          >
-            <InfoOutlined fontSize="small" />
-          </IconButton>
+        {isLeafRule && isComplete && completionMessage && (
+          <Tooltip title={completionMessage} arrow>
+            <IconButton
+              size="small"
+              onClick={(e) => e.stopPropagation()}
+              sx={{
+                padding: '2px',
+                color: 'text.secondary',
+                '&:hover': {
+                  color: 'primary.main'
+                }
+              }}
+            >
+              <InfoOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
         )}
       </>
     );
@@ -401,16 +376,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           onStatusChange={handleStatusUpdate}
         />
       )}
-
-      <RuleHistoryModal
-        open={showHistoryModal}
-        onClose={() => {
-          setShowHistoryModal(false);
-          setSelectedRuleForHistory(null);
-        }}
-        rule={selectedRuleForHistory}
-        projectRules={projectRules}
-      />
 
       {/* Add Rule Modal */}
       {activeRuleset && teamId && (

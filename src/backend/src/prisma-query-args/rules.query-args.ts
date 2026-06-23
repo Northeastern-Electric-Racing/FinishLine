@@ -27,6 +27,22 @@ export const getRulePreviewQueryArgs = () =>
           teamId: true,
           teamName: true
         }
+      },
+      completedBy: {
+        select: {
+          firstName: true,
+          lastName: true
+        }
+      },
+      completedInProject: {
+        select: {
+          projectId: true,
+          wbsElement: {
+            select: {
+              name: true
+            }
+          }
+        }
       }
     }
   });
@@ -35,21 +51,7 @@ export const getProjectRuleQueryArgs = () =>
   Prisma.validator<Prisma.Project_RuleDefaultArgs>()({
     include: {
       rule: getRulePreviewQueryArgs(),
-      project: { select: { projectId: true } },
-      statusHistory: {
-        include: {
-          createdBy: {
-            select: {
-              userId: true,
-              firstName: true,
-              lastName: true
-            }
-          }
-        },
-        orderBy: {
-          dateCreated: 'desc'
-        }
-      }
+      project: { select: { projectId: true } }
     }
   });
 
