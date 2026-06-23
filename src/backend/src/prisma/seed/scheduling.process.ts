@@ -7,6 +7,8 @@ import { availabilityCreateInput, scheduleSettingsCreateInput } from '../factori
 
 type SchedulingInput = OrganizationOutput & UsersOutput & ConfigDataOutput;
 
+const SEED_START_DATE = new Date('2025-01-01T00:00:00.000Z');
+
 export type SchedulingOutput = {
   scheduleSettings: Schedule_Settings[];
   availabilities: Availability[];
@@ -17,10 +19,8 @@ export class SchedulingProcess extends SeedProcess<SchedulingInput, SchedulingOu
     return [OrganizationProcess, UsersProcess];
   }
 
-  async run({ appAdmins, admins, heads, leadership }: SchedulingInput): Promise<SchedulingOutput> {
-    const eligibleUsers = [...appAdmins, ...admins, ...heads, ...leadership];
-
-    const seedStartDate = new Date();
+  async run({ members, appAdmins, admins, heads, leadership }: SchedulingInput): Promise<SchedulingOutput> {
+    const eligibleUsers = [...appAdmins, ...admins, ...heads, ...leadership, ...members];
 
     const scheduleSettings = await Promise.all(
       eligibleUsers.map((user) =>
@@ -33,7 +33,7 @@ export class SchedulingProcess extends SeedProcess<SchedulingInput, SchedulingOu
     const availabilities = await Promise.all(
       scheduleSettings.flatMap((settings) =>
         Array.from({ length: 7 }, (_, i) => {
-          const date = new Date(seedStartDate);
+          const date = new Date(SEED_START_DATE);
           date.setDate(date.getDate() + i);
           return this.prisma.availability.create({
             data: availabilityCreateInput(this.faker, settings.drScheduleSettingsId, date)
