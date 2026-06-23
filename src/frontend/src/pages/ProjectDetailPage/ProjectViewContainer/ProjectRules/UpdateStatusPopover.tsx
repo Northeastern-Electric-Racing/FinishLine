@@ -22,7 +22,7 @@ const UpdateStatusPopover = ({ anchorEl, onClose, projectRule, onStatusChange }:
   };
 
   const statusOptions = [
-    { value: true, label: 'Completed' },
+    { value: true, label: 'Complete' },
     { value: false, label: 'Incomplete' }
   ];
 
