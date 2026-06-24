@@ -3,13 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { Project, isGuest, isAdmin, isLeadership } from 'shared';
 import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
 import ProjectDetails from './ProjectDetails';
 import { routes } from '../../../utils/routes';
 import EditIcon from '@mui/icons-material/Edit';
-import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import { Box } from '@mui/material';
 import { useState } from 'react';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
@@ -121,18 +120,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             icon: <EditIcon fontSize="small" />
           },
           {
-            title: 'Request Change',
-            onClick: handleDropdownClose,
-            disabled: isGuest(user.role),
-            icon: <SyncAltIcon fontSize="small" />,
-            component: Link,
-            to: routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(project.wbsNum)
-          },
-          {
             title: 'Suggest Budget Increase',
             onClick: () => {
               history.push(
-                `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&budgetChange=${budgetIncrease}`
+                `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&budgetChange=${budgetIncrease}&returnUrl=${encodeURIComponent(`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`)}`
               );
             },
             disabled: !isLeadership(user.role) || budgetIncrease <= 0,

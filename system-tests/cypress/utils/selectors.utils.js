@@ -26,7 +26,6 @@ const SELECTORS = {
 
   // Change Request
   CR_ROW: (title) => testIdBuilder(`${title}crRow`),
-  NEW_CHANGE_REQUEST_BUTTON: 'New Change Request',
   ALL_CHANGE_REQUESTS_TAB: 'All Change Requests',
   CHANGE_REQUEST_TABLE: testIdBuilder('Change Request Table'),
   PROJECT_OR_WORKPACKAGE_PLACEHOLDER: placeholderBuilder('Select a project or work package'),

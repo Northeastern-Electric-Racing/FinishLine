@@ -3,8 +3,17 @@ import AnnouncementService from './announcement.services.js';
 import { Announcement, ReimbursementStatusType } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { blockToMentionedUsers, blockToString } from '../utils/slack.utils.js';
-import { InvalidOrganizationException, NotFoundException } from '../utils/errors.utils.js';
+import {
+  AccessDeniedException,
+  HttpException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../utils/errors.utils.js';
 import ReimbursementRequestService from './reimbursement-requests.services.js';
+import ChangeRequestsService from './change-requests.services.js';
+import { userTransformer } from '../transformers/user.transformer.js';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { User } from 'shared';
 
 /**
  * Represents a slack event for a message in a channel.
@@ -125,6 +134,13 @@ export interface SaboSubmissionActionValue {
   reimbursementRequestId: string;
 }
 
+/**
+ * Represents the parsed value from a CR approval action
+ */
+export interface CrApprovalActionValue {
+  crId: string;
+}
+
 export default class SlackServices {
   /**
    * Handles the Slack button click for marking a reimbursement request as SABO submitted.
@@ -197,6 +213,93 @@ export default class SlackServices {
       user,
       reimbursementRequest.organization
     );
+  }
+
+  /**
+   * Approves a change request from a Slack interactive button click.
+   * Auth (admin/head/requested-reviewer) is enforced inside reviewChangeRequest.
+   *
+   * @param userSlackId Slack id of the user who clicked the button
+   * @param crId the change request to approve
+   * @param respond Bolt response callback bound to this interaction's response_url
+   */
+  static async handleApproveCRAction(
+    userSlackId: string,
+    crId: string,
+    respond: (msg: {
+      response_type?: 'ephemeral';
+      text?: string;
+      replace_original?: boolean;
+      delete_original?: boolean;
+    }) => Promise<unknown>
+  ): Promise<void> {
+    const cr = await prisma.change_Request.findUnique({
+      where: {
+        crId
+      }
+    });
+
+    if (!cr) {
+      throw new NotFoundException('Change Request', crId);
+    }
+
+    const reviewer = await prisma.user.findFirst({
+      where: {
+        userSettings: {
+          slackId: userSlackId
+        }
+      },
+      ...getUserQueryArgs(cr.organizationId)
+    });
+
+    if (!reviewer) {
+      console.error('User not found for slack ID:', userSlackId);
+      throw new NotFoundException('User', userSlackId);
+    }
+
+    const org = await prisma.organization.findUnique({
+      where: {
+        organizationId: cr.organizationId
+      }
+    });
+
+    if (!org) {
+      throw new NotFoundException('Organization', cr.organizationId);
+    }
+
+    const reviewerShared: User = userTransformer(reviewer);
+
+    try {
+      await ChangeRequestsService.reviewChangeRequest(reviewerShared, crId, true, org);
+      await respond({
+        replace_original: true,
+        text: `✅ CR #${cr.identifier} approved by ${reviewer.firstName} ${reviewer.lastName}.`
+      });
+    } catch (error) {
+      if (error instanceof AccessDeniedException) {
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ You're not authorized to approve this CR. Only admins, team heads, or requested reviewers can approve.`
+        });
+      } else if (error instanceof NotFoundException) {
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ ${error.message}`
+        });
+      } else if (error instanceof HttpException) {
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ ${error.message}`
+        });
+      } else {
+        const msg = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error approving CR via Slack:', error);
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ An unexpected error occurred while approving this CR.\n\n*Error:* ${msg}`
+        });
+      }
+    }
   }
 
   /**
