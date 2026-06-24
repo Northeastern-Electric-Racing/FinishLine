@@ -1,5 +1,5 @@
 import { Faker } from '@faker-js/faker';
-import { Prisma, Team, WBS_Element_Status } from '@prisma/client';
+import { Link_Type, Prisma, WBS_Element_Status } from '@prisma/client';
 import { DateRange } from '../context.js';
 
 export const PROJECTS_PER_CAR = 30;
@@ -89,6 +89,11 @@ const PROJECT_SUMMARY_BY_PART: Record<string, string> = {
   'Yaw Sensor': 'Integrate yaw sensing and vehicle dynamics data collection.'
 };
 
+const PROJECT_LINK_URL_BY_TYPE: Record<string, (projectSlug: string) => string> = {
+  Confluence: (projectSlug) => `https://nerdocs.atlassian.net/wiki/spaces/NER/pages/${projectSlug}`,
+  'Bill of Materials': (projectSlug) => `https://docs.google.com/spreadsheets/d/${projectSlug}`
+};
+
 const clampDate = (date: Date, min: Date, max: Date): Date => {
   if (date < min) return new Date(min);
   if (date > max) return new Date(max);
@@ -158,6 +163,32 @@ export const projectAbbreviationForName = (name: string, projectNumber: number):
   return `${abbreviation}${projectNumber}`;
 };
 
+const projectSlugForName = (projectName: string): string =>
+  projectName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+const projectLinksCreateInput = (
+  projectName: string,
+  linkTypes: Link_Type[],
+  creatorId: string
+): Prisma.LinkCreateWithoutWbsElmentInput[] => {
+  const projectSlug = projectSlugForName(projectName);
+
+  return linkTypes
+    .filter((linkType) => linkType.name in PROJECT_LINK_URL_BY_TYPE)
+    .map((linkType) => ({
+      url: PROJECT_LINK_URL_BY_TYPE[linkType.name](projectSlug),
+      creator: {
+        connect: { userId: creatorId }
+      },
+      linkType: {
+        connect: { id: linkType.id }
+      }
+    }));
+};
+
 export const projectCreateInput = (
   faker: Faker,
   organizationId: string,
@@ -168,6 +199,8 @@ export const projectCreateInput = (
   teamIds: string[],
   leadId?: string,
   managerId?: string,
+  linkTypes: Link_Type[] = [],
+  linkCreatorId?: string,
   overrides: Partial<Prisma.ProjectCreateInput> = {}
 ): Prisma.ProjectCreateInput => ({
   summary: projectSummaryForName(projectName),
@@ -186,9 +219,30 @@ export const projectCreateInput = (
       projectNumber,
       workPackageNumber: 0,
       status: WBS_Element_Status.ACTIVE,
-      organizationId,
-      ...(leadId ? { lead: { connect: { userId: leadId } } } : {}),
-      ...(managerId ? { manager: { connect: { userId: managerId } } } : {})
+      organization: {
+        connect: { organizationId }
+      },
+      ...(leadId
+        ? {
+            lead: {
+              connect: { userId: leadId }
+            }
+          }
+        : {}),
+      ...(managerId
+        ? {
+            manager: {
+              connect: { userId: managerId }
+            }
+          }
+        : {}),
+      ...(linkCreatorId && linkTypes.length > 0
+        ? {
+            links: {
+              create: projectLinksCreateInput(projectName, linkTypes, linkCreatorId)
+            }
+          }
+        : {})
     }
   },
   ...overrides

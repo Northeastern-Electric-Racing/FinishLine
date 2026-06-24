@@ -28,3 +28,5 @@ await new SeedRunner()
     new ProjectProcess()
   )
   .run();
+
+await prisma.$disconnect();
