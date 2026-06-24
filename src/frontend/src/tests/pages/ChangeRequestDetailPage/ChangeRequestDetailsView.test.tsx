@@ -57,11 +57,7 @@ const renderComponent = (cr: ChangeRequest, allowed: boolean = false) => {
   return render(
     <ToastProvider>
       <RouterWrapper>
-        <ChangeRequestDetailsView
-          changeRequest={cr}
-          isUserAllowedToReview={allowed}
-          isUserAllowedToDelete={allowed}
-        />
+        <ChangeRequestDetailsView changeRequest={cr} isUserAllowedToReview={allowed} isUserAllowedToDelete={allowed} />
       </RouterWrapper>
     </ToastProvider>
   );
