@@ -1,0 +1,47 @@
+import { Availability, Schedule_Settings } from '@prisma/client';
+import { SeedProcess } from '../processes/seed-process.js';
+import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
+import { UsersOutput, UsersProcess } from './user.process.js';
+import { ConfigDataOutput } from './config-data.process.js';
+import { availabilityCreateInput, scheduleSettingsCreateInput } from '../factories/scheduling.factory.js';
+
+type SchedulingInput = OrganizationOutput & UsersOutput & ConfigDataOutput;
+
+const SEED_START_DATE = new Date('2025-01-01T00:00:00.000Z');
+
+export type SchedulingOutput = {
+  scheduleSettings: Schedule_Settings[];
+  availabilities: Availability[];
+};
+
+export class SchedulingProcess extends SeedProcess<SchedulingInput, SchedulingOutput> {
+  dependencies() {
+    return [OrganizationProcess, UsersProcess];
+  }
+
+  async run({ members, appAdmins, admins, heads, leadership }: SchedulingInput): Promise<SchedulingOutput> {
+    const eligibleUsers = [...appAdmins, ...admins, ...heads, ...leadership, ...members];
+
+    const scheduleSettings = await Promise.all(
+      eligibleUsers.map((user) =>
+        this.prisma.schedule_Settings.create({
+          data: scheduleSettingsCreateInput(this.faker, user.userId)
+        })
+      )
+    );
+
+    const availabilities = await Promise.all(
+      scheduleSettings.flatMap((settings) =>
+        Array.from({ length: 7 }, (_, i) => {
+          const date = new Date(SEED_START_DATE);
+          date.setDate(date.getDate() + i);
+          return this.prisma.availability.create({
+            data: availabilityCreateInput(this.faker, settings.drScheduleSettingsId, date)
+          });
+        })
+      )
+    );
+
+    return { scheduleSettings, availabilities };
+  }
+}

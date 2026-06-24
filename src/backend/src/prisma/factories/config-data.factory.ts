@@ -312,3 +312,246 @@ export const otherReimbursementReasonCreateInput = (
     connect: accountCodeIds.map((accountCodeId) => ({ accountCodeId }))
   }
 });
+
+export const calendarCreateInputs = (userCreatedId: string, organizationId: string): Prisma.CalendarCreateInput[] => [
+  {
+    name: 'Design Reviews',
+    description: 'Tracks all design review events and deadlines.',
+    colorHexCode: '#4caf50',
+    userCreated: connectUser(userCreatedId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Organization',
+    description: 'Tracks all organization-wide events and meetings.',
+    colorHexCode: '#f44336',
+    userCreated: connectUser(userCreatedId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Manufacturing',
+    description: 'Tracks all manufacturing and bay time events.',
+    colorHexCode: '#ff9800',
+    userCreated: connectUser(userCreatedId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Miscellaneous',
+    description: 'Tracks miscellaneous events.',
+    colorHexCode: '#2196f3',
+    userCreated: connectUser(userCreatedId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'New Member Events',
+    description: 'Tracks all new member onboarding events.',
+    colorHexCode: '#5c6bc0',
+    userCreated: connectUser(userCreatedId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'FHE Comp',
+    description: 'Tracks all FHE competition events.',
+    colorHexCode: '#9c27b0',
+    userCreated: connectUser(userCreatedId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'FSAE Comp',
+    description: 'Tracks all FSAE competition events.',
+    colorHexCode: '#9c27b0',
+    userCreated: connectUser(userCreatedId),
+    organization: connectOrganization(organizationId)
+  }
+];
+
+type EventTypeConfig = {
+  name: string;
+  calendarNames: string[];
+  requiredMembers: boolean;
+  optionalMembers: boolean;
+  teams: boolean;
+  teamType: boolean;
+  location: boolean;
+  zoomLink: boolean;
+  shop: boolean;
+  machinery: boolean;
+  workPackage: boolean;
+  questionDocument: boolean;
+  documents: boolean;
+  description: boolean;
+  onlyHeadsOrAboveForEventCreation: boolean;
+  requiresConfirmation: boolean;
+  sendSlackNotifications: boolean;
+};
+
+export const eventTypeConfigs: EventTypeConfig[] = [
+  {
+    name: 'Manufacturing',
+    calendarNames: ['Manufacturing'],
+    requiredMembers: true,
+    optionalMembers: true,
+    teams: true,
+    teamType: true,
+    location: false,
+    zoomLink: false,
+    shop: true,
+    machinery: true,
+    workPackage: true,
+    questionDocument: false,
+    documents: false,
+    description: false,
+    onlyHeadsOrAboveForEventCreation: false,
+    requiresConfirmation: false,
+    sendSlackNotifications: false
+  },
+  {
+    name: 'Educational',
+    calendarNames: ['Organization'],
+    requiredMembers: false,
+    optionalMembers: true,
+    teams: true,
+    teamType: false,
+    location: true,
+    zoomLink: true,
+    shop: false,
+    machinery: false,
+    workPackage: false,
+    questionDocument: false,
+    documents: true,
+    description: true,
+    onlyHeadsOrAboveForEventCreation: false,
+    requiresConfirmation: false,
+    sendSlackNotifications: true
+  },
+  {
+    name: 'FSAE',
+    calendarNames: ['FSAE Comp'],
+    requiredMembers: true,
+    optionalMembers: true,
+    teams: true,
+    teamType: true,
+    location: true,
+    zoomLink: false,
+    shop: false,
+    machinery: false,
+    workPackage: false,
+    questionDocument: false,
+    documents: true,
+    description: true,
+    onlyHeadsOrAboveForEventCreation: true,
+    requiresConfirmation: true,
+    sendSlackNotifications: true
+  },
+  {
+    name: 'FHE',
+    calendarNames: ['FHE Comp'],
+    requiredMembers: true,
+    optionalMembers: true,
+    teams: true,
+    teamType: true,
+    location: true,
+    zoomLink: false,
+    shop: false,
+    machinery: false,
+    workPackage: false,
+    questionDocument: false,
+    documents: true,
+    description: true,
+    onlyHeadsOrAboveForEventCreation: true,
+    requiresConfirmation: true,
+    sendSlackNotifications: true
+  },
+  {
+    name: 'Misc. Event (When2Meet)',
+    calendarNames: ['Miscellaneous'],
+    requiredMembers: true,
+    optionalMembers: true,
+    teams: true,
+    teamType: false,
+    location: false,
+    zoomLink: false,
+    shop: false,
+    machinery: false,
+    workPackage: false,
+    questionDocument: false,
+    documents: false,
+    description: true,
+    onlyHeadsOrAboveForEventCreation: false,
+    requiresConfirmation: true,
+    sendSlackNotifications: true
+  },
+  {
+    name: 'Deadline/Heads Up',
+    calendarNames: ['Organization'],
+    requiredMembers: false,
+    optionalMembers: false,
+    teams: true,
+    teamType: false,
+    location: false,
+    zoomLink: false,
+    shop: false,
+    machinery: false,
+    workPackage: true,
+    questionDocument: false,
+    documents: false,
+    description: true,
+    onlyHeadsOrAboveForEventCreation: false,
+    requiresConfirmation: false,
+    sendSlackNotifications: true
+  },
+  {
+    name: 'Misc. Event (Standard)',
+    calendarNames: ['Miscellaneous'],
+    requiredMembers: false,
+    optionalMembers: true,
+    teams: true,
+    teamType: false,
+    location: true,
+    zoomLink: true,
+    shop: false,
+    machinery: false,
+    workPackage: false,
+    questionDocument: false,
+    documents: false,
+    description: true,
+    onlyHeadsOrAboveForEventCreation: false,
+    requiresConfirmation: false,
+    sendSlackNotifications: true
+  }
+];
+
+export const eventTypeCreateInput = (
+  userCreatedId: string,
+  organizationId: string,
+  config: EventTypeConfig,
+  calendarIdsByName: Record<string, string>
+): Prisma.Event_TypeCreateInput => ({
+  name: config.name,
+  userCreated: connectUser(userCreatedId),
+  organization: connectOrganization(organizationId),
+  requiredMembers: config.requiredMembers,
+  optionalMembers: config.optionalMembers,
+  teams: config.teams,
+  teamType: config.teamType,
+  location: config.location,
+  zoomLink: config.zoomLink,
+  shop: config.shop,
+  machinery: config.machinery,
+  workPackage: config.workPackage,
+  questionDocument: config.questionDocument,
+  documents: config.documents,
+  description: config.description,
+  onlyHeadsOrAboveForEventCreation: config.onlyHeadsOrAboveForEventCreation,
+  requiresConfirmation: config.requiresConfirmation,
+  sendSlackNotifications: config.sendSlackNotifications,
+  calendars: {
+    connect: config.calendarNames.map((name) => {
+      const calendarId = calendarIdsByName[name];
+      if (!calendarId) {
+        throw new Error(`Missing calendar for event type config: ${name}`);
+      }
+      return { calendarId };
+    })
+  }
+});

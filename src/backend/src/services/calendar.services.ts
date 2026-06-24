@@ -1527,12 +1527,11 @@ export default class CalendarService {
         data: { availability: updatedAvailability }
       });
     }
-
     const { eventTypeId } = updatedEvent;
     const foundEventType = await prisma.event_Type.findUnique({
       where: { eventTypeId }
     });
-
+    const edittedEvent = eventTransformer(updatedEvent);
     if (foundEventType?.sendSlackNotifications) {
       await sendEventScheduledSlackNotif(
         updatedEvent.notificationSlackThreads,
@@ -1540,7 +1539,8 @@ export default class CalendarService {
         event.status === Event_Status.SCHEDULED
       );
     }
-    return eventTransformer(updatedEvent);
+
+    return edittedEvent;
   }
 
   /**

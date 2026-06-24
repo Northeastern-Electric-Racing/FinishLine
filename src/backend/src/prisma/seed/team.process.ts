@@ -4,8 +4,8 @@ import { OrganizationOutput, OrganizationProcess } from './organization.process.
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { seedTeamConfigs, teamCreateInput } from '../factories/teams.factory.js';
 import { SeedProcess } from '../processes/seed-process.js';
+import type { FullUser } from '../context.js';
 
-const EXPECTED_TEAM_COUNT = 20;
 const MIN_LEADS_PER_TEAM = 1;
 const MAX_LEADS_PER_TEAM = 3;
 const MIN_MEMBERS_PER_TEAM = 8;
@@ -19,18 +19,24 @@ export type TeamOutput = {
   teamsByName: Record<string, Team>;
 };
 
+const uniqueUsersById = (users: FullUser[]): FullUser[] => {
+  return Array.from(new Map(users.map((user) => [user.userId, user])).values());
+};
+
 export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
   dependencies() {
     return [OrganizationProcess, UsersProcess, ConfigDataProcess];
   }
 
   async run({ organization, admins, heads, leadership, members, teamTypes }: TeamInput): Promise<TeamOutput> {
-    if (seedTeamConfigs.length !== EXPECTED_TEAM_COUNT) {
-      throw new Error(`TeamProcess expected ${EXPECTED_TEAM_COUNT} teams but found ${seedTeamConfigs.length}.`);
-    }
-
     if (admins.length === 0 || heads.length === 0 || leadership.length === 0 || members.length === 0) {
       throw new Error('TeamProcess requires admins, heads, leadership, and members to create teams.');
+    }
+
+    if (members.length < MIN_MEMBERS_PER_TEAM) {
+      throw new Error(
+        `TeamProcess requires at least ${MIN_MEMBERS_PER_TEAM} member candidates, but only found ${members.length}.`
+      );
     }
 
     const teamNames = seedTeamConfigs.map((team) => team.teamName);
@@ -44,50 +50,77 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
       return acc;
     }, {});
 
-    const possibleHeads = [...heads, ...admins, ...leadership];
-    const possibleLeads = [...leadership, ...heads, ...admins];
+    const teamLeadershipCandidates = uniqueUsersById([...heads, ...admins, ...leadership]);
 
-    const teams = await Promise.all(
-      seedTeamConfigs.map((config, index) => {
-        const head = possibleHeads[index % possibleHeads.length];
+    if (teamLeadershipCandidates.length < seedTeamConfigs.length) {
+      throw new Error(
+        `Not enough head candidates (${teamLeadershipCandidates.length}) for ${seedTeamConfigs.length} teams.`
+      );
+    }
 
-        if (!head) {
-          throw new Error('TeamProcess could not find a head for a team.');
-        }
+    const headCandidates = teamLeadershipCandidates.slice(0, seedTeamConfigs.length);
+    const headIds = new Set(headCandidates.map((head) => head.userId));
 
-        const leadPool = possibleLeads.filter((user) => user.userId !== head.userId);
+    const leadCandidates = teamLeadershipCandidates.filter((candidate) => !headIds.has(candidate.userId));
 
-        const leads = this.faker.helpers.arrayElements(
-          leadPool,
-          this.faker.number.int({
-            min: MIN_LEADS_PER_TEAM,
-            max: MAX_LEADS_PER_TEAM
-          })
-        );
+    if (leadCandidates.length < seedTeamConfigs.length * MIN_LEADS_PER_TEAM) {
+      throw new Error(`Not enough unique lead candidates (${leadCandidates.length}) for ${seedTeamConfigs.length} teams.`);
+    }
 
-        const teamMembers = this.faker.helpers.arrayElements(
-          members,
-          this.faker.number.int({
-            min: MIN_MEMBERS_PER_TEAM,
-            max: MAX_MEMBERS_PER_TEAM
-          })
-        );
+    const usedLeadIds = new Set<string>();
 
-        return this.prisma.team.create({
-          data: teamCreateInput(this.faker, organization.organizationId, head, leads, teamMembers, teamTypesByName, config)
-        });
-      })
-    );
+    const getLeadsForTeam = (teamIndex: number): FullUser[] => {
+      const remainingTeams = seedTeamConfigs.length - teamIndex;
+      const availableLeads = leadCandidates.filter((candidate) => !usedLeadIds.has(candidate.userId));
+
+      const maxLeadsForThisTeam = Math.min(
+        MAX_LEADS_PER_TEAM,
+        availableLeads.length - (remainingTeams - 1) * MIN_LEADS_PER_TEAM
+      );
+
+      if (maxLeadsForThisTeam < MIN_LEADS_PER_TEAM) {
+        throw new Error('TeamProcess could not assign unique leads to every team.');
+      }
+
+      const leads = this.faker.helpers.arrayElements(
+        availableLeads,
+        this.faker.number.int({
+          min: MIN_LEADS_PER_TEAM,
+          max: maxLeadsForThisTeam
+        })
+      );
+
+      leads.forEach((lead) => usedLeadIds.add(lead.userId));
+
+      return leads;
+    };
+
+    const teamCreateInputs = seedTeamConfigs.map((config, index) => {
+      const head = headCandidates[index];
+      const leads = getLeadsForTeam(index);
+
+      const teamMembers = this.faker.helpers.arrayElements(
+        members,
+        this.faker.number.int({
+          min: MIN_MEMBERS_PER_TEAM,
+          max: Math.min(MAX_MEMBERS_PER_TEAM, members.length)
+        })
+      );
+
+      return teamCreateInput(this.faker, organization.organizationId, head, leads, teamMembers, teamTypesByName, config);
+    });
+
+    const teams = await Promise.all(teamCreateInputs.map((data) => this.prisma.team.create({ data })));
 
     const teamsByName = teams.reduce<Record<string, Team>>((acc, team) => {
       acc[team.teamName] = team;
       return acc;
     }, {});
 
-    const financeTeam = teamsByName.Finance;
+    const financeTeam = teams.find((_, index) => seedTeamConfigs[index]?.financeTeam);
 
     if (!financeTeam) {
-      throw new Error('TeamProcess expected a Finance team to be generated.');
+      throw new Error('TeamProcess expected one team config to be marked as the finance team.');
     }
 
     return { teams, financeTeam, teamsByName };

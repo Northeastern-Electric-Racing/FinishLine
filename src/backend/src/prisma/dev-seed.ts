@@ -13,6 +13,7 @@ import { CarProcess } from './seed/car.process.js';
 import { ConfigDataProcess } from './seed/config-data.process.js';
 import { TeamProcess } from './seed/team.process.js';
 import { ProjectProcess } from './seed/project.process.js';
+import { SchedulingProcess } from './seed/scheduling.process.js';
 
 const prisma = new PrismaClient();
 
@@ -24,6 +25,7 @@ await new SeedRunner()
     new CarProcess(),
     new UsersProcess(),
     new ConfigDataProcess(),
+    new SchedulingProcess(),
     new TeamProcess(),
     new ProjectProcess()
   )
