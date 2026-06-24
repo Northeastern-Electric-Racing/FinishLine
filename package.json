@@ -18,6 +18,7 @@
     "prisma:seed": "cd src/backend; npx prisma db seed",
     "prisma:reset:force": "yarn workspace shared build; cd src/backend; npx prisma migrate reset --force",
     "prisma:reset": "yarn workspace shared build; cd src/backend; npx prisma migrate reset",
+    "prisma:reset:no-seed": "yarn workspace shared build; cd src/backend; npx prisma migrate reset --skip-seed",
     "docker:prisma:reset": "cd devContainerization && docker compose -f docker-compose.dev.yml exec -T backend sh -c \"cd /src/backend && npx prisma migrate reset --force\"",
     "prisma:migrate": "yarn prisma:migrate:dev",
     "docker:prisma:migrate": "cd devContainerization && docker compose -f docker-compose.dev.yml exec -it -w /src/backend backend npx prisma migrate dev",
