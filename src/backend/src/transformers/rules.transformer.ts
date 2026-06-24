@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { Rule, ProjectRule, Ruleset, RulesetType } from 'shared';
-import { RulesetQueryArgs, RulePreviewQueryArgs } from '../prisma-query-args/rules.query-args';
+import { RulesetQueryArgs, RulePreviewQueryArgs, ProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args.js';
 
 export const ruleTransformer = (rule: Prisma.RuleGetPayload<RulePreviewQueryArgs>): Rule => {
   return {
@@ -36,7 +36,7 @@ export const ruleTransformer = (rule: Prisma.RuleGetPayload<RulePreviewQueryArgs
   };
 };
 
-export const projectRuleTransformer = (projectRule: any): ProjectRule => {
+export const projectRuleTransformer = (projectRule: Prisma.Project_RuleGetPayload<ProjectRuleQueryArgs>): ProjectRule => {
   return {
     projectRuleId: projectRule.projectRuleId,
     rule: ruleTransformer(projectRule.rule),

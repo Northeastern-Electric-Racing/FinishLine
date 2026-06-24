@@ -385,8 +385,7 @@ export default class RulesService {
       throw new HttpException(400, 'This rule is already associated with the project');
     }
 
-    // Walk up the parent chain to assign all ancestors of a rule to the project as well.
-    // visited guards against cycles, which editRule does not currently prevent.
+    // ensure we assign all ancestors of a rule to the project
     const ancestorIds: string[] = [];
     const visited = new Set<string>([ruleId]);
     let currentParentId = rule.parentRuleId;
@@ -397,13 +396,15 @@ export default class RulesService {
         where: { ruleId: currentParentId },
         select: { parentRuleId: true, dateDeleted: true }
       });
-      // Stop if the ancestor is missing or deleted - deleted rules should not be assigned to projects
-      if (!parent || parent.dateDeleted) break;
+      // rule only displays if the full chain to a top-level rule exists, so a missing or deleted
+      // ancestor means this rule would not display - do not assign it OR its ancestors to the project
+      if (!parent) throw new NotFoundException('Rule', currentParentId);
+      if (parent.dateDeleted) throw new DeletedException('Rule', currentParentId);
       ancestorIds.push(currentParentId);
       currentParentId = parent.parentRuleId;
     }
 
-    // Only create ancestors that aren't already assigned to the project to avoid duplicate assignment issues
+    // skip ancestors already assigned to this project
     const existingAncestors = await prisma.project_Rule.findMany({
       where: { projectId, ruleId: { in: ancestorIds }, dateDeleted: null },
       select: { ruleId: true }
@@ -411,6 +412,7 @@ export default class RulesService {
     const existingAncestorIds = new Set(existingAncestors.map((projectRule) => projectRule.ruleId));
     const ancestorsToCreate = ancestorIds.filter((id) => !existingAncestorIds.has(id));
 
+    // create all project rules
     await prisma.$transaction([
       ...ancestorsToCreate.map((ancestorId) =>
         prisma.project_Rule.create({
@@ -430,6 +432,7 @@ export default class RulesService {
       })
     ]);
 
+    // return only original project rule being assigned (leaf rule)
     const projectRule = await prisma.project_Rule.findUnique({
       where: { ruleId_projectId: { ruleId, projectId } },
       ...getProjectRuleQueryArgs()
@@ -703,8 +706,8 @@ export default class RulesService {
    * @param submitter the user updating the completion
    * @param organization the organization of the rule
    * @param ruleId the id of the rule to update
-   * @param isComplete whether the rule is complete
-   * @param projectId the project the rule was completed from (optional - omitted for general view)
+   * @param isComplete whether the rule is complete or incomplete
+   * @param projectId the project the rule was completed from (optional - omitted if updated in general view)
    * @returns the rule with updated completion
    */
   static async setRuleCompletion(
@@ -715,7 +718,7 @@ export default class RulesService {
     projectId?: string
   ): Promise<SharedRule> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
-      throw new AccessDeniedException('You do not have permissions to update a rule completion');
+      throw new AccessDeniedException('You do not have permissions to update rule completion');
     }
 
     const rule = await prisma.rule.findUnique({

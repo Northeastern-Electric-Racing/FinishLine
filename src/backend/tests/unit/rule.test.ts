@@ -368,15 +368,15 @@ describe('Create Rules Tests', () => {
   });
 
   describe('Create Project Rule', () => {
-    it('Creates project rules for the full ancestor chain when assigning a nested sub-rule', async () => {
-      const root = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
+    it('Creates project rules for all ancestors when assigning deep child rule', async () => {
+      const topLevelRule = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
       const child = await RulesService.createRule(
         batman,
         'T.1.1',
         'Vehicle Requirements',
         rulesetId,
         organization,
-        root.ruleId
+        topLevelRule.ruleId
       );
       const grandchild = await RulesService.createRule(batman, 'T.1.1.1', 'Wheels', rulesetId, organization, child.ruleId);
 
@@ -386,19 +386,19 @@ describe('Create Rules Tests', () => {
 
       const projectRules = await RulesService.getProjectRules(rulesetId, project.projectId, organization);
       const assignedRuleIds = projectRules.map((pr) => pr.rule.ruleId);
-      expect(assignedRuleIds).toHaveLength(3);
-      expect(assignedRuleIds).toEqual(expect.arrayContaining([root.ruleId, child.ruleId, grandchild.ruleId]));
+      expect(assignedRuleIds).toHaveLength(3); // grandchild, child, topLevelRule
+      expect(assignedRuleIds).toEqual(expect.arrayContaining([topLevelRule.ruleId, child.ruleId, grandchild.ruleId]));
     });
 
-    it('Creates project rules for shared ancestors when adding a sibling sub-rule', async () => {
-      const root = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
+    it('Creates project rules for shared ancestors when adding a sibling child rule', async () => {
+      const topLevelRule = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
       const child = await RulesService.createRule(
         batman,
         'T.1.1',
         'Vehicle Requirements',
         rulesetId,
         organization,
-        root.ruleId
+        topLevelRule.ruleId
       );
       const grandchild1 = await RulesService.createRule(batman, 'T.1.1.1', 'Wheels', rulesetId, organization, child.ruleId);
       const grandchild2 = await RulesService.createRule(batman, 'T.1.1.2', 'Brakes', rulesetId, organization, child.ruleId);
@@ -406,26 +406,26 @@ describe('Create Rules Tests', () => {
       const project = await createTestProject(aquaman, orgId, undefined, carId);
 
       await RulesService.createProjectRule(aquaman, organization, grandchild1.ruleId, project.projectId);
-      // Adding a sibling must not error on the already-present parent/root and must not duplicate them.
+      // adding sibling must not error or duplicate the already-present parent/root rules
       await RulesService.createProjectRule(aquaman, organization, grandchild2.ruleId, project.projectId);
 
       const projectRules = await RulesService.getProjectRules(rulesetId, project.projectId, organization);
       const assignedRuleIds = projectRules.map((pr) => pr.rule.ruleId);
-      expect(assignedRuleIds).toHaveLength(4);
+      expect(assignedRuleIds).toHaveLength(4); // grandchild1, grandchild2, child, topLevelRule
       expect(assignedRuleIds).toEqual(
-        expect.arrayContaining([root.ruleId, child.ruleId, grandchild1.ruleId, grandchild2.ruleId])
+        expect.arrayContaining([topLevelRule.ruleId, child.ruleId, grandchild1.ruleId, grandchild2.ruleId])
       );
     });
 
-    it('does not assign descendants of the selected rule', async () => {
-      const root = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
+    it('Creating project rule does not assign descendants of the selected rule', async () => {
+      const topLevelRule = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
       const child = await RulesService.createRule(
         batman,
         'T.1.1',
         'Vehicle Requirements',
         rulesetId,
         organization,
-        root.ruleId
+        topLevelRule.ruleId
       );
       await RulesService.createRule(batman, 'T.1.1.1', 'Wheels', rulesetId, organization, child.ruleId);
 
@@ -435,23 +435,23 @@ describe('Create Rules Tests', () => {
 
       const projectRules = await RulesService.getProjectRules(rulesetId, project.projectId, organization);
       const assignedRuleIds = projectRules.map((pr) => pr.rule.ruleId);
-      expect(assignedRuleIds).toHaveLength(2);
-      expect(assignedRuleIds).toEqual(expect.arrayContaining([root.ruleId, child.ruleId]));
+      expect(assignedRuleIds).toHaveLength(2); // child and topLevelRule, not grandchild
+      expect(assignedRuleIds).toEqual(expect.arrayContaining([topLevelRule.ruleId, child.ruleId]));
     });
 
-    it('does not assign deleted ancestors when assigning a nested sub-rule', async () => {
-      const root = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
+    it('Creating project rule is refused entirely when an ancestor has been deleted', async () => {
+      const topLevelRule = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
       const child = await RulesService.createRule(
         batman,
         'T.1.1',
         'Vehicle Requirements',
         rulesetId,
         organization,
-        root.ruleId
+        topLevelRule.ruleId
       );
       const grandchild = await RulesService.createRule(batman, 'T.1.1.1', 'Wheels', rulesetId, organization, child.ruleId);
 
-      // Soft-delete the immediate parent directly so the grandchild remains assignable
+      // soft-delete an ancestor so the chain to the top-level rule is broken
       await prisma.rule.update({
         where: { ruleId: child.ruleId },
         data: { dateDeleted: new Date(), deletedBy: { connect: { userId: batman.userId } } }
@@ -459,19 +459,19 @@ describe('Create Rules Tests', () => {
 
       const project = await createTestProject(aquaman, orgId, undefined, carId);
 
-      await RulesService.createProjectRule(aquaman, organization, grandchild.ruleId, project.projectId);
+      // a broken chain means the grandchild could never display, so no rules are assigned to the project and an error is thrown
+      await expect(
+        async () => await RulesService.createProjectRule(aquaman, organization, grandchild.ruleId, project.projectId)
+      ).rejects.toThrow(new DeletedException('Rule', child.ruleId));
 
-      // The walk stops at the deleted ancestor, so neither it nor the root above it are assigned.
+      // nothing should have been assigned (not the grandchild, the deleted parent, or the root)
       const projectRules = await RulesService.getProjectRules(rulesetId, project.projectId, organization);
-      const assignedRuleIds = projectRules.map((pr) => pr.rule.ruleId);
-      expect(assignedRuleIds).toHaveLength(1);
-      expect(assignedRuleIds).toEqual([grandchild.ruleId]);
+      expect(projectRules).toHaveLength(0);
 
-      // getProjectRules hides deleted rules, so assert directly that none was created for the deleted ancestor
-      const deletedAncestorProjectRule = await prisma.project_Rule.findUnique({
-        where: { ruleId_projectId: { ruleId: child.ruleId, projectId: project.projectId } }
+      const grandchildProjectRule = await prisma.project_Rule.findUnique({
+        where: { ruleId_projectId: { ruleId: grandchild.ruleId, projectId: project.projectId } }
       });
-      expect(deletedAncestorProjectRule).toBeNull();
+      expect(grandchildProjectRule).toBeNull();
     });
 
     it('throws when the rule is already associated with the project', async () => {

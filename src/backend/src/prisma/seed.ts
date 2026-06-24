@@ -4785,7 +4785,7 @@ const performSeed: () => Promise<void> = async () => {
   // project rules
   await RulesService.createProjectRule(batman, ner, ruleT211.ruleId, projectHuskies1Id);
 
-  // mark the leaf rule complete from the project to demonstrate global rule completion
+  // mark the leaf rule complete
   await RulesService.setRuleCompletion(batman, ner, ruleT211.ruleId, true, projectHuskies1Id);
 
   // Technical Rules Section

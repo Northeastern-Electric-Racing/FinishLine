@@ -47,11 +47,12 @@ export const getRulePreviewQueryArgs = () =>
     }
   });
 
+export type ProjectRuleQueryArgs = ReturnType<typeof getProjectRuleQueryArgs>;
+
 export const getProjectRuleQueryArgs = () =>
   Prisma.validator<Prisma.Project_RuleDefaultArgs>()({
     include: {
-      rule: getRulePreviewQueryArgs(),
-      project: { select: { projectId: true } }
+      rule: getRulePreviewQueryArgs()
     }
   });
 
