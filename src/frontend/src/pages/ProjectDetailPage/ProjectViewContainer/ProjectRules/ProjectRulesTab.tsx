@@ -34,7 +34,7 @@ import {
   useCreateProjectRule
 } from '../../../../hooks/rules.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { InfoOutlined } from '@mui/icons-material';
+import { InfoOutlined, KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 
 interface ProjectRulesTabProps {
   project: Project;
@@ -206,38 +206,11 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       ? `Completed by ${completedByName}${rule.completedInProject ? ` in ${rule.completedInProject.projectName}` : ''}`
       : '';
 
+    // Whether the status popover is currently open for this rule
+    const isPopoverOpenForRule = Boolean(statusPopoverAnchor) && selectedProjectRule?.rule.ruleId === rule.ruleId;
+
     return (
-      <>
-        <Box
-          onClick={
-            isLeafRule
-              ? (e: React.MouseEvent<HTMLElement>) => {
-                  e.stopPropagation();
-                  handleStatusClick(e, rule);
-                }
-              : undefined
-          }
-          sx={{
-            backgroundColor: statusConfig.color,
-            color: 'white',
-            fontSize: '11px',
-            fontWeight: 600,
-            px: 0.75,
-            py: 0.25,
-            borderRadius: '3px',
-            cursor: isLeafRule ? 'pointer' : 'default',
-            display: 'inline-flex',
-            alignItems: 'center',
-            whiteSpace: 'nowrap',
-            '&:hover': isLeafRule
-              ? {
-                  opacity: 0.85
-                }
-              : {}
-          }}
-        >
-          {statusConfig.label}
-        </Box>
+      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
         {isLeafRule && isComplete && completionMessage && (
           <Tooltip title={completionMessage} arrow>
             <IconButton
@@ -255,10 +228,48 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
             </IconButton>
           </Tooltip>
         )}
-      </>
+        <Box
+          onClick={
+            isLeafRule
+              ? (e: React.MouseEvent<HTMLElement>) => {
+                  e.stopPropagation();
+                  handleStatusClick(e, rule);
+                }
+              : undefined
+          }
+          sx={{
+            backgroundColor: statusConfig.color,
+            color: 'white',
+            fontSize: '11px',
+            fontWeight: 600,
+            pl: isLeafRule ? 0.25 : 0.75,
+            pr: 0.75,
+            py: 0.25,
+            borderRadius: '3px',
+            cursor: isLeafRule ? 'pointer' : 'default',
+            display: 'inline-flex',
+            alignItems: 'center',
+            whiteSpace: 'nowrap',
+            '&:hover': isLeafRule
+              ? {
+                  opacity: 0.85
+                }
+              : {}
+          }}
+        >
+          {isLeafRule &&
+            (isPopoverOpenForRule ? (
+              <KeyboardArrowDown sx={{ fontSize: '16px', mr: 0.25 }} />
+            ) : (
+              <KeyboardArrowRight sx={{ fontSize: '16px', mr: 0.25 }} />
+            ))}
+          {statusConfig.label}
+        </Box>
+      </Box>
     );
   };
 
+  const backgroundColor = theme.palette.background.default;
   const tableBackgroundColor = theme.palette.background.paper;
   const tableTextColor = theme.palette.text.primary;
   const tableHoverColor = theme.palette.action.hover;
@@ -311,8 +322,26 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         </Box>
       ) : (
         <Box sx={{ paddingBottom: '80px' }}>
-          <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-            <Table sx={{ borderCollapse: 'collapse' }}>
+          <TableContainer
+            component={Paper}
+            elevation={0}
+            sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor: backgroundColor }}
+          >
+            <Table
+              sx={{
+                borderCollapse: 'separate',
+                borderSpacing: '0 8px',
+                backgroundColor: backgroundColor,
+                '& tbody td:first-of-type': {
+                  borderTopLeftRadius: '8px',
+                  borderBottomLeftRadius: '8px'
+                },
+                '& tbody td:last-of-type': {
+                  borderTopRightRadius: '8px',
+                  borderBottomRightRadius: '8px'
+                }
+              }}
+            >
               <TableBody sx={{ backgroundColor: tableBackgroundColor }}>
                 {topLevelRules.map((rule) => (
                   <RuleRow
