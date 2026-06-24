@@ -60,7 +60,6 @@ const renderComponent = (cr: ChangeRequest, allowed: boolean = false) => {
         <ChangeRequestDetailsView
           changeRequest={cr}
           isUserAllowedToReview={allowed}
-          isUserAllowedToImplement={allowed}
           isUserAllowedToDelete={allowed}
         />
       </RouterWrapper>

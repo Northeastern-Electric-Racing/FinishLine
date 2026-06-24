@@ -301,6 +301,20 @@ export const applyProjectProposedChanges = async (
 
       projectWbsNum = proj.wbsNum;
     } else if (associatedProject) {
+      // Map proposed links back to the current project's real linkIds so that
+      // editProject's linkId-based comparator correctly detects unchanged links.
+      const currentProject = await prisma.project.findUnique({
+        where: { projectId: associatedProject.projectId },
+        include: { wbsElement: { include: { links: { where: { dateDeleted: null }, include: { linkType: true } } } } }
+      });
+      const existingLinkIdByType = new Map(
+        currentProject?.wbsElement.links.map((l) => [l.linkType.name, l.linkId]) ?? []
+      );
+      const linksWithRealIds = links.map((link) => ({
+        ...link,
+        linkId: existingLinkIdByType.get(link.linkTypeName) ?? '-1'
+      }));
+
       const proj = await ProjectsService.editProject(
         reviewer,
         associatedProject.projectId,
@@ -309,7 +323,7 @@ export const applyProjectProposedChanges = async (
         projectProposedChanges.budget,
         projectProposedChanges.summary,
         descriptionBullets,
-        links,
+        linksWithRealIds,
         wbsProposedChanges.leadId,
         wbsProposedChanges.managerId,
         organization

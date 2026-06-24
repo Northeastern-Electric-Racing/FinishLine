@@ -47,7 +47,6 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
 interface ChangeRequestDetailsProps {
   isUserAllowedToReview: boolean;
   reviewDisabledTooltip?: string;
-  isUserAllowedToImplement: boolean;
   isUserAllowedToDelete: boolean;
   changeRequest: ChangeRequest;
 }
@@ -55,7 +54,6 @@ interface ChangeRequestDetailsProps {
 const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   isUserAllowedToReview,
   reviewDisabledTooltip,
-  isUserAllowedToImplement,
   isUserAllowedToDelete,
   changeRequest
 }: ChangeRequestDetailsProps) => {
@@ -88,7 +86,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         <ChangeRequestActionMenu
           isUserAllowedToReview={isUserAllowedToReview}
           reviewDisabledTooltip={reviewDisabledTooltip}
-          isUserAllowedToImplement={isUserAllowedToImplement}
           isUserAllowedToDelete={isUserAllowedToDelete}
           changeRequest={changeRequest}
           handleReviewOpen={handleReviewOpen}

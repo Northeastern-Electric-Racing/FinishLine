@@ -36,7 +36,6 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
                     )}
                     {ic.category && <Typography> {ic.category.name} </Typography>} {ic.detail}
                     {ic.accountCode && <Typography> {`${ic.accountCode.code} - ${ic.accountCode.name}`} </Typography>}]
-                    {ic.detail}
                   </Typography>
                 }
               </DynamicTooltip>

@@ -9,7 +9,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import ChangeRequestDetailsView from './ChangeRequestDetailsView';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { ChangeRequestStatus, isAdmin, isGuest, isHead, isNotLeadership } from 'shared';
+import { ChangeRequestStatus, isAdmin, isHead, isNotLeadership } from 'shared';
 
 const ChangeRequestDetails: React.FC = () => {
   interface ParamTypes {
@@ -53,7 +53,6 @@ const ChangeRequestDetails: React.FC = () => {
     <ChangeRequestDetailsView
       isUserAllowedToReview={isUserAllowedToReview}
       reviewDisabledTooltip={reviewDisabledTooltip}
-      isUserAllowedToImplement={!isGuest(auth.user?.role)}
       isUserAllowedToDelete={
         isAdmin(auth.user?.role) ||
         (auth.user?.userId === data?.submitter.userId && !data?.dateReviewed && data?.implementedChanges?.length === 0)

@@ -1176,7 +1176,7 @@ export default class ChangeRequestsService {
 
       const validationResult = await validateProposedChangesFields(
         workPackageProposedChanges,
-        [],
+        workPackageProposedChanges.links,
         descriptionBullets,
         blockedBy,
         [],
@@ -1197,6 +1197,13 @@ export default class ChangeRequestsService {
             create: validationResult.descriptionBullets.map((bullet) => ({
               detail: bullet.detail,
               descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
+            }))
+          },
+          links: {
+            create: validationResult.links.map((linkInfo) => ({
+              url: linkInfo.url,
+              linkTypeId: linkInfo.linkType.id,
+              creatorId: submitter.userId
             }))
           },
           ...(leadId && { lead: { connect: { userId: leadId } } }),
