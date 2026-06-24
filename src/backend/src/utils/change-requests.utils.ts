@@ -307,9 +307,7 @@ export const applyProjectProposedChanges = async (
         where: { projectId: associatedProject.projectId },
         include: { wbsElement: { include: { links: { where: { dateDeleted: null }, include: { linkType: true } } } } }
       });
-      const existingLinkIdByType = new Map(
-        currentProject?.wbsElement.links.map((l) => [l.linkType.name, l.linkId]) ?? []
-      );
+      const existingLinkIdByType = new Map(currentProject?.wbsElement.links.map((l) => [l.linkType.name, l.linkId]) ?? []);
       const linksWithRealIds = links.map((link) => ({
         ...link,
         linkId: existingLinkIdByType.get(link.linkTypeName) ?? '-1'
