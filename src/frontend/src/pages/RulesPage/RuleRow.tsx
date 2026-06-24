@@ -27,6 +27,10 @@ interface RuleRowProps {
   middleWidth?: string;
   rightWidth?: string;
   initiallyExpanded?: boolean;
+  // When true, the entire rule is shifted right per child depth
+  indentRow?: boolean;
+  // Amount of indentation per child depth when indentRow is enabled
+  indentWidth?: number;
 }
 
 /**
@@ -47,10 +51,12 @@ const RuleRow: React.FC<RuleRowProps> = ({
   rowHeight,
   verticalPadding = '12px',
   horizontalPadding = '16px',
-  leftWidth = '20%',
-  middleWidth = '70%',
+  leftWidth = '10%',
+  middleWidth = '80%',
   rightWidth = '10%',
-  initiallyExpanded = false
+  initiallyExpanded = false,
+  indentRow = false,
+  indentWidth = 10
 }) => {
   const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
   const hasSubRules = rule.subRuleIds.length > 0;
@@ -86,13 +92,28 @@ const RuleRow: React.FC<RuleRowProps> = ({
     height: rowHeight
   };
 
+  const cardRadius = 8;
+  const cardCellBg = indentRow ? { backgroundColor: bgColor } : {};
+  const cardCellClass = indentRow ? 'rule-card-cell' : undefined;
+  // Indent left edge of rule with transparent left border 
+  const leftInset = indentRow ? level * indentWidth : 0;
+  const leftCellRadius = indentRow
+    ? {
+        borderTopLeftRadius: `${leftInset + cardRadius}px ${cardRadius}px`,
+        borderBottomLeftRadius: `${leftInset + cardRadius}px ${cardRadius}px`
+      }
+    : {};
+  const rightCellRadius = indentRow
+    ? { borderTopRightRadius: `${cardRadius}px`, borderBottomRightRadius: `${cardRadius}px` }
+    : {};
+
   const defaultLeftContent = (
     <Box
       sx={{
         display: 'flex',
         alignItems: 'center',
         gap: 1,
-        paddingLeft: `${level * 20}px`,
+        paddingLeft: indentRow ? 0 : `${level * 20}px`,
         color
       }}
     >
@@ -121,8 +142,10 @@ const RuleRow: React.FC<RuleRowProps> = ({
       <TableRow
         sx={{
           borderBottom: '1px solid #7d7d7d',
-          backgroundColor: bgColor,
-          '&:hover': { backgroundColor: hoverBgColor },
+          backgroundColor: indentRow ? 'transparent' : bgColor,
+          '&:hover': indentRow
+            ? { '& .rule-card-cell': { backgroundColor: hoverBgColor } }
+            : { backgroundColor: hoverBgColor },
           '&:last-child': {
             borderBottom: 'none'
           },
@@ -131,8 +154,16 @@ const RuleRow: React.FC<RuleRowProps> = ({
       >
         <TableCell
           align="left"
+          className={cardCellClass}
           sx={{
             ...commonCellStyles,
+            ...cardCellBg,
+            ...leftCellRadius,
+            // Indent left edge of rule with transparent left border
+            ...(indentRow && {
+              borderLeft: `${level * indentWidth}px solid transparent`,
+              backgroundClip: 'padding-box'
+            }),
             cursor: onRowClick ? 'pointer' : 'default',
             width: leftWidth
           }}
@@ -142,8 +173,10 @@ const RuleRow: React.FC<RuleRowProps> = ({
         </TableCell>
         <TableCell
           align="left"
+          className={cardCellClass}
           sx={{
             ...commonCellStyles,
+            ...cardCellBg,
             width: middleWidth,
             maxWidth: '700px',
             wordWrap: 'break-word',
@@ -157,8 +190,11 @@ const RuleRow: React.FC<RuleRowProps> = ({
         </TableCell>
         <TableCell
           align="center"
+          className={cardCellClass}
           sx={{
             ...commonCellStyles,
+            ...cardCellBg,
+            ...rightCellRadius,
             width: rightWidth
           }}
         >
@@ -186,6 +222,8 @@ const RuleRow: React.FC<RuleRowProps> = ({
             leftWidth={leftWidth}
             middleWidth={middleWidth}
             rightWidth={rightWidth}
+            indentRow={indentRow}
+            indentWidth={indentWidth}
           />
         ))}
     </>

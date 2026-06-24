@@ -331,18 +331,10 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
               sx={{
                 borderCollapse: 'separate',
                 borderSpacing: '0 8px',
-                backgroundColor: backgroundColor,
-                '& tbody td:first-of-type': {
-                  borderTopLeftRadius: '8px',
-                  borderBottomLeftRadius: '8px'
-                },
-                '& tbody td:last-of-type': {
-                  borderTopRightRadius: '8px',
-                  borderBottomRightRadius: '8px'
-                }
+                backgroundColor: backgroundColor
               }}
             >
-              <TableBody sx={{ backgroundColor: tableBackgroundColor }}>
+              <TableBody>
                 {topLevelRules.map((rule) => (
                   <RuleRow
                     key={rule.ruleId}
@@ -354,6 +346,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
                     hoverColor={tableHoverColor}
                     rowHeight="40px"
                     verticalPadding="8px"
+                    indentRow
                   />
                 ))}
               </TableBody>
