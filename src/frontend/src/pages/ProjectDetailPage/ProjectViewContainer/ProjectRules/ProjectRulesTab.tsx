@@ -300,7 +300,11 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           ))}
         </MuiTabs>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <Tooltip title={`Assign rules to ${project.teams[0]?.teamName ?? ''} team to add them to this project`} arrow>
+          <Tooltip
+            title={`Assign rules to ${project.teams[0]?.teamName ?? ''} team to add them to this project`}
+            arrow
+            slotProps={{ tooltip: { sx: { textAlign: 'center' } } }}
+          >
             <IconButton
               size="small"
               onClick={(e) => e.stopPropagation()}
@@ -316,7 +320,11 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
             disabled={!activeRuleset}
             onClick={() =>
               activeRuleset &&
-              history.push(`${routes.RULESET_EDIT.replace(':rulesetId', activeRuleset.rulesetId)}/assign-rules`)
+              history.push(
+                `${routes.RULESET_EDIT.replace(':rulesetId', activeRuleset.rulesetId)}/assign-rules${
+                  teamId ? `?teamId=${teamId}` : ''
+                }`
+              )
             }
             sx={{
               border: 1,
@@ -442,6 +450,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           onHide={() => setAddRuleModalOpen(false)}
           rulesetId={activeRuleset.rulesetId}
           teamId={teamId}
+          teamName={project.teams[0]?.teamName ?? ''}
           onSubmit={handleAddRules}
         />
       )}

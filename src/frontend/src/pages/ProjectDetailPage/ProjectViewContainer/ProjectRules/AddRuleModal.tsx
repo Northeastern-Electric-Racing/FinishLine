@@ -27,10 +27,11 @@ interface AddRuleModalProps {
   onHide: () => void;
   rulesetId: string;
   teamId: string;
+  teamName: string;
   onSubmit: (ruleIds: string[]) => void;
 }
 
-const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModalProps) => {
+const AddRuleModal = ({ open, onHide, rulesetId, teamId, teamName, onSubmit }: AddRuleModalProps) => {
   const theme = useTheme();
   const [selectedRuleIds, setSelectedRuleIds] = useState<string[]>([]);
 
@@ -148,7 +149,7 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModa
           <Alert severity="error">Failed to load rules</Alert>
         ) : !unassignedRules || unassignedRules.length === 0 ? (
           <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-            No unassigned rules available for this team.
+            No unassigned rules available for the {teamName} team.
           </Typography>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

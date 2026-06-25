@@ -20,7 +20,7 @@ import { Rule, TeamPreview } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { useHistory, useParams } from 'react-router-dom';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
 import { NERButton } from '../../components/NERButton';
@@ -94,6 +94,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
   const theme = useTheme();
   const history = useHistory();
   const { rulesetId } = useParams<{ rulesetId: string }>();
+  const location = useLocation();
   const toast = useToast();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<Set<string>>(new Set());
@@ -116,8 +117,15 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
 
     setOriginalAssignments(initialAssignments);
     setAssignments(new Set(initialAssignments));
+
+    // Pre-select the team passed in via query param (e.g. when navigating from a project's rules tab)
+    const teamIdParam = new URLSearchParams(location.search).get('teamId');
+    if (teamIdParam && teams.some((team) => team.teamId === teamIdParam)) {
+      setSelectedTeamId(teamIdParam);
+    }
+
     setIsInitialized(true);
-  }, [rules, teams, isInitialized]);
+  }, [rules, teams, isInitialized, location.search]);
 
   const handleTeamSelect = (teamId: string) => setSelectedTeamId(teamId);
 
