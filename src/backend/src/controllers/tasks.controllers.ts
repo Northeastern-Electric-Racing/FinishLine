@@ -5,7 +5,7 @@ import { validateWBS, WbsNumber } from 'shared';
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, deadline, startDate, priority, status, assignees, notes } = req.body;
+      const { title, deadline, startDate, priority, status, assignees, notes, labelIds } = req.body;
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const task = await TasksService.createTask(
@@ -17,6 +17,7 @@ export default class TasksController {
         status,
         assignees,
         req.organization,
+        labelIds,
         startDate ? new Date(startDate) : undefined,
         deadline ? new Date(deadline) : undefined
       );
@@ -29,7 +30,7 @@ export default class TasksController {
 
   static async editTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, notes, priority, deadline, startDate, wbsNum } = req.body;
+      const { title, notes, priority, deadline, startDate, wbsNum, labelIds } = req.body;
       const { taskId } = req.params as Record<string, string>;
 
       const updateTask = await TasksService.editTask(
@@ -39,6 +40,7 @@ export default class TasksController {
         title,
         notes,
         priority,
+        labelIds,
         startDate ? new Date(startDate) : undefined,
         deadline ? new Date(deadline) : undefined,
         wbsNum
@@ -95,14 +97,16 @@ export default class TasksController {
 
   static async getFilteredTasks(req: Request, res: Response, next: NextFunction) {
     try {
-      const { memberIds, teamIds, startPeriod, endPeriod } = req.body;
+      const { memberIds, teamIds, startPeriod, endPeriod, labelIds, wbsNum } = req.body;
 
       const tasks = await TasksService.getFilteredTasks(
         {
           memberIds,
           teamIds,
-          startPeriod: new Date(startPeriod),
-          endPeriod: new Date(endPeriod)
+          startPeriod: startPeriod ? new Date(startPeriod) : undefined,
+          endPeriod: endPeriod ? new Date(endPeriod) : undefined,
+          labelIds,
+          wbsNum
         },
         req.organization
       );
@@ -124,11 +128,41 @@ export default class TasksController {
     }
   }
 
-  static async getTasksByWbsNum(req: Request, res: Response, next: NextFunction) {
+  static async getAllTaskLabels(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
-      const tasks = await TasksService.getTasksByWbsNum(wbsNum, req.organization);
-      res.status(200).json(tasks);
+      const labels = await TasksService.getAllTaskLabels(req.organization);
+      res.status(200).json(labels);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createTaskLabel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, colorHexCode } = req.body;
+      const label = await TasksService.createTaskLabel(req.currentUser, name, colorHexCode, req.organization);
+      res.status(200).json(label);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editTaskLabel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { taskLabelId } = req.params as Record<string, string>;
+      const { name, colorHexCode } = req.body;
+      const label = await TasksService.editTaskLabel(req.currentUser, taskLabelId, name, colorHexCode, req.organization);
+      res.status(200).json(label);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteTaskLabel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { taskLabelId } = req.params as Record<string, string>;
+      const deletedId = await TasksService.deleteTaskLabel(req.currentUser, taskLabelId, req.organization);
+      res.status(200).json(deletedId);
     } catch (error: unknown) {
       next(error);
     }

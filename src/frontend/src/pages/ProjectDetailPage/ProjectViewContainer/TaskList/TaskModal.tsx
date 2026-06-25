@@ -5,7 +5,7 @@
 
 import { fullNamePipe, datePipe } from '../../../../utils/pipes';
 import { Task, WbsNumber } from 'shared';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Chip, Grid, Typography } from '@mui/material';
 import { useState } from 'react';
 import TaskFormModal, { EditTaskFormInput } from './TaskFormModal';
 import NERModal from '../../../../components/NERModal';
@@ -81,6 +81,19 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
               </Typography>
             </Grid>
           )}
+          <Grid item xs={12} md={6}>
+            <Typography fontWeight={'bold'}>Label(s):</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+              {task.labels.map((label) => (
+                <Chip
+                  key={label.taskLabelId}
+                  label={label.name}
+                  size="small"
+                  sx={{ backgroundColor: label.colorHexCode, color: '#fff', fontWeight: 'bold' }}
+                />
+              ))}
+            </Box>
+          </Grid>
           <Grid item xs={12} md={6}>
             <Typography fontWeight={'bold'}>Notes:</Typography>
             <Box sx={{ height: 'auto', overflow: 'auto' }}>

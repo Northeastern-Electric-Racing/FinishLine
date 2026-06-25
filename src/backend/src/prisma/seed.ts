@@ -2260,6 +2260,16 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /**
+   * Task Labels
+   */
+  const taskLabelResearch = await TasksService.createTaskLabel(thomasEmrax, 'Research', '#3B82F6', ner);
+  const taskLabelDesign = await TasksService.createTaskLabel(thomasEmrax, 'Design', '#A855F7', ner);
+  const taskLabelTesting = await TasksService.createTaskLabel(thomasEmrax, 'Testing', '#EF4444', ner);
+  const taskLabelAdmin = await TasksService.createTaskLabel(thomasEmrax, 'Admin', '#F97316', ner);
+  const taskLabelBuild = await TasksService.createTaskLabel(thomasEmrax, 'Build', '#22C55E', ner);
+  const taskLabelBlocked = await TasksService.createTaskLabel(thomasEmrax, 'Blocked', '#1E3A8A', ner);
+
+  /**
    * Tasks
    */
   await TasksService.createTask(
@@ -2271,6 +2281,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
+    [taskLabelResearch.taskLabelId],
     undefined,
     daysFromNow(10)
   );
@@ -2284,6 +2295,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
     ner,
+    [taskLabelDesign.taskLabelId],
     daysAgo(5),
     daysFromNow(15)
   );
@@ -2297,13 +2309,14 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId, joeBlow.userId],
     ner,
+    [taskLabelResearch.taskLabelId, taskLabelBlocked.taskLabelId],
     undefined,
     daysFromNow(8)
   );
 
   await TasksService.createTask(
     joeShmoe,
-    projectHuskies1WbsNumber,
+    workPackageHuskies1WbsNumber,
     'Impact Test',
     'Use our conveniently available jumbo watermelon and slingshot to test how well our impact attenuator can ' +
       'attenuate impact.',
@@ -2311,32 +2324,35 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeBlow.userId],
     ner,
+    [taskLabelTesting.taskLabelId],
     undefined,
     daysFromNow(14)
   );
 
   await TasksService.createTask(
     joeBlow,
-    projectHuskies1WbsNumber,
+    workPackageHuskies1WbsNumber,
     'Review Compliance',
     'I think there are some rules we may or may not have overlooked...',
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
     ner,
+    [taskLabelAdmin.taskLabelId],
     daysAgo(14),
     daysFromNow(7)
   );
 
   await TasksService.createTask(
     thomasEmrax,
-    projectHuskies1WbsNumber,
+    workPackageHuskies1WbsNumber,
     'Decorate Impact Attenuator',
     'You know you want to.',
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
     ner,
+    [taskLabelDesign.taskLabelId],
     undefined,
     daysFromNow(9)
   );
@@ -2350,6 +2366,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
     ner,
+    [taskLabelAdmin.taskLabelId],
     undefined,
     daysFromNow(6)
   );
@@ -2363,6 +2380,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeShmoe.userId],
     ner,
+    [taskLabelBuild.taskLabelId],
     undefined,
     daysAgo(30)
   );
@@ -2384,6 +2402,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeShmoe.userId],
     ner,
+    [taskLabelBuild.taskLabelId],
     undefined,
     daysAgo(90)
   );
@@ -2397,6 +2416,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
     ner,
+    [taskLabelAdmin.taskLabelId],
     daysAgo(70),
     daysAgo(55)
   );
@@ -2410,6 +2430,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [],
     ner,
+    [taskLabelAdmin.taskLabelId],
     undefined,
     daysFromNow(12)
   );
@@ -2423,6 +2444,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
+    [taskLabelTesting.taskLabelId],
     undefined,
     daysFromNow(8)
   );
@@ -2436,6 +2458,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeShmoe.userId],
     ner,
+    [taskLabelAdmin.taskLabelId],
     undefined,
     daysFromNow(7)
   );
@@ -2449,6 +2472,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [thomasEmrax.userId],
     ner,
+    [taskLabelDesign.taskLabelId],
     daysAgo(80),
     daysAgo(65)
   );
@@ -2462,6 +2486,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId),
     ner,
+    [taskLabelBuild.taskLabelId, taskLabelBlocked.taskLabelId],
     undefined,
     daysFromNow(16)
   );
@@ -2475,6 +2500,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
+    [taskLabelBuild.taskLabelId],
     undefined,
     daysFromNow(13)
   );
@@ -2488,6 +2514,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
     ner,
+    [taskLabelTesting.taskLabelId],
     undefined,
     daysFromNow(18)
   );
@@ -2501,6 +2528,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeBlow.userId],
     ner,
+    [],
     undefined,
     daysAgo(45)
   );
@@ -2514,6 +2542,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeBlow.userId],
     ner,
+    [taskLabelDesign.taskLabelId],
     undefined,
     daysAgo(60)
   );
@@ -2527,6 +2556,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [regina.userId],
     ner,
+    [taskLabelResearch.taskLabelId, taskLabelAdmin.taskLabelId],
     daysAgo(21),
     daysAgo(10)
   );
@@ -2540,6 +2570,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [zatanna.userId],
     ner,
+    [taskLabelAdmin.taskLabelId],
     daysAgo(10),
     daysAgo(9)
   );
@@ -2553,6 +2584,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [sandy.userId],
     ner,
+    [taskLabelResearch.taskLabelId],
     daysAgo(16),
     daysAgo(1)
   );
