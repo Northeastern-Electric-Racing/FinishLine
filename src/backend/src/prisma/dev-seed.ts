@@ -11,6 +11,7 @@ import { UsersProcess } from './seed/user.process.js';
 import { OrganizationProcess } from './seed/organization.process.js';
 import { CarProcess } from './seed/car.process.js';
 import { ConfigDataProcess } from './seed/config-data.process.js';
+import { ShopProcess } from './seed/shop.process.js';
 import { TeamProcess } from './seed/team.process.js';
 import { SchedulingProcess } from './seed/scheduling.process.js';
 
@@ -25,7 +26,8 @@ await new SeedRunner()
     new UsersProcess(),
     new ConfigDataProcess(),
     new SchedulingProcess(),
-    new TeamProcess()
+    new TeamProcess(),
+    new ShopProcess()
   )
   .run();
 
