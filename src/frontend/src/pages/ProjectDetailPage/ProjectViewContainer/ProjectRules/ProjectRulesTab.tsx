@@ -451,6 +451,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           rulesetId={activeRuleset.rulesetId}
           teamId={teamId}
           teamName={project.teams[0]?.teamName ?? ''}
+          projectId={project.id}
           onSubmit={handleAddRules}
         />
       )}

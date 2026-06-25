@@ -59,13 +59,17 @@ const RuleRow: React.FC<RuleRowProps> = ({
   indentWidth = 10
 }) => {
   const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
-  const hasSubRules = rule.subRuleIds.length > 0;
+
+  // a parent rule whose sub rules aren't in the set (e.g. rule T.1 was assigned to a project but T.1.1 wasn't)
+  // will render as a leaf rule but with no expand dropdown
+  const presentSubRules = allRules ? allRules.filter((r) => rule.subRuleIds.includes(r.ruleId)) : null;
+  const hasSubRules = presentSubRules ? presentSubRules.length > 0 : rule.subRuleIds.length > 0;
 
   // Lazy load if allRules not provided
   const { data: fetchedSubRules = [] } = useGetChildRules(rule.ruleId, !allRules && isExpanded && hasSubRules);
 
   // Use allRules if provided, otherwise use fetched
-  const subRules = allRules ? allRules.filter((r) => rule.subRuleIds.includes(r.ruleId)) : fetchedSubRules;
+  const subRules = presentSubRules ?? fetchedSubRules;
 
   const bgColor = typeof backgroundColor === 'function' ? backgroundColor(rule) : backgroundColor;
   const color = typeof textColor === 'function' ? textColor(rule) : textColor;
@@ -95,7 +99,7 @@ const RuleRow: React.FC<RuleRowProps> = ({
   const cardRadius = 8;
   const cardCellBg = indentRow ? { backgroundColor: bgColor } : {};
   const cardCellClass = indentRow ? 'rule-card-cell' : undefined;
-  // Indent left edge of rule with transparent left border 
+  // Indent left edge of rule with transparent left border
   const leftInset = indentRow ? level * indentWidth : 0;
   const leftCellRadius = indentRow
     ? {

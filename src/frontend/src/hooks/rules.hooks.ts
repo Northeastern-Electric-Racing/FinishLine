@@ -80,14 +80,14 @@ export const useProjectRules = (rulesetId: string, projectId: string) => {
 /**
  * Hook to get unassigned rules for a ruleset and team.
  */
-export const useUnassignedRulesForRuleset = (rulesetId: string, teamId: string) => {
+export const useUnassignedRulesForRuleset = (rulesetId: string, teamId: string, projectId: string) => {
   return useQuery<SharedRule[], Error>(
-    ['rules', 'unassigned', rulesetId, teamId],
+    ['rules', 'unassigned', rulesetId, teamId, projectId],
     async () => {
-      const { data } = await getUnassignedRulesForRuleset(rulesetId, teamId);
+      const { data } = await getUnassignedRulesForRuleset(rulesetId, teamId, projectId);
       return data;
     },
-    { enabled: !!rulesetId && !!teamId }
+    { enabled: !!rulesetId && !!teamId && !!projectId }
   );
 };
 

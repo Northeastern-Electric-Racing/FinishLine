@@ -1162,7 +1162,7 @@ export default class RulesService {
    * @param organizationId the organization id
    * @returns the rules in this team that do not have an associated project rule
    */
-  static async getUnassignedRulesForRuleset(rulesetId: string, teamId: string, organizationId: string) {
+  static async getUnassignedRulesForRuleset(rulesetId: string, teamId: string, projectId: string, organizationId: string) {
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
@@ -1202,6 +1202,19 @@ export default class RulesService {
       throw new InvalidOrganizationException('Team');
     }
 
+    const project = await prisma.project.findUnique({
+      where: { projectId },
+      select: { wbsElement: { select: { organizationId: true } } }
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project', projectId);
+    }
+
+    if (project.wbsElement.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Project');
+    }
+
     const rules = await prisma.rule.findMany({
       where: {
         rulesetId,
@@ -1211,8 +1224,10 @@ export default class RulesService {
             organizationId
           }
         },
+        // a rule can belong to many projects within a team
+        // only hide it from a project that already has it assigned
         projects: {
-          none: {}
+          none: { projectId }
         },
         deletedByUserId: null
       },

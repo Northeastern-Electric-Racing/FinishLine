@@ -28,14 +28,15 @@ interface AddRuleModalProps {
   rulesetId: string;
   teamId: string;
   teamName: string;
+  projectId: string;
   onSubmit: (ruleIds: string[]) => void;
 }
 
-const AddRuleModal = ({ open, onHide, rulesetId, teamId, teamName, onSubmit }: AddRuleModalProps) => {
+const AddRuleModal = ({ open, onHide, rulesetId, teamId, teamName, projectId, onSubmit }: AddRuleModalProps) => {
   const theme = useTheme();
   const [selectedRuleIds, setSelectedRuleIds] = useState<string[]>([]);
 
-  const { data: unassignedRules, isLoading, isError } = useUnassignedRulesForRuleset(rulesetId, teamId);
+  const { data: unassignedRules, isLoading, isError } = useUnassignedRulesForRuleset(rulesetId, teamId, projectId);
 
   type ParentInfo = { ruleId: string; ruleCode: string };
 

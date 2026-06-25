@@ -265,9 +265,11 @@ export default class RulesController {
   static async getUnassignedRulesForRuleset(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetId, teamId } = req.params;
+      const { projectId } = req.query;
       const rules = await RulesService.getUnassignedRulesForRuleset(
         rulesetId as string,
         teamId,
+        projectId as string,
         req.organization.organizationId
       );
       res.status(200).json(rules);
