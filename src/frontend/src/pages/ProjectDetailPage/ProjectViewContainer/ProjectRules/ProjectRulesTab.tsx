@@ -35,6 +35,8 @@ import {
 } from '../../../../hooks/rules.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { InfoOutlined, KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../../../utils/routes';
 
 interface ProjectRulesTabProps {
   project: Project;
@@ -50,6 +52,7 @@ const getStatusConfig = (isComplete: boolean) => {
 export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const toast = useToast();
   const theme = useTheme();
+  const history = useHistory();
 
   // State for modals and popovers
   const [selectedRulesetTypeIndex, setSelectedRulesetTypeIndex] = useState(0);
@@ -218,10 +221,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
               onClick={(e) => e.stopPropagation()}
               sx={{
                 padding: '2px',
-                color: 'text.secondary',
-                '&:hover': {
-                  color: 'primary.main'
-                }
+                color: 'text.secondary'
               }}
             >
               <InfoOutlined fontSize="small" />
@@ -277,7 +277,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   return (
     <Box>
       {/* Ruleset Type Tabs */}
-      <Box sx={{ width: 'fit-content', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 2 }}>
         <MuiTabs
           value={selectedRulesetTypeIndex}
           onChange={handleTabChange}
@@ -299,7 +299,43 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
             />
           ))}
         </MuiTabs>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Tooltip title={`Assign rules to ${project.teams[0]?.teamName ?? ''} team to add them to this project`} arrow>
+            <IconButton
+              size="small"
+              onClick={(e) => e.stopPropagation()}
+              sx={{
+                padding: '5px',
+                color: 'text.secondary'
+              }}
+            >
+              <InfoOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Button
+            disabled={!activeRuleset}
+            onClick={() =>
+              activeRuleset &&
+              history.push(`${routes.RULESET_EDIT.replace(':rulesetId', activeRuleset.rulesetId)}/assign-rules`)
+            }
+            sx={{
+              border: 1,
+              height: '2.25rem'
+            }}
+          >
+            <Typography fontSize={'.75rem'} align="center">
+              Assign Rules
+            </Typography>
+          </Button>
+        </Box>
       </Box>
+
+      {/* Active ruleset name for this ruleset type */}
+      {activeRuleset && (
+        <Typography variant="h5" sx={{ mb: 1 }}>
+          {activeRuleset.name}
+        </Typography>
+      )}
 
       {/* Rules Content */}
       {activeRulesetLoading || projectRulesLoading ? (
