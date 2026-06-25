@@ -97,9 +97,6 @@ const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assigne
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
-const tasksByWbsNum = (wbsNum: string) => `${tasks()}/by-wbs/${wbsNum}`;
-const tasksByWbsNumFilteredByLabels = (wbsNum: string, labelIds: string[]) =>
-  `${tasks()}/by-wbs/${wbsNum}/filter-by-labels?labelIds=${labelIds.join(',')}`;
 const taskLabels = () => `${tasks()}/task-labels`;
 const taskLabelCreate = () => `${taskLabels()}/create`;
 const taskLabelEdit = (taskLabelId: string) => `${taskLabels()}/${taskLabelId}/edit`;
@@ -600,8 +597,6 @@ export const apiUrls = {
   editTaskAssignees,
   deleteTask,
   overdueTasksByTeamLeadership,
-  tasksByWbsNum,
-  tasksByWbsNumFilteredByLabels,
   taskLabels,
   taskLabelCreate,
   taskLabelEdit,

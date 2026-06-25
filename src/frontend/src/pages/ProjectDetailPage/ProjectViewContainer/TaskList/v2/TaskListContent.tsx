@@ -4,12 +4,7 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import { useCallback, useState, useEffect } from 'react';
 import { Task, TaskLabel, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
-import {
-  useAllTaskLabels,
-  useSetTaskStatus,
-  useTasksByWbsNum,
-  useTasksByWbsNumFilteredByLabels
-} from '../../../../../hooks/tasks.hooks';
+import { useAllTaskLabels, useFilterTasks, useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { TaskColumn } from './TaskColumn';
 import confetti from 'canvas-confetti';
@@ -23,31 +18,14 @@ interface TaskListContentProps {
 export const TaskListContent = ({ wbsNum }: TaskListContentProps) => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
-  const isFiltering = selectedLabelIds.length > 0;
 
-  const {
-    data: allTasks,
-    isLoading: allTasksLoading,
-    isError: allTasksIsError,
-    error: allTasksError
-  } = useTasksByWbsNum(wbsNum);
-  const {
-    data: filteredTasks,
-    isLoading: filteredTasksLoading,
-    isError: filteredTasksIsError,
-    error: filteredTasksError
-  } = useTasksByWbsNumFilteredByLabels(wbsNum, selectedLabelIds);
+  const { data: tasks, isLoading, isError, error } = useFilterTasks({ wbsNum, labelIds: selectedLabelIds });
   const {
     data: taskLabels,
     isLoading: taskLabelsLoading,
     isError: tasklabelsIsError,
     error: tasksLabelsError
   } = useAllTaskLabels();
-
-  const tasks = isFiltering ? filteredTasks : allTasks;
-  const isLoading = isFiltering ? filteredTasksLoading : allTasksLoading;
-  const isError = isFiltering ? filteredTasksIsError : allTasksIsError;
-  const error = isFiltering ? filteredTasksError : allTasksError;
 
   const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus | undefined>(undefined); // can't use getTasksByStatus since tasks are async
   const { mutateAsync: setTaskStatus } = useSetTaskStatus();
@@ -69,8 +47,8 @@ export const TaskListContent = ({ wbsNum }: TaskListContentProps) => {
     setColumnHeights((prev) => ({ ...prev, [status]: height }));
   }, []);
 
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (tasklabelsIsError) return <ErrorPage message={tasksLabelsError?.message} />;
+  if (isError) return <ErrorPage error={error} />;
+  if (tasklabelsIsError) return <ErrorPage error={tasksLabelsError} />;
   if (isLoading || taskLabelsLoading || !tasksByStatus) return <LoadingIndicator />;
 
   const onDeleteTask = (taskId: string) => {

@@ -2811,7 +2811,7 @@ const performSeed: () => Promise<void> = async () => {
 
   await TasksService.createTask(
     joeShmoe,
-    projectHuskies1WbsNumber,
+    workPackageHuskies1WbsNumber,
     'Impact Test',
     'Use our conveniently available jumbo watermelon and slingshot to test how well our impact attenuator can ' +
       'attenuate impact.',
@@ -2826,7 +2826,7 @@ const performSeed: () => Promise<void> = async () => {
 
   await TasksService.createTask(
     joeBlow,
-    projectHuskies1WbsNumber,
+    workPackageHuskies1WbsNumber,
     'Review Compliance',
     'I think there are some rules we may or may not have overlooked...',
     Task_Priority.MEDIUM,
@@ -2840,7 +2840,7 @@ const performSeed: () => Promise<void> = async () => {
 
   await TasksService.createTask(
     thomasEmrax,
-    projectHuskies1WbsNumber,
+    workPackageHuskies1WbsNumber,
     'Decorate Impact Attenuator',
     'You know you want to.',
     Task_Priority.LOW,

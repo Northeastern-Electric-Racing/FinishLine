@@ -13,14 +13,11 @@ import {
   editTaskAssignees,
   getOverdueTasksByTeamLeader,
   getFilterTasks,
-  getTasksByWbsNum,
-  getTasksByWbsNumFilteredByLabels,
   getAllTaskLabels,
   createTaskLabel,
   editTaskLabel,
   deleteTaskLabel
 } from '../apis/tasks.api';
-import { wbsPipe } from '../utils/pipes';
 
 export interface CreateTaskPayload {
   wbsNum: WbsNumber;
@@ -194,38 +191,6 @@ export const useOverdueTasksByTeamLeader = (userId: string) => {
     const { data } = await getOverdueTasksByTeamLeader(userId);
     return data;
   });
-};
-
-/**
- * Custom React Hook to get all tasks for a given wbs element
- * For projects, returns project tasks merged with all project's wp's tasks
- * For work packages, returns just that wp's tasks
- * @param wbsNum the wbs number to fetch tasks for
- * @returns the tasks query
- */
-export const useTasksByWbsNum = (wbsNum: WbsNumber) => {
-  return useQuery<Task[], Error>(['tasks', wbsPipe(wbsNum)], async () => {
-    const { data } = await getTasksByWbsNum(wbsNum);
-    return data;
-  });
-};
-
-/**
- * Custom React Hook to get tasks for a wbs element filtered by label ids
- * Only fires when labelIds is non-empty; returns all tasks when empty
- * @param wbsNum the wbs number to fetch tasks for
- * @param labelIds the label ids to filter by
- * @returns the filtered tasks query
- */
-export const useTasksByWbsNumFilteredByLabels = (wbsNum: WbsNumber, labelIds: string[]) => {
-  return useQuery<Task[], Error>(
-    ['tasks', wbsPipe(wbsNum), 'filtered-by-labels', labelIds],
-    async () => {
-      const { data } = await getTasksByWbsNumFilteredByLabels(wbsNum, labelIds);
-      return data;
-    },
-    { enabled: labelIds.length > 0 }
-  );
 };
 
 /**

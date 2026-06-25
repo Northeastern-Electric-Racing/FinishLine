@@ -97,14 +97,16 @@ export default class TasksController {
 
   static async getFilteredTasks(req: Request, res: Response, next: NextFunction) {
     try {
-      const { memberIds, teamIds, startPeriod, endPeriod } = req.body;
+      const { memberIds, teamIds, startPeriod, endPeriod, labelIds, wbsNum } = req.body;
 
       const tasks = await TasksService.getFilteredTasks(
         {
           memberIds,
           teamIds,
-          startPeriod: new Date(startPeriod),
-          endPeriod: new Date(endPeriod)
+          startPeriod: startPeriod ? new Date(startPeriod) : undefined,
+          endPeriod: endPeriod ? new Date(endPeriod) : undefined,
+          labelIds,
+          wbsNum
         },
         req.organization
       );
@@ -120,27 +122,6 @@ export default class TasksController {
       const { userId } = req.params as Record<string, string>;
 
       const tasks = await TasksService.getOverdueTasksByTeamLeadership(userId, req.organization);
-      res.status(200).json(tasks);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getTasksByWbsNum(req: Request, res: Response, next: NextFunction) {
-    try {
-      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
-      const tasks = await TasksService.getTasksByWbsNum(wbsNum, req.organization);
-      res.status(200).json(tasks);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getTasksByWbsNumAndLabels(req: Request, res: Response, next: NextFunction) {
-    try {
-      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
-      const labelIds = req.query.labelIds ? String(req.query.labelIds).split(',') : [];
-      const tasks = await TasksService.getTasksByWbsNumAndLabels(wbsNum, labelIds, req.organization);
       res.status(200).json(tasks);
     } catch (error: unknown) {
       next(error);

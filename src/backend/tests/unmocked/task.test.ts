@@ -260,7 +260,7 @@ describe('Task Tests', () => {
     });
   });
 
-  describe('Get tasks by wbs num', () => {
+  describe('Get filtered tasks', () => {
     it('returns project tasks and all WP tasks when given a project wbs number', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const car = await createTestCar(organizationId, user.userId);
@@ -312,9 +312,10 @@ describe('Task Tests', () => {
         }
       });
 
-      const tasks = await TasksService.getTasksByWbsNum({ carNumber: 0, projectNumber: 1, workPackageNumber: 0 }, {
-        organizationId
-      } as any);
+      const tasks = await TasksService.getFilteredTasks(
+        { wbsNum: { carNumber: 0, projectNumber: 1, workPackageNumber: 0 } },
+        organization
+      );
 
       expect(tasks.length).toBe(2);
       expect(tasks.map((t) => t.title)).toContain('Project Task');
@@ -360,9 +361,10 @@ describe('Task Tests', () => {
         }
       });
 
-      const tasks = await TasksService.getTasksByWbsNum({ carNumber: 0, projectNumber: 1, workPackageNumber: 1 }, {
-        organizationId
-      } as any);
+      const tasks = await TasksService.getFilteredTasks(
+        { wbsNum: { carNumber: 0, projectNumber: 1, workPackageNumber: 1 } },
+        organization
+      );
 
       expect(tasks.length).toBe(1);
       expect(tasks[0].title).toBe('WP Task');
@@ -370,8 +372,106 @@ describe('Task Tests', () => {
 
     it('throws NotFoundException when wbs element does not exist', async () => {
       await expect(async () =>
-        TasksService.getTasksByWbsNum({ carNumber: 99, projectNumber: 99, workPackageNumber: 0 }, { organizationId } as any)
+        TasksService.getFilteredTasks({ wbsNum: { carNumber: 99, projectNumber: 99, workPackageNumber: 0 } }, organization)
       ).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws DeletedException when wbs element is deleted', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      await prisma.wBS_Element.create({
+        data: {
+          carNumber: 99,
+          projectNumber: 99,
+          workPackageNumber: 0,
+          dateCreated: new Date(),
+          name: 'Deleted WBS',
+          status: 'INACTIVE',
+          leadId: user.userId,
+          managerId: user.userId,
+          organizationId,
+          dateDeleted: new Date()
+        }
+      });
+
+      await expect(async () =>
+        TasksService.getFilteredTasks({ wbsNum: { carNumber: 99, projectNumber: 99, workPackageNumber: 0 } }, organization)
+      ).rejects.toThrow(DeletedException);
+    });
+
+    it('filters tasks by labelIds when wbsNum is provided', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const car = await createTestCar(organizationId, user.userId);
+      const project = await createTestProject(user, organizationId, undefined, car.carId);
+      const label = await TasksService.createTaskLabel(user, 'Bug', '#EF4444', organization);
+
+      await prisma.task.create({
+        data: {
+          title: 'Labeled Task',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: project.wbsElementId } },
+          labels: { connect: [{ taskLabelId: label.taskLabelId }] }
+        }
+      });
+
+      await prisma.task.create({
+        data: {
+          title: 'Unlabeled Task',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: project.wbsElementId } }
+        }
+      });
+
+      const tasks = await TasksService.getFilteredTasks(
+        { wbsNum: { carNumber: 0, projectNumber: 1, workPackageNumber: 0 }, labelIds: [label.taskLabelId] },
+        organization
+      );
+
+      expect(tasks.length).toBe(1);
+      expect(tasks[0].title).toBe('Labeled Task');
+    });
+
+    it('returns all org tasks when no filters are provided', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const car = await createTestCar(organizationId, user.userId);
+      const project = await createTestProject(user, organizationId, undefined, car.carId);
+
+      await prisma.task.create({
+        data: {
+          title: 'Task 1',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: project.wbsElementId } }
+        }
+      });
+
+      await prisma.task.create({
+        data: {
+          title: 'Task 2',
+          notes: '',
+          priority: 'LOW',
+          status: 'DONE',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: project.wbsElementId } }
+        }
+      });
+
+      const tasks = await TasksService.getFilteredTasks({}, organization);
+
+      expect(tasks.length).toBe(2);
+      expect(tasks.map((t) => t.title)).toContain('Task 1');
+      expect(tasks.map((t) => t.title)).toContain('Task 2');
     });
   });
 

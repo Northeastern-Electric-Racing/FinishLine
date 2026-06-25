@@ -370,7 +370,7 @@ export default class TasksService {
   }
 
   static async getFilteredTasks(filters: FilterTaskArgs, organization: Organization): Promise<CalendarTask[]> {
-    const { memberIds, teamIds, startPeriod, endPeriod } = filters;
+    const { memberIds, teamIds, startPeriod, endPeriod, labelIds, wbsNum } = filters;
 
     // Validate memberIds if provided
     if (memberIds && memberIds.length > 0) {
@@ -395,6 +395,10 @@ export default class TasksService {
       }
     }
 
+    if (labelIds && labelIds.length > 0) {
+      await validateTaskLabels(labelIds, organization.organizationId);
+    }
+
     const orFilters: any[] = [];
     if (memberIds && memberIds.length > 0) {
       orFilters.push({ assignees: { some: { userId: { in: memberIds } } } });
@@ -410,13 +414,32 @@ export default class TasksService {
       });
     }
 
+    let wbsElementIds: string[] | undefined;
+    if (wbsNum) {
+      const wbsElement = await prisma.wBS_Element.findUnique({
+        where: { wbsNumber: { ...wbsNum, organizationId: organization.organizationId } }
+      });
+      if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+      if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+
+      if (wbsNum.workPackageNumber === 0) {
+        const project = await prisma.project.findUnique({
+          where: { wbsElementId: wbsElement.wbsElementId },
+          include: { workPackages: { include: { wbsElement: true } } }
+        });
+        if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+        wbsElementIds = [wbsElement.wbsElementId, ...project.workPackages.map((wp) => wp.wbsElementId)];
+      } else {
+        wbsElementIds = [wbsElement.wbsElementId];
+      }
+    }
+
     const tasks = await prisma.task.findMany({
       where: {
         dateDeleted: null,
-        deadline: {
-          gte: startPeriod,
-          lte: endPeriod
-        },
+        ...(startPeriod && endPeriod ? { deadline: { gte: startPeriod, lte: endPeriod } } : {}),
+        ...(wbsElementIds ? { wbsElementId: { in: wbsElementIds } } : {}),
+        ...(labelIds && labelIds.length > 0 ? { labels: { some: { taskLabelId: { in: labelIds } } } } : {}),
         wbsElement: {
           organizationId: organization.organizationId,
           dateDeleted: null
@@ -461,115 +484,6 @@ export default class TasksService {
     });
 
     return tasks.map(taskCardPreviewTransformer);
-  }
-
-  /**
-   * Gets all tasks associated with a wbs element
-   * If the wbs number is a project (workPackageNumber === 0), returns the project's
-   * own tasks merged with all of its work packages' tasks
-   * If the wbs number is a work package, returns just that WP's tasks
-   * @param wbsNum the wbs number to fetch tasks for
-   * @param organization the organization that the user is currently in
-   * @returns array of tasks
-   */
-  static async getTasksByWbsNum(wbsNum: WbsNumber, organization: Organization): Promise<Task[]> {
-    const wbsElement = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsNumber: {
-          ...wbsNum,
-          organizationId: organization.organizationId
-        }
-      }
-    });
-
-    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
-
-    // project case, so return project's own tasks and all its wp's tasks
-    if (wbsNum.workPackageNumber === 0) {
-      const project = await prisma.project.findUnique({
-        where: { wbsElementId: wbsElement.wbsElementId },
-        include: { workPackages: { include: { wbsElement: true } } }
-      });
-
-      if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
-
-      const wpWbsElementIds = project.workPackages.map((wp) => wp.wbsElementId);
-
-      const tasks = await prisma.task.findMany({
-        where: {
-          dateDeleted: null,
-          wbsElementId: { in: [wbsElement.wbsElementId, ...wpWbsElementIds] }
-        },
-        ...getTaskQueryArgs(organization.organizationId)
-      });
-
-      return tasks.map(taskTransformer);
-    }
-
-    // work package case, so return just that wp's tasks
-    const tasks = await prisma.task.findMany({
-      where: {
-        dateDeleted: null,
-        wbsElementId: wbsElement.wbsElementId
-      },
-      ...getTaskQueryArgs(organization.organizationId)
-    });
-
-    return tasks.map(taskTransformer);
-  }
-
-  /**
-   * Gets tasks for a wbs element filtered to only those containing at least one of the given labels
-   * @param wbsNum the wbs number of the project or work package
-   * @param labelIds the label ids to filter by
-   * @param organization the organization that the user is currently in
-   * @returns array of tasks that have at least one matching label
-   */
-  static async getTasksByWbsNumAndLabels(
-    wbsNum: WbsNumber,
-    labelIds: string[],
-    organization: Organization
-  ): Promise<Task[]> {
-    const wbsElement = await prisma.wBS_Element.findUnique({
-      where: { wbsNumber: { ...wbsNum, organizationId: organization.organizationId } }
-    });
-
-    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
-
-    await validateTaskLabels(labelIds, organization.organizationId);
-
-    const labelFilter = { labels: { some: { taskLabelId: { in: labelIds } } } };
-
-    if (wbsNum.workPackageNumber === 0) {
-      const project = await prisma.project.findUnique({
-        where: { wbsElementId: wbsElement.wbsElementId },
-        include: { workPackages: { include: { wbsElement: true } } }
-      });
-
-      if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
-
-      const wpWbsElementIds = project.workPackages.map((wp) => wp.wbsElementId);
-
-      const tasks = await prisma.task.findMany({
-        where: {
-          dateDeleted: null,
-          wbsElementId: { in: [wbsElement.wbsElementId, ...wpWbsElementIds] },
-          ...labelFilter
-        },
-        ...getTaskQueryArgs(organization.organizationId)
-      });
-
-      return tasks.map(taskTransformer);
-    }
-
-    const tasks = await prisma.task.findMany({
-      where: { dateDeleted: null, wbsElementId: wbsElement.wbsElementId, ...labelFilter },
-      ...getTaskQueryArgs(organization.organizationId)
-    });
-
-    return tasks.map(taskTransformer);
   }
 
   /**

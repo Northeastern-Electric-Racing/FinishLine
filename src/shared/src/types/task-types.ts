@@ -50,8 +50,10 @@ export type TaskPreview = Pick<Task, 'taskId' | 'title' | 'notes' | 'dateCreated
 export interface FilterTaskArgs {
   memberIds?: string[];
   teamIds?: string[];
-  startPeriod: Date;
-  endPeriod: Date;
+  startPeriod?: Date;
+  endPeriod?: Date;
+  labelIds?: string[];
+  wbsNum?: WbsNumber;
 }
 
 // Need lead and manager in order to determine permissions for editing and deleting tasks in the calendar view
