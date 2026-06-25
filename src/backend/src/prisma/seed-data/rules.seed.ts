@@ -699,8 +699,11 @@ export const seedFsaeRules = async (
     }
   });
 
-  // Add rule to husky team and then bodywork project and mark as completed
-  await RulesService.toggleRuleTeam(T112ARule.ruleId, huskyTeamId, batman, organization);
+  // Add the rule to the husky team, then the bodywork project, and mark it complete.
+  for (const rule of [topLevelTechnical, T1Rule, T11Rule, T112Rule, T112ARule]) {
+    await RulesService.toggleRuleTeam(rule.ruleId, huskyTeamId, batman, organization);
+  }
+  // TODO: the above logic should be in the service function, not handled in the assign team frontend 
   await RulesService.createProjectRule(batman, organization, T112ARule.ruleId, projectId);
   await RulesService.setRuleCompletion(batman, organization, T112ARule.ruleId, true, projectId);
 };

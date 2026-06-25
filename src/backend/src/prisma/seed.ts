@@ -4765,7 +4765,7 @@ const performSeed: () => Promise<void> = async () => {
       superman
     },
     ner,
-    projectHuskies1Id,
+    projectHuskies2Id,
     huskies.teamId
   );
 
