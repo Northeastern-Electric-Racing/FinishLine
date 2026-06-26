@@ -146,11 +146,9 @@ module "elasticbeanstalk" {
 module "frontend" {
   source = "../../modules/amplify-frontend"
 
-  project_name        = "finishline"
-  environment         = "sandbox"
-  github_repository   = "https://github.com/Northeastern-Electric-Racing/FinishLine"
-  github_access_token = var.github_access_token
-  main_branch_name    = "develop"
+  project_name     = "finishline"
+  environment      = "sandbox"
+  main_branch_name = "develop"
   backend_api_url     = module.elasticbeanstalk.environment_endpoint_url
 
   domain_name                 = ""

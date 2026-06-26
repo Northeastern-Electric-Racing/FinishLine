@@ -10,17 +10,6 @@ variable "environment" {
   type        = string
 }
 
-variable "github_repository" {
-  description = "GitHub repository URL (e.g., https://github.com/username/repo)"
-  type        = string
-}
-
-variable "github_access_token" {
-  description = "GitHub personal access token for repository access"
-  type        = string
-  sensitive   = true
-  default     = ""
-}
 
 variable "main_branch_name" {
   description = "Name of the main branch to deploy"

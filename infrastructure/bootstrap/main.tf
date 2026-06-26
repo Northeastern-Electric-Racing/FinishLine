@@ -1,7 +1,4 @@
 # Bootstrap Infrastructure
-#
-# NOTE: The github-actions-finishline IAM user was created manually outside of Terraform.
-# The policy below attaches to that existing user by name.
 # This Terraform configuration creates the foundational resources needed
 # for managing Terraform state remotely.
 #
@@ -12,6 +9,7 @@
 # 1. S3 bucket for Terraform state storage
 # 2. DynamoDB table for state locking
 # 3. S3 bucket for Elastic Beanstalk application versions
+# 4. IAM permissions for the github-actions-finishline CI/CD user
 
 terraform {
   required_version = ">= 1.0"
@@ -35,9 +33,9 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project     = "finishline"
-      ManagedBy   = "Terraform"
-      Purpose     = "Bootstrap"
+      Project   = "finishline"
+      ManagedBy = "Terraform"
+      Purpose   = "Bootstrap"
     }
   }
 }
@@ -58,7 +56,6 @@ resource "aws_s3_bucket" "terraform_state" {
   }
 }
 
-# Versioning for state file history and recovery
 resource "aws_s3_bucket_versioning" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
@@ -67,7 +64,6 @@ resource "aws_s3_bucket_versioning" "terraform_state" {
   }
 }
 
-# Server-side encryption for state files
 resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
@@ -78,7 +74,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" 
   }
 }
 
-# Block all public access to state bucket
 resource "aws_s3_bucket_public_access_block" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
@@ -88,7 +83,6 @@ resource "aws_s3_bucket_public_access_block" "terraform_state" {
   restrict_public_buckets = true
 }
 
-# Delete old versions of state files after 90 days
 resource "aws_s3_bucket_lifecycle_configuration" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
@@ -109,7 +103,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "terraform_state" {
 #############
 resource "aws_dynamodb_table" "terraform_locks" {
   name         = var.locks_table_name
-  billing_mode = "PAY_PER_REQUEST"  # On-demand pricing, no minimum cost
+  billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
 
   attribute {
@@ -139,7 +133,6 @@ resource "aws_s3_bucket" "eb_versions" {
   }
 }
 
-# Enable versioning for EB application versions
 resource "aws_s3_bucket_versioning" "eb_versions" {
   bucket = aws_s3_bucket.eb_versions.id
 
@@ -148,7 +141,6 @@ resource "aws_s3_bucket_versioning" "eb_versions" {
   }
 }
 
-# Block public access to EB versions bucket
 resource "aws_s3_bucket_public_access_block" "eb_versions" {
   bucket = aws_s3_bucket.eb_versions.id
 
@@ -158,39 +150,43 @@ resource "aws_s3_bucket_public_access_block" "eb_versions" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "eb_versions" {
+  bucket = aws_s3_bucket.eb_versions.id
+
+  rule {
+    id     = "cleanup-old-versions"
+    status = "Enabled"
+
+    filter {}
+
+    expiration {
+      days = 90
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 30
+    }
+  }
+}
+
 #############
-<<<<<<< Updated upstream
-# IAM Policy for Sandbox Workflow Operations
-<<<<<<< Updated upstream
-# The github-actions-finishline user needs these permissions for sandbox-up.yml:
-# - RDS snapshot operations (create from prod, copy cross-region)
-# - Secrets Manager reads (pull prod secrets)
-# - EB describe (pull prod non-secret config)
-=======
-# Attaches to the manually-created github-actions-finishline user.
-# Grants permissions needed by sandbox-up.yml that the user doesn't already have.
->>>>>>> Stashed changes
-#############
-resource "aws_iam_user_policy" "github_actions_sandbox" {
-  name = "sandbox-workflow-permissions"
-  user = "github-actions-finishline"
-=======
 # IAM Permissions for github-actions-finishline
-# Attaches managed policies so Terraform can provision sandbox resources.
-# Also adds an inline policy for operations specific to the sandbox workflow.
+# The user was created manually outside of Terraform.
+# Managed policies cover provisioning sandbox resources via Terraform.
+# The inline policy covers sandbox-workflow-specific operations.
 #############
 
 locals {
   github_actions_user = "github-actions-finishline"
   managed_policies = {
-    ec2         = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
-    rds         = "arn:aws:iam::aws:policy/AmazonRDSFullAccess"
-    iam         = "arn:aws:iam::aws:policy/IAMFullAccess"
-    eb          = "arn:aws:iam::aws:policy/AdministratorAccess-AWSElasticBeanstalk"
-    s3          = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-    cloudwatch  = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
-    amplify     = "arn:aws:iam::aws:policy/AdministratorAccess-Amplify"
-    logs        = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+    ec2        = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+    rds        = "arn:aws:iam::aws:policy/AmazonRDSFullAccess"
+    iam        = "arn:aws:iam::aws:policy/IAMFullAccess"
+    eb         = "arn:aws:iam::aws:policy/AdministratorAccess-AWSElasticBeanstalk"
+    s3         = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+    cloudwatch = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+    amplify    = "arn:aws:iam::aws:policy/AdministratorAccess-Amplify"
+    logs       = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
   }
 }
 
@@ -203,17 +199,11 @@ resource "aws_iam_user_policy_attachment" "github_actions_managed" {
 resource "aws_iam_user_policy" "github_actions_sandbox" {
   name = "sandbox-workflow-permissions"
   user = local.github_actions_user
->>>>>>> Stashed changes
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
         Sid    = "TerraformStateS3"
         Effect = "Allow"
         Action = [
@@ -238,10 +228,6 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
         Resource = "arn:aws:dynamodb:us-east-1:830877454256:table/finishline-terraform-locks"
       },
       {
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         Sid    = "RDSSnapshotOperations"
         Effect = "Allow"
         Action = [
@@ -255,21 +241,6 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
         Resource = "*"
       },
       {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-        Sid    = "SecretsManagerReadProd"
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret"
-        ]
-        Resource = "arn:aws:secretsmanager:us-east-1:830877454256:secret:finishline/production/*"
-      },
-      {
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         Sid    = "KMSForSnapshotCopy"
         Effect = "Allow"
         Action = [
@@ -291,11 +262,6 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
         }
       },
       {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
         Sid    = "SecretsManagerReadProd"
         Effect = "Allow"
         Action = [
@@ -305,10 +271,6 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
         Resource = "arn:aws:secretsmanager:us-east-1:830877454256:secret:finishline/production/*"
       },
       {
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         Sid    = "ElasticBeanstalkDescribeProd"
         Effect = "Allow"
         Action = [
@@ -320,24 +282,3 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
     ]
   })
 }
-
-# Clean up old EB versions after 90 days
-resource "aws_s3_bucket_lifecycle_configuration" "eb_versions" {
-  bucket = aws_s3_bucket.eb_versions.id
-
-  rule {
-    id     = "cleanup-old-versions"
-    status = "Enabled"
-
-    filter {}
-
-    expiration {
-      days = 90
-    }
-
-    noncurrent_version_expiration {
-      noncurrent_days = 30
-    }
-  }
-}
-
