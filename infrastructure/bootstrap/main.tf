@@ -159,6 +159,7 @@ resource "aws_s3_bucket_public_access_block" "eb_versions" {
 }
 
 #############
+<<<<<<< Updated upstream
 # IAM Policy for Sandbox Workflow Operations
 <<<<<<< Updated upstream
 # The github-actions-finishline user needs these permissions for sandbox-up.yml:
@@ -173,13 +174,46 @@ resource "aws_s3_bucket_public_access_block" "eb_versions" {
 resource "aws_iam_user_policy" "github_actions_sandbox" {
   name = "sandbox-workflow-permissions"
   user = "github-actions-finishline"
+=======
+# IAM Permissions for github-actions-finishline
+# Attaches managed policies so Terraform can provision sandbox resources.
+# Also adds an inline policy for operations specific to the sandbox workflow.
+#############
+
+locals {
+  github_actions_user = "github-actions-finishline"
+  managed_policies = {
+    ec2         = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+    rds         = "arn:aws:iam::aws:policy/AmazonRDSFullAccess"
+    iam         = "arn:aws:iam::aws:policy/IAMFullAccess"
+    eb          = "arn:aws:iam::aws:policy/AdministratorAccess-AWSElasticBeanstalk"
+    s3          = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+    cloudwatch  = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+    amplify     = "arn:aws:iam::aws:policy/AdministratorAccess-Amplify"
+    logs        = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+  }
+}
+
+resource "aws_iam_user_policy_attachment" "github_actions_managed" {
+  for_each   = local.managed_policies
+  user       = local.github_actions_user
+  policy_arn = each.value
+}
+
+resource "aws_iam_user_policy" "github_actions_sandbox" {
+  name = "sandbox-workflow-permissions"
+  user = local.github_actions_user
+>>>>>>> Stashed changes
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
         Sid    = "TerraformStateS3"
         Effect = "Allow"
         Action = [
@@ -204,6 +238,9 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
         Resource = "arn:aws:dynamodb:us-east-1:830877454256:table/finishline-terraform-locks"
       },
       {
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Sid    = "RDSSnapshotOperations"
         Effect = "Allow"
@@ -219,6 +256,7 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
       },
       {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Sid    = "SecretsManagerReadProd"
         Effect = "Allow"
         Action = [
@@ -228,6 +266,8 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
         Resource = "arn:aws:secretsmanager:us-east-1:830877454256:secret:finishline/production/*"
       },
       {
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         Sid    = "KMSForSnapshotCopy"
@@ -252,7 +292,10 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
       },
       {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
         Sid    = "SecretsManagerReadProd"
         Effect = "Allow"
         Action = [
@@ -262,6 +305,9 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
         Resource = "arn:aws:secretsmanager:us-east-1:830877454256:secret:finishline/production/*"
       },
       {
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Sid    = "ElasticBeanstalkDescribeProd"
         Effect = "Allow"
