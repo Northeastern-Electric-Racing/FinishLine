@@ -242,4 +242,14 @@ export default class UsersController {
       next(error);
     }
   }
+
+  static async validateSlackId(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { slackId } = req.body;
+      const isValid = await UsersService.validateSlackId(slackId);
+      res.status(200).json({ isValid });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

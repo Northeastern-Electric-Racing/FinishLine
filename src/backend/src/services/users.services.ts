@@ -29,6 +29,7 @@ import authenticatedUserTransformer from '../transformers/auth-user.transformer.
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
 import taskTransformer from '../transformers/tasks.transformer.js';
 import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
+import { validateSlackUserId } from '../integrations/slack.js';
 
 export default class UsersService {
   /**
@@ -621,5 +622,14 @@ export default class UsersService {
     }
 
     return users.map(userWithScheduleSettingsTransformer);
+  }
+
+  /**
+   * Validates a user's slack id
+   * @param slackId the Slack user id to validate
+   * @returns true if the user exists, false otherwise
+   */
+  static async validateSlackId(slackId: string): Promise<boolean> {
+    return validateSlackUserId(slackId);
   }
 }

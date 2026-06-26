@@ -289,7 +289,7 @@ export const checkBotInChannel = async (channelId: string): Promise<boolean> => 
 };
 
 /**
- * Given a slack user id, prood.uces the name of the channel
+ * Given a slack user id, produces the name of the channel
  * @param userId the id of the slack user
  * @returns the name of the user (real name if no display name), undefined if cannot be found
  */
@@ -380,3 +380,20 @@ export const getReceiver = (): ExpressReceiver | null => {
 // Export the getters for any direct usage if needed
 export { getSlackClient };
 export default getSlackClient;
+
+/**
+ * Validates that a given Slack user id exists in the workspace
+ * All slack ids start with U. If you pass a valid user id to users.info, it returns ok: true; throws error otherwise.
+ * @param slackId the Slack user id to validate
+ * @returns true if the user exists, false otherwise
+ */
+export const validateSlackUserId = async (slackId: string): Promise<boolean> => {
+  const client = getSlackClient();
+  if (!client) return false;
+  try {
+    const res = await client.users.info({ user: slackId });
+    return res.ok === true;
+  } catch (error) {
+    return false;
+  }
+};
