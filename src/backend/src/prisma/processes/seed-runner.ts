@@ -21,20 +21,31 @@ export class SeedRunner {
     const outputs = new Map<string, any>();
     const context: Record<string, any> = {};
 
+    const mergeOutputs = (target: Record<string, any>, source: Record<string, any>, sourceName: string) => {
+      const duplicateKeys = Object.keys(source).filter((key) => key in target);
+
+      if (duplicateKeys.length > 0) {
+        throw new Error(`Duplicate seed output keys from ${sourceName}: ${duplicateKeys.join(', ')}`);
+      }
+
+      return Object.assign(target, source);
+    };
+
     for (const instance of this.instances) {
       instance.prisma = this.prisma;
 
-      const depOutputs = instance.dependencies().reduce((acc, depClass) => {
+      const depOutputs = instance.dependencies().reduce<Record<string, any>>((acc, depClass) => {
         const output = outputs.get(depClass.name);
         if (!output) throw new Error(`Missing output for dependency: ${depClass.name}`);
-        return { ...acc, ...output };
+
+        return mergeOutputs(acc, output, depClass.name);
       }, {});
 
       console.log(`Running ${instance.constructor.name} (seed ${GLOBAL_SEED})...`);
       const output = await instance.run(depOutputs);
 
       outputs.set(instance.constructor.name, output);
-      Object.assign(context, output);
+      mergeOutputs(context, output, instance.constructor.name);
 
       console.log(`${instance.constructor.name} complete`);
     }
