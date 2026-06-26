@@ -712,7 +712,7 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('delete faq');
     }
 
-    const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId }, ...getFaqQueryArgs });
+    const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId }, ...getFaqQueryArgs(organizationId) });
 
     if (!faq || faq.organizationId !== organizationId || !faq.isOnPartReviewPage) {
       throw new NotFoundException('Faq', faqId);

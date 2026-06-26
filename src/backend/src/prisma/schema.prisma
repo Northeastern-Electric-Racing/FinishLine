@@ -214,6 +214,7 @@ model User {
   teamsAsHead                             Team[]                               @relation(name: "teamsAsHead")
   teamsAsLead                             Team[]                               @relation(name: "teamsAsLead")
   teamJoinRequests                        Team_Join_Request[]                  @relation(name: "teamJoinRequests")
+  reviewedTeamJoinRequests                Team_Join_Request[]                  @relation(name: "teamJoinRequestReviewer")
   deletedWBSElements                      WBS_Element[]                        @relation(name: "deletedWbsElements")
   checkedDescriptionBullets               Description_Bullet[]                 @relation(name: "checkDescriptionBullets")
   createdProposedSolutions                Proposed_Solution[]
@@ -365,6 +366,9 @@ model Team_Join_Request {
   status            Team_Join_Request_Status @default(PENDING)
   dateRequested     DateTime                 @default(now())
   denialReason      String?
+  reviewedByUserId  String?
+  reviewedBy        User?                    @relation(fields: [reviewedByUserId], references: [userId], name: "teamJoinRequestReviewer")
+  dateReviewed      DateTime?
 
   @@index([userId])
   @@index([teamId])

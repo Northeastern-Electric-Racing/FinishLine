@@ -69,6 +69,24 @@ export default class RecruitmentController {
     }
   }
 
+  static async getRecruitingFaqs(req: Request, res: Response, next: NextFunction) {
+    try {
+      const faqs = await RecruitmentServices.getRecruitingFaqs(req.organization);
+      res.status(200).json(faqs);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getNewMemberFaqs(req: Request, res: Response, next: NextFunction) {
+    try {
+      const faqs = await RecruitmentServices.getNewMemberFaqs(req.organization);
+      res.status(200).json(faqs);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createOrganizationFaq(req: Request, res: Response, next: NextFunction) {
     try {
       const { question, answer } = req.body;

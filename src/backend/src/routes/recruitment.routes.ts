@@ -32,6 +32,10 @@ recruitmentRouter.delete('/milestone/:milestoneId/delete', RecruitmentController
 
 recruitmentRouter.get('/faqs', RecruitmentController.getAllOrganizationFaqs);
 
+recruitmentRouter.get('/faqs/recruiting', RecruitmentController.getRecruitingFaqs);
+
+recruitmentRouter.get('/faqs/new-member', RecruitmentController.getNewMemberFaqs);
+
 recruitmentRouter.post(
   '/faq/create',
   nonEmptyString(body('question')),

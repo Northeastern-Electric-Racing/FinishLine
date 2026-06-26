@@ -38,4 +38,6 @@ export interface TeamJoinRequest {
   status: TeamJoinRequestStatus;
   dateRequested: Date;
   denialReason?: string;
+  reviewedBy?: User;
+  dateReviewed?: Date;
 }

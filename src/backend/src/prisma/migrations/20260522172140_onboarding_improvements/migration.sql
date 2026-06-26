@@ -59,6 +59,8 @@ CREATE TABLE "Team_Join_Request" (
     "status" "Team_Join_Request_Status" NOT NULL DEFAULT 'PENDING',
     "dateRequested" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "denialReason" TEXT,
+    "reviewedByUserId" TEXT,
+    "dateReviewed" TIMESTAMP(3),
     CONSTRAINT "Team_Join_Request_pkey" PRIMARY KEY ("teamJoinRequestId")
 );
 
@@ -68,8 +70,11 @@ CREATE INDEX "Team_Join_Request_userId_idx" ON "Team_Join_Request"("userId");
 -- CreateIndex
 CREATE INDEX "Team_Join_Request_teamId_idx" ON "Team_Join_Request"("teamId");
 
--- AddForeignKey
+-- AddForeignKey for user id
 ALTER TABLE "Team_Join_Request" ADD CONSTRAINT "Team_Join_Request_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
+-- AddForeignKey for team id
 ALTER TABLE "Team_Join_Request" ADD CONSTRAINT "Team_Join_Request_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("teamId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey for reviewed by user id
+ALTER TABLE "Team_Join_Request" ADD CONSTRAINT "Team_Join_Request_reviewedByUserId_fkey" FOREIGN KEY ("reviewedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
