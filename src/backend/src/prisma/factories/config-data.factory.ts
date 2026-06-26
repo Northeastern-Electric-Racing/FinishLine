@@ -39,42 +39,66 @@ export const teamTypeCreateInputs = (organizationId: string): Prisma.Team_TypeCr
 
 export const linkTypeCreateInputs = (creatorId: string, organizationId: string): Prisma.Link_TypeCreateInput[] => [
   {
-    name: 'Confluence',
-    iconName: 'description',
-    required: true,
-    isOnGuestHomePage: false,
-    creator: connectUser(creatorId),
-    organization: connectOrganization(organizationId)
-  },
-  {
-    name: 'Bill of Materials',
-    iconName: 'bar_chart',
-    required: true,
-    isOnGuestHomePage: false,
-    creator: connectUser(creatorId),
-    organization: connectOrganization(organizationId)
-  },
-  {
-    name: 'NER Website',
-    iconName: 'bar_chart',
-    required: true,
-    isOnGuestHomePage: false,
-    creator: connectUser(creatorId),
-    organization: connectOrganization(organizationId)
-  },
-  {
-    name: 'NER Instagram',
-    iconName: 'bar_chart',
-    required: true,
-    isOnGuestHomePage: false,
-    creator: connectUser(creatorId),
-    organization: connectOrganization(organizationId)
-  },
-  {
     name: 'Google Drive',
-    iconName: 'folder',
-    required: true,
+    iconName: 'add_to_drive',
+    required: false,
     isOnGuestHomePage: false,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Confluence',
+    iconName: 'article',
+    required: false,
+    isOnGuestHomePage: false,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Github',
+    iconName: 'code',
+    required: false,
+    isOnGuestHomePage: false,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Altium',
+    iconName: 'electric_bolt',
+    required: false,
+    isOnGuestHomePage: false,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Application',
+    iconName: 'ballot',
+    required: false,
+    isOnGuestHomePage: false,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Sign Ups',
+    iconName: 'ballot',
+    required: false,
+    isOnGuestHomePage: false,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'facebook',
+    iconName: 'facebook',
+    required: false,
+    isOnGuestHomePage: true,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Instagram',
+    iconName: 'Instagram',
+    required: false,
+    isOnGuestHomePage: true,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
   }

@@ -7,6 +7,7 @@ import { TeamOutput, TeamProcess } from './team.process.js';
 import { ConfigDataOutput, ConfigDataProcess } from './config-data.process.js';
 import { CarOutput } from '../context.js';
 import {
+  generateProjectBudgets,
   generateProjectTimeline,
   PROJECTS_PER_CAR,
   projectCreateInput,
@@ -32,6 +33,8 @@ const PROJECT_TEMPLATES = [
     projectName: 'Software Controls Project'
   }
 ];
+
+const PROJECT_LINK_TYPE_NAMES = ['Confluence', 'Github', 'Altium', 'Google Drive'];
 
 export type ProjectOutput = {
   projects: ProjectContext[];
@@ -74,6 +77,7 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
       cars.map(async ({ car, dateRange }) => {
         const { carNumber } = car.wbsElement;
         const usedProjectNames = new Set<string>();
+        const projectBudgets = generateProjectBudgets(this.faker, PROJECTS_PER_CAR);
 
         return Promise.all(
           Array.from({ length: PROJECTS_PER_CAR }, async (_, index) => {
@@ -87,22 +91,18 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
 
             usedProjectNames.add(projectName);
 
-            const assignedTeams = this.faker.helpers.arrayElements(
-              teams,
-              this.faker.number.int({ min: 1, max: Math.min(3, teams.length) })
-            );
-
+            const assignedTeams = this.projectTeams(teams);
             const assignedTeamIds = assignedTeams.map((team) => team.teamId);
 
             const lead = this.faker.helpers.arrayElement(projectOwners);
             const managerPool = projectOwners.filter((user) => user.userId !== lead.userId);
             const manager = this.faker.helpers.arrayElement(managerPool.length > 0 ? managerPool : projectOwners);
 
+            const selectedLinkTypes = this.projectLinkTypes(linkTypes);
             const timeline = generateProjectTimeline(this.faker, dateRange);
 
             const project = await this.prisma.project.create({
               data: projectCreateInput(
-                this.faker,
                 organizationId,
                 car.carId,
                 carNumber,
@@ -111,8 +111,9 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
                 assignedTeamIds,
                 lead.userId,
                 manager.userId,
-                linkTypes,
-                lead.userId
+                selectedLinkTypes,
+                lead.userId,
+                { budget: projectBudgets[index] }
               ),
               include: {
                 wbsElement: true,
@@ -151,6 +152,29 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
       projectsByCarId,
       projectsById
     };
+  }
+
+  private projectTeams(teams: Team[]) {
+    const teamCount = this.faker.helpers.weightedArrayElement([
+      { weight: 85, value: 1 },
+      { weight: 12, value: 2 },
+      { weight: 3, value: 3 }
+    ]);
+
+    return this.faker.helpers.arrayElements(teams, Math.min(teamCount, teams.length));
+  }
+
+  private projectLinkTypes(linkTypes: ProjectInput['linkTypes']) {
+    const projectLinkTypes = linkTypes.filter((linkType) => PROJECT_LINK_TYPE_NAMES.includes(linkType.name));
+
+    const linkCount = this.faker.helpers.weightedArrayElement([
+      { weight: 45, value: 0 },
+      { weight: 35, value: 1 },
+      { weight: 15, value: 2 },
+      { weight: 5, value: 3 }
+    ]);
+
+    return this.faker.helpers.arrayElements(projectLinkTypes, Math.min(linkCount, projectLinkTypes.length));
   }
 
   private async createProjectTemplates(organizationId: string, userCreatedId: string | undefined, teams: Team[]) {

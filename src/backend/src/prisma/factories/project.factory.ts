@@ -10,88 +10,183 @@ const MAX_PROJECT_MONTHS = 12;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const DAYS_PER_MONTH = 30;
 
-const PROJECT_NAME_PARTS = [
-  'Accumulator',
-  'Battery Box',
-  'Brake Pedal',
-  'Brake System',
-  'Cooling Loop',
-  'DAQ Harness',
-  'Dashboard',
-  'Drivetrain',
+const PROJECT_NAMES = [
   'Firewall',
-  'Front Wing',
-  'HV Disconnect',
-  'Impact Attenuator',
-  'Inverter Mount',
-  'LV Battery',
-  'Main Hoop',
-  'Motor Controller',
-  'Nose Cone',
+  'TS Interface Panel',
+  'Steering',
+  'Shepherd BMS FW',
+  'Flex Therm PCBs',
+  'TSAL',
+  'Argos',
+  'Ergo Test Bench',
+  'Driver IO',
+  'Harness',
+  'Headrest',
+  'Tractive Wiring',
+  'Floor',
+  'Wiring',
+  'Bodywork',
+  'Chassis',
+  'Motor Cooling',
+  'Odyssey',
+  'Seat',
+  'Shepherd',
+  'Proteus MC FW',
   'Pedal Box',
-  'Power Distribution',
+  'Cerberus MPU',
+  'Lightning Board',
+  'FSAE Competition Documents',
+  'MPU',
+  'Driver Comms',
+  'NERO',
+  'ML and Data',
+  'Wings',
+  'Lap Simulation',
+  'Polaris',
+  'PDU',
+  'General Electrical',
+  'Tire Modeling Tool',
+  'Calendar Improvements',
+  'Brake Light',
+  'FinishLine',
+  'Proteus MC HW',
+  'Steering Wheel PCB',
+  'BSPD',
+  'Charger',
+  'Mechanical Sensor Boards',
+  'Vehicle Control Unit',
   'Rear Wing',
-  'Seat Mount',
-  'Shutdown Circuit',
-  'Steering Rack',
-  'Suspension Geometry',
-  'Telemetry System',
-  'Tractive System',
-  'Vehicle Controls',
-  'Wheel Assembly',
-  'Wiring Harness',
-  'Yaw Sensor'
+  'Segments',
+  'Automotive Ethernet',
+  'Battery Box',
+  'Fusible Links',
+  'Front Wing',
+  'Underbody',
+  'Firewall/Floor',
+  'Operations Dashboard',
+  'Telemetry Stand',
+  'Marketing',
+  'Tires',
+  'HV Plate',
+  'BMS Compute',
+  'Transmission',
+  'TS Wiring',
+  'Jigs',
+  'Rules Dashboard',
+  'LV Wiring',
+  'TSSI',
+  'Bodywork Thermal',
+  'Embedded Analysis',
+  'Competition Registration Fees',
+  'Trucks',
+  'Spring Recruitment',
+  'Competition Logistics',
+  'BOM Usability',
+  'Gantt Improvements',
+  'Bay Dashboard',
+  'Executive Summary',
+  'Multibody',
+  'Autonomous Control',
+  'Real Time',
+  'Simulation Product',
+  'Wheels',
+  'Charger Cart',
+  'Suspension',
+  'Simulation'
 ];
 
-const PROJECT_QUALIFIERS = [
-  'Design',
-  'Integration',
-  'Manufacturing',
-  'Validation',
-  'Testing',
-  'Redesign',
-  'Optimization',
-  'Packaging',
-  'Prototype',
-  'Assembly'
-];
+const VERSIONED_PROJECT_NAMES = ['Odyssey', 'Argos', 'NERO', 'Polaris'];
 
-const PROJECT_SUMMARY_BY_PART: Record<string, string> = {
-  Accumulator: 'Design and validate the accumulator subsystem for the car.',
+const PROJECT_SUMMARY_BY_NAME: Record<string, string> = {
+  Firewall: 'Partitions and protects the driver from the rest of the car.',
+  'TS Interface Panel': 'Integration with tractive system measurement points, energy meter, and high voltage disconnect.',
+  Steering:
+    "Design and validate the steering system, including the steering column, steering gear, and tie rods that transmit the driver's input to the wheels.",
+  'Shepherd BMS FW': 'Develop firmware for the battery management system.',
+  'Flex Therm PCBs': 'Design and validate thermistor and tap PCBs.',
+  TSAL: 'Develop and validate the tractive system active light.',
+  Argos: 'Build telemetry and data visualization tooling for car data.',
+  'Ergo Test Bench': 'Create an adjustable ergonomics test bench for validating driver position.',
+  'Driver IO': 'Develop steering wheel, dashboard, and driver-facing controls.',
+  Harness: 'Design, manufacture, and validate vehicle wiring harnesses.',
+  Headrest: 'Design and manufacture headrest components that keep the driver safe.',
+  'Tractive Wiring': 'Design and validate tractive system high-current path wiring.',
+  Floor: 'Design and manufacture the vehicle floor.',
+  Wiring: 'Design and validate GLV, LV, and TS wiring.',
+  Bodywork: 'Design and manufacture exterior bodywork components.',
+  Chassis: 'Design and manufacture the structural core of the car.',
+  'Motor Cooling': 'Design and manufacture a system to cool the motor and motor controller.',
+  Odyssey: 'Develop FinishLine improvements for project management workflows.',
+  Seat: 'Design and manufacture the driver seat and mounting interface.',
+  Shepherd: 'Develop battery management system hardware and firmware.',
+  'Proteus MC FW': 'Develop firmware for the motor controller.',
+  'Pedal Box': 'Package and validate brake and throttle pedal systems.',
+  'Cerberus MPU': 'Develop main processing unit hardware and firmware.',
+  'Lightning Board': 'Design and validate low-voltage electronics.',
+  'FSAE Competition Documents': 'Prepare competition documents and technical reports.',
+  MPU: 'Develop main processing hardware and supporting firmware.',
+  'Driver Comms': 'Develop driver communication and feedback systems.',
+  NERO: 'Develop software tooling and dashboards for team operations.',
+  'ML and Data': 'Develop data processing and analysis tooling.',
+  Wings: 'Design and manufacture aerodynamic wing elements.',
+  'Lap Simulation': 'Build lap simulation tooling to evaluate vehicle performance.',
+  PDU: 'Design and validate the power distribution unit.',
+  'General Electrical': 'Support general electrical integration and validation.',
+  'Tire Modeling Tool': 'Build tooling for tire model analysis.',
+  'Calendar Improvements': 'Improve scheduling and calendar workflows.',
+  'Brake Light': 'Design and validate the brake light system.',
+  FinishLine: 'Develop improvements to the FinishLine project management platform.',
+  'Proteus MC HW': 'Design and validate motor controller hardware.',
+  'Steering Wheel PCB': 'Design and validate the steering wheel PCB.',
+  BSPD: 'Design and validate the brake system plausibility device.',
+  Charger: 'Design and validate charging hardware and supporting systems.',
+  'Mechanical Sensor Boards': 'Design and validate mechanical sensor boards.',
+  'Vehicle Control Unit': 'Develop vehicle control hardware and software.',
+  'Rear Wing': 'Design, manufacture, and test the rear aerodynamic package.',
+  Segments: 'Develop segmented data and analysis workflows.',
+  'Automotive Ethernet': 'Integrate automotive Ethernet communication systems.',
   'Battery Box': 'Design, manufacture, and validate the battery box assembly.',
-  'Brake Pedal': 'Develop the brake pedal and pedal box interface.',
-  'Brake System': 'Design and validate hydraulic braking components.',
-  'Cooling Loop': 'Build and test the cooling loop for thermal management.',
-  'DAQ Harness': 'Create the data acquisition harness and sensor wiring.',
-  Dashboard: 'Develop the driver-facing dashboard and controls.',
-  Drivetrain: 'Integrate drivetrain components and validate performance.',
-  Firewall: 'Design and manufacture rules-compliant firewall components.',
-  'Front Wing': 'Design, manufacture, and test front aerodynamic elements.',
-  'HV Disconnect': 'Develop high-voltage disconnect and safety interfaces.',
-  'Impact Attenuator': 'Develop a rules-compliant impact attenuator.',
-  'Inverter Mount': 'Package and mount the inverter assembly.',
-  'LV Battery': 'Develop the low-voltage battery and supporting circuits.',
-  'Main Hoop': 'Design and validate the main hoop structure.',
-  'Motor Controller': 'Integrate motor controller hardware and software.',
-  'Nose Cone': 'Design and manufacture the nose cone assembly.',
-  'Pedal Box': 'Package brake and throttle pedal systems.',
-  'Power Distribution': 'Build and validate vehicle power distribution.',
-  'Rear Wing': 'Design, manufacture, and test rear aerodynamic elements.',
-  'Seat Mount': 'Design and manufacture driver seat mounting hardware.',
-  'Shutdown Circuit': 'Implement and validate the shutdown safety circuit.',
-  'Steering Rack': 'Design and validate the steering rack and linkage.',
-  'Suspension Geometry': 'Develop suspension geometry and mounting points.',
-  'Telemetry System': 'Build telemetry collection and wireless data systems.',
-  'Tractive System': 'Design and validate tractive system wiring and safety.',
-  'Vehicle Controls': 'Develop vehicle control logic and driver interfaces.',
-  'Wheel Assembly': 'Design and validate wheel-end components.',
-  'Wiring Harness': 'Design, manufacture, and validate vehicle wiring harnesses.',
-  'Yaw Sensor': 'Integrate yaw sensing and vehicle dynamics data collection.'
+  'Fusible Links': 'Design and validate fusible link components.',
+  'Front Wing': 'Design, manufacture, and test the front aerodynamic package.',
+  Underbody: 'Design and manufacture underbody aerodynamic components.',
+  'Firewall/Floor': 'Design and manufacture firewall and floor interface components.',
+  'Operations Dashboard': 'Build dashboards for operations and team management.',
+  'Telemetry Stand': 'Build a stand for telemetry collection and display.',
+  Marketing: 'Support marketing and outreach initiatives.',
+  Tires: 'Support tire selection, modeling, and testing.',
+  'HV Plate': 'Package and validate high-voltage plate components.',
+  'BMS Compute': 'Develop compute systems for battery management.',
+  Transmission: 'Design and validate drivetrain transmission components.',
+  'TS Wiring': 'Design and validate tractive system wiring.',
+  Jigs: 'Design and manufacture jigs for repeatable assembly.',
+  'Rules Dashboard': 'Build tooling for tracking rules compliance.',
+  'LV Wiring': 'Design and validate low-voltage wiring.',
+  TSSI: 'Develop tractive system safety interface components.',
+  'Bodywork Thermal': 'Analyze and improve bodywork thermal behavior.',
+  'Embedded Analysis': 'Develop embedded systems analysis tooling.',
+  'Competition Registration Fees': 'Track and support competition registration.',
+  Trucks: 'Support truck and logistics planning for competition.',
+  'Spring Recruitment': 'Support spring recruitment planning and execution.',
+  'Competition Logistics': 'Plan and execute competition logistics.',
+  'BOM Usability': 'Improve bill of materials workflows.',
+  'Gantt Improvements': 'Improve project timeline and Gantt chart workflows.',
+  'Bay Dashboard': 'Build dashboards for bay activity and operations.',
+  'Executive Summary': 'Prepare executive-level project and competition summaries.',
+  Multibody: 'Develop multibody vehicle simulation models.',
+  'Autonomous Control': 'Develop autonomous vehicle control logic.',
+  'Real Time': 'Develop real-time telemetry and visualization workflows.',
+  'Simulation Product': 'Develop simulation tooling for vehicle performance analysis.',
+  Wheels: 'Design and validate wheel-end components.',
+  'Charger Cart': 'Design and manufacture the charger cart.',
+  Suspension: 'Design and validate suspension components.',
+  Simulation: 'Develop simulation models for vehicle performance analysis.'
 };
 
 const PROJECT_LINK_URL_BY_TYPE: Record<string, (projectSlug: string) => string> = {
   Confluence: (projectSlug) => `https://nerdocs.atlassian.net/wiki/spaces/NER/pages/${projectSlug}`,
-  'Bill of Materials': (projectSlug) => `https://docs.google.com/spreadsheets/d/${projectSlug}`
+  Github: (projectSlug) => `https://github.com/Northeastern-Electric-Racing/${projectSlug}`,
+  Altium: (projectSlug) => `https://northeastern-fsae.365.altium.com/designs/${projectSlug}`,
+  'Google Drive': (projectSlug) => `https://drive.google.com/drive/folders/${projectSlug}`
 };
 
 const clampDate = (date: Date, min: Date, max: Date): Date => {
@@ -108,6 +203,43 @@ const addDays = (date: Date, days: number): Date => {
 
 const daysBetween = (start: Date, end: Date): number =>
   Math.max(0, Math.floor((end.getTime() - start.getTime()) / MS_PER_DAY));
+
+const TARGET_BUDGET_PER_CAR = 80_000;
+
+export const generateProjectBudgets = (
+  faker: Faker,
+  projectCount: number,
+  targetBudget = TARGET_BUDGET_PER_CAR
+): number[] => {
+  const weights = Array.from({ length: projectCount }, (): number => {
+    const bucket = faker.number.int({ min: 1, max: 100 });
+
+    if (bucket <= 5) return 0;
+    if (bucket <= 75) return faker.number.float({ min: 0.3, max: 1.2 });
+    if (bucket <= 95) return faker.number.float({ min: 1.2, max: 3 });
+    return faker.number.float({ min: 3, max: 7 });
+  });
+
+  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+
+  if (totalWeight === 0) {
+    return [targetBudget, ...Array.from({ length: projectCount - 1 }, () => 0)];
+  }
+
+  const budgets = weights.map((weight) => Math.round((targetBudget * weight) / totalWeight / 100) * 100);
+
+  const currentTotal = budgets.reduce((sum, budget) => sum + budget, 0);
+  const difference = targetBudget - currentTotal;
+
+  const largestBudgetIndex = budgets.reduce(
+    (largestIndex, budget, index) => (budget > budgets[largestIndex] ? index : largestIndex),
+    0
+  );
+
+  budgets[largestBudgetIndex] += difference;
+
+  return budgets;
+};
 
 export const generateProjectTimeline = (faker: Faker, carDateRange: DateRange): DateRange => {
   const carStart = new Date(carDateRange.start);
@@ -136,20 +268,23 @@ export const generateProjectTimeline = (faker: Faker, carDateRange: DateRange): 
 };
 
 export const projectNameForIndex = (faker: Faker, index: number): string => {
-  const part = PROJECT_NAME_PARTS[index % PROJECT_NAME_PARTS.length];
-  const qualifier = faker.helpers.arrayElement(PROJECT_QUALIFIERS);
+  const baseName = PROJECT_NAMES[index % PROJECT_NAMES.length];
 
-  return `${part} ${qualifier}`;
+  if (VERSIONED_PROJECT_NAMES.includes(baseName)) {
+    return `${baseName} ${faker.number.int({ min: 24, max: 27 })}`;
+  }
+
+  return baseName;
 };
 
 export const projectSummaryForName = (name: string): string => {
-  const matchingPart = PROJECT_NAME_PARTS.find((part) => name.startsWith(part));
+  const matchingName = PROJECT_NAMES.find((projectName) => name.startsWith(projectName));
 
-  if (!matchingPart) {
+  if (!matchingName) {
     return `Plan, design, manufacture, and validate ${name.toLowerCase()}.`;
   }
 
-  return PROJECT_SUMMARY_BY_PART[matchingPart] ?? `Develop ${matchingPart.toLowerCase()} for the car.`;
+  return PROJECT_SUMMARY_BY_NAME[matchingName] ?? `Develop ${matchingName.toLowerCase()} for the car.`;
 };
 
 export const projectAbbreviationForName = (name: string, projectNumber: number): string => {
@@ -190,7 +325,6 @@ const projectLinksCreateInput = (
 };
 
 export const projectCreateInput = (
-  faker: Faker,
   organizationId: string,
   carId: string,
   carNumber: number,
@@ -204,7 +338,7 @@ export const projectCreateInput = (
   overrides: Partial<Prisma.ProjectCreateInput> = {}
 ): Prisma.ProjectCreateInput => ({
   summary: projectSummaryForName(projectName),
-  budget: faker.number.int({ min: 500, max: 12_000 }),
+  budget: 0,
   abbreviation: projectAbbreviationForName(projectName, projectNumber),
   car: {
     connect: { carId }
