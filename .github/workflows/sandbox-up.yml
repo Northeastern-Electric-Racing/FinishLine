@@ -3,7 +3,7 @@ name: Sandbox Spin-Up
 on:
   pull_request:
     branches:
-      - multitenancy
+      - sandbox
     types: [opened, synchronize, reopened]
   workflow_dispatch:
 
