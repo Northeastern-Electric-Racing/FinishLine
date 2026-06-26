@@ -3,7 +3,7 @@ import { isAdmin, User } from 'shared';
 import { getCarQueryArgs } from '../prisma-query-args/cars.query-args.js';
 import prisma from '../prisma/prisma.js';
 import { carTransformer } from '../transformers/cars.transformer.js';
-import { AccessDeniedAdminOnlyException } from '../utils/errors.utils.js';
+import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
 
 export default class CarsService {
@@ -52,5 +52,28 @@ export default class CarsService {
     });
 
     return carTransformer(car);
+  }
+
+  static async updateCar(carId: string, organization: Organization, user: User, name: string) {
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit a car');
+
+    const car = await prisma.car.findFirst({
+      where: { carId, wbsElement: { organizationId: organization.organizationId } }
+    });
+
+    if (!car) throw new NotFoundException('Car', carId);
+
+    const updatedCar = await prisma.car.update({
+      where: { carId },
+      data: {
+        wbsElement: {
+          update: { name }
+        }
+      },
+      ...getCarQueryArgs(organization.organizationId)
+    });
+
+    return carTransformer(updatedCar);
   }
 }

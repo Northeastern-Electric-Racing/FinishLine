@@ -22,4 +22,15 @@ export default class CarsController {
       next(error);
     }
   }
+
+  static async updateCarName(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { carId } = req.params as Record<string, string>;
+      const { name } = req.body;
+      const car = await CarsService.updateCar(carId, req.organization, req.currentUser, name);
+      res.status(201).json(car);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
