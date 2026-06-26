@@ -172,6 +172,79 @@ jobs:
           TF_VAR_snapshot_identifier: ${{ steps.snapshot_copy.outputs.snapshot_id }}
         run: terraform apply -auto-approve
 
+      - name: Configure Amplify custom domain DNS
+        working-directory: infrastructure/environments/sandbox
+        run: |
+          APP_ID=$(terraform output -raw amplify_app_id)
+          DOMAIN="sandbox.finishlinebyner.com"
+
+          # Get cert verification and subdomain routing records from Amplify
+          DOMAIN_ASSOC=$(aws amplify get-domain-association \
+            --app-id "$APP_ID" \
+            --domain-name "$DOMAIN" \
+            --region us-east-2)
+
+          # Parse cert verification record: "_abc.domain. CNAME _xyz.acm-validations.aws."
+          CERT_RECORD=$(echo "$DOMAIN_ASSOC" | jq -r '.domainAssociation.certificateVerificationDNSRecord')
+          CERT_NAME=$(echo "$CERT_RECORD" | awk '{print $1}')
+          CERT_VALUE=$(echo "$CERT_RECORD" | awk '{print $3}')
+
+          # Parse subdomain routing record: "CNAME branch.appid.amplifyapp.com"
+          SUB_RECORD=$(echo "$DOMAIN_ASSOC" | jq -r '.domainAssociation.subDomains[0].dnsRecord')
+          SUB_VALUE=$(echo "$SUB_RECORD" | awk '{print $NF}')
+
+          # Get Route53 hosted zone ID
+          ZONE_ID=$(aws route53 list-hosted-zones-by-name \
+            --dns-name "finishlinebyner.com." \
+            --query "HostedZones[0].Id" \
+            --output text | sed 's|/hostedzone/||')
+
+          echo "Zone ID: $ZONE_ID"
+          echo "Cert verification: $CERT_NAME CNAME $CERT_VALUE"
+          echo "Subdomain routing: $DOMAIN CNAME $SUB_VALUE"
+
+          # Upsert both DNS records
+          aws route53 change-resource-record-sets \
+            --hosted-zone-id "$ZONE_ID" \
+            --change-batch "{
+              \"Changes\": [
+                {
+                  \"Action\": \"UPSERT\",
+                  \"ResourceRecordSet\": {
+                    \"Name\": \"$CERT_NAME\",
+                    \"Type\": \"CNAME\",
+                    \"TTL\": 300,
+                    \"ResourceRecords\": [{\"Value\": \"$CERT_VALUE\"}]
+                  }
+                },
+                {
+                  \"Action\": \"UPSERT\",
+                  \"ResourceRecordSet\": {
+                    \"Name\": \"$DOMAIN.\",
+                    \"Type\": \"CNAME\",
+                    \"TTL\": 300,
+                    \"ResourceRecords\": [{\"Value\": \"$SUB_VALUE\"}]
+                  }
+                }
+              ]
+            }"
+
+          echo "Waiting for Amplify domain to become active..."
+          while true; do
+            STATUS=$(aws amplify get-domain-association \
+              --app-id "$APP_ID" \
+              --domain-name "$DOMAIN" \
+              --region us-east-2 \
+              --query "domainAssociation.domainStatus" \
+              --output text)
+            echo "  domain status: $STATUS"
+            case "$STATUS" in
+              AVAILABLE) echo "Domain is active."; break ;;
+              FAILED) echo "Domain verification failed."; exit 1 ;;
+              *) sleep 30 ;;
+            esac
+          done
+
       - name: Build and deploy frontend to Amplify
         working-directory: infrastructure/environments/sandbox
         run: |
@@ -240,18 +313,12 @@ jobs:
           echo "frontend_url=$(terraform output -raw frontend_url)" >> "$GITHUB_OUTPUT"
 
       - name: Deploy app to sandbox EB
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          # Log into ECR (prod repo, us-east-1) to get the registry URL
-          ECR_REGISTRY=$(aws ecr get-login-password --region us-east-1 | \
-            docker login --username AWS --password-stdin \
-            "$(aws sts get-caller-identity --query Account --output text).dkr.ecr.us-east-1.amazonaws.com" \
-            2>/dev/null && \
-            echo "$(aws sts get-caller-identity --query Account --output text).dkr.ecr.us-east-1.amazonaws.com")
-
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com"
+
+          aws ecr get-login-password --region us-east-1 | \
+            docker login --username AWS --password-stdin "$ECR_REGISTRY"
           ECR_REPOSITORY="finishline-production"
 
           # Use the latest prod image — same image tested in sandbox = same image that goes to prod
@@ -290,5 +357,7 @@ jobs:
         run: |
           echo "Sandbox is up!"
           echo ""
-          echo "Frontend: ${{ steps.urls.outputs.frontend_url }}"
+          echo "Frontend: https://sandbox.finishlinebyner.com"
           echo "Backend:  ${{ steps.urls.outputs.eb_url }}"
+          echo ""
+          echo "Register https://sandbox.finishlinebyner.com in Google OAuth once, then it works on every spin-up."

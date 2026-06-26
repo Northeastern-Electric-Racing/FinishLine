@@ -149,12 +149,20 @@ module "frontend" {
   project_name     = "finishline"
   environment      = "sandbox"
   main_branch_name = "develop"
-  backend_api_url     = module.elasticbeanstalk.environment_endpoint_url
+  backend_api_url  = module.elasticbeanstalk.environment_endpoint_url
 
-  domain_name                 = ""
-  enable_pull_request_preview = false
-  enable_auto_branch_creation = false
-  create_webhook              = false
+  domain_name                  = "sandbox.finishlinebyner.com"
+  enable_pull_request_preview  = false
+  enable_auto_branch_creation  = false
+  create_webhook               = false
+  # The workflow polls for domain ACTIVE status after applying DNS records
+  wait_for_domain_verification = false
+}
+
+# Route53 hosted zone for finishlinebyner.com
+data "aws_route53_zone" "main" {
+  name         = "finishlinebyner.com"
+  private_zone = false
 }
 
 #############

@@ -69,3 +69,9 @@ variable "create_webhook" {
   type        = bool
   default     = false
 }
+
+variable "wait_for_domain_verification" {
+  description = "Whether Terraform should block until Amplify domain verification completes. Set false for sandbox where the workflow handles the wait."
+  type        = bool
+  default     = true
+}

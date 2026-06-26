@@ -118,7 +118,7 @@ resource "aws_amplify_domain_association" "main" {
   domain_name = var.domain_name
 
   # Wait for DNS propagation
-  wait_for_verification = true
+  wait_for_verification = var.wait_for_domain_verification
 
   # Main branch subdomain configuration
   sub_domain {
