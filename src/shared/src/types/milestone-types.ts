@@ -14,4 +14,6 @@ export interface Milestone {
   userDeleted?: User;
   dateCreated: Date;
   dateDeleted?: Date;
+  isOnRecruitingDashboard: boolean;
+  isOnNewMemberDashboard: boolean;
 }

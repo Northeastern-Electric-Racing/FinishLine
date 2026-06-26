@@ -537,7 +537,7 @@ export default class PartReviewService {
    */
   static async getAllPartReviewFAQs(organizationId: string) {
     const partReviewFAQs = await prisma.frequentlyAskedQuestion.findMany({
-      where: { dateDeleted: null, partReviewFaqOrgId: organizationId },
+      where: { dateDeleted: null, organizationId, isOnPartReviewPage: true },
       ...getFaqQueryArgs(organizationId)
     });
 
@@ -652,7 +652,8 @@ export default class PartReviewService {
         question,
         answer,
         userCreated: { connect: { userId: creator.userId } },
-        partReviewFaqOrg: { connect: { organizationId } }
+        organization: { connect: { organizationId } },
+        isOnPartReviewPage: true
       },
       ...getFaqQueryArgs(organizationId)
     });
@@ -682,7 +683,7 @@ export default class PartReviewService {
 
     const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId } });
 
-    if (!faq || faq.partReviewFaqOrgId !== organizationId) {
+    if (!faq || faq.organizationId !== organizationId || !faq.isOnPartReviewPage) {
       throw new NotFoundException('Faq', faqId);
     }
 
@@ -711,9 +712,9 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('delete faq');
     }
 
-    const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId }, ...getFaqQueryArgs });
+    const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId }, ...getFaqQueryArgs(organizationId) });
 
-    if (!faq || faq.partReviewFaqOrgId !== organizationId) {
+    if (!faq || faq.organizationId !== organizationId || !faq.isOnPartReviewPage) {
       throw new NotFoundException('Faq', faqId);
     }
 
