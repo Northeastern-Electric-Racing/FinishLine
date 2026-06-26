@@ -181,6 +181,12 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           yarn install --frozen-lockfile
           yarn workspace shared build
+
+          # Set Vite env vars required at build time
+          EB_URL=$(cd infrastructure/environments/sandbox && terraform output -raw eb_environment_url)
+          export VITE_REACT_APP_BACKEND_URL="http://$EB_URL"
+          export VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID="$TF_VAR_google_client_id"
+
           yarn workspace frontend build
 
           # Zip the built artifacts (files at root, not nested)
