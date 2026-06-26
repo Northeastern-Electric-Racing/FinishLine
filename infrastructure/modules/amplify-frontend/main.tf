@@ -7,8 +7,8 @@ resource "aws_amplify_app" "frontend" {
   name       = "${var.project_name}-${var.environment}-frontend"
   repository = var.github_repository
 
-  # GitHub access token for repository access
-  access_token = var.github_access_token
+  # GitHub access token for webhook setup — optional; omit for public repos
+  access_token = var.github_access_token != "" ? var.github_access_token : null
 
   # Build specification
   build_spec = <<-EOT

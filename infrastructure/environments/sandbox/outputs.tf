@@ -52,3 +52,8 @@ output "frontend_url" {
   description = "URL of the sandbox Amplify frontend"
   value       = module.frontend.frontend_url
 }
+
+output "amplify_app_id" {
+  description = "Amplify app ID (used to trigger manual builds)"
+  value       = module.frontend.amplify_app_id
+}
