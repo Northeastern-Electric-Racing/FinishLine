@@ -21,6 +21,9 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
+      <Typography variant="h6" sx={{ textAlign: 'center', color: 'warning.main' }}>
+        🚧 Sandbox Environment
+      </Typography>
       <Box
         sx={{
           display: 'flex',
