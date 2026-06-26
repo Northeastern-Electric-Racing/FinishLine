@@ -278,6 +278,18 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
           "elasticbeanstalk:DescribeEnvironments"
         ]
         Resource = "*"
+      },
+      {
+        Sid    = "Route53SandboxDNS"
+        Effect = "Allow"
+        Action = [
+          "route53:ChangeResourceRecordSets",
+          "route53:ListHostedZonesByName",
+          "route53:ListHostedZones",
+          "route53:GetHostedZone",
+          "route53:GetChange"
+        ]
+        Resource = "*"
       }
     ]
   })
