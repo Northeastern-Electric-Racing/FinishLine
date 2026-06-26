@@ -160,10 +160,15 @@ resource "aws_s3_bucket_public_access_block" "eb_versions" {
 
 #############
 # IAM Policy for Sandbox Workflow Operations
+<<<<<<< Updated upstream
 # The github-actions-finishline user needs these permissions for sandbox-up.yml:
 # - RDS snapshot operations (create from prod, copy cross-region)
 # - Secrets Manager reads (pull prod secrets)
 # - EB describe (pull prod non-secret config)
+=======
+# Attaches to the manually-created github-actions-finishline user.
+# Grants permissions needed by sandbox-up.yml that the user doesn't already have.
+>>>>>>> Stashed changes
 #############
 resource "aws_iam_user_policy" "github_actions_sandbox" {
   name = "sandbox-workflow-permissions"
@@ -173,6 +178,33 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
     Version = "2012-10-17"
     Statement = [
       {
+<<<<<<< Updated upstream
+=======
+        Sid    = "TerraformStateS3"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::finishline-terraform-state",
+          "arn:aws:s3:::finishline-terraform-state/*"
+        ]
+      },
+      {
+        Sid    = "TerraformStateDynamoDB"
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem"
+        ]
+        Resource = "arn:aws:dynamodb:us-east-1:830877454256:table/finishline-terraform-locks"
+      },
+      {
+>>>>>>> Stashed changes
         Sid    = "RDSSnapshotOperations"
         Effect = "Allow"
         Action = [
@@ -186,6 +218,7 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
         Resource = "*"
       },
       {
+<<<<<<< Updated upstream
         Sid    = "SecretsManagerReadProd"
         Effect = "Allow"
         Action = [
@@ -195,6 +228,8 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
         Resource = "arn:aws:secretsmanager:us-east-1:830877454256:secret:finishline/production/*"
       },
       {
+=======
+>>>>>>> Stashed changes
         Sid    = "KMSForSnapshotCopy"
         Effect = "Allow"
         Action = [
@@ -216,6 +251,18 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
         }
       },
       {
+<<<<<<< Updated upstream
+=======
+        Sid    = "SecretsManagerReadProd"
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = "arn:aws:secretsmanager:us-east-1:830877454256:secret:finishline/production/*"
+      },
+      {
+>>>>>>> Stashed changes
         Sid    = "ElasticBeanstalkDescribeProd"
         Effect = "Allow"
         Action = [
