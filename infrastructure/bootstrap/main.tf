@@ -1,4 +1,7 @@
 # Bootstrap Infrastructure
+#
+# NOTE: The github-actions-finishline IAM user was created manually outside of Terraform.
+# The policy below attaches to that existing user by name.
 # This Terraform configuration creates the foundational resources needed
 # for managing Terraform state remotely.
 #
@@ -153,6 +156,76 @@ resource "aws_s3_bucket_public_access_block" "eb_versions" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+#############
+# IAM Policy for Sandbox Workflow Operations
+# The github-actions-finishline user needs these permissions for sandbox-up.yml:
+# - RDS snapshot operations (create from prod, copy cross-region)
+# - Secrets Manager reads (pull prod secrets)
+# - EB describe (pull prod non-secret config)
+#############
+resource "aws_iam_user_policy" "github_actions_sandbox" {
+  name = "sandbox-workflow-permissions"
+  user = "github-actions-finishline"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "RDSSnapshotOperations"
+        Effect = "Allow"
+        Action = [
+          "rds:CreateDBSnapshot",
+          "rds:DescribeDBSnapshots",
+          "rds:CopyDBSnapshot",
+          "rds:DeleteDBSnapshot",
+          "rds:ListTagsForResource",
+          "rds:AddTagsToResource"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "SecretsManagerReadProd"
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = "arn:aws:secretsmanager:us-east-1:830877454256:secret:finishline/production/*"
+      },
+      {
+        Sid    = "KMSForSnapshotCopy"
+        Effect = "Allow"
+        Action = [
+          "kms:CreateGrant",
+          "kms:DescribeKey",
+          "kms:GenerateDataKey",
+          "kms:Decrypt",
+          "kms:ReEncryptFrom",
+          "kms:ReEncryptTo"
+        ]
+        Resource = "*"
+        Condition = {
+          StringLike = {
+            "kms:ViaService" = [
+              "rds.us-east-1.amazonaws.com",
+              "rds.us-east-2.amazonaws.com"
+            ]
+          }
+        }
+      },
+      {
+        Sid    = "ElasticBeanstalkDescribeProd"
+        Effect = "Allow"
+        Action = [
+          "elasticbeanstalk:DescribeConfigurationSettings",
+          "elasticbeanstalk:DescribeEnvironments"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
 }
 
 # Clean up old EB versions after 90 days

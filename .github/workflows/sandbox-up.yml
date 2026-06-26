@@ -78,6 +78,7 @@ jobs:
           aws rds copy-db-snapshot \
             --source-db-snapshot-identifier "$SOURCE_ARN" \
             --target-db-snapshot-identifier "$COPY_ID" \
+            --kms-key-id alias/aws/rds \
             --region us-east-2
 
           echo "Waiting for snapshot copy to become available (~5 min)..."
