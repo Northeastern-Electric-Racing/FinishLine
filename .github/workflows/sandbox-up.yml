@@ -192,7 +192,7 @@ jobs:
           DEPLOY=$(aws amplify create-deployment \
             --app-id "$APP_ID" \
             --branch-name develop \
-            --region us-east-1)
+            --region us-east-2)
           JOB_ID=$(echo "$DEPLOY" | jq -r '.jobId')
           UPLOAD_URL=$(echo "$DEPLOY" | jq -r '.zipUploadUrl')
 
@@ -206,7 +206,7 @@ jobs:
             --app-id "$APP_ID" \
             --branch-name develop \
             --job-id "$JOB_ID" \
-            --region us-east-1
+            --region us-east-2
 
           echo "Waiting for Amplify deployment..."
           while true; do
@@ -214,7 +214,7 @@ jobs:
               --app-id "$APP_ID" \
               --branch-name develop \
               --job-id "$JOB_ID" \
-              --region us-east-1 \
+              --region us-east-2 \
               --query "job.summary.status" \
               --output text)
             echo "  status: $STATUS"
