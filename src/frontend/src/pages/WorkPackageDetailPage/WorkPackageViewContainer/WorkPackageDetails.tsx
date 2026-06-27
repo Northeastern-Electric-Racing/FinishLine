@@ -22,7 +22,7 @@ interface WorkPackageDetailsProps {
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, dependencies }) => {
   const user = useCurrentUser();
-  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(user.role);
+  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(user?.role);
   const descriptionBulletsSplitByType = new Map<string, DescriptionBullet[]>();
   for (const bullet of workPackage.descriptionBullets) {
     if (bullet.dateDeleted) continue;
