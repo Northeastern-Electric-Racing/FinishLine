@@ -18,7 +18,6 @@ import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ScopeTab } from './ScopeTab';
 import ProjectGantt from './ProjectGantt';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -220,7 +219,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             { tabUrlValue: 'overview', tabName: 'Overview' },
             { tabUrlValue: 'tasks', tabName: 'Tasks' },
             { tabUrlValue: 'bom', tabName: 'BOM' },
-            { tabUrlValue: 'scope', tabName: 'Scope' },
             { tabUrlValue: 'changes', tabName: 'Changes' },
             { tabUrlValue: 'gantt', tabName: 'Gantt' },
             { tabUrlValue: 'change-requests', tabName: 'Change Requests' },
@@ -241,14 +239,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       ) : tab === 2 ? (
         <BOMTab project={project} />
       ) : tab === 3 ? (
-        <ScopeTab project={project} />
-      ) : tab === 4 ? (
         <ChangesList changes={project.changes} />
-      ) : tab === 5 ? (
+      ) : tab === 4 ? (
         <ProjectGantt workPackages={project.workPackages} />
-      ) : tab === 6 ? (
+      ) : tab === 5 ? (
         <ChangeRequestTab wbsElement={project} />
-      ) : tab === 7 ? (
+      ) : tab === 6 ? (
         <PartsReviewPage project={project} />
       ) : (
         <ProjectSpendingHistory wbsNum={project.wbsNum} />

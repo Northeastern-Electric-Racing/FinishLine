@@ -2,8 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import { WorkPackage, wbsPipe } from 'shared';
+import { DescriptionBullet, WbsElementStatus, WorkPackage, isGuest, wbsPipe } from 'shared';
 import { fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
 import { Box, Divider, Grid, Link, Stack, Typography } from '@mui/material';
@@ -13,6 +12,8 @@ import { Construction, Work } from '@mui/icons-material';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
+import CheckList, { CheckListItem } from '../../../components/CheckList';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
@@ -20,6 +21,17 @@ interface WorkPackageDetailsProps {
 }
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, dependencies }) => {
+  const user = useCurrentUser();
+  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(user.role);
+  const descriptionBulletsSplitByType = new Map<string, DescriptionBullet[]>();
+  for (const bullet of workPackage.descriptionBullets) {
+    if (bullet.dateDeleted) continue;
+    if (!descriptionBulletsSplitByType.has(bullet.type)) {
+      descriptionBulletsSplitByType.set(bullet.type, []);
+    }
+    descriptionBulletsSplitByType.get(bullet.type)!.push(bullet);
+  }
+
   return (
     <>
       <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', mb: 2, mt: 1 }}>
@@ -29,44 +41,31 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
         {workPackage.stage && <WorkPackageStageChip stage={workPackage.stage} />}
         <WbsStatus status={workPackage.status} />
       </Box>
-
       <Grid container spacing={2}>
         <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
           <Construction sx={{ mr: 2 }} />
           <DetailDisplay label="Lead" content={fullNamePipe(workPackage.lead)} paddingRight={1} />
         </Grid>
-
         <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
           <ScheduleIcon sx={{ mr: 2 }} />
           <DetailDisplay label="Start Date" content={datePipe(workPackage.startDate)} paddingRight={1} />
         </Grid>
-
         <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
           <ScheduleIcon sx={{ mr: 2 }} />
           <DetailDisplay label="Duration" content={weeksPipe(workPackage.duration)} paddingRight={1} />
         </Grid>
-
         <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
           <Work sx={{ mr: 2 }} />
           <DetailDisplay label="Manager" content={fullNamePipe(workPackage.manager)} paddingRight={1} />
         </Grid>
-
         <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
           <ScheduleIcon sx={{ mr: 2 }} />
           <DetailDisplay label="End Date" content={datePipe(workPackage.endDate)} paddingRight={1} />
         </Grid>
       </Grid>
-
-      <Typography
-        variant="h5"
-        sx={{
-          mb: 1,
-          mt: 5
-        }}
-      >
+      <Typography variant="h5" sx={{ mb: 1, mt: 5 }}>
         Blocked By
       </Typography>
-
       <Stack direction="row" alignItems="center" divider={<Divider orientation="vertical" flexItem />} spacing={2}>
         {dependencies.length === 0 ? (
           <Typography>No Blockers</Typography>
@@ -83,6 +82,16 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
           ))
         )}
       </Stack>
+      {Array.from(descriptionBulletsSplitByType.entries()).map(([type, bullets]) => (
+        <CheckList
+          key={type}
+          title={type}
+          items={bullets.map((db): CheckListItem => {
+            return { ...db, resolved: !!db.userChecked, user: db.userChecked };
+          })}
+          isDisabled={checkListDisabled}
+        />
+      ))}
     </>
   );
 };
