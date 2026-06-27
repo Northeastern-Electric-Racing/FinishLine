@@ -8,6 +8,6 @@ const carsRouter = express.Router();
 carsRouter.get('/', CarsController.getAllCars);
 
 carsRouter.post('/create', CarsController.createCar);
-carsRouter.post('/:carId/update', nonEmptyString(body('name')), CarsController.updateCarName);
+carsRouter.post('/:carId/edit', nonEmptyString(body('name')), CarsController.editCar);
 
 export default carsRouter;

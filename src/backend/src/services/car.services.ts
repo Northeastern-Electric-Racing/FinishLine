@@ -54,7 +54,7 @@ export default class CarsService {
     return carTransformer(car);
   }
 
-  static async updateCar(carId: string, organization: Organization, user: User, name: string) {
+  static async editCar(carId: string, organization: Organization, user: User, name: string) {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit a car');
 
@@ -64,8 +64,8 @@ export default class CarsService {
 
     if (!car) throw new NotFoundException('Car', carId);
 
-    const updatedCar = await prisma.car.update({
-      where: { carId },
+    const editedCar = await prisma.car.update({
+      where: { carId: car.carId },
       data: {
         wbsElement: {
           update: { name }
@@ -74,6 +74,6 @@ export default class CarsService {
       ...getCarQueryArgs(organization.organizationId)
     });
 
-    return carTransformer(updatedCar);
+    return carTransformer(editedCar);
   }
 }

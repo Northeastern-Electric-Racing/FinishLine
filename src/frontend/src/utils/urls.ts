@@ -390,7 +390,7 @@ const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates(
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
-const carUpdate = (id: string) => `${cars()}/${id}/update`;
+const carEdit = (id: string) => `${cars()}/${id}/update`;
 
 /************** Recruitment Endpoints ***************/
 const recruitment = () => `${API_URL}/recruitment`;
@@ -797,7 +797,7 @@ export const apiUrls = {
 
   cars,
   carsCreate,
-  carUpdate,
+  carEdit,
 
   recruitment,
   allMilestones,

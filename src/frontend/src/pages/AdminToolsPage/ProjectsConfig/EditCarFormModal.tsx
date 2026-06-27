@@ -3,11 +3,9 @@ import NERFormModal from '../../../components/NERFormModal';
 import { FormControl, FormLabel, FormHelperText } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
-import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useUpdateCar } from '../../../hooks/cars.hooks';
+import { useEditCar } from '../../../hooks/cars.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Car Name is Required')
@@ -22,17 +20,17 @@ interface EditCarModalProps {
 
 const EditCarModal: React.FC<EditCarModalProps> = ({ showModal, handleClose, carId, carName }) => {
   const toast = useToast();
-  const { isLoading, isError, error, mutateAsync } = useUpdateCar(carId);
+  const { mutateAsync } = useEditCar(carId);
 
   const onSubmit = async (data: { name: string }) => {
     try {
       await mutateAsync(data);
+      handleClose();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    handleClose();
   };
 
   const {
@@ -46,9 +44,6 @@ const EditCarModal: React.FC<EditCarModalProps> = ({ showModal, handleClose, car
       name: carName
     }
   });
-
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading) return <LoadingIndicator />;
 
   return (
     <NERFormModal

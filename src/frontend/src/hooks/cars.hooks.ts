@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Car } from 'shared';
-import { createCar, getAllCars, updateCar } from '../apis/cars.api';
+import { createCar, getAllCars, editCar } from '../apis/cars.api';
 
 export interface CreateCarPayload {
   name: string;
@@ -40,12 +40,12 @@ export const useCreateCar = () => {
   );
 };
 
-export const useUpdateCar = (carId: string) => {
+export const useEditCar = (carId: string) => {
   const queryClient = useQueryClient();
   return useMutation<Car, Error, CreateCarPayload>(
     ['cars', 'edit'],
     async (formData: CreateCarPayload) => {
-      const { data } = await updateCar(carId, formData);
+      const { data } = await editCar(carId, formData);
       return data;
     },
     {
