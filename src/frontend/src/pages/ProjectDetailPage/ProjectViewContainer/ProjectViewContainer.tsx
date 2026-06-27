@@ -142,7 +142,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
           {
             title: 'Create New Work Package',
             onClick: () => {
-              history.push(`${routes.WORK_PACKAGE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}&crId=null`);
+              history.push(`${routes.WORK_PACKAGE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}`);
             },
             disabled: isGuest(user.role),
             icon: <ContentPasteIcon fontSize="small" />
