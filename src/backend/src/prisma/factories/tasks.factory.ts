@@ -83,7 +83,13 @@ const TASK_TITLE_OBJECTS = [
   'Slack message viewer',
   'recruitment UI'
 ];
+const taskTitle = (faker: Faker): string => {
+  if (faker.datatype.boolean({ probability: 0.7 })) {
+    return faker.helpers.arrayElement(TASK_TITLE_OBJECTS);
+  }
 
+  return `${faker.helpers.arrayElement(TASK_TITLE_VERBS)} ${faker.helpers.arrayElement(TASK_TITLE_OBJECTS)}`;
+};
 const TASK_NOTES = [
   'Check packaging, manufacturability, load cases, and interfaces with nearby systems.',
   'Verify assumptions and document any follow-up decisions in Confluence.',
@@ -199,7 +205,7 @@ export const createSeedTask = (
   );
 
   return {
-    title: `${faker.helpers.arrayElement(TASK_TITLE_VERBS)} ${faker.helpers.arrayElement(TASK_TITLE_OBJECTS)}`,
+    title: taskTitle(faker),
     notes: faker.helpers.arrayElement(TASK_NOTES),
     priority: randomPriority(faker),
     status: taskStatusForDueDate(faker, deadline, parent.timeline),
