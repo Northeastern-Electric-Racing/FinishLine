@@ -649,15 +649,14 @@ export const sendStandardCRCreatedNotification = async (
   const adminSlackIds = admins.map((a) => a.userSettings?.slackId).filter((id): id is string => !!id);
 
   const allSlackIds = new Set([...headSlackIds, ...adminSlackIds, ...(reviewerSlackId ? [reviewerSlackId] : [])]);
-  const allMentions = [...allSlackIds].map((id) => `<@${id}>`).join(' ');
 
-  if (allMentions) {
-    const reviewMsg = `${allMentions} Your review has been requested on CR #${cr.identifier}!`;
-    const crLink = `https://finishlinebyner.com/cr/${cr.crId}`;
-    await Promise.all(
-      notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, reviewMsg, crLink, `View CR #${cr.identifier}`))
-    );
-  }
+  const reviewMsg = reviewerSlackId
+    ? `<!channel> <@${reviewerSlackId}> Your review has been requested on CR #${cr.identifier}!`
+    : `<!channel> Your review has been requested on CR #${cr.identifier}!`;
+  const crLink = `https://finishlinebyner.com/cr/${cr.crId}`;
+  await Promise.all(
+    notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, reviewMsg, crLink, `View CR #${cr.identifier}`))
+  );
 
   // Send the approve button as an ephemeral message to each head and requested reviewer,
   // so only authorized approvers see it. reviewChangeRequest still enforces auth on click.
