@@ -37,8 +37,6 @@ export const machineryConfigs: MachineryConfig[] = [
   { name: 'Rear Manual Lathe', shopName: 'Forsyth Machine Shop', quantity: 1 },
   { name: 'Vertical Bandsaw', shopName: 'Forsyth Machine Shop', quantity: 1 },
   { name: 'Horizontal Bandsaw', shopName: 'Forsyth Machine Shop', quantity: 1 },
-  { name: 'Cold Cut Saw', shopName: 'Forsyth Machine Shop', quantity: 1 },
-  { name: 'd650afff Front Manual Lathe', shopName: 'Forsyth Machine Shop', quantity: 1 },
 
   // Richards 054
   { name: 'Hydraulic Press', shopName: 'Richards 054', quantity: 1 },
