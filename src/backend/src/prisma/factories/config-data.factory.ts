@@ -1,13 +1,10 @@
 import { Prisma } from '@prisma/client';
+import { connectUser } from '../utils/common.factory.js';
 
 const SEED_CREATED_AT = new Date('2024-01-01T00:00:00.000Z');
 
 const connectOrganization = (organizationId: string) => ({
   connect: { organizationId }
-});
-
-const connectUser = (userId: string) => ({
-  connect: { userId }
 });
 
 export const teamTypeCreateInputs = (organizationId: string): Prisma.Team_TypeCreateInput[] => [

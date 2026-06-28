@@ -1,6 +1,5 @@
 import { Prisma } from '@prisma/client';
-
-const connectUser = (userId: string) => ({ connect: { userId } });
+import { connectUser } from '../utils/common.factory.js';
 const connectOrganization = (organizationId: string) => ({ connect: { organizationId } });
 
 type ShopConfig = {
