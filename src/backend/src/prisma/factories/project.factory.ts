@@ -1,5 +1,6 @@
 import { Faker } from '@faker-js/faker';
 import { Link_Type, Prisma, WBS_Element_Status } from '@prisma/client';
+import dayjs from 'dayjs';
 import { DateRange } from '../context.js';
 
 export const PROJECTS_PER_CAR = 30;
@@ -7,7 +8,6 @@ export const PROJECTS_PER_CAR = 30;
 const MIN_PROJECT_MONTHS = 3;
 const MAX_PROJECT_MONTHS = 12;
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const DAYS_PER_MONTH = 30;
 
 const PROJECT_NAMES = [
@@ -201,8 +201,7 @@ const addDays = (date: Date, days: number): Date => {
   return result;
 };
 
-const daysBetween = (start: Date, end: Date): number =>
-  Math.max(0, Math.floor((end.getTime() - start.getTime()) / MS_PER_DAY));
+const daysBetween = ({ start, end }: DateRange): number => Math.max(0, dayjs(end).diff(dayjs(start), 'day'));
 
 const TARGET_BUDGET_PER_CAR = 80_000;
 
@@ -251,7 +250,7 @@ export const generateProjectTimeline = (faker: Faker, carDateRange: DateRange): 
   });
 
   const durationDays = durationMonths * DAYS_PER_MONTH;
-  const availableDays = daysBetween(carStart, carEnd);
+  const availableDays = daysBetween({ start: carStart, end: carEnd });
   const latestStartOffset = Math.max(0, availableDays - durationDays);
 
   const start = addDays(
