@@ -1,6 +1,7 @@
 import { Faker } from '@faker-js/faker';
 import { Link_Type, Prisma, WBS_Element_Status } from '@prisma/client';
 import dayjs from 'dayjs';
+import { addDaysToDate } from 'shared';
 import { DateRange } from '../context.js';
 
 export const PROJECTS_PER_CAR = 30;
@@ -195,12 +196,6 @@ const clampDate = (date: Date, min: Date, max: Date): Date => {
   return date;
 };
 
-const addDays = (date: Date, days: number): Date => {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-};
-
 const daysBetween = ({ start, end }: DateRange): number => Math.max(0, dayjs(end).diff(dayjs(start), 'day'));
 
 const TARGET_BUDGET_PER_CAR = 80_000;
@@ -253,7 +248,7 @@ export const generateProjectTimeline = (faker: Faker, carDateRange: DateRange): 
   const availableDays = daysBetween({ start: carStart, end: carEnd });
   const latestStartOffset = Math.max(0, availableDays - durationDays);
 
-  const start = addDays(
+  const start = addDaysToDate(
     carStart,
     faker.number.int({
       min: 0,
@@ -261,7 +256,7 @@ export const generateProjectTimeline = (faker: Faker, carDateRange: DateRange): 
     })
   );
 
-  const end = clampDate(addDays(start, durationDays), carStart, carEnd);
+  const end = clampDate(addDaysToDate(start, durationDays), carStart, carEnd);
 
   return { start, end };
 };
@@ -277,7 +272,9 @@ export const projectNameForIndex = (faker: Faker, index: number): string => {
 };
 
 export const projectSummaryForName = (name: string): string => {
-  const matchingName = PROJECT_NAMES.find((projectName) => name.startsWith(projectName));
+  const matchingName =
+    PROJECT_NAMES.find((projectName) => projectName === name) ??
+    VERSIONED_PROJECT_NAMES.find((projectName) => name.startsWith(`${projectName} `));
 
   if (!matchingName) {
     return `Plan, design, manufacture, and validate ${name.toLowerCase()}.`;
@@ -288,8 +285,9 @@ export const projectSummaryForName = (name: string): string => {
 
 export const projectAbbreviationForName = (name: string, projectNumber: number): string => {
   const abbreviation = name
-    .split(' ')
-    .map((word) => word[0])
+    .split(/[\s/]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0))
     .join('')
     .toUpperCase()
     .slice(0, 6);

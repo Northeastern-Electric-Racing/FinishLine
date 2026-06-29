@@ -73,8 +73,15 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
       throw new Error('ProjectProcess requires users who can be project leads and managers.');
     }
 
+    const projectCount = cars.length * PROJECTS_PER_CAR;
+    const projectLeadPool = this.faker.helpers.shuffle(
+      Array.from({ length: Math.ceil(projectCount / projectOwners.length) }, () => projectOwners)
+        .flat()
+        .slice(0, projectCount)
+    );
+
     const projectContextsByCar = await Promise.all(
-      cars.map(async ({ car, dateRange }) => {
+      cars.map(async ({ car, dateRange }, carIndex) => {
         const { carNumber } = car.wbsElement;
         const usedProjectNames = new Set<string>();
         const projectBudgets = generateProjectBudgets(this.faker, PROJECTS_PER_CAR);
@@ -94,7 +101,7 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
             const assignedTeams = this.projectTeams(teams);
             const assignedTeamIds = assignedTeams.map((team) => team.teamId);
 
-            const lead = this.faker.helpers.arrayElement(projectOwners);
+            const lead = projectLeadPool[carIndex * PROJECTS_PER_CAR + index];
             const managerPool = projectOwners.filter((user) => user.userId !== lead.userId);
             const manager = this.faker.helpers.arrayElement(managerPool.length > 0 ? managerPool : projectOwners);
 
