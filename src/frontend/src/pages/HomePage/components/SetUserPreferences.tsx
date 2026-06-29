@@ -15,7 +15,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useUpdateUserSettings } from '../../../hooks/users.hooks';
+import { useUpdateUserSettings, useValidateSlackId } from '../../../hooks/users.hooks';
 import ErrorPage from '../../ErrorPage';
 
 interface SetUserPreferencesProps {
@@ -28,13 +28,20 @@ const SetUserPreferences: React.FC<SetUserPreferencesProps> = ({ userSettings })
   const { handleSubmit, control } = useForm<{ slackId: string }>({
     defaultValues: { slackId: userSettings.slackId }
   });
+  const { mutateAsync: validateSlackId } = useValidateSlackId();
 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
   const onSubmit = async ({ slackId }: { slackId: string }) => {
     try {
+      const { isValid } = await validateSlackId(slackId);
+      if (!isValid) {
+        toast.error('Invalid Slack ID! Please check it and try again.');
+        return;
+      }
       await mutateAsync({ ...userSettings, slackId });
+      // window.location.reload(); might not need this if it rerenders automatically
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);

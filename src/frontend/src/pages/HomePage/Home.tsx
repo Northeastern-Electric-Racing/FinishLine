@@ -7,7 +7,6 @@ import { routes } from '../../utils/routes';
 import PNMHomePage from './PNMHomePage';
 import OnboardingHomePage from './OnboardingHomePage';
 import SelectSubteamPage from './SelectSubteamPage';
-import AcceptedPage from '../AcceptedPage/AcceptedPage';
 import HomePage from './HomePage';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import IntroGuestHomePage from './IntroGuestHomePage';
@@ -23,12 +22,11 @@ const Home: React.FC = () => {
     <Switch>
       {completedOnboarding &&
         !isAdmin(user.role) &&
-        [routes.HOME_PNM, routes.HOME_ONBOARDING, routes.HOME_ACCEPT].map((path) => (
+        [routes.HOME_PNM, routes.HOME_ONBOARDING].map((path) => (
           <Redirect exact path={path} to={routes.HOME} />
         ))}
       {onOnboarding && !completedOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_PNM} />}
       <Route exact path={routes.HOME_SELECT_SUBTEAM} component={SelectSubteamPage} />
-      <Route exact path={routes.HOME_ACCEPT} component={AcceptedPage} />
       <Route exact path={routes.HOME_ONBOARDING} component={OnboardingHomePage} />
       <Route exact path={routes.HOME_PNM} component={PNMHomePage} />
       <Route exact path={routes.HOME_MEMBER} component={HomePage} />

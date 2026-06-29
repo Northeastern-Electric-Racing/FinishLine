@@ -24,7 +24,8 @@ import {
   logUserOut,
   getManyUsersWithScheduleSettings,
   getAllOrgUsers,
-  getAllOrgMembers
+  getAllOrgMembers,
+  validateSlackId
 } from '../apis/users.api';
 import {
   User,
@@ -319,6 +320,16 @@ export const useManyUsersWithScheduleSettings = (userIds: string[]) => {
 export const useLogUserOut = () => {
   return useMutation<{ message: string }, Error, void>([], async () => {
     const { data } = await logUserOut();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to determine if a user's slack id is valid
+ */
+export const useValidateSlackId = () => {
+  return useMutation<{ isValid: boolean }, Error, string>(['users', 'validate-slack-id'], async (slackId: string) => {
+    const { data } = await validateSlackId(slackId);
     return data;
   });
 };

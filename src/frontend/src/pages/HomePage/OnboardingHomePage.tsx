@@ -13,6 +13,7 @@ import { routes } from '../../utils/routes';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import OnboardingProgressBar from '../../components/OnboardingProgressBar';
 import ErrorPage from '../ErrorPage';
+import { useCompleteOnboarding } from '../../hooks/team-types.hooks';
 
 const OnboardingHomePage = () => {
   const history = useHistory();
@@ -40,6 +41,8 @@ const OnboardingHomePage = () => {
   } = useCheckedChecklists();
 
   const progress = useChecklistProgress(usersChecklists || [], checkedChecklists || []);
+
+  const { mutateAsync: completeOnboarding } = useCompleteOnboarding();
 
   if (usersChecklistsIsError) {
     return <ErrorPage error={usersChecklistsError} />;
@@ -69,7 +72,8 @@ const OnboardingHomePage = () => {
   };
 
   const handleConfirmModal = async () => {
-    history.push(routes.HOME_ACCEPT);
+    await completeOnboarding();
+    history.push(routes.HOME);
   };
 
   return (

@@ -212,3 +212,13 @@ export const getManyUsersWithScheduleSettings = (userIds: string[]) => {
 export const logUserOut = () => {
   return axios.post<{ message: string }>(apiUrls.logUserOut());
 };
+
+/**
+ * Validates a user's slack id
+ *
+ * @param slackId the user's slack id
+ * @returns true if the slack id is valid, false otherwise
+ */
+export const validateSlackId = (slackId: string) => {
+  return axios.post<{ isValid: boolean }>(apiUrls.validateSlackId(), { slackId });
+};
