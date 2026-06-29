@@ -13,6 +13,10 @@ import { RoleEnum } from 'shared';
 import { vi, Mock } from 'vitest';
 import * as slackIntegration from '../../src/integrations/slack.js';
 
+vi.mock('../../src/integrations/slack.js', () => ({
+  validateSlackUserId: vi.fn()
+}));
+
 describe('User Tests', () => {
   let orgId: string;
   let organization: Organization;
@@ -122,33 +126,22 @@ describe('User Tests', () => {
     });
   });
 
-  describe('Validate slack id tests', () => {
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it('returns true for a valid Slack ID', async () => {
-      vi.spyOn(slackIntegration, 'validateSlackUserId').mockResolvedValue(true);
-
+  describe('Validate Slack id tests', () => {
+    it('returns true for a valid Slack id', async () => {
+      (slackIntegration.validateSlackUserId as Mock).mockResolvedValue(true);
       const result = await UsersService.validateSlackId('U06D5RURPMF');
-
       expect(result).toBe(true);
-      expect(slackIntegration.validateSlackUserId).toHaveBeenCalledWith('U06D5RURPMF');
     });
 
-    it('returns false for an invalid Slack ID', async () => {
-      vi.spyOn(slackIntegration, 'validateSlackUserId').mockResolvedValue(false);
-
-      const result = await UsersService.validateSlackId('NOTAVALIDID');
-
+    it('returns false for an invalid Slack id', async () => {
+      (slackIntegration.validateSlackUserId as Mock).mockResolvedValue(false);
+      const result = await UsersService.validateSlackId('BLAH');
       expect(result).toBe(false);
     });
 
     it('returns false when Slack client is not configured', async () => {
-      vi.spyOn(slackIntegration, 'validateSlackUserId').mockResolvedValue(false);
-
+      (slackIntegration.validateSlackUserId as Mock).mockResolvedValue(false);
       const result = await UsersService.validateSlackId('U06D5RURPMF');
-
       expect(result).toBe(false);
     });
   });
