@@ -22,9 +22,7 @@ const Home: React.FC = () => {
     <Switch>
       {completedOnboarding &&
         !isAdmin(user.role) &&
-        [routes.HOME_PNM, routes.HOME_ONBOARDING].map((path) => (
-          <Redirect exact path={path} to={routes.HOME} />
-        ))}
+        [routes.HOME_PNM, routes.HOME_ONBOARDING].map((path) => <Redirect exact path={path} to={routes.HOME} />)}
       {onOnboarding && !completedOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_PNM} />}
       <Route exact path={routes.HOME_SELECT_SUBTEAM} component={SelectSubteamPage} />
       <Route exact path={routes.HOME_ONBOARDING} component={OnboardingHomePage} />
