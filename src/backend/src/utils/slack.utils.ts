@@ -603,6 +603,8 @@ export const sendStandardCRCreatedNotification = async (
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return;
 
+  const reviewerSlackId = requestedReviewerId ? await getUserSlackId(requestedReviewerId) : undefined;
+
   const message =
     wbsElementName !== projectWbsName
       ? `${submitter.firstName} ${submitter.lastName} submitted a change request for ${wbsElementName} in ${projectWbsName}`
@@ -632,8 +634,6 @@ export const sendStandardCRCreatedNotification = async (
     (id): id is string => !!id
   );
 
-  const reviewerSlackId = requestedReviewerId ? await getUserSlackId(requestedReviewerId) : undefined;
-
   // Also include admins
   const admins = await prisma.user.findMany({
     where: {
@@ -650,13 +650,13 @@ export const sendStandardCRCreatedNotification = async (
 
   const allSlackIds = new Set([...headSlackIds, ...adminSlackIds, ...(reviewerSlackId ? [reviewerSlackId] : [])]);
 
-  const reviewMsg = reviewerSlackId
-    ? `<!channel> <@${reviewerSlackId}> Your review has been requested on CR #${cr.identifier}!`
-    : `<!channel> Your review has been requested on CR #${cr.identifier}!`;
-  const crLink = `https://finishlinebyner.com/cr/${cr.crId}`;
-  await Promise.all(
-    notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, reviewMsg, crLink, `View CR #${cr.identifier}`))
-  );
+  if (reviewerSlackId) {
+    const reviewMsg = `<@${reviewerSlackId}> Your review has been requested on CR #${cr.identifier}!`;
+    const crLink = `https://finishlinebyner.com/cr/${cr.crId}`;
+    await Promise.all(
+      notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, reviewMsg, crLink, `View CR #${cr.identifier}`))
+    );
+  }
 
   // Send the approve button as an ephemeral message to each head and requested reviewer,
   // so only authorized approvers see it. reviewChangeRequest still enforces auth on click.
