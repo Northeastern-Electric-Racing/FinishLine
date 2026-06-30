@@ -680,11 +680,12 @@ export const sendStandardCRCreatedNotification = async (
   ];
 
   await Promise.all(
-    notifications.flatMap((n) =>
-      [...allSlackIds].map((slackId) =>
-        sendEphemeralMessage(n.channelId, n.ts, slackId, `Approve CR #${cr.identifier}?`, approveBlocks)
-      )
-    )
+    notifications.flatMap(async (n) => {
+      const membersInChannel = new Set(await getUsersInChannel(n.channelId));
+      return [...allSlackIds]
+        .filter((slackId) => membersInChannel.has(slackId))
+        .map((slackId) => sendEphemeralMessage(n.channelId, n.ts, slackId, `Approve CR #${cr.identifier}?`, approveBlocks));
+    })
   );
 };
 
