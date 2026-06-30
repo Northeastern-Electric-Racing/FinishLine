@@ -396,7 +396,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     if (scheduleSettings?.personalZoomLink && !getValues('zoomLink')) {
       setValue('zoomLink', scheduleSettings.personalZoomLink);
     }
-  }, [open, isEditMode, scheduleSettings]);
+  }, [open, isEditMode, scheduleSettings, getValues, setValue]);
 
   const computedTitle = isEditMode ? 'Edit Event' : 'Add Event';
 
