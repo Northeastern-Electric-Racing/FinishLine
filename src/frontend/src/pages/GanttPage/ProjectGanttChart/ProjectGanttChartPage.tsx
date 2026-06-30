@@ -32,6 +32,7 @@ import GanttChart from '../GanttChart/GanttChart';
 import {
   ProjectGantt,
   Task,
+  TaskLabel,
   TaskPriority,
   TaskStatus,
   TeamPreview,
@@ -323,6 +324,7 @@ const ProjectGanttChartPage: FC = () => {
       priority: TaskPriority;
       status: TaskStatus;
       assignees: string[];
+      labels: TaskLabel[];
       notes: string;
       startDate: Date | null;
       deadline: Date | null;
@@ -354,6 +356,7 @@ const ProjectGanttChartPage: FC = () => {
         role: user.role
       },
       assignees: [],
+      labels: taskInfo.labels,
       deadline,
       startDate,
       priority: taskInfo.priority,

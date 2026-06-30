@@ -1,9 +1,4 @@
-import {
-  Change_Request as PrismaChangeRequest,
-  Proposed_Solution as PrismaProposedSolution,
-  Scope_CR as PrismaScopeCR,
-  CR_Type as PrismaCRType
-} from '@prisma/client';
+import { Change_Request as PrismaChangeRequest } from '@prisma/client';
 import { ChangeRequest as SharedChangeRequest, ChangeRequestStatus, ChangeRequestType } from 'shared';
 import { sharedBatman } from './users.test-data.js';
 
@@ -15,7 +10,9 @@ export const prismaChangeRequest1: PrismaChangeRequest = {
   wbsElementId: '65',
   categoryId: null,
   accountCodeId: null,
-  type: PrismaCRType.DEFINITION_CHANGE,
+  type: ChangeRequestType.Budget,
+  why: null,
+  wbsProposedChangesId: null,
   dateSubmitted: new Date('11/24/2020'),
   dateReviewed: new Date('11/25/2020'),
   accepted: null,
@@ -23,27 +20,6 @@ export const prismaChangeRequest1: PrismaChangeRequest = {
   reviewNotes: null,
   dateDeleted: null,
   deletedByUserId: null
-};
-
-export const prismaProposedSolution1: PrismaProposedSolution = {
-  proposedSolutionId: '1',
-  description: 'Change Color from Orange to Black',
-  timelineImpact: 10,
-  budgetImpact: 1000,
-  scopeImpact: 'huge',
-  scopeChangeRequestId: '1',
-  createdByUserId: '3',
-  dateCreated: new Date('10/16/2022'),
-  approved: false
-};
-
-export const prismaScopeChangeRequest1: PrismaScopeCR = {
-  scopeCrId: '1',
-  changeRequestId: '2',
-  what: 'redesign whip',
-  scopeImpact: 'huge',
-  timelineImpact: 10,
-  budgetImpact: 1000
 };
 
 export const sharedChangeRequest: SharedChangeRequest = {
@@ -56,7 +32,7 @@ export const sharedChangeRequest: SharedChangeRequest = {
   wbsName: 'whip',
   submitter: sharedBatman,
   dateSubmitted: new Date('12-25-2000'),
-  type: ChangeRequestType.Redefinition,
+  type: ChangeRequestType.Leadership,
   status: ChangeRequestStatus.Open,
   requestedReviewers: [],
   identifier: 1

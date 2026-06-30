@@ -35,7 +35,7 @@ import {
   SlackMentionType
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useAllMembers, useCurrentUser } from '../../../hooks/users.hooks';
+import { useAllMembers, useCurrentUser, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import { useAllWorkPackagesPreview } from '../../../hooks/work-packages.hooks';
 import { useAllTeamPreviews } from '../../../hooks/teams.hooks';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
@@ -60,6 +60,7 @@ import { convertDayToInt, convertIntToDay } from '../../../utils/calendar.utils'
 import EditSeriesConfirmationModal from './EditSeriesConfirmationModal';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 export interface EventFormValues {
   title: string;
@@ -231,6 +232,12 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const theme = useTheme();
   const toast = useToast();
   const user = useCurrentUser();
+  const {
+    data: scheduleSettings,
+    isError: ssIsError,
+    isLoading: ssIsLoading,
+    error: ssError
+  } = useUserScheduleSettings(user.userId);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [startTimePickerOpen, setStartTimePickerOpen] = useState(false);
   const [endTimePickerOpen, setEndTimePickerOpen] = useState(false);
@@ -314,6 +321,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     reset,
     watch,
     setValue,
+    getValues,
     formState: { errors }
   } = useForm<EventFormValues>({
     resolver: yupResolver(schema),
@@ -380,6 +388,15 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       setShowRecurringOptions(true);
     }
   }, [initialValues, users, teams]);
+
+  // When creating a new event, autofill personal zoom link from the user's schedule settings
+  // made it so it only fills when the field is empty, that way doesn't overwrite a link or anythingi me
+  useEffect(() => {
+    if (!open || isEditMode) return;
+    if (scheduleSettings?.personalZoomLink && !getValues('zoomLink')) {
+      setValue('zoomLink', scheduleSettings.personalZoomLink);
+    }
+  }, [open, isEditMode, scheduleSettings, getValues, setValue]);
 
   const computedTitle = isEditMode ? 'Edit Event' : 'Add Event';
 
@@ -654,6 +671,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   if (teamTypesError) return <ErrorPage error={teamTypesErrorMsg} message={teamTypesErrorMsg?.message} />;
   if (shopsError) return <ErrorPage error={shopsErrorMsg} message={shopsErrorMsg?.message} />;
   if (machineryError) return <ErrorPage error={machineryErrorMsg} message={machineryErrorMsg?.message} />;
+  if (ssIsError) return <ErrorPage error={ssError} message={ssError?.message} />;
+  if (ssIsLoading) return <LoadingIndicator />;
 
   const workPackageOptions = workPackagesLoading
     ? [{ id: 'loading', label: 'Loading work packages...' }]

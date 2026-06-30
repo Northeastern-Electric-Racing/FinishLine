@@ -31,6 +31,7 @@ const renderComponent = (modalShow: boolean) => {
           onHide={mockHandleHide}
           onSubmit={mockHandleSubmit}
           wbsNum={exampleWbs1}
+          startDate={new Date('2024-01-01')}
         />
       </ToastProvider>
     </RouterWrapper>

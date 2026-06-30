@@ -26,7 +26,7 @@ import {
 } from '../utils/errors.utils.js';
 import { getWorkPackageQueryArgs, getWorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer.js';
-import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils.js';
 import { getWorkPackageChanges } from '../utils/changes.utils.js';
 import {
@@ -468,13 +468,7 @@ export default class WorkPackagesService {
       ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
-    // Transform Milliseconds to weeks
-    const timelineImpact =
-      (updatedWorkPackage.startDate.getTime() - originalWorkPackage.startDate.getTime()) / 1000 / 60 / 60 / 24 / 7 +
-      updatedWorkPackage.duration -
-      originalWorkPackage.duration;
-
-    await updateBlocking(updatedWorkPackage, timelineImpact, crId, user);
+    // await updateBlocking(updatedWorkPackage, timelineImpact, crId, user);
 
     // Update any deleted description bullets to have their date deleted as right now
     if (changes.deletedDescriptionBullets.length > 0) {

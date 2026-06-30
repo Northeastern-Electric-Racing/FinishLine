@@ -72,6 +72,7 @@ export const TaskCard = ({
     title,
     deadline,
     assignees,
+    labels,
     priority,
     startDate,
     wpWbsNum
@@ -86,6 +87,7 @@ export const TaskCard = ({
         deadline,
         startDate,
         priority,
+        labelIds: labels.map((l) => l.taskLabelId),
         wbsNum: targetWbsNum
       });
 
@@ -190,6 +192,20 @@ export const TaskCard = ({
                             }}
                           />
                         )}
+                      {task.labels.map((label) => (
+                        <Chip
+                          key={label.taskLabelId}
+                          label={label.name}
+                          size="medium"
+                          sx={{
+                            marginTop: 1,
+                            marginRight: 1,
+                            backgroundColor: label.colorHexCode,
+                            color: 'white',
+                            fontWeight: 500
+                          }}
+                        />
+                      ))}
                     </Grid>
                     <Grid item xs={12} lg={4} justifyContent={'right'}>
                       <Box alignItems={'center'} mt={1} justifyContent={'right'} display={'flex'} flexDirection={'column'}>

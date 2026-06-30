@@ -15,12 +15,17 @@ const tasksRouter = express.Router();
 
 tasksRouter.post(
   '/filter',
-  isDate(body('startPeriod')),
-  isDate(body('endPeriod')),
+  isDate(body('startPeriod').optional()),
+  isDate(body('endPeriod').optional()),
   body('memberIds').optional().isArray(),
   body('memberIds.*').optional().isString(),
   body('teamIds').optional().isArray(),
   body('teamIds.*').optional().isString(),
+  body('labelIds').optional().isArray(),
+  body('labelIds.*').optional().isString(),
+  intMinZero(body('wbsNum.carNumber').optional()),
+  intMinZero(body('wbsNum.projectNumber').optional()),
+  intMinZero(body('wbsNum.workPackageNumber').optional()),
   validateInputs,
   TasksController.getFilteredTasks
 );
@@ -35,6 +40,8 @@ tasksRouter.post(
   isTaskStatus(body('status')),
   body('assignees').isArray(),
   nonEmptyString(body('assignees.*')),
+  body('labelIds').isArray(),
+  body('labelIds.*').isString(),
   validateInputs,
   TasksController.createTask
 );
@@ -49,6 +56,8 @@ tasksRouter.post(
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
+  body('labelIds').isArray(),
+  body('labelIds.*').isString(),
   validateInputs,
   TasksController.editTask
 );
@@ -67,6 +76,24 @@ tasksRouter.post('/:taskId/delete', validateInputs, TasksController.deleteTask);
 
 tasksRouter.get('/overdue-by-team-member/:userId', TasksController.getOverdueTasksByTeamLeadership);
 
-tasksRouter.get('/by-wbs/:wbsNum', TasksController.getTasksByWbsNum);
+tasksRouter.get('/task-labels', TasksController.getAllTaskLabels);
+
+tasksRouter.post(
+  '/task-labels/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  TasksController.createTaskLabel
+);
+
+tasksRouter.post(
+  '/task-labels/:taskLabelId/edit',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  TasksController.editTaskLabel
+);
+
+tasksRouter.post('/task-labels/:taskLabelId/delete', TasksController.deleteTaskLabel);
 
 export default tasksRouter;
