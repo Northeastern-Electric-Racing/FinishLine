@@ -299,7 +299,9 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
           "acm:RequestCertificate",
           "acm:DeleteCertificate",
           "acm:AddTagsToResource",
-          "acm:RemoveTagsFromResource"
+          "acm:RemoveTagsFromResource",
+          "acm:AddTagsToCertificate",
+          "acm:RemoveTagsFromCertificate"
         ]
         Resource = "*"
       }
