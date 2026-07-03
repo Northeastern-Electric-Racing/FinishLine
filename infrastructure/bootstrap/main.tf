@@ -291,6 +291,17 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
           "route53:ListTagsForResource"
         ]
         Resource = "*"
+      },
+      {
+        Sid    = "ACMSandboxCerts"
+        Effect = "Allow"
+        Action = [
+          "acm:RequestCertificate",
+          "acm:DeleteCertificate",
+          "acm:AddTagsToResource",
+          "acm:RemoveTagsFromResource"
+        ]
+        Resource = "*"
       }
     ]
   })
