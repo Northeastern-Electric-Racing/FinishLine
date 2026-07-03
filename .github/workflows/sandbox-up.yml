@@ -208,8 +208,9 @@ jobs:
           yarn workspace shared build
 
           # Set Vite env vars required at build time
-          EB_URL=$(cd infrastructure/environments/sandbox && terraform output -raw eb_environment_url)
-          export VITE_REACT_APP_BACKEND_URL="http://$EB_URL"
+          # Must use the custom domain, not the raw EB CNAME: the backend's
+          # cert only matches qa.api.finishlinebyner.com.
+          export VITE_REACT_APP_BACKEND_URL=$(cd infrastructure/environments/sandbox && terraform output -raw backend_url)
           export VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID="$TF_VAR_google_client_id"
 
           yarn workspace frontend build

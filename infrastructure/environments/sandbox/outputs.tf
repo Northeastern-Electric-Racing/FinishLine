@@ -39,6 +39,11 @@ output "eb_environment_url" {
   value       = module.elasticbeanstalk.environment_endpoint_url
 }
 
+output "backend_url" {
+  description = "HTTPS custom-domain URL for the sandbox backend (what the frontend should call; the EB environment's cert only matches this domain, not the raw EB CNAME)"
+  value       = module.dns.backend_url
+}
+
 output "eb_cname" {
   description = "Raw CNAME of the sandbox EB environment"
   value       = module.elasticbeanstalk.environment_cname
