@@ -35,7 +35,7 @@ const port = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
 // Sandbox's frontend is a real production build, so it always uses the real Google
 // login flow (never the dev login) and needs the same auth/CORS handling as prod.
-const usesRealGoogleAuth = isProd || process.env.NODE_ENV === 'sandbox';
+const usesRealGoogleAuth = isProd || (process.env.NODE_ENV as string) === 'sandbox';
 
 // cors options
 const allowedHeaders = usesRealGoogleAuth ? prodHeaders : '*';
