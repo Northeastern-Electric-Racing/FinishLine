@@ -111,6 +111,12 @@ variable "ssl_certificate_arn" {
   default     = ""
 }
 
+variable "cname_prefix" {
+  description = "Fixed CNAME prefix for the environment (e.g. 'finishline-sandbox'). Leave empty to let AWS assign a random one. Set this when a backend ACM cert needs a CNAME known before the environment exists, to avoid a dependency cycle."
+  type        = string
+  default     = ""
+}
+
 variable "ec2_key_name" {
   description = "Name of the EC2 key pair for SSH access (leave empty to disable SSH)"
   type        = string

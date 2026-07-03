@@ -33,6 +33,7 @@ resource "aws_elastic_beanstalk_environment" "main" {
   application         = aws_elastic_beanstalk_application.main.name
   solution_stack_name = var.solution_stack_name != "" ? var.solution_stack_name : data.aws_elastic_beanstalk_solution_stack.docker.name
   tier                = "WebServer"
+  cname_prefix        = var.cname_prefix != "" ? var.cname_prefix : null
 
   #####################
   # VPC Configuration
