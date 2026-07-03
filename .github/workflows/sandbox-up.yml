@@ -172,63 +172,15 @@ jobs:
           TF_VAR_snapshot_identifier: ${{ steps.snapshot_copy.outputs.snapshot_id }}
         run: terraform apply -auto-approve
 
-      - name: Configure Amplify custom domain DNS
+      - name: Wait for Amplify custom domain to become active
         working-directory: infrastructure/environments/sandbox
         run: |
           APP_ID=$(terraform output -raw amplify_app_id)
           DOMAIN="qa.finishlinebyner.com"
 
-          # Get cert verification and subdomain routing records from Amplify
-          DOMAIN_ASSOC=$(aws amplify get-domain-association \
-            --app-id "$APP_ID" \
-            --domain-name "$DOMAIN" \
-            --region us-east-2)
-
-          # Parse cert verification record: "_abc.domain. CNAME _xyz.acm-validations.aws."
-          CERT_RECORD=$(echo "$DOMAIN_ASSOC" | jq -r '.domainAssociation.certificateVerificationDNSRecord')
-          CERT_NAME=$(echo "$CERT_RECORD" | awk '{print $1}')
-          CERT_VALUE=$(echo "$CERT_RECORD" | awk '{print $3}')
-
-          # Parse subdomain routing record: "CNAME branch.appid.amplifyapp.com"
-          SUB_RECORD=$(echo "$DOMAIN_ASSOC" | jq -r '.domainAssociation.subDomains[0].dnsRecord')
-          SUB_VALUE=$(echo "$SUB_RECORD" | awk '{print $NF}')
-
-          # Get Route53 hosted zone ID
-          ZONE_ID=$(aws route53 list-hosted-zones-by-name \
-            --dns-name "finishlinebyner.com." \
-            --query "HostedZones[0].Id" \
-            --output text | sed 's|/hostedzone/||')
-
-          echo "Zone ID: $ZONE_ID"
-          echo "Cert verification: $CERT_NAME CNAME $CERT_VALUE"
-          echo "Subdomain routing: $DOMAIN CNAME $SUB_VALUE"
-
-          # Upsert both DNS records
-          aws route53 change-resource-record-sets \
-            --hosted-zone-id "$ZONE_ID" \
-            --change-batch "{
-              \"Changes\": [
-                {
-                  \"Action\": \"UPSERT\",
-                  \"ResourceRecordSet\": {
-                    \"Name\": \"$CERT_NAME\",
-                    \"Type\": \"CNAME\",
-                    \"TTL\": 300,
-                    \"ResourceRecords\": [{\"Value\": \"$CERT_VALUE\"}]
-                  }
-                },
-                {
-                  \"Action\": \"UPSERT\",
-                  \"ResourceRecordSet\": {
-                    \"Name\": \"$DOMAIN.\",
-                    \"Type\": \"CNAME\",
-                    \"TTL\": 300,
-                    \"ResourceRecords\": [{\"Value\": \"$SUB_VALUE\"}]
-                  }
-                }
-              ]
-            }"
-
+          # finishlinebyner.com's hosted zone is in this same AWS account, so Amplify
+          # automatically creates and manages the cert-verification and subdomain
+          # routing DNS records itself — no manual Route53 writes needed here.
           echo "Waiting for Amplify domain to become active..."
           while true; do
             STATUS=$(aws amplify get-domain-association \
