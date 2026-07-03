@@ -151,7 +151,7 @@ module "frontend" {
   main_branch_name = "develop"
   backend_api_url  = module.elasticbeanstalk.environment_endpoint_url
 
-  domain_name                  = "sandbox.finishlinebyner.com"
+  domain_name                  = "qa.finishlinebyner.com"
   enable_pull_request_preview  = false
   enable_auto_branch_creation  = false
   create_webhook               = false

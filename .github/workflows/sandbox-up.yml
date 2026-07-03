@@ -176,7 +176,7 @@ jobs:
         working-directory: infrastructure/environments/sandbox
         run: |
           APP_ID=$(terraform output -raw amplify_app_id)
-          DOMAIN="sandbox.finishlinebyner.com"
+          DOMAIN="qa.finishlinebyner.com"
 
           # Get cert verification and subdomain routing records from Amplify
           DOMAIN_ASSOC=$(aws amplify get-domain-association \
@@ -357,7 +357,7 @@ jobs:
         run: |
           echo "Sandbox is up!"
           echo ""
-          echo "Frontend: https://sandbox.finishlinebyner.com"
+          echo "Frontend: https://qa.finishlinebyner.com"
           echo "Backend:  ${{ steps.urls.outputs.eb_url }}"
           echo ""
-          echo "Register https://sandbox.finishlinebyner.com in Google OAuth once, then it works on every spin-up."
+          echo "Register https://qa.finishlinebyner.com in Google OAuth once, then it works on every spin-up."
