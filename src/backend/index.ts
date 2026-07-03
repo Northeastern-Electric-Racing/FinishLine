@@ -33,9 +33,12 @@ const app = express();
 
 const port = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
+// Sandbox's frontend is a real production build, so it always uses the real Google
+// login flow (never the dev login) and needs the same auth/CORS handling as prod.
+const usesRealGoogleAuth = isProd || process.env.NODE_ENV === 'sandbox';
 
 // cors options
-const allowedHeaders = isProd ? prodHeaders : '*';
+const allowedHeaders = usesRealGoogleAuth ? prodHeaders : '*';
 
 // Build list of allowed origins
 const allowedOrigins = [
@@ -85,7 +88,7 @@ app.use(express.json());
 app.use(cors(options));
 
 // ensure each request is authorized using JWT
-app.use(isProd ? requireJwtProd : requireJwtDev);
+app.use(usesRealGoogleAuth ? requireJwtProd : requireJwtDev);
 
 // get user and organization
 app.use(getUserAndOrganization);
