@@ -78,6 +78,7 @@ jobs:
           aws rds copy-db-snapshot \
             --source-db-snapshot-identifier "$SOURCE_ARN" \
             --target-db-snapshot-identifier "$COPY_ID" \
+            --kms-key-id alias/aws/rds \
             --region us-east-2
 
           echo "Waiting for snapshot copy to become available (~5 min)..."
@@ -147,7 +148,6 @@ jobs:
             echo "TF_VAR_slack_id=$(eb_var SLACK_ID)"
             echo "TF_VAR_user_email=$(eb_var USER_EMAIL)"
             echo "TF_VAR_admin_user_id=$(eb_var ADMIN_USER_ID)"
-            echo "TF_VAR_github_access_token=${{ secrets.GITHUB_TOKEN }}"
           } >> "$GITHUB_ENV"
 
       - name: Generate sandbox DB password
@@ -172,6 +172,91 @@ jobs:
           TF_VAR_snapshot_identifier: ${{ steps.snapshot_copy.outputs.snapshot_id }}
         run: terraform apply -auto-approve
 
+      - name: Wait for Amplify custom domain to become active
+        working-directory: infrastructure/environments/sandbox
+        run: |
+          APP_ID=$(terraform output -raw amplify_app_id)
+          DOMAIN="qa.finishlinebyner.com"
+
+          # finishlinebyner.com's hosted zone is in this same AWS account, so Amplify
+          # automatically creates and manages the cert-verification and subdomain
+          # routing DNS records itself — no manual Route53 writes needed here.
+          echo "Waiting for Amplify domain to become active..."
+          while true; do
+            STATUS=$(aws amplify get-domain-association \
+              --app-id "$APP_ID" \
+              --domain-name "$DOMAIN" \
+              --region us-east-2 \
+              --query "domainAssociation.domainStatus" \
+              --output text)
+            echo "  domain status: $STATUS"
+            case "$STATUS" in
+              AVAILABLE) echo "Domain is active."; break ;;
+              FAILED) echo "Domain verification failed."; exit 1 ;;
+              *) sleep 30 ;;
+            esac
+          done
+
+      - name: Build and deploy frontend to Amplify
+        working-directory: infrastructure/environments/sandbox
+        run: |
+          APP_ID=$(terraform output -raw amplify_app_id)
+
+          # Install deps and build
+          cd "$GITHUB_WORKSPACE"
+          yarn install --frozen-lockfile
+          yarn workspace shared build
+
+          # Set Vite env vars required at build time
+          # Must use the custom domain, not the raw EB CNAME: the backend's
+          # cert only matches qa.api.finishlinebyner.com.
+          export VITE_REACT_APP_BACKEND_URL=$(cd infrastructure/environments/sandbox && terraform output -raw backend_url)
+          export VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID="$TF_VAR_google_client_id"
+
+          yarn workspace frontend build
+
+          # Zip the built artifacts (files at root, not nested)
+          cd src/frontend/dist
+          zip -r /tmp/frontend.zip .
+          cd "$GITHUB_WORKSPACE"
+
+          # Create a manual deployment slot and get the upload URL
+          DEPLOY=$(aws amplify create-deployment \
+            --app-id "$APP_ID" \
+            --branch-name develop \
+            --region us-east-2)
+          JOB_ID=$(echo "$DEPLOY" | jq -r '.jobId')
+          UPLOAD_URL=$(echo "$DEPLOY" | jq -r '.zipUploadUrl')
+
+          # Upload the artifact
+          curl -X PUT "$UPLOAD_URL" \
+            -H "Content-Type: application/zip" \
+            --data-binary @/tmp/frontend.zip
+
+          # Start the deployment
+          aws amplify start-deployment \
+            --app-id "$APP_ID" \
+            --branch-name develop \
+            --job-id "$JOB_ID" \
+            --region us-east-2
+
+          echo "Waiting for Amplify deployment..."
+          while true; do
+            STATUS=$(aws amplify get-job \
+              --app-id "$APP_ID" \
+              --branch-name develop \
+              --job-id "$JOB_ID" \
+              --region us-east-2 \
+              --query "job.summary.status" \
+              --output text)
+            echo "  status: $STATUS"
+            case "$STATUS" in
+              SUCCEED) echo "Frontend deployed."; break ;;
+              FAILED|CANCELLED) echo "Amplify deployment $STATUS."; exit 1 ;;
+              *) sleep 30 ;;
+            esac
+          done
+
       - name: Get sandbox URLs
         id: urls
         working-directory: infrastructure/environments/sandbox
@@ -181,18 +266,12 @@ jobs:
           echo "frontend_url=$(terraform output -raw frontend_url)" >> "$GITHUB_OUTPUT"
 
       - name: Deploy app to sandbox EB
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          # Log into ECR (prod repo, us-east-1) to get the registry URL
-          ECR_REGISTRY=$(aws ecr get-login-password --region us-east-1 | \
-            docker login --username AWS --password-stdin \
-            "$(aws sts get-caller-identity --query Account --output text).dkr.ecr.us-east-1.amazonaws.com" \
-            2>/dev/null && \
-            echo "$(aws sts get-caller-identity --query Account --output text).dkr.ecr.us-east-1.amazonaws.com")
-
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com"
+
+          aws ecr get-login-password --region us-east-1 | \
+            docker login --username AWS --password-stdin "$ECR_REGISTRY"
           ECR_REPOSITORY="finishline-production"
 
           # Use the latest prod image — same image tested in sandbox = same image that goes to prod
@@ -231,5 +310,7 @@ jobs:
         run: |
           echo "Sandbox is up!"
           echo ""
-          echo "Frontend: ${{ steps.urls.outputs.frontend_url }}"
+          echo "Frontend: https://qa.finishlinebyner.com"
           echo "Backend:  ${{ steps.urls.outputs.eb_url }}"
+          echo ""
+          echo "Register https://qa.finishlinebyner.com in Google OAuth once, then it works on every spin-up."

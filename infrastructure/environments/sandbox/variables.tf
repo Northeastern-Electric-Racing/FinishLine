@@ -14,12 +14,6 @@ variable "db_master_password" {
   # In CI/CD: generated once and stored in GitHub Actions secrets
 }
 
-variable "github_access_token" {
-  description = "GitHub personal access token for Amplify to access the repository"
-  type        = string
-  sensitive   = true
-}
-
 variable "snapshot_identifier" {
   description = "RDS snapshot ID to restore from (taken from prod by the CI/CD pipeline before spin-up)"
   type        = string

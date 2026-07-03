@@ -87,6 +87,31 @@ module "rds" {
 }
 
 #############
+# Backend domain (fixed CNAME prefix so the ACM cert's validation record and
+# Route53 CNAME can be created before the EB environment exists, avoiding a
+# dependency cycle between module.dns and module.elasticbeanstalk)
+#############
+locals {
+  eb_cname_prefix = "finishline-sandbox"
+  eb_cname        = "${local.eb_cname_prefix}.us-east-2.elasticbeanstalk.com"
+  backend_domain  = "qa.api.finishlinebyner.com"
+}
+
+#############
+# DNS Module (backend HTTPS cert + Route53 record)
+#############
+module "dns" {
+  source = "../../modules/dns"
+
+  project_name     = "finishline"
+  environment      = "sandbox"
+  hosted_zone_name = "finishlinebyner.com"
+  frontend_domain  = "qa.finishlinebyner.com"
+  backend_domain   = local.backend_domain
+  backend_cname    = local.eb_cname
+}
+
+#############
 # Elastic Beanstalk Module
 #############
 module "elasticbeanstalk" {
@@ -107,14 +132,16 @@ module "elasticbeanstalk" {
   instance_security_group_id = module.network.eb_instance_security_group_id
   alb_security_group_id      = module.network.alb_security_group_id
 
-  # Sandbox-specific: single instance, fast deploys, no HTTPS
-  min_instance_count = 1
-  max_instance_count = 1
-  deployment_policy  = "AllAtOnce"
-  enable_https       = false
-  health_check_path  = "/health"
-  log_retention_days = 7
-  ec2_key_name       = "finishline-sandbox"
+  # Sandbox-specific: single instance, fast deploys
+  min_instance_count  = 1
+  max_instance_count  = 1
+  deployment_policy   = "AllAtOnce"
+  cname_prefix        = local.eb_cname_prefix
+  enable_https        = true
+  ssl_certificate_arn = module.dns.backend_certificate_arn
+  health_check_path   = "/health"
+  log_retention_days  = 7
+  ec2_key_name        = "finishline-sandbox"
 
   environment_variables = {
     DATABASE_URL = module.rds.database_url
@@ -146,17 +173,23 @@ module "elasticbeanstalk" {
 module "frontend" {
   source = "../../modules/amplify-frontend"
 
-  project_name        = "finishline"
-  environment         = "sandbox"
-  github_repository   = "https://github.com/Northeastern-Electric-Racing/FinishLine"
-  github_access_token = var.github_access_token
-  main_branch_name    = "develop"
-  backend_api_url     = module.elasticbeanstalk.environment_endpoint_url
+  project_name     = "finishline"
+  environment      = "sandbox"
+  main_branch_name = "develop"
+  backend_api_url  = module.dns.backend_url
 
-  domain_name                 = ""
-  enable_pull_request_preview = false
-  enable_auto_branch_creation = false
-  create_webhook              = false
+  domain_name                  = "qa.finishlinebyner.com"
+  enable_pull_request_preview  = false
+  enable_auto_branch_creation  = false
+  create_webhook               = false
+  # The workflow polls for domain ACTIVE status after applying DNS records
+  wait_for_domain_verification = false
+}
+
+# Route53 hosted zone for finishlinebyner.com
+data "aws_route53_zone" "main" {
+  name         = "finishlinebyner.com"
+  private_zone = false
 }
 
 #############

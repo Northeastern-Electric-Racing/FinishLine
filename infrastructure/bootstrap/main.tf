@@ -9,6 +9,7 @@
 # 1. S3 bucket for Terraform state storage
 # 2. DynamoDB table for state locking
 # 3. S3 bucket for Elastic Beanstalk application versions
+# 4. IAM permissions for the github-actions-finishline CI/CD user
 
 terraform {
   required_version = ">= 1.0"
@@ -32,9 +33,9 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project     = "finishline"
-      ManagedBy   = "Terraform"
-      Purpose     = "Bootstrap"
+      Project   = "finishline"
+      ManagedBy = "Terraform"
+      Purpose   = "Bootstrap"
     }
   }
 }
@@ -55,7 +56,6 @@ resource "aws_s3_bucket" "terraform_state" {
   }
 }
 
-# Versioning for state file history and recovery
 resource "aws_s3_bucket_versioning" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
@@ -64,7 +64,6 @@ resource "aws_s3_bucket_versioning" "terraform_state" {
   }
 }
 
-# Server-side encryption for state files
 resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
@@ -75,7 +74,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" 
   }
 }
 
-# Block all public access to state bucket
 resource "aws_s3_bucket_public_access_block" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
@@ -85,7 +83,6 @@ resource "aws_s3_bucket_public_access_block" "terraform_state" {
   restrict_public_buckets = true
 }
 
-# Delete old versions of state files after 90 days
 resource "aws_s3_bucket_lifecycle_configuration" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
@@ -106,7 +103,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "terraform_state" {
 #############
 resource "aws_dynamodb_table" "terraform_locks" {
   name         = var.locks_table_name
-  billing_mode = "PAY_PER_REQUEST"  # On-demand pricing, no minimum cost
+  billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
 
   attribute {
@@ -136,7 +133,6 @@ resource "aws_s3_bucket" "eb_versions" {
   }
 }
 
-# Enable versioning for EB application versions
 resource "aws_s3_bucket_versioning" "eb_versions" {
   bucket = aws_s3_bucket.eb_versions.id
 
@@ -145,7 +141,6 @@ resource "aws_s3_bucket_versioning" "eb_versions" {
   }
 }
 
-# Block public access to EB versions bucket
 resource "aws_s3_bucket_public_access_block" "eb_versions" {
   bucket = aws_s3_bucket.eb_versions.id
 
@@ -155,7 +150,6 @@ resource "aws_s3_bucket_public_access_block" "eb_versions" {
   restrict_public_buckets = true
 }
 
-# Clean up old EB versions after 90 days
 resource "aws_s3_bucket_lifecycle_configuration" "eb_versions" {
   bucket = aws_s3_bucket.eb_versions.id
 
@@ -175,3 +169,142 @@ resource "aws_s3_bucket_lifecycle_configuration" "eb_versions" {
   }
 }
 
+#############
+# IAM Permissions for github-actions-finishline
+# The user was created manually outside of Terraform.
+# Managed policies cover provisioning sandbox resources via Terraform.
+# The inline policy covers sandbox-workflow-specific operations.
+#############
+
+locals {
+  github_actions_user = "github-actions-finishline"
+  managed_policies = {
+    ec2        = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+    rds        = "arn:aws:iam::aws:policy/AmazonRDSFullAccess"
+    iam        = "arn:aws:iam::aws:policy/IAMFullAccess"
+    eb         = "arn:aws:iam::aws:policy/AdministratorAccess-AWSElasticBeanstalk"
+    s3         = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+    cloudwatch = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+    amplify    = "arn:aws:iam::aws:policy/AdministratorAccess-Amplify"
+    logs       = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+  }
+}
+
+resource "aws_iam_user_policy_attachment" "github_actions_managed" {
+  for_each   = local.managed_policies
+  user       = local.github_actions_user
+  policy_arn = each.value
+}
+
+resource "aws_iam_user_policy" "github_actions_sandbox" {
+  name = "sandbox-workflow-permissions"
+  user = local.github_actions_user
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "TerraformStateS3"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::finishline-terraform-state",
+          "arn:aws:s3:::finishline-terraform-state/*"
+        ]
+      },
+      {
+        Sid    = "TerraformStateDynamoDB"
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem"
+        ]
+        Resource = "arn:aws:dynamodb:us-east-1:830877454256:table/finishline-terraform-locks"
+      },
+      {
+        Sid    = "RDSSnapshotOperations"
+        Effect = "Allow"
+        Action = [
+          "rds:CreateDBSnapshot",
+          "rds:DescribeDBSnapshots",
+          "rds:CopyDBSnapshot",
+          "rds:DeleteDBSnapshot",
+          "rds:ListTagsForResource",
+          "rds:AddTagsToResource"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "KMSForSnapshotCopy"
+        Effect = "Allow"
+        Action = [
+          "kms:CreateGrant",
+          "kms:DescribeKey",
+          "kms:GenerateDataKey",
+          "kms:Decrypt",
+          "kms:ReEncryptFrom",
+          "kms:ReEncryptTo"
+        ]
+        Resource = "*"
+        Condition = {
+          StringLike = {
+            "kms:ViaService" = [
+              "rds.us-east-1.amazonaws.com",
+              "rds.us-east-2.amazonaws.com"
+            ]
+          }
+        }
+      },
+      {
+        Sid    = "SecretsManagerReadProd"
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = "arn:aws:secretsmanager:us-east-1:830877454256:secret:finishline/production/*"
+      },
+      {
+        Sid    = "ElasticBeanstalkDescribeProd"
+        Effect = "Allow"
+        Action = [
+          "elasticbeanstalk:DescribeConfigurationSettings",
+          "elasticbeanstalk:DescribeEnvironments"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "Route53SandboxDNS"
+        Effect = "Allow"
+        Action = [
+          "route53:ChangeResourceRecordSets",
+          "route53:ListHostedZonesByName",
+          "route53:ListHostedZones",
+          "route53:GetHostedZone",
+          "route53:GetChange",
+          "route53:ListTagsForResource"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "ACMSandboxCerts"
+        Effect = "Allow"
+        Action = [
+          "acm:RequestCertificate",
+          "acm:DeleteCertificate",
+          "acm:AddTagsToResource",
+          "acm:RemoveTagsFromResource",
+          "acm:AddTagsToCertificate",
+          "acm:RemoveTagsFromCertificate"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}

@@ -4,11 +4,7 @@
 # Amplify App
 #############
 resource "aws_amplify_app" "frontend" {
-  name       = "${var.project_name}-${var.environment}-frontend"
-  repository = var.github_repository
-
-  # GitHub access token for repository access
-  access_token = var.github_access_token
+  name = "${var.project_name}-${var.environment}-frontend"
 
   # Build specification
   build_spec = <<-EOT
@@ -122,7 +118,7 @@ resource "aws_amplify_domain_association" "main" {
   domain_name = var.domain_name
 
   # Wait for DNS propagation
-  wait_for_verification = true
+  wait_for_verification = var.wait_for_domain_verification
 
   # Main branch subdomain configuration
   sub_domain {
