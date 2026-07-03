@@ -287,7 +287,8 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
           "route53:ListHostedZonesByName",
           "route53:ListHostedZones",
           "route53:GetHostedZone",
-          "route53:GetChange"
+          "route53:GetChange",
+          "route53:ListTagsForResource"
         ]
         Resource = "*"
       }
