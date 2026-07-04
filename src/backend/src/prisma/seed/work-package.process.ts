@@ -67,7 +67,7 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
         ? workPackageContexts[this.faker.number.int({ min: 0, max: workPackageContexts.length - 1 })]
         : undefined;
 
-      // if the blocker ends too close to the project end, drop the blocking relationship 
+      // if the blocker ends too close to the project end, drop the blocking relationship
       // this would skew the data with 5-10% of blocking relationships being affected in the worst case scenario
       // this happening is extremely rare but does change the data slightly if it does occur.
       const effectiveBlocker =

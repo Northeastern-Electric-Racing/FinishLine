@@ -15,7 +15,7 @@ export const HOUR_MS = MINUTE_MS * 60;
 export const DAY_MS = HOUR_MS * 24;
 export const WEEK_MS = DAY_MS * 7;
 
-export const DAYS_PER_WEEK = 7
+export const DAYS_PER_WEEK = 7;
 
 export function generateRandomDate({ faker }: WithFaker, from?: Date, to?: Date) {
   return faker.date.between({ from: from ?? '2000-01-01', to: to ?? Date.now() });
