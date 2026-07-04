@@ -1162,7 +1162,15 @@ export default class RulesService {
    * @param organizationId the organization id
    * @returns the rules in this team that do not have an associated project rule
    */
-  static async getUnassignedRulesForRuleset(rulesetId: string, teamId: string, projectId: string, organizationId: string) {
+  static async getUnassignedRulesForRuleset(
+    rulesetId: string,
+    teamId: string,
+    projectId: string | undefined,
+    organizationId: string
+  ) {
+    if (!projectId) {
+      throw new HttpException(400, 'Query parameter projectId is required');
+    }
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
