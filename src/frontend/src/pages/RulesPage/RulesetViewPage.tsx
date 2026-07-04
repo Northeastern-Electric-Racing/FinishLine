@@ -72,16 +72,16 @@ const RulesetViewPage = () => {
     isLoading: isRulesLoading
   } = useAllRulesForRuleset(rulesetId!);
 
-  if (isRulesetLoading || isRulesLoading) {
-    return <LoadingIndicator />;
-  }
-
   if (isRulesetError) {
     return <ErrorPage error={rulesetError} />;
   }
 
   if (isRulesError) {
     return <ErrorPage error={rulesError} />;
+  }
+
+  if (isRulesetLoading || isRulesLoading) {
+    return <LoadingIndicator />;
   }
 
   if (!ruleset || !allRules) {

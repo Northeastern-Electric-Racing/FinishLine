@@ -73,8 +73,8 @@ const RulesetPage: React.FC = () => {
     }
   };
 
-  if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
+  if (isLoading) return <LoadingIndicator />;
 
   return (
     <>

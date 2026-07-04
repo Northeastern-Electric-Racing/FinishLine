@@ -129,8 +129,8 @@ const RulesetTable: React.FC = () => {
     );
   };
 
-  if (isLoading) return <LoadingIndicator />;
   if (error) return <ErrorPage message={error.message} />;
+  if (isLoading) return <LoadingIndicator />;
 
   return (
     <Box>

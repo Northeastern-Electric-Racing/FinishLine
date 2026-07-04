@@ -142,12 +142,12 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, teamName, projectId, on
       disabled={selectedRuleIds.length === 0}
     >
       <Box sx={{ minWidth: 400 }}>
-        {isLoading ? (
+        {isError ? (
+          <Alert severity="error">Failed to load rules</Alert>
+        ) : isLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
             <CircularProgress />
           </Box>
-        ) : isError ? (
-          <Alert severity="error">Failed to load rules</Alert>
         ) : !unassignedRules || unassignedRules.length === 0 ? (
           <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
             No unassigned rules available for the {teamName} team.

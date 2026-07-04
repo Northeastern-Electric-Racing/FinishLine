@@ -224,12 +224,12 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     });
   };
 
-  if (teamsLoading) {
-    return <LoadingIndicator />;
-  }
-
   if (teamsError) {
     return <ErrorPage message={teamsErrorData?.message} error={teamsErrorData} />;
+  }
+
+  if (teamsLoading) {
+    return <LoadingIndicator />;
   }
 
   const topLevelRules = rules.filter((rule) => !rule.parentRule);

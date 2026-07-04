@@ -25,7 +25,7 @@ import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
 import UpdateStatusPopover from './UpdateStatusPopover';
-import AddRuleModal from './AddRuleModal';
+import AddRuleModal from './AddProjectRuleModal';
 import {
   useAllRulesetTypes,
   useActiveRuleset,
@@ -171,14 +171,12 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     setSelectedRulesetTypeIndex(newValue);
   };
 
-  // Loading state
-  if (rulesetTypesLoading) {
-    return <LoadingIndicator />;
-  }
-
-  // Error state
   if (rulesetTypesError) {
     return <ErrorPage message={'Failed to load ruleset types'} />;
+  }
+
+  if (rulesetTypesLoading) {
+    return <LoadingIndicator />;
   }
 
   // No ruleset types
@@ -346,7 +344,9 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       )}
 
       {/* Rules Content */}
-      {activeRulesetLoading || projectRulesLoading ? (
+      {projectRulesError ? (
+        <Alert severity="error">Failed to load rules</Alert>
+      ) : activeRulesetLoading || projectRulesLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress />
         </Box>
@@ -356,8 +356,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
             No active ruleset configured for this ruleset type.
           </Typography>
         </Box>
-      ) : projectRulesError ? (
-        <Alert severity="error">Failed to load rules</Alert>
       ) : topLevelRules.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="body1" color="text.secondary">
