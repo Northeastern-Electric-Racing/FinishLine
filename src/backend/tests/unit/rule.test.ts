@@ -704,8 +704,6 @@ describe('Create Rules Tests', () => {
           name: 'wrong org',
           userCreatedId: batman.userId,
           description: 'desc',
-          applyInterestImageId: '1',
-          exploreAsGuestImageId: '1',
           applicationLink: '1'
         }
       });
@@ -1676,7 +1674,12 @@ describe('Rule Tests', () => {
         }
       });
       await expect(
-        RulesService.getUnassignedRulesForRuleset(otherRuleset.rulesetId, testTeam.teamId, organization.organizationId)
+        RulesService.getUnassignedRulesForRuleset(
+          otherRuleset.rulesetId,
+          testTeam.teamId,
+          project.projectId,
+          organization.organizationId
+        )
       ).rejects.toThrow(InvalidOrganizationException);
     });
     it('fails if team is in the wrong org', async () => {
@@ -1691,19 +1694,34 @@ describe('Rule Tests', () => {
       });
       const { ruleset1 } = await setupRules(car);
       await expect(
-        RulesService.getUnassignedRulesForRuleset(ruleset1.rulesetId, otherTeam.teamId, organization.organizationId)
+        RulesService.getUnassignedRulesForRuleset(
+          ruleset1.rulesetId,
+          otherTeam.teamId,
+          project.projectId,
+          organization.organizationId
+        )
       ).rejects.toThrow(InvalidOrganizationException);
     });
     it('fails if ruleset does not exist', async () => {
       await expect(
-        RulesService.getUnassignedRulesForRuleset('nonexistent-ruleset-id', testTeam.teamId, organization.organizationId)
+        RulesService.getUnassignedRulesForRuleset(
+          'nonexistent-ruleset-id',
+          testTeam.teamId,
+          project.projectId,
+          organization.organizationId
+        )
       ).rejects.toThrow(new NotFoundException('Ruleset', 'nonexistent-ruleset-id'));
     });
     it('fails if team does not exist', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
       await expect(
-        RulesService.getUnassignedRulesForRuleset(ruleset1.rulesetId, 'fake-team-id', organization.organizationId)
+        RulesService.getUnassignedRulesForRuleset(
+          ruleset1.rulesetId,
+          'fake-team-id',
+          project.projectId,
+          organization.organizationId
+        )
       ).rejects.toThrow(new NotFoundException('Team', 'fake-team-id'));
     });
     it('successfully returns rules in the team that have no projects', async () => {
@@ -1749,6 +1767,7 @@ describe('Rule Tests', () => {
       const rules = await RulesService.getUnassignedRulesForRuleset(
         ruleset1.rulesetId,
         testTeam.teamId,
+        project.projectId,
         organization.organizationId
       );
       expect(rules.length).toEqual(2);
@@ -1765,6 +1784,7 @@ describe('Rule Tests', () => {
       const rules = await RulesService.getUnassignedRulesForRuleset(
         ruleset1.rulesetId,
         testTeam.teamId,
+        project.projectId,
         organization.organizationId
       );
       expect(rules).toEqual([]);

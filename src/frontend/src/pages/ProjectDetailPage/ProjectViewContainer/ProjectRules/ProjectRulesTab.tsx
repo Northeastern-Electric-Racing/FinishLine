@@ -364,16 +364,12 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         </Box>
       ) : (
         <Box sx={{ paddingBottom: '80px' }}>
-          <TableContainer
-            component={Paper}
-            elevation={0}
-            sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor: backgroundColor }}
-          >
+          <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor }}>
             <Table
               sx={{
                 borderCollapse: 'separate',
                 borderSpacing: '0 8px',
-                backgroundColor: backgroundColor
+                backgroundColor
               }}
             >
               <TableBody>

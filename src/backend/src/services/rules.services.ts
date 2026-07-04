@@ -438,6 +438,10 @@ export default class RulesService {
       ...getProjectRuleQueryArgs()
     });
 
+    if (!projectRule) {
+      throw new NotFoundException('Project Rule', ruleId);
+    }
+
     return projectRuleTransformer(projectRule);
   }
 

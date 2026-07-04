@@ -174,7 +174,7 @@ export const seedFsaeRules = async (
     }
   });
 
-  const T112BRule = await prisma.rule.create({
+  await prisma.rule.create({
     data: {
       ruleCode: 'T.1.1.2.b',
       ruleContent: 'Is less than or equal to 320 mm above the lowest point inside the cockpit',
@@ -235,7 +235,7 @@ export const seedFsaeRules = async (
     }
   });
 
-  const IC1Rule = await prisma.rule.create({
+  await prisma.rule.create({
     data: {
       ruleCode: 'IC.1',
       ruleContent: 'GENERAL REQUIREMENTS',
@@ -265,7 +265,7 @@ export const seedFsaeRules = async (
     }
   });
 
-  const IC561Rule = await prisma.rule.create({
+  await prisma.rule.create({
     data: {
       ruleCode: 'IC.5.6.1',
       ruleContent:
@@ -276,7 +276,7 @@ export const seedFsaeRules = async (
     }
   });
 
-  const IC562Rule = await prisma.rule.create({
+  await prisma.rule.create({
     data: {
       ruleCode: 'IC.5.6.2',
       ruleContent: 'All fuel vent lines must have a check valve to prevent fuel leakage when the tank is inverted',
@@ -286,7 +286,7 @@ export const seedFsaeRules = async (
     }
   });
 
-  const IC563Rule = await prisma.rule.create({
+  await prisma.rule.create({
     data: {
       ruleCode: 'IC.5.6.3',
       ruleContent: 'All fuel vent lines must exit outside the bodywork',
@@ -433,7 +433,7 @@ export const seedFsaeRules = async (
   });
 
   // Rule F.5.7.1 references F.3.2.1.c
-  const F571Rule = await prisma.rule.create({
+  await prisma.rule.create({
     data: {
       ruleCode: 'F.5.7.1',
       ruleContent: 'The Front Hoop must be constructed of closed section metal tubing meeting F.3.2.1.c',

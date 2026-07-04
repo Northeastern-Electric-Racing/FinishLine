@@ -38,7 +38,8 @@ const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules, teamRules, 
       ...team.projects.map((p) => `project-${p.projectId}`),
       ...(team.unassignedRules.length > 0 ? [`team-${team.teamId}-unassigned`] : [])
     ],
-    referencedRuleIds: []
+    referencedRuleIds: [],
+    isComplete: false
   }));
 
   // Convert projects to mock rules for rendering with RuleRow
@@ -53,7 +54,8 @@ const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules, teamRules, 
         ruleCode: `${team.teamName}`
       },
       subRuleIds: project.rules.map((r) => r.ruleId),
-      referencedRuleIds: []
+      referencedRuleIds: [],
+      isComplete: false
     }))
   );
 
@@ -70,7 +72,8 @@ const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules, teamRules, 
         ruleCode: `${team.teamName}`
       },
       subRuleIds: team.unassignedRules.map((r) => r.ruleId),
-      referencedRuleIds: []
+      referencedRuleIds: [],
+      isComplete: false
     }));
 
   // Create unassigned to team mock rule
@@ -83,7 +86,8 @@ const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules, teamRules, 
           imageFileIds: [],
           parentRule: undefined,
           subRuleIds: unassignedToTeam.map((r) => r.ruleId),
-          referencedRuleIds: []
+          referencedRuleIds: [],
+          isComplete: false
         }
       : null;
 
