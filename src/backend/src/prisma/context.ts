@@ -14,6 +14,7 @@ import {
   Team_Type,
   Team,
   Unit,
+  Work_Package,
   Vendor,
   WBS_Element
 } from '@prisma/client';
@@ -85,5 +86,10 @@ export type ProjectContext = {
     teams: Team[];
     car: Car;
   };
+  timeline: DateRange;
+};
+
+export type WorkPackageContext = {
+  workPackage: Work_Package & { wbsElement: WBS_Element };
   timeline: DateRange;
 };

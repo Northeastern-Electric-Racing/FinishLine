@@ -10,7 +10,8 @@ import {
   Reimbursement_Product_Other_Reason,
   Team_Type,
   Unit,
-  Vendor
+  Vendor,
+  WBS_Element_Template
 } from '@prisma/client';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
@@ -27,10 +28,13 @@ import {
   materialTypeCreateInputs,
   otherReimbursementReasonConfigs,
   otherReimbursementReasonCreateInput,
+  projectTemplateConfigs,
+  standaloneWorkPackageTemplateConfigs,
   teamTypeCreateInputs,
   unitCreateInputs,
   vendorCreateInputs
 } from '../factories/config-data.factory.js';
+import { connectOrganization, connectUser } from '../utils/common.factory.js';
 
 type ConfigDataInput = OrganizationOutput & UsersOutput;
 
@@ -47,6 +51,8 @@ export type ConfigDataOutput = {
   reimbursementProductOtherReasons: Reimbursement_Product_Other_Reason[];
   calendars: Calendar[];
   eventTypes: Event_Type[];
+  projectTemplates: WBS_Element_Template[];
+  standaloneWpTemplates: WBS_Element_Template[];
 };
 
 export class ConfigDataProcess extends SeedProcess<ConfigDataInput, ConfigDataOutput> {
@@ -153,6 +159,64 @@ export class ConfigDataProcess extends SeedProcess<ConfigDataInput, ConfigDataOu
       )
     );
 
+    const projectTemplates = await Promise.all(
+      projectTemplateConfigs.map(async (config) => {
+        const wbsElementTemplate = await this.prisma.wBS_Element_Template.create({
+          data: {
+            templateName: config.templateName,
+            templateNotes: `Seed template for ${config.projectName}.`,
+            wbsElementName: config.projectName,
+            userCreated: connectUser(creator.userId),
+            organization: connectOrganization(organizationId),
+            projectTemplate: {
+              create: {
+                summary: config.summary,
+                budget: config.budget,
+                workPackageTemplates: {
+                  create: await Promise.all(
+                    config.workPackageTemplates.map(async (wpConfig) => ({
+                      wbsElementTemplate: {
+                        create: {
+                          templateName: wpConfig.templateName,
+                          templateNotes: `Seed template for ${wpConfig.wbsElementName}.`,
+                          wbsElementName: wpConfig.wbsElementName,
+                          userCreated: connectUser(creator.userId),
+                          organization: connectOrganization(organizationId)
+                        }
+                      },
+                      stage: wpConfig.stage,
+                      duration: wpConfig.duration
+                    }))
+                  )
+                }
+              }
+            }
+          }
+        });
+        return wbsElementTemplate;
+      })
+    );
+
+    const standaloneWpTemplates = await Promise.all(
+      standaloneWorkPackageTemplateConfigs.map((config) =>
+        this.prisma.wBS_Element_Template.create({
+          data: {
+            templateName: config.templateName,
+            templateNotes: `Seed template for ${config.wbsElementName}.`,
+            wbsElementName: config.wbsElementName,
+            userCreated: connectUser(creator.userId),
+            organization: connectOrganization(organizationId),
+            workPackageTemplate: {
+              create: {
+                stage: config.stage,
+                duration: config.duration
+              }
+            }
+          }
+        })
+      )
+    );
+
     return {
       teamTypes,
       linkTypes,
@@ -165,7 +229,9 @@ export class ConfigDataProcess extends SeedProcess<ConfigDataInput, ConfigDataOu
       vendors,
       reimbursementProductOtherReasons,
       calendars,
-      eventTypes
+      eventTypes,
+      projectTemplates,
+      standaloneWpTemplates
     };
   }
 }

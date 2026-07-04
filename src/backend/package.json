@@ -8,7 +8,8 @@
     "build": "NODE_OPTIONS='--max-old-space-size=8192' tsc --noEmit false",
     "start": "node -r dotenv/config dist/backend/index.js",
     "prisma:manual": "tsx --import dotenv/config ./src/prisma/manual.ts",
-    "prisma:dev-seed": "tsx --import dotenv/config ./src/prisma/dev-seed.ts"
+    "prisma:dev-seed": "tsx --import dotenv/config ./src/prisma/dev-seed.ts",
+    "prisma:dev-setup": "docker compose up -d database && yarn prisma:reset:no-seed --force && yarn workspace backend prisma:dev-seed"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",

@@ -1,5 +1,20 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, Work_Package_Stage } from '@prisma/client';
 import { connectOrganization, connectUser } from '../utils/common.factory.js';
+
+type WorkPackageTemplateConfig = {
+  templateName: string;
+  wbsElementName: string;
+  stage: Work_Package_Stage | null;
+  duration: number | null;
+};
+
+type ProjectTemplateConfig = {
+  templateName: string;
+  projectName: string;
+  summary: string;
+  budget: number;
+  workPackageTemplates: WorkPackageTemplateConfig[];
+};
 
 const SEED_CREATED_AT = new Date('2024-01-01T00:00:00.000Z');
 
@@ -572,3 +587,29 @@ export const eventTypeCreateInput = (
     })
   }
 });
+
+export const projectTemplateConfigs: ProjectTemplateConfig[] = [
+  {
+    templateName: 'Standard Hardware Project',
+    projectName: 'Hardware Project',
+    summary: 'Standard template for hardware projects.',
+    budget: 0,
+    workPackageTemplates: [
+      { templateName: 'Research Phase', wbsElementName: 'Research', stage: Work_Package_Stage.RESEARCH, duration: null },
+      { templateName: 'Design Phase', wbsElementName: 'Design', stage: Work_Package_Stage.DESIGN, duration: null },
+      {
+        templateName: 'Manufacturing Phase',
+        wbsElementName: 'Manufacturing',
+        stage: Work_Package_Stage.MANUFACTURING,
+        duration: null
+      },
+      { templateName: 'Install Phase', wbsElementName: 'Install', stage: Work_Package_Stage.INSTALL, duration: null },
+      { templateName: 'Testing Phase', wbsElementName: 'Testing', stage: Work_Package_Stage.TESTING, duration: null },
+      { templateName: 'Final Testing', wbsElementName: 'Final Testing', stage: Work_Package_Stage.TESTING, duration: null }
+    ]
+  }
+];
+
+export const standaloneWorkPackageTemplateConfigs: WorkPackageTemplateConfig[] = [
+  { templateName: 'Quick Install', wbsElementName: 'Install', stage: null, duration: 1 }
+];
