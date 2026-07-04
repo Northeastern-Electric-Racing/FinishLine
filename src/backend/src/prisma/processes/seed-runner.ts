@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { SeedProcess, GLOBAL_SEED } from './seed-process.js';
+import { SeedProcess } from './seed-process.js';
 import ora from 'ora';
 
 export class SeedRunner {
