@@ -1065,7 +1065,7 @@ describe('Rule Tests', () => {
       await expect(
         async () =>
           await RulesService.setRuleCompletion(nonLeadership, organization, topLevelRule.ruleId, true, project.projectId)
-      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update a rule completion'));
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule completion'));
     });
   });
 

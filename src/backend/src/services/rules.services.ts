@@ -10,7 +10,7 @@ import {
   isHead,
   Ruleset
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
