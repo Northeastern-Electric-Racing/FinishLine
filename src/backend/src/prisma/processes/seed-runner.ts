@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { SeedProcess, GLOBAL_SEED } from './seed-process.js';
+import ora from 'ora';
 
 export class SeedRunner {
   private instances: SeedProcess<any, any>[] = [];
@@ -20,34 +21,47 @@ export class SeedRunner {
 
     const outputs = new Map<string, any>();
     const context: Record<string, any> = {};
+    const total = this.instances.length;
 
     const mergeOutputs = (target: Record<string, any>, source: Record<string, any>, sourceName: string) => {
       const duplicateKeys = Object.keys(source).filter((key) => key in target);
-
       if (duplicateKeys.length > 0) {
         throw new Error(`Duplicate seed output keys from ${sourceName}: ${duplicateKeys.join(', ')}`);
       }
-
       return Object.assign(target, source);
     };
 
-    for (const instance of this.instances) {
+    for (let i = 0; i < this.instances.length; i++) {
+      const instance = this.instances[i];
       instance.prisma = this.prisma;
+      const start = Date.now();
 
-      const depOutputs = instance.dependencies().reduce<Record<string, any>>((acc, depClass) => {
-        const output = outputs.get(depClass.name);
-        if (!output) throw new Error(`Missing output for dependency: ${depClass.name}`);
+      const spinner = ora({
+        text: `[${i + 1}/${total}] ${instance.constructor.name}...`,
+        color: 'cyan'
+      }).start();
 
-        return mergeOutputs(acc, output, depClass.name);
-      }, {});
+      try {
+        const depOutputs = instance.dependencies().reduce<Record<string, any>>((acc, depClass) => {
+          const output = outputs.get(depClass.name);
+          if (!output) throw new Error(`Missing output for dependency: ${depClass.name}`);
+          return mergeOutputs(acc, output, depClass.name);
+        }, {});
 
-      console.log(`Running ${instance.constructor.name} (seed ${GLOBAL_SEED})...`);
-      const output = await instance.run(depOutputs);
+        const output = await instance.run(depOutputs);
 
-      outputs.set(instance.constructor.name, output);
-      mergeOutputs(context, output, instance.constructor.name);
+        outputs.set(instance.constructor.name, output);
+        mergeOutputs(context, output, instance.constructor.name);
 
-      console.log(`${instance.constructor.name} complete`);
+        spinner.succeed(
+          `[${i + 1}/${total}] ${instance.constructor.name} complete (${((Date.now() - start) / 1000).toFixed(2)}s)`
+        );
+      } catch (e) {
+        spinner.fail(
+          `[${i + 1}/${total}] ${instance.constructor.name} failed (${((Date.now() - start) / 1000).toFixed(2)}s)`
+        );
+        throw e;
+      }
     }
 
     return context;
