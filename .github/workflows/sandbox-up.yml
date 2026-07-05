@@ -265,7 +265,7 @@ jobs:
           echo "eb_cname=$(terraform output -raw eb_cname)" >> "$GITHUB_OUTPUT"
           echo "frontend_url=$(terraform output -raw frontend_url)" >> "$GITHUB_OUTPUT"
 
-      - name: Deploy app to sandbox EB
+      - name: Build and push candidate image to prod ECR repo
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com"
@@ -274,12 +274,25 @@ jobs:
             docker login --username AWS --password-stdin "$ECR_REGISTRY"
           ECR_REPOSITORY="finishline-production"
 
-          # Use the latest prod image — same image tested in sandbox = same image that goes to prod
+          # Build from this branch and push to the SAME prod ECR repo (no separate
+          # sandbox repo — ECR has no concept of environments) under a distinct tag,
+          # so sandbox tests the exact image that would be promoted to prod, rather
+          # than whatever was last actually deployed to prod.
+          SANDBOX_IMAGE_TAG="sandbox-${{ github.sha }}"
+          docker build --tag "$ECR_REGISTRY/$ECR_REPOSITORY:$SANDBOX_IMAGE_TAG" .
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$SANDBOX_IMAGE_TAG"
+
+          echo "SANDBOX_IMAGE_TAG=$SANDBOX_IMAGE_TAG" >> "$GITHUB_ENV"
+          echo "ECR_REGISTRY=$ECR_REGISTRY" >> "$GITHUB_ENV"
+          echo "ECR_REPOSITORY=$ECR_REPOSITORY" >> "$GITHUB_ENV"
+
+      - name: Deploy app to sandbox EB
+        run: |
           cat > Dockerrun.aws.json <<EOF
           {
             "AWSEBDockerrunVersion": "1",
             "Image": {
-              "Name": "$ECR_REGISTRY/$ECR_REPOSITORY:latest",
+              "Name": "$ECR_REGISTRY/$ECR_REPOSITORY:$SANDBOX_IMAGE_TAG",
               "Update": "true"
             },
             "Ports": [
