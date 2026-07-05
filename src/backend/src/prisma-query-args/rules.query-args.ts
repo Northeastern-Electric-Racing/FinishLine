@@ -28,6 +28,26 @@ export const getRulePreviewQueryArgs = () =>
           teamName: true
         }
       },
+      projects: {
+        where: { dateDeleted: null },
+        select: {
+          project: {
+            select: {
+              projectId: true,
+              wbsElement: {
+                select: {
+                  name: true
+                }
+              },
+              teams: {
+                select: {
+                  teamId: true
+                }
+              }
+            }
+          }
+        }
+      },
       completedBy: {
         select: {
           firstName: true,

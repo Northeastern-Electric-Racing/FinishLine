@@ -40,6 +40,11 @@ export interface Rule {
     teamId: string;
     teamName: string;
   }>;
+  projects?: Array<{
+    projectId: string;
+    projectName: string;
+    teamIds: string[];
+  }>;
   isComplete: boolean;
   completedBy?: {
     firstName: string;
