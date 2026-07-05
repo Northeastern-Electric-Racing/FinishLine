@@ -82,13 +82,15 @@ done
 # CloudWatch Log Groups
 #####################
 log "Deleting sandbox CloudWatch log groups..."
-for lg in $(aws logs describe-log-groups \
-    --region "$REGION" \
-    --log-group-name-prefix "/aws/elasticbeanstalk/finishline-sandbox" \
-    --query "logGroups[].logGroupName" \
-    --output text 2>/dev/null || true); do
-  log "  Deleting log group: $lg"
-  aws logs delete-log-group --log-group-name "$lg" --region "$REGION" || true
+for prefix in "/aws/elasticbeanstalk/finishline-sandbox" "/aws/rds/instance/finishline-sandbox-db"; do
+  for lg in $(aws logs describe-log-groups \
+      --region "$REGION" \
+      --log-group-name-prefix "$prefix" \
+      --query "logGroups[].logGroupName" \
+      --output text 2>/dev/null || true); do
+    log "  Deleting log group: $lg"
+    aws logs delete-log-group --log-group-name "$lg" --region "$REGION" || true
+  done
 done
 
 #####################
@@ -214,5 +216,32 @@ for role in $(aws iam list-roles \
   log "  Deleting IAM role: $role"
   aws iam delete-role --role-name "$role" || true
 done
+
+#####################
+# Leftover Amplify-managed cert-validation DNS record
+# Amplify auto-manages the routing (A) record and the ACM cert-validation CNAME
+# for qa.finishlinebyner.com (same-account custom domain). It cleans up the A
+# record when the domain association is destroyed, but the cert-validation
+# CNAME persists (cached at the account+domain level in ACM) and blocks the
+# next spin-up's domain association from completing.
+#####################
+log "Deleting leftover Amplify cert-validation DNS record..."
+ZONE_ID=$(aws route53 list-hosted-zones-by-name \
+    --dns-name "finishlinebyner.com." \
+    --query "HostedZones[0].Id" \
+    --output text 2>/dev/null | sed 's|/hostedzone/||')
+
+if [ -n "$ZONE_ID" ] && [ "$ZONE_ID" != "None" ]; then
+  aws route53 list-resource-record-sets \
+      --hosted-zone-id "$ZONE_ID" \
+      --query "ResourceRecordSets[?Type=='CNAME' && ends_with(Name, '.qa.finishlinebyner.com.') && contains(ResourceRecords[0].Value, 'acm-validations.aws')]" \
+      --output json 2>/dev/null | jq -c '.[]' | while read -r record; do
+    NAME=$(echo "$record" | jq -r '.Name')
+    log "  Deleting DNS record: $NAME"
+    aws route53 change-resource-record-sets \
+      --hosted-zone-id "$ZONE_ID" \
+      --change-batch "$(jq -n --argjson rr "$record" '{Changes:[{Action:"DELETE",ResourceRecordSet:$rr}]}')" >/dev/null || true
+  done
+fi
 
 log "Cleanup complete."
