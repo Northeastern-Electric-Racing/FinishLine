@@ -18,15 +18,53 @@ interface TeamRules {
 
 interface RulesetTeamViewProps {
   allRules: Rule[];
-  teamRules: TeamRules[];
-  unassignedToTeam: Rule[];
 }
+
+/**
+ * Organizes rules by team and project assignments.
+ * Rules without team assignments are shown in the unassigned section.
+ */
+const getTeamOrganization = (allRules: Rule[]): { teamRules: TeamRules[]; unassignedToTeam: Rule[] } => {
+  const teamMap = new Map<string, TeamRules>();
+  const unassignedToTeam: Rule[] = [];
+
+  // Iterate through all rules and organize by team
+  allRules.forEach((rule) => {
+    if (!rule.teams || rule.teams.length === 0) {
+      // Only add to unassigned if it's a top-level rule (no parent)
+      if (!rule.parentRule) {
+        unassignedToTeam.push(rule);
+      }
+    } else {
+      // Add rule to each assigned team (includes both parents and children)
+      rule.teams.forEach((team) => {
+        if (!teamMap.has(team.teamId)) {
+          teamMap.set(team.teamId, {
+            teamId: team.teamId,
+            teamName: team.teamName,
+            projects: [],
+            unassignedRules: []
+          });
+        }
+
+        const teamRules = teamMap.get(team.teamId)!;
+        if (!rule.parentRule) {
+          teamRules.unassignedRules.push(rule);
+        }
+      });
+    }
+  });
+
+  return { teamRules: Array.from(teamMap.values()), unassignedToTeam };
+};
 
 /**
  * Displays rules organized by team and project
  * Teams and projects are rendered as RuleRows for consistent formatting
  */
-const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules, teamRules, unassignedToTeam }) => {
+const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules }) => {
+  const { teamRules, unassignedToTeam } = getTeamOrganization(allRules);
+
   // Convert teams to mock rules for rendering with RuleRow
   const teamRulesAsRules: Rule[] = teamRules.map((team) => ({
     ruleId: `team-${team.teamId}`,

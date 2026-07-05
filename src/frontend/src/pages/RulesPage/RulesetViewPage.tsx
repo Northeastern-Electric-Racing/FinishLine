@@ -7,53 +7,14 @@ import { useParams } from 'react-router-dom';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import RulesetGeneralView from './components/RulesetGeneralView';
-import { Rule } from 'shared';
-import RulesetTeamView, { TeamRules } from './components/RulesetTeamView';
+import RulesetTeamView from './components/RulesetTeamView';
 import { useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
-
-/**
- * Organizes rules by team and project assignments.
- * Rules without team assignments are shown in the unassigned section.
- */
-const getTeamOrganization = (allRules: Rule[]): { teamRules: TeamRules[]; unassignedToTeam: Rule[] } => {
-  const teamMap = new Map<string, TeamRules>();
-  const unassignedToTeam: Rule[] = [];
-
-  // Iterate through all rules and organize by team
-  allRules.forEach((rule) => {
-    if (!rule.teams || rule.teams.length === 0) {
-      // Only add to unassigned if it's a top-level rule (no parent)
-      if (!rule.parentRule) {
-        unassignedToTeam.push(rule);
-      }
-    } else {
-      // Add rule to each assigned team (includes both parents and children)
-      rule.teams.forEach((team) => {
-        if (!teamMap.has(team.teamId)) {
-          teamMap.set(team.teamId, {
-            teamId: team.teamId,
-            teamName: team.teamName,
-            projects: [],
-            unassignedRules: []
-          });
-        }
-
-        const teamRules = teamMap.get(team.teamId)!;
-        if (!rule.parentRule) {
-          teamRules.unassignedRules.push(rule);
-        }
-      });
-    }
-  });
-
-  return { teamRules: Array.from(teamMap.values()), unassignedToTeam };
-};
 
 const RulesetViewPage = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
   const tabs = [
-    { tabUrlValue: 'teamView', tabName: 'Team View' },
-    { tabUrlValue: 'generalView', tabName: 'General View' }
+    { tabUrlValue: 'generalView', tabName: 'General View' },
+    { tabUrlValue: 'teamView', tabName: 'Team View' }
   ];
 
   const { rulesetId } = useParams<{ rulesetId: string }>();
@@ -88,8 +49,6 @@ const RulesetViewPage = () => {
     return <LoadingIndicator />;
   }
 
-  const { teamRules, unassignedToTeam } = getTeamOrganization(allRules);
-
   return (
     <Box>
       <PageLayout
@@ -108,18 +67,14 @@ const RulesetViewPage = () => {
               setTab={setTabIndex}
               tabsLabels={tabs}
               baseUrl={routes.RULESET_VIEW.replace(':rulesetId', rulesetId!)}
-              defaultTab={'teamView'}
+              defaultTab={'generalView'}
               id="rules-view-tabs"
             />
           </Box>
         }
       >
         <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
-          {tabIndex === 0 ? (
-            <RulesetTeamView allRules={allRules} teamRules={teamRules} unassignedToTeam={unassignedToTeam} />
-          ) : (
-            <RulesetGeneralView allRules={allRules} />
-          )}
+          {tabIndex === 0 ? <RulesetGeneralView allRules={allRules} /> : <RulesetTeamView allRules={allRules} />}
         </Box>
       </PageLayout>
     </Box>
