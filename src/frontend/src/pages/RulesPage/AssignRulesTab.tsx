@@ -34,17 +34,19 @@ interface AssignRulesTabProps {
   rules: Rule[];
 }
 
-const getLeafRuleIds = (ruleId: string, allRules: Rule[]): string[] => {
+/**
+ * Collects a rule and all of its descendants
+ * Assignment applies to the clicked rule and everything beneath it, so each of
+ * those rules gets its own team relation — a parent is only assigned when it is
+ * clicked directly.
+ */
+const getRuleAndDescendantIds = (ruleId: string, allRules: Rule[]): string[] => {
   const rule = allRules.find((r) => r.ruleId === ruleId);
   if (!rule) {
     return [];
   }
 
-  if (rule.subRuleIds.length === 0) {
-    return [ruleId];
-  }
-
-  return rule.subRuleIds.flatMap((subId) => getLeafRuleIds(subId, allRules));
+  return [ruleId, ...rule.subRuleIds.flatMap((subId) => getRuleAndDescendantIds(subId, allRules))];
 };
 
 /*
@@ -168,21 +170,23 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
       return;
     }
 
-    const leafIds = getLeafRuleIds(ruleId, rules);
-    if (leafIds.length === 0) {
+    // Assign the clicked rule and all of its descendants, not just leaves, so
+    // every rule in the subtree gets its own team relation
+    const subtreeIds = getRuleAndDescendantIds(ruleId, rules);
+    if (subtreeIds.length === 0) {
       return;
     }
 
     const newAssignments = new Set(assignments);
     let allSelected = true;
-    for (const id of leafIds) {
+    for (const id of subtreeIds) {
       if (!newAssignments.has(`${selectedTeamId}:${id}`)) {
         allSelected = false;
         break;
       }
     }
 
-    for (const id of leafIds) {
+    for (const id of subtreeIds) {
       const key = `${selectedTeamId}:${id}`;
       if (allSelected) {
         newAssignments.delete(key);
@@ -287,16 +291,8 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
                     key={rule.ruleId}
                     rule={rule}
                     allRules={rules}
-                    backgroundColor={(r) => {
-                      const leafIds = getLeafRuleIds(r.ruleId, rules);
-                      const isSelected = leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
-                      return isSelected ? '#b36b6b' : '#CECECE';
-                    }}
-                    hoverColor={(r) => {
-                      const leafIds = getLeafRuleIds(r.ruleId, rules);
-                      const isSelected = leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
-                      return isSelected ? '#a05858' : '#5e5e5e';
-                    }}
+                    backgroundColor={(r) => (isRuleAssigned(r.ruleId) ? '#b36b6b' : '#CECECE')}
+                    hoverColor={(r) => (isRuleAssigned(r.ruleId) ? '#a05858' : '#5e5e5e')}
                     textColor="#000000"
                     onRowClick={(r) => handleRuleToggle(r.ruleId)}
                     middleContent={() => null}
