@@ -27,14 +27,16 @@ interface AddRuleModalProps {
   onHide: () => void;
   rulesetId: string;
   teamId: string;
+  teamName: string;
+  projectId: string;
   onSubmit: (ruleIds: string[]) => void;
 }
 
-const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModalProps) => {
+const AddRuleModal = ({ open, onHide, rulesetId, teamId, teamName, projectId, onSubmit }: AddRuleModalProps) => {
   const theme = useTheme();
   const [selectedRuleIds, setSelectedRuleIds] = useState<string[]>([]);
 
-  const { data: unassignedRules, isLoading, isError } = useUnassignedRulesForRuleset(rulesetId, teamId);
+  const { data: unassignedRules, isLoading, isError } = useUnassignedRulesForRuleset(rulesetId, teamId, projectId);
 
   type ParentInfo = { ruleId: string; ruleCode: string };
 
@@ -140,15 +142,15 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, onSubmit }: AddRuleModa
       disabled={selectedRuleIds.length === 0}
     >
       <Box sx={{ minWidth: 400 }}>
-        {isLoading ? (
+        {isError ? (
+          <Alert severity="error">Failed to load rules</Alert>
+        ) : isLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
             <CircularProgress />
           </Box>
-        ) : isError ? (
-          <Alert severity="error">Failed to load rules</Alert>
         ) : !unassignedRules || unassignedRules.length === 0 ? (
           <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-            No unassigned rules available for this team.
+            No unassigned rules available for the {teamName} team.
           </Typography>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

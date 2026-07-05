@@ -6,8 +6,8 @@ import { HttpException } from '../utils/errors.utils.js';
 export default class RulesController {
   static async getActiveRuleset(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetTypeId } = req.params;
-      const rulesetType = await RulesService.getActiveRuleset(req.currentUser, rulesetTypeId as string, req.organization);
+      const { rulesetTypeId } = req.params as Record<string, string>;
+      const rulesetType = await RulesService.getActiveRuleset(req.currentUser, rulesetTypeId, req.organization);
       res.status(200).json(rulesetType);
     } catch (error: unknown) {
       next(error);
@@ -16,8 +16,8 @@ export default class RulesController {
 
   static async getRulesetById(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetId } = req.params;
-      const ruleset = await RulesService.getRulesetById(rulesetId as string, req.organization.organizationId);
+      const { rulesetId } = req.params as Record<string, string>;
+      const ruleset = await RulesService.getRulesetById(rulesetId, req.organization.organizationId);
       res.status(200).json(ruleset);
     } catch (error: unknown) {
       next(error);
@@ -47,8 +47,8 @@ export default class RulesController {
 
   static async deleteRule(req: Request, res: Response, next: NextFunction) {
     try {
-      const { ruleId } = req.params;
-      const deletedRule = await RulesService.deleteRule(ruleId as string, req.currentUser, req.organization);
+      const { ruleId } = req.params as Record<string, string>;
+      const deletedRule = await RulesService.deleteRule(ruleId, req.currentUser, req.organization);
       res.status(200).json(deletedRule);
     } catch (error: unknown) {
       next(error);
@@ -83,13 +83,13 @@ export default class RulesController {
 
   static async editRule(req: Request, res: Response, next: NextFunction) {
     try {
-      const { ruleId } = req.params;
+      const { ruleId } = req.params as Record<string, string>;
       const { ruleContent, ruleCode, imageFileIds, parentRuleId } = req.body;
 
       const rule = await RulesService.editRule(
         req.currentUser,
         ruleContent,
-        ruleId as string,
+        ruleId,
         ruleCode,
         imageFileIds,
         req.organization,
@@ -112,8 +112,8 @@ export default class RulesController {
 
   static async getRulesetsByRulesetType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetTypeId } = req.params;
-      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetTypeId as string, req.organization.organizationId);
+      const { rulesetTypeId } = req.params as Record<string, string>;
+      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetTypeId, req.organization.organizationId);
       res.status(200).json(rulesets);
     } catch (error: unknown) {
       next(error);
@@ -122,8 +122,8 @@ export default class RulesController {
 
   static async getRulesetType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetTypeId } = req.params;
-      const rulesetType = await RulesService.getRulesetType(rulesetTypeId as string, req.organization.organizationId);
+      const { rulesetTypeId } = req.params as Record<string, string>;
+      const rulesetType = await RulesService.getRulesetType(rulesetTypeId, req.organization.organizationId);
       res.status(200).json(rulesetType);
     } catch (error: unknown) {
       next(error);
@@ -132,12 +132,8 @@ export default class RulesController {
 
   static async deleteRuleset(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetId } = req.params;
-      const ruleset = await RulesService.deleteRuleset(
-        rulesetId as string,
-        req.currentUser.userId,
-        req.organization.organizationId
-      );
+      const { rulesetId } = req.params as Record<string, string>;
+      const ruleset = await RulesService.deleteRuleset(rulesetId, req.currentUser.userId, req.organization.organizationId);
       res.status(200).json(ruleset);
     } catch (error: unknown) {
       next(error);
@@ -146,31 +142,28 @@ export default class RulesController {
 
   static async deleteProjectRule(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectRuleId } = req.params;
-      const deletedProjectRule = await RulesService.deleteProjectRule(
-        projectRuleId as string,
-        req.currentUser,
-        req.organization
-      );
+      const { projectRuleId } = req.params as Record<string, string>;
+      const deletedProjectRule = await RulesService.deleteProjectRule(projectRuleId, req.currentUser, req.organization);
       res.status(200).json(deletedProjectRule);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async editProjectRuleStatus(req: Request, res: Response, next: NextFunction) {
+  static async setRuleCompletion(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectRuleId } = req.params;
-      const { newStatus } = req.body;
+      const { ruleId } = req.params as Record<string, string>;
+      const { isComplete, projectId } = req.body;
 
-      const projectRule: ProjectRule = await RulesService.editProjectRuleStatus(
+      const rule: Rule = await RulesService.setRuleCompletion(
         req.currentUser,
         req.organization,
-        projectRuleId as string,
-        newStatus
+        ruleId,
+        isComplete,
+        projectId
       );
 
-      res.status(200).json(projectRule);
+      res.status(200).json(rule);
     } catch (error: unknown) {
       next(error);
     }
@@ -178,10 +171,10 @@ export default class RulesController {
 
   static async toggleRuleTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      const { ruleId } = req.params;
+      const { ruleId } = req.params as Record<string, string>;
       const { teamId } = req.body;
 
-      const changedRule = await RulesService.toggleRuleTeam(ruleId as string, teamId, req.currentUser, req.organization);
+      const changedRule = await RulesService.toggleRuleTeam(ruleId, teamId, req.currentUser, req.organization);
 
       res.status(200).json(changedRule);
     } catch (error: unknown) {
@@ -211,9 +204,9 @@ export default class RulesController {
 
   static async deleteRulesetType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetTypeId } = req.params;
+      const { rulesetTypeId } = req.params as Record<string, string>;
 
-      const rulesetType = await RulesService.deleteRulesetType(req.currentUser, rulesetTypeId as string, req.organization);
+      const rulesetType = await RulesService.deleteRulesetType(req.currentUser, rulesetTypeId, req.organization);
 
       res.status(200).json(rulesetType);
     } catch (error: unknown) {
@@ -223,13 +216,13 @@ export default class RulesController {
 
   static async updateRuleset(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetId } = req.params;
+      const { rulesetId } = req.params as Record<string, string>;
       const { name, isActive } = req.body;
 
       const ruleset: Ruleset = await RulesService.updateRuleset(
         req.currentUser,
         req.organization.organizationId,
-        rulesetId as string,
+        rulesetId,
         name,
         isActive
       );
@@ -242,8 +235,8 @@ export default class RulesController {
 
   static async getChildRules(req: Request, res: Response, next: NextFunction) {
     try {
-      const { ruleId: parentRuleId } = req.params;
-      const childrenRules: Rule[] = await RulesService.getChildRules(parentRuleId as string, req.organization);
+      const { ruleId: parentRuleId } = req.params as Record<string, string>;
+      const childrenRules: Rule[] = await RulesService.getChildRules(parentRuleId, req.organization);
 
       res.status(200).json(childrenRules);
     } catch (error: unknown) {
@@ -253,8 +246,8 @@ export default class RulesController {
 
   static async getUnassignedRules(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetId } = req.params;
-      const rules = await RulesService.getUnassignedRules(rulesetId as string, req.organization);
+      const { rulesetId } = req.params as Record<string, string>;
+      const rules = await RulesService.getUnassignedRules(rulesetId, req.organization);
       res.status(200).json(rules);
     } catch (error: unknown) {
       next(error);
@@ -263,10 +256,14 @@ export default class RulesController {
 
   static async getUnassignedRulesForRuleset(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetId, teamId } = req.params;
+      const { rulesetId, teamId } = req.params as Record<string, string>;
+      const { projectId } = req.query;
+      const projectIdString = typeof projectId === 'string' ? projectId : undefined;
+
       const rules = await RulesService.getUnassignedRulesForRuleset(
-        rulesetId as string,
+        rulesetId,
         teamId,
+        projectIdString,
         req.organization.organizationId
       );
       res.status(200).json(rules);
@@ -277,9 +274,9 @@ export default class RulesController {
 
   static async getProjectRules(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetId, projectId } = req.params;
+      const { rulesetId, projectId } = req.params as Record<string, string>;
 
-      const projectRules = await RulesService.getProjectRules(rulesetId as string, projectId, req.organization);
+      const projectRules = await RulesService.getProjectRules(rulesetId, projectId, req.organization);
 
       res.status(200).json(projectRules);
     } catch (error: unknown) {
@@ -289,8 +286,8 @@ export default class RulesController {
 
   static async getTeamRulesInRulesetType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetTypeId, teamId } = req.params;
-      const rules = await RulesService.getTeamRulesInRulesetType(teamId as string, rulesetTypeId, req.organization);
+      const { rulesetTypeId, teamId } = req.params as Record<string, string>;
+      const rules = await RulesService.getTeamRulesInRulesetType(teamId, rulesetTypeId, req.organization);
       res.status(200).json(rules);
     } catch (error: unknown) {
       next(error);
@@ -299,8 +296,8 @@ export default class RulesController {
 
   static async getTopLevelRules(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetId } = req.params;
-      const rules = await RulesService.getTopLevelRules(rulesetId as string, req.organization.organizationId);
+      const { rulesetId } = req.params as Record<string, string>;
+      const rules = await RulesService.getTopLevelRules(rulesetId, req.organization.organizationId);
       res.status(200).json(rules);
     } catch (error: unknown) {
       next(error);
@@ -310,13 +307,13 @@ export default class RulesController {
   static async parseRuleset(req: Request, res: Response, next: NextFunction) {
     try {
       const { fileId, parserType } = req.body;
-      const { rulesetId } = req.params;
+      const { rulesetId } = req.params as Record<string, string>;
 
       const parseResult = await RulesService.parseRuleset(
         req.currentUser,
         req.organization.organizationId,
         fileId,
-        rulesetId as string,
+        rulesetId,
         parserType
       );
 
@@ -341,8 +338,8 @@ export default class RulesController {
 
   static async getSingleRuleset(req: Request, res: Response, next: NextFunction) {
     try {
-      const { rulesetId } = req.params;
-      const ruleset = await RulesService.getSingleRuleset(req.currentUser, rulesetId as string, req.organization);
+      const { rulesetId } = req.params as Record<string, string>;
+      const ruleset = await RulesService.getSingleRuleset(req.currentUser, rulesetId, req.organization);
       res.status(200).json(ruleset);
     } catch (error: unknown) {
       next(error);

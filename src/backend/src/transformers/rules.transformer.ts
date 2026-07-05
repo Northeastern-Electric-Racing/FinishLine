@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { Rule, ProjectRule, Ruleset, RulesetType } from 'shared';
-import { RulesetQueryArgs, RulePreviewQueryArgs } from '../prisma-query-args/rules.query-args';
+import { RulesetQueryArgs, RulePreviewQueryArgs, ProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args.js';
 
 export const ruleTransformer = (rule: Prisma.RuleGetPayload<RulePreviewQueryArgs>): Rule => {
   return {
@@ -19,17 +19,28 @@ export const ruleTransformer = (rule: Prisma.RuleGetPayload<RulePreviewQueryArgs
     teams: rule.teams?.map((team) => ({
       teamId: team.teamId,
       teamName: team.teamName
-    }))
+    })),
+    isComplete: rule.isComplete,
+    completedBy: rule.completedBy
+      ? {
+          firstName: rule.completedBy.firstName,
+          lastName: rule.completedBy.lastName
+        }
+      : undefined,
+    completedInProject: rule.completedInProject
+      ? {
+          projectId: rule.completedInProject.projectId,
+          projectName: rule.completedInProject.wbsElement.name
+        }
+      : undefined
   };
 };
 
-export const projectRuleTransformer = (projectRule: any): ProjectRule => {
+export const projectRuleTransformer = (projectRule: Prisma.Project_RuleGetPayload<ProjectRuleQueryArgs>): ProjectRule => {
   return {
     projectRuleId: projectRule.projectRuleId,
     rule: ruleTransformer(projectRule.rule),
-    projectId: projectRule.projectId,
-    currentStatus: projectRule.currentStatus,
-    statusHistory: projectRule.statusHistory
+    projectId: projectRule.projectId
   };
 };
 

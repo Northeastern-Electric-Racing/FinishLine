@@ -9282,6 +9282,7 @@ __metadata:
     multer: "npm:^1.4.5-lts.1"
     nodemailer: "npm:^6.9.1"
     nodemon: "npm:^2.0.16"
+    pdf-parse-new: "npm:^1.4.1"
     prisma: "npm:^6.2.1"
     shared: "npm:1.0.0"
     supertest: "npm:^6.2.4"
@@ -19059,6 +19060,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-ensure@npm:^0.0.0":
+  version: 0.0.0
+  resolution: "node-ensure@npm:0.0.0"
+  checksum: 10/1124623beb1dec66889794286ec1761ac3bfac42ce93b8652903efa5af14227edce5bafa06c4e0675cdc850360931d7c9413e3b5406150f05b2c9bf5bb3ccce4
+  languageName: node
+  linkType: hard
+
 "node-exports-info@npm:^1.6.0":
   version: 1.6.0
   resolution: "node-exports-info@npm:1.6.0"
@@ -19893,6 +19901,16 @@ __metadata:
     pako: "npm:^1.0.11"
     tslib: "npm:^1.11.1"
   checksum: 10/ea8c2c0c813d89ca359a0c831cb2e8a581c569ed44b074316f917942b5baa101f878ce922f1cb87e6f41a035008ba75b52267480aee5d65a5e68c445ee83bc37
+  languageName: node
+  linkType: hard
+
+"pdf-parse-new@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "pdf-parse-new@npm:1.4.1"
+  dependencies:
+    debug: "npm:^4.3.4"
+    node-ensure: "npm:^0.0.0"
+  checksum: 10/ac7a64517ce855de5d1da77ec7b0c657e51597c7ba5dfbdf75526447167ea647683aae69ccc721352d29e988ddc6995ae5a5c27036e60c956b076afb032f9272
   languageName: node
   linkType: hard
 

@@ -465,11 +465,11 @@ const uploadRulesetFile = () => `${rules()}/upload/file`;
 const rulesGetActiveRuleset = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/active`;
 const rulesGetProjectRules = (rulesetId: string, projectId: string) =>
   `${rules()}/ruleset/${rulesetId}/project/${projectId}/rules`;
-const rulesGetUnassignedRulesForRuleset = (rulesetId: string, teamId: string) =>
-  `${rules()}/ruleset/${rulesetId}/team/${teamId}/rules/unassigned`;
+const rulesGetUnassignedRulesForRuleset = (rulesetId: string, teamId: string, projectId: string) =>
+  `${rules()}/ruleset/${rulesetId}/team/${teamId}/rules/unassigned?projectId=${projectId}`;
 const rulesCreateProjectRule = () => `${rules()}/projectRule/create`;
 const rulesDeleteProjectRule = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/delete`;
-const rulesEditProjectRuleStatus = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/editStatus`;
+const rulesSetRuleCompletion = (ruleId: string) => `${rules()}/rule/${ruleId}/setCompletion`;
 const rulesEdit = (ruleId: string) => `${rules()}/rule/${ruleId}/edit`;
 const rulesDelete = (ruleId: string) => `${rules()}/rule/${ruleId}/delete`;
 const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
@@ -887,7 +887,7 @@ export const apiUrls = {
   rulesGetUnassignedRulesForRuleset,
   rulesCreateProjectRule,
   rulesDeleteProjectRule,
-  rulesEditProjectRuleStatus,
+  rulesSetRuleCompletion,
   rulesEdit,
   rulesDelete,
   rulesetUpdate,

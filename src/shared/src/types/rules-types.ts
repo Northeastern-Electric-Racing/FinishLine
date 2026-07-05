@@ -3,14 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from './user-types.js';
-
-export enum RuleCompletion {
-  REVIEW = 'REVIEW',
-  INCOMPLETE = 'INCOMPLETE',
-  COMPLETED = 'COMPLETED'
-}
-
 export interface RulesetType {
   rulesetTypeId: string;
   name: string;
@@ -48,23 +40,18 @@ export interface Rule {
     teamId: string;
     teamName: string;
   }>;
-}
-
-export interface RuleStatusChange {
-  historyId: string;
-  projectRuleId: string;
-  createdBy: User;
-  dateCreated: Date;
-  newStatus: RuleCompletion;
-  note: string;
+  isComplete: boolean;
+  completedBy?: {
+    firstName: string;
+    lastName: string;
+  };
+  completedInProject?: { projectId: string; projectName: string };
 }
 
 export interface ProjectRule {
   projectRuleId: string;
   rule: Rule;
   projectId: string;
-  currentStatus: RuleCompletion;
-  statusHistory: RuleStatusChange[];
 }
 
 export interface RulesetPreview {

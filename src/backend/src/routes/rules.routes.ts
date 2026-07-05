@@ -52,10 +52,11 @@ rulesRouter.post('/projectRule/:projectRuleId/delete', RulesController.deletePro
 
 rulesRouter.get('/rulesets/:rulesetTypeId', RulesController.getRulesetsByRulesetType);
 rulesRouter.post(
-  '/projectRule/:projectRuleId/editStatus',
-  nonEmptyString(body('newStatus')),
+  '/rule/:ruleId/setCompletion',
+  body('isComplete').isBoolean(),
+  body('projectId').optional().isString(),
   validateInputs,
-  RulesController.editProjectRuleStatus
+  RulesController.setRuleCompletion
 );
 
 rulesRouter.post(

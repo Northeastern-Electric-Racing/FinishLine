@@ -1,4 +1,4 @@
-import { Organization, Rule, Rule_Completion } from '@prisma/client';
+import { Organization, Rule } from '@prisma/client';
 import {
   isAdmin,
   isLeadership,
@@ -10,7 +10,7 @@ import {
   isHead,
   Ruleset
 } from 'shared';
-import prisma from '../prisma/prisma';
+import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
@@ -385,15 +385,62 @@ export default class RulesService {
       throw new HttpException(400, 'This rule is already associated with the project');
     }
 
-    const projectRule = await prisma.project_Rule.create({
-      data: {
-        ruleId,
-        projectId,
-        currentStatus: Rule_Completion.REVIEW,
-        createdByUserId: submitter.userId
-      },
+    // ensure we assign all ancestors of a rule to the project
+    const ancestorIds: string[] = [];
+    const visited = new Set<string>([ruleId]);
+    let currentParentId = rule.parentRuleId;
+
+    while (currentParentId && !visited.has(currentParentId)) {
+      visited.add(currentParentId);
+      const parent = await prisma.rule.findUnique({
+        where: { ruleId: currentParentId },
+        select: { parentRuleId: true, dateDeleted: true }
+      });
+      // rule only displays if the full chain to a top-level rule exists, so a missing or deleted
+      // ancestor means this rule would not display - do not assign it OR its ancestors to the project
+      if (!parent) throw new NotFoundException('Rule', currentParentId);
+      if (parent.dateDeleted) throw new DeletedException('Rule', currentParentId);
+      ancestorIds.push(currentParentId);
+      currentParentId = parent.parentRuleId;
+    }
+
+    // skip ancestors already assigned to this project
+    const existingAncestors = await prisma.project_Rule.findMany({
+      where: { projectId, ruleId: { in: ancestorIds }, dateDeleted: null },
+      select: { ruleId: true }
+    });
+    const existingAncestorIds = new Set(existingAncestors.map((projectRule) => projectRule.ruleId));
+    const ancestorsToCreate = ancestorIds.filter((id) => !existingAncestorIds.has(id));
+
+    // create all project rules
+    await prisma.$transaction([
+      ...ancestorsToCreate.map((ancestorId) =>
+        prisma.project_Rule.create({
+          data: {
+            ruleId: ancestorId,
+            projectId,
+            createdByUserId: submitter.userId
+          }
+        })
+      ),
+      prisma.project_Rule.create({
+        data: {
+          ruleId,
+          projectId,
+          createdByUserId: submitter.userId
+        }
+      })
+    ]);
+
+    // return only original project rule being assigned (leaf rule)
+    const projectRule = await prisma.project_Rule.findUnique({
+      where: { ruleId_projectId: { ruleId, projectId } },
       ...getProjectRuleQueryArgs()
     });
+
+    if (!projectRule) {
+      throw new NotFoundException('Project Rule', ruleId);
+    }
 
     return projectRuleTransformer(projectRule);
   }
@@ -658,64 +705,52 @@ export default class RulesService {
   }
 
   /**
-   * Updates the status of a project rule
-   * Such as changing a project rule from INCOMPLETE to COMPLETED
-   * @param submitter the user updating the status
+   * Sets the completion of a rule. Completion is global to the rule, so marking it complete
+   * (or incomplete) is reflected everywhere the rule appears.
+   * @param submitter the user updating the completion
    * @param organization the organization of the rule
-   * @param projectRuleId the id of the project rule to update
-   * @param newStatus the new status of the project rule
-   * @returns the project rule with updated status
+   * @param ruleId the id of the rule to update
+   * @param isComplete whether the rule is complete or incomplete
+   * @param projectId the project the rule was completed from (optional - omitted if updated in general view)
+   * @returns the rule with updated completion
    */
-  static async editProjectRuleStatus(
+  static async setRuleCompletion(
     submitter: User,
     organization: Organization,
-    projectRuleId: string,
-    newStatus: Rule_Completion
-  ): Promise<ProjectRule> {
-    // Ensure new satus is a valid Rule_Completion value
-    if (!Object.values(Rule_Completion).includes(newStatus as Rule_Completion)) {
-      throw new HttpException(400, `status must be one of: ${Object.values(Rule_Completion).join(', ')}`);
-    }
-
+    ruleId: string,
+    isComplete: boolean,
+    projectId?: string
+  ): Promise<SharedRule> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
-      throw new AccessDeniedException('You do not have permissions to update a project rule status');
+      throw new AccessDeniedException('You do not have permissions to update rule completion');
     }
 
-    const projectRule = await prisma.project_Rule.findUnique({
-      where: { projectRuleId },
-      include: { rule: { include: { ruleset: { include: { car: { include: { wbsElement: true } } } } } } }
+    const rule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: { ruleset: { include: { car: { include: { wbsElement: true } } } } }
     });
 
-    if (!projectRule) {
-      throw new NotFoundException('Project Rule', projectRuleId);
+    if (!rule) {
+      throw new NotFoundException('Rule', ruleId);
     }
 
-    if (projectRule.rule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
-      throw new InvalidOrganizationException('Project Rule');
+    if (rule.dateDeleted) {
+      throw new DeletedException('Rule', ruleId);
     }
 
-    // If the status does not change, simply return the project rule
-    if (projectRule.currentStatus === newStatus) {
-      const originalProjectRule = await prisma.project_Rule.findUnique({
-        where: { projectRuleId },
-        ...getProjectRuleQueryArgs()
-      });
-      return projectRuleTransformer(originalProjectRule);
+    if (rule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Rule');
     }
 
-    const newStatusHistory = {
-      createdByUserId: submitter.userId,
-      newStatus,
-      note: `${submitter.firstName} ${submitter.lastName} marked as ${newStatus}`
-    };
-
-    const updatedProjectRule = await prisma.project_Rule.update({
-      where: { projectRuleId },
-      data: { currentStatus: newStatus, statusHistory: { create: newStatusHistory } },
-      ...getProjectRuleQueryArgs()
+    const updatedRule = await prisma.rule.update({
+      where: { ruleId },
+      data: isComplete
+        ? { isComplete: true, completedByUserId: submitter.userId, completedInProjectId: projectId ?? null }
+        : { isComplete: false, completedByUserId: null, completedInProjectId: null },
+      ...getRulePreviewQueryArgs()
     });
 
-    return projectRuleTransformer(updatedProjectRule);
+    return ruleTransformer(updatedRule);
   }
 
   /**
@@ -1131,7 +1166,15 @@ export default class RulesService {
    * @param organizationId the organization id
    * @returns the rules in this team that do not have an associated project rule
    */
-  static async getUnassignedRulesForRuleset(rulesetId: string, teamId: string, organizationId: string) {
+  static async getUnassignedRulesForRuleset(
+    rulesetId: string,
+    teamId: string,
+    projectId: string | undefined,
+    organizationId: string
+  ) {
+    if (!projectId) {
+      throw new HttpException(400, 'Query parameter projectId is required');
+    }
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
@@ -1171,6 +1214,19 @@ export default class RulesService {
       throw new InvalidOrganizationException('Team');
     }
 
+    const project = await prisma.project.findUnique({
+      where: { projectId },
+      select: { wbsElement: { select: { organizationId: true } } }
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project', projectId);
+    }
+
+    if (project.wbsElement.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Project');
+    }
+
     const rules = await prisma.rule.findMany({
       where: {
         rulesetId,
@@ -1180,8 +1236,10 @@ export default class RulesService {
             organizationId
           }
         },
+        // a rule can belong to many projects within a team
+        // only hide it from a project that already has it assigned
         projects: {
-          none: {}
+          none: { projectId }
         },
         deletedByUserId: null
       },

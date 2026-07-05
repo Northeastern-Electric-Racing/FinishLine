@@ -17,24 +17,26 @@ import {
   TableContainer,
   Paper,
   useTheme,
-  IconButton
+  IconButton,
+  Tooltip
 } from '@mui/material';
-import { Project, ProjectRule, Rule, RuleCompletion } from 'shared';
+import { Project, ProjectRule, Rule } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
 import UpdateStatusPopover from './UpdateStatusPopover';
-import AddRuleModal from './AddRuleModal';
+import AddRuleModal from './AddProjectRuleModal';
 import {
   useAllRulesetTypes,
   useActiveRuleset,
   useProjectRules,
-  useEditProjectRuleStatus,
+  useSetRuleCompletion,
   useCreateProjectRule
 } from '../../../../hooks/rules.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { InfoOutlined } from '@mui/icons-material';
-import { RuleHistoryModal } from './RuleHistoryModal';
+import { InfoOutlined, KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../../../utils/routes';
 
 interface ProjectRulesTabProps {
   project: Project;
@@ -43,30 +45,20 @@ interface ProjectRulesTabProps {
 /**
  * Get the status chip configuration
  */
-const getStatusConfig = (status: RuleCompletion) => {
-  switch (status) {
-    case RuleCompletion.COMPLETED:
-      return { label: 'Complete', color: '#4caf50' };
-    case RuleCompletion.INCOMPLETE:
-      return { label: 'Incomplete', color: '#f44336' };
-    case RuleCompletion.REVIEW:
-    default:
-      return { label: 'Review', color: '#ff9800' };
-  }
+const getStatusConfig = (isComplete: boolean) => {
+  return isComplete ? { label: 'Complete', color: '#4caf50' } : { label: 'Incomplete', color: '#f44336' };
 };
 
 export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const toast = useToast();
   const theme = useTheme();
+  const history = useHistory();
 
   // State for modals and popovers
   const [selectedRulesetTypeIndex, setSelectedRulesetTypeIndex] = useState(0);
   const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
   const [selectedProjectRule, setSelectedProjectRule] = useState<ProjectRule | null>(null);
-
-  const [selectedRuleForHistory, setSelectedRuleForHistory] = useState<Rule | null>(null);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Fetch all ruleset types
   const { data: rulesetTypes, isLoading: rulesetTypesLoading, isError: rulesetTypesError } = useAllRulesetTypes();
@@ -87,7 +79,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   } = useProjectRules(activeRuleset?.rulesetId || '', project.id);
 
   // Mutations
-  const { mutateAsync: editStatusMutation, isLoading: isUpdatingStatus } = useEditProjectRuleStatus(
+  const { mutateAsync: setCompletionMutation, isLoading: isUpdatingStatus } = useSetRuleCompletion(
     activeRuleset?.rulesetId || '',
     project.id
   );
@@ -119,34 +111,21 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     return children.flatMap((child) => getDescendantLeafRules(child));
   };
 
-  // Helper function to calculate aggregated status from leaf rules
-  const getAggregatedStatus = (rule: Rule): RuleCompletion => {
+  // Helper function to calculate aggregated completion from leaf rules.
+  // A parent is complete only if all of its descendant leaf rules are complete.
+  const getAggregatedStatus = (rule: Rule): boolean => {
     const leafRules = getDescendantLeafRules(rule);
     if (leafRules.length === 0) {
-      return RuleCompletion.REVIEW;
+      return false;
     }
-
-    const leafStatuses = leafRules.map((leafRule) => {
-      const projectRule = projectRules?.find((pr) => pr.rule.ruleId === leafRule.ruleId);
-      return projectRule?.currentStatus || RuleCompletion.REVIEW;
-    });
-
-    if (leafStatuses.every((s) => s === RuleCompletion.COMPLETED)) {
-      return RuleCompletion.COMPLETED;
-    }
-
-    if (leafStatuses.some((s) => s === RuleCompletion.INCOMPLETE)) {
-      return RuleCompletion.INCOMPLETE;
-    }
-
-    return RuleCompletion.REVIEW;
+    return leafRules.every((leafRule) => leafRule.isComplete);
   };
 
-  // Handle status update
-  const handleStatusUpdate = async (projectRuleId: string, newStatus: RuleCompletion) => {
+  // Handle completion update
+  const handleStatusUpdate = async (ruleId: string, isComplete: boolean) => {
     try {
-      await editStatusMutation({ projectRuleId, newStatus });
-      toast.success('Rule status updated successfully');
+      await setCompletionMutation({ ruleId, isComplete, projectId: project.id });
+      toast.success('Rule completion updated successfully');
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -192,14 +171,12 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     setSelectedRulesetTypeIndex(newValue);
   };
 
-  // Loading state
-  if (rulesetTypesLoading) {
-    return <LoadingIndicator />;
-  }
-
-  // Error state
   if (rulesetTypesError) {
     return <ErrorPage message={'Failed to load ruleset types'} />;
+  }
+
+  if (rulesetTypesLoading) {
+    return <LoadingIndicator />;
   }
 
   // No ruleset types
@@ -221,16 +198,34 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     const hasChildren = allRules.some((r) => r.parentRule?.ruleId === rule.ruleId);
     const isLeafRule = !hasChildren;
 
-    // Get status - for leaf rules use their own status, for parents calculate from children
-    const status = isLeafRule
-      ? projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId)?.currentStatus || RuleCompletion.REVIEW
-      : getAggregatedStatus(rule);
-    const statusConfig = getStatusConfig(status);
+    // Completion - for leaf rules use their own, for parents aggregate from children
+    const isComplete = isLeafRule ? rule.isComplete : getAggregatedStatus(rule);
+    const statusConfig = getStatusConfig(isComplete);
 
-    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
+    const completedByName = rule.completedBy && `${rule.completedBy.firstName} ${rule.completedBy.lastName}`;
+    const completionMessage = completedByName
+      ? `Completed by ${completedByName}${rule.completedInProject ? ` in ${rule.completedInProject.projectName}` : ''}`
+      : '';
+
+    // Whether the status popover is currently open for this rule
+    const isPopoverOpenForRule = Boolean(statusPopoverAnchor) && selectedProjectRule?.rule.ruleId === rule.ruleId;
 
     return (
-      <>
+      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+        {isLeafRule && isComplete && completionMessage && (
+          <Tooltip title={completionMessage} arrow>
+            <IconButton
+              size="small"
+              onClick={(e) => e.stopPropagation()}
+              sx={{
+                padding: '2px',
+                color: 'text.secondary'
+              }}
+            >
+              <InfoOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
         <Box
           onClick={
             isLeafRule
@@ -245,7 +240,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
             color: 'white',
             fontSize: '11px',
             fontWeight: 600,
-            px: 0.75,
+            pl: isLeafRule ? 0.25 : 0.75,
+            pr: 0.75,
             py: 0.25,
             borderRadius: '3px',
             cursor: isLeafRule ? 'pointer' : 'default',
@@ -259,31 +255,19 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
               : {}
           }}
         >
+          {isLeafRule &&
+            (isPopoverOpenForRule ? (
+              <KeyboardArrowDown sx={{ fontSize: '16px', mr: 0.25 }} />
+            ) : (
+              <KeyboardArrowRight sx={{ fontSize: '16px', mr: 0.25 }} />
+            ))}
           {statusConfig.label}
         </Box>
-        {isLeafRule && projectRule && projectRule.statusHistory && projectRule.statusHistory.length > 0 && (
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedRuleForHistory(rule);
-              setShowHistoryModal(true);
-            }}
-            sx={{
-              padding: '2px',
-              color: 'text.secondary',
-              '&:hover': {
-                color: 'primary.main'
-              }
-            }}
-          >
-            <InfoOutlined fontSize="small" />
-          </IconButton>
-        )}
-      </>
+      </Box>
     );
   };
 
+  const backgroundColor = theme.palette.background.default;
   const tableBackgroundColor = theme.palette.background.paper;
   const tableTextColor = theme.palette.text.primary;
   const tableHoverColor = theme.palette.action.hover;
@@ -291,7 +275,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   return (
     <Box>
       {/* Ruleset Type Tabs */}
-      <Box sx={{ width: 'fit-content', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 2 }}>
         <MuiTabs
           value={selectedRulesetTypeIndex}
           onChange={handleTabChange}
@@ -313,10 +297,56 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
             />
           ))}
         </MuiTabs>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Tooltip
+            title={`Assign rules to ${project.teams[0]?.teamName ?? ''} team to add them to this project`}
+            arrow
+            slotProps={{ tooltip: { sx: { textAlign: 'center' } } }}
+          >
+            <IconButton
+              size="small"
+              onClick={(e) => e.stopPropagation()}
+              sx={{
+                padding: '5px',
+                color: 'text.secondary'
+              }}
+            >
+              <InfoOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Button
+            disabled={!activeRuleset}
+            onClick={() =>
+              activeRuleset &&
+              history.push(
+                `${routes.RULESET_EDIT.replace(':rulesetId', activeRuleset.rulesetId)}/assign-rules${
+                  teamId ? `?teamId=${teamId}` : ''
+                }`
+              )
+            }
+            sx={{
+              border: 1,
+              height: '2.25rem'
+            }}
+          >
+            <Typography fontSize={'.75rem'} align="center">
+              Assign Rules
+            </Typography>
+          </Button>
+        </Box>
       </Box>
 
+      {/* Active ruleset name for this ruleset type */}
+      {activeRuleset && (
+        <Typography variant="h5" sx={{ mb: 1 }}>
+          {activeRuleset.name}
+        </Typography>
+      )}
+
       {/* Rules Content */}
-      {activeRulesetLoading || projectRulesLoading ? (
+      {projectRulesError ? (
+        <Alert severity="error">Failed to load rules</Alert>
+      ) : activeRulesetLoading || projectRulesLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress />
         </Box>
@@ -326,8 +356,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
             No active ruleset configured for this ruleset type.
           </Typography>
         </Box>
-      ) : projectRulesError ? (
-        <Alert severity="error">Failed to load rules</Alert>
       ) : topLevelRules.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="body1" color="text.secondary">
@@ -336,9 +364,15 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         </Box>
       ) : (
         <Box sx={{ paddingBottom: '80px' }}>
-          <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-            <Table sx={{ borderCollapse: 'collapse' }}>
-              <TableBody sx={{ backgroundColor: tableBackgroundColor }}>
+          <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor }}>
+            <Table
+              sx={{
+                borderCollapse: 'separate',
+                borderSpacing: '0 8px',
+                backgroundColor
+              }}
+            >
+              <TableBody>
                 {topLevelRules.map((rule) => (
                   <RuleRow
                     key={rule.ruleId}
@@ -350,6 +384,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
                     hoverColor={tableHoverColor}
                     rowHeight="40px"
                     verticalPadding="8px"
+                    indentRow
                   />
                 ))}
               </TableBody>
@@ -402,16 +437,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         />
       )}
 
-      <RuleHistoryModal
-        open={showHistoryModal}
-        onClose={() => {
-          setShowHistoryModal(false);
-          setSelectedRuleForHistory(null);
-        }}
-        rule={selectedRuleForHistory}
-        projectRules={projectRules}
-      />
-
       {/* Add Rule Modal */}
       {activeRuleset && teamId && (
         <AddRuleModal
@@ -419,6 +444,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           onHide={() => setAddRuleModalOpen(false)}
           rulesetId={activeRuleset.rulesetId}
           teamId={teamId}
+          teamName={project.teams[0]?.teamName ?? ''}
+          projectId={project.id}
           onSubmit={handleAddRules}
         />
       )}
