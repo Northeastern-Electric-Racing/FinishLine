@@ -366,12 +366,9 @@ resource "aws_elastic_beanstalk_environment" "main" {
   #####################
   # Environment Variables
   #####################
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "NODE_ENV"
-    value     = var.environment == "production" ? "production" : "development"
-  }
-
+  # NODE_ENV is set by each caller via environment_variables below, not hardcoded
+  # here — this used to force "development" for any non-production environment,
+  # silently overriding sandbox's own NODE_ENV=sandbox value.
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "PORT"
