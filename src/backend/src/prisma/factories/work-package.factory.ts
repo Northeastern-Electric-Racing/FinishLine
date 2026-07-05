@@ -1,10 +1,8 @@
 import { Faker } from '@faker-js/faker';
 import { Prisma, WBS_Element_Status, Work_Package_Stage } from '@prisma/client';
 import { DateRange } from '../context.js';
-import { clampDate, daysBetween } from '../dates.js';
+import { clampDate, DAYS_PER_WEEK, daysBetween } from '../dates.js';
 import { addDaysToDate } from 'shared';
-
-const DAYS_PER_WEEK = 7;
 
 export const generateWorkPackageCount = (faker: Faker): number =>
   // Each project gets 0–8 work packages. Average work package count is around 5.
@@ -36,7 +34,7 @@ export const generateWorkPackageTimeline = (faker: Faker, projectTimeline: DateR
         );
 
   // duration saved in WEEKS instead of days
-  const maxDuration = Math.max(1, daysBetween({ start, end: projectTimeline.end }) / DAYS_PER_WEEK);
+  const maxDuration = Math.floor(Math.max(1, daysBetween({ start, end: projectTimeline.end }) / DAYS_PER_WEEK));
   const duration = faker.number.int({ min: 1, max: Math.min(12, maxDuration) });
 
   return { start, end: clampDate(addDaysToDate(start, duration * DAYS_PER_WEEK), { start, end: projectTimeline.end }) };
