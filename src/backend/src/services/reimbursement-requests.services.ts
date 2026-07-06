@@ -35,7 +35,8 @@ import {
   validateRefund,
   validateUserIsPartOfFinanceTeamOrHead,
   isUserFinanceTeamOrHead,
-  updateMaterialStatusesOnPayment
+  updateMaterialStatusesOnPayment,
+  getCarNumberFilter
 } from '../utils/reimbursement-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
@@ -85,9 +86,18 @@ export default class ReimbursementRequestService {
    * @param recipient The user retrieving their reimbursement requests
    * @param organizationId The organization the user is currently in
    */
-  static async getUserReimbursementRequests(recipient: User, organization: Organization): Promise<ReimbursementRequest[]> {
+  static async getUserReimbursementRequests(
+    recipient: User,
+    organization: Organization,
+    carNumber?: number
+  ): Promise<ReimbursementRequest[]> {
     const userReimbursementRequests = await prisma.reimbursement_Request.findMany({
-      where: { dateDeleted: null, recipientId: recipient.userId, organizationId: organization.organizationId },
+      where: {
+        dateDeleted: null,
+        recipientId: recipient.userId,
+        organizationId: organization.organizationId,
+        ...getCarNumberFilter(carNumber)
+      },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
     return userReimbursementRequests.map(reimbursementRequestTransformer);
@@ -101,10 +111,16 @@ export default class ReimbursementRequestService {
    */
   static async getUserAssignedReimbursementRequests(
     assignee: User,
-    organization: Organization
+    organization: Organization,
+    carNumber?: number
   ): Promise<ReimbursementRequest[]> {
     const assignedReimbursementRequests = await prisma.reimbursement_Request.findMany({
-      where: { dateDeleted: null, assigneeId: assignee.userId, organizationId: organization.organizationId },
+      where: {
+        dateDeleted: null,
+        assigneeId: assignee.userId,
+        organizationId: organization.organizationId,
+        ...getCarNumberFilter(carNumber)
+      },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
     return assignedReimbursementRequests.map(reimbursementRequestTransformer);
@@ -117,7 +133,8 @@ export default class ReimbursementRequestService {
    */
   static async getUsersTeamsReimbursementRequests(
     recipient: User,
-    organization: Organization
+    organization: Organization,
+    carNumber?: number
   ): Promise<ReimbursementRequest[]> {
     const teams = await prisma.team.findMany({
       where: {
@@ -160,7 +177,8 @@ export default class ReimbursementRequestService {
       where: {
         dateDeleted: null,
         recipientId: { in: Array.from(teamUserIds) },
-        organizationId: organization.organizationId
+        organizationId: organization.organizationId,
+        ...getCarNumberFilter(carNumber)
       },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -579,7 +597,11 @@ export default class ReimbursementRequestService {
    * @param organizationId the organization the user is currently in
    * @returns reimbursement requests with no advisor approved reimbursement status
    */
-  static async getPendingAdvisorList(requester: User, organization: Organization): Promise<ReimbursementRequest[]> {
+  static async getPendingAdvisorList(
+    requester: User,
+    organization: Organization,
+    carNumber?: number
+  ): Promise<ReimbursementRequest[]> {
     await validateUserIsPartOfFinanceTeamOrHead(requester, organization.organizationId);
 
     const requestsPendingAdvisors = await prisma.reimbursement_Request.findMany({
@@ -593,7 +615,8 @@ export default class ReimbursementRequestService {
             type: Reimbursement_Status_Type.ADVISOR_APPROVED
           }
         },
-        accountCode: { organizationId: organization.organizationId }
+        accountCode: { organizationId: organization.organizationId },
+        ...getCarNumberFilter(carNumber)
       },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -699,13 +722,19 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
+    const existingWithSaboNumber = await prisma.reimbursement_Request.findFirst({
+      where: { saboId: saboNumber, organizationId: organization.organizationId }
+    });
+    if (existingWithSaboNumber) {
+      throw new HttpException(400, 'This SABO number is already assigned to another reimbursement request.');
+    }
+
     const reimbursementRequestWithSaboNumber = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId },
       data: {
         saboId: saboNumber
       }
     });
-
     return reimbursementRequestWithSaboNumber;
   }
 
@@ -980,13 +1009,21 @@ export default class ReimbursementRequestService {
    * @param organizationId the organization the user is currently in
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
-  static async getAllReimbursementRequests(user: User, organization: Organization): Promise<ReimbursementRequest[]> {
+  static async getAllReimbursementRequests(
+    user: User,
+    organization: Organization,
+    carNumber?: number
+  ): Promise<ReimbursementRequest[]> {
     if (!(await isUserFinanceTeamOrHead(user, organization.organizationId))) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
-      where: { dateDeleted: null, accountCode: { organizationId: organization.organizationId } },
+      where: {
+        dateDeleted: null,
+        accountCode: { organizationId: organization.organizationId },
+        ...getCarNumberFilter(carNumber)
+      },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
 
@@ -1473,14 +1510,14 @@ export default class ReimbursementRequestService {
   static async editVendor(
     name: string,
     vendorId: string,
-    username: string,
-    password: string,
-    discountCode: string,
     taxExempt: boolean,
     twoFactorContacts: string[],
-    notes: string,
     submitter: User,
-    organization: Organization
+    organization: Organization,
+    username?: string,
+    password?: string,
+    discountCode?: string,
+    notes?: string
   ): Promise<Vendor> {
     const existingVendor = await prisma.vendor.findUnique({
       where: { vendorId, dateDeleted: null },

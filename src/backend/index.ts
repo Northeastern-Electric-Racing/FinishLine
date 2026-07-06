@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { getUserAndOrganization, prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils.js';
 import { errorHandler } from './src/utils/errors.utils.js';
+import { getCurrentCar } from './src/utils/car.utils.js';
 import userRouter from './src/routes/users.routes.js';
 import projectRouter from './src/routes/projects.routes.js';
 import teamsRouter from './src/routes/teams.routes.js';
@@ -28,6 +29,7 @@ import financeRouter from './src/routes/finance.routes.js';
 import calendarRouter from './src/routes/calendar.routes.js';
 import prospectiveSponsorRouter from './src/routes/prospective-sponsor.routes.js';
 import attendanceRouter from './src/routes/attendance.routes.js';
+import icsRouter from './src/routes/ics.routes.js';
 
 const app = express();
 
@@ -87,11 +89,17 @@ app.use(express.json());
 // cors settings
 app.use(cors(options));
 
+// Public ICS feed routes — mounted before JWT middleware so calendar apps can subscribe without auth
+app.use('/ics', icsRouter);
+
 // ensure each request is authorized using JWT
 app.use(usesRealGoogleAuth ? requireJwtProd : requireJwtDev);
 
 // get user and organization
 app.use(getUserAndOrganization);
+
+// get current car
+app.use(getCurrentCar);
 
 // routes
 app.use('/users', userRouter);

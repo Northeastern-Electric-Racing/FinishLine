@@ -64,10 +64,12 @@ export const mockEditProjectReturnValue = mockUseMutationResult<Task>(
     status: TaskStatus.IN_PROGRESS,
     priority: TaskPriority.Medium,
     wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+    wbsName: 'WP',
     notes: '',
     dateCreated: new Date(),
     createdBy: exampleAdminUser,
-    assignees: []
+    assignees: [],
+    labels: []
   },
   new Error()
 );
@@ -82,10 +84,12 @@ export const mockCreateTaskReturnValue = mockUseMutationResult<Task>(
     status: TaskStatus.IN_PROGRESS,
     priority: TaskPriority.Medium,
     wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+    wbsName: 'WP',
     notes: '',
     dateCreated: new Date(),
     createdBy: exampleAdminUser,
-    assignees: []
+    assignees: [],
+    labels: []
   },
   new Error()
 ) as UseMutationResult<Task, Error, CreateTaskPayload, unknown>;
@@ -107,10 +111,12 @@ export const mockEditTaskAssigneesReturnValue = mockUseMutationResult<Task>(
     status: TaskStatus.IN_PROGRESS,
     priority: TaskPriority.Medium,
     wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+    wbsName: 'WP',
     notes: '',
     dateCreated: new Date(),
     createdBy: exampleAdminUser,
-    assignees: []
+    assignees: [],
+    labels: []
   },
   new Error()
 ) as UseMutationResult<Task, Error, { taskId: string; assignees: string[] }, unknown>;

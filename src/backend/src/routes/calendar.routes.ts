@@ -119,6 +119,7 @@ calendarRouter.post(
   isDate(body('scheduleSlots.*.startTime')),
   isDate(body('scheduleSlots.*.endTime')),
   body('scheduleSlots.*.allDay').isBoolean(),
+  body('mention').isIn(['USER', 'CHANNEL']),
   validateInputs,
   CalendarController.createEvent
 );
@@ -297,5 +298,7 @@ calendarRouter.post(
 );
 
 calendarRouter.get('/calendars', CalendarController.getAllCalendars);
+calendarRouter.post('/events-paginated', CalendarController.getAllEventsPaginated);
+calendarRouter.get('/ics/token', CalendarController.getOrCreateIcsToken);
 
 export default calendarRouter;

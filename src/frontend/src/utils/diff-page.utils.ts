@@ -181,19 +181,24 @@ export const getWbsChanges = (
     )
   );
 
-  lines.push(
-    genListChange(
-      'Description Bullets',
-      '',
-      (originalElement?.descriptionBullets.map((db) => ({ ...db, value: db.type + ' - ' + db.detail })) ?? []).sort((a, b) =>
-        a.value.localeCompare(b.value)
-      ),
-      (proposedChanges?.descriptionBullets.map((db) => ({ ...db, value: db.type + ' - ' + db.detail })) ?? []).sort((a, b) =>
-        a.value.localeCompare(b.value)
-      ),
-      (a, b) => a?.value !== b?.value
-    )
+  const bulletTypes = Array.from(
+    new Set([
+      ...(originalElement?.descriptionBullets.map((db) => db.type) ?? []),
+      ...(proposedChanges?.descriptionBullets.map((db) => db.type) ?? [])
+    ])
   );
+
+  bulletTypes.forEach((type) => {
+    const originalBullets = (originalElement?.descriptionBullets.filter((db) => db.type === type) ?? [])
+      .map((db) => ({ ...db, value: db.detail }))
+      .sort((a, b) => a.value.localeCompare(b.value));
+
+    const proposedBullets = (proposedChanges?.descriptionBullets.filter((db) => db.type === type) ?? [])
+      .map((db) => ({ ...db, value: db.detail }))
+      .sort((a, b) => a.value.localeCompare(b.value));
+
+    lines.push(genListChange(displayEnum(type), '', originalBullets, proposedBullets, (a, b) => a?.value !== b?.value));
+  });
 
   return lines;
 };
@@ -310,7 +315,7 @@ export const getChangesForWorkPackage = (
       '',
       originalWorkPackage?.blockedBy.map((wbsNum) => ({ ...wbsNum, value: wbsPipe(wbsNum) })) ?? [],
       proposedChanges?.blockedBy.map((wbsNum) => ({ ...wbsNum, value: wbsPipe(wbsNum) })) ?? [],
-      (a, b) => a !== undefined && b !== undefined && equalsWbsNumber(a, b)
+      (a, b) => a === undefined || b === undefined || !equalsWbsNumber(a, b)
     )
   );
 

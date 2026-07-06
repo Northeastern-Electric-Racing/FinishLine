@@ -635,3 +635,21 @@ export const updateMaterialStatusesOnPayment = async (reimbursementRequestId: st
     });
   }
 };
+
+export const getCarNumberFilter = (carNumber?: number) => {
+  if (carNumber === undefined || carNumber === null) return {};
+  return {
+    OR: [
+      {
+        reimbursementProducts: {
+          some: { reimbursementProductReason: { wbsElement: { carNumber } } }
+        }
+      },
+      {
+        reimbursementProducts: {
+          none: { reimbursementProductReason: { wbsElementId: { not: null } } }
+        }
+      }
+    ]
+  };
+};

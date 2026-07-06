@@ -56,6 +56,17 @@ export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
 };
 
 /**
+ * Fetch all work packages for a given project
+ * @param projectWbsNum the wbs number of the project
+ * @returns the work packages for the given project
+ */
+export const getWorkPackagesByProject = (projectWbsNum: WbsNumber) => {
+  return axios.get<WorkPackage[]>(apiUrls.workPackagesByProject(wbsPipe(projectWbsNum)), {
+    transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
+  });
+};
+
+/**
  * Create a single work package.
  *
  * @param payload Payload containing all the necessary data to create a work package.

@@ -5,6 +5,7 @@
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { WorkPackage, WorkPackagePreview, WbsNumber, WorkPackageSelection } from 'shared';
+import { wbsPipe } from '../utils/pipes';
 import {
   createSingleWorkPackage,
   deleteWorkPackage,
@@ -14,30 +15,40 @@ import {
   getAllWorkPackagesPreview,
   getManyWorkPackages,
   getSingleWorkPackage,
+  getWorkPackagesByProject,
   slackUpcomingDeadlines,
   WorkPackageCreateArgs,
   WorkPackageEditArgs,
   getHomePageWorkPackages
 } from '../apis/work-packages.api';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Custom React Hook to supply all work packages.
  */
 export const useAllWorkPackages = (queryParams?: { [field: string]: string }) => {
-  return useQuery<WorkPackage[], Error>(['work packages', queryParams], async () => {
-    const { data } = await getAllWorkPackages(queryParams);
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<WorkPackage[], Error>(
+    ['work packages', queryParams, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllWorkPackages(queryParams);
+      return data;
+    }
+  );
 };
 
 /**
  * Custom React Hook to supply all work packages in preview format (minimal data).
  */
 export const useAllWorkPackagesPreview = (status?: string) => {
-  return useQuery<WorkPackagePreview[], Error>(['work packages', 'preview', status], async () => {
-    const { data } = await getAllWorkPackagesPreview(status);
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<WorkPackagePreview[], Error>(
+    ['work packages', 'preview', status, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllWorkPackagesPreview(status);
+      return data;
+    }
+  );
 };
 
 /**
@@ -48,6 +59,17 @@ export const useAllWorkPackagesPreview = (status?: string) => {
 export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
   return useQuery<WorkPackage, Error>(['work packages', wbsNum], async () => {
     const { data } = await getSingleWorkPackage(wbsNum);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all work packages for a given project
+ * @param projectWbsNum the wbs number of the project
+ */
+export const useWorkPackagesByProject = (projectWbsNum: WbsNumber) => {
+  return useQuery<WorkPackage[], Error>(['work-packages', 'by-project', wbsPipe(projectWbsNum)], async () => {
+    const { data } = await getWorkPackagesByProject(projectWbsNum);
     return data;
   });
 };
@@ -128,8 +150,12 @@ export const useGetBlockingWorkPackages = (wbsNum: WbsNumber) => {
  * Custom React Hook to get many work packages
  */
 export const useGetManyWorkPackages = (wbsNums: WbsNumber[]) => {
-  return useQuery<WorkPackage[], Error>(['work packages', 'blocking', wbsNums], async () => {
-    const { data } = await getManyWorkPackages(wbsNums);
+  const { selectedCar } = useGlobalCarFilter();
+  const filteredWbsNums =
+    selectedCar === 'all-cars' ? wbsNums : wbsNums.filter((wbsNum) => wbsNum.carNumber === selectedCar.wbsNum.carNumber);
+  const carKey = selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id;
+  return useQuery<WorkPackage[], Error>(['work packages', 'many', filteredWbsNums, carKey], async () => {
+    const { data } = await getManyWorkPackages(filteredWbsNums);
     return data;
   });
 };
@@ -145,8 +171,12 @@ export const useSlackUpcomingDeadlines = () => {
 };
 
 export const useHomeScreenWorkPackages = (selection: WorkPackageSelection) => {
-  return useQuery<WorkPackage[], Error>(['teams', 'work-packages', selection], async () => {
-    const { data } = await getHomePageWorkPackages(selection);
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<WorkPackage[], Error>(
+    ['teams', 'work-packages', selection, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getHomePageWorkPackages(selection);
+      return data;
+    }
+  );
 };

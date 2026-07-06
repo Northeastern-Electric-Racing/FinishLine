@@ -67,12 +67,13 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
         for (const task of project.tasks) {
           try {
             await createSingleTask({
-              wbsNum: createdProject.wbsNum,
+              wbsNum: task.wbsNum,
               title: task.title,
               priority: task.priority,
               status: task.status,
               assignees: task.assignees.map((user) => user.userId),
               notes: task.notes || '',
+              labelIds: task.labels.map((l) => l.taskLabelId),
               deadline: task.deadline ? dateToMidnightUTC(task.deadline).toISOString() : undefined,
               startDate: task.startDate ? dateToMidnightUTC(task.startDate).toISOString() : undefined
             });

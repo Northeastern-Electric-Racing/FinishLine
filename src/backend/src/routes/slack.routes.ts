@@ -129,6 +129,22 @@ if (slackApp) {
     }
   });
 
+  // Register interactive action handler for CR approval
+  slackApp.action('approve_cr', async ({ ack, body, logger, respond }: any) => {
+    await ack();
+
+    try {
+      if (!validateSlackActionBody(body)) {
+        logger.error('Invalid Slack action body structure');
+        return;
+      }
+
+      await SlackController.handleApproveCRAction(body, respond);
+    } catch (error) {
+      logger.error('Error handling approve_cr action:', error);
+    }
+  });
+
   // Error handler
   slackApp.error(async (error: Error) => {
     console.error('Slack app error:', error);

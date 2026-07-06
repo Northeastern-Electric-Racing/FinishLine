@@ -13,7 +13,7 @@ export const getTeamQueryArgs = (organizationId: string) =>
       head: getUserQueryArgs(organizationId),
       leads: getUserQueryArgs(organizationId),
       userArchived: getUserQueryArgs(organizationId),
-      teamType: true,
+      teamType: { select: { teamTypeId: true, name: true } },
       projects: {
         where: {
           wbsElement: {

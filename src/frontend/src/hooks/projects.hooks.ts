@@ -35,16 +35,18 @@ import {
   setAbbreviation,
   deleteAbbreviation,
   getTeamsProjects,
-  getAllProjects
+  getAllProjects,
+  getAllProjectsCopyBOM
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Custom React Hook to supply all projects with Gantt querry args
  */
 export const useAllProjectsGantt = () => {
-  return useQuery<ProjectGantt[], Error>(['projects'], async () => {
+  return useQuery<ProjectGantt[], Error>(['projects', 'gantt-all'], async () => {
     const { data } = await getAllProjectsGantt();
     return data;
   });
@@ -54,8 +56,24 @@ export const useAllProjectsGantt = () => {
  * Custom React Hook to supply all projects
  */
 export const useAllProjects = () => {
-  return useQuery<ProjectPreview[], Error>(['projects', 'previews'], async () => {
-    const { data } = await getAllProjects();
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ProjectPreview[], Error>(
+    ['projects', 'previews', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllProjects();
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to supply all projects, bypassing the global car filter.
+ * Used by Copy BOM, which lets the user pick any past car regardless of the
+ * globally selected car and does its own frontend filtering by car.
+ */
+export const useAllProjectsCopyBOM = () => {
+  return useQuery<ProjectPreview[], Error>(['projects', 'previews', 'all-cars'], async () => {
+    const { data } = await getAllProjectsCopyBOM();
     return data;
   });
 };
@@ -64,30 +82,42 @@ export const useAllProjects = () => {
  * Custom React Hook to supply all of the projects that are on the users teams
  */
 export const useGetUsersTeamsProjects = () => {
-  return useQuery<ProjectOverview[], Error>(['projects', 'teams'], async () => {
-    const { data } = await getUsersTeamsProjects();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ProjectOverview[], Error>(
+    ['projects', 'teams', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getUsersTeamsProjects();
+      return data;
+    }
+  );
 };
 
 /**
  * Custom React Hook to supply all of the projects that the user is the manager or lead of
  */
 export const useGetUsersLeadingProjects = () => {
-  return useQuery<ProjectOverview[], Error>(['projects', 'leading'], async () => {
-    const { data } = await getUsersLeadingProjects();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ProjectOverview[], Error>(
+    ['projects', 'leading', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getUsersLeadingProjects();
+      return data;
+    }
+  );
 };
 
 /**
  * Custom React Hook to supply all of the projects for a given team
  */
 export const useGetTeamsProjects = (teamId: string) => {
-  return useQuery<Project[], Error>(['projects', 'teams'], async () => {
-    const { data } = await getTeamsProjects(teamId);
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<Project[], Error>(
+    ['projects', 'teams', teamId, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getTeamsProjects(teamId);
+      return data;
+    }
+  );
 };
 
 /**

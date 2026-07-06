@@ -713,14 +713,14 @@ describe('Reimbursement Requests', () => {
       const updatedVendor = await ReimbursementRequestService.editVendor(
         'Updated Vendor Name',
         vendor.vendorId,
-        '',
-        '',
-        '',
         false,
         [],
-        'Updated notes',
         regularMember,
-        org
+        org,
+        undefined,
+        undefined,
+        undefined,
+        'Updated notes'
       );
 
       expect(updatedVendor).not.toBeNull();
@@ -733,14 +733,14 @@ describe('Reimbursement Requests', () => {
         ReimbursementRequestService.editVendor(
           'Updated Name',
           createdVendor.vendorId,
-          '',
-          '',
-          '',
           false,
           [],
-          'notes',
           anotherMember,
-          org
+          org,
+          undefined,
+          undefined,
+          undefined,
+          'notes'
         )
       ).rejects.toThrow(new AccessDeniedException('You are not a member of the finance team!'));
     });
@@ -749,14 +749,14 @@ describe('Reimbursement Requests', () => {
       const updatedVendor = await ReimbursementRequestService.editVendor(
         'Finance Updated Vendor',
         createdVendor.vendorId,
-        '',
-        '',
-        '',
         false,
         [],
-        'Finance notes',
         financeMember,
-        org
+        org,
+        undefined,
+        undefined,
+        undefined,
+        'Finance notes'
       );
 
       expect(updatedVendor).not.toBeNull();
@@ -1170,8 +1170,7 @@ describe('Reimbursement Requests', () => {
           manufacturerId: manufacturer.id,
           linkUrl: 'https://example.com',
           quantity: 1,
-          price: 100,
-          subtotal: 100
+          price: 100
         }
       });
     });
@@ -1276,8 +1275,7 @@ describe('Reimbursement Requests', () => {
           manufacturerId: material.manufacturerId,
           linkUrl: 'https://example.com',
           quantity: 2,
-          price: 200,
-          subtotal: 400
+          price: 200
         }
       });
 

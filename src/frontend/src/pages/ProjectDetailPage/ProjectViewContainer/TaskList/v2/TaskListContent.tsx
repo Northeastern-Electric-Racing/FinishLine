@@ -1,20 +1,33 @@
 import { DragDropContext, OnDragEndResponder, OnDragStartResponder } from '@hello-pangea/dnd';
-import { Box } from '@mui/material';
-import { useCallback, useState } from 'react';
-import { Project, Task, TaskStatus, TaskWithIndex } from 'shared';
+import { Autocomplete, Box, Button, Chip, TextField, Typography } from '@mui/material';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import { useCallback, useState, useEffect } from 'react';
+import { Task, TaskLabel, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
-import { useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
+import { useAllTaskLabels, useFilterTasks, useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { TaskColumn } from './TaskColumn';
 import confetti from 'canvas-confetti';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import ErrorPage from '../../../../ErrorPage';
 
-interface TaskListProps {
-  project: Project;
+interface TaskListContentProps {
+  wbsNum: WbsNumber;
 }
 
-export const TaskListContent = ({ project }: TaskListProps) => {
-  const { tasks } = project;
-  const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus>(getTasksByStatus(tasks));
+export const TaskListContent = ({ wbsNum }: TaskListContentProps) => {
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
+
+  const { data: tasks, isLoading, isError, error } = useFilterTasks({ wbsNum, labelIds: selectedLabelIds });
+  const {
+    data: taskLabels,
+    isLoading: taskLabelsLoading,
+    isError: tasklabelsIsError,
+    error: tasksLabelsError
+  } = useAllTaskLabels();
+
+  const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus | undefined>(undefined); // can't use getTasksByStatus since tasks are async
   const { mutateAsync: setTaskStatus } = useSetTaskStatus();
 
   const toast = useToast();
@@ -23,12 +36,24 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   const [columnHeights, setColumnHeights] = useState<Partial<Record<TaskStatus, number>>>({});
   const equalizedHeight = Math.max(...(Object.values(columnHeights) as number[]));
 
+  // initialize tasksByStatus once tasks load, but only once
+  useEffect(() => {
+    if (tasks) {
+      setTasksByStatus(getTasksByStatus(tasks));
+    }
+  }, [tasks]);
+
   const onHeightChange = useCallback((status: TaskStatus, height: number) => {
     setColumnHeights((prev) => ({ ...prev, [status]: height }));
   }, []);
 
+  if (isError) return <ErrorPage error={error} />;
+  if (tasklabelsIsError) return <ErrorPage error={tasksLabelsError} />;
+  if (isLoading || taskLabelsLoading || !tasksByStatus) return <LoadingIndicator />;
+
   const onDeleteTask = (taskId: string) => {
     setTasksByStatus((prev) => {
+      if (!prev) return prev;
       const newTasksByStatus = { ...prev };
       for (const status of statuses) {
         const index = newTasksByStatus[status].findIndex((task) => task?.taskId === taskId);
@@ -43,6 +68,7 @@ export const TaskListContent = ({ project }: TaskListProps) => {
 
   const onEditTask = (task: Task) => {
     setTasksByStatus((prev) => {
+      if (!prev) return prev;
       const newTasksByStatus = { ...prev };
       for (const status of statuses) {
         const index = newTasksByStatus[status].findIndex((t) => t?.taskId === task.taskId);
@@ -56,10 +82,13 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   };
 
   const onAddTask = (task: Task) => {
-    setTasksByStatus((prev) => ({
-      ...prev,
-      [task.status]: [...prev[task.status], { ...task, index: prev[task.status].length }]
-    }));
+    setTasksByStatus((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [task.status]: [...prev[task.status], { ...task, index: prev[task.status].length }]
+      };
+    });
   };
 
   const onDragStart: OnDragStartResponder = () => {
@@ -124,6 +153,65 @@ export const TaskListContent = ({ project }: TaskListProps) => {
 
   return (
     <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+      <Box display="flex" alignItems="center" mb={1}>
+        <Button onClick={() => setShowFilters(!showFilters)} sx={{ height: '2.25rem' }}>
+          <FilterListIcon fontSize="medium" />
+          <Typography fontSize="0.75rem" align="center">
+            Filters
+          </Typography>
+        </Button>
+      </Box>
+      {showFilters && (
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <Autocomplete
+            multiple
+            size="small"
+            options={taskLabels ?? []}
+            getOptionLabel={(option: TaskLabel) => option.name}
+            isOptionEqualToValue={(option, val) => option.taskLabelId === val.taskLabelId}
+            value={(taskLabels ?? []).filter((l) => selectedLabelIds.includes(l.taskLabelId))}
+            onChange={(_, selected) => setSelectedLabelIds(selected.map((l) => l.taskLabelId))}
+            renderOption={(props, option) => (
+              <li {...props} key={option.taskLabelId}>
+                <Box
+                  sx={{
+                    display: 'inline-block',
+                    px: 1.5,
+                    py: 0.25,
+                    borderRadius: '999px',
+                    backgroundColor: option.colorHexCode,
+                    color: 'white',
+                    fontWeight: 500,
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  {option.name}
+                </Box>
+              </li>
+            )}
+            renderTags={(selected, getTagProps) =>
+              selected.map((label, index) => (
+                <Chip
+                  {...getTagProps({ index })}
+                  key={label.taskLabelId}
+                  label={label.name}
+                  size="small"
+                  sx={{
+                    backgroundColor: label.colorHexCode,
+                    color: 'white',
+                    fontWeight: 500,
+                    '& .MuiChip-deleteIcon': { color: 'rgba(255,255,255,0.7)' }
+                  }}
+                />
+              ))
+            }
+            renderInput={(params) => (
+              <TextField {...params} variant="outlined" label="Labels" placeholder="Filter by label" />
+            )}
+            sx={{ width: '20%', minWidth: 200 }}
+          />
+        </Box>
+      )}
       <Box display="flex">
         {statuses.map((status) => (
           <TaskColumn
@@ -134,7 +222,7 @@ export const TaskListContent = ({ project }: TaskListProps) => {
             status={status}
             tasks={tasksByStatus[status]}
             key={status}
-            project={project}
+            wbsNum={wbsNum}
             equalizedHeight={equalizedHeight}
             isDragging={isDragging}
           />

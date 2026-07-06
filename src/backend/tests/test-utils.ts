@@ -130,17 +130,17 @@ export const resetUsers = async () => {
   await prisma.reimbursement_Status.deleteMany();
   await prisma.reimbursement_Request_Comment.deleteMany();
   await prisma.reimbursement_Request.deleteMany();
+  await prisma.reimbursement.deleteMany();
   await prisma.vendor.deleteMany();
   await prisma.account_Code.deleteMany();
   await prisma.car.deleteMany();
+  await prisma.task_Label.deleteMany();
   await prisma.task.deleteMany();
   await prisma.stage_Gate_CR.deleteMany();
   await prisma.activation_CR.deleteMany();
   await prisma.change.deleteMany();
-  await prisma.proposed_Solution.deleteMany();
-  await prisma.scope_CR_Why.deleteMany();
-  await prisma.scope_CR.deleteMany();
   await prisma.budget_CR.deleteMany();
+  await prisma.leadership_CR.deleteMany();
   await prisma.change_Request.deleteMany();
   await prisma.link.deleteMany();
   await prisma.link_Type.deleteMany();
@@ -397,7 +397,7 @@ export const createTestLinkType = async (user: User, organizationId?: string) =>
   return linkType;
 };
 
-export const createTestCar = async (orgId?: string, userIdentification?: string) => {
+export const createTestCar = async (orgId?: string, userIdentification?: string, carNumber: number = 0) => {
   if (!orgId) orgId = (await createTestOrganization()).organizationId;
   if (!userIdentification) userIdentification = (await createTestUser(supermanAdmin, orgId)).userId;
 
@@ -405,7 +405,7 @@ export const createTestCar = async (orgId?: string, userIdentification?: string)
     data: {
       wbsElement: {
         create: {
-          carNumber: 0,
+          carNumber,
           projectNumber: 0,
           workPackageNumber: 0,
           dateCreated: new Date('01/01/2023'),
@@ -427,6 +427,7 @@ export const createTestProject = async (
   organizationId?: string,
   teamId?: string,
   carId?: string,
+  carNumber: number = 0,
   projectNumber: number = 1,
   dateDeleted?: Date
 ): Promise<Project> => {
@@ -437,7 +438,7 @@ export const createTestProject = async (
     data: {
       wbsElement: {
         create: {
-          carNumber: 0,
+          carNumber,
           projectNumber,
           workPackageNumber: 0,
           dateCreated: new Date('01/01/2023'),
@@ -476,6 +477,36 @@ export const createTestProject = async (
 
   return genesisProject;
 };
+
+export const createTestWorkPackage = async (
+  user: User,
+  organizationId: string,
+  projectId: string,
+  carNumber: number = 0,
+  projectNumber: number = 1,
+  workPackageNumber: number = 1
+) =>
+  prisma.work_Package.create({
+    data: {
+      wbsElement: {
+        create: {
+          carNumber,
+          projectNumber,
+          workPackageNumber,
+          name: `WP ${carNumber}.${projectNumber}.${workPackageNumber}`,
+          status: WBS_Element_Status.ACTIVE,
+          leadId: user.userId,
+          managerId: user.userId,
+          organizationId
+        }
+      },
+      project: { connect: { projectId } },
+      startDate: new Date('2024-01-01'),
+      duration: 4,
+      orderInProject: workPackageNumber
+    },
+    include: { wbsElement: true }
+  });
 
 export const createTestReimbursementRequest = async () => {
   const organization = await createTestOrganization();
@@ -763,8 +794,9 @@ export const createTestTaskWithOrganization = async (user: User, organization?: 
     TaskStatus.IN_PROGRESS,
     [user.userId],
     organization,
-    undefined,
-    new Date()
+    [],
+    new Date(),
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
   );
 
   if (!task) throw new Error('Failed to create task');
@@ -955,6 +987,7 @@ export const createTestGuestDefinition = async (user: User, organizationId: stri
       term: 'Term',
       description: 'Description',
       order: 0,
+      type: 'INFO_PAGE',
       organizationId,
       userCreatedId: user.userId
     }

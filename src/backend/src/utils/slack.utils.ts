@@ -7,7 +7,8 @@ import {
   CreateSponsorTask,
   User,
   Event,
-  formatForSlack
+  formatForSlack,
+  SlackMentionType
 } from 'shared';
 import { Account_Code, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
 import {
@@ -40,6 +41,14 @@ interface SlackMessageThread {
 }
 
 const DEV_TESTING_OVERRIDE = process.env.SEND_SLACK_MESSAGES_IN_DEV === 'true';
+
+export function tryParseJson<T>(value: string): { ok: true; data: T } | { ok: false; error: string } {
+  try {
+    return { ok: true, data: JSON.parse(value) as T };
+  } catch (e: unknown) {
+    return { ok: false, error: (e as Error).message };
+  }
+}
 
 // build the "due" string for the upcoming deadlines slack message
 export const buildDueString = (daysUntilDeadline: number): string => {
@@ -383,35 +392,49 @@ export const sendAndGetSlackCRNotifications = async (
   return notifications;
 };
 
+export const buildSlackMentionPrefix = (mention: SlackMentionType, memberSlackIds: string[]): string => {
+  if (mention === SlackMentionType.CHANNEL) return '<!channel> ';
+  if (memberSlackIds.length > 0) return `${memberSlackIds.map((id) => `<@${id}>`).join(' ')} `;
+  return '';
+};
+
 export const sendSlackEventNotification = async (
   team: Team,
   message: string
 ): Promise<{ channelId: string; ts: string }[]> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return []; // don't send msgs unless in prod
   const msgs: { channelId: string; ts: string }[] = [];
-  const fullMsg = `${message}`;
   const fullLink = `https://finishlinebyner.com/calendar`;
   const btnText = `View Calendar`;
-  const notification = await sendMessage(team.slackId, fullMsg, fullLink, btnText);
+  const notification = await sendMessage(team.slackId, message, fullLink, btnText);
   if (notification) msgs.push(notification);
 
   return msgs;
 };
+
+export interface EventNotificationOptions {
+  memberSlackIds?: string[];
+  mention?: SlackMentionType;
+}
 
 export const sendSlackEventNotifications = async (
   teams: Team[],
   event: Event,
   submitter: User,
   workPackageName: string,
-  projectName: string
+  projectName: string,
+  options: EventNotificationOptions = {}
 ) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return []; // don't send msgs unless in prod
   const notifications: { channelId: string; ts: string }[] = [];
+
+  const mentionPrefix = buildSlackMentionPrefix(options.mention ?? SlackMentionType.USER, options.memberSlackIds ?? []);
+
   let message;
   if (workPackageName) {
-    message = `:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
+    message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
   } else {
-    message = `:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
+    message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
   }
 
   const completion: Promise<void>[] = teams.map(async (team) => {
@@ -458,9 +481,13 @@ export const sendEventConfirmationToThread = async (threads: SlackMessageThread[
   }
 };
 
-export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[], event: Event) => {
+export const sendEventScheduledSlackNotif = async (
+  threads: SlackMessageThread[],
+  event: Event,
+  beingRescheduled: boolean = false
+) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
-
+  const scheduledOrRescheduled = beingRescheduled ? 'rescheduled' : 'scheduled';
   // Get work package names
   const wpNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
   const drName = event.title + (wpNames ? ` (${wpNames})` : '');
@@ -487,9 +514,17 @@ export const sendEventScheduledSlackNotif = async (threads: SlackMessageThread[]
 
   const location = zoomLink && inPersonLocation ? `${inPersonLocation} and ${zoomLink}` : inPersonLocation || zoomLink || '';
 
-  const msg = `:spiral_calendar_pad: ${event.title} for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
+  const allMembers = [...event.requiredMembers, ...event.optionalMembers];
+  const resolvedSlackIds = await Promise.all(allMembers.map((m) => getUserSlackId(m.userId)));
+  const validSlackIds = resolvedSlackIds.filter((id): id is string => !!id);
+  const mentionPrefix = buildSlackMentionPrefix(SlackMentionType.USER, validSlackIds);
+
+  const msg =
+    `:spiral_calendar_pad: ${event.title} for *${drName}* has been ` +
+    scheduledOrRescheduled +
+    ` for *${drTime}* ${location} by ${drSubmitter}`;
   const docLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Doc Link>` : '';
-  const threadMsg = `This event has been Scheduled! \n` + docLink;
+  const threadMsg = `${mentionPrefix}This event has been ` + scheduledOrRescheduled + ` \n` + docLink;
 
   if (threads && threads.length !== 0) {
     const msgs = threads.map((thread) => editMessage(thread.channelId, thread.timestamp, msg));
@@ -547,6 +582,111 @@ export const sendSlackCRStatusToThread = async (
     );
     await Promise.all([...msgs, ...reactions]);
   }
+};
+
+/**
+ * Sends Slack notifications for a newly created standard (manual) CR:
+ * 1. Initial message to each project team channel
+ * 2. Thread reply with the why text and field diff
+ * 3. Thread reply tagging the project head(s) and requested reviewer(s)
+ * Also stores Message_Info records linking threads to the CR.
+ */
+export const sendStandardCRCreatedNotification = async (
+  cr: Change_Request,
+  wbsElementName: string,
+  projectWbsName: string,
+  submitter: User,
+  teams: Team[],
+  why: string,
+  requestedReviewerId: string | undefined,
+  diffText: string
+): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return;
+
+  const reviewerSlackId = requestedReviewerId ? await getUserSlackId(requestedReviewerId) : undefined;
+
+  const message =
+    wbsElementName !== projectWbsName
+      ? `${submitter.firstName} ${submitter.lastName} submitted a change request for ${wbsElementName} in ${projectWbsName}`
+      : `${submitter.firstName} ${submitter.lastName} submitted a change request for ${projectWbsName}`;
+  const notifications: { channelId: string; ts: string }[] = [];
+
+  await Promise.all(
+    teams.map(async (team) => {
+      const sent = await sendSlackChangeRequestNotification(team, message, cr.crId, cr.identifier);
+      notifications.push(...sent);
+    })
+  );
+
+  if (notifications.length === 0) return;
+
+  // add message_Info records for the sent notifications so we can link the CR to the slack threads for future replies
+  await addSlackThreadsToChangeRequest(cr.crId, notifications);
+
+  // Thread reply: why + diff
+  const whyAndDiff = diffText
+    ? `*Change Justification:*\n${why}\n\n*Proposed Changes:*\n${diffText}`
+    : `*Change Justification:*\n${why}`;
+  await Promise.all(notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, whyAndDiff)));
+
+  // Thread reply: tag project head(s) + requested reviewer
+  const headSlackIds = (await Promise.all(teams.filter((t) => t.headId).map((t) => getUserSlackId(t.headId!)))).filter(
+    (id): id is string => !!id
+  );
+
+  // Also include admins
+  const admins = await prisma.user.findMany({
+    where: {
+      roles: {
+        some: {
+          roleType: { in: ['ADMIN', 'APP_ADMIN'] },
+          organizationId: cr.organizationId
+        }
+      }
+    },
+    include: { userSettings: true }
+  });
+  const adminSlackIds = admins.map((a) => a.userSettings?.slackId).filter((id): id is string => !!id);
+
+  const allSlackIds = new Set([...headSlackIds, ...adminSlackIds, ...(reviewerSlackId ? [reviewerSlackId] : [])]);
+
+  if (reviewerSlackId) {
+    const reviewMsg = `<@${reviewerSlackId}> Your review has been requested on CR #${cr.identifier}!`;
+    const crLink = `https://finishlinebyner.com/cr/${cr.crId}`;
+    await Promise.all(
+      notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, reviewMsg, crLink, `View CR #${cr.identifier}`))
+    );
+  }
+
+  // Send the approve button as an ephemeral message to each head and requested reviewer,
+  // so only authorized approvers see it. reviewChangeRequest still enforces auth on click.
+  const approveBlocks = [
+    {
+      type: 'section',
+      text: { type: 'mrkdwn', text: `Approve CR #${cr.identifier}?` }
+    },
+    {
+      type: 'actions',
+      elements: [
+        {
+          type: 'button',
+          text: { type: 'plain_text', text: 'Approve Change Request' },
+          style: 'primary',
+          action_id: 'approve_cr',
+          value: JSON.stringify({ crId: cr.crId, organizationId: cr.organizationId })
+        }
+      ]
+    }
+  ];
+
+  await Promise.all(
+    notifications.flatMap(async (n) => {
+      const membersInChannel = new Set(await getUsersInChannel(n.channelId));
+      return [...allSlackIds]
+        .filter((slackId) => membersInChannel.has(slackId))
+        .map((slackId) => sendEphemeralMessage(n.channelId, n.ts, slackId, `Approve CR #${cr.identifier}?`, approveBlocks));
+    })
+  );
 };
 
 /**

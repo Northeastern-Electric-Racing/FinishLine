@@ -27,11 +27,14 @@ import {
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 
 /**
- * Fetches all projects with querry args needed for Gantt chart
+ * Fetches all projects with query args needed for Gantt chart
+ * Note: Gantt supports multi-car local selection and handles its own frontend filtering,
+ * so we bypass the global car filter using overrideCarId: 'all-cars'
  */
 export const getAllProjectsGantt = () => {
   return axios.get<ProjectGantt[]>(apiUrls.allProjectsGantt(), {
-    transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer)
+    transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer),
+    overrideCarId: 'all-cars'
   });
 };
 
@@ -41,6 +44,18 @@ export const getAllProjectsGantt = () => {
 export const getAllProjects = () => {
   return axios.get<ProjectPreview[]>(apiUrls.allProjectPreviews(), {
     transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
+  });
+};
+
+/**
+ * Fetches all projects with preview querry args for Copy BOM
+ * Note: Copy BOM lets the user pick any past car to copy from and handles its own
+ * frontend filtering, so we bypass the global car filter using overrideCarId: 'all-cars'
+ */
+export const getAllProjectsCopyBOM = () => {
+  return axios.get<ProjectPreview[]>(apiUrls.allProjectPreviews(), {
+    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer),
+    overrideCarId: 'all-cars'
   });
 };
 

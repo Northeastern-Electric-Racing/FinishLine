@@ -214,4 +214,6 @@ export type ExceptionObjectNames =
   | 'Guest Definition'
   | 'ProspectiveSponsor'
   | 'SponsorTier'
-  | 'Meeting Attendance';
+  | 'Guest Definition'
+  | 'Meeting Attendance'
+  | 'Task Label';

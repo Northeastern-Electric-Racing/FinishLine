@@ -3,10 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import confetti from 'canvas-confetti';
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestType, WbsNumber, wbsPipe } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { useCreateStageGateChangeRequest } from '../../../hooks/change-requests.hooks';
+import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { routes } from '../../../utils/routes';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -22,6 +24,7 @@ interface StageGateWorkPackageModalContainerProps {
 
 export interface FormInput {
   confirmDone: boolean;
+  dateCompleted: Date;
 }
 
 const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalContainerProps> = ({
@@ -34,8 +37,9 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
   const history = useHistory();
   const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useCreateStageGateChangeRequest();
+  const { isLoading: wpIsLoading, isError: wpIsError, error: wpError, data: workPackage } = useSingleWorkPackage(wbsNum);
 
-  const handleConfirm = async ({ confirmDone }: FormInput) => {
+  const handleConfirm = async ({ confirmDone, dateCompleted }: FormInput) => {
     handleClose();
     if (auth.user?.userId === undefined) throw new Error('Cannot create stage gate change request without being logged in');
     try {
@@ -43,7 +47,18 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
         submitterId: auth.user?.userId,
         wbsNum,
         type: ChangeRequestType.StageGate,
-        confirmDone
+        confirmDone,
+        dateCompleted
+      });
+      [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9].forEach((xPos) => {
+        confetti({
+          origin: { y: -0.5, x: xPos },
+          angle: 270,
+          gravity: 1.5,
+          startVelocity: 35,
+          spread: 70,
+          particleCount: 50
+        });
       });
       history.push(`${routes.PROJECTS}/${wbsPipe(wbsNum)}/change-requests`);
     } catch (e: unknown) {
@@ -54,11 +69,22 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
   };
 
   if (!hideStatus) {
-    if (isLoading) return <LoadingIndicator />;
     if (isError) return <ErrorPage message={error?.message} />;
+    if (wpIsError) return <ErrorPage message={wpError?.message} />;
+    if (isLoading || wpIsLoading) return <LoadingIndicator />;
   }
 
-  return <StageGateWorkPackageModal wbsNum={wbsNum} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
+  if (!workPackage) return <LoadingIndicator />;
+
+  return (
+    <StageGateWorkPackageModal
+      wbsNum={wbsNum}
+      modalShow={modalShow}
+      onHide={handleClose}
+      onSubmit={handleConfirm}
+      startDate={workPackage.startDate}
+    />
+  );
 };
 
 export default StageGateWorkPackageModalContainer;

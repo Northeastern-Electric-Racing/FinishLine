@@ -617,14 +617,14 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             width: 'calc(100% - 40px)'
           }}
         />
-        <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', flexDirection: { xs: 'column', md: 'row' } }}>
           <Box sx={{ mt: -3 }}>
             <ReimbursementRequestTimeline
               reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
               reimbursementRequestComments={reimbursementRequest.comments}
             />
           </Box>
-          <Box sx={{ mt: 2, ml: 2, whiteSpace: 'nowrap' }}>
+          <Box sx={{ mt: 2, ml: { xs: 0, md: 2 }, whiteSpace: { xs: 'normal', md: 'nowrap' } }}>
             <ReimbursementProductsView reimbursementRequest={reimbursementRequest} />
             <Box sx={{ mt: 2 }}>
               <ReceiptsView />

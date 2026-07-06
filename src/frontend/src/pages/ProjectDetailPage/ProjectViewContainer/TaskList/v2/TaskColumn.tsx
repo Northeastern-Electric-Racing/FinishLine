@@ -1,7 +1,7 @@
 import { Droppable } from '@hello-pangea/dnd';
 import { Box, Typography, useTheme } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-import { Project, Task, TaskStatus, TaskWithIndex } from 'shared';
+import { Task, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
 import { statusNames, TaskCard } from '.';
 import { NERButton } from '../../../../../components/NERButton';
 import { useCreateTask } from '../../../../../hooks/tasks.hooks';
@@ -12,7 +12,7 @@ import TaskFormModal, { EditTaskFormInput } from '../TaskFormModal';
 export const TaskColumn = ({
   status,
   tasks,
-  project,
+  wbsNum,
   equalizedHeight,
   isDragging,
   onEditTask,
@@ -22,7 +22,7 @@ export const TaskColumn = ({
 }: {
   status: TaskStatus;
   tasks: TaskWithIndex[];
-  project: Project;
+  wbsNum: WbsNumber;
   equalizedHeight: number;
   isDragging: boolean;
   onEditTask: (task: Task) => void;
@@ -30,7 +30,7 @@ export const TaskColumn = ({
   onAddTask: (task: Task) => void;
   onHeightChange: (status: TaskStatus, height: number) => void;
 }) => {
-  const { mutateAsync: createTask } = useCreateTask();
+  const { mutateAsync: createTask, isLoading } = useCreateTask();
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const toast = useToast();
   const theme = useTheme();
@@ -46,17 +46,27 @@ export const TaskColumn = ({
     return () => observer.disconnect();
   }, [status, onHeightChange]);
 
-  const handleCreateTask = async ({ notes, title, deadline, assignees, priority, startDate }: EditTaskFormInput) => {
+  const handleCreateTask = async ({
+    notes,
+    title,
+    deadline,
+    assignees,
+    labels,
+    priority,
+    startDate,
+    wpWbsNum
+  }: EditTaskFormInput) => {
     try {
       const task = await createTask({
-        wbsNum: project.wbsNum,
+        wbsNum: wpWbsNum ?? wbsNum,
         title,
         deadline: deadline ? toDateString(deadline) : undefined,
         startDate: startDate ? toDateString(startDate) : undefined,
         priority,
         status: status as TaskStatus,
         assignees,
-        notes
+        notes,
+        labelIds: labels.map((l) => l.taskLabelId)
       });
       onAddTask(task);
       toast.success('Task Successfully Created!');
@@ -75,7 +85,8 @@ export const TaskColumn = ({
         onSubmit={handleCreateTask}
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
-        teams={project.teams}
+        wbsNum={wbsNum}
+        isLoading={isLoading}
       />
       <Box
         sx={{
@@ -131,7 +142,7 @@ export const TaskColumn = ({
                   key={task.taskId}
                   task={task}
                   index={index}
-                  project={project}
+                  wbsNum={wbsNum}
                 />
               ))}
               {droppableProvided.placeholder}

@@ -9,6 +9,7 @@ import {
   FilterTaskArgs,
   Task,
   TaskCardPreview,
+  TaskLabel,
   TaskPriority,
   TaskStatus,
   WbsNumber,
@@ -16,7 +17,7 @@ import {
 } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { taskTransformer } from './transformers/tasks.transformers';
+import { taskLabelTransformer, taskTransformer } from './transformers/tasks.transformers';
 
 /**
  * Api call to create a task.
@@ -26,6 +27,7 @@ import { taskTransformer } from './transformers/tasks.transformers';
  * @param status the status of the task
  * @param assignees the ids of the users assigned to the task
  * @param notes the notes for the task
+ * @param labelIds the ids of the labels for the task
  * @param deadline the datestring deadline of the task
  * @param startDate the datestring start date of the task
  * @returns
@@ -37,6 +39,7 @@ export const createSingleTask = (
   status: TaskStatus,
   assignees: string[],
   notes: string,
+  labelIds: string[],
   deadline?: string,
   startDate?: string
 ) => {
@@ -49,7 +52,8 @@ export const createSingleTask = (
       priority,
       status,
       assignees,
-      notes
+      notes,
+      labelIds
     },
     {
       transformResponse: (data) => taskTransformer(JSON.parse(data))
@@ -63,8 +67,10 @@ export const createSingleTask = (
  * @param title the new title
  * @param notes the new notes
  * @param priority the new priority
+ * @param labelIds the new label ids
  * @param deadline the new deadline
  * @param startDate the new start date
+ * @param wbsNum the new wbs element
  * @returns the edited task
  */
 export const editTask = (
@@ -72,15 +78,19 @@ export const editTask = (
   title: string,
   notes: string,
   priority: TaskPriority,
+  labelIds: string[],
   deadline?: Date,
-  startDate?: Date
+  startDate?: Date,
+  wbsNum?: WbsNumber
 ) => {
   return axios.post<{ message: string }>(apiUrls.editTaskById(taskId), {
     title,
     notes,
     priority,
+    labelIds,
     deadline: deadline ? dateToMidnightUTC(deadline) : undefined,
-    startDate: startDate ? dateToMidnightUTC(startDate) : undefined
+    startDate: startDate ? dateToMidnightUTC(startDate) : undefined,
+    wbsNum
   });
 };
 
@@ -138,4 +148,56 @@ export const getOverdueTasksByTeamLeader = (userId: string) => {
   return axios.get<TaskCardPreview[]>(apiUrls.overdueTasksByTeamLeadership(userId), {
     transformResponse: (data) => JSON.parse(data).map(taskTransformer)
   });
+};
+
+/**
+ * Gets all tasks labels for a given organization
+ * @returns array of task labels
+ */
+export const getAllTaskLabels = () => {
+  return axios.get<TaskLabel[]>(apiUrls.taskLabels(), {
+    transformResponse: (data) => JSON.parse(data).map(taskLabelTransformer)
+  });
+};
+
+/**
+ * Api call to create a task label.
+ * @param name the name of the task label
+ * @param colorHexCode the hex code for the task label color
+ * @returns the created task label
+ */
+export const createTaskLabel = (name: string, colorHexCode: string) => {
+  return axios.post<TaskLabel>(
+    apiUrls.taskLabelCreate(),
+    { name, colorHexCode },
+    {
+      transformResponse: (data) => taskLabelTransformer(JSON.parse(data))
+    }
+  );
+};
+
+/**
+ * Edits the task label.
+ * @param id the id of the task label
+ * @param name the name of the task label
+ * @param colorHexCode the hex code for the task label color
+ * @returns the edited task label
+ */
+export const editTaskLabel = (taskLabelId: string, name: string, colorHexCode: string) => {
+  return axios.post<TaskLabel>(
+    apiUrls.taskLabelEdit(taskLabelId),
+    { name, colorHexCode },
+    {
+      transformResponse: (data) => taskLabelTransformer(JSON.parse(data))
+    }
+  );
+};
+
+/**
+ * Soft deletes a task label.
+ * @param taskLabelId
+ * @returns the deleted taskLabelId
+ */
+export const deleteTaskLabel = (taskLabelId: string) => {
+  return axios.post<string>(apiUrls.taskLabelDelete(taskLabelId), {});
 };

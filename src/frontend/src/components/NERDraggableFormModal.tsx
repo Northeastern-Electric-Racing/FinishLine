@@ -39,13 +39,13 @@ export const NERDraggableFormModal = ({
   return (
     <>
       {open && (
-        <Draggable handle=".draggable-handle" nodeRef={nodeRef}>
+        <Draggable handle=".draggable-handle" nodeRef={nodeRef} positionOffset={{ x: '-50%', y: '-50%' }}>
           <Box
             ref={nodeRef}
             sx={{
               position: 'fixed',
               top: '50%',
-              right: '5%',
+              left: '50%',
               backgroundColor: theme.palette.background.paper,
               boxShadow: 24,
               zIndex: 6,

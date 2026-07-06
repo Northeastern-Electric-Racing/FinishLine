@@ -1,15 +1,21 @@
 import { Prisma } from '@prisma/client';
-import { CalendarTask, Task, TaskCardPreview } from 'shared';
+import { CalendarTask, Task, TaskCardPreview, TaskLabel } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
 import { convertTaskPriority, convertTaskStatus } from '../utils/tasks.utils.js';
 import { userTransformer } from './user.transformer.js';
-import { CalendarTaskQueryArgs, TaskQueryArgs, TaskPreviewQueryArgs } from '../prisma-query-args/tasks.query-args.js';
+import {
+  CalendarTaskQueryArgs,
+  TaskLabelQueryArgs,
+  TaskQueryArgs,
+  TaskPreviewQueryArgs
+} from '../prisma-query-args/tasks.query-args.js';
 
-const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
+export const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
   const wbsNum = wbsNumOf(task.wbsElement);
   return {
     taskId: task.taskId,
     wbsNum,
+    wbsName: task.wbsElement.name,
     title: task.title,
     notes: task.notes,
     deadline: task.deadline ?? undefined,
@@ -18,6 +24,7 @@ const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
     status: convertTaskStatus(task.status),
     createdBy: userTransformer(task.createdBy),
     assignees: task.assignees.map(userTransformer),
+    labels: task.labels.map(taskLabelTransformer),
     dateDeleted: task.dateDeleted ?? undefined,
     dateCreated: task.dateCreated,
     deletedBy: task.deletedBy ? userTransformer(task.deletedBy) : undefined
@@ -45,6 +52,7 @@ export const calendarTaskTransformer = (task: Prisma.TaskGetPayload<CalendarTask
   return {
     taskId: task.taskId,
     wbsNum,
+    wbsName: task.wbsElement.name,
     title: task.title,
     notes: task.notes,
     deadline: task.deadline ?? undefined,
@@ -53,6 +61,7 @@ export const calendarTaskTransformer = (task: Prisma.TaskGetPayload<CalendarTask
     status: convertTaskStatus(task.status),
     createdBy: userTransformer(task.createdBy),
     assignees: task.assignees.map(userTransformer),
+    labels: task.labels.map(taskLabelTransformer),
     dateDeleted: task.dateDeleted ?? undefined,
     dateCreated: task.dateCreated,
     deletedBy: task.deletedBy ? userTransformer(task.deletedBy) : undefined,
@@ -60,5 +69,11 @@ export const calendarTaskTransformer = (task: Prisma.TaskGetPayload<CalendarTask
     projectManagerId: task.wbsElement.managerId ?? undefined
   };
 };
+
+export const taskLabelTransformer = (label: Prisma.Task_LabelGetPayload<TaskLabelQueryArgs>): TaskLabel => ({
+  taskLabelId: label.taskLabelId,
+  name: label.name,
+  colorHexCode: label.colorHexCode
+});
 
 export default taskTransformer;

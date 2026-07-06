@@ -1,5 +1,5 @@
 import { Project, User } from 'shared';
-import { Box, FormControl, FormLabel, Grid, MenuItem, Select, Typography } from '@mui/material';
+import { Box, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
@@ -7,10 +7,8 @@ import { ProjectFormInput } from './ProjectForm';
 import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { AttachMoney } from '@mui/icons-material';
 import TeamDropdown from '../../../components/TeamsDropdown';
-import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
-import { useGetAllCars } from '../../../hooks/cars.hooks';
+import { useGlobalCarFilter } from '../../../app/AppGlobalCarFilterContext';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
 
 interface ProjectEditDetailsProps {
   users: User[];
@@ -21,8 +19,6 @@ interface ProjectEditDetailsProps {
   leadId?: string;
   setManagerId: (id?: string) => void;
   setLeadId: (id?: string) => void;
-  setcrId?: (crId?: number) => void;
-  setCarNumber: (carNumber: number) => void;
 }
 
 const userToAutocompleteOption = (user?: User): { label: string; id: string } => {
@@ -38,18 +34,15 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
   managerId,
   leadId,
   setLeadId,
-  setManagerId,
-  setCarNumber
+  setManagerId
 }) => {
-  const { data: cars, isLoading, isError, error } = useGetAllCars();
+  const { selectedCar, allCars, isLoading: carFilterIsLoading } = useGlobalCarFilter();
 
-  if (isLoading || !cars) {
+  if (carFilterIsLoading) {
     return <LoadingIndicator />;
   }
 
-  if (isError) {
-    return <ErrorPage message={error.message} />;
-  }
+  const sortedCars = [...allCars].sort((a, b) => b.wbsNum.carNumber - a.wbsNum.carNumber);
 
   return (
     <Box>
@@ -57,7 +50,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
         Project Details
       </Typography>
       <Grid container spacing={3}>
-        <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
+        <Grid item lg={project ? 6 : 3} md={6} xs={12}>
           <FormControl fullWidth>
             <FormLabel>Project Name</FormLabel>
             <ReactHookTextField
@@ -68,45 +61,35 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        {!project && (
-          <>
-            <Grid item lg={2.4} md={6} xs={12} sx={{ display: 'flex' }}>
-              <FormControl fullWidth>
-                <FormLabel>Car</FormLabel>
-                <Controller
-                  name="carNumber"
-                  control={control}
-                  defaultValue={cars.length - 1}
-                  render={({ field: { onChange, value } }) => (
-                    <Select
-                      error={!!errors.carNumber}
-                      value={value}
-                      onChange={(e) => {
-                        setCarNumber(e.target.value as number);
-                        onChange(e);
-                      }}
-                    >
-                      {
-                        // reverse to show most recent cars first
-                        cars.toReversed().map((car) => (
-                          <MenuItem key={car.wbsElementId} value={car.wbsNum.carNumber}>
-                            {car.name}
-                          </MenuItem>
-                        ))
-                      }
-                    </Select>
-                  )}
-                ></Controller>
-              </FormControl>
-            </Grid>
-            <Grid item lg={2.4} md={6} xs={12}>
-              <FormControl fullWidth>
-                <TeamDropdown control={control} name="teamIds" multiselect />
-              </FormControl>
-            </Grid>
-          </>
+        {!project && selectedCar === 'all-cars' && (
+          <Grid item lg={3} md={6} xs={12}>
+            <FormControl fullWidth>
+              <FormLabel>Car</FormLabel>
+              <Controller
+                name="carNumber"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <TextField select onChange={onChange} value={value ?? ''} fullWidth size="small">
+                    {sortedCars.map((car) => (
+                      <MenuItem key={car.id} value={car.wbsNum.carNumber}>
+                        {car.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+              <FormHelperText error>{errors.carNumber?.message}</FormHelperText>
+            </FormControl>
+          </Grid>
         )}
-        <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
+        {!project && (
+          <Grid item lg={3} md={6} xs={12}>
+            <FormControl fullWidth>
+              <TeamDropdown control={control} name="teamIds" multiselect />
+            </FormControl>
+          </Grid>
+        )}
+        <Grid item lg={project ? 6 : 3} md={6} xs={12}>
           <FormControl fullWidth>
             <FormLabel>{!project ? 'Budget (optional)' : 'Budget'}</FormLabel>
             <ReactHookTextField
@@ -119,33 +102,30 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
-          <FormControl fullWidth>
-            <ChangeRequestDropdown control={control} name="crId" />
-          </FormControl>
-        </Grid>
       </Grid>
       <Grid container spacing={2}>
         <Grid item lg={6} md={12} xs={12} mt={{ xs: 3, md: 3, lg: 2 }}>
           <FormLabel>{!project ? 'Project Lead (optional)' : 'Project Lead'}</FormLabel>
           <NERAutocomplete
-            id="users-autocomplete"
+            id="lead-autocomplete"
             onChange={(_event, value) => setLeadId(value?.id)}
             options={users.map(userToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Lead"
             value={userToAutocompleteOption(users.find((user) => user.userId.toString() === leadId))}
+            required={false}
           />
         </Grid>
         <Grid item lg={6} md={12} xs={12} mt={{ xs: 0, md: 0, lg: 2 }}>
           <FormLabel>{!project ? 'Project Manager (optional)' : 'Project Manager'}</FormLabel>
           <NERAutocomplete
-            id="users-autocomplete"
+            id="manager-autocomplete"
             onChange={(_event, value) => setManagerId(value?.id)}
             options={users.map(userToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Manager"
             value={userToAutocompleteOption(users.find((user) => user.userId.toString() === managerId))}
+            required={false}
           />
         </Grid>
         <Grid item lg={12} md={12} xs={12}>
@@ -154,7 +134,6 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             <ReactHookTextField
               name="summary"
               control={control}
-              type="number"
               placeholder="Enter a summary..."
               multiline={true}
               rows={5}

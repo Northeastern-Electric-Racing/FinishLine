@@ -12,10 +12,10 @@ import {
   RequestEventChange
 } from '../../../utils/gantt.utils';
 import { Box } from '@mui/material';
-import { useState } from 'react';
+import { MutableRefObject, useCallback, useRef, useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
-import { ArcherContainer } from 'react-archer';
+import { ArcherContainer, ArcherContainerRef } from 'react-archer';
 
 interface GanttChartSectionProps<T> {
   start: Date;
@@ -24,12 +24,38 @@ interface GanttChartSectionProps<T> {
   isEditMode: boolean;
   createChange: (change: GanttChange<T>) => void;
   highlightedChange?: RequestEventChange<T>;
-  onShowChildrenToggle: (task: GanttTask<T>) => void;
-  shouldShowChildren: (task: GanttTask<T>) => boolean;
   onAddTaskPressed: (parentTask: GanttTask<T>) => void;
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
 }
+
+interface GanttTooltipLayerProps {
+  updateRef: MutableRefObject<(options: OnMouseOverOptions | undefined, y?: number) => void>;
+}
+
+const GanttTooltipLayer: React.FC<GanttTooltipLayerProps> = ({ updateRef }) => {
+  const [tooltipOptions, setTooltipOptions] = useState<OnMouseOverOptions | undefined>(undefined);
+  const [cursorY, setCursorY] = useState(0);
+
+  updateRef.current = (options, y = 0) => {
+    setTooltipOptions(options);
+    if (options && y !== undefined && y !== null) setCursorY(y);
+  };
+
+  if (!tooltipOptions) return null;
+
+  return (
+    <GanttToolTip
+      yCoordinate={cursorY}
+      title={tooltipOptions.name}
+      startDate={tooltipOptions.start}
+      endDate={tooltipOptions.end}
+      color={tooltipOptions.styles?.backgroundColor}
+      upperRightDisplay={tooltipOptions.tooltip?.upperRightDisplay}
+      lowerRightDisplay={tooltipOptions.tooltip?.lowerRightDisplay}
+    />
+  );
+};
 
 const GanttChartSection = <T,>({
   start,
@@ -38,31 +64,35 @@ const GanttChartSection = <T,>({
   isEditMode,
   createChange,
   highlightedChange,
-  onShowChildrenToggle,
   onAddTaskPressed,
-  shouldShowChildren,
   highlightSubtaskComparator,
   highlightTaskComparator
 }: GanttChartSectionProps<T>) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
-  const [currentTooltipOptions, setCurrentTooltipOptions] = useState<OnMouseOverOptions | undefined>(undefined);
-  const [cursorY, setCursorY] = useState<number>(0);
 
-  const handleOnMouseOver = (e: React.MouseEvent, task: OnMouseOverOptions) => {
-    if (!isEditMode) {
-      setCurrentTooltipOptions(task);
-      setCursorY(e.clientY);
-    }
-  };
+  const archerRef = useRef<ArcherContainerRef>(null);
+  const handleToggle = useCallback(() => archerRef.current?.refreshScreen(), []);
 
-  const handleCreateProjectChange = (change: GanttChange<T>) => {
-    createChange(change);
-    setCurrentTooltipOptions(undefined);
-  };
+  const updateTooltip = useRef<(options: OnMouseOverOptions | undefined, y?: number) => void>(() => {});
 
-  const handleOnMouseLeave = () => {
-    setCurrentTooltipOptions(undefined);
-  };
+  const handleOnMouseOver = useCallback(
+    (e: React.MouseEvent, task: OnMouseOverOptions) => {
+      if (!isEditMode) updateTooltip.current(task, e.clientY);
+    },
+    [isEditMode]
+  );
+
+  const handleOnMouseLeave = useCallback(() => {
+    updateTooltip.current(undefined);
+  }, []);
+
+  const handleCreateProjectChange = useCallback(
+    (change: GanttChange<T>) => {
+      createChange(change);
+      updateTooltip.current(undefined);
+    },
+    [createChange]
+  );
 
   return (
     <ArcherContainer strokeColor="#ef4545">
@@ -78,28 +108,17 @@ const GanttChartSection = <T,>({
                   createChange={handleCreateProjectChange}
                   handleOnMouseOver={handleOnMouseOver}
                   handleOnMouseLeave={handleOnMouseLeave}
-                  onShowChildrenToggle={() => onShowChildrenToggle(task)}
                   onAddTaskPressed={onAddTaskPressed}
-                  showChildren={shouldShowChildren(task)}
                   highlightedChange={highlightedChange}
                   highlightSubtaskComparator={highlightSubtaskComparator}
                   highlightTaskComparator={highlightTaskComparator}
+                  onToggle={handleToggle}
                 />
               </Box>
             );
           })}
         </Box>
-        {currentTooltipOptions && (
-          <GanttToolTip
-            yCoordinate={cursorY}
-            title={currentTooltipOptions.name}
-            startDate={currentTooltipOptions.start}
-            endDate={currentTooltipOptions.end}
-            color={currentTooltipOptions.styles?.backgroundColor}
-            upperRightDisplay={currentTooltipOptions.tooltip?.upperRightDisplay}
-            lowerRightDisplay={currentTooltipOptions.tooltip?.lowerRightDisplay}
-          />
-        )}
+        <GanttTooltipLayer updateRef={updateTooltip} />
       </Box>
     </ArcherContainer>
   );

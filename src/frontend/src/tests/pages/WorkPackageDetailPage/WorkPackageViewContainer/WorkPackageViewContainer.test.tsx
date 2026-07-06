@@ -19,7 +19,6 @@ const renderComponent = (
   allowEdit = true,
   allowActivate = true,
   allowStageGate = true,
-  allowRequestChange = true,
   allowDelete = true
 ) => {
   const RouterWrapper = routerWrapperBuilder({});
@@ -33,7 +32,6 @@ const renderComponent = (
             allowEdit={allowEdit}
             allowActivate={allowActivate}
             allowStageGate={allowStageGate}
-            allowRequestChange={allowRequestChange}
             allowDelete={allowDelete}
           />
         </AppContextUser>

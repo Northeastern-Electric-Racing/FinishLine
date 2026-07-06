@@ -40,8 +40,7 @@ describe('Material Tests', () => {
         manufacturer.name,
         'lalsd',
         new Decimal(5),
-        10,
-        50
+        10
       );
 
       expect(material.name).toEqual('100k Resistor');
@@ -52,6 +51,7 @@ describe('Material Tests', () => {
       expect(material.manufacturerName).toEqual('Digikey');
       expect(material.manufacturerPartNumber).toEqual('lalsd');
       expect(material.quantity?.toString()).toEqual('5');
+      expect(material.isCopied).toBe(false);
     });
   });
 
@@ -98,7 +98,6 @@ describe('Material Tests', () => {
         'CAP-100UF',
         new Decimal(10),
         50,
-        500,
         'Test notes'
       );
 
@@ -113,8 +112,7 @@ describe('Material Tests', () => {
         manufacturer.name,
         'CAP-220UF',
         new Decimal(5),
-        75,
-        375
+        75
       );
 
       const newMaterialIds = await BillOfMaterials.copyMaterialsToProject(
@@ -148,6 +146,9 @@ describe('Material Tests', () => {
       expect(copiedMat1.notes).toBe('Test notes');
 
       expect(copiedMat2.status).toBe('NOT_READY_TO_ORDER');
+
+      expect(copiedMat1.isCopied).toBe(true);
+      expect(copiedMat2.isCopied).toBe(true);
     });
 
     test('Fails when material does not exist', async () => {
@@ -181,8 +182,7 @@ describe('Material Tests', () => {
         manufacturer.name,
         'lalsd',
         new Decimal(5),
-        10,
-        50
+        10
       );
 
       const newMaterial = await BillOfMaterials.editMaterial(
@@ -196,8 +196,7 @@ describe('Material Tests', () => {
         manufacturer.name,
         'lalsd',
         new Decimal(5),
-        10,
-        50
+        10
       );
 
       expect(newMaterial.name).toEqual('100k Resistor Updated');

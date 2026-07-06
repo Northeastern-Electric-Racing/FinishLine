@@ -15,7 +15,9 @@ import {
   Machinery,
   ScheduleSlot,
   notGuest,
-  isSameDay
+  isSameDayUTC,
+  EventInstance,
+  SlackMentionType
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
@@ -269,8 +271,10 @@ export default class CalendarService {
     questionDocumentLink?: string,
     location?: string,
     zoomLink?: string,
-    description?: string
+    description?: string,
+    mention?: SlackMentionType
   ): Promise<Event> {
+    if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
     // Validate eventTypeId
     const foundEventType = await prisma.event_Type.findUnique({
       where: { eventTypeId }
@@ -310,17 +314,16 @@ export default class CalendarService {
     });
 
     // Validate required memberIds
-    if (requiredMemberIds.length > 0) {
-      const foundMembers = await prisma.user.findMany({
-        where: {
-          userId: { in: requiredMemberIds },
-          organizations: { some: { organizationId: organization.organizationId } }
-        }
-      });
-      if (foundMembers.length !== requiredMemberIds.length) {
-        const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
-        throw new NotFoundException('User', missingIds.join(', '));
+
+    const foundMembers = await prisma.user.findMany({
+      where: {
+        userId: { in: requiredMemberIds || submitter.userId },
+        organizations: { some: { organizationId: organization.organizationId } }
       }
+    });
+    if (foundMembers.length !== requiredMemberIds.length) {
+      const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
+      throw new NotFoundException('User', missingIds.join(', '));
     }
 
     // Validate optionals memberIds
@@ -421,6 +424,11 @@ export default class CalendarService {
     // Check for conflicts using expanded slots
     const { hasConflict, conflictingEvent } = await checkEventConflicts(scheduleSlots, organization, location, undefined);
 
+    const allRequiredMembers = [
+      ...requiredMemberIds,
+      ...(requiredMemberIds.includes(submitter.userId) ? [] : [submitter.userId])
+    ];
+
     const newEvent = await prisma.event.create({
       data: {
         userCreatedId: submitter.userId,
@@ -428,7 +436,7 @@ export default class CalendarService {
         title,
         eventTypeId,
         requiredMembers: {
-          connect: requiredMemberIds.map((userId) => ({ userId }))
+          connect: allRequiredMembers.map((userId) => ({ userId }))
         },
         optionalMembers: {
           connect: optionalMemberIds.map((userId) => ({ userId }))
@@ -470,7 +478,7 @@ export default class CalendarService {
     let calendarEventIds: string[] = [];
     if (process.env.NODE_ENV === 'production') {
       try {
-        const allMemberIds = [...requiredMemberIds, ...optionalMemberIds];
+        const allMemberIds = [...allRequiredMembers, ...optionalMemberIds];
         const isInPerson = !!location;
 
         calendarEventIds = await createCalendarEvent(
@@ -495,7 +503,7 @@ export default class CalendarService {
 
     if (foundEventType.sendSlackNotifications) {
       const members = await prisma.user.findMany({
-        where: { userId: { in: optionalMemberIds.concat(requiredMemberIds) } }
+        where: { userId: { in: optionalMemberIds.concat(allRequiredMembers) } }
       });
 
       // get the user settings for all the members invited, who are leaderingship
@@ -524,23 +532,24 @@ export default class CalendarService {
       // Send popup notification
       await sendEventPopUp(newEvent, members, submitter, workPackageNames, organization.organizationId);
 
-      const teamsToNotify = new Set<Team>();
+      const teamsToNotify = new Map<string, Team>();
       for (const project of projects) {
         for (const team of project.teams) {
-          teamsToNotify.add(team);
+          teamsToNotify.set(team.teamId, team);
         }
       }
 
       for (const team of newEvent.teams) {
-        teamsToNotify.add(team);
+        teamsToNotify.set(team.teamId, team);
       }
 
       await sendSlackEventNotifications(
-        Array.from(teamsToNotify),
+        Array.from(teamsToNotify.values()),
         createdEvent,
         submitter,
         workPackageNames,
-        organization.name
+        organization.name,
+        { memberSlackIds: memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id), mention }
       );
     }
 
@@ -592,6 +601,7 @@ export default class CalendarService {
     zoomLink?: string,
     description?: string
   ): Promise<Event> {
+    if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
     // validate eventId
     const foundEvent = await prisma.event.findUnique({
       where: { eventId },
@@ -632,17 +642,15 @@ export default class CalendarService {
     }
 
     // Validate required memberIds
-    if (requiredMemberIds.length > 0) {
-      const foundMembers = await prisma.user.findMany({
-        where: {
-          userId: { in: requiredMemberIds },
-          organizations: { some: { organizationId: organization.organizationId } }
-        }
-      });
-      if (foundMembers.length !== requiredMemberIds.length) {
-        const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
-        throw new NotFoundException('User', missingIds.join(', '));
+    const foundMembers = await prisma.user.findMany({
+      where: {
+        userId: { in: requiredMemberIds || submitter.userId },
+        organizations: { some: { organizationId: organization.organizationId } }
       }
+    });
+    if (foundMembers.length !== requiredMemberIds.length) {
+      const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
+      throw new NotFoundException('User', missingIds.join(', '));
     }
 
     // Validate optional memberIds
@@ -740,8 +748,13 @@ export default class CalendarService {
       }
     }
 
+    const allRequiredMembers = [
+      ...requiredMemberIds,
+      ...(requiredMemberIds.includes(submitter.userId) ? [] : [submitter.userId])
+    ];
+
     // throw if a user isn't found, then build prisma queries for connecting userIds
-    const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMemberIds));
+    const updatedRequiredMembers = [...getPrismaQueryUserIds(await getUsers(allRequiredMembers))];
     const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
 
     // Update the event with new data (excluding schedule slots)
@@ -784,13 +797,12 @@ export default class CalendarService {
     const edittedEvent = eventTransformer(updatedEvent);
 
     if (status === Event_Status.SCHEDULED && foundEventType.sendSlackNotifications) {
-      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent);
+      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent, true);
     }
 
     if (status === Event_Status.CONFIRMED && foundEventType.sendSlackNotifications) {
       await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
     }
-
     return edittedEvent;
   }
 
@@ -926,7 +938,11 @@ export default class CalendarService {
         userCreatedId: true,
         location: true,
         dateDeleted: true,
-        approved: true
+        approved: true,
+        status: true,
+        title: true,
+        workPackages: true,
+        scheduledTimes: true
       }
     });
 
@@ -1407,10 +1423,48 @@ export default class CalendarService {
 
     if (!event) throw new NotFoundException('Event', eventId);
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
-
-    // Cannot schedule an already scheduled event
     if (event.status === Event_Status.SCHEDULED) {
-      throw new HttpException(400, 'Event is already scheduled');
+      const timeSlots = await prisma.schedule_Slot.findMany({
+        where: { eventId: event.eventId }
+      });
+
+      // Restore the old scheduled time from confirmed members' availabilities
+      // so they get their time back from the old scheduled event
+      for (const slot of timeSlots) {
+        if (!slot.startTime || !slot.endTime) continue;
+        const startHour = new Date(slot.startTime).getHours();
+        const endHour = new Date(slot.endTime).getHours();
+
+        for (const member of event.confirmedMembers) {
+          if (!member.drScheduleSettings) continue;
+          const existingAvailability = member.drScheduleSettings.availabilities.find((a) =>
+            isSameDayUTC(a.dateSet, slot.startTime)
+          );
+          if (!existingAvailability) continue;
+          // Availability index i represents local hour (10 + i); remove indices that fall within [startHour, endHour)
+          const returnedAvailability = Array.from({ length: endHour - startHour }, (_, i) => startHour + i - 10).filter(
+            (i) => i >= 0
+          );
+
+          const updatedAvailability = [...new Set([...existingAvailability.availability, ...returnedAvailability])].sort(
+            (a, b) => a - b
+          );
+
+          await prisma.availability.update({
+            where: { availabilityId: existingAvailability.availabilityId },
+            data: { availability: updatedAvailability }
+          });
+        }
+      }
+
+      await prisma.event.update({
+        where: { eventId: event.eventId },
+        data: { status: Event_Status.SCHEDULED }
+      });
+
+      await prisma.schedule_Slot.deleteMany({
+        where: { eventId: event.eventId }
+      });
     }
 
     // Only the event creator can schedule the event
@@ -1447,9 +1501,12 @@ export default class CalendarService {
             allDay: false
           }
         },
+
+        initialDateScheduled: event.initialDateScheduled ?? null,
         approved: hasConflict ? Conflict_Status.PENDING : event.approved,
         approvalRequiredFromUserId: hasConflict ? conflictingEvent?.userCreated.userId : event.approvalRequiredFromUserId
       },
+
       ...getEventQueryArgs(organization.organizationId)
     });
 
@@ -1459,7 +1516,7 @@ export default class CalendarService {
     const endHour = endTime.getHours();
     for (const member of event.confirmedMembers) {
       if (!member.drScheduleSettings) continue;
-      const existingAvailability = member.drScheduleSettings.availabilities.find((a) => isSameDay(a.dateSet, startTime));
+      const existingAvailability = member.drScheduleSettings.availabilities.find((a) => isSameDayUTC(a.dateSet, startTime));
       if (!existingAvailability) continue;
       // Availability index i represents local hour (10 + i); remove indices that fall within [startHour, endHour)
       const updatedAvailability = existingAvailability.availability.filter(
@@ -1470,17 +1527,20 @@ export default class CalendarService {
         data: { availability: updatedAvailability }
       });
     }
-
     const { eventTypeId } = updatedEvent;
     const foundEventType = await prisma.event_Type.findUnique({
       where: { eventTypeId }
     });
-
+    const edittedEvent = eventTransformer(updatedEvent);
     if (foundEventType?.sendSlackNotifications) {
-      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, eventTransformer(updatedEvent));
+      await sendEventScheduledSlackNotif(
+        updatedEvent.notificationSlackThreads,
+        eventTransformer(updatedEvent),
+        event.status === Event_Status.SCHEDULED
+      );
     }
 
-    return eventTransformer(updatedEvent);
+    return edittedEvent;
   }
 
   /**
@@ -2748,5 +2808,133 @@ export default class CalendarService {
       ...getEventTypeQueryArgs(organization.organizationId)
     });
     return eventTypes.map(eventTypeTransformer);
+  }
+
+  /**
+   * Gets the 25 events on each side of a reference point (defaults to now).
+   * futureCursor paginates forward; pastCursor paginates backward.
+   * @param organization the org the user is currently in
+   * @param futureCursor the startTime of the last future event from the previous page
+   * @param pastCursor the startTime of the last past event from the previous page
+   */
+  static async getAllEventsPaginated(
+    organization: Organization,
+    futureCursor?: Date,
+    pastCursor?: Date
+  ): Promise<{
+    futureInstances: EventInstance[];
+    pastInstances: EventInstance[];
+    nextFutureCursor: Date | null;
+    nextPastCursor: Date | null;
+  }> {
+    const now = new Date();
+
+    const eventFilter = {
+      dateDeleted: null,
+      status: Event_Status.SCHEDULED,
+      eventType: {
+        organizationId: organization.organizationId
+      }
+    };
+
+    const [futureSlots, pastSlots] = await Promise.all([
+      prisma.schedule_Slot.findMany({
+        where: { startTime: { gte: futureCursor ?? now }, event: eventFilter },
+        include: { event: getEventQueryArgs(organization.organizationId) },
+        orderBy: { startTime: 'asc' },
+        take: 25
+      }),
+      prisma.schedule_Slot.findMany({
+        where: { startTime: { lt: pastCursor ?? now }, event: eventFilter },
+        include: { event: getEventQueryArgs(organization.organizationId) },
+        orderBy: { startTime: 'desc' },
+        take: 25
+      })
+    ]);
+
+    const toInstance = (slot: (typeof futureSlots)[0]): EventInstance => {
+      const { scheduledTimes, ...eventWithoutSlots } = eventTransformer(slot.event);
+      return {
+        ...eventWithoutSlots,
+        scheduleSlotId: slot.scheduleSlotId,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        allDay: slot.allDay,
+        recurring: slot.event.scheduledTimes.length > 1,
+        totalScheduledSlots: slot.event.scheduledTimes.length
+      };
+    };
+
+    return {
+      futureInstances: futureSlots.map(toInstance),
+      pastInstances: pastSlots.map(toInstance),
+      nextFutureCursor: futureSlots.length === 25 ? futureSlots[futureSlots.length - 1].startTime : null,
+      nextPastCursor: pastSlots.length === 25 ? pastSlots[pastSlots.length - 1].startTime : null
+    };
+  }
+
+  static async getOrCreateIcsToken(userId: string): Promise<string> {
+    const user = await prisma.user.findUnique({ where: { userId } });
+    if (!user) throw new NotFoundException('User', userId);
+    if (user.icsToken) return user.icsToken;
+
+    const token = crypto.randomUUID();
+    await prisma.user.update({ where: { userId }, data: { icsToken: token } });
+    return token;
+  }
+
+  static async getIcsFeedEvents(icsToken: string, organizationId: string, calendarIds: string[], eventIds: string[] = []) {
+    const user = await prisma.user.findUnique({
+      where: { icsToken },
+      include: {
+        teamsAsMember: { select: { teamId: true } },
+        teamsAsLead: { select: { teamId: true } },
+        teamsAsHead: { select: { teamId: true } }
+      }
+    });
+
+    if (!user) throw new NotFoundException('User', 'icsToken');
+
+    // specific events case
+    if (eventIds.length > 0) {
+      const events = await prisma.event.findMany({
+        where: {
+          dateDeleted: null,
+          eventId: { in: eventIds },
+          eventType: { calendars: { some: { organizationId } } }
+        },
+        ...getEventQueryArgs(organizationId)
+      });
+      return events.map(eventTransformer);
+    }
+
+    const userTeamIds = [
+      ...user.teamsAsMember.map((t) => t.teamId),
+      ...user.teamsAsLead.map((t) => t.teamId),
+      ...user.teamsAsHead.map((t) => t.teamId)
+    ];
+
+    const calendarFilter =
+      calendarIds.length > 0
+        ? [{ eventType: { calendars: { some: { calendarId: { in: calendarIds }, organizationId } } } }]
+        : [{ eventType: { calendars: { some: { organizationId } } } }];
+
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        status: { in: [Event_Status.CONFIRMED, Event_Status.SCHEDULED, Event_Status.DONE] },
+        scheduledTimes: { some: {} },
+        OR: [
+          { requiredMembers: { some: { userId: user.userId } } },
+          { optionalMembers: { some: { userId: user.userId } } },
+          ...(userTeamIds.length > 0 ? [{ teams: { some: { teamId: { in: userTeamIds } } } }] : []),
+          ...calendarFilter,
+          ...[]
+        ]
+      },
+      ...getEventQueryArgs(organizationId)
+    });
+
+    return events.map(eventTransformer);
   }
 }
