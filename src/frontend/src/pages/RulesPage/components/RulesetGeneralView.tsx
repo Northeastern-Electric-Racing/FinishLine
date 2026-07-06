@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Paper, Table, TableBody, TableContainer } from '@mui/material';
+import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
 import { Rule } from 'shared';
 import RuleRow from '../RuleRow';
 import RuleStatusTag from './RuleStatusTag';
@@ -16,11 +16,17 @@ interface RulesetGeneralViewProps {
  * general view for displaying all top-level rules as dropdowns
  */
 const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rulesetId }) => {
+  const theme = useTheme();
   const toast = useToast();
   const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
   const [selectedRule, setSelectedRule] = useState<Rule | null>(null);
 
-  // Completion here is ruleset-wide (no project context), so no projectId is passed
+  const backgroundColor = theme.palette.background.default;
+  const tableBackgroundColor = theme.palette.background.paper;
+  const tableTextColor = theme.palette.text.primary;
+  const tableHoverColor = theme.palette.action.hover;
+
+  // Completion in general view is for the whole ruleset, so no projectId is passed in
   const { mutateAsync: setCompletion } = useSetRuleCompletion(rulesetId, '');
 
   const topLevelRules = allRules.filter((rule) => !rule.parentRule);
@@ -43,8 +49,8 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
 
   return (
     <Box>
-      <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-        <Table sx={{ borderCollapse: 'collapse' }}>
+      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor }}>
+        <Table sx={{ borderCollapse: 'separate', borderSpacing: '0 8px', backgroundColor }}>
           <TableBody>
             {topLevelRules.map((rule) => (
               <RuleRow
@@ -62,11 +68,12 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
                     }}
                   />
                 )}
-                backgroundColor="#9d9d9d"
-                textColor="#000000"
-                hoverColor="#5e5e5e"
-                rowHeight="10px"
-                verticalPadding="5px"
+                backgroundColor={tableBackgroundColor}
+                textColor={tableTextColor}
+                hoverColor={tableHoverColor}
+                rowHeight="40px"
+                verticalPadding="8px"
+                indentRow
               />
             ))}
           </TableBody>
