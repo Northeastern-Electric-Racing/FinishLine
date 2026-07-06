@@ -584,7 +584,8 @@ export default class TasksService {
       where: { taskLabelId },
       data: {
         dateDeleted: new Date(),
-        userDeleted: { connect: { userId: user.userId } }
+        userDeleted: { connect: { userId: user.userId } },
+        tasks: { set: [] }
       }
     });
 
