@@ -118,7 +118,7 @@ const RulesetViewPage = () => {
           {tabIndex === 0 ? (
             <RulesetTeamView allRules={allRules} teamRules={teamRules} unassignedToTeam={unassignedToTeam} />
           ) : (
-            <RulesetGeneralView allRules={allRules} />
+            <RulesetGeneralView allRules={allRules} rulesetId={rulesetId!} />
           )}
         </Box>
       </PageLayout>

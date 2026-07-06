@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Paper, Table, TableBody, TableContainer } from '@mui/material';
+import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
 import { Rule } from 'shared';
 import RuleRow from '../RuleRow';
 
@@ -27,6 +27,13 @@ interface RulesetTeamViewProps {
  * Teams and projects are rendered as RuleRows for consistent formatting
  */
 const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules, teamRules, unassignedToTeam }) => {
+  const theme = useTheme();
+
+  const backgroundColor = theme.palette.background.default;
+  const tableBackgroundColor = theme.palette.background.paper;
+  const tableTextColor = theme.palette.text.primary;
+  const tableHoverColor = theme.palette.action.hover;
+
   // Convert teams to mock rules for rendering with RuleRow
   const teamRulesAsRules: Rule[] = teamRules.map((team) => ({
     ruleId: `team-${team.teamId}`,
@@ -105,20 +112,21 @@ const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules, teamRules, 
 
   return (
     <Box>
-      <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-        <Table sx={{ borderCollapse: 'collapse' }}>
-          <TableBody sx={{ backgroundColor: '#9d9d9d' }}>
+      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor }}>
+        <Table sx={{ borderCollapse: 'separate', borderSpacing: '0 8px', backgroundColor }}>
+          <TableBody>
             {topLevelItems.map((item) => (
               <RuleRow
                 key={item.ruleId}
                 rule={item}
                 allRules={allRulesIncludingMock}
                 rightContent={() => null}
-                backgroundColor="#9d9d9d"
-                textColor="#000000"
-                hoverColor="#5e5e5e"
-                rowHeight="10px"
-                verticalPadding="5px"
+                backgroundColor={tableBackgroundColor}
+                textColor={tableTextColor}
+                hoverColor={tableHoverColor}
+                rowHeight="40px"
+                verticalPadding="8px"
+                indentRow
                 initiallyExpanded={item.ruleId.startsWith('team-')}
               />
             ))}
