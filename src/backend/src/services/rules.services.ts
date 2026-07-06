@@ -376,9 +376,10 @@ export default class RulesService {
 
     if (project.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
 
-    // Checks if this rule was already assigned to this project
-    const existingProjectRule = await prisma.project_Rule.findUnique({
-      where: { ruleId_projectId: { ruleId, projectId } }
+    // Checks if this rule is already actively assigned to this project.
+    // A soft-deleted project rule from previous unassignment would be revived instead of creating a new one
+    const existingProjectRule = await prisma.project_Rule.findFirst({
+      where: { ruleId, projectId, dateDeleted: null }
     });
 
     if (existingProjectRule) {
@@ -412,25 +413,25 @@ export default class RulesService {
     const existingAncestorIds = new Set(existingAncestors.map((projectRule) => projectRule.ruleId));
     const ancestorsToCreate = ancestorIds.filter((id) => !existingAncestorIds.has(id));
 
-    // create all project rules
-    await prisma.$transaction([
-      ...ancestorsToCreate.map((ancestorId) =>
-        prisma.project_Rule.create({
-          data: {
-            ruleId: ancestorId,
-            projectId,
-            createdByUserId: submitter.userId
-          }
-        })
-      ),
-      prisma.project_Rule.create({
-        data: {
-          ruleId,
+    // create (or revive) all project rules. (ruleId, projectId) is unique so
+    // soft deleted rules from previous team unassignment would be revived instead of colliding on insert
+    const reviveOrCreate = (targetRuleId: string) =>
+      // upsert - updates existing record, or inserts if it doesn't exist
+      prisma.project_Rule.upsert({
+        where: { ruleId_projectId: { ruleId: targetRuleId, projectId } },
+        create: {
+          ruleId: targetRuleId,
           projectId,
           createdByUserId: submitter.userId
+        },
+        update: {
+          dateDeleted: null,
+          deletedByUserId: null,
+          createdByUserId: submitter.userId
         }
-      })
-    ]);
+      });
+
+    await prisma.$transaction([...ancestorsToCreate.map(reviveOrCreate), reviveOrCreate(ruleId)]);
 
     // return only original project rule being assigned (leaf rule)
     const projectRule = await prisma.project_Rule.findUnique({
@@ -811,32 +812,34 @@ export default class RulesService {
         }
       });
     } else {
-      await prisma.rule.update({
-        where: { ruleId: rule.ruleId },
-        data: {
-          teams: {
-            disconnect: {
-              teamId
+      // Disconnect the team and soft delete its project rules, ensure we never leave
+      // the rule unassigned from the team while its project rules stay active
+      await prisma.$transaction(async (tx) => {
+        await tx.rule.update({
+          where: { ruleId: rule.ruleId },
+          data: {
+            teams: {
+              disconnect: {
+                teamId
+              }
             }
           }
-        }
-      });
-
-      // Unassigning a rule from a team also soft deletes its project rules for
-      // that team's projects, since a rule can only be in a project whose team it is on
-      await prisma.project_Rule.updateMany({
-        where: {
-          ruleId: rule.ruleId,
-          dateDeleted: null,
-          project: { teams: { some: { teamId } } }
-        },
-        data: {
-          dateDeleted: new Date(),
-          deletedByUserId: user.userId
-        }
+        });
+        // Unassigning a rule also soft deletes its project rules for that team's projects,
+        // since a rule can only be in a project whose team it is assigned to
+        await tx.project_Rule.updateMany({
+          where: {
+            ruleId: rule.ruleId,
+            dateDeleted: null,
+            project: { teams: { some: { teamId } } }
+          },
+          data: {
+            dateDeleted: new Date(),
+            deletedByUserId: user.userId
+          }
+        });
       });
     }
-
     // retrieve and return the updated rule
     const newRule = await prisma.rule.findUnique({
       where: { ruleId },
