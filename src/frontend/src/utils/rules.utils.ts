@@ -46,9 +46,6 @@ export const getDescendantLeafRules = (rule: Rule, allRules: Rule[]): Rule[] => 
  */
 export const isRuleComplete = (rule: Rule, allRules: Rule[]): boolean => {
   const leafRules = getDescendantLeafRules(rule, allRules);
-  if (leafRules.length === 0) {
-    return false;
-  }
   return leafRules.every((leafRule) => leafRule.isComplete);
 };
 
