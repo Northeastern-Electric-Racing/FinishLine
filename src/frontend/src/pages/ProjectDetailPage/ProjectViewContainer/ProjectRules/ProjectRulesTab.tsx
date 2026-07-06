@@ -34,20 +34,14 @@ import {
   useCreateProjectRule
 } from '../../../../hooks/rules.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { InfoOutlined, KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
+import { InfoOutlined } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../../utils/routes';
+import RuleStatusTag from '../../../RulesPage/components/RuleStatusTag';
 
 interface ProjectRulesTabProps {
   project: Project;
 }
-
-/**
- * Get the status chip configuration
- */
-const getStatusConfig = (isComplete: boolean) => {
-  return isComplete ? { label: 'Complete', color: '#4caf50' } : { label: 'Incomplete', color: '#f44336' };
-};
 
 export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const toast = useToast();
@@ -99,27 +93,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const topLevelRules = useMemo(() => {
     return allRules.filter((rule) => !rule.parentRule);
   }, [allRules]);
-
-  // Helper function to get all descendant leaf rules for a given rule
-  const getDescendantLeafRules = (rule: Rule): Rule[] => {
-    const children = allRules.filter((r) => r.parentRule?.ruleId === rule.ruleId);
-    if (children.length === 0) {
-      // This is a leaf rule
-      return [rule];
-    }
-    // Recursively get leaf rules from all children
-    return children.flatMap((child) => getDescendantLeafRules(child));
-  };
-
-  // Helper function to calculate aggregated completion from leaf rules.
-  // A parent is complete only if all of its descendant leaf rules are complete.
-  const getAggregatedStatus = (rule: Rule): boolean => {
-    const leafRules = getDescendantLeafRules(rule);
-    if (leafRules.length === 0) {
-      return false;
-    }
-    return leafRules.every((leafRule) => leafRule.isComplete);
-  };
 
   // Handle completion update
   const handleStatusUpdate = async (ruleId: string, isComplete: boolean) => {
@@ -193,77 +166,19 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   // Check if we have no active ruleset
   const hasNoActiveRuleset = !activeRulesetLoading && !activeRuleset;
 
-  // Right content for rule rows - status badge
+  // Right content for rule rows - status badge. Leaf rules are clickable to open
+  // the completion popover; parents show an aggregated, read-only status.
   const renderRightContent = (rule: Rule) => {
-    const hasChildren = allRules.some((r) => r.parentRule?.ruleId === rule.ruleId);
-    const isLeafRule = !hasChildren;
-
-    // Completion - for leaf rules use their own, for parents aggregate from children
-    const isComplete = isLeafRule ? rule.isComplete : getAggregatedStatus(rule);
-    const statusConfig = getStatusConfig(isComplete);
-
-    const completedByName = rule.completedBy && `${rule.completedBy.firstName} ${rule.completedBy.lastName}`;
-    const completionMessage = completedByName
-      ? `Completed by ${completedByName}${rule.completedInProject ? ` in ${rule.completedInProject.projectName}` : ''}`
-      : '';
-
-    // Whether the status popover is currently open for this rule
+    const isLeafRule = !allRules.some((r) => r.parentRule?.ruleId === rule.ruleId);
     const isPopoverOpenForRule = Boolean(statusPopoverAnchor) && selectedProjectRule?.rule.ruleId === rule.ruleId;
 
     return (
-      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-        {isLeafRule && isComplete && completionMessage && (
-          <Tooltip title={completionMessage} arrow>
-            <IconButton
-              size="small"
-              onClick={(e) => e.stopPropagation()}
-              sx={{
-                padding: '2px',
-                color: 'text.secondary'
-              }}
-            >
-              <InfoOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        )}
-        <Box
-          onClick={
-            isLeafRule
-              ? (e: React.MouseEvent<HTMLElement>) => {
-                  e.stopPropagation();
-                  handleStatusClick(e, rule);
-                }
-              : undefined
-          }
-          sx={{
-            backgroundColor: statusConfig.color,
-            color: 'white',
-            fontSize: '11px',
-            fontWeight: 600,
-            pl: isLeafRule ? 0.25 : 0.75,
-            pr: 0.75,
-            py: 0.25,
-            borderRadius: '3px',
-            cursor: isLeafRule ? 'pointer' : 'default',
-            display: 'inline-flex',
-            alignItems: 'center',
-            whiteSpace: 'nowrap',
-            '&:hover': isLeafRule
-              ? {
-                  opacity: 0.85
-                }
-              : {}
-          }}
-        >
-          {isLeafRule &&
-            (isPopoverOpenForRule ? (
-              <KeyboardArrowDown sx={{ fontSize: '16px', mr: 0.25 }} />
-            ) : (
-              <KeyboardArrowRight sx={{ fontSize: '16px', mr: 0.25 }} />
-            ))}
-          {statusConfig.label}
-        </Box>
-      </Box>
+      <RuleStatusTag
+        rule={rule}
+        allRules={allRules}
+        popoverOpen={isPopoverOpenForRule}
+        onClick={isLeafRule ? (e) => handleStatusClick(e, rule) : undefined}
+      />
     );
   };
 
@@ -432,7 +347,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         <UpdateStatusPopover
           anchorEl={statusPopoverAnchor}
           onClose={handleStatusPopoverClose}
-          projectRule={selectedProjectRule}
+          rule={selectedProjectRule.rule}
           onStatusChange={handleStatusUpdate}
         />
       )}
