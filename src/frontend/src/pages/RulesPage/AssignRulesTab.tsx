@@ -24,6 +24,8 @@ import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
 import { NERButton } from '../../components/NERButton';
+import NERModal from '../../components/NERModal';
+import WarningIcon from '@mui/icons-material/Warning';
 import RuleRow from './RuleRow';
 import { useBulkToggleRuleTeam } from '../../hooks/rules.hooks';
 
@@ -102,6 +104,12 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
   const [assignments, setAssignments] = useState<Set<string>>(new Set());
   const [originalAssignments, setOriginalAssignments] = useState<Set<string>>(new Set());
   const [isInitialized, setIsInitialized] = useState(false);
+  // unassign impact for the amount of project rules that would be deleted by this action, used to warn the user before saving
+  const [pendingToggles, setPendingToggles] = useState<Array<{ ruleId: string; teamId: string }> | null>(null);
+  const [unassignImpact, setUnassignImpact] = useState<{ ruleCount: number; projectCount: number }>({
+    ruleCount: 0,
+    projectCount: 0
+  });
 
   const { data: teams, isLoading: teamsLoading, isError: teamsError, error: teamsErrorData } = useAllTeams();
   const { mutate: bulkToggle, isLoading: isSaving } = useBulkToggleRuleTeam();
@@ -198,6 +206,34 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     setAssignments(newAssignments);
   };
 
+  // Counts the amount of rules and projects that would lose their project rule
+  // assignments when the given team-unassignments are saved
+  const getUnassignImpact = (removedKeys: string[]): { ruleCount: number; projectCount: number } => {
+    const affectedRuleIds = new Set<string>();
+    const affectedProjectIds = new Set<string>();
+
+    removedKeys.forEach((key) => {
+      const [teamId, ruleId] = key.split(':');
+      const rule = rules.find((r) => r.ruleId === ruleId);
+      rule?.projects?.forEach((project) => {
+        if (project.teamIds.includes(teamId)) {
+          affectedRuleIds.add(ruleId);
+          affectedProjectIds.add(project.projectId);
+        }
+      });
+    });
+
+    return { ruleCount: affectedRuleIds.size, projectCount: affectedProjectIds.size };
+  };
+
+  const executeToggles = (toggles: Array<{ ruleId: string; teamId: string }>) => {
+    bulkToggle(toggles, {
+      onSuccess: () => {
+        history.push(routes.RULESET_EDIT.replace(':rulesetId', rulesetId));
+      }
+    });
+  };
+
   const handleSaveAndExit = () => {
     const toAdd = [...assignments].filter((key) => !originalAssignments.has(key));
     const toRemove = [...originalAssignments].filter((key) => !assignments.has(key));
@@ -208,24 +244,27 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     }
 
     // Build array of toggles to execute
-    const toggles: Array<{ ruleId: string; teamId: string }> = [];
-
-    toAdd.forEach((key) => {
+    const toggles = [...toAdd, ...toRemove].map((key) => {
       const [teamId, ruleId] = key.split(':');
-      toggles.push({ ruleId, teamId });
+      return { ruleId, teamId };
     });
 
-    toRemove.forEach((key) => {
-      const [teamId, ruleId] = key.split(':');
-      toggles.push({ ruleId, teamId });
-    });
+    // Warn before saving if unassignments would remove existing project assignments
+    const impact = getUnassignImpact(toRemove);
+    if (impact.ruleCount > 0) {
+      setUnassignImpact(impact);
+      setPendingToggles(toggles);
+      return;
+    }
 
-    // Execute bulk toggle and navigate on success
-    bulkToggle(toggles, {
-      onSuccess: () => {
-        history.push(routes.RULESET_EDIT.replace(':rulesetId', rulesetId));
-      }
-    });
+    executeToggles(toggles);
+  };
+
+  const handleConfirmSave = () => {
+    if (pendingToggles) {
+      executeToggles(pendingToggles);
+    }
+    setPendingToggles(null);
   };
 
   if (teamsError) {
@@ -341,6 +380,23 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
           </NERButton>
         </Box>
       </Box>
+
+      <NERModal
+        open={pendingToggles !== null}
+        onHide={() => setPendingToggles(null)}
+        title="Confirm Unassignment"
+        cancelText="Cancel"
+        submitText="Save"
+        onSubmit={handleConfirmSave}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningIcon sx={{ color: '#ef4345', fontSize: 30 }} />
+          <Typography sx={{ fontSize: '1rem' }}>
+            This will remove {unassignImpact.ruleCount} rule{unassignImpact.ruleCount === 1 ? '' : 's'} from{' '}
+            {unassignImpact.projectCount} project{unassignImpact.projectCount === 1 ? '' : 's'}.
+          </Typography>
+        </Box>
+      </NERModal>
     </Box>
   );
 };

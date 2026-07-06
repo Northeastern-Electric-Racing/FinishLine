@@ -821,6 +821,20 @@ export default class RulesService {
           }
         }
       });
+
+      // Unassigning a rule from a team also soft deletes its project rules for
+      // that team's projects, since a rule can only be in a project whose team it is on
+      await prisma.project_Rule.updateMany({
+        where: {
+          ruleId: rule.ruleId,
+          dateDeleted: null,
+          project: { teams: { some: { teamId } } }
+        },
+        data: {
+          dateDeleted: new Date(),
+          deletedByUserId: user.userId
+        }
+      });
     }
 
     // retrieve and return the updated rule

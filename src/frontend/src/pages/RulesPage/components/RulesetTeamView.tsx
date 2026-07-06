@@ -21,27 +21,27 @@ interface RulesetTeamViewProps {
 }
 
 /**
- * Groups ruleset's rules by team and project for team view.
- *   team → project → rules assigned to that project, or unassigned to any project
- *   "unassigned to team" → rules on no team at all
- * Note that rules can be on more than one team and in more than one project.
+ * Groups ruleset's rules by team and project for team view. First groups by team
+ * assigned to, then by projects assign to within that team, or unassigned to any
+ * project. Finally groups by rules not assigned to any team.
+ * Note that rules can be on more than one team and in more than one project for that team.
  */
 const getTeamOrganization = (allRules: Rule[]): { teamRules: TeamRules[]; unassignedToTeam: Rule[] } => {
   const teamMap = new Map<string, TeamRules>();
-  // per team, projects keyed by projectId so rules sharing a project merge into one bucket
   const teamProjectMaps = new Map<string, Map<string, TeamProject>>();
   const unassignedToTeam: Rule[] = [];
 
+  // iterate through all rules and organize by team and project
   allRules.forEach((rule) => {
-    // A rule with no team belongs to the top-level "unassigned to team" bucket.
+    // rule with no team belongs to the top-level "unassigned to team" bucket.
     if (!rule.teams || rule.teams.length === 0) {
       unassignedToTeam.push(rule);
       return;
     }
 
-    // otherwise place the rule under each team it belongs to.
+    // otherwise place the rule under each team it belongs to
     rule.teams.forEach((team) => {
-      // create the team's buckets the first time we see it.
+      // create the team's buckets the first time we see it
       if (!teamMap.has(team.teamId)) {
         teamMap.set(team.teamId, {
           teamId: team.teamId,
@@ -85,29 +85,24 @@ const getTeamOrganization = (allRules: Rule[]): { teamRules: TeamRules[]; unassi
 };
 
 /**
- * Turns one bucket's rules into rows that RuleRow can render.
- *
- * Returns the prepared rows plus the ids of the bucket's roots (rules whose
- * parent isn't in the bucket) and those become the section header row's children
+ * Prepares one bucket's rules for the shared RuleRow tree.
+ * Ids are prefixed with their bucket since the same rule can live in multiple teams or projects
  */
 const scopeRulesToBucket = (bucketId: string, rules: Rule[]): { rows: Rule[]; rootIds: string[] } => {
   const idsInBucket = new Set(rules.map((rule) => rule.ruleId));
-  const scopedId = (ruleId: string) => `${bucketId}::${ruleId}`;
+  const bucketPrefixId = (ruleId: string) => `${bucketId}::${ruleId}`;
 
+  // add bucket prefix id to each rule, filtering out subRuleIds that are not in this bucket
   const rows: Rule[] = rules.map((rule) => ({
     ...rule,
-    // Bucket-prefixed id so copies of the same rule in different buckets don't collide
-    ruleId: scopedId(rule.ruleId),
-    // only keeps parent link if parent is in this bucket
-    parentRule:
-      rule.parentRule && idsInBucket.has(rule.parentRule.ruleId)
-        ? { ruleId: scopedId(rule.parentRule.ruleId), ruleCode: rule.parentRule.ruleCode }
-        : undefined,
-    // only keep child links if children are in this bucket
-    subRuleIds: rule.subRuleIds.filter((id) => idsInBucket.has(id)).map(scopedId)
+    ruleId: bucketPrefixId(rule.ruleId),
+    subRuleIds: rule.subRuleIds.filter((id) => idsInBucket.has(id)).map(bucketPrefixId)
   }));
-  // rules with no in-bucket parent
-  const rootIds = rows.filter((row) => !row.parentRule).map((row) => row.ruleId);
+
+  // find top level rules in this bucket where parentRule is either not set or not in this bucket
+  const rootIds = rules
+    .filter((rule) => !rule.parentRule || !idsInBucket.has(rule.parentRule.ruleId))
+    .map((rule) => bucketPrefixId(rule.ruleId));
 
   return { rows, rootIds };
 };
