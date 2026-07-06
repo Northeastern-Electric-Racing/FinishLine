@@ -1254,9 +1254,10 @@ export default class RulesService {
           }
         },
         // a rule can belong to many projects within a team
-        // only hide it from a project that already has it assigned
+        // only hide it from a project that already has it actively assigned
+        // (ignore soft-deleted assignments so a removed rule can be re-added)
         projects: {
-          none: { projectId }
+          none: { projectId, dateDeleted: null }
         },
         deletedByUserId: null
       },
