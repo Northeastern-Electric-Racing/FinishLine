@@ -32,7 +32,7 @@ const renderComponent = (modalShow: boolean, route: string) => {
             workPackageNumber: 0
           },
           dateSubmitted: new Date(),
-          type: 'ISSUE',
+          type: 'BUDGET',
           wbsName: 'a',
           status: ChangeRequestStatus.Open,
           requestedReviewers: []

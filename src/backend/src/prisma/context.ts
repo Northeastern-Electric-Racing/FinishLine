@@ -1,5 +1,6 @@
 import {
   Account_Code,
+  Car,
   Description_Bullet_Type,
   Index_Code,
   Link_Type,
@@ -7,11 +8,14 @@ import {
   Material_Type,
   Organization,
   Prisma,
+  Project,
   Reimbursement_Product_Other_Reason,
   Role,
   Team_Type,
+  Team,
   Unit,
-  Vendor
+  Vendor,
+  WBS_Element
 } from '@prisma/client';
 import { RoleEnum } from 'shared';
 import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
@@ -73,4 +77,13 @@ export type CarContext = {
 export type CarOutput = {
   cars: CarContext[];
   currentYearCar: CarContext;
+};
+
+export type ProjectContext = {
+  project: Project & {
+    wbsElement: WBS_Element;
+    teams: Team[];
+    car: Car;
+  };
+  timeline: DateRange;
 };

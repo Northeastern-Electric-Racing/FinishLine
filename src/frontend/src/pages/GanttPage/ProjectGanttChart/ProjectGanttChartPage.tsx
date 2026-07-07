@@ -32,6 +32,7 @@ import GanttChart from '../GanttChart/GanttChart';
 import {
   ProjectGantt,
   Task,
+  TaskLabel,
   TaskPriority,
   TaskStatus,
   TeamPreview,
@@ -191,6 +192,11 @@ const ProjectGanttChartPage: FC = () => {
     };
   };
 
+  // Checked = show tasks, so hideTasks is the inverse of the checkbox state
+  const showTasksHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    handleSetGanttFilters({ ...filters, hideTasks: !event.target.checked });
+  };
+
   const teamTypeHandlers: {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -323,6 +329,7 @@ const ProjectGanttChartPage: FC = () => {
       priority: TaskPriority;
       status: TaskStatus;
       assignees: string[];
+      labels: TaskLabel[];
       notes: string;
       startDate: Date | null;
       deadline: Date | null;
@@ -354,6 +361,7 @@ const ProjectGanttChartPage: FC = () => {
         role: user.role
       },
       assignees: [],
+      labels: taskInfo.labels,
       deadline,
       startDate,
       priority: taskInfo.priority,
@@ -628,6 +636,8 @@ const ProjectGanttChartPage: FC = () => {
         carHandlers={carHandlers}
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
+        showTasks={!(filters.hideTasks ?? false)}
+        showTasksHandler={showTasksHandler}
         resetHandler={resetHandler}
       />
     </Box>

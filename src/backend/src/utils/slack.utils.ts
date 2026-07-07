@@ -42,6 +42,14 @@ interface SlackMessageThread {
 
 const DEV_TESTING_OVERRIDE = process.env.SEND_SLACK_MESSAGES_IN_DEV === 'true';
 
+export function tryParseJson<T>(value: string): { ok: true; data: T } | { ok: false; error: string } {
+  try {
+    return { ok: true, data: JSON.parse(value) as T };
+  } catch (e: unknown) {
+    return { ok: false, error: (e as Error).message };
+  }
+}
+
 // build the "due" string for the upcoming deadlines slack message
 export const buildDueString = (daysUntilDeadline: number): string => {
   if (daysUntilDeadline < 0) return `was due *${daysUntilDeadline * -1} days ago!*`;
@@ -574,6 +582,111 @@ export const sendSlackCRStatusToThread = async (
     );
     await Promise.all([...msgs, ...reactions]);
   }
+};
+
+/**
+ * Sends Slack notifications for a newly created standard (manual) CR:
+ * 1. Initial message to each project team channel
+ * 2. Thread reply with the why text and field diff
+ * 3. Thread reply tagging the project head(s) and requested reviewer(s)
+ * Also stores Message_Info records linking threads to the CR.
+ */
+export const sendStandardCRCreatedNotification = async (
+  cr: Change_Request,
+  wbsElementName: string,
+  projectWbsName: string,
+  submitter: User,
+  teams: Team[],
+  why: string,
+  requestedReviewerId: string | undefined,
+  diffText: string
+): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return;
+
+  const reviewerSlackId = requestedReviewerId ? await getUserSlackId(requestedReviewerId) : undefined;
+
+  const message =
+    wbsElementName !== projectWbsName
+      ? `${submitter.firstName} ${submitter.lastName} submitted a change request for ${wbsElementName} in ${projectWbsName}`
+      : `${submitter.firstName} ${submitter.lastName} submitted a change request for ${projectWbsName}`;
+  const notifications: { channelId: string; ts: string }[] = [];
+
+  await Promise.all(
+    teams.map(async (team) => {
+      const sent = await sendSlackChangeRequestNotification(team, message, cr.crId, cr.identifier);
+      notifications.push(...sent);
+    })
+  );
+
+  if (notifications.length === 0) return;
+
+  // add message_Info records for the sent notifications so we can link the CR to the slack threads for future replies
+  await addSlackThreadsToChangeRequest(cr.crId, notifications);
+
+  // Thread reply: why + diff
+  const whyAndDiff = diffText
+    ? `*Change Justification:*\n${why}\n\n*Proposed Changes:*\n${diffText}`
+    : `*Change Justification:*\n${why}`;
+  await Promise.all(notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, whyAndDiff)));
+
+  // Thread reply: tag project head(s) + requested reviewer
+  const headSlackIds = (await Promise.all(teams.filter((t) => t.headId).map((t) => getUserSlackId(t.headId!)))).filter(
+    (id): id is string => !!id
+  );
+
+  // Also include admins
+  const admins = await prisma.user.findMany({
+    where: {
+      roles: {
+        some: {
+          roleType: { in: ['ADMIN', 'APP_ADMIN'] },
+          organizationId: cr.organizationId
+        }
+      }
+    },
+    include: { userSettings: true }
+  });
+  const adminSlackIds = admins.map((a) => a.userSettings?.slackId).filter((id): id is string => !!id);
+
+  const allSlackIds = new Set([...headSlackIds, ...adminSlackIds, ...(reviewerSlackId ? [reviewerSlackId] : [])]);
+
+  if (reviewerSlackId) {
+    const reviewMsg = `<@${reviewerSlackId}> Your review has been requested on CR #${cr.identifier}!`;
+    const crLink = `https://finishlinebyner.com/cr/${cr.crId}`;
+    await Promise.all(
+      notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, reviewMsg, crLink, `View CR #${cr.identifier}`))
+    );
+  }
+
+  // Send the approve button as an ephemeral message to each head and requested reviewer,
+  // so only authorized approvers see it. reviewChangeRequest still enforces auth on click.
+  const approveBlocks = [
+    {
+      type: 'section',
+      text: { type: 'mrkdwn', text: `Approve CR #${cr.identifier}?` }
+    },
+    {
+      type: 'actions',
+      elements: [
+        {
+          type: 'button',
+          text: { type: 'plain_text', text: 'Approve Change Request' },
+          style: 'primary',
+          action_id: 'approve_cr',
+          value: JSON.stringify({ crId: cr.crId, organizationId: cr.organizationId })
+        }
+      ]
+    }
+  ];
+
+  await Promise.all(
+    notifications.flatMap(async (n) => {
+      const membersInChannel = new Set(await getUsersInChannel(n.channelId));
+      return [...allSlackIds]
+        .filter((slackId) => membersInChannel.has(slackId))
+        .map((slackId) => sendEphemeralMessage(n.channelId, n.ts, slackId, `Approve CR #${cr.identifier}?`, approveBlocks));
+    })
+  );
 };
 
 /**

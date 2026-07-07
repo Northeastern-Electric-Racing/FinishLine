@@ -93,6 +93,8 @@ interface GanttChartFiltersProps {
     defaultChecked: boolean;
   }[];
   teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
+  showTasks?: boolean;
+  showTasksHandler?: (event: ChangeEvent<HTMLInputElement>) => void;
   resetHandler: () => void;
   onClose: () => void;
 }
@@ -101,6 +103,8 @@ const GanttChartFilters = ({
   carHandlers,
   teamTypeHandlers,
   teamHandlers,
+  showTasks,
+  showTasksHandler,
   resetHandler,
   onClose
 }: GanttChartFiltersProps) => {
@@ -175,6 +179,23 @@ const GanttChartFilters = ({
       <FilterAccordion label="Team" expanded={expanded.team} onChange={() => toggle('team')}>
         <FilterCheckboxes key={`team-${resetKey}`} handlers={teamHandlers} />
       </FilterAccordion>
+
+      {showTasksHandler && (
+        <FormControlLabel
+          key={`show-tasks-${resetKey}`}
+          slotProps={{ typography: { fontSize: '14px' } }}
+          sx={{ ml: 0, mt: 1 }}
+          control={
+            <Checkbox
+              size="small"
+              onChange={showTasksHandler}
+              defaultChecked={showTasks ?? true}
+              sx={{ padding: '2px 7px' }}
+            />
+          }
+          label="Show Tasks"
+        />
+      )}
     </Box>
   );
 };

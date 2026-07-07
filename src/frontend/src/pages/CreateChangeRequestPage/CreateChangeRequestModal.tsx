@@ -24,8 +24,6 @@ const CreateChangeRequestModal: React.FC<CreateChangeRequestModalProps> = ({
         wbsNum={wbsNum}
         setWbsNum={() => {}}
         onSubmit={onConfirm}
-        proposedSolutions={[]}
-        setProposedSolutions={() => {}}
         modalView
         handleCancel={onHide}
         changeRequestFormReturn={changeRequestFormReturn}

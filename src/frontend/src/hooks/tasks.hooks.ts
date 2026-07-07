@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { CalendarTask, FilterTaskArgs, WbsNumber, TaskPriority, TaskStatus, Task, TaskCardPreview } from 'shared';
+import { CalendarTask, FilterTaskArgs, WbsNumber, TaskPriority, TaskStatus, Task, TaskCardPreview, TaskLabel } from 'shared';
 import {
   createSingleTask,
   deleteSingleTask,
@@ -13,9 +13,11 @@ import {
   editTaskAssignees,
   getOverdueTasksByTeamLeader,
   getFilterTasks,
-  getTasksByWbsNum
+  getAllTaskLabels,
+  createTaskLabel,
+  editTaskLabel,
+  deleteTaskLabel
 } from '../apis/tasks.api';
-import { wbsPipe } from '../utils/pipes';
 
 export interface CreateTaskPayload {
   wbsNum: WbsNumber;
@@ -26,6 +28,7 @@ export interface CreateTaskPayload {
   status: TaskStatus;
   notes?: string;
   assignees: string[];
+  labelIds: string[];
 }
 
 /**
@@ -58,6 +61,7 @@ export const useCreateTask = () => {
         createTaskPayload.status,
         createTaskPayload.assignees,
         createTaskPayload.notes ?? '',
+        createTaskPayload.labelIds,
         createTaskPayload.deadline,
         createTaskPayload.startDate
       );
@@ -68,6 +72,7 @@ export const useCreateTask = () => {
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['filter-tasks']);
         queryClient.invalidateQueries(['tasks']);
+        queryClient.invalidateQueries(['task-labels']);
       }
     }
   );
@@ -81,6 +86,7 @@ export interface TaskPayload {
   deadline?: Date;
   priority: TaskPriority;
   wbsNum?: WbsNumber;
+  labelIds: string[];
 }
 
 /**
@@ -97,6 +103,7 @@ export const useEditTask = () => {
         taskPayload.title,
         taskPayload.notes ?? '',
         taskPayload.priority,
+        taskPayload.labelIds,
         taskPayload.deadline,
         taskPayload.startDate,
         taskPayload.wbsNum
@@ -109,6 +116,7 @@ export const useEditTask = () => {
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['tasks']);
         queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['task-labels']);
       }
     }
   );
@@ -186,15 +194,72 @@ export const useOverdueTasksByTeamLeader = (userId: string) => {
 };
 
 /**
- * Custom React Hook to get all tasks for a given wbs element
- * For projects, returns project tasks merged with all project's wp's tasks
- * For work packages, returns just that wp's tasks
- * @param wbsNum the wbs number to fetch tasks for
- * @returns the tasks query
+ * Custom React Hook to get all task labels for a given organization
+ * @returns the task labels query
  */
-export const useTasksByWbsNum = (wbsNum: WbsNumber) => {
-  return useQuery<Task[], Error>(['tasks', wbsPipe(wbsNum)], async () => {
-    const { data } = await getTasksByWbsNum(wbsNum);
+export const useAllTaskLabels = () => {
+  return useQuery<TaskLabel[], Error>(['task-labels'], async () => {
+    const { data } = await getAllTaskLabels();
     return data;
   });
+};
+
+/**
+ * Custom React Hook to create a task label
+ * @returns the create task label mutation
+ */
+export const useCreateTaskLabel = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TaskLabel, Error, { name: string; colorHexCode: string }>(
+    ['task-labels', 'create'],
+    async ({ name, colorHexCode }) => {
+      const { data } = await createTaskLabel(name, colorHexCode);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['task-labels']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit a task label
+ * @returns the edit task label mutation
+ */
+export const useEditTaskLabel = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TaskLabel, Error, { taskLabelId: string; name: string; colorHexCode: string }>(
+    ['task-labels', 'edit'],
+    async ({ taskLabelId, name, colorHexCode }) => {
+      const { data } = await editTaskLabel(taskLabelId, name, colorHexCode);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['task-labels']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a task label
+ * @returns the delete task label id
+ */
+export const useDeleteTaskLabel = () => {
+  const queryClient = useQueryClient();
+  return useMutation<string, Error, { taskLabelId: string }>(
+    ['task-labels', 'delete'],
+    async ({ taskLabelId }) => {
+      const { data } = await deleteTaskLabel(taskLabelId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['task-labels']);
+      }
+    }
+  );
 };
