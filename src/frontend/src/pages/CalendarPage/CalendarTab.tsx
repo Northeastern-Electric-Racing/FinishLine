@@ -17,6 +17,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { Add } from '@mui/icons-material';
 import { eventsToEventInstances, getSundayOfWeek } from '../../utils/calendar.utils';
+import { useToast } from '../../hooks/toasts.hooks';
 
 const CalendarTab: React.FC = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -32,19 +33,30 @@ const CalendarTab: React.FC = () => {
   const user = useCurrentUser();
   const history = useHistory();
   const location = useLocation();
+  const toast = useToast();
   const canViewReviews = isHead(user.role) || isLead(user.role);
 
   const selectedEventId = new URLSearchParams(location.search).get('eventId') ?? undefined;
-  const { data: selectedEvent } = useSingleEvent(selectedEventId);
+  const {
+    data: selectedEvent,
+    isLoading: selectedEventIsLoading,
+    isError: selectedEventIsError,
+    error: selectedEventError
+  } = useSingleEvent(selectedEventId);
 
   useEffect(() => {
-    if (!selectedEvent) return;
+    if (selectedEventIsError) {
+      toast.error(selectedEventError?.message ?? 'Failed to load the linked event');
+      return;
+    }
+    if (selectedEventIsLoading || !selectedEvent) return;
     const eventDate = selectedEvent.initialDateScheduled ?? selectedEvent.scheduledTimes[0]?.startTime;
     if (!eventDate) return;
     const date = new Date(eventDate);
     setDisplayMonthYear(new Date(date.getFullYear(), date.getMonth(), 1));
     setDisplayWeek(getSundayOfWeek(date));
-  }, [selectedEvent]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEvent, selectedEventIsLoading, selectedEventIsError, selectedEventError]);
 
   const handleViewModeToggle = (_: React.MouseEvent, newMode: 'month' | 'week' | null) => {
     if (!newMode || newMode === viewMode) return;
@@ -104,6 +116,14 @@ const CalendarTab: React.FC = () => {
   const yourEvents = untransformedYourEvents?.map(filterEventTransformer);
   const reviewEvents = untransformedReviewEvents?.map(filterEventTransformer);
 
+  if (yourEventsIsError) return <ErrorPage error={yourEventsError} message={yourEventsError?.message} />;
+
+  if (reviewEventsIsError) return <ErrorPage error={reviewEventsError} message={reviewEventsError?.message} />;
+
+  if (allEventTypesIsError) return <ErrorPage error={allEventTypesError} message={allEventTypesError?.message} />;
+
+  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
+
   if (
     !yourEvents ||
     yourEventsLoading ||
@@ -115,13 +135,6 @@ const CalendarTab: React.FC = () => {
     allCalendarsLoading
   )
     return <LoadingIndicator />;
-  if (yourEventsIsError) return <ErrorPage error={yourEventsError} message={yourEventsError?.message} />;
-
-  if (reviewEventsIsError) return <ErrorPage error={reviewEventsError} message={reviewEventsError?.message} />;
-
-  if (allEventTypesIsError) return <ErrorPage error={allEventTypesError} message={allEventTypesError?.message} />;
-
-  if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
 
   if (canViewReviews) tabs.push({ tabUrlValue: 'reviews', tabName: 'Review Bookings' });
 
