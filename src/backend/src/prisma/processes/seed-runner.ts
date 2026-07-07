@@ -33,7 +33,6 @@ export class SeedRunner {
     };
 
     const totalStart = Date.now();
-    let failures = 0;
 
     console.log();
     console.log(`  🌱 Starting seed — ${total} processes\n`);
@@ -71,7 +70,6 @@ export class SeedRunner {
         console.log();
         console.log(`  ❌ Seed failed on ${instance.constructor.name.trim()} failure(s) in ${totalElapsed}`);
         console.log();
-        failures++;
         throw e;
       }
     }
