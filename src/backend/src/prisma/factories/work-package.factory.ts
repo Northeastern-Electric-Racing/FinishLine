@@ -4,6 +4,8 @@ import { DateRange } from '../context.js';
 import { clampDate, DAYS_PER_WEEK, daysBetween } from '../dates.js';
 import { addDaysToDate } from 'shared';
 
+const WORK_PACKAGE_NULL_STAGE_CHANCE = 0.15;
+
 export const generateWorkPackageCount = (faker: Faker): number =>
   // Each project gets 0–8 work packages. Average work package count is around 5.
   faker.helpers.weightedArrayElement([
@@ -18,8 +20,10 @@ export const generateWorkPackageCount = (faker: Faker): number =>
     { weight: 5, value: 8 }
   ]);
 
-export const generateWorkPackageStage = (faker: Faker): Work_Package_Stage =>
-  faker.helpers.arrayElement(Object.values(Work_Package_Stage));
+export const generateWorkPackageStage = (faker: Faker): Work_Package_Stage | null => {
+  if (faker.datatype.boolean({ probability: WORK_PACKAGE_NULL_STAGE_CHANCE })) return null;
+  return faker.helpers.arrayElement(Object.values(Work_Package_Stage).sort());
+};
 
 export const generateWorkPackageTimeline = (faker: Faker, projectTimeline: DateRange, blockerEndDate?: Date): DateRange => {
   const start =
@@ -50,7 +54,7 @@ export const workPackageCreateInput = (
   name: string,
   startDate: Date,
   duration: number,
-  stage: Work_Package_Stage,
+  stage: Work_Package_Stage | null,
   leadId?: string,
   managerId?: string,
   blockedByWbsElementIds: string[] = []

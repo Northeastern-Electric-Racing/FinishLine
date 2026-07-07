@@ -67,6 +67,10 @@ export class SeedRunner {
       } catch (e) {
         const elapsed = `${((Date.now() - start) / 1000).toFixed(2)}s`;
         spinner.fail(`${index} ${name}   ${elapsed}`);
+        const totalElapsed = `${((Date.now() - totalStart) / 1000).toFixed(2)}s`;
+        console.log();
+        console.log(`  ❌ Seed failed on ${instance.constructor.name.trim()} failure(s) in ${totalElapsed}`);
+        console.log();
         failures++;
         throw e;
       }
@@ -74,11 +78,7 @@ export class SeedRunner {
 
     const totalElapsed = `${((Date.now() - totalStart) / 1000).toFixed(2)}s`;
     console.log();
-    if (failures === 0) {
-      console.log(`  ✅ Seed complete — ${total} processes finished in ${totalElapsed}`);
-    } else {
-      console.log(`  ❌ Seed finished with ${failures} failure(s) in ${totalElapsed}`);
-    }
+    console.log(`  ✅ Seed complete — ${total} processes finished in ${totalElapsed}`);
     console.log();
 
     return context;
