@@ -230,6 +230,9 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     bulkToggle(toggles, {
       onSuccess: () => {
         history.push(routes.RULESET_EDIT.replace(':rulesetId', rulesetId));
+      },
+      onSettled: () => {
+        setPendingToggles(null);
       }
     });
   };
@@ -264,7 +267,6 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     if (pendingToggles) {
       executeToggles(pendingToggles);
     }
-    setPendingToggles(null);
   };
 
   if (teamsError) {
@@ -388,6 +390,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
         cancelText="Cancel"
         submitText="Save"
         onSubmit={handleConfirmSave}
+        disabled={isSaving}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <WarningIcon sx={{ color: '#ef4345', fontSize: 30 }} />
