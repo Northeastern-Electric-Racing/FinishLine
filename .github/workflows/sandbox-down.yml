@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [closed]
     branches:
-      - sandbox
+      - multitenancy
 
 # Share the concurrency group with sandbox-up so they can't run simultaneously.
 concurrency:
