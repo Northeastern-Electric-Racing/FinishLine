@@ -17,7 +17,8 @@ const EditCalendarModal: React.FC<EditCalendarModalProps> = ({ open, onClose, ca
   const initialValues: CalendarFormValues = {
     name: calendar.name,
     description: calendar.description ?? '',
-    colorHexCode: calendar.color ?? ''
+    colorHexCode: calendar.color ?? '',
+    isNewMemberCalendar: calendar.isNewMemberCalendar
   };
 
   const onSubmit = async (data: CalendarFormValues) => {
@@ -25,7 +26,8 @@ const EditCalendarModal: React.FC<EditCalendarModalProps> = ({ open, onClose, ca
       const result = await editCalendar({
         name: data.name,
         description: data.description,
-        colorHexCode: data.colorHexCode
+        colorHexCode: data.colorHexCode,
+        isNewMemberCalendar: data.isNewMemberCalendar
       });
       toast.success('Calendar updated successfully');
       return result;

@@ -1177,19 +1177,20 @@ model Event {
 }
 
 model Calendar {
-  calendarId     String       @id @default(uuid())
-  name           String
-  dateCreated    DateTime     @default(now())
-  dateDeleted    DateTime?
-  userCreatedId  String
-  userCreated    User         @relation(name: "calendarCreator", fields: [userCreatedId], references: [userId])
-  userDeletedId  String?
-  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "calendarDeleter")
-  description    String
-  colorHexCode   String
-  eventTypes     Event_Type[]
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  calendarId          String       @id @default(uuid())
+  name                String
+  dateCreated         DateTime     @default(now())
+  dateDeleted         DateTime?
+  userCreatedId       String
+  userCreated         User         @relation(name: "calendarCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId       String?
+  userDeleted         User?        @relation(fields: [userDeletedId], references: [userId], name: "calendarDeleter")
+  description         String
+  colorHexCode        String
+  eventTypes          Event_Type[]
+  organizationId      String
+  organization        Organization @relation(fields: [organizationId], references: [organizationId])
+  isNewMemberCalendar Boolean      @default(false)
 }
 
 model Event_Type {

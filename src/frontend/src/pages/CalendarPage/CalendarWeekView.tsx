@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import { Box, Card, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -131,6 +131,7 @@ interface CalendarWeekViewProps {
   onNavigateWeek: (offset: -1 | 1) => void;
   onCreateEventClick: (date: Date, startTime?: Date, endTime?: Date) => void;
   tasks?: CalendarTask[];
+  selectedEventId?: string;
 }
 
 // ─── Drag state ───────────────────────────────────────────────────────────────
@@ -151,7 +152,8 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   displayWeek,
   onNavigateWeek,
   onCreateEventClick,
-  tasks = []
+  tasks = [],
+  selectedEventId
 }) => {
   const theme = useTheme();
   const user = useCurrentUser();
@@ -160,6 +162,15 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
 
   const [lockedTooltipEventId, setLockedTooltipEventId] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventInstance | null>(null);
+
+  // Open this event's tooltip if it's been deep-linked to via ?eventId=
+  useEffect(() => {
+    if (!selectedEventId) return;
+    const matchingInstance = eventInstances.find((event) => event.eventId === selectedEventId);
+    if (matchingInstance) {
+      setLockedTooltipEventId(matchingInstance.eventId + matchingInstance.scheduleSlotId);
+    }
+  }, [selectedEventId, eventInstances]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);

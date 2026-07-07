@@ -1,6 +1,9 @@
 -- CreateEnum
 CREATE TYPE "Team_Join_Request_Status" AS ENUM ('PENDING', 'APPROVED', 'DENIED');
 
+-- AlterTable
+ALTER TABLE "Calendar" ADD COLUMN     "isNewMemberCalendar" BOOLEAN NOT NULL DEFAULT false;
+
 -- AlterTable: FrequentlyAskedQuestion - add new columns (nullable first for data migration)
 ALTER TABLE "FrequentlyAskedQuestion"
 ADD COLUMN "isOnNewMemberDashboard" BOOLEAN NOT NULL DEFAULT false,

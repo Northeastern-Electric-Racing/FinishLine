@@ -100,6 +100,7 @@ export interface Calendar {
   userCreated: User;
   dateCreated: Date;
   eventTypes: EventType[];
+  isNewMemberCalendar: boolean;
 }
 
 export interface ScheduleSlot {

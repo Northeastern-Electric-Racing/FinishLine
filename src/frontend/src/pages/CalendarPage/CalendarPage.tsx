@@ -97,6 +97,7 @@ interface NewCalendarPageProps {
   setDisplayMonthYear: (date: Date) => void;
   displayWeek: Date;
   setDisplayWeek: (date: Date) => void;
+  selectedEventId?: string;
 }
 
 const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
@@ -109,7 +110,8 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   displayMonthYear,
   setDisplayMonthYear,
   displayWeek,
-  setDisplayWeek
+  setDisplayWeek,
+  selectedEventId
 }) => {
   const theme = useTheme();
   const history = useHistory();
@@ -609,6 +611,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                 }}
                 onCreateEventClick={onCreateEventClick}
                 tasks={showTasks && filteredTasks ? filteredTasks : []}
+                selectedEventId={selectedEventId}
               />
             ) : (
               <>
@@ -674,6 +677,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                                 dayOfWeek={dayDict.get(datePipe(cardDate)) ?? DayOfWeek.SUNDAY}
                                 onCreateEventClick={onCreateEventClick}
                                 tasks={taskDict.get(datePipe(cardDate)) ?? []}
+                                selectedEventId={selectedEventId}
                               />
                             </Box>
                           );

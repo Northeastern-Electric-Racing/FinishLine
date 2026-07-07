@@ -49,6 +49,7 @@ interface CalendarDayCardProps {
   dayOfWeek?: DayOfWeek;
   onCreateEventClick: (date: Date) => void;
   tasks?: CalendarTask[];
+  selectedEventId?: string;
 }
 
 // Constants for dynamic event display calculation
@@ -64,7 +65,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   calendars = [],
   dayOfWeek = DayOfWeek.MONDAY,
   onCreateEventClick,
-  tasks = []
+  tasks = [],
+  selectedEventId
 }) => {
   const theme = useTheme();
 
@@ -108,6 +110,13 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     window.addEventListener('resize', calculateMaxEvents);
     return () => window.removeEventListener('resize', calculateMaxEvents);
   }, []);
+
+  // Open this event's tooltip if it's been deep-linked to via ?eventId=
+  useEffect(() => {
+    if (selectedEventId && events.some((event) => event.eventId === selectedEventId)) {
+      setLockedTooltipEventId(selectedEventId);
+    }
+  }, [selectedEventId, events]);
 
   const { mutateAsync: deleteEvent } = useDeleteEvent(selectedEvent?.eventId ?? '');
   const { mutateAsync: deleteScheduleSlot } = useDeleteScheduleSlot(

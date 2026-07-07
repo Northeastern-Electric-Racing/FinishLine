@@ -41,6 +41,7 @@ calendarRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('description')),
   nonEmptyString(body('colorHexCode')),
+  body('isNewMemberCalendar').isBoolean(),
   validateInputs,
   CalendarController.createCalendar
 );
@@ -215,6 +216,8 @@ calendarRouter.get('/event/:eventId', CalendarController.getSingleEvent);
 
 calendarRouter.get('/event-members/:eventId', CalendarController.getSingleEventWithMembers);
 
+calendarRouter.get('/events/new-member', CalendarController.getNewMemberEvents);
+
 calendarRouter.get('/events', CalendarController.getAllEvents);
 
 calendarRouter.get('/event-types', CalendarController.getAllEventTypes);
@@ -244,6 +247,7 @@ calendarRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('description')),
   nonEmptyString(body('colorHexCode')),
+  body('isNewMemberCalendar').isBoolean(),
   validateInputs,
   CalendarController.editCalendar
 );

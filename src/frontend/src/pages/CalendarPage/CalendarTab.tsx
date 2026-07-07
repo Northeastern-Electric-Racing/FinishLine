@@ -3,17 +3,17 @@ import NewCalendarPage from './CalendarPage';
 import PageLayout from '../../components/PageLayout';
 import { Box, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import FullPageTabs from '../../components/FullPageTabs';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { ConflictStatus, isGuest, isHead, isLead } from 'shared';
-import { useAllCalendars, useAllEventTypes, useFilterEvents } from '../../hooks/calendar.hooks';
+import { useAllCalendars, useAllEventTypes, useFilterEvents, useSingleEvent } from '../../hooks/calendar.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import EventsTable from './EventsTable';
 import CreateEventModal from './Components/CreateEventModal';
 import CalendarCreateTaskModal from './Components/CalendarCreateTaskModal';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { Add } from '@mui/icons-material';
 import { eventsToEventInstances, getSundayOfWeek } from '../../utils/calendar.utils';
@@ -31,7 +31,20 @@ const CalendarTab: React.FC = () => {
   const [createTaskDefaultDeadline, setCreateTaskDefaultDeadline] = useState<Date | undefined>(undefined);
   const user = useCurrentUser();
   const history = useHistory();
+  const location = useLocation();
   const canViewReviews = isHead(user.role) || isLead(user.role);
+
+  const selectedEventId = new URLSearchParams(location.search).get('eventId') ?? undefined;
+  const { data: selectedEvent } = useSingleEvent(selectedEventId);
+
+  useEffect(() => {
+    if (!selectedEvent) return;
+    const eventDate = selectedEvent.initialDateScheduled ?? selectedEvent.scheduledTimes[0]?.startTime;
+    if (!eventDate) return;
+    const date = new Date(eventDate);
+    setDisplayMonthYear(new Date(date.getFullYear(), date.getMonth(), 1));
+    setDisplayWeek(getSundayOfWeek(date));
+  }, [selectedEvent]);
 
   const handleViewModeToggle = (_: React.MouseEvent, newMode: 'month' | 'week' | null) => {
     if (!newMode || newMode === viewMode) return;
@@ -191,6 +204,7 @@ const CalendarTab: React.FC = () => {
             setDisplayMonthYear={setDisplayMonthYear}
             displayWeek={displayWeek}
             setDisplayWeek={setDisplayWeek}
+            selectedEventId={selectedEventId}
           />
         ) : (
           <EventsTable

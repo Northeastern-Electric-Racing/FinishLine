@@ -4294,6 +4294,7 @@ const performSeed: () => Promise<void> = async () => {
     'Engineering Team Calendar',
     'Tracks all engineering team events, meetings, and deadlines.',
     '#3498db',
+    false,
     ner
   );
 
@@ -4302,6 +4303,7 @@ const performSeed: () => Promise<void> = async () => {
     'Finishline Projects Calendar',
     'Tracks all ongoing projects currently being developed for Finishline',
     '#911111ff',
+    false,
     ner
   );
 
@@ -4310,6 +4312,16 @@ const performSeed: () => Promise<void> = async () => {
     'Calendar Improvements Calendar',
     'Tracks all current improvements and schedulings for the improvement of the Finishline Calendar',
     '#bf40e6ff',
+    false,
+    ner
+  );
+
+  const newMemberCalendar = await CalendarService.createCalendar(
+    thomasEmrax,
+    'New Member Events',
+    'Tracks all new member onboarding events.',
+    '#5c6bc0',
+    true,
     ner
   );
 
@@ -4403,6 +4415,107 @@ const performSeed: () => Promise<void> = async () => {
     false,
     false,
     false
+  );
+
+  // educational event type, used for new member onboarding events
+  const educationalEventType = await CalendarService.createEventType(
+    thomasEmrax,
+    'Educational',
+    [newMemberCalendar.calendarId],
+    ner,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+    false,
+    false,
+    true
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'New Member Mixer',
+    educationalEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
+        allDay: false
+      }
+    ],
+    undefined,
+    electrical.teamTypeId,
+    undefined,
+    'Curry Student Center',
+    undefined,
+    'Come meet the team!'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'New Member Bay Time',
+    educationalEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
+        allDay: false
+      }
+    ],
+    undefined,
+    mechanical.teamTypeId,
+    undefined,
+    'Richards Hall',
+    undefined,
+    'Hands-on time in the bay with the mechanical team'
+  );
+
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'New Member Software Onboarding',
+    educationalEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        startTime: new Date(new Date().getTime() + 21 * 24 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 21 * 24 * 60 * 60 * 1000 + 90 * 60 * 1000),
+        allDay: false
+      }
+    ],
+    undefined,
+    software.teamTypeId,
+    undefined,
+    undefined,
+    'https://zoom.us/j/123456789',
+    'Intro to the FinishLine codebase'
   );
 
   await CalendarService.createEvent(

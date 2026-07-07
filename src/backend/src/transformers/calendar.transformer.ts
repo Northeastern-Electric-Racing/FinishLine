@@ -96,7 +96,8 @@ export const calendarTransformer = (calendar: Prisma.CalendarGetPayload<Calendar
     color: calendar.colorHexCode,
     userCreated: userTransformer(calendar.userCreated),
     dateCreated: calendar.dateCreated,
-    eventTypes: calendar.eventTypes.map(eventTypeTransformer)
+    eventTypes: calendar.eventTypes.map(eventTypeTransformer),
+    isNewMemberCalendar: calendar.isNewMemberCalendar
   };
 };
 
