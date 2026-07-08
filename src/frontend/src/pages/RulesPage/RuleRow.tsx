@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Rule } from 'shared';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useGetChildRules } from '../../hooks/rules.hooks';
+import { compareRuleCodes } from '../../utils/rules.utils';
 
 interface RuleRowProps {
   rule: Rule;
@@ -71,8 +72,9 @@ const RuleRow: React.FC<RuleRowProps> = ({
   // Lazy load if allRules not provided
   const { data: fetchedSubRules = [] } = useGetChildRules(rule.ruleId, !allRules && isExpanded && hasSubRules);
 
-  // Use allRules if provided, otherwise use fetched
-  const subRules = presentSubRules ?? fetchedSubRules;
+  // Use allRules if provided, otherwise use fetched. 
+  // Sorted by rule code so children render in a stable numeric order (e.g. F.2 before F.10)
+  const subRules = [...(presentSubRules ?? fetchedSubRules)].sort(compareRuleCodes);
 
   const bgColor = typeof backgroundColor === 'function' ? backgroundColor(rule) : backgroundColor;
   const color = typeof textColor === 'function' ? textColor(rule) : textColor;

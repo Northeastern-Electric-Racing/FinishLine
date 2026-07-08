@@ -39,6 +39,7 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../../../utils/routes';
 import RuleStatusTag from '../../../RulesPage/components/RuleStatusTag';
 import { RulesActionButton } from '../../../RulesPage/components/RulesActionButton';
+import { compareRuleCodes } from '../../../../utils/rules.utils';
 
 interface ProjectRulesTabProps {
   project: Project;
@@ -85,9 +86,10 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const teamId = project.teams[0]?.teamId || '';
 
   // Convert project rules to rules
+  // Sorted by rule code so both top-level rows and their children render in stable numeric order.
   const allRules = useMemo(() => {
     if (!projectRules) return [];
-    return projectRules.map((pr) => pr.rule);
+    return projectRules.map((pr) => pr.rule).sort(compareRuleCodes);
   }, [projectRules]);
 
   // Get top-level rules (rules without a parent)

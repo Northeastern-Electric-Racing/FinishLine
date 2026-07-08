@@ -20,7 +20,7 @@ import AssignRulesTab from './AssignRulesTab';
 import { RulesActionButton } from './components/RulesActionButton';
 import DeleteRuleModal from './components/DeleteRuleModal';
 import { useDeleteRule, useEditRule, useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
-import { countRulesToDelete } from '../../utils/rules.utils';
+import { countRulesToDelete, compareRuleCodes } from '../../utils/rules.utils';
 import { Rule } from 'shared';
 
 /**
@@ -159,8 +159,8 @@ const RulesetEditPage: React.FC = () => {
 
   const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, allRules) : 0;
 
-  // Filter to only show top-level rules
-  const topLevelRules = allRules.filter((rule) => !rule.parentRule);
+  // Filter to only show top-level rules, sorted by rule code for stable numeric order
+  const topLevelRules = allRules.filter((rule) => !rule.parentRule).sort(compareRuleCodes);
 
   return (
     <PageLayout

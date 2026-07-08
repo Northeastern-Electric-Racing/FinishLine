@@ -55,3 +55,10 @@ export const isRuleComplete = (rule: Rule, allRules: Rule[]): boolean => {
 export const getRuleStatusConfig = (isComplete: boolean): { label: string; color: string } => {
   return isComplete ? { label: 'Complete', color: '#4caf50' } : { label: 'Incomplete', color: '#f44336' };
 };
+
+/**
+ * Comparator that orders rules by their rule code numerically, so codes sort
+ * as F.2 before F.10 rather than alphabetically
+ */
+export const compareRuleCodes = (a: Rule, b: Rule): number =>
+  a.ruleCode.localeCompare(b.ruleCode, undefined, { numeric: true });

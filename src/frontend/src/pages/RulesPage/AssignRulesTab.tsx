@@ -26,6 +26,7 @@ import { useToast } from '../../hooks/toasts.hooks';
 import { RulesActionButton } from './components/RulesActionButton';
 import RuleRow from './RuleRow';
 import { useBulkToggleRuleTeam } from '../../hooks/rules.hooks';
+import { compareRuleCodes } from '../../utils/rules.utils';
 
 const ROW_BACKGROUND_COLOR = '#9d9d9d';
 const SELECTED_ROW_COLOR = '#b36b6b';
@@ -239,7 +240,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     return <LoadingIndicator />;
   }
 
-  const topLevelRules = rules.filter((rule) => !rule.parentRule);
+  const topLevelRules = rules.filter((rule) => !rule.parentRule).sort(compareRuleCodes);
 
   return (
     <Box sx={{ paddingBottom: '100px' }}>

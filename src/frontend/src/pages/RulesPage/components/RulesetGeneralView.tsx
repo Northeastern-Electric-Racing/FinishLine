@@ -6,6 +6,7 @@ import RuleStatusTag from './RuleStatusTag';
 import UpdateStatusPopover from '../../ProjectDetailPage/ProjectViewContainer/ProjectRules/UpdateStatusPopover';
 import { useSetRuleCompletion } from '../../../hooks/rules.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { compareRuleCodes } from '../../../utils/rules.utils';
 
 interface RulesetGeneralViewProps {
   allRules: Rule[];
@@ -29,7 +30,9 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
   // Completion in general view is for the whole ruleset, so no projectId is passed in
   const { mutateAsync: setCompletion } = useSetRuleCompletion(rulesetId, '');
 
-  const topLevelRules = allRules.filter((rule) => !rule.parentRule);
+  // Sort once by rule code so both top-level rows and their children render in a stable numeric order
+  const sortedRules = [...allRules].sort(compareRuleCodes);
+  const topLevelRules = sortedRules.filter((rule) => !rule.parentRule);
 
   const handleStatusClose = () => {
     setStatusPopoverAnchor(null);
@@ -56,11 +59,11 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
               <RuleRow
                 key={rule.ruleId}
                 rule={rule}
-                allRules={allRules}
+                allRules={sortedRules}
                 rightContent={(r) => (
                   <RuleStatusTag
                     rule={r}
-                    allRules={allRules}
+                    allRules={sortedRules}
                     popoverOpen={selectedRule?.ruleId === r.ruleId && Boolean(statusPopoverAnchor)}
                     onClick={(e) => {
                       setSelectedRule(r);
