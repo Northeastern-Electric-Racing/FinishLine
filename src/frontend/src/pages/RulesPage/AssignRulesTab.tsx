@@ -333,12 +333,12 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
       >
         <Box
           sx={{
-            borderBottom: '2px solid white',
+            borderBottom: `2px solid ${theme.palette.divider}`,
             mb: 2,
-            ml: '30px'
+            ml: '20px'
           }}
         />
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 2 }}>
           <RulesActionButton variant="contained" onClick={handleSaveAndExit} disabled={isSaving}>
             {isSaving ? 'Saving...' : 'Save & Exit'}
           </RulesActionButton>
