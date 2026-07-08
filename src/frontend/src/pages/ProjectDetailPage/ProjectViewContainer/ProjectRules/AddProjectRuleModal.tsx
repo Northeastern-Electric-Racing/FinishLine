@@ -26,17 +26,16 @@ interface AddRuleModalProps {
   open: boolean;
   onHide: () => void;
   rulesetId: string;
-  teamId: string;
-  teamName: string;
   projectId: string;
+  teamNames: string[];
   onSubmit: (ruleIds: string[]) => void;
 }
 
-const AddRuleModal = ({ open, onHide, rulesetId, teamId, teamName, projectId, onSubmit }: AddRuleModalProps) => {
+const AddRuleModal = ({ open, onHide, rulesetId, projectId, teamNames, onSubmit }: AddRuleModalProps) => {
   const theme = useTheme();
   const [selectedRuleIds, setSelectedRuleIds] = useState<string[]>([]);
 
-  const { data: unassignedRules, isLoading, isError } = useUnassignedRulesForRuleset(rulesetId, teamId, projectId);
+  const { data: unassignedRules, isLoading, isError } = useUnassignedRulesForRuleset(rulesetId, projectId);
 
   type ParentInfo = { ruleId: string; ruleCode: string };
 
@@ -150,7 +149,9 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, teamName, projectId, on
           </Box>
         ) : !unassignedRules || unassignedRules.length === 0 ? (
           <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-            No unassigned rules available for the {teamName} team.
+            {teamNames.length > 0
+              ? `No unassigned rules available for the ${teamNames.join(', ')} team${teamNames.length === 1 ? '' : 's'}.`
+              : 'No unassigned rules available for this project.'}
           </Typography>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

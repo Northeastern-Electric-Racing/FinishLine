@@ -28,6 +28,7 @@ import {
   InvalidOrganizationException
 } from '../../src/utils/errors.utils';
 import TeamsService from '../../src/services/teams.services';
+import ProjectsService from '../../src/services/projects.services';
 
 describe('Create Rules Tests', () => {
   let orgId: string;
@@ -380,7 +381,11 @@ describe('Create Rules Tests', () => {
       );
       const grandchild = await RulesService.createRule(batman, 'T.1.1.1', 'Wheels', rulesetId, organization, child.ruleId);
 
-      const project = await createTestProject(aquaman, orgId, undefined, carId);
+      const teamType = await createTestTeamType('technical', orgId);
+      const team = await createTestTeam(batman.userId, teamType.teamTypeId, orgId);
+      await RulesService.toggleRuleTeam(grandchild.ruleId, team.teamId, batman, organization);
+
+      const project = await createTestProject(aquaman, orgId, team.teamId, carId);
 
       await RulesService.createProjectRule(aquaman, organization, grandchild.ruleId, project.projectId);
 
@@ -403,7 +408,13 @@ describe('Create Rules Tests', () => {
       const grandchild1 = await RulesService.createRule(batman, 'T.1.1.1', 'Wheels', rulesetId, organization, child.ruleId);
       const grandchild2 = await RulesService.createRule(batman, 'T.1.1.2', 'Brakes', rulesetId, organization, child.ruleId);
 
-      const project = await createTestProject(aquaman, orgId, undefined, carId);
+      const teamType = await createTestTeamType('technical', orgId);
+      const team = await createTestTeam(batman.userId, teamType.teamTypeId, orgId);
+
+      await RulesService.toggleRuleTeam(grandchild1.ruleId, team.teamId, batman, organization);
+      await RulesService.toggleRuleTeam(grandchild2.ruleId, team.teamId, batman, organization);
+
+      const project = await createTestProject(aquaman, orgId, team.teamId, carId);
 
       await RulesService.createProjectRule(aquaman, organization, grandchild1.ruleId, project.projectId);
       // adding sibling must not error or duplicate the already-present parent/root rules
@@ -429,7 +440,11 @@ describe('Create Rules Tests', () => {
       );
       await RulesService.createRule(batman, 'T.1.1.1', 'Wheels', rulesetId, organization, child.ruleId);
 
-      const project = await createTestProject(aquaman, orgId, undefined, carId);
+      const teamType = await createTestTeamType('technical', orgId);
+      const team = await createTestTeam(batman.userId, teamType.teamTypeId, orgId);
+      await RulesService.toggleRuleTeam(child.ruleId, team.teamId, batman, organization);
+
+      const project = await createTestProject(aquaman, orgId, team.teamId, carId);
 
       await RulesService.createProjectRule(aquaman, organization, child.ruleId, project.projectId);
 
@@ -451,13 +466,17 @@ describe('Create Rules Tests', () => {
       );
       const grandchild = await RulesService.createRule(batman, 'T.1.1.1', 'Wheels', rulesetId, organization, child.ruleId);
 
+      const teamType = await createTestTeamType('technical', orgId);
+      const team = await createTestTeam(batman.userId, teamType.teamTypeId, orgId);
+      await RulesService.toggleRuleTeam(grandchild.ruleId, team.teamId, batman, organization);
+
       // soft-delete an ancestor so the chain to the top-level rule is broken
       await prisma.rule.update({
         where: { ruleId: child.ruleId },
         data: { dateDeleted: new Date(), deletedBy: { connect: { userId: batman.userId } } }
       });
 
-      const project = await createTestProject(aquaman, orgId, undefined, carId);
+      const project = await createTestProject(aquaman, orgId, team.teamId, carId);
 
       // a broken chain means the grandchild could never display, so no rules are assigned to the project and an error is thrown
       await expect(
@@ -476,7 +495,12 @@ describe('Create Rules Tests', () => {
 
     it('throws when the rule is already associated with the project', async () => {
       const rule = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
-      const project = await createTestProject(aquaman, orgId, undefined, carId);
+
+      const teamType = await createTestTeamType('technical', orgId);
+      const team = await createTestTeam(batman.userId, teamType.teamTypeId, orgId);
+      await RulesService.toggleRuleTeam(rule.ruleId, team.teamId, batman, organization);
+
+      const project = await createTestProject(aquaman, orgId, team.teamId, carId);
 
       await RulesService.createProjectRule(aquaman, organization, rule.ruleId, project.projectId);
 
@@ -508,6 +532,19 @@ describe('Create Rules Tests', () => {
       await expect(
         async () => await RulesService.createProjectRule(aquaman, organization, rule.ruleId, 'fake-project-id')
       ).rejects.toThrow(new NotFoundException('Project', 'fake-project-id'));
+    });
+
+    it('throws when the rule is not on any of the project`s teams', async () => {
+      // rule has no team, but the project belongs to a team, so they share no team
+      const rule = await RulesService.createRule(batman, 'T.1', 'Technical Rules', rulesetId, organization);
+
+      const teamType = await createTestTeamType('technical', orgId);
+      const team = await createTestTeam(batman.userId, teamType.teamTypeId, orgId);
+      const project = await createTestProject(aquaman, orgId, team.teamId, carId);
+
+      await expect(
+        async () => await RulesService.createProjectRule(aquaman, organization, rule.ruleId, project.projectId)
+      ).rejects.toThrow(new HttpException(400, "Rule must be on one of the project's teams to be assigned to it"));
     });
   });
 
@@ -939,6 +976,9 @@ describe('Rule Tests', () => {
     it('Creates a project rule successfully', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
+      // rule and project must share a team for the rule to be assignable
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
 
       expect(projectRule.projectRuleId).toBeDefined();
@@ -951,6 +991,9 @@ describe('Rule Tests', () => {
     it('Creates a project rule successfully for a leaf rule', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
+      // rule and project must share a team for the rule to be assignable
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
 
       expect(projectRule.projectRuleId).toBeDefined();
@@ -1009,6 +1052,9 @@ describe('Rule Tests', () => {
     it('Create project rule fails if project rule assignment already exists', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
+      // rule and project must share a team so the first assignment succeeds
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
       await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
       await expect(RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId)).rejects.toThrow(
         new HttpException(400, 'This rule is already associated with the project')
@@ -1374,6 +1420,8 @@ describe('Rule Tests', () => {
     it('Deletes a project rule successfully and returns the correct information', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
 
       const deletedProjectRule = await RulesService.deleteProjectRule(projectRule.projectRuleId, admin, organization);
@@ -1387,6 +1435,8 @@ describe('Rule Tests', () => {
     it('Delete project rule fails if user does not have permission', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
 
       await expect(
@@ -1396,6 +1446,8 @@ describe('Rule Tests', () => {
     it('Delete project rule fails if project rule was already deleted', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
 
       await RulesService.deleteProjectRule(projectRule.projectRuleId, admin, organization);
@@ -1674,89 +1726,60 @@ describe('Rule Tests', () => {
         }
       });
       await expect(
-        RulesService.getUnassignedRulesForRuleset(
+        RulesService.getUnassignedRulesForProjectRuleset(
           otherRuleset.rulesetId,
-          testTeam.teamId,
           project.projectId,
           organization.organizationId
         )
       ).rejects.toThrow(InvalidOrganizationException);
     });
-    it('fails if team is in the wrong org', async () => {
+    it('fails if project is in the wrong org', async () => {
       const car = await createUniqueCar(orgId);
-      const otherTeam = await prisma.team.create({
-        data: {
-          teamName: 'Other Team',
-          slackId: 'other-slack',
-          headId: admin.userId,
-          organizationId: otherOrg.organizationId
-        }
-      });
       const { ruleset1 } = await setupRules(car);
+      const otherOrgProject = await createTestProject(admin, otherOrg.organizationId);
       await expect(
-        RulesService.getUnassignedRulesForRuleset(
+        RulesService.getUnassignedRulesForProjectRuleset(
           ruleset1.rulesetId,
-          otherTeam.teamId,
-          project.projectId,
+          otherOrgProject.projectId,
           organization.organizationId
         )
       ).rejects.toThrow(InvalidOrganizationException);
     });
     it('fails if ruleset does not exist', async () => {
       await expect(
-        RulesService.getUnassignedRulesForRuleset(
+        RulesService.getUnassignedRulesForProjectRuleset(
           'nonexistent-ruleset-id',
-          testTeam.teamId,
           project.projectId,
           organization.organizationId
         )
       ).rejects.toThrow(new NotFoundException('Ruleset', 'nonexistent-ruleset-id'));
     });
-    it('fails if team does not exist', async () => {
+    it('fails if project does not exist', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
       await expect(
-        RulesService.getUnassignedRulesForRuleset(
-          ruleset1.rulesetId,
-          'fake-team-id',
-          project.projectId,
-          organization.organizationId
-        )
-      ).rejects.toThrow(new NotFoundException('Team', 'fake-team-id'));
+        RulesService.getUnassignedRulesForProjectRuleset(ruleset1.rulesetId, 'fake-project-id', organization.organizationId)
+      ).rejects.toThrow(new NotFoundException('Project', 'fake-project-id'));
     });
-    it('successfully returns rules in the team that have no projects', async () => {
+    it("successfully returns rules on the project's teams that are not already assigned to the project", async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
-      // add rules to the team
-      await prisma.rule.update({
-        where: { ruleId: topLevelRule.ruleId },
-        data: {
-          teams: {
-            connect: { teamId: testTeam.teamId }
-          }
-        }
-      });
-      await prisma.rule.update({
-        where: { ruleId: leafRule1.ruleId },
-        data: {
-          teams: {
-            connect: { teamId: testTeam.teamId }
-          }
-        }
-      });
-      // rule in the team that has a project
+      // the project belongs to the team, so rules on that team are candidates
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      // add rules to the project's team
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
+      // rule on the project's team that is already assigned to the project
       const ruleWithProject = await prisma.rule.create({
         data: {
           ruleCode: 'T.1.3',
           ruleContent: 'Rule with project',
           imageFileIds: [],
           rulesetId: ruleset1.rulesetId,
-          createdByUserId: admin.userId,
-          teams: {
-            connect: { teamId: testTeam.teamId }
-          }
+          createdByUserId: admin.userId
         }
       });
+      await RulesService.toggleRuleTeam(ruleWithProject.ruleId, testTeam.teamId, admin, organization);
       await prisma.project_Rule.create({
         data: {
           projectId: project.projectId,
@@ -1764,26 +1787,56 @@ describe('Rule Tests', () => {
           createdByUserId: admin.userId
         }
       });
-      const rules = await RulesService.getUnassignedRulesForRuleset(
+      const rules = await RulesService.getUnassignedRulesForProjectRuleset(
         ruleset1.rulesetId,
-        testTeam.teamId,
         project.projectId,
         organization.organizationId
       );
       expect(rules.length).toEqual(2);
       expect(rules[0].ruleCode).toEqual('T');
       expect(rules[1].ruleCode).toEqual('T2');
-      // leafRule2 is not in the team so should not be returned
+      // leafRule2 is not on any of the project's teams so should not be returned
       expect(rules.find((r) => r.ruleCode === leafRule2.ruleCode)).toBeUndefined();
-      // ruleWithProject has a project so should not be returned
+      // ruleWithProject is already assigned to the project so should not be returned
       expect(rules.find((r) => r.ruleCode === ruleWithProject.ruleCode)).toBeUndefined();
     });
-    it('successfully returns empty if team has no assigned rules', async () => {
+    it('returns rules from any of the project`s teams when it belongs to multiple', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+
+      // a second team the project also belongs to
+      const teamType = await createTestTeamType('secondTeamType', orgId);
+      const secondTeam = await createTestTeam(admin.userId, teamType.teamTypeId, orgId);
+
+      // project belongs to both testTeam and secondTeam
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await ProjectsService.setProjectTeam(
+        admin,
+        { carNumber: car.wbsElement.carNumber, projectNumber: 1, workPackageNumber: 0 },
+        secondTeam.teamId,
+        organization
+      );
+
+      // topLevelRule on the first team, leafRule1 on the second team - both should be returned
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, secondTeam.teamId, admin, organization);
+
+      const rules = await RulesService.getUnassignedRulesForProjectRuleset(
+        ruleset1.rulesetId,
+        project.projectId,
+        organization.organizationId
+      );
+      expect(rules.map((r) => r.ruleId)).toContain(topLevelRule.ruleId);
+      expect(rules.map((r) => r.ruleId)).toContain(leafRule1.ruleId);
+      // leafRule2 has no team so it should not be returned
+      expect(rules.map((r) => r.ruleId)).not.toContain(leafRule2.ruleId);
+    });
+    it("successfully returns empty if the project's teams have no assignable rules", async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
-      const rules = await RulesService.getUnassignedRulesForRuleset(
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      const rules = await RulesService.getUnassignedRulesForProjectRuleset(
         ruleset1.rulesetId,
-        testTeam.teamId,
         project.projectId,
         organization.organizationId
       );
@@ -1795,6 +1848,8 @@ describe('Rule Tests', () => {
     it('Successfully gets all project rules for a project', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
 
       const projectRules = await RulesService.getProjectRules(topLevelRule.rulesetId, projectRule.projectId, organization);

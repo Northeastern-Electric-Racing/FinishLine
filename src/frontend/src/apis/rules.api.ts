@@ -93,10 +93,10 @@ export const getProjectRules = (rulesetId: string, projectId: string) => {
 };
 
 /**
- * Gets unassigned rules for a ruleset and team.
+ * Gets rules assignable to a project, across all of its teams, that aren't already assigned
  */
-export const getUnassignedRulesForRuleset = (rulesetId: string, teamId: string, projectId: string) => {
-  return axios.get<SharedRule[]>(apiUrls.rulesGetUnassignedRulesForRuleset(rulesetId, teamId, projectId), {
+export const getUnassignedRulesForRuleset = (rulesetId: string, projectId: string) => {
+  return axios.get<SharedRule[]>(apiUrls.rulesGetUnassignedRulesForRuleset(rulesetId, projectId), {
     transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
   });
 };

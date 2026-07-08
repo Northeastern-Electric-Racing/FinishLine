@@ -438,14 +438,13 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       )}
 
       {/* Add Rule Modal */}
-      {activeRuleset && teamId && (
+      {activeRuleset && (
         <AddRuleModal
           open={addRuleModalOpen}
           onHide={() => setAddRuleModalOpen(false)}
           rulesetId={activeRuleset.rulesetId}
-          teamId={teamId}
-          teamName={project.teams[0]?.teamName ?? ''}
           projectId={project.id}
+          teamNames={project.teams.map((team) => team.teamName)}
           onSubmit={handleAddRules}
         />
       )}

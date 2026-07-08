@@ -215,8 +215,17 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     removedKeys.forEach((key) => {
       const [teamId, ruleId] = key.split(':');
       const rule = rules.find((r) => r.ruleId === ruleId);
+      // teams the rule will remain on after this save
+      const remainingTeamIds = [...assignments]
+        .filter((assignmentKey) => assignmentKey.endsWith(`:${ruleId}`))
+        .map((assignmentKey) => assignmentKey.split(':')[0]);
+
       rule?.projects?.forEach((project) => {
-        if (project.teamIds.includes(teamId)) {
+        if (!project.teamIds.includes(teamId)) return;
+        // A project can belong to multiple teams
+        // Therefore a project only loses the rule if the rule no longer shares ANY team with it
+        const sharesRemainingTeam = project.teamIds.some((id) => remainingTeamIds.includes(id));
+        if (!sharesRemainingTeam) {
           affectedRuleIds.add(ruleId);
           affectedProjectIds.add(project.projectId);
         }

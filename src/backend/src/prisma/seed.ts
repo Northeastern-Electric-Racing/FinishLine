@@ -912,7 +912,7 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Create the invisible jet.',
     'Develop a prototype of the invisible jet that wonder woman uses.',
-    [justiceLeague.teamId],
+    [justiceLeague.teamId, penguinTeam.teamId],
     wonderwoman,
     500,
     [
