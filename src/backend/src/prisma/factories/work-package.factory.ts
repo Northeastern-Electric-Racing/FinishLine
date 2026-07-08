@@ -6,6 +6,88 @@ import { addDaysToDate } from 'shared';
 
 const WORK_PACKAGE_NULL_STAGE_CHANCE = 0.15;
 
+const WP_NAMES_BY_STAGE: Record<Work_Package_Stage, string[]> = {
+  [Work_Package_Stage.RESEARCH]: [
+    'Research',
+    'Analysis',
+    'Investigation',
+    'Literature Review',
+    'Requirements Analysis',
+    'Feasibility Study',
+    'Market Research',
+    'Benchmarking',
+    'Trade Study',
+    'Concept Exploration'
+  ],
+  [Work_Package_Stage.DESIGN]: [
+    'Concept of Design',
+    'CAD Modeling',
+    'Detailed Design',
+    'Design Review Prep',
+    'Tolerance Analysis',
+    'Schematic Design',
+    'Layout Design',
+    'Design Iteration',
+    'System Architecture',
+    'Interface Design'
+  ],
+  [Work_Package_Stage.MANUFACTURING]: [
+    'Fabrication',
+    'Manufacturing',
+    'Machining',
+    'Assembly',
+    'Procurement',
+    'Prototyping',
+    'Build',
+    'Production',
+    'Part Ordering',
+    'Component Manufacturing'
+  ],
+  [Work_Package_Stage.INSTALL]: [
+    'Installation',
+    'Integration',
+    'Assembly',
+    'Wiring',
+    'Mounting',
+    'System Integration',
+    'Harness Routing',
+    'Commissioning',
+    'Fit Check',
+    'Subsystem Integration'
+  ],
+  [Work_Package_Stage.TESTING]: [
+    'Testing',
+    'Validation',
+    'Verification',
+    'Sign Off',
+    'Bench Testing',
+    'System Testing',
+    'Performance Testing',
+    'Load Testing',
+    'Acceptance Testing',
+    'Final Review'
+  ]
+};
+
+const WP_NAMES_NO_STAGE = [
+  'Planning',
+  'Documentation',
+  'Review',
+  'Kickoff',
+  'Closeout',
+  'Milestone',
+  'Support',
+  'Coordination'
+];
+
+export const generateWorkPackageName = (faker: Faker, projectName: string, stage: Work_Package_Stage | null): string => {
+  const suffix = stage
+    ? faker.helpers.arrayElement(WP_NAMES_BY_STAGE[stage])
+    : faker.helpers.arrayElement(WP_NAMES_NO_STAGE);
+
+  return `${projectName} ${suffix}`;
+};
+
 export const generateWorkPackageCount = (faker: Faker): number =>
   // Each project gets 0–8 work packages. Average work package count is around 5.
   faker.helpers.weightedArrayElement([
@@ -44,7 +126,19 @@ export const generateWorkPackageTimeline = (faker: Faker, projectTimeline: DateR
   return { start, end: clampDate(addDaysToDate(start, duration * DAYS_PER_WEEK), { start, end: projectTimeline.end }) };
 };
 
+const getOverdueStatus = (faker: Faker, daysOverdue: number): WBS_Element_Status => {
+  if (daysOverdue <= 0) return WBS_Element_Status.ACTIVE;
+
+  // inverse exponential: starts at ~20% incomplete chance, drops rapidly toward 0
+  const incompleteChance = 0.8 * Math.exp(-0.01 * daysOverdue);
+
+  return faker.datatype.boolean({ probability: 1 - incompleteChance })
+    ? WBS_Element_Status.COMPLETE
+    : WBS_Element_Status.ACTIVE;
+};
+
 export const workPackageCreateInput = (
+  faker: Faker,
   organizationId: string,
   carNumber: number,
   projectNumber: number,
@@ -77,7 +171,7 @@ export const workPackageCreateInput = (
       carNumber,
       projectNumber,
       workPackageNumber,
-      status: WBS_Element_Status.ACTIVE,
+      status: getOverdueStatus(faker, daysBetween({ start: addDaysToDate(startDate, duration * 7), end: new Date() })),
       organization: { connect: { organizationId } },
       ...(leadId ? { lead: { connect: { userId: leadId } } } : {}),
       ...(managerId ? { manager: { connect: { userId: managerId } } } : {})

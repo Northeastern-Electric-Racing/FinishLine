@@ -5,6 +5,7 @@ import { ProjectOutput, ProjectProcess } from './project.process.js';
 import { WorkPackageContext, ProjectContext, FullUser } from '../context.js';
 import {
   generateWorkPackageCount,
+  generateWorkPackageName,
   generateWorkPackageStage,
   generateWorkPackageTimeline,
   workPackageCreateInput
@@ -55,6 +56,7 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
 
     const { carNumber, projectNumber } = project.wbsElement;
     const workPackageContexts: WorkPackageContext[] = [];
+    const usedNames = new Set<string>();
 
     for (let i = 0; i < count; i++) {
       // for clarity
@@ -80,12 +82,19 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
       const managerPool = projectOwners.filter((u) => u.userId !== lead.userId);
       const manager = this.faker.helpers.arrayElement(managerPool.length > 0 ? managerPool : projectOwners);
       const stage = generateWorkPackageStage(this.faker);
-      const name = `${project.wbsElement.name} WP${workPackageNumber}`;
+
+      // inside the loop:
+      let name = generateWorkPackageName(this.faker, project.wbsElement.name, stage);
+      while (usedNames.has(name)) {
+        name = generateWorkPackageName(this.faker, project.wbsElement.name, stage);
+      }
+      usedNames.add(name);
 
       const blockedByWbsElementIds = effectiveBlocker ? [effectiveBlocker.workPackage.wbsElement.wbsElementId] : [];
 
       const workPackage = await this.prisma.work_Package.create({
         data: workPackageCreateInput(
+          this.faker,
           organizationId,
           carNumber,
           projectNumber,
