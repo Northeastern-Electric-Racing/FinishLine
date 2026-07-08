@@ -129,7 +129,7 @@ export const generateWorkPackageTimeline = (faker: Faker, projectTimeline: DateR
 const getOverdueStatus = (faker: Faker, daysOverdue: number): WBS_Element_Status => {
   if (daysOverdue <= 0) return WBS_Element_Status.ACTIVE;
 
-  // inverse exponential: starts at ~20% incomplete chance, drops rapidly toward 0
+  // inverse exponential: starts at ~80% incomplete chance, drops rapidly toward 0
   const incompleteChance = 0.8 * Math.exp(-0.01 * daysOverdue);
 
   return faker.datatype.boolean({ probability: 1 - incompleteChance })

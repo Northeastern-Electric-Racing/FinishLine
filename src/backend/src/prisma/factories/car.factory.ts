@@ -11,7 +11,7 @@ const TO_MONTH = 8; // September
 const TO_DAY = 30;
 
 export const CAR_CONFIGS = Array.from({ length: CAR_COUNT }, (_, i) => {
-  const carYear = CURRENT_YEAR - (CAR_COUNT - 1) + i;
+  const carYear = CURRENT_YEAR - (CAR_COUNT - 1) + i + 1;
   const shortYear = String(carYear).slice(2);
 
   const carFaker = new Faker({ locale: [en, base] });

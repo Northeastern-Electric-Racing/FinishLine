@@ -227,6 +227,18 @@ export const generateProjectBudgets = (
   return budgets;
 };
 
+export const shouldExist = (faker: Faker, dateRange: DateRange): boolean => {
+  // Date is in the past, obviously it should exist
+  if (dateRange.start < new Date()) return true;
+
+  const daysUpcoming = daysBetween({ start: new Date(), end: dateRange.start });
+
+  // inverse exponential: starts at ~80% incomplete chance, drops rapidly toward 0
+  const incompleteChance = 0.8 * Math.exp(-0.02 * daysUpcoming);
+
+  return !faker.datatype.boolean({ probability: 1 - incompleteChance });
+};
+
 export const generateProjectTimeline = (faker: Faker, carDateRange: DateRange): DateRange => {
   const carStart = new Date(carDateRange.start);
   const carEnd = new Date(carDateRange.end);
