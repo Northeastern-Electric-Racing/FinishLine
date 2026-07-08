@@ -73,7 +73,7 @@ const AddRuleModal = ({ open, onHide, rulesetId, projectId, teamNames, onSubmit 
 
   // One dropdown per level: the top-level rules, then the children of each chosen rule, recursively.
   // The first dropdown will always be the top level options, each selection adds a dropdown for its children, until a leaf is chosen.
-  const levels = useMemo(() => {
+  const buildLevels = (): { options: Rule[]; value: string }[] => {
     // Tracks the dropdowns to show, starting with the top-level rules and adding a level for each selected rule in the path.
     const result: { options: Rule[]; value: string }[] = [{ options: optionsForParent(null), value: path[0] ?? '' }];
     // Each rule already chosen in the path adds one more dropdown beneath it, listing that rule's children.
@@ -81,8 +81,8 @@ const AddRuleModal = ({ open, onHide, rulesetId, projectId, teamNames, onSubmit 
       result.push({ options: optionsForParent(ruleId), value: path[index + 1] ?? '' });
     });
     return result;
-    // Recompute when the path changes, the addable pool loads/changes, or a selection is made/removed
-  }, [path, addableRules, selectedRuleIds]);
+  };
+  const levels = buildLevels();
 
   // If an addable leaf exists anywhere
   const hasAddableRules = optionsForParent(null).length > 0;
