@@ -699,11 +699,12 @@ export const seedFsaeRules = async (
     }
   });
 
-  // Add the rule to the husky team, then the bodywork project, and mark it complete.
+  // Assign the leaf rule T.1.1.2.a to the husky team along with its full chain of
+  // ancestors (T -> T.1 -> T.1.1 -> T.1.1.2). Simulates how the assign-rules page automatically completes this full chain.
   for (const rule of [topLevelTechnical, T1Rule, T11Rule, T112Rule, T112ARule]) {
     await RulesService.toggleRuleTeam(rule.ruleId, huskyTeamId, batman, organization);
   }
-  // TODO: the above logic should be in the service function, not handled in the assign team frontend
+  // Add the leaf rule to the bodywork project and mark it complete.
   await RulesService.createProjectRule(batman, organization, T112ARule.ruleId, projectId);
   await RulesService.setRuleCompletion(batman, organization, T112ARule.ruleId, true, projectId);
 };

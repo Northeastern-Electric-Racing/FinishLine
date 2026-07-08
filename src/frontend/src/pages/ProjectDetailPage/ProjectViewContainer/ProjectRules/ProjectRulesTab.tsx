@@ -80,7 +80,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
 
   const { mutateAsync: createProjectRuleMutation, isLoading: isCreating } = useCreateProjectRule();
 
-  // Get the first team's ID for fetching unassigned rules
+  // First team's ID, used only to pre-select a team tab on the assign-rules deep link
   const teamId = project.teams[0]?.teamId || '';
   const teamNames = project.teams.map((team) => team.teamName);
 
@@ -238,6 +238,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           </Tooltip>
           <Button
             disabled={!activeRuleset || teamNames.length === 0}
+            // Assign rule page only supports highlighting a single team at a time
             onClick={() =>
               activeRuleset &&
               history.push(
@@ -332,7 +333,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           <Button
             variant="contained"
             onClick={() => setAddRuleModalOpen(true)}
-            disabled={!teamId || hasNoActiveRuleset}
+            disabled={teamNames.length === 0 || hasNoActiveRuleset}
             sx={{
               borderRadius: '8px',
               backgroundColor: '#ef4345',

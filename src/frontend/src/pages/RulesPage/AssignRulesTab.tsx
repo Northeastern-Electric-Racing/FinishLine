@@ -28,6 +28,7 @@ import NERModal from '../../components/NERModal';
 import WarningIcon from '@mui/icons-material/Warning';
 import RuleRow from './RuleRow';
 import { useBulkToggleRuleTeam } from '../../hooks/rules.hooks';
+import { getAncestorIds, getRuleAndDescendantIds } from '../../utils/rules.utils';
 
 /*
  * Props for the assign rules tab.
@@ -35,21 +36,6 @@ import { useBulkToggleRuleTeam } from '../../hooks/rules.hooks';
 interface AssignRulesTabProps {
   rules: Rule[];
 }
-
-/**
- * Collects a rule and all of its descendants
- * Assignment applies to the clicked rule and everything beneath it, so each of
- * those rules gets its own team relation — a parent is only assigned when it is
- * clicked directly.
- */
-const getRuleAndDescendantIds = (ruleId: string, allRules: Rule[]): string[] => {
-  const rule = allRules.find((r) => r.ruleId === ruleId);
-  if (!rule) {
-    return [];
-  }
-
-  return [ruleId, ...rule.subRuleIds.flatMap((subId) => getRuleAndDescendantIds(subId, allRules))];
-};
 
 /*
  * Props for the team row.
@@ -186,21 +172,30 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     }
 
     const newAssignments = new Set(assignments);
-    let allSelected = true;
-    for (const id of subtreeIds) {
-      if (!newAssignments.has(`${selectedTeamId}:${id}`)) {
-        allSelected = false;
-        break;
-      }
-    }
+    const teamAssignmentKey = (id: string) => `${selectedTeamId}:${id}`; // needed since the same rule can be assigned to multiple teams
+    const allSelected = subtreeIds.every((id) => newAssignments.has(teamAssignmentKey(id)));
 
-    for (const id of subtreeIds) {
-      const key = `${selectedTeamId}:${id}`;
-      if (allSelected) {
-        newAssignments.delete(key);
-      } else {
-        newAssignments.add(key);
+    if (allSelected) {
+      // Unassign the rule and its descendants
+      subtreeIds.forEach((id) => newAssignments.delete(teamAssignmentKey(id)));
+
+      // Drop each parent that no longer has ANY assigned descendant.
+      for (const ancestorId of getAncestorIds(ruleId, rules)) {
+        const hasAssignedDescendant = getRuleAndDescendantIds(ancestorId, rules).some(
+          (id) => id !== ancestorId && newAssignments.has(teamAssignmentKey(id))
+        );
+        // Stop at the first ancestor still holding an assigned leaf rule, since every
+        // higher ancestor shares that descendant and must remain assigned.
+        if (hasAssignedDescendant) {
+          break;
+        }
+        newAssignments.delete(teamAssignmentKey(ancestorId));
       }
+    } else {
+      // Assign the rule, its descendants, and all of its ancestors so there is
+      // always a path to the top-level rule
+      subtreeIds.forEach((id) => newAssignments.add(teamAssignmentKey(id)));
+      getAncestorIds(ruleId, rules).forEach((id) => newAssignments.add(teamAssignmentKey(id)));
     }
 
     setAssignments(newAssignments);
