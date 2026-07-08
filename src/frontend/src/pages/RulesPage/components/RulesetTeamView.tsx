@@ -110,6 +110,9 @@ const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules, teamRules, 
   // Top level items are teams and unassigned to team
   const topLevelItems = [...teamRulesAsRules, ...(unassignedToTeamRule ? [unassignedToTeamRule] : [])];
 
+  // Everything that isn't an actual rule (e.g., unassigned headers) should span the full row width 
+  const actualRuleIds = new Set<string>(allRules.map((r) => r.ruleId));
+
   return (
     <Box>
       <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor }}>
@@ -128,6 +131,7 @@ const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules, teamRules, 
                 verticalPadding="8px"
                 indentRow
                 initiallyExpanded={item.ruleId.startsWith('team-')}
+                fullWidthCode={(rule) => !actualRuleIds.has(rule.ruleId)}
               />
             ))}
           </TableBody>

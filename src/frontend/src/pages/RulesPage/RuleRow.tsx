@@ -31,6 +31,8 @@ interface RuleRowProps {
   indentRow?: boolean;
   // Amount of indentation per child depth when indentRow is enabled
   indentWidth?: number;
+  // If a rule's code/name should span the entire row - used for team view header rows
+  fullWidthCode?: (rule: Rule) => boolean;
 }
 
 /**
@@ -56,7 +58,8 @@ const RuleRow: React.FC<RuleRowProps> = ({
   rightWidth = '10%',
   initiallyExpanded = false,
   indentRow = false,
-  indentWidth = 10
+  indentWidth = 10,
+  fullWidthCode
 }) => {
   const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
 
@@ -85,8 +88,12 @@ const RuleRow: React.FC<RuleRowProps> = ({
   const handleRowClick = () => {
     if (onRowClick) {
       onRowClick(rule);
+    } else if (hasSubRules) {
+      toggleExpand();
     }
   };
+
+  const rowIsClickable = Boolean(onRowClick) || hasSubRules;
 
   const commonCellStyles = {
     fontSize: '16px',
@@ -144,9 +151,11 @@ const RuleRow: React.FC<RuleRowProps> = ({
   return (
     <>
       <TableRow
+        onClick={handleRowClick}
         sx={{
           borderBottom: '1px solid #7d7d7d',
           backgroundColor: indentRow ? 'transparent' : bgColor,
+          cursor: rowIsClickable ? 'pointer' : 'default',
           '&:hover': indentRow
             ? { '& .rule-card-cell': { backgroundColor: hoverBgColor } }
             : { backgroundColor: hoverBgColor },
@@ -156,54 +165,80 @@ const RuleRow: React.FC<RuleRowProps> = ({
           height: rowHeight
         }}
       >
-        <TableCell
-          align="left"
-          className={cardCellClass}
-          sx={{
-            ...commonCellStyles,
-            ...cardCellBg,
-            ...leftCellRadius,
-            // Indent left edge of rule with transparent left border
-            ...(indentRow && {
-              borderLeft: `${level * indentWidth}px solid transparent`,
-              backgroundClip: 'padding-box'
-            }),
-            cursor: onRowClick ? 'pointer' : 'default',
-            width: leftWidth
-          }}
-          onClick={handleRowClick}
-        >
-          {leftContent ? leftContent(rule, level, isExpanded, hasSubRules) : defaultLeftContent}
-        </TableCell>
-        <TableCell
-          align="left"
-          className={cardCellClass}
-          sx={{
-            ...commonCellStyles,
-            ...cardCellBg,
-            width: middleWidth,
-            maxWidth: '700px',
-            wordWrap: 'break-word',
-            overflowWrap: 'break-word',
-            whiteSpace: 'normal'
-          }}
-        >
-          {middleContent
-            ? middleContent(rule, level)
-            : rule.ruleContent && <span style={{ color }}>{rule.ruleContent}</span>}
-        </TableCell>
-        <TableCell
-          align="center"
-          className={cardCellClass}
-          sx={{
-            ...commonCellStyles,
-            ...cardCellBg,
-            ...rightCellRadius,
-            width: rightWidth
-          }}
-        >
-          {rightContent(rule, level)}
-        </TableCell>
+        {fullWidthCode && fullWidthCode(rule) ? (
+          <TableCell
+            align="left"
+            colSpan={3}
+            className={cardCellClass}
+            sx={{
+              ...commonCellStyles,
+              ...cardCellBg,
+              ...leftCellRadius,
+              ...rightCellRadius,
+              // Indent left edge of rule with transparent left border
+              ...(indentRow && {
+                borderLeft: `${level * indentWidth}px solid transparent`,
+                backgroundClip: 'padding-box'
+              }),
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              whiteSpace: 'normal'
+            }}
+          >
+            {leftContent ? leftContent(rule, level, isExpanded, hasSubRules) : defaultLeftContent}
+          </TableCell>
+        ) : (
+          <>
+            <TableCell
+              align="left"
+              className={cardCellClass}
+              sx={{
+                ...commonCellStyles,
+                ...cardCellBg,
+                ...leftCellRadius,
+                // Indent left edge of rule with transparent left border
+                ...(indentRow && {
+                  borderLeft: `${level * indentWidth}px solid transparent`,
+                  backgroundClip: 'padding-box'
+                }),
+                width: leftWidth
+              }}
+            >
+              {leftContent ? leftContent(rule, level, isExpanded, hasSubRules) : defaultLeftContent}
+            </TableCell>
+            <TableCell
+              align="left"
+              className={cardCellClass}
+              sx={{
+                ...commonCellStyles,
+                ...cardCellBg,
+                width: middleWidth,
+                maxWidth: '700px',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                whiteSpace: 'normal'
+              }}
+            >
+              {middleContent
+                ? middleContent(rule, level)
+                : rule.ruleContent && <span style={{ color }}>{rule.ruleContent}</span>}
+            </TableCell>
+            <TableCell
+              align="center"
+              className={cardCellClass}
+              onClick={(e) => e.stopPropagation()}
+              sx={{
+                ...commonCellStyles,
+                ...cardCellBg,
+                ...rightCellRadius,
+                cursor: 'default',
+                width: rightWidth
+              }}
+            >
+              {rightContent(rule, level)}
+            </TableCell>
+          </>
+        )}
       </TableRow>
       {isExpanded &&
         hasSubRules &&
@@ -228,6 +263,7 @@ const RuleRow: React.FC<RuleRowProps> = ({
             rightWidth={rightWidth}
             indentRow={indentRow}
             indentWidth={indentWidth}
+            fullWidthCode={fullWidthCode}
           />
         ))}
     </>
