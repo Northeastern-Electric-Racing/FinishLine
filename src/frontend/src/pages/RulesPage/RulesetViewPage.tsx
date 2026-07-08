@@ -74,7 +74,11 @@ const RulesetViewPage = () => {
         }
       >
         <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
-          {tabIndex === 0 ? <RulesetGeneralView allRules={allRules} /> : <RulesetTeamView allRules={allRules} />}
+          {tabIndex === 0 ? (
+            <RulesetTeamView allRules={allRules} />
+          ) : (
+            <RulesetGeneralView allRules={allRules} rulesetId={rulesetId!} />
+          )}
         </Box>
       </PageLayout>
     </Box>

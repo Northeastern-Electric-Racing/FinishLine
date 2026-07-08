@@ -360,6 +360,7 @@ export const useSetRuleCompletion = (rulesetId: string, projectId: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
         queryClient.invalidateQueries(['rules', 'unassigned']);
+        queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
       }
     }
   );
