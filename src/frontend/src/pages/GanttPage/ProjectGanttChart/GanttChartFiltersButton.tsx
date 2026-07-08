@@ -12,6 +12,8 @@ interface GanttChartFiltersButtonProps {
     defaultChecked: boolean;
   }[];
   teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
+  showTasks?: boolean;
+  showTasksHandler?: (event: ChangeEvent<HTMLInputElement>) => void;
   resetHandler: () => void;
 }
 
@@ -19,6 +21,8 @@ const GanttChartFiltersButton = ({
   carHandlers,
   teamTypeHandlers,
   teamHandlers,
+  showTasks,
+  showTasksHandler,
   resetHandler
 }: GanttChartFiltersButtonProps) => {
   const theme = useTheme();
@@ -63,6 +67,8 @@ const GanttChartFiltersButton = ({
           carHandlers={carHandlers}
           teamTypeHandlers={teamTypeHandlers}
           teamHandlers={teamHandlers}
+          showTasks={showTasks}
+          showTasksHandler={showTasksHandler}
           resetHandler={resetHandler}
           onClose={handleFilterClose}
         />

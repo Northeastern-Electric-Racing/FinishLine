@@ -13,13 +13,11 @@ generator client {
 }
 
 enum CR_Type {
-  ISSUE
-  DEFINITION_CHANGE
   LEADERSHIP
-  OTHER
   STAGE_GATE
   ACTIVATION
   BUDGET
+  STANDARD
 }
 
 enum Task_Priority {
@@ -52,19 +50,6 @@ enum Role_Type {
 enum Theme {
   LIGHT
   DARK
-}
-
-enum Scope_CR_Why_Type {
-  ESTIMATION
-  SCHOOL
-  DESIGN
-  MANUFACTURING
-  RULES
-  INITIALIZATION
-  COMPETITION
-  MAINTENANCE
-  OTHER_PROJECT
-  OTHER
 }
 
 enum Work_Package_Stage {
@@ -209,7 +194,6 @@ model User {
   teamsAsLead                             Team[]                               @relation(name: "teamsAsLead")
   deletedWBSElements                      WBS_Element[]                        @relation(name: "deletedWbsElements")
   checkedDescriptionBullets               Description_Bullet[]                 @relation(name: "checkDescriptionBullets")
-  createdProposedSolutions                Proposed_Solution[]
   createdTasks                            Task[]                               @relation(name: "createdBy")
   deletedTasks                            Task[]                               @relation(name: "deletedBy")
   assignedTasks                           Task[]                               @relation(name: "assignedTo")
@@ -306,6 +290,8 @@ model User {
   prospectiveSponsorsContacted            Prospective_Sponsor[]                @relation(name: "prospectiveSponsorContactor")
   createdMeetingAttendances               Meeting_Attendance[]                 @relation(name: "meetingAttendanceCreated")
   attendedMeetingAttendances              Meeting_Attendance[]                 @relation(name: "meetingAttendees")
+  createdTaskLabels                       Task_Label[]                         @relation(name: "taskLabelCreator")
+  deletedTaskLabels                       Task_Label[]                         @relation(name: "taskLabelDeleter")
 }
 
 model Role {
@@ -383,6 +369,7 @@ model Change_Request {
   accountCodeId            String?
   accountCode              Account_Code?                       @relation(fields: [accountCodeId], references: [accountCodeId])
   type                     CR_Type
+  why                      String?
   reviewerId               String?
   reviewer                 User?                               @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
   requestedReviewers       User[]                              @relation(name: "requestedChangeRequestReviewers")
@@ -392,12 +379,13 @@ model Change_Request {
   accepted                 Boolean?
   reviewNotes              String?
   changes                  Change[]
-  scopeChangeRequest       Scope_CR?
   stageGateChangeRequest   Stage_Gate_CR?
   activationChangeRequest  Activation_CR?
   budgetChangeRequest      Budget_CR?
   leadershipChangeRequest  Leadership_CR?
   notificationSlackThreads Message_Info[]
+  wbsProposedChangesId     String?                             @unique
+  wbsProposedChanges       Wbs_Proposed_Changes?               @relation("wbsProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
 
   @@unique([identifier, organizationId], name: "uniqueChangeRequest")
   @@index([reviewerId])
@@ -419,46 +407,6 @@ model Message_Info {
   @@index([reimbursementRequestId])
   @@index([eventId])
   @@index([changeRequestId])
-}
-
-model Scope_CR {
-  scopeCrId          String                @id @default(uuid())
-  changeRequestId    String                @unique
-  changeRequest      Change_Request        @relation(fields: [changeRequestId], references: [crId])
-  what               String
-  why                Scope_CR_Why[]
-  scopeImpact        String
-  timelineImpact     Int
-  budgetImpact       Int
-  proposedSolutions  Proposed_Solution[]
-  wbsProposedChanges Wbs_Proposed_Changes? @relation(name: "wbsProposedChanges")
-  wbsOriginalData    Wbs_Proposed_Changes? @relation(name: "wbsOriginalData")
-}
-
-model Proposed_Solution {
-  proposedSolutionId   String   @id @default(uuid())
-  description          String
-  timelineImpact       Int
-  budgetImpact         Int
-  scopeImpact          String
-  scopeChangeRequest   Scope_CR @relation(fields: [scopeChangeRequestId], references: [scopeCrId])
-  scopeChangeRequestId String
-  createdByUserId      String
-  createdBy            User     @relation(fields: [createdByUserId], references: [userId])
-  dateCreated          DateTime @default(now())
-  approved             Boolean  @default(false)
-
-  @@index([scopeChangeRequestId])
-}
-
-model Scope_CR_Why {
-  scopeCrWhyId String            @id @default(uuid())
-  scopeCrId    String
-  scopeCr      Scope_CR          @relation(fields: [scopeCrId], references: [scopeCrId])
-  type         Scope_CR_Why_Type
-  explain      String
-
-  @@index([scopeCrId])
 }
 
 model Stage_Gate_CR {
@@ -705,8 +653,26 @@ model Task {
   dateCreated     DateTime      @default(now())
   wbsElement      WBS_Element   @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId    String
+  labels          Task_Label[]
 
   @@index([wbsElementId])
+}
+
+model Task_Label {
+  taskLabelId    String       @id @default(uuid())
+  name           String
+  colorHexCode   String
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "taskLabelCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "taskLabelDeleter")
+  userDeletedId  String?
+  tasks          Task[]
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@index([organizationId])
 }
 
 model Reimbursement_Status {
@@ -1287,14 +1253,7 @@ model Wbs_Proposed_Changes {
   proposedDescriptionBulletChanges Description_Bullet[]           @relation(name: "proposedDescriptionBulletChanges")
   dateDeleted                      DateTime?
 
-  // A Wbs Proposed Change can either be original data or a proposed change, not a combination and not none
-  scopeChangeRequestAsOriginalData   Scope_CR? @relation(name: "wbsOriginalData", fields: [scopeChangeRequestAsOriginalDataId], references: [scopeCrId])
-  scopeChangeRequestAsOriginalDataId String?   @unique
-  scopeChangeRequest                 Scope_CR? @relation(name: "wbsProposedChanges", fields: [scopeChangeRequestId], references: [scopeCrId])
-  scopeChangeRequestId               String?   @unique
-
-  @@index([scopeChangeRequestAsOriginalDataId])
-  @@index([scopeChangeRequestId])
+  changeRequest Change_Request? @relation("wbsProposedChanges")
 }
 
 model Project_Proposed_Changes {
@@ -1450,6 +1409,7 @@ model Organization {
   calendars                Calendar[]
   eventTypes               Event_Type[]
   meetingAttendances       Meeting_Attendance[]
+  taskLabels               Task_Label[]
 }
 
 model FrequentlyAskedQuestion {

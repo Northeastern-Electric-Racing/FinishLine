@@ -2,10 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
 import {
-  ChangeRequestReason,
-  ChangeRequestType,
   DescriptionBulletPreview,
   User,
   validateWBS,
@@ -28,10 +25,11 @@ import {
   UseFormWatch
 } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
+import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
 import { useState, useEffect } from 'react';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERSuccessButton from '../../components/NERSuccessButton';
+import NERFailButton from '../../components/NERFailButton';
 import PageLayout from '../../components/PageLayout';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -41,12 +39,9 @@ import { ObjectSchema } from 'yup';
 import { getMonday } from '../../utils/datetime.utils';
 import { toDateString } from 'shared';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
-import { StandardChangeRequestType } from '../CreateChangeRequestPage/CreateChangeRequestView';
 import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequestView';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import HelpIcon from '@mui/icons-material/Help';
-import { NERButton } from '../../components/NERButton';
 import dayjs from 'dayjs';
 import DescriptionBulletsEditView from '../../components/DescriptionBulletEditView';
 import { useAllWorkPackageTemplates } from '../../hooks/wbs-templates.hooks';
@@ -54,10 +49,10 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { WorkPackageTemplateSection } from './WorkPackageTemplateSection';
 import { useQuery } from '../../hooks/utils.hooks';
-import { wbsTester } from '../../utils/form';
 import * as yup from 'yup';
 import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeRequestModal';
 import { useQueryClient } from 'react-query';
+import * as React from 'react';
 
 export interface WorkPackageFormReturn {
   register: UseFormRegister<WorkPackageFormViewPayload>;
@@ -87,7 +82,6 @@ export interface WorkPackageFormViewPayload {
   workPackageId: string;
   startDate: Date;
   duration: number;
-  crId?: string;
   stage: string;
   blockedBy: string[];
   descriptionBullets: DescriptionBulletPreview[];
@@ -110,19 +104,21 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const toast = useToast();
   const user = useCurrentUser();
   const queryClient = useQueryClient();
-  const { reset: resetWorkPackageForm, ...workPackageFormMethods } = useForm<WorkPackageFormViewPayload>({
+  const history = useHistory();
+
+  const { ...workPackageFormMethods } = useForm<WorkPackageFormViewPayload>({
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.name ?? '',
       workPackageId: defaultValues?.workPackageId ?? '',
       startDate: defaultValues?.startDate ?? getMonday(new Date()),
       duration: defaultValues?.duration ?? 0,
-      crId: crId ?? defaultValues?.crId,
       blockedBy: defaultValues?.blockedBy ?? [],
       descriptionBullets: defaultValues?.descriptionBullets ?? [],
       stage: defaultValues?.stage ?? 'NONE'
     }
   });
+
   const {
     control,
     watch,
@@ -131,8 +127,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     register,
     formState: { errors }
   } = workPackageFormMethods;
-
-  const history = useHistory();
 
   const [managerId, setManagerId] = useState<string | undefined>(
     defaultValues ? wbsElement.manager?.userId.toString() : undefined
@@ -143,7 +137,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   let changeRequestFormInput: FormInput | undefined = undefined;
   const pageTitle = defaultValues ? 'Edit Work Package' : 'Create Work Package';
 
-  // lists of stuff
   const {
     fields: descriptionBullets,
     append: appendDescriptionBullet,
@@ -151,6 +144,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   } = useFieldArray({ control, name: 'descriptionBullets' });
 
   const { userId } = user;
+
   const {
     data: workPackageTemplates,
     isLoading: workPackageTemplateisLoading,
@@ -164,54 +158,23 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const watchedStage = watch('stage');
   const watchedDuration = watch('duration');
   const watchedDescriptionBullets = watch('descriptionBullets');
+  const watchedBlockedBy = watch('blockedBy');
+  const watchedStartDate = watch('startDate');
 
   const changeRequestSchema = yup.object().shape({
-    type: yup.mixed<StandardChangeRequestType>().required('Type is required'),
-    what: yup.string().required('What is required'),
-    why: yup
-      .array()
-      .min(1, 'At least one Why is required')
-      .required('Why is required')
-      .of(
-        yup.object().shape({
-          type: yup.mixed<ChangeRequestReason>().required('Why Type is required'),
-          explain: yup
-            .string()
-            .required('Why Explain is required')
-            .when('type', ([type], schema) =>
-              type === ChangeRequestReason.OtherProject
-                ? schema.required().test('wbs-num-valid', 'WBS Number is not valid', wbsTester)
-                : yup.string()
-            )
-        })
-      )
+    why: yup.string().required('Why is required'),
+    requestedReviewerId: yup.string().optional()
   });
 
-  const { reset: resetChangeRequestForm, ...changeRequestFormMethods } = useForm<FormInput>({
+  const { reset: resetCRForm, ...changeRequestFormMethods } = useForm<FormInput>({
     resolver: yupResolver(changeRequestSchema),
     defaultValues: query.get('budgetChange')
-      ? {
-          what: 'Increase the budget to account for the cost of materials',
-          why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
-          type: ChangeRequestType.Issue
-        }
+      ? { why: 'The cost of materials ended up exceeding the initial budget' }
       : query.get('timelineDelay')
-        ? {
-            what: 'Timeline delay',
-            why: [{ type: ChangeRequestReason.Other, explain: 'Decided to extend timeline after design review' }],
-            type: ChangeRequestType.Redefinition
-          }
+        ? { why: 'Decided to extend timeline after design review' }
         : query.get('createWP')
-          ? {
-              what: '',
-              why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
-              type: ChangeRequestType.Redefinition
-            }
-          : {
-              what: '',
-              why: [{ type: ChangeRequestReason.Other, explain: '' }],
-              type: ChangeRequestType.Issue
-            }
+          ? { why: 'Creating a Work Package on this Project' }
+          : { why: '' }
   });
 
   useEffect(() => {
@@ -231,53 +194,66 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   if (workPackageTemplateisLoading || !workPackageTemplates) return <LoadingIndicator />;
   if (workPackageTemplateisError) return <ErrorPage message={workPackageTemplateError.message} />;
 
-  // Check if only lead/manager changed
-  const checkOnlyLeadershipChanged = (
-    formName: string,
-    formStartDate: Date,
-    formDuration: number,
-    formBlockedBy: string[],
-    formStage: string,
-    formDescriptionBullets: DescriptionBulletPreview[]
-  ) => {
-    if (!defaultValues) return false; // Only relevant for edits
+  const leadershipChanged = defaultValues
+    ? leadId !== wbsElement.lead?.userId.toString() || managerId !== wbsElement.manager?.userId.toString()
+    : false;
 
-    return (
-      formName === defaultValues.name &&
-      isSameDay(formStartDate, defaultValues.startDate) &&
-      formDuration === defaultValues.duration &&
-      JSON.stringify(formBlockedBy.sort()) === JSON.stringify((defaultValues.blockedBy || []).sort()) &&
-      formStage === defaultValues.stage &&
-      JSON.stringify(formDescriptionBullets) === JSON.stringify(defaultValues.descriptionBullets) &&
-      (leadId !== wbsElement.lead?.userId.toString() || managerId !== wbsElement.manager?.userId.toString())
-    );
+  const otherFieldsChanged = defaultValues
+    ? watchedName !== defaultValues.name ||
+      !isSameDay(watchedStartDate, defaultValues.startDate) ||
+      watchedDuration !== defaultValues.duration ||
+      JSON.stringify([...watchedBlockedBy].sort()) !== JSON.stringify([...(defaultValues.blockedBy || [])].sort()) ||
+      watchedStage !== defaultValues.stage ||
+      JSON.stringify(watchedDescriptionBullets) !== JSON.stringify(defaultValues.descriptionBullets)
+    : false;
+
+  const liveOnlyLeadershipChanged = leadershipChanged && !otherFieldsChanged;
+
+  const getButtonLabel = () => {
+    if (!defaultValues) return 'Create Work Package';
+    if (liveOnlyLeadershipChanged) return 'Submit & Implement';
+    if (otherFieldsChanged) return 'Submit Change Request';
+    return 'Submit & Implement';
+  };
+
+  const isButtonDisabled = () => {
+    if (!defaultValues) return false;
+    return !leadershipChanged && !otherFieldsChanged;
+  };
+
+  const handleButtonClick = (e: React.MouseEvent) => {
+    if (defaultValues && otherFieldsChanged) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsModalOpen(true);
+    }
   };
 
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
-    const { name, startDate, duration, blockedBy, crId, stage, descriptionBullets } = data;
+    const { name, startDate, duration, blockedBy, stage, descriptionBullets } = data;
     const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
-    try {
-      const onlyLeadershipChanged = checkOnlyLeadershipChanged(
-        name,
-        startDate,
-        duration,
-        blockedBy,
-        stage,
-        descriptionBullets
-      );
 
-      if (onlyLeadershipChanged) {
-        const autoCRPayload = {
+    try {
+      if (liveOnlyLeadershipChanged) {
+        await createLeadershipCR({
           submitterId: user.userId,
           wbsNum: wbsElement.wbsNum,
           leadId,
           managerId
-        };
-        await createLeadershipCR(autoCRPayload);
-        // fixes cache issue
+        });
+        toast.success('Changes submitted successfully');
         await queryClient.refetchQueries(['work packages']);
         exitActiveMode();
         return;
+      }
+
+      if (leadershipChanged && otherFieldsChanged) {
+        await createLeadershipCR({
+          submitterId: user.userId,
+          wbsNum: wbsElement.wbsNum,
+          leadId,
+          managerId
+        });
       }
 
       const payload = {
@@ -287,7 +263,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         workPackageId: defaultValues?.workPackageId,
         userId,
         name,
-        crId: crId === 'null' ? undefined : crId,
         startDate: toDateString(startDate),
         duration,
         blockedBy: blockedByWbsNums,
@@ -295,46 +270,27 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         stage: stage as WorkPackageStage,
         links: []
       };
+
       if (changeRequestFormInput) {
         await createWorkPackageScopeCR({
           ...changeRequestFormInput,
           wbsNum: wbsElement.wbsNum,
-          workPackageProposedChanges: {
-            ...payload
-          },
-          proposedSolutions: []
+          workPackageProposedChanges: { ...payload }
         });
-
-        history.push(`${routes.PROJECTS}/${wbsPipe(wbsElement.wbsNum)}/change-requests`);
+        toast.success('Change request submitted successfully');
+        history.push(routes.CHANGE_REQUESTS_OVERVIEW);
       } else {
-        await workPackageMutateAsync(payload);
+        await workPackageMutateAsync({ ...payload, crId });
+        toast.success('Work package updated successfully');
         exitActiveMode();
       }
     } catch (e) {
-      if (e instanceof Error) {
-        toast.error(e.message);
-        return;
-      }
+      if (e instanceof Error) toast.error(e.message);
     }
   };
 
-  const crWatch = watch('crId');
-  const changeRequestInputExists = crWatch && crWatch !== 'null' && crWatch !== '';
   const startDate = watch('startDate');
   const duration = watch('duration');
-
-  // Calculate for submit button status
-  const onlyLeadershipChanged = defaultValues
-    ? checkOnlyLeadershipChanged(
-        watch('name'),
-        watch('startDate'),
-        watch('duration'),
-        watch('blockedBy'),
-        watch('stage'),
-        watch('descriptionBullets')
-      )
-    : false;
-
   const calculatedEndDate = dayjs(startDate)
     .add(7 * duration, 'day')
     .toDate();
@@ -359,61 +315,28 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         stickyHeader
         title={pageTitle}
         headerRight={
-          <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
-            {
-              <Box display="inline-flex" alignItems="center">
-                <Tooltip
-                  title={
-                    <Typography fontSize={'16px'}>
-                      {`If you don't enter a Change Request ID into this form, you can create one here that when accepted will
-                      ${
-                        defaultValues ? `edit the selected Work Package` : `create a new Work Package`
-                      } with the inputted values`}
-                    </Typography>
-                  }
-                  placement="left"
-                >
-                  <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
-                </Tooltip>
-                <NERButton
-                  disabled={!!changeRequestInputExists || onlyLeadershipChanged}
-                  variant="contained"
-                  onClick={() => setIsModalOpen(true)}
-                  sx={{ mx: 1 }}
-                >
-                  Create Change Request
-                </NERButton>
-              </Box>
-            }
-            <Box>
-              <NERButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
-                Cancel
-              </NERButton>
-              <NERSuccessButton
-                variant="contained"
-                type="submit"
-                sx={{ mx: 1 }}
-                disabled={!changeRequestInputExists && !!defaultValues && !onlyLeadershipChanged}
-              >
-                Submit
-              </NERSuccessButton>
-            </Box>
+          <Box display="inline-flex" alignItems="center" justifyContent="end" flexWrap="nowrap" gap={1}>
+            <NERFailButton variant="contained" onClick={exitActiveMode}>
+              Cancel
+            </NERFailButton>
+            <NERSuccessButton variant="contained" type="submit" disabled={isButtonDisabled()} onClick={handleButtonClick}>
+              {getButtonLabel()}
+            </NERSuccessButton>
           </Box>
         }
       >
         <WorkPackageTemplateSection
           workPackageTemplates={workPackageTemplates}
           currentWorkPackageTemplate={currentWorkPackageTemplate}
-          setCurrentWorkPackageTemplate={(WorkPackageTemplate) => {
-            setValue('name', WorkPackageTemplate.workPackageName ?? '');
-            setValue('stage', WorkPackageTemplate.stage ?? 'NONE');
-            setValue('duration', WorkPackageTemplate.duration ?? 0);
-            setValue('descriptionBullets', WorkPackageTemplate.descriptionBullets ?? []);
-            setValue('workPackageId', WorkPackageTemplate.workPackageTemplateId);
-            setCurrentWorkPackageTemplate(WorkPackageTemplate);
+          setCurrentWorkPackageTemplate={(template) => {
+            setValue('name', template.workPackageName ?? '');
+            setValue('stage', template.stage ?? 'NONE');
+            setValue('duration', template.duration ?? 0);
+            setValue('descriptionBullets', template.descriptionBullets ?? []);
+            setValue('workPackageId', template.workPackageTemplateId);
+            setCurrentWorkPackageTemplate(template);
           }}
         />
-
         <WorkPackageFormDetails
           control={control}
           errors={errors}
@@ -463,8 +386,12 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           changeRequestFormInput = crFormInput;
           await handleSubmit(onSubmit)();
           setIsModalOpen(false);
+          resetCRForm();
         }}
-        onHide={() => setIsModalOpen(false)}
+        onHide={() => {
+          setIsModalOpen(false);
+          resetCRForm();
+        }}
         wbsNum={wbsPipe(wbsElement.wbsNum)}
         open={isModalOpen}
         changeRequestFormReturn={changeRequestFormMethods}

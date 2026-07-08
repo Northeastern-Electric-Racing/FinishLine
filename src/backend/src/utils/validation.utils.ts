@@ -24,7 +24,7 @@ export const decimalMinZero = (validationObject: ValidationChain): ValidationCha
 };
 
 export const nonEmptyString = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().not().isEmpty({ ignore_whitespace: true });
+  return validationObject.isString().not().isEmpty();
 };
 
 export const isRole = (validationObject: ValidationChain): ValidationChain => {
