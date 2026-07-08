@@ -254,7 +254,7 @@ export default class RulesController {
     }
   }
 
-  static async getUnassignedRulesForRuleset(req: Request, res: Response, next: NextFunction) {
+  static async getUnassignedRulesForProjectRuleset(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetId, projectId } = req.params as Record<string, string>;
 

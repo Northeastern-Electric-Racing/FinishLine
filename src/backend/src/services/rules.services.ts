@@ -1195,9 +1195,8 @@ export default class RulesService {
   }
 
   /**
-   * Gets rules assignable to a project, on any of the project's teams, that are not
-   * already assigned to it. A project can belong to multiple teams, so rules from all
-   * of its teams are shown.
+   * Gets rules assignable to a project that are not already assigned to it.
+   * A project can belong to multiple teams, so rules from all of its teams are shown.
    * @param rulesetId ruleset the rules are in
    * @param projectId the project the rules would be assigned to
    * @param organizationId the organization id
