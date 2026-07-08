@@ -19,11 +19,12 @@ import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentUser, useUserScheduleSettings, useManyUsersWithScheduleSettings } from '../../../hooks/users.hooks';
-import { useMarkUserConfirmed, useSingleEventWithMembers } from '../../../hooks/calendar.hooks';
+import { useMarkUserConfirmed, useRemindUnconfirmed, useSingleEventWithMembers } from '../../../hooks/calendar.hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { eventNamePipe, fullNamePipe } from '../../../utils/pipes';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
+import NERModal from '../../../components/NERModal';
 import { routes } from '../../../utils/routes';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { deeplyCopy } from 'shared/src/utils';
@@ -84,6 +85,7 @@ export const EventAvailabilityPage: React.FC = () => {
   );
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ day: Date; startHour: number; endHour: number } | null>(null);
+  const [confirmRemindOpen, setConfirmRemindOpen] = useState(false);
 
   const {
     data: event,
@@ -123,6 +125,7 @@ export const EventAvailabilityPage: React.FC = () => {
   } = useManyUsersWithScheduleSettings(allRelevantUserIds);
 
   const { mutateAsync: markUserConfirmed } = useMarkUserConfirmed(eventId);
+  const { mutateAsync: remindUnconfirmed, isLoading: isReminding } = useRemindUnconfirmed(eventId);
 
   const displayDate = useMemo(() => {
     if (dateParam) {
@@ -207,6 +210,18 @@ export const EventAvailabilityPage: React.FC = () => {
 
   const handleClose = () => {
     history.push(routes.CALENDAR);
+  };
+
+  const handleRemindConfirm = async () => {
+    try {
+      await remindUnconfirmed();
+      toast.success('Reminders sent to unconfirmed members!');
+      setConfirmRemindOpen(false);
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
   };
 
   const availableUsers = new Map<number, User[]>();
@@ -400,6 +415,15 @@ export const EventAvailabilityPage: React.FC = () => {
             </Typography>
           )}
 
+          {/* Button to renotify unconfirmed members */}
+          {(isCreator || isAdmin(currentUser.role)) && (
+            <Box sx={{ mt: 3 }}>
+              <NERFailButton fullWidth disabled={isReminding} onClick={() => setConfirmRemindOpen(true)}>
+                {isReminding ? 'Sending Reminders...' : 'Remind Unconfirmed'}
+              </NERFailButton>
+            </Box>
+          )}
+
           {/* Schedule button for creators - only show if event is not already scheduled */}
           {(isCreator || isAdmin(currentUser.role)) && selectedSlot && event.status !== EventStatus.SCHEDULED && (
             <Box sx={{ mt: 3 }}>
@@ -442,6 +466,19 @@ export const EventAvailabilityPage: React.FC = () => {
           endHour={selectedSlot.endHour}
         />
       )}
+      <NERModal
+        open={confirmRemindOpen}
+        onHide={() => setConfirmRemindOpen(false)}
+        title="Remind Unconfirmed Members"
+        onSubmit={handleRemindConfirm}
+        submitText="Send"
+        cancelText="Cancel"
+        disabled={isReminding}
+      >
+        <Typography>
+          Are you sure you want to send a Slack reminder to all members who have not yet confirmed their availability?
+        </Typography>
+      </NERModal>
     </PageLayout>
   );
 };

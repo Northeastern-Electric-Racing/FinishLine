@@ -301,4 +301,6 @@ calendarRouter.get('/calendars', CalendarController.getAllCalendars);
 calendarRouter.post('/events-paginated', CalendarController.getAllEventsPaginated);
 calendarRouter.get('/ics/token', CalendarController.getOrCreateIcsToken);
 
+calendarRouter.post('/event/:eventId/remind-unconfirmed', CalendarController.remindUnconfirmed);
+
 export default calendarRouter;

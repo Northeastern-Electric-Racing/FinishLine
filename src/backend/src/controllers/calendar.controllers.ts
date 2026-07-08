@@ -641,4 +641,15 @@ export default class CalendarController {
       next(error);
     }
   }
+
+  static async remindUnconfirmed(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params as Record<string, string>;
+
+      await CalendarService.remindUnconfirmed(eventId, req.currentUser, req.organization);
+      res.status(200).json({ message: 'Reminders sent to unconfirmed members' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

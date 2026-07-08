@@ -2579,4 +2579,67 @@ describe('Calendar Tests', () => {
       expect(result.find((s) => s.scheduleSlotId === slotId)).toBeUndefined();
     });
   });
+
+  describe('remindUnconfirmed', () => {
+    let member: User;
+    let event: Event;
+
+    beforeEach(async () => {
+      member = await createTestUser(wonderwomanGuest, orgId);
+      const scheduleSlots: ScheduleSlotCreateArgs[] = [
+        { startTime: new Date('2025-10-13T09:00:00Z'), endTime: new Date('2025-10-13T10:00:00Z'), allDay: false }
+      ];
+      event = await CalendarService.createEvent(
+        adminUser,
+        'Test Event',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [],
+        [],
+        [],
+        [],
+        scheduleSlots,
+        undefined,
+        undefined,
+        undefined,
+        'Conference Room A',
+        undefined,
+        undefined
+      );
+    });
+
+    it('fails if event does not exist', async () => {
+      await expect(CalendarService.remindUnconfirmed('non-existent-id', adminUser, organization)).rejects.toThrow(
+        new NotFoundException('Event', 'non-existent-id')
+      );
+    });
+
+    it('fails if event is already deleted', async () => {
+      await prisma.event.update({ where: { eventId: event.eventId }, data: { dateDeleted: new Date() } });
+      await expect(CalendarService.remindUnconfirmed(event.eventId, adminUser, organization)).rejects.toThrow(
+        new DeletedException('Event', event.eventId)
+      );
+    });
+
+    it('fails if submitter is not the creator', async () => {
+      await expect(CalendarService.remindUnconfirmed(event.eventId, member, organization)).rejects.toThrow(
+        new AccessDeniedException('Only the creator or an admin can send reminders for unconfirmed events')
+      );
+    });
+
+    it('succeeds and sends reminders to unconfirmed members', async () => {
+      await expect(CalendarService.remindUnconfirmed(event.eventId, adminUser, organization)).resolves.toBeUndefined();
+    });
+
+    it('succeeds when all members have already confirmed', async () => {
+      // pre-confirm the member so there are no unconfirmed recipients
+      await prisma.event.update({
+        where: { eventId: event.eventId },
+        data: { confirmedMembers: { connect: { userId: member.userId } } }
+      });
+      await expect(CalendarService.remindUnconfirmed(event.eventId, adminUser, organization)).resolves.toBeUndefined();
+    });
+  });
 });
