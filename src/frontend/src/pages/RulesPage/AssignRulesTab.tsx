@@ -23,9 +23,16 @@ import ErrorPage from '../ErrorPage';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
-import { NERButton } from '../../components/NERButton';
+import { RulesActionButton } from './components/RulesActionButton';
 import RuleRow from './RuleRow';
 import { useBulkToggleRuleTeam } from '../../hooks/rules.hooks';
+
+const ROW_BACKGROUND_COLOR = '#9d9d9d';
+const SELECTED_ROW_COLOR = '#b36b6b';
+const ROW_HOVER_COLOR = '#5e5e5e';
+const SELECTED_ROW_HOVER_COLOR = '#a05858';
+const ROW_TEXT_COLOR = '#000000';
+const HEADER_TEXT_COLOR = '#ffffff';
 
 /*
  * Props for the assign rules tab.
@@ -65,8 +72,8 @@ const TeamRow: React.FC<TeamRowProps> = ({ team, isSelected, onClick }) => {
       onClick={onClick}
       sx={{
         borderBottom: '1px solid #7d7d7d',
-        backgroundColor: isSelected ? '#b36b6b' : '#CECECE',
-        '&:hover': { backgroundColor: isSelected ? '#a05858' : '#5e5e5e' },
+        backgroundColor: isSelected ? SELECTED_ROW_COLOR : ROW_BACKGROUND_COLOR,
+        '&:hover': { backgroundColor: isSelected ? SELECTED_ROW_HOVER_COLOR : ROW_HOVER_COLOR },
         cursor: 'pointer',
         '&:last-child': { borderBottom: 'none' }
       }}
@@ -77,7 +84,7 @@ const TeamRow: React.FC<TeamRowProps> = ({ team, isSelected, onClick }) => {
           padding: '8px 16px',
           backgroundColor: 'inherit',
           borderBottom: 'none',
-          color: '#000000'
+          color: ROW_TEXT_COLOR
         }}
       >
         {team.teamName}
@@ -239,7 +246,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
       <Box sx={{ display: 'flex', gap: 4 }}>
         {/* Teams Column */}
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h4" sx={{ mb: 2, color: '#ffffff' }}>
+          <Typography variant="h4" sx={{ mb: 2, color: HEADER_TEXT_COLOR }}>
             Teams:
           </Typography>
           <TableContainer
@@ -252,7 +259,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
             }}
           >
             <Table sx={{ borderCollapse: 'collapse' }}>
-              <TableBody sx={{ backgroundColor: '#CECECE' }}>
+              <TableBody sx={{ backgroundColor: ROW_BACKGROUND_COLOR }}>
                 {teams?.map((team) => (
                   <TeamRow
                     key={team.teamId}
@@ -268,7 +275,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
 
         {/* Rules Column */}
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h4" sx={{ mb: 2, color: '#ffffff' }}>
+          <Typography variant="h4" sx={{ mb: 2, color: HEADER_TEXT_COLOR }}>
             Rules:
           </Typography>
           <TableContainer
@@ -281,7 +288,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
             }}
           >
             <Table sx={{ borderCollapse: 'collapse' }}>
-              <TableBody sx={{ backgroundColor: '#CECECE' }}>
+              <TableBody sx={{ backgroundColor: ROW_BACKGROUND_COLOR }}>
                 {topLevelRules.map((rule) => (
                   <RuleRow
                     key={rule.ruleId}
@@ -290,14 +297,14 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
                     backgroundColor={(r) => {
                       const leafIds = getLeafRuleIds(r.ruleId, rules);
                       const isSelected = leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
-                      return isSelected ? '#b36b6b' : '#CECECE';
+                      return isSelected ? SELECTED_ROW_COLOR : ROW_BACKGROUND_COLOR;
                     }}
                     hoverColor={(r) => {
                       const leafIds = getLeafRuleIds(r.ruleId, rules);
                       const isSelected = leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
-                      return isSelected ? '#a05858' : '#5e5e5e';
+                      return isSelected ? SELECTED_ROW_HOVER_COLOR : ROW_HOVER_COLOR;
                     }}
-                    textColor="#000000"
+                    textColor={ROW_TEXT_COLOR}
                     onRowClick={(r) => handleRuleToggle(r.ruleId)}
                     middleContent={() => null}
                     rightContent={(r) => renderTeamTags(r.ruleId)}
@@ -332,17 +339,9 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
           }}
         />
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 1 }}>
-          <NERButton
-            variant="contained"
-            onClick={handleSaveAndExit}
-            disabled={isSaving}
-            sx={{
-              backgroundColor: '#dd514c',
-              '&:hover': { backgroundColor: '#c74340' }
-            }}
-          >
+          <RulesActionButton variant="contained" onClick={handleSaveAndExit} disabled={isSaving}>
             {isSaving ? 'Saving...' : 'Save & Exit'}
-          </NERButton>
+          </RulesActionButton>
         </Box>
       </Box>
     </Box>

@@ -38,6 +38,7 @@ import { InfoOutlined } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../../utils/routes';
 import RuleStatusTag from '../../../RulesPage/components/RuleStatusTag';
+import { RulesActionButton } from '../../../RulesPage/components/RulesActionButton';
 
 interface ProjectRulesTabProps {
   project: Project;
@@ -322,23 +323,13 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       >
         <Box sx={{ borderBottom: `2px solid ${theme.palette.divider}`, mb: 2, ml: '30px' }} />
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 1 }}>
-          <Button
+          <RulesActionButton
             variant="contained"
             onClick={() => setAddRuleModalOpen(true)}
             disabled={!teamId || hasNoActiveRuleset}
-            sx={{
-              borderRadius: '8px',
-              backgroundColor: '#ef4345',
-              padding: '2px 15px',
-              fontSize: '16px',
-              fontWeight: 700,
-              textTransform: 'none',
-              '&:hover': { backgroundColor: '#b0191a' },
-              '&.Mui-disabled': { backgroundColor: theme.palette.action.disabled, color: theme.palette.text.disabled }
-            }}
           >
             Add Rule
-          </Button>
+          </RulesActionButton>
         </Box>
       </Box>
 

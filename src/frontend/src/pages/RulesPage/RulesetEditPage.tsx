@@ -17,6 +17,7 @@ import AddRuleSectionModal from './components/AddRuleSectionModal';
 import AddRuleModal from './components/AddRuleModal';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
+import { RulesActionButton } from './components/RulesActionButton';
 import DeleteRuleModal from './components/DeleteRuleModal';
 import { useDeleteRule, useEditRule, useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
 import { countRulesToDelete } from '../../utils/rules.utils';
@@ -317,44 +318,14 @@ const RulesetEditPage: React.FC = () => {
                     >
                       Cancel
                     </Button>
-                    <Button
-                      variant="contained"
-                      onClick={handleSaveEdit}
-                      sx={{
-                        borderRadius: '8px',
-                        color: '#ededed',
-                        backgroundColor: '#dd514c',
-                        padding: '2px 15px',
-                        fontSize: '16px',
-                        fontWeight: 700,
-                        textTransform: 'none',
-                        '&:hover': {
-                          backgroundColor: '#c74340'
-                        }
-                      }}
-                    >
+                    <RulesActionButton variant="contained" onClick={handleSaveEdit}>
                       Save
-                    </Button>
+                    </RulesActionButton>
                   </>
                 ) : (
-                  <Button
-                    variant="contained"
-                    onClick={handleAddRuleSection}
-                    sx={{
-                      borderRadius: '8px',
-                      color: '#ededed',
-                      backgroundColor: '#dd514c',
-                      padding: '2px 15px',
-                      fontSize: '16px',
-                      fontWeight: 700,
-                      textTransform: 'none',
-                      '&:hover': {
-                        backgroundColor: '#c74340'
-                      }
-                    }}
-                  >
+                  <RulesActionButton variant="contained" onClick={handleAddRuleSection}>
                     Add Rule Section
-                  </Button>
+                  </RulesActionButton>
                 )}
               </Box>
             </Box>
