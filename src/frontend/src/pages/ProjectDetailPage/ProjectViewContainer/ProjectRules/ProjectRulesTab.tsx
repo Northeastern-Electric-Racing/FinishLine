@@ -324,7 +324,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         }}
       >
         <Box sx={{ borderBottom: `2px solid ${theme.palette.divider}`, mb: 2, ml: '30px' }} />
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 2 }}>
           <RulesActionButton
             variant="contained"
             onClick={() => setAddRuleModalOpen(true)}

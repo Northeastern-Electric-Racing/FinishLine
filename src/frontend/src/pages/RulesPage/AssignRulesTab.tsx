@@ -28,13 +28,6 @@ import RuleRow from './RuleRow';
 import { useBulkToggleRuleTeam } from '../../hooks/rules.hooks';
 import { compareRuleCodes } from '../../utils/rules.utils';
 
-const ROW_BACKGROUND_COLOR = '#9d9d9d';
-const SELECTED_ROW_COLOR = '#b36b6b';
-const ROW_HOVER_COLOR = '#5e5e5e';
-const SELECTED_ROW_HOVER_COLOR = '#a05858';
-const ROW_TEXT_COLOR = '#000000';
-const HEADER_TEXT_COLOR = '#ffffff';
-
 /*
  * Props for the assign rules tab.
  */
@@ -60,21 +53,23 @@ const getLeafRuleIds = (ruleId: string, allRules: Rule[]): string[] => {
  */
 interface TeamRowProps {
   team: TeamPreview;
-  isSelected: boolean;
+  backgroundColor: string;
+  hoverColor: string;
   onClick: () => void;
 }
 
 /**
  * Row component for displaying a team in the teams table.
  */
-const TeamRow: React.FC<TeamRowProps> = ({ team, isSelected, onClick }) => {
+const TeamRow: React.FC<TeamRowProps> = ({ team, backgroundColor, hoverColor, onClick }) => {
+  const theme = useTheme();
   return (
     <TableRow
       onClick={onClick}
       sx={{
         borderBottom: '1px solid #7d7d7d',
-        backgroundColor: isSelected ? SELECTED_ROW_COLOR : ROW_BACKGROUND_COLOR,
-        '&:hover': { backgroundColor: isSelected ? SELECTED_ROW_HOVER_COLOR : ROW_HOVER_COLOR },
+        backgroundColor,
+        '&:hover': { backgroundColor: hoverColor },
         cursor: 'pointer',
         '&:last-child': { borderBottom: 'none' }
       }}
@@ -85,7 +80,7 @@ const TeamRow: React.FC<TeamRowProps> = ({ team, isSelected, onClick }) => {
           padding: '8px 16px',
           backgroundColor: 'inherit',
           borderBottom: 'none',
-          color: ROW_TEXT_COLOR
+          color: theme.palette.common.black
         }}
       >
         {team.teamName}
@@ -141,6 +136,16 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     if (!selectedTeamId) return false;
     return assignments.has(`${selectedTeamId}:${ruleId}`);
   };
+
+  // A rule is considered selected when all of its leaf rules are assigned to the current team.
+  const isRuleSelected = (rule: Rule) => {
+    const leafIds = getLeafRuleIds(rule.ruleId, rules);
+    return leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
+  };
+
+  // Shared highlight logic for both the team rows and rule rows.
+  const rowBackgroundColor = (isSelected: boolean) => (isSelected ? '#b36b6b' : theme.palette.grey[500]);
+  const rowHoverColor = (isSelected: boolean) => (isSelected ? '#a05858' : theme.palette.grey[700]);
 
   const getAssignedTeamNames = (ruleId: string): string[] => {
     if (!teams) return [];
@@ -247,7 +252,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
       <Box sx={{ display: 'flex', gap: 4 }}>
         {/* Teams Column */}
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h4" sx={{ mb: 2, color: HEADER_TEXT_COLOR }}>
+          <Typography variant="h4" sx={{ mb: 2, color: theme.palette.text.primary }}>
             Teams:
           </Typography>
           <TableContainer
@@ -260,12 +265,13 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
             }}
           >
             <Table sx={{ borderCollapse: 'collapse' }}>
-              <TableBody sx={{ backgroundColor: ROW_BACKGROUND_COLOR }}>
+              <TableBody sx={{ backgroundColor: theme.palette.grey[500] }}>
                 {teams?.map((team) => (
                   <TeamRow
                     key={team.teamId}
                     team={team}
-                    isSelected={selectedTeamId === team.teamId}
+                    backgroundColor={rowBackgroundColor(selectedTeamId === team.teamId)}
+                    hoverColor={rowHoverColor(selectedTeamId === team.teamId)}
                     onClick={() => handleTeamSelect(team.teamId)}
                   />
                 ))}
@@ -276,7 +282,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
 
         {/* Rules Column */}
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h4" sx={{ mb: 2, color: HEADER_TEXT_COLOR }}>
+          <Typography variant="h4" sx={{ mb: 2, color: theme.palette.text.primary }}>
             Rules:
           </Typography>
           <TableContainer
@@ -289,23 +295,15 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
             }}
           >
             <Table sx={{ borderCollapse: 'collapse' }}>
-              <TableBody sx={{ backgroundColor: ROW_BACKGROUND_COLOR }}>
+              <TableBody sx={{ backgroundColor: theme.palette.grey[500] }}>
                 {topLevelRules.map((rule) => (
                   <RuleRow
                     key={rule.ruleId}
                     rule={rule}
                     allRules={rules}
-                    backgroundColor={(r) => {
-                      const leafIds = getLeafRuleIds(r.ruleId, rules);
-                      const isSelected = leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
-                      return isSelected ? SELECTED_ROW_COLOR : ROW_BACKGROUND_COLOR;
-                    }}
-                    hoverColor={(r) => {
-                      const leafIds = getLeafRuleIds(r.ruleId, rules);
-                      const isSelected = leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
-                      return isSelected ? SELECTED_ROW_HOVER_COLOR : ROW_HOVER_COLOR;
-                    }}
-                    textColor={ROW_TEXT_COLOR}
+                    backgroundColor={(r) => rowBackgroundColor(isRuleSelected(r))}
+                    hoverColor={(r) => rowHoverColor(isRuleSelected(r))}
+                    textColor={theme.palette.common.black}
                     onRowClick={(r) => handleRuleToggle(r.ruleId)}
                     middleContent={() => null}
                     rightContent={(r) => renderTeamTags(r.ruleId)}

@@ -189,7 +189,7 @@ const RulesetEditPage: React.FC = () => {
           <Box sx={{ paddingBottom: '100px' }}>
             <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
               <Table sx={{ borderCollapse: 'collapse' }}>
-                <TableBody sx={{ backgroundColor: '#9d9d9d' }}>
+                <TableBody sx={{ backgroundColor: theme.palette.grey[500] }}>
                   {topLevelRules.map((rule) => (
                     <RuleRow
                       key={rule.ruleId}
@@ -210,7 +210,7 @@ const RulesetEditPage: React.FC = () => {
                               sx={{
                                 backgroundColor: theme.palette.grey[100],
                                 '& .MuiOutlinedInput-root': {
-                                  color: '#000000',
+                                  color: theme.palette.common.black,
                                   '& fieldset': {
                                     borderColor: '#dd514c'
                                   },
@@ -226,7 +226,9 @@ const RulesetEditPage: React.FC = () => {
                           );
                         }
                         return (
-                          currentRule.ruleContent && <span style={{ color: '#000000' }}>{currentRule.ruleContent}</span>
+                          currentRule.ruleContent && (
+                            <span style={{ color: theme.palette.common.black }}>{currentRule.ruleContent}</span>
+                          )
                         );
                       }}
                       rightContent={(currentRule) => (
@@ -235,12 +237,14 @@ const RulesetEditPage: React.FC = () => {
                           onAdd={handleOpenAddMenu}
                           onRemove={handleRemoveRule}
                           onEdit={handleEditRule}
-                          iconColor="#000000"
+                          iconColor={theme.palette.common.black}
                         />
                       )}
-                      backgroundColor={(currentRule) => (editingRuleId === currentRule.ruleId ? '#c0c0c0' : '#9d9d9d')}
-                      textColor="#000000"
-                      hoverColor="#5e5e5e"
+                      backgroundColor={(currentRule) =>
+                        editingRuleId === currentRule.ruleId ? theme.palette.grey[400] : theme.palette.grey[500]
+                      }
+                      textColor={theme.palette.common.black}
+                      hoverColor={theme.palette.grey[700]}
                       rowHeight="10px"
                       verticalPadding="5px"
                     />

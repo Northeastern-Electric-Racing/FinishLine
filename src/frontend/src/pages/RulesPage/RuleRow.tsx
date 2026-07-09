@@ -72,7 +72,7 @@ const RuleRow: React.FC<RuleRowProps> = ({
   // Lazy load if allRules not provided
   const { data: fetchedSubRules = [] } = useGetChildRules(rule.ruleId, !allRules && isExpanded && hasSubRules);
 
-  // Use allRules if provided, otherwise use fetched. 
+  // Use allRules if provided, otherwise use fetched.
   // Sorted by rule code so children render in a stable numeric order (e.g. F.2 before F.10)
   const subRules = [...(presentSubRules ?? fetchedSubRules)].sort(compareRuleCodes);
 
