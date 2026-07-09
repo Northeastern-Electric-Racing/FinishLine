@@ -14,7 +14,7 @@ variable "solution_stack_name" {
   description = "Elastic Beanstalk solution stack name"
   type        = string
   # Find the latest: aws elasticbeanstalk list-available-solution-stacks
-  default     = ""
+  default     = "64bit Amazon Linux 2023 v4.11.0 running Docker"
 }
 
 variable "vpc_id" {
@@ -91,6 +91,12 @@ variable "log_retention_days" {
   description = "Number of days to retain logs"
   type        = number
   default     = 7
+}
+
+variable "retain_logs_on_terminate" {
+  description = "Keep CloudWatch logs (until log_retention_days expires) after the environment is terminated, instead of deleting them immediately. Needed for post-mortem debugging of a failed deployment after teardown."
+  type        = bool
+  default     = false
 }
 
 variable "environment_variables" {

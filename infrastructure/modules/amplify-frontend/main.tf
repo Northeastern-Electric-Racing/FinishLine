@@ -4,7 +4,11 @@
 # Amplify App
 #############
 resource "aws_amplify_app" "frontend" {
-  name = "${var.project_name}-${var.environment}-frontend"
+  name       = "${var.project_name}-${var.environment}-frontend"
+  repository = var.github_repository
+
+  # GitHub access token for repository access
+  access_token = var.github_access_token
 
   # Build specification
   build_spec = <<-EOT

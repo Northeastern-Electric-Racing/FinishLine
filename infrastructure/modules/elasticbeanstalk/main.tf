@@ -306,7 +306,7 @@ resource "aws_elastic_beanstalk_environment" "main" {
   setting {
     namespace = "aws:elasticbeanstalk:cloudwatch:logs"
     name      = "DeleteOnTerminate"
-    value     = var.environment == "production" ? "false" : "true"
+    value     = var.retain_logs_on_terminate ? "false" : "true"
   }
 
   setting {
@@ -324,7 +324,7 @@ resource "aws_elastic_beanstalk_environment" "main" {
   setting {
     namespace = "aws:elasticbeanstalk:cloudwatch:logs:health"
     name      = "DeleteOnTerminate"
-    value     = var.environment == "production" ? "false" : "true"
+    value     = var.retain_logs_on_terminate ? "false" : "true"
   }
 
   setting {

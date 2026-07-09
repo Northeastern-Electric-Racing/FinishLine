@@ -3,11 +3,14 @@ name: Sandbox Spin-Up
 on:
   pull_request:
     branches:
-      - multitenancy
+      - sandbox
     types: [opened, synchronize, reopened]
   workflow_dispatch:
 
-# Only one sandbox may exist at a time.
+# Only one spin-up/tear-down runs at a time; queued runs wait rather than
+# running concurrently. This does not by itself prevent two sandbox
+# environments from existing - see the "Fail fast if sandbox already exists"
+# step below for that check.
 concurrency:
   group: sandbox
   cancel-in-progress: false
@@ -43,7 +46,8 @@ jobs:
 
           if [ "$STATUS" != "None" ] && [ "$STATUS" != "" ] && [ "$STATUS" != "Terminated" ]; then
             echo "Sandbox already exists with status: $STATUS"
-            echo "Tear it down first with the sandbox-down workflow."
+            echo "Another open PR is likely using it for review - check for open PRs into multitenancy first."
+            echo "Only tear it down manually (sandbox-down workflow) if none are open."
             exit 1
           fi
 
@@ -170,6 +174,8 @@ jobs:
         working-directory: infrastructure/environments/sandbox
         env:
           TF_VAR_snapshot_identifier: ${{ steps.snapshot_copy.outputs.snapshot_id }}
+          TF_VAR_github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          TF_VAR_frontend_branch_name: ${{ github.head_ref || github.ref_name }}
         run: terraform apply -auto-approve
 
       - name: Wait for Amplify custom domain to become active
@@ -197,54 +203,30 @@ jobs:
             esac
           done
 
-      - name: Build and deploy frontend to Amplify
+      - name: Build and deploy frontend via Amplify's own GitHub-connected build
         working-directory: infrastructure/environments/sandbox
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         run: |
           APP_ID=$(terraform output -raw amplify_app_id)
 
-          # Install deps and build
-          cd "$GITHUB_WORKSPACE"
-          yarn install --frozen-lockfile
-          yarn workspace shared build
-
-          # Set Vite env vars required at build time
-          # Must use the custom domain, not the raw EB CNAME: the backend's
-          # cert only matches qa.api.finishlinebyner.com.
-          export VITE_REACT_APP_BACKEND_URL=$(cd infrastructure/environments/sandbox && terraform output -raw backend_url)
-          export VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID="$TF_VAR_google_client_id"
-
-          yarn workspace frontend build
-
-          # Zip the built artifacts (files at root, not nested)
-          cd src/frontend/dist
-          zip -r /tmp/frontend.zip .
-          cd "$GITHUB_WORKSPACE"
-
-          # Create a manual deployment slot and get the upload URL
-          DEPLOY=$(aws amplify create-deployment \
+          # Amplify is connected directly to the repo (same as production) and
+          # builds using its own build_spec - no local yarn build/zip/upload.
+          # Creating the branch resource doesn't auto-start a build, so kick
+          # off the initial one explicitly.
+          JOB_ID=$(aws amplify start-job \
             --app-id "$APP_ID" \
-            --branch-name develop \
-            --region us-east-2)
-          JOB_ID=$(echo "$DEPLOY" | jq -r '.jobId')
-          UPLOAD_URL=$(echo "$DEPLOY" | jq -r '.zipUploadUrl')
+            --branch-name "$BRANCH_NAME" \
+            --job-type RELEASE \
+            --region us-east-2 \
+            --query "jobSummary.jobId" \
+            --output text)
 
-          # Upload the artifact
-          curl -X PUT "$UPLOAD_URL" \
-            -H "Content-Type: application/zip" \
-            --data-binary @/tmp/frontend.zip
-
-          # Start the deployment
-          aws amplify start-deployment \
-            --app-id "$APP_ID" \
-            --branch-name develop \
-            --job-id "$JOB_ID" \
-            --region us-east-2
-
-          echo "Waiting for Amplify deployment..."
+          echo "Waiting for Amplify build..."
           while true; do
             STATUS=$(aws amplify get-job \
               --app-id "$APP_ID" \
-              --branch-name develop \
+              --branch-name "$BRANCH_NAME" \
               --job-id "$JOB_ID" \
               --region us-east-2 \
               --query "job.summary.status" \
@@ -252,7 +234,7 @@ jobs:
             echo "  status: $STATUS"
             case "$STATUS" in
               SUCCEED) echo "Frontend deployed."; break ;;
-              FAILED|CANCELLED) echo "Amplify deployment $STATUS."; exit 1 ;;
+              FAILED|CANCELLED) echo "Amplify build $STATUS."; exit 1 ;;
               *) sleep 30 ;;
             esac
           done

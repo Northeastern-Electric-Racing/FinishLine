@@ -112,3 +112,18 @@ variable "admin_user_id" {
   type        = string
   default     = ""
 }
+
+#####################
+# Amplify GitHub connection
+#####################
+
+variable "github_access_token" {
+  description = "GitHub token Amplify uses to pull and build the candidate branch"
+  type        = string
+  sensitive   = true
+}
+
+variable "frontend_branch_name" {
+  description = "Git branch Amplify should build from (the PR's head branch being tested, not a fixed branch)"
+  type        = string
+}

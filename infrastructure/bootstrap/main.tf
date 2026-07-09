@@ -1,9 +1,12 @@
 # Bootstrap Infrastructure
 # This Terraform configuration creates the foundational resources needed
-# for managing Terraform state remotely.
+# for managing Terraform state remotely, plus the IAM permissions the CI/CD
+# user needs.
 #
-# This is a ONE-TIME SETUP
-# Run this BEFORE setting up any other Terraform infrastructure
+# The state/locking/versions buckets are one-time setup - run this BEFORE
+# setting up any other Terraform infrastructure. The IAM permissions section
+# is NOT one-time: it gets re-applied whenever a new environment (e.g.
+# sandbox) needs additional permissions.
 #
 # Resources created:
 # 1. S3 bucket for Terraform state storage
@@ -56,6 +59,7 @@ resource "aws_s3_bucket" "terraform_state" {
   }
 }
 
+# Versioning for state file history and recovery
 resource "aws_s3_bucket_versioning" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
@@ -64,6 +68,7 @@ resource "aws_s3_bucket_versioning" "terraform_state" {
   }
 }
 
+# Server-side encryption for state files
 resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
@@ -74,6 +79,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" 
   }
 }
 
+# Block all public access to state bucket
 resource "aws_s3_bucket_public_access_block" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
@@ -83,6 +89,7 @@ resource "aws_s3_bucket_public_access_block" "terraform_state" {
   restrict_public_buckets = true
 }
 
+# Delete old versions of state files after 90 days
 resource "aws_s3_bucket_lifecycle_configuration" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
@@ -103,7 +110,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "terraform_state" {
 #############
 resource "aws_dynamodb_table" "terraform_locks" {
   name         = var.locks_table_name
-  billing_mode = "PAY_PER_REQUEST"
+  billing_mode = "PAY_PER_REQUEST" # On-demand pricing, no minimum cost
   hash_key     = "LockID"
 
   attribute {
@@ -133,6 +140,7 @@ resource "aws_s3_bucket" "eb_versions" {
   }
 }
 
+# Enable versioning for EB application versions
 resource "aws_s3_bucket_versioning" "eb_versions" {
   bucket = aws_s3_bucket.eb_versions.id
 
@@ -141,6 +149,7 @@ resource "aws_s3_bucket_versioning" "eb_versions" {
   }
 }
 
+# Block public access to EB versions bucket
 resource "aws_s3_bucket_public_access_block" "eb_versions" {
   bucket = aws_s3_bucket.eb_versions.id
 
@@ -150,6 +159,7 @@ resource "aws_s3_bucket_public_access_block" "eb_versions" {
   restrict_public_buckets = true
 }
 
+# Clean up old EB versions after 90 days
 resource "aws_s3_bucket_lifecycle_configuration" "eb_versions" {
   bucket = aws_s3_bucket.eb_versions.id
 
@@ -304,6 +314,50 @@ resource "aws_iam_user_policy" "github_actions_sandbox" {
           "acm:RemoveTagsFromCertificate"
         ]
         Resource = "*"
+      },
+      # The managed policies above (ec2, rds, iam, eb, s3, cloudwatch, amplify,
+      # logs) are broad, account-wide FullAccess policies, but the user only
+      # legitimately needs that breadth in us-east-2 (sandbox). Its us-east-1
+      # (prod) needs are narrow: the RDS snapshot/EB describe actions above,
+      # plus the terraform state bucket. These two statements deny everything
+      # else outside us-east-2. IAM is excluded entirely - it's a global
+      # service, so aws:RequestedRegion never resolves to us-east-2 for it,
+      # and denying it here would break sandbox's own IAM role creation.
+      {
+        Sid    = "DenyBroadAccessOutsideSandboxRegion"
+        Effect = "Deny"
+        NotAction = [
+          "iam:*",
+          "rds:CreateDBSnapshot",
+          "rds:DescribeDBSnapshots",
+          "rds:CopyDBSnapshot",
+          "rds:DeleteDBSnapshot",
+          "rds:ListTagsForResource",
+          "rds:AddTagsToResource",
+          "elasticbeanstalk:DescribeConfigurationSettings",
+          "elasticbeanstalk:DescribeEnvironments",
+          "s3:*"
+        ]
+        Resource = "*"
+        Condition = {
+          StringNotEquals = {
+            "aws:RequestedRegion" = "us-east-2"
+          }
+        }
+      },
+      {
+        Sid    = "DenyS3OutsideSandboxRegionExceptStateBucket"
+        Effect = "Deny"
+        Action = ["s3:*"]
+        NotResource = [
+          "arn:aws:s3:::finishline-terraform-state",
+          "arn:aws:s3:::finishline-terraform-state/*"
+        ]
+        Condition = {
+          StringNotEquals = {
+            "aws:RequestedRegion" = "us-east-2"
+          }
+        }
       }
     ]
   })

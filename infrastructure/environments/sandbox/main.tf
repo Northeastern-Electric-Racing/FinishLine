@@ -137,26 +137,34 @@ module "elasticbeanstalk" {
   max_instance_count  = 1
   deployment_policy   = "AllAtOnce"
   cname_prefix        = local.eb_cname_prefix
-  enable_https        = true
-  ssl_certificate_arn = module.dns.backend_certificate_arn
-  health_check_path   = "/health"
-  log_retention_days  = 7
-  ec2_key_name        = "finishline-sandbox"
+  enable_https             = true
+  ssl_certificate_arn      = module.dns.backend_certificate_arn
+  health_check_path        = "/health"
+  log_retention_days       = 7
+  # Keep logs after teardown for post-mortem debugging of a failed deployment -
+  # otherwise they vanish the moment sandbox-down runs, defeating the point of
+  # having a sandbox to catch deployment issues in the first place.
+  retain_logs_on_terminate = true
+  # No ec2_key_name - .ebextensions/03_ssh_keys.config already provides named,
+  # auditable per-person SSH access (same as production), so a separate shared
+  # EC2 key pair is redundant and less auditable.
 
   environment_variables = {
     DATABASE_URL = module.rds.database_url
 
     SESSION_SECRET               = var.session_secret
     ENCRYPTION_KEY               = var.encryption_key
-    GOOGLE_CLIENT_SECRET         = var.google_client_secret
-    DRIVE_REFRESH_TOKEN          = var.drive_refresh_token
-    CALENDAR_REFRESH_TOKEN       = var.calendar_refresh_token
-    SLACK_BOT_TOKEN              = var.slack_bot_token
-    SLACK_TOKEN_SECRET           = var.slack_token_secret
-    SLACK_SIGNING_SECRET         = var.slack_signing_secret
     NOTIFICATION_ENDPOINT_SECRET = var.notification_endpoint_secret
 
-    NODE_ENV                             = "sandbox"
+    # Matches production so no code has to special-case a third NODE_ENV value.
+    # Deliberately NOT passing real GOOGLE_CLIENT_SECRET / DRIVE_REFRESH_TOKEN /
+    # CALENDAR_REFRESH_TOKEN / SLACK_BOT_TOKEN / SLACK_SIGNING_SECRET here even
+    # though NODE_ENV=production would otherwise enable those code paths -
+    # sandbox reuses prod's real credentials for everything else, and we don't
+    # want it sending real Slack messages or writing to real Calendar/Drive.
+    # Without these, the calls fail cleanly and are caught/logged - login only
+    # needs GOOGLE_CLIENT_ID, not the secret, so it's unaffected.
+    NODE_ENV                             = "production"
     LOG_LEVEL                            = "info"
     GOOGLE_CLIENT_ID                     = var.google_client_id
     REACT_APP_GOOGLE_AUTH_CLIENT_ID      = var.google_client_id
@@ -175,8 +183,15 @@ module "frontend" {
 
   project_name     = "finishline"
   environment      = "sandbox"
-  main_branch_name = "develop"
-  backend_api_url  = module.dns.backend_url
+  main_branch_name = var.frontend_branch_name
+
+  # GitHub-connected build, matching how production builds its frontend -
+  # Amplify pulls and builds the PR's actual branch itself, rather than the
+  # workflow doing a manual yarn build + zip + upload.
+  github_repository   = "https://github.com/Northeastern-Electric-Racing/FinishLine"
+  github_access_token = var.github_access_token
+
+  backend_api_url = module.dns.backend_url
 
   domain_name                  = "qa.finishlinebyner.com"
   enable_pull_request_preview  = false
@@ -193,13 +208,45 @@ data "aws_route53_zone" "main" {
 }
 
 #############
-# CloudWatch Log Group (skip full monitoring module — no dashboards or alarms needed for sandbox)
+# Data sources for monitoring (autoscaling group + load balancer)
 #############
-resource "aws_cloudwatch_log_group" "eb_logs" {
-  name              = "/aws/elasticbeanstalk/finishline-sandbox"
-  retention_in_days = 7
-
-  tags = {
-    Name = "finishline-sandbox-eb-logs"
+data "aws_autoscaling_groups" "eb_asg" {
+  filter {
+    name   = "tag:elasticbeanstalk:environment-name"
+    values = [module.elasticbeanstalk.environment_name]
   }
+
+  depends_on = [module.elasticbeanstalk]
+}
+
+data "aws_lb" "eb_alb" {
+  tags = {
+    "elasticbeanstalk:environment-name" = module.elasticbeanstalk.environment_name
+  }
+
+  depends_on = [module.elasticbeanstalk]
+}
+
+locals {
+  # Full ARN: arn:aws:elasticloadbalancing:region:account:loadbalancer/app/name/id
+  # Suffix needed: app/name/id
+  alb_arn_suffix = try(split("loadbalancer/", data.aws_lb.eb_alb.arn)[1], "")
+}
+
+#############
+# Monitoring Module (alarms only - no SNS topic, so nobody gets paged for a
+# temporary environment; dashboard/log group are inert but kept for parity
+# with production's setup)
+#############
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  project_name              = "finishline"
+  environment                = "sandbox"
+  aws_region                 = "us-east-2"
+  eb_environment_name        = module.elasticbeanstalk.environment_name
+  eb_autoscaling_group_name  = data.aws_autoscaling_groups.eb_asg.names[0]
+  alb_arn_suffix             = local.alb_arn_suffix
+  rds_instance_id            = module.rds.db_instance_id
+  log_retention_days         = 7
 }
