@@ -24,8 +24,11 @@ import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
 import { NERButton } from '../../components/NERButton';
+import NERModal from '../../components/NERModal';
+import WarningIcon from '@mui/icons-material/Warning';
 import RuleRow from './RuleRow';
 import { useBulkToggleRuleTeam } from '../../hooks/rules.hooks';
+import { getAncestorIds, getRuleAndDescendantIds } from '../../utils/rules.utils';
 
 /*
  * Props for the assign rules tab.
@@ -33,19 +36,6 @@ import { useBulkToggleRuleTeam } from '../../hooks/rules.hooks';
 interface AssignRulesTabProps {
   rules: Rule[];
 }
-
-const getLeafRuleIds = (ruleId: string, allRules: Rule[]): string[] => {
-  const rule = allRules.find((r) => r.ruleId === ruleId);
-  if (!rule) {
-    return [];
-  }
-
-  if (rule.subRuleIds.length === 0) {
-    return [ruleId];
-  }
-
-  return rule.subRuleIds.flatMap((subId) => getLeafRuleIds(subId, allRules));
-};
 
 /*
  * Props for the team row.
@@ -100,6 +90,12 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
   const [assignments, setAssignments] = useState<Set<string>>(new Set());
   const [originalAssignments, setOriginalAssignments] = useState<Set<string>>(new Set());
   const [isInitialized, setIsInitialized] = useState(false);
+  // unassign impact for the amount of project rules that would be deleted by this action, used to warn the user before saving
+  const [pendingToggles, setPendingToggles] = useState<Array<{ ruleId: string; teamId: string }> | null>(null);
+  const [unassignImpact, setUnassignImpact] = useState<{ ruleCount: number; projectCount: number }>({
+    ruleCount: 0,
+    projectCount: 0
+  });
 
   const { data: teams, isLoading: teamsLoading, isError: teamsError, error: teamsErrorData } = useAllTeams();
   const { mutate: bulkToggle, isLoading: isSaving } = useBulkToggleRuleTeam();
@@ -168,30 +164,81 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
       return;
     }
 
-    const leafIds = getLeafRuleIds(ruleId, rules);
-    if (leafIds.length === 0) {
+    // Assign the clicked rule and all of its descendants, not just leaves, so
+    // every rule in the subtree gets its own team relation
+    const subtreeIds = getRuleAndDescendantIds(ruleId, rules);
+    if (subtreeIds.length === 0) {
       return;
     }
 
     const newAssignments = new Set(assignments);
-    let allSelected = true;
-    for (const id of leafIds) {
-      if (!newAssignments.has(`${selectedTeamId}:${id}`)) {
-        allSelected = false;
-        break;
-      }
-    }
+    const teamAssignmentKey = (id: string) => `${selectedTeamId}:${id}`; // needed since the same rule can be assigned to multiple teams
+    const allSelected = subtreeIds.every((id) => newAssignments.has(teamAssignmentKey(id)));
 
-    for (const id of leafIds) {
-      const key = `${selectedTeamId}:${id}`;
-      if (allSelected) {
-        newAssignments.delete(key);
-      } else {
-        newAssignments.add(key);
+    if (allSelected) {
+      // Unassign the rule and its descendants
+      subtreeIds.forEach((id) => newAssignments.delete(teamAssignmentKey(id)));
+
+      // Drop each parent that no longer has ANY assigned descendant.
+      for (const ancestorId of getAncestorIds(ruleId, rules)) {
+        const hasAssignedDescendant = getRuleAndDescendantIds(ancestorId, rules).some(
+          (id) => id !== ancestorId && newAssignments.has(teamAssignmentKey(id))
+        );
+        // Stop at the first ancestor still holding an assigned leaf rule, since every
+        // higher ancestor shares that descendant and must remain assigned.
+        if (hasAssignedDescendant) {
+          break;
+        }
+        newAssignments.delete(teamAssignmentKey(ancestorId));
       }
+    } else {
+      // Assign the rule, its descendants, and all of its ancestors so there is
+      // always a path to the top-level rule
+      subtreeIds.forEach((id) => newAssignments.add(teamAssignmentKey(id)));
+      getAncestorIds(ruleId, rules).forEach((id) => newAssignments.add(teamAssignmentKey(id)));
     }
 
     setAssignments(newAssignments);
+  };
+
+  // Counts the amount of rules and projects that would lose their project rule
+  // assignments when the given team-unassignments are saved
+  const getUnassignImpact = (removedKeys: string[]): { ruleCount: number; projectCount: number } => {
+    const affectedRuleIds = new Set<string>();
+    const affectedProjectIds = new Set<string>();
+
+    removedKeys.forEach((key) => {
+      const [teamId, ruleId] = key.split(':');
+      const rule = rules.find((r) => r.ruleId === ruleId);
+      // teams the rule will remain on after this save
+      const remainingTeamIds = [...assignments]
+        .filter((assignmentKey) => assignmentKey.endsWith(`:${ruleId}`))
+        .map((assignmentKey) => assignmentKey.split(':')[0]);
+
+      rule?.projects?.forEach((project) => {
+        if (!project.teamIds.includes(teamId)) return;
+        // A project can belong to multiple teams
+        // Therefore a project only loses the rule if the rule no longer shares ANY team with it
+        const sharesRemainingTeam = project.teamIds.some((id) => remainingTeamIds.includes(id));
+        if (!sharesRemainingTeam) {
+          affectedRuleIds.add(ruleId);
+          affectedProjectIds.add(project.projectId);
+        }
+      });
+    });
+
+    return { ruleCount: affectedRuleIds.size, projectCount: affectedProjectIds.size };
+  };
+
+  const executeToggles = (toggles: Array<{ ruleId: string; teamId: string }>) => {
+    bulkToggle(toggles, {
+      onSuccess: () => {
+        history.push(routes.RULESET_EDIT.replace(':rulesetId', rulesetId));
+      },
+      onSettled: () => {
+        setPendingToggles(null);
+      }
+    });
   };
 
   const handleSaveAndExit = () => {
@@ -204,24 +251,26 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     }
 
     // Build array of toggles to execute
-    const toggles: Array<{ ruleId: string; teamId: string }> = [];
-
-    toAdd.forEach((key) => {
+    const toggles = [...toAdd, ...toRemove].map((key) => {
       const [teamId, ruleId] = key.split(':');
-      toggles.push({ ruleId, teamId });
+      return { ruleId, teamId };
     });
 
-    toRemove.forEach((key) => {
-      const [teamId, ruleId] = key.split(':');
-      toggles.push({ ruleId, teamId });
-    });
+    // Warn before saving if unassignments would remove existing project assignments
+    const impact = getUnassignImpact(toRemove);
+    if (impact.ruleCount > 0) {
+      setUnassignImpact(impact);
+      setPendingToggles(toggles);
+      return;
+    }
 
-    // Execute bulk toggle and navigate on success
-    bulkToggle(toggles, {
-      onSuccess: () => {
-        history.push(routes.RULESET_EDIT.replace(':rulesetId', rulesetId));
-      }
-    });
+    executeToggles(toggles);
+  };
+
+  const handleConfirmSave = () => {
+    if (pendingToggles) {
+      executeToggles(pendingToggles);
+    }
   };
 
   if (teamsError) {
@@ -287,16 +336,8 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
                     key={rule.ruleId}
                     rule={rule}
                     allRules={rules}
-                    backgroundColor={(r) => {
-                      const leafIds = getLeafRuleIds(r.ruleId, rules);
-                      const isSelected = leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
-                      return isSelected ? '#b36b6b' : '#CECECE';
-                    }}
-                    hoverColor={(r) => {
-                      const leafIds = getLeafRuleIds(r.ruleId, rules);
-                      const isSelected = leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
-                      return isSelected ? '#a05858' : '#5e5e5e';
-                    }}
+                    backgroundColor={(r) => (isRuleAssigned(r.ruleId) ? '#b36b6b' : '#CECECE')}
+                    hoverColor={(r) => (isRuleAssigned(r.ruleId) ? '#a05858' : '#5e5e5e')}
                     textColor="#000000"
                     onRowClick={(r) => handleRuleToggle(r.ruleId)}
                     middleContent={() => null}
@@ -345,6 +386,24 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
           </NERButton>
         </Box>
       </Box>
+
+      <NERModal
+        open={pendingToggles !== null}
+        onHide={() => setPendingToggles(null)}
+        title="Confirm Unassignment"
+        cancelText="Cancel"
+        submitText="Save"
+        onSubmit={handleConfirmSave}
+        disabled={isSaving}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningIcon sx={{ color: '#ef4345', fontSize: 30 }} />
+          <Typography sx={{ fontSize: '1rem' }}>
+            This will remove {unassignImpact.ruleCount} rule{unassignImpact.ruleCount === 1 ? '' : 's'} from{' '}
+            {unassignImpact.projectCount} project{unassignImpact.projectCount === 1 ? '' : 's'}.
+          </Typography>
+        </Box>
+      </NERModal>
     </Box>
   );
 };

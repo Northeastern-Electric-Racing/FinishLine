@@ -55,3 +55,31 @@ export const isRuleComplete = (rule: Rule, allRules: Rule[]): boolean => {
 export const getRuleStatusConfig = (isComplete: boolean): { label: string; color: string } => {
   return isComplete ? { label: 'Complete', color: '#4caf50' } : { label: 'Incomplete', color: '#f44336' };
 };
+
+/**
+ * Collects a rule and all of its descendants, down to the leaf rules.
+ */
+export const getRuleAndDescendantIds = (ruleId: string, allRules: Rule[]): string[] => {
+  const rule = allRules.find((r) => r.ruleId === ruleId);
+  if (!rule) {
+    return [];
+  }
+
+  return [ruleId, ...rule.subRuleIds.flatMap((subId) => getRuleAndDescendantIds(subId, allRules))];
+};
+
+/**
+ * Collects the ancestors of a rule, from its immediate parent up to the top-level rule.
+ */
+export const getAncestorIds = (ruleId: string, allRules: Rule[]): string[] => {
+  const ancestorIds: string[] = [];
+  let current = allRules.find((r) => r.ruleId === ruleId);
+
+  while (current?.parentRule) {
+    const parentId = current.parentRule.ruleId;
+    ancestorIds.push(parentId);
+    current = allRules.find((r) => r.ruleId === parentId);
+  }
+
+  return ancestorIds;
+};

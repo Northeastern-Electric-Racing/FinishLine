@@ -17,7 +17,6 @@ import {
   useTheme
 } from '@mui/material';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Rule } from 'shared';
 import NERModal from '../../../../components/NERModal';
 import { useUnassignedRulesForRuleset } from '../../../../hooks/rules.hooks';
@@ -26,47 +25,87 @@ interface AddRuleModalProps {
   open: boolean;
   onHide: () => void;
   rulesetId: string;
-  teamId: string;
-  teamName: string;
   projectId: string;
+  teamNames: string[];
   onSubmit: (ruleIds: string[]) => void;
 }
 
-const AddRuleModal = ({ open, onHide, rulesetId, teamId, teamName, projectId, onSubmit }: AddRuleModalProps) => {
+const AddRuleModal = ({ open, onHide, rulesetId, projectId, teamNames, onSubmit }: AddRuleModalProps) => {
   const theme = useTheme();
-  const [selectedRuleIds, setSelectedRuleIds] = useState<string[]>([]);
 
-  const { data: unassignedRules, isLoading, isError } = useUnassignedRulesForRuleset(rulesetId, teamId, projectId);
+  const [selectedRuleIds, setSelectedRuleIds] = useState<string[]>([]); // Leaf-rule selections that will be submitted
+  const [path, setPath] = useState<string[]>([]); // In-progress path (rule ids from top level down); only holds non-leaf rules
+  const { data: unassignedRules, isLoading, isError } = useUnassignedRulesForRuleset(rulesetId, projectId);
 
-  type ParentInfo = { ruleId: string; ruleCode: string };
+  const addableRules = useMemo(() => unassignedRules ?? [], [unassignedRules]); // rules that can still be added
+  const rulesById = useMemo(
+    () => new Map(addableRules.map((rule: Rule) => [rule.ruleId, rule] as [string, Rule])),
+    [addableRules]
+  );
+  const addableRuleIds = useMemo(() => new Set(addableRules.map((rule: Rule) => rule.ruleId)), [addableRules]);
 
-  const uniqueParents = useMemo(() => {
-    if (!unassignedRules) return [];
-    const parentMap = new Map<string, ParentInfo>();
-    unassignedRules.forEach((rule: Rule) => {
-      if (rule.parentRule) {
-        parentMap.set(rule.parentRule.ruleId, rule.parentRule);
-      }
-    });
-    return Array.from(parentMap.values()).sort((a, b) => a.ruleCode.localeCompare(b.ruleCode));
-  }, [unassignedRules]);
+  // Children of a rule that are still addable
+  const addableChildrenOf = (ruleId: string) => addableRules.filter((rule: Rule) => rule.parentRule?.ruleId === ruleId);
+  // A rule is a selectable leaf when it has no addable children to drill into
+  const isLeaf = (rule: Rule) => addableChildrenOf(rule.ruleId).length === 0;
+  // used to sort rules in the dropdowns by their rule code
+  const byRuleCode = (a: Rule, b: Rule) => a.ruleCode.localeCompare(b.ruleCode, undefined, { numeric: true });
 
-  const [selectedParentId, setSelectedParentId] = useState<string>('');
-
-  const availableRules = useMemo(() => {
-    if (!unassignedRules || !selectedParentId) return [];
-    return unassignedRules.filter((rule: Rule) => rule.parentRule?.ruleId === selectedParentId);
-  }, [unassignedRules, selectedParentId]);
-
-  const handleParentChange = (event: SelectChangeEvent<string>) => {
-    setSelectedParentId(event.target.value);
-    setSelectedRuleIds([]);
+  // Recursively checks if a rule has any unselected leaf descendants.
+  const hasUnselectedLeaf = (ruleId: string, selected: string[]): boolean => {
+    const rule = rulesById.get(ruleId);
+    if (!rule) return false;
+    const addableChildren = addableChildrenOf(ruleId);
+    if (addableChildren.length === 0) return !selected.includes(ruleId);
+    return addableChildren.some((child: Rule) => hasUnselectedLeaf(child.ruleId, selected));
   };
 
-  const handleRuleSelect = (event: SelectChangeEvent<string>) => {
+  // Finds children of the given parent that still have a leaf left to assign
+  // Or if parentId is null finds the top-level rules of each addable branch (has some unassigned leaf rule)
+  const optionsForParent = (parentId: string | null, selected: string[] = selectedRuleIds): Rule[] =>
+    addableRules
+      .filter((rule: Rule) =>
+        parentId === null
+          ? !rule.parentRule || !addableRuleIds.has(rule.parentRule.ruleId)
+          : rule.parentRule?.ruleId === parentId
+      )
+      .filter((rule: Rule) => hasUnselectedLeaf(rule.ruleId, selected))
+      .sort(byRuleCode);
+
+  // One dropdown per level: the top-level rules, then the children of each chosen rule, recursively.
+  // The first dropdown will always be the top level options, each selection adds a dropdown for its children, until a leaf is chosen.
+  const buildLevels = (): { options: Rule[]; value: string }[] => {
+    // Tracks the dropdowns to show, starting with the top-level rules and adding a level for each selected rule in the path.
+    const result: { options: Rule[]; value: string }[] = [{ options: optionsForParent(null), value: path[0] ?? '' }];
+    // Each rule already chosen in the path adds one more dropdown beneath it, listing that rule's children.
+    path.forEach((ruleId, index) => {
+      result.push({ options: optionsForParent(ruleId), value: path[index + 1] ?? '' });
+    });
+    return result;
+  };
+  const levels = buildLevels();
+
+  // If an addable leaf exists anywhere
+  const hasAddableRules = optionsForParent(null).length > 0;
+
+  const handleLevelChange = (levelIndex: number, event: SelectChangeEvent<string>) => {
     const ruleId = event.target.value;
-    if (ruleId && !selectedRuleIds.includes(ruleId)) {
-      setSelectedRuleIds((prev) => [...prev, ruleId]);
+    const rule = rulesById.get(ruleId);
+    if (!rule) return;
+
+    if (isLeaf(rule)) {
+      // Add the leaf to the selected list if it isn't already there
+      const updatedSelected = selectedRuleIds.includes(ruleId) ? selectedRuleIds : [...selectedRuleIds, ruleId];
+      setSelectedRuleIds(updatedSelected);
+      // Keep the path up to the parent of the leaf so siblings can be added if any exist
+      // Collapse levels whose options are now exhausted (no unselected leaves left)
+      let newPath = path.slice(0, levelIndex);
+      while (newPath.length > 0 && optionsForParent(newPath[newPath.length - 1], updatedSelected).length === 0) {
+        newPath = newPath.slice(0, -1);
+      }
+      setPath(newPath);
+    } else {
+      setPath([...path.slice(0, levelIndex), ruleId]);
     }
   };
 
@@ -87,14 +126,11 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, teamName, projectId, on
 
   const resetForm = () => {
     setSelectedRuleIds([]);
-    setSelectedParentId('');
+    setPath([]); // reset dropdowns
   };
 
   // Get rule display name
-  const getRuleName = (ruleId: string): string => {
-    const rule = unassignedRules?.find((r: Rule) => r.ruleId === ruleId);
-    return rule ? rule.ruleCode : ruleId;
-  };
+  const getRuleName = (ruleId: string): string => rulesById.get(ruleId)?.ruleCode ?? ruleId;
 
   // Dropdown styling
   const selectStyles = {
@@ -148,99 +184,98 @@ const AddRuleModal = ({ open, onHide, rulesetId, teamId, teamName, projectId, on
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
             <CircularProgress />
           </Box>
-        ) : !unassignedRules || unassignedRules.length === 0 ? (
+        ) : // Empty state when there are no rules assigned or nothing addable is left
+        addableRules.length === 0 || (!hasAddableRules && selectedRuleIds.length === 0) ? (
           <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-            No unassigned rules available for the {teamName} team.
+            {teamNames.length > 0
+              ? `No unassigned rules available for the ${teamNames.join(', ')} team${teamNames.length === 1 ? '' : 's'}.`
+              : 'No unassigned rules available for this project.'}
           </Typography>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* Select Section */}
-            <Box>
-              <Typography variant="h4" sx={labelStyles}>
-                Select Section
-              </Typography>
-              <FormControl fullWidth>
-                <Select
-                  value={selectedParentId}
-                  onChange={handleParentChange}
-                  displayEmpty
-                  disabled={uniqueParents.length === 0}
-                  sx={selectStyles}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: { backgroundColor: theme.palette.background.paper }
-                    }
-                  }}
-                >
-                  <MenuItem value="" disabled>
-                    <Typography sx={{ color: theme.palette.text.secondary }}>Select Section</Typography>
-                  </MenuItem>
-                  {uniqueParents.map((parent) => (
-                    <MenuItem key={parent.ruleId} value={parent.ruleId}>
-                      {parent.ruleCode}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-
-            {/* Select Rules */}
-            <Box>
-              <Typography variant="h4" sx={labelStyles}>
-                Select Rules
-              </Typography>
-
-              {/* Selected Rules */}
-              {selectedRuleIds.map((ruleId) => (
-                <Box key={ruleId} sx={selectedRuleStyles}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleRemoveRule(ruleId)}
-                      sx={{ color: theme.palette.text.primary, p: 0.5, mr: 1 }}
-                    >
-                      <RemoveCircleOutlineIcon fontSize="small" />
-                    </IconButton>
-                    <Typography sx={{ color: theme.palette.text.primary }}>{getRuleName(ruleId)}</Typography>
+            {/* Selected Rules */}
+            {selectedRuleIds.length > 0 && (
+              <Box>
+                <Typography variant="h4" sx={labelStyles}>
+                  Selected Rules
+                </Typography>
+                {selectedRuleIds.map((ruleId) => (
+                  <Box key={ruleId} sx={selectedRuleStyles}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleRemoveRule(ruleId)}
+                        sx={{ color: theme.palette.text.primary, p: 0.5, mr: 1 }}
+                      >
+                        <RemoveCircleOutlineIcon fontSize="small" />
+                      </IconButton>
+                      <Typography sx={{ color: theme.palette.text.primary }}>{getRuleName(ruleId)}</Typography>
+                    </Box>
                   </Box>
-                  <KeyboardArrowDownIcon sx={{ color: theme.palette.text.primary }} />
-                </Box>
-              ))}
+                ))}
+              </Box>
+            )}
 
-              {/* Add Subtask dropdown */}
-              <FormControl fullWidth>
-                <Select
-                  value=""
-                  onChange={handleRuleSelect}
-                  displayEmpty
-                  disabled={!selectedParentId}
-                  sx={selectStyles}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: { backgroundColor: '#3a3a3a', maxHeight: 300 }
-                    }
-                  }}
-                >
-                  <MenuItem value="" disabled>
-                    <Typography sx={{ color: theme.palette.text.secondary }}>Add Subtask</Typography>
-                  </MenuItem>
-                  {availableRules
-                    .filter((rule: Rule) => !selectedRuleIds.includes(rule.ruleId))
-                    .map((rule: Rule) => (
-                      <MenuItem key={rule.ruleId} value={rule.ruleId}>
-                        <Box>
-                          <Typography fontWeight="bold">{rule.ruleCode}</Typography>
-                          {rule.ruleContent && (
-                            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, maxWidth: 350 }} noWrap>
-                              {rule.ruleContent}
-                            </Typography>
-                          )}
-                        </Box>
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-            </Box>
+            {/* Continuous dropdowns: start at a top-level rule and pick sub-rules until reaching a leaf */}
+            {hasAddableRules ? (
+              <Box>
+                <Typography variant="h4" sx={labelStyles}>
+                  Select Rule
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  {/* Non-leaf options are flagged with a › to show the ability to continue selecting */}
+                  {levels.map((level, levelIndex) => (
+                    <FormControl fullWidth key={levelIndex}>
+                      <Select
+                        value={level.value}
+                        onChange={(event) => handleLevelChange(levelIndex, event)}
+                        displayEmpty
+                        disabled={level.options.length === 0}
+                        sx={selectStyles}
+                        MenuProps={{
+                          PaperProps: {
+                            sx: { backgroundColor: theme.palette.background.paper, maxHeight: 300 }
+                          }
+                        }}
+                      >
+                        <MenuItem value="" disabled>
+                          <Typography sx={{ color: theme.palette.text.secondary }}>
+                            {levelIndex === 0 ? 'Select Rule' : 'Select Sub-Rule'}
+                          </Typography>
+                        </MenuItem>
+                        {level.options.map((rule: Rule) => (
+                          <MenuItem key={rule.ruleId} value={rule.ruleId}>
+                            <Box>
+                              <Typography fontWeight="bold">
+                                {rule.ruleCode}
+                                {isLeaf(rule) ? '' : ' ›'}
+                              </Typography>
+                              {rule.ruleContent && (
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: theme.palette.text.secondary, maxWidth: 350 }}
+                                  noWrap
+                                >
+                                  {rule.ruleContent}
+                                </Typography>
+                              )}
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  ))}
+                </Box>
+              </Box>
+            ) : (
+              // Every addable leaf has been selected this session, but the Selected Rules list
+              // above stays visible with save enabled so the user can submit what they picked
+              <Typography variant="body2" color="text.secondary">
+                {teamNames.length > 0
+                  ? `No more unassigned rules available for the ${teamNames.join(', ')} team${teamNames.length === 1 ? '' : 's'}.`
+                  : 'No more unassigned rules available for this project.'}
+              </Typography>
+            )}
           </Box>
         )}
       </Box>

@@ -20,6 +20,11 @@ export const ruleTransformer = (rule: Prisma.RuleGetPayload<RulePreviewQueryArgs
       teamId: team.teamId,
       teamName: team.teamName
     })),
+    projects: rule.projects?.map((projectRule) => ({
+      projectId: projectRule.project.projectId,
+      projectName: projectRule.project.wbsElement.name,
+      teamIds: projectRule.project.teams.map((team) => team.teamId)
+    })),
     isComplete: rule.isComplete,
     completedBy: rule.completedBy
       ? {
