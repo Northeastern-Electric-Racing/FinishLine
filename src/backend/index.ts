@@ -76,7 +76,7 @@ if (receiver) {
 }
 
 app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'healthy' });
+  res.status(200).json({ status: 'healthy', build: 'sandbox-deploy-test' });
 });
 
 // so that we can use cookies and json

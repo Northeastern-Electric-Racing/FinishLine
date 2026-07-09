@@ -1367,6 +1367,7 @@ model Organization {
   sponsorshipNotificationsSlackChannelId String?
   platformDescription                    String    @default("")
   platformLogoImageId                    String?
+  sandboxDeployTestField                 String?
 
   // Relation references
   wbsElements              WBS_Element[]
