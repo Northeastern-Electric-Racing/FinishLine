@@ -383,6 +383,10 @@ describe('Create Rules Tests', () => {
 
       const teamType = await createTestTeamType('technical', orgId);
       const team = await createTestTeam(batman.userId, teamType.teamTypeId, orgId);
+      // every rule in the ancestor chain must be on the project's team for the leaf to be assignable
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, team.teamId, batman, organization);
+      await RulesService.toggleRuleTeam(child.ruleId, team.teamId, batman, organization);
+
       await RulesService.toggleRuleTeam(grandchild.ruleId, team.teamId, batman, organization);
 
       const project = await createTestProject(aquaman, orgId, team.teamId, carId);
@@ -410,6 +414,10 @@ describe('Create Rules Tests', () => {
 
       const teamType = await createTestTeamType('technical', orgId);
       const team = await createTestTeam(batman.userId, teamType.teamTypeId, orgId);
+
+      // every rule in the ancestor chain must be on the project's team for the leaves to be assignable
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, team.teamId, batman, organization);
+      await RulesService.toggleRuleTeam(child.ruleId, team.teamId, batman, organization);
 
       await RulesService.toggleRuleTeam(grandchild1.ruleId, team.teamId, batman, organization);
       await RulesService.toggleRuleTeam(grandchild2.ruleId, team.teamId, batman, organization);
@@ -442,6 +450,8 @@ describe('Create Rules Tests', () => {
 
       const teamType = await createTestTeamType('technical', orgId);
       const team = await createTestTeam(batman.userId, teamType.teamTypeId, orgId);
+
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, team.teamId, batman, organization);
       await RulesService.toggleRuleTeam(child.ruleId, team.teamId, batman, organization);
 
       const project = await createTestProject(aquaman, orgId, team.teamId, carId);
@@ -990,9 +1000,10 @@ describe('Rule Tests', () => {
     });
     it('Creates a project rule successfully for a leaf rule', async () => {
       const car = await createUniqueCar(orgId);
-      const { leafRule1 } = await setupRules(car);
-      // rule and project must share a team for the rule to be assignable
+      const { leafRule1, topLevelRule } = await setupRules(car);
+      // every rule in the ancestor chain must be on the project's team for the leaf to be assignable
       const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
       await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
 
@@ -1051,9 +1062,10 @@ describe('Rule Tests', () => {
     });
     it('Create project rule fails if project rule assignment already exists', async () => {
       const car = await createUniqueCar(orgId);
-      const { leafRule1 } = await setupRules(car);
-      // rule and project must share a team so the first assignment succeeds
+      const { leafRule1, topLevelRule } = await setupRules(car);
+      // every rule in the chain must be on the project's team
       const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
       await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
       await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
       await expect(RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId)).rejects.toThrow(
@@ -1419,8 +1431,10 @@ describe('Rule Tests', () => {
   describe('Delete Project Rule', () => {
     it('Deletes a project rule successfully and returns the correct information', async () => {
       const car = await createUniqueCar(orgId);
-      const { leafRule1 } = await setupRules(car);
+      const { leafRule1, topLevelRule } = await setupRules(car);
       const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      // every rule in the chain must be on the project's team for the leaf to be assignable
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
       await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
 
@@ -1434,8 +1448,9 @@ describe('Rule Tests', () => {
     });
     it('Delete project rule fails if user does not have permission', async () => {
       const car = await createUniqueCar(orgId);
-      const { leafRule1 } = await setupRules(car);
+      const { leafRule1, topLevelRule } = await setupRules(car);
       const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
       await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
 
@@ -1445,8 +1460,9 @@ describe('Rule Tests', () => {
     });
     it('Delete project rule fails if project rule was already deleted', async () => {
       const car = await createUniqueCar(orgId);
-      const { leafRule1 } = await setupRules(car);
+      const { leafRule1, topLevelRule } = await setupRules(car);
       const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
       await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
 
