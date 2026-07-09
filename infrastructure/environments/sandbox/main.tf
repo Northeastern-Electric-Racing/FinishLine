@@ -78,7 +78,7 @@ module "rds" {
   alarm_actions           = []
 
   # Restore from a prod snapshot when provided (passed in by CI/CD pipeline)
-  snapshot_identifier     = var.snapshot_identifier
+  snapshot_identifier = var.snapshot_identifier
 
   # Credentials
   database_name   = "finishline"
@@ -117,10 +117,10 @@ module "dns" {
 module "elasticbeanstalk" {
   source = "../../modules/elasticbeanstalk"
 
-  project_name = "finishline"
-  environment  = "sandbox"
-  vpc_id       = module.network.vpc_id
-  subnet_ids   = module.network.public_subnet_ids
+  project_name   = "finishline"
+  environment    = "sandbox"
+  vpc_id         = module.network.vpc_id
+  subnet_ids     = module.network.public_subnet_ids
   elb_subnet_ids = module.network.public_subnet_ids
 
   # IAM
@@ -137,10 +137,10 @@ module "elasticbeanstalk" {
   max_instance_count  = 1
   deployment_policy   = "AllAtOnce"
   cname_prefix        = local.eb_cname_prefix
-  enable_https             = true
-  ssl_certificate_arn      = module.dns.backend_certificate_arn
-  health_check_path        = "/health"
-  log_retention_days       = 7
+  enable_https        = true
+  ssl_certificate_arn = module.dns.backend_certificate_arn
+  health_check_path   = "/health"
+  log_retention_days  = 7
   # Keep logs after teardown for post-mortem debugging of a failed deployment -
   # otherwise they vanish the moment sandbox-down runs, defeating the point of
   # having a sandbox to catch deployment issues in the first place.
@@ -164,14 +164,14 @@ module "elasticbeanstalk" {
     # want it sending real Slack messages or writing to real Calendar/Drive.
     # Without these, the calls fail cleanly and are caught/logged - login only
     # needs GOOGLE_CLIENT_ID, not the secret, so it's unaffected.
-    NODE_ENV                             = "production"
-    LOG_LEVEL                            = "info"
-    GOOGLE_CLIENT_ID                     = var.google_client_id
-    REACT_APP_GOOGLE_AUTH_CLIENT_ID      = var.google_client_id
-    GOOGLE_DRIVE_FOLDER_ID               = var.google_drive_folder_id
-    SLACK_ID                             = var.slack_id
-    USER_EMAIL                           = var.user_email
-    ADMIN_USER_ID                        = var.admin_user_id
+    NODE_ENV                        = "production"
+    LOG_LEVEL                       = "info"
+    GOOGLE_CLIENT_ID                = var.google_client_id
+    REACT_APP_GOOGLE_AUTH_CLIENT_ID = var.google_client_id # Required by OAuth2Client
+    GOOGLE_DRIVE_FOLDER_ID          = var.google_drive_folder_id
+    SLACK_ID                        = var.slack_id
+    USER_EMAIL                      = var.user_email
+    ADMIN_USER_ID                   = var.admin_user_id
   }
 }
 
@@ -193,10 +193,14 @@ module "frontend" {
 
   backend_api_url = module.dns.backend_url
 
-  domain_name                  = "qa.finishlinebyner.com"
-  enable_pull_request_preview  = false
-  enable_auto_branch_creation  = false
-  create_webhook               = false
+  additional_environment_variables = {
+    VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID = var.google_client_id
+  }
+
+  domain_name                 = "qa.finishlinebyner.com"
+  enable_pull_request_preview = false
+  enable_auto_branch_creation = false
+  create_webhook              = false
   # The workflow polls for domain ACTIVE status after applying DNS records
   wait_for_domain_verification = false
 }
@@ -242,11 +246,11 @@ module "monitoring" {
   source = "../../modules/monitoring"
 
   project_name              = "finishline"
-  environment                = "sandbox"
-  aws_region                 = "us-east-2"
-  eb_environment_name        = module.elasticbeanstalk.environment_name
-  eb_autoscaling_group_name  = data.aws_autoscaling_groups.eb_asg.names[0]
-  alb_arn_suffix             = local.alb_arn_suffix
-  rds_instance_id            = module.rds.db_instance_id
-  log_retention_days         = 7
+  environment               = "sandbox"
+  aws_region                = "us-east-2"
+  eb_environment_name       = module.elasticbeanstalk.environment_name
+  eb_autoscaling_group_name = data.aws_autoscaling_groups.eb_asg.names[0]
+  alb_arn_suffix            = local.alb_arn_suffix
+  rds_instance_id           = module.rds.db_instance_id
+  log_retention_days        = 7
 }
