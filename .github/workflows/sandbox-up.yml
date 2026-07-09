@@ -174,7 +174,11 @@ jobs:
         working-directory: infrastructure/environments/sandbox
         env:
           TF_VAR_snapshot_identifier: ${{ steps.snapshot_copy.outputs.snapshot_id }}
-          TF_VAR_github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          # Amplify's GitHub connection needs a real, standing personal access
+          # token (repo + admin:repo_hook scopes) - the ephemeral, job-scoped
+          # secrets.GITHUB_TOKEN is not sufficient for this (confirmed: fails
+          # with "expected length of access_token to be in the range (1 - 255)").
+          TF_VAR_github_access_token: ${{ secrets.AMPLIFY_ACCESS_TOKEN }}
           TF_VAR_frontend_branch_name: ${{ github.head_ref || github.ref_name }}
         run: terraform apply -auto-approve
 
