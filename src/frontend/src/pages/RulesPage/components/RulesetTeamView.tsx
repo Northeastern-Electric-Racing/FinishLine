@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
 import { Rule } from 'shared';
 import RuleRow from '../RuleRow';
@@ -18,15 +18,114 @@ interface TeamRules {
 
 interface RulesetTeamViewProps {
   allRules: Rule[];
-  teamRules: TeamRules[];
-  unassignedToTeam: Rule[];
 }
 
 /**
- * Displays rules organized by team and project
- * Teams and projects are rendered as RuleRows for consistent formatting
+ * Groups ruleset's rules by team and project for team view. First groups by team
+ * assigned to, then by projects assign to within that team, or unassigned to any
+ * project. Finally groups by rules not assigned to any team.
+ * Note that rules can be on more than one team and in more than one project for that team.
  */
-const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules, teamRules, unassignedToTeam }) => {
+const getTeamOrganization = (allRules: Rule[]): { teamRules: TeamRules[]; unassignedToTeam: Rule[] } => {
+  const teamMap = new Map<string, TeamRules>();
+  const teamProjectMaps = new Map<string, Map<string, TeamProject>>();
+  const unassignedToTeam: Rule[] = [];
+
+  // iterate through all rules and organize by team and project
+  allRules.forEach((rule) => {
+    // rule with no team belongs to the top-level "unassigned to team" bucket.
+    if (!rule.teams || rule.teams.length === 0) {
+      unassignedToTeam.push(rule);
+      return;
+    }
+
+    // otherwise place the rule under each team it belongs to
+    rule.teams.forEach((team) => {
+      // create the team's buckets the first time we see it
+      if (!teamMap.has(team.teamId)) {
+        teamMap.set(team.teamId, {
+          teamId: team.teamId,
+          teamName: team.teamName,
+          projects: [],
+          unassignedRules: []
+        });
+        teamProjectMaps.set(team.teamId, new Map());
+      }
+
+      const teamRules = teamMap.get(team.teamId)!;
+      const projectMap = teamProjectMaps.get(team.teamId)!;
+
+      // Keep only the rule's projects that belong to this team. Since rules can be on multiple teams,
+      // this ensures projects don't show up under teams they are not a part of
+      const projectsForTeam = rule.projects?.filter((project) => project.teamIds.includes(team.teamId)) ?? [];
+
+      // Add the rule under each of its projects, or unassigned to project, for this team
+      if (projectsForTeam.length > 0) {
+        projectsForTeam.forEach((project) => {
+          if (!projectMap.has(project.projectId)) {
+            projectMap.set(project.projectId, {
+              projectId: project.projectId,
+              projectName: project.projectName,
+              rules: []
+            });
+          }
+          projectMap.get(project.projectId)!.rules.push(rule);
+        });
+      } else {
+        teamRules.unassignedRules.push(rule);
+      }
+    });
+  });
+
+  teamMap.forEach((teamRules, teamId) => {
+    teamRules.projects = Array.from(teamProjectMaps.get(teamId)!.values());
+  });
+
+  return { teamRules: Array.from(teamMap.values()), unassignedToTeam };
+};
+
+/**
+ * Prepares one bucket's rules for the shared RuleRow tree.
+ * Ids are prefixed with their bucket since the same rule can live in multiple teams or projects
+ */
+const scopeRulesToBucket = (bucketId: string, rules: Rule[]): { rows: Rule[]; rootIds: string[] } => {
+  const idsInBucket = new Set(rules.map((rule) => rule.ruleId));
+  const bucketPrefixId = (ruleId: string) => `${bucketId}::${ruleId}`;
+
+  // add bucket prefix id to each rule, filtering out subRuleIds that are not in this bucket
+  const rows: Rule[] = rules.map((rule) => ({
+    ...rule,
+    ruleId: bucketPrefixId(rule.ruleId),
+    subRuleIds: rule.subRuleIds.filter((id) => idsInBucket.has(id)).map(bucketPrefixId)
+  }));
+
+  // find top level rules in this bucket where parentRule is either not set or not in this bucket
+  const rootIds = rules
+    .filter((rule) => !rule.parentRule || !idsInBucket.has(rule.parentRule.ruleId))
+    .map((rule) => bucketPrefixId(rule.ruleId));
+
+  return { rows, rootIds };
+};
+
+/**
+ * Builds a structural header row (team, project, or "unassigned" section), not a real rule
+ */
+const makeSectionRow = (ruleId: string, ruleCode: string, subRuleIds: string[]): Rule => ({
+  ruleId,
+  ruleCode,
+  ruleContent: '',
+  imageFileIds: [],
+  parentRule: undefined,
+  subRuleIds,
+  referencedRuleIds: [],
+  isComplete: false
+});
+
+/**
+ * Displays rules organized by team and project.
+ * Teams, projects, and unassigned sections are all rendered as RuleRows for consistent formatting.
+ */
+const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules }) => {
   const theme = useTheme();
 
   const backgroundColor = theme.palette.background.default;
@@ -34,81 +133,56 @@ const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules, teamRules, 
   const tableTextColor = theme.palette.text.primary;
   const tableHoverColor = theme.palette.action.hover;
 
-  // Convert teams to mock rules for rendering with RuleRow
-  const teamRulesAsRules: Rule[] = teamRules.map((team) => ({
-    ruleId: `team-${team.teamId}`,
-    ruleCode: `${team.teamName}`,
-    ruleContent: '',
-    imageFileIds: [],
-    parentRule: undefined,
-    subRuleIds: [
-      ...team.projects.map((p) => `project-${p.projectId}`),
-      ...(team.unassignedRules.length > 0 ? [`team-${team.teamId}-unassigned`] : [])
-    ],
-    referencedRuleIds: [],
-    isComplete: false
-  }));
+  // recompute row tree only when the rules change
+  const { topLevelItems, rowsById } = useMemo(() => {
+    const { teamRules, unassignedToTeam } = getTeamOrganization(allRules);
 
-  // Convert projects to mock rules for rendering with RuleRow
-  const projectRulesAsRules: Rule[] = teamRules.flatMap((team) =>
-    team.projects.map((project) => ({
-      ruleId: `project-${project.projectId}`,
-      ruleCode: `${project.projectName}`,
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: {
-        ruleId: `team-${team.teamId}`,
-        ruleCode: `${team.teamName}`
-      },
-      subRuleIds: project.rules.map((r) => r.ruleId),
-      referencedRuleIds: [],
-      isComplete: false
-    }))
-  );
+    // real-rule rows (bucket-scoped)
+    const ruleRows: Rule[] = [];
+    // header rows: teams, projects, and unassigned sections
+    const sectionRows: Rule[] = [];
+    // top level - one header row per team, plus "unassigned to team"
+    const topLevelItems: Rule[] = [];
 
-  // Convert unassigned to project sections to mock rules
-  const unassignedToProjectRules: Rule[] = teamRules
-    .filter((team) => team.unassignedRules.length > 0)
-    .map((team) => ({
-      ruleId: `team-${team.teamId}-unassigned`,
-      ruleCode: 'Unassigned Rules - Unassigned to Project',
-      ruleContent: '',
-      imageFileIds: [],
-      parentRule: {
-        ruleId: `team-${team.teamId}`,
-        ruleCode: `${team.teamName}`
-      },
-      subRuleIds: team.unassignedRules.map((r) => r.ruleId),
-      referencedRuleIds: [],
-      isComplete: false
-    }));
+    teamRules.forEach((team) => {
+      const teamRowId = `team-${team.teamId}`;
+      const teamChildIds: string[] = [];
 
-  // Create unassigned to team mock rule
-  const unassignedToTeamRule: Rule | null =
-    unassignedToTeam.length > 0
-      ? {
-          ruleId: 'unassigned-to-team',
-          ruleCode: 'Unassigned Rules - Unassigned to Team',
-          ruleContent: '',
-          imageFileIds: [],
-          parentRule: undefined,
-          subRuleIds: unassignedToTeam.map((r) => r.ruleId),
-          referencedRuleIds: [],
-          isComplete: false
-        }
-      : null;
+      // one section per project, holding that project's assigned rules
+      team.projects.forEach((project) => {
+        const projectRowId = `project-${team.teamId}-${project.projectId}`;
+        const { rows, rootIds } = scopeRulesToBucket(projectRowId, project.rules);
+        ruleRows.push(...rows);
+        sectionRows.push(makeSectionRow(projectRowId, project.projectName, rootIds));
+        teamChildIds.push(projectRowId);
+      });
 
-  // mock team/project rules + actual rules
-  const allRulesIncludingMock = [
-    ...teamRulesAsRules,
-    ...projectRulesAsRules,
-    ...unassignedToProjectRules,
-    ...(unassignedToTeamRule ? [unassignedToTeamRule] : []),
-    ...allRules
-  ];
+      // one section for rules on the team but assigned to no project
+      if (team.unassignedRules.length > 0) {
+        const unassignedRowId = `team-${team.teamId}-unassigned`;
+        const { rows, rootIds } = scopeRulesToBucket(unassignedRowId, team.unassignedRules);
+        ruleRows.push(...rows);
+        sectionRows.push(makeSectionRow(unassignedRowId, 'Unassigned Rules - Unassigned to Project', rootIds));
+        teamChildIds.push(unassignedRowId);
+      }
 
-  // Top level items are teams and unassigned to team
-  const topLevelItems = [...teamRulesAsRules, ...(unassignedToTeamRule ? [unassignedToTeamRule] : [])];
+      const teamRow = makeSectionRow(teamRowId, team.teamName, teamChildIds);
+      sectionRows.push(teamRow);
+      topLevelItems.push(teamRow);
+    });
+
+    // top-level for rules unassigned to any team
+    if (unassignedToTeam.length > 0) {
+      const unassignedToTeamRowId = 'unassigned-to-team';
+      const { rows, rootIds } = scopeRulesToBucket(unassignedToTeamRowId, unassignedToTeam);
+      ruleRows.push(...rows);
+      const unassignedToTeamRow = makeSectionRow(unassignedToTeamRowId, 'Unassigned Rules - Unassigned to Team', rootIds);
+      sectionRows.push(unassignedToTeamRow);
+      topLevelItems.push(unassignedToTeamRow);
+    }
+
+    return { topLevelItems, rowsById: [...sectionRows, ...ruleRows] };
+  }, [allRules]);
 
   // Everything that isn't an actual rule (e.g., unassigned headers) should span the full row width
   const actualRuleIds = new Set<string>(allRules.map((r) => r.ruleId));
@@ -122,7 +196,7 @@ const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules, teamRules, 
               <RuleRow
                 key={item.ruleId}
                 rule={item}
-                allRules={allRulesIncludingMock}
+                allRules={rowsById}
                 rightContent={() => null}
                 backgroundColor={tableBackgroundColor}
                 textColor={tableTextColor}

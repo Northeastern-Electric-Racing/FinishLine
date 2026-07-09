@@ -349,6 +349,7 @@ export default class RulesService {
       where: { ruleId },
       include: {
         subRules: true,
+        teams: { select: { teamId: true } },
         ruleset: { select: { car: { include: { wbsElement: { select: { organizationId: true } } } } } }
       }
     });
@@ -364,7 +365,7 @@ export default class RulesService {
 
     const project = await prisma.project.findUnique({
       where: { projectId },
-      include: { wbsElement: true }
+      include: { wbsElement: true, teams: { select: { teamId: true } } }
     });
 
     if (!project) {
@@ -376,9 +377,17 @@ export default class RulesService {
 
     if (project.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
 
-    // Checks if this rule was already assigned to this project
-    const existingProjectRule = await prisma.project_Rule.findUnique({
-      where: { ruleId_projectId: { ruleId, projectId } }
+    // A rule can only be assigned to a project if the rule is on one of that project's teams.
+    // This should never be reached since the frontend only shows unassigned rules that are assigned to the project's teams
+    const projectTeamIds = new Set(project.teams.map((team) => team.teamId));
+    if (!rule.teams.some((team) => projectTeamIds.has(team.teamId))) {
+      throw new HttpException(400, "Rule must be on one of the project's teams to be assigned to it");
+    }
+
+    // Checks if this rule is already actively assigned to this project.
+    // A soft-deleted project rule from previous unassignment would be revived instead of creating a new one
+    const existingProjectRule = await prisma.project_Rule.findFirst({
+      where: { ruleId, projectId, dateDeleted: null }
     });
 
     if (existingProjectRule) {
@@ -394,12 +403,16 @@ export default class RulesService {
       visited.add(currentParentId);
       const parent = await prisma.rule.findUnique({
         where: { ruleId: currentParentId },
-        select: { parentRuleId: true, dateDeleted: true }
+        select: { parentRuleId: true, dateDeleted: true, teams: { select: { teamId: true } } }
       });
       // rule only displays if the full chain to a top-level rule exists, so a missing or deleted
       // ancestor means this rule would not display - do not assign it OR its ancestors to the project
       if (!parent) throw new NotFoundException('Rule', currentParentId);
       if (parent.dateDeleted) throw new DeletedException('Rule', currentParentId);
+      // ancestors must also be on one of the project's teams otherwise the chain to the top-level rule would break
+      if (!parent.teams.some((team) => projectTeamIds.has(team.teamId))) {
+        throw new HttpException(400, "Parent rules must be on one of the project's teams to be assigned to it");
+      }
       ancestorIds.push(currentParentId);
       currentParentId = parent.parentRuleId;
     }
@@ -412,25 +425,25 @@ export default class RulesService {
     const existingAncestorIds = new Set(existingAncestors.map((projectRule) => projectRule.ruleId));
     const ancestorsToCreate = ancestorIds.filter((id) => !existingAncestorIds.has(id));
 
-    // create all project rules
-    await prisma.$transaction([
-      ...ancestorsToCreate.map((ancestorId) =>
-        prisma.project_Rule.create({
-          data: {
-            ruleId: ancestorId,
-            projectId,
-            createdByUserId: submitter.userId
-          }
-        })
-      ),
-      prisma.project_Rule.create({
-        data: {
-          ruleId,
+    // create (or revive) all project rules. (ruleId, projectId) is unique so
+    // soft deleted rules from previous team unassignment would be revived instead of colliding on insert
+    const reviveOrCreate = (targetRuleId: string) =>
+      // upsert - updates existing record, or inserts if it doesn't exist
+      prisma.project_Rule.upsert({
+        where: { ruleId_projectId: { ruleId: targetRuleId, projectId } },
+        create: {
+          ruleId: targetRuleId,
           projectId,
           createdByUserId: submitter.userId
+        },
+        update: {
+          dateDeleted: null,
+          deletedByUserId: null,
+          createdByUserId: submitter.userId
         }
-      })
-    ]);
+      });
+
+    await prisma.$transaction([...ancestorsToCreate.map(reviveOrCreate), reviveOrCreate(ruleId)]);
 
     // return only original project rule being assigned (leaf rule)
     const projectRule = await prisma.project_Rule.findUnique({
@@ -811,18 +824,44 @@ export default class RulesService {
         }
       });
     } else {
-      await prisma.rule.update({
-        where: { ruleId: rule.ruleId },
-        data: {
-          teams: {
-            disconnect: {
-              teamId
+      // teams the rule still belongs to once this team assignment is removed
+      const remainingTeamIds = rule.teams
+        .filter((currTeam) => currTeam.teamId !== teamId)
+        .map((currTeam) => currTeam.teamId);
+
+      // Disconnect the team and soft delete its project rules, ensure we never leave
+      // the rule unassigned from the team while its project rules stay active
+      await prisma.$transaction(async (tx) => {
+        await tx.rule.update({
+          where: { ruleId: rule.ruleId },
+          data: {
+            teams: {
+              disconnect: {
+                teamId
+              }
             }
           }
-        }
+        });
+        // Since a project can belong to multiple teams, only soft delete the project rule
+        // when the project shares no remaining team with the rule.
+        await tx.project_Rule.updateMany({
+          where: {
+            ruleId: rule.ruleId,
+            dateDeleted: null,
+            project: {
+              teams: {
+                some: { teamId }, // project has the team where the assignment is being removed
+                none: { teamId: { in: remainingTeamIds } } // project has no remaining teams that the rule is still assigned to
+              }
+            }
+          },
+          data: {
+            dateDeleted: new Date(),
+            deletedByUserId: user.userId
+          }
+        });
       });
     }
-
     // retrieve and return the updated rule
     const newRule = await prisma.rule.findUnique({
       where: { ruleId },
@@ -1161,21 +1200,14 @@ export default class RulesService {
   }
 
   /**
-   * Gets team rules that are unassigned to a project
+   * Gets rules assignable to a project that are not already assigned to it.
+   * A project can belong to multiple teams, so rules from all of its teams are shown.
    * @param rulesetId ruleset the rules are in
-   * @param teamId team that rules are assigned to
+   * @param projectId the project the rules would be assigned to
    * @param organizationId the organization id
-   * @returns the rules in this team that do not have an associated project rule
+   * @returns the rules on one of the project's teams that are not already actively assigned to this project
    */
-  static async getUnassignedRulesForRuleset(
-    rulesetId: string,
-    teamId: string,
-    projectId: string | undefined,
-    organizationId: string
-  ) {
-    if (!projectId) {
-      throw new HttpException(400, 'Query parameter projectId is required');
-    }
+  static async getUnassignedRulesForProjectRuleset(rulesetId: string, projectId: string, organizationId: string) {
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
@@ -1200,24 +1232,12 @@ export default class RulesService {
       throw new InvalidOrganizationException('Ruleset');
     }
 
-    const team = await prisma.team.findUnique({
-      where: { teamId },
-      select: {
-        organizationId: true
-      }
-    });
-
-    if (!team) {
-      throw new NotFoundException('Team', teamId);
-    }
-
-    if (team.organizationId !== organizationId) {
-      throw new InvalidOrganizationException('Team');
-    }
-
     const project = await prisma.project.findUnique({
       where: { projectId },
-      select: { wbsElement: { select: { organizationId: true } } }
+      select: {
+        wbsElement: { select: { organizationId: true } },
+        teams: { select: { teamId: true } }
+      }
     });
 
     if (!project) {
@@ -1228,19 +1248,21 @@ export default class RulesService {
       throw new InvalidOrganizationException('Project');
     }
 
+    const projectTeamIds = project.teams.map((team) => team.teamId);
+
     const rules = await prisma.rule.findMany({
       where: {
         rulesetId,
+        // rule is on at least one of the project's teams
         teams: {
           some: {
-            teamId,
+            teamId: { in: projectTeamIds },
             organizationId
           }
         },
-        // a rule can belong to many projects within a team
-        // only hide it from a project that already has it assigned
+        // only hide it from a project that already has it actively assigned
         projects: {
-          none: { projectId }
+          none: { projectId, dateDeleted: null }
         },
         deletedByUserId: null
       },

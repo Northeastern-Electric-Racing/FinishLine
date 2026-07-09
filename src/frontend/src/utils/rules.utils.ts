@@ -57,6 +57,34 @@ export const getRuleStatusConfig = (isComplete: boolean): { label: string; color
 };
 
 /**
+ * Collects a rule and all of its descendants, down to the leaf rules.
+ */
+export const getRuleAndDescendantIds = (ruleId: string, allRules: Rule[]): string[] => {
+  const rule = allRules.find((r) => r.ruleId === ruleId);
+  if (!rule) {
+    return [];
+  }
+
+  return [ruleId, ...rule.subRuleIds.flatMap((subId) => getRuleAndDescendantIds(subId, allRules))];
+};
+
+/**
+ * Collects the ancestors of a rule, from its immediate parent up to the top-level rule.
+ */
+export const getAncestorIds = (ruleId: string, allRules: Rule[]): string[] => {
+  const ancestorIds: string[] = [];
+  let current = allRules.find((r) => r.ruleId === ruleId);
+
+  while (current?.parentRule) {
+    const parentId = current.parentRule.ruleId;
+    ancestorIds.push(parentId);
+    current = allRules.find((r) => r.ruleId === parentId);
+  }
+
+  return ancestorIds;
+};
+
+/**
  * Comparator that orders rules by their rule code numerically, so codes sort
  * as F.2 before F.10 rather than alphabetically
  */

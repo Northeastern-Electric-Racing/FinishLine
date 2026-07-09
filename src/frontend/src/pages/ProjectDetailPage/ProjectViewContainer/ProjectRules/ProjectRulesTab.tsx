@@ -82,8 +82,9 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
 
   const { mutateAsync: createProjectRuleMutation, isLoading: isCreating } = useCreateProjectRule();
 
-  // Get the first team's ID for fetching unassigned rules
+  // First team's ID, used only to pre-select a team tab on the assign-rules deep link
   const teamId = project.teams[0]?.teamId || '';
+  const teamNames = project.teams.map((team) => team.teamName);
 
   // Convert project rules to rules
   // Sorted by rule code so both top-level rows and their children render in stable numeric order.
@@ -217,7 +218,13 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         </MuiTabs>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Tooltip
-            title={`Assign rules to ${project.teams[0]?.teamName ?? ''} team to add them to this project`}
+            title={
+              teamNames.length > 0
+                ? `Assign rules to the ${teamNames.join(', ')} team${
+                    teamNames.length === 1 ? '' : 's'
+                  } to add them to this project`
+                : 'Add a team to this project to assign rules'
+            }
             arrow
             slotProps={{ tooltip: { sx: { textAlign: 'center' } } }}
           >
@@ -233,7 +240,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
             </IconButton>
           </Tooltip>
           <Button
-            disabled={!activeRuleset}
+            disabled={!activeRuleset || teamNames.length === 0}
+            // Assign rule page only supports highlighting a single team at a time
             onClick={() =>
               activeRuleset &&
               history.push(
@@ -328,7 +336,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           <RulesActionButton
             variant="contained"
             onClick={() => setAddRuleModalOpen(true)}
-            disabled={!teamId || hasNoActiveRuleset}
+            disabled={teamNames.length === 0 || hasNoActiveRuleset}
           >
             Add Rule
           </RulesActionButton>
@@ -346,14 +354,13 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       )}
 
       {/* Add Rule Modal */}
-      {activeRuleset && teamId && (
+      {activeRuleset && (
         <AddRuleModal
           open={addRuleModalOpen}
           onHide={() => setAddRuleModalOpen(false)}
           rulesetId={activeRuleset.rulesetId}
-          teamId={teamId}
-          teamName={project.teams[0]?.teamName ?? ''}
           projectId={project.id}
+          teamNames={project.teams.map((team) => team.teamName)}
           onSubmit={handleAddRules}
         />
       )}
