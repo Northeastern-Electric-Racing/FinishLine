@@ -44,8 +44,10 @@ const AddRuleModal = ({ open, onHide, rulesetId, projectId, teamNames, onSubmit 
   );
   const addableRuleIds = useMemo(() => new Set(addableRules.map((rule: Rule) => rule.ruleId)), [addableRules]);
 
-  // only leaves can be submitted
-  const isLeaf = (rule: Rule) => rule.subRuleIds.length === 0;
+  // Children of a rule that are still addable
+  const addableChildrenOf = (ruleId: string) => addableRules.filter((rule: Rule) => rule.parentRule?.ruleId === ruleId);
+  // A rule is a selectable leaf when it has no addable children to drill into
+  const isLeaf = (rule: Rule) => addableChildrenOf(rule.ruleId).length === 0;
   // used to sort rules in the dropdowns by their rule code
   const byRuleCode = (a: Rule, b: Rule) => a.ruleCode.localeCompare(b.ruleCode, undefined, { numeric: true });
 
@@ -53,10 +55,9 @@ const AddRuleModal = ({ open, onHide, rulesetId, projectId, teamNames, onSubmit 
   const hasUnselectedLeaf = (ruleId: string, selected: string[]): boolean => {
     const rule = rulesById.get(ruleId);
     if (!rule) return false;
-    if (isLeaf(rule)) return !selected.includes(ruleId);
-    return addableRules.some(
-      (child: Rule) => child.parentRule?.ruleId === ruleId && hasUnselectedLeaf(child.ruleId, selected)
-    );
+    const addableChildren = addableChildrenOf(ruleId);
+    if (addableChildren.length === 0) return !selected.includes(ruleId);
+    return addableChildren.some((child: Rule) => hasUnselectedLeaf(child.ruleId, selected));
   };
 
   // Finds children of the given parent that still have a leaf left to assign

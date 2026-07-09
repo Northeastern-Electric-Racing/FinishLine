@@ -403,12 +403,16 @@ export default class RulesService {
       visited.add(currentParentId);
       const parent = await prisma.rule.findUnique({
         where: { ruleId: currentParentId },
-        select: { parentRuleId: true, dateDeleted: true }
+        select: { parentRuleId: true, dateDeleted: true, teams: { select: { teamId: true } } }
       });
       // rule only displays if the full chain to a top-level rule exists, so a missing or deleted
       // ancestor means this rule would not display - do not assign it OR its ancestors to the project
       if (!parent) throw new NotFoundException('Rule', currentParentId);
       if (parent.dateDeleted) throw new DeletedException('Rule', currentParentId);
+      // ancestors must also be on one of the project's teams otherwise the chain to the top-level rule would break
+      if (!parent.teams.some((team) => projectTeamIds.has(team.teamId))) {
+        throw new HttpException(400, "Parent rules must be on one of the project's teams to be assigned to it");
+      }
       ancestorIds.push(currentParentId);
       currentParentId = parent.parentRuleId;
     }
