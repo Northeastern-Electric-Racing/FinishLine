@@ -11,10 +11,9 @@ variable "environment" {
 }
 
 variable "solution_stack_name" {
-  description = "Elastic Beanstalk solution stack name"
+  description = "Elastic Beanstalk solution stack name. Leave empty to auto-detect the latest matching Docker stack (see the data source below) - AWS periodically deprecates specific patch versions, so pinning one here will eventually break CreateEnvironment with 'No Solution Stack named ... found' (as v4.11.0 just did)."
   type        = string
-  # Find the latest: aws elasticbeanstalk list-available-solution-stacks
-  default     = "64bit Amazon Linux 2023 v4.11.0 running Docker"
+  default     = ""
 }
 
 variable "vpc_id" {
