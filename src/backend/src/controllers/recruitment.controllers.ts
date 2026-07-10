@@ -11,15 +11,25 @@ export default class RecruitmentController {
     }
   }
 
+  static async getNewMemberMilestones(req: Request, res: Response, next: NextFunction) {
+    try {
+      const newMemberMilestones = await RecruitmentServices.getNewMemberMilestones(req.organization);
+      res.status(200).json(newMemberMilestones);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createMilestone(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, description, dateOfEvent } = req.body;
+      const { name, description, dateOfEvent, isOnNewMemberDashboard } = req.body;
 
       const milestone = await RecruitmentServices.createMilestone(
         req.currentUser,
         name,
         description,
         dateOfEvent,
+        isOnNewMemberDashboard,
         req.organization
       );
       res.status(200).json(milestone);
@@ -31,13 +41,14 @@ export default class RecruitmentController {
   static async editMilestone(req: Request, res: Response, next: NextFunction) {
     try {
       const { milestoneId } = req.params as Record<string, string>;
-      const { name, description, dateOfEvent } = req.body;
+      const { name, description, dateOfEvent, isOnNewMemberDashboard } = req.body;
 
       const milestone = await RecruitmentServices.editMilestone(
         req.currentUser,
         name,
         description,
         dateOfEvent,
+        isOnNewMemberDashboard,
         milestoneId,
         req.organization
       );

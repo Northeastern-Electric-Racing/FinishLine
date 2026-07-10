@@ -12,13 +12,15 @@ import {
   editMilestone,
   getAllFaqs,
   getAllGuestDefinitions,
-  getAllMilestones
+  getAllMilestones,
+  getNewMemberMilestones
 } from '../apis/recruitment.api';
 
 export interface MilestonePayload {
   name: string;
   description: string;
   dateOfEvent: Date;
+  isOnNewMemberDashboard: boolean;
 }
 
 export interface FaqPayload {
@@ -39,6 +41,13 @@ export interface GuestDefinitionPayload {
 export const useAllMilestones = () => {
   return useQuery<Milestone[], Error>(['milestones'], async () => {
     const { data } = await getAllMilestones();
+    return data;
+  });
+};
+
+export const useNewMemberMilestones = () => {
+  return useQuery<Milestone[], Error>(['milestones', 'new-member'], async () => {
+    const { data } = await getNewMemberMilestones();
     return data;
   });
 };

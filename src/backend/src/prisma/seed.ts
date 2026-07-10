@@ -3288,10 +3288,44 @@ const performSeed: () => Promise<void> = async () => {
     { userId: regina.userId, title: 'Chief Electrical Engineer' }
   ]);
 
-  await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', daysAgo(120), ner);
-  await RecruitmentServices.createMilestone(batman, 'Applications Open', '', daysAgo(70), ner);
-  await RecruitmentServices.createMilestone(batman, 'Applications Close', '', daysAgo(56), ner);
-  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', daysAgo(49), ner);
+  await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', daysAgo(120), false, ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Open', '', daysAgo(70), false, ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Close', '', daysAgo(56), false, ner);
+  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', daysAgo(49), false, ner);
+
+  // new member onboarding milestones
+  await RecruitmentServices.createMilestone(
+    batman,
+    'First Meeting',
+    'Attend your first general body meeting',
+    daysAgo(14),
+    true,
+    ner
+  );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'First Bay Time',
+    'Get hands-on time in the bay with a team lead',
+    daysAgo(7),
+    true,
+    ner
+  );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Safety Training Deadline',
+    'Complete required safety training to access the bay unsupervised',
+    daysFromNow(14),
+    true,
+    ner
+  );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Subteam Placement',
+    'Officially join a subteam project',
+    daysFromNow(30),
+    true,
+    ner
+  );
 
   await RecruitmentServices.createOrganizationFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
   await RecruitmentServices.createOrganizationFaq(

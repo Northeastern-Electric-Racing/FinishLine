@@ -10,6 +10,12 @@ export const getAllMilestones = () => {
   });
 };
 
+export const getNewMemberMilestones = () => {
+  return axios.get<Milestone[]>(apiUrls.newMemberMilestones(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
 export const createMilestone = (payload: MilestonePayload) => {
   return axios.post(apiUrls.milestoneCreate(), {
     ...payload,

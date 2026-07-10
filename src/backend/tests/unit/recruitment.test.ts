@@ -104,6 +104,7 @@ describe('Recruitment Tests', () => {
               'name',
               'description',
               new Date(),
+              false,
               organization
             )
         ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a milestone'));
@@ -115,6 +116,7 @@ describe('Recruitment Tests', () => {
           'name',
           'description',
           new Date('11/12/24'),
+          false,
           organization
         );
 
@@ -133,6 +135,7 @@ describe('Recruitment Tests', () => {
               'name',
               'description',
               new Date(),
+              false,
               '1',
               organization
             )
@@ -147,6 +150,7 @@ describe('Recruitment Tests', () => {
               'name',
               'description',
               new Date('11/12/24'),
+              false,
               '1',
               organization
             )
@@ -159,6 +163,7 @@ describe('Recruitment Tests', () => {
           'name',
           'description',
           new Date('11/12/24'),
+          false,
           organization
         );
 
@@ -175,6 +180,7 @@ describe('Recruitment Tests', () => {
               'name',
               'description',
               new Date('11/12/24'),
+              false,
               milestone.milestoneId,
               organization
             )
@@ -187,6 +193,7 @@ describe('Recruitment Tests', () => {
           'name',
           'description',
           new Date('11/12/24'),
+          false,
           organization
         );
 
@@ -195,6 +202,7 @@ describe('Recruitment Tests', () => {
           'new name',
           'new description',
           new Date('11/14/24'),
+          false,
           milestone.milestoneId,
           organization
         );
@@ -212,6 +220,7 @@ describe('Recruitment Tests', () => {
           'name',
           'description',
           new Date('11/11/24'),
+          false,
           organization
         );
 
@@ -220,6 +229,7 @@ describe('Recruitment Tests', () => {
           'name2',
           'description2',
           new Date('1/1/1'),
+          false,
           organization
         );
         const result = await RecruitmentServices.getAllMilestones(organization);
@@ -515,6 +525,7 @@ describe('Recruitment Tests', () => {
         'name',
         'description',
         new Date('11/12/24'),
+        false,
         organization
       );
 
@@ -531,6 +542,7 @@ describe('Recruitment Tests', () => {
             'name',
             'description',
             new Date('11/12/24'),
+            false,
             milestone.milestoneId,
             organization
           )

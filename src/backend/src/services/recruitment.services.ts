@@ -21,11 +21,25 @@ export default class RecruitmentServices {
   }
 
   /**
+   * Gets all milestones flagged for the new member dashboard, for the given organization
+   * @param organization the organization to get new member milestones for
+   * @returns all new-member-dashboard milestones from the given organization
+   */
+  static async getNewMemberMilestones(organization: Organization) {
+    const newMemberMilestones = await prisma.milestone.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null, isOnNewMemberDashboard: true }
+    });
+
+    return newMemberMilestones;
+  }
+
+  /**
    * Creates a new milestone in the given organization
    * @param submitter a user who is making this request
    * @param name the name of the user
    * @param description description of the milestone
    * @param dateOfEvent date of the event of the milestone
+   * @param isOnNewMemberDashboard whether the milestone should show on the new member dashboard
    * @param organizationId the organization Id of the milestone
    * @returns A newly created milestone
    */
@@ -34,6 +48,7 @@ export default class RecruitmentServices {
     name: string,
     description: string,
     dateOfEvent: Date,
+    isOnNewMemberDashboard: boolean,
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
@@ -44,6 +59,7 @@ export default class RecruitmentServices {
         name,
         description,
         dateOfEvent,
+        isOnNewMemberDashboard,
         organizationId: organization.organizationId,
         userCreatedId: submitter.userId
       }
@@ -58,6 +74,7 @@ export default class RecruitmentServices {
    * @param name the name of the user
    * @param description description of the milestone
    * @param dateOfEvent date of the event of the milestone
+   * @param isOnNewMemberDashboard whether the milestone should show on the new member dashboard
    * @param organizationId the organization Id of the milestone
    * @returns the edited milestone
    */
@@ -66,6 +83,7 @@ export default class RecruitmentServices {
     name: string,
     description: string,
     dateOfEvent: Date,
+    isOnNewMemberDashboard: boolean,
     milestoneId: string,
     organization: Organization
   ) {
@@ -94,6 +112,7 @@ export default class RecruitmentServices {
         name,
         description,
         dateOfEvent,
+        isOnNewMemberDashboard,
         organizationId: organization.organizationId
       }
     });

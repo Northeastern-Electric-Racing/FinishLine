@@ -395,6 +395,7 @@ const carEdit = (id: string) => `${cars()}/${id}/edit`;
 /************** Recruitment Endpoints ***************/
 const recruitment = () => `${API_URL}/recruitment`;
 const allMilestones = () => `${recruitment()}/milestones`;
+const newMemberMilestones = () => `${recruitment()}/milestones/new-member`;
 const milestoneCreate = () => `${recruitment()}/milestone/create`;
 const milestoneEdit = (id: string) => `${recruitment()}/milestone/${id}/edit`;
 const milestoneDelete = (id: string) => `${recruitment()}/milestone/${id}/delete`;
@@ -801,6 +802,7 @@ export const apiUrls = {
 
   recruitment,
   allMilestones,
+  newMemberMilestones,
   milestoneCreate,
   milestoneEdit,
   milestoneDelete,
