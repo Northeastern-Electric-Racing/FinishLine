@@ -25,9 +25,11 @@ export const getCarConfigs = (faker: Faker) => {
       to: new Date(carYear, TO_MONTH, TO_DAY)
     });
 
+    console.log(start, end);
+
     return {
       name: `NER-${shortYear}`,
-      carNumber: carYear - 2000,
+      carNumber: i,
       year: carYear,
       dateRange: { start, end } as DateRange
     };

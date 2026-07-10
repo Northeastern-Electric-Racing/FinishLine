@@ -89,7 +89,9 @@ export type ProjectContext = {
   timeline: DateRange;
 };
 
+export type WorkPackage = Work_Package & { wbsElement: WBS_Element }
+
 export type WorkPackageContext = {
-  workPackage: Work_Package & { wbsElement: WBS_Element };
+  workPackage: WorkPackage;
   timeline: DateRange;
 };

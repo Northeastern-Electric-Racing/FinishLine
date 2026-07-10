@@ -107,16 +107,23 @@ export const generateWorkPackageStage = (faker: Faker): Work_Package_Stage | nul
   return faker.helpers.arrayElement(Object.values(Work_Package_Stage).sort());
 };
 
-export const generateWorkPackageTimeline = (faker: Faker, projectTimeline: DateRange, blockerEndDate?: Date): DateRange => {
+export const generateWorkPackageTimeline = (
+  faker: Faker,
+  projectTimeline: DateRange,
+  initial: boolean,
+  blockerEndDate?: Date
+): DateRange => {
   const start =
     blockerEndDate && blockerEndDate < projectTimeline.end
       ? addDaysToDate(blockerEndDate, 1)
       : addDaysToDate(
           projectTimeline.start,
-          faker.number.int({
-            min: 0,
-            max: Math.max(0, daysBetween(projectTimeline) - DAYS_PER_WEEK)
-          })
+          initial
+            ? 0
+            : faker.number.int({
+                min: 0,
+                max: Math.max(0, daysBetween(projectTimeline) - DAYS_PER_WEEK)
+              })
         );
 
   // duration saved in WEEKS instead of days
@@ -126,11 +133,11 @@ export const generateWorkPackageTimeline = (faker: Faker, projectTimeline: DateR
   return { start, end: clampDate(addDaysToDate(start, duration * DAYS_PER_WEEK), { start, end: projectTimeline.end }) };
 };
 
-const getOverdueStatus = (faker: Faker, daysOverdue: number): WBS_Element_Status => {
-  if (daysOverdue <= 0) return WBS_Element_Status.ACTIVE;
+export const getOverdueStatus = (faker: Faker, daysOverdue: number): WBS_Element_Status => {
+  if (daysOverdue <= 0) return WBS_Element_Status.INACTIVE;
 
   // inverse exponential: starts at ~80% incomplete chance, drops rapidly toward 0
-  const incompleteChance = 0.8 * Math.exp(-0.01 * daysOverdue);
+  const incompleteChance = 10 * Math.exp(-0.01 * daysOverdue);
 
   return faker.datatype.boolean({ probability: 1 - incompleteChance })
     ? WBS_Element_Status.COMPLETE
@@ -138,7 +145,6 @@ const getOverdueStatus = (faker: Faker, daysOverdue: number): WBS_Element_Status
 };
 
 export const workPackageCreateInput = (
-  faker: Faker,
   organizationId: string,
   carNumber: number,
   projectNumber: number,
@@ -149,6 +155,7 @@ export const workPackageCreateInput = (
   startDate: Date,
   duration: number,
   stage: Work_Package_Stage | null,
+  status: WBS_Element_Status,
   leadId?: string,
   managerId?: string,
   blockedByWbsElementIds: string[] = []
@@ -171,7 +178,7 @@ export const workPackageCreateInput = (
       carNumber,
       projectNumber,
       workPackageNumber,
-      status: getOverdueStatus(faker, daysBetween({ start: addDaysToDate(startDate, duration * 7), end: new Date() })),
+      status,
       organization: { connect: { organizationId } },
       ...(leadId ? { lead: { connect: { userId: leadId } } } : {}),
       ...(managerId ? { manager: { connect: { userId: managerId } } } : {})

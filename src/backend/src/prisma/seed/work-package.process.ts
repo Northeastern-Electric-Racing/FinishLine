@@ -2,15 +2,17 @@ import { SeedProcess } from '../processes/seed-process.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { ProjectOutput, ProjectProcess } from './project.process.js';
-import { WorkPackageContext, ProjectContext, FullUser } from '../context.js';
+import { WorkPackageContext, ProjectContext, FullUser, WorkPackage } from '../context.js';
 import {
   generateWorkPackageCount,
   generateWorkPackageName,
   generateWorkPackageStage,
   generateWorkPackageTimeline,
+  getOverdueStatus,
   workPackageCreateInput
 } from '../factories/work-package.factory.js';
 import { DAYS_PER_WEEK, daysBetween, WEEK_MS } from '../dates.js';
+import { WBS_Element_Status } from '@prisma/client';
 
 type WorkPackageInput = OrganizationOutput & UsersOutput & ProjectOutput;
 
@@ -46,6 +48,40 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
     return { workPackages, workPackagesByProjectId };
   }
 
+  private async setWorkPackageCompleteAndAllPrior(
+    workPackage: WorkPackage,
+    blockedRef: Map<WorkPackage, WorkPackage | undefined>,
+    primary: boolean
+  ) {
+    await this.prisma.work_Package.update({
+      where: { workPackageId: workPackage.workPackageId },
+      data: {
+        wbsElement: {
+          update: {
+            status: primary ? WBS_Element_Status.ACTIVE : WBS_Element_Status.COMPLETE
+          }
+        }
+      }
+    });
+
+    let blocked = blockedRef.get(workPackage);
+
+    while (blocked) {
+      await this.prisma.work_Package.update({
+        where: { workPackageId: workPackage.workPackageId },
+        data: {
+          wbsElement: {
+            update: {
+              status: WBS_Element_Status.COMPLETE
+            }
+          }
+        }
+      });
+
+      blocked = blockedRef.get(blocked);
+    }
+  }
+
   private async generateWorkPackagesForProject(
     organizationId: string,
     { project, timeline }: ProjectContext,
@@ -57,6 +93,11 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
     const { carNumber, projectNumber } = project.wbsElement;
     const workPackageContexts: WorkPackageContext[] = [];
     const usedNames = new Set<string>();
+    const blockedRef: Map<WorkPackage, WorkPackage | undefined> = new Map();
+
+    const now = new Date();
+
+    const status = getOverdueStatus(this.faker, daysBetween({ start: timeline.start, end: now }));
 
     for (let i = 0; i < count; i++) {
       // for clarity
@@ -75,7 +116,7 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
       const effectiveBlocker =
         blocker && daysBetween({ start: blocker.timeline.end, end: timeline.end }) >= DAYS_PER_WEEK ? blocker : undefined;
 
-      const wpTimeline = generateWorkPackageTimeline(this.faker, timeline, effectiveBlocker?.timeline.end);
+      const wpTimeline = generateWorkPackageTimeline(this.faker, timeline, i === 0, effectiveBlocker?.timeline.end);
 
       // pick lead and manager
       const lead = this.faker.helpers.arrayElement(projectOwners);
@@ -83,7 +124,6 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
       const manager = this.faker.helpers.arrayElement(managerPool.length > 0 ? managerPool : projectOwners);
       const stage = generateWorkPackageStage(this.faker);
 
-      // inside the loop:
       let name = generateWorkPackageName(this.faker, project.wbsElement.name, stage);
       while (usedNames.has(name)) {
         name = generateWorkPackageName(this.faker, project.wbsElement.name, stage);
@@ -94,7 +134,6 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
 
       const workPackage = await this.prisma.work_Package.create({
         data: workPackageCreateInput(
-          this.faker,
           organizationId,
           carNumber,
           projectNumber,
@@ -105,6 +144,7 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
           wpTimeline.start,
           Math.ceil((wpTimeline.end.getTime() - wpTimeline.start.getTime()) / WEEK_MS),
           stage,
+          status === WBS_Element_Status.COMPLETE ? WBS_Element_Status.COMPLETE : WBS_Element_Status.INACTIVE,
           lead.userId,
           manager.userId,
           blockedByWbsElementIds
@@ -113,6 +153,22 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
       });
 
       workPackageContexts.push({ workPackage, timeline: wpTimeline });
+      blockedRef.set(workPackage, effectiveBlocker?.workPackage);
+    }
+
+    if (status === WBS_Element_Status.ACTIVE) {
+      const { workPackage: randomWorkPackage, timeline: randomPackageTimeline } =
+        workPackageContexts[this.faker.number.int({ min: 0, max: workPackageContexts.length - 1 })];
+
+      const affectedWorkPackages = workPackageContexts
+        .filter((context) => context.timeline.start < randomPackageTimeline.start)
+        .map((context) => context.workPackage);
+
+      await this.setWorkPackageCompleteAndAllPrior(randomWorkPackage, blockedRef, true);
+
+      await Promise.all(
+        affectedWorkPackages.map((workPackage) => this.setWorkPackageCompleteAndAllPrior(workPackage, blockedRef, false))
+      );
     }
 
     return workPackageContexts;
