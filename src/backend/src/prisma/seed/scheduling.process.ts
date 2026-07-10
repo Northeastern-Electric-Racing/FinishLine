@@ -7,7 +7,14 @@ import { availabilityCreateInput, scheduleSettingsCreateInput } from '../factori
 
 type SchedulingInput = OrganizationOutput & UsersOutput & ConfigDataOutput;
 
-const SEED_START_DATE = new Date('2025-01-01T00:00:00.000Z');
+const getSeedStartDate = (): Date => {
+  const now = new Date();
+  now.setDate(now.getDate() - now.getDay()); // rewind to Sunday
+  now.setHours(0, 0, 0, 0);
+  return now;
+};
+
+const SEED_START_DATE = getSeedStartDate();
 
 export type SchedulingOutput = {
   scheduleSettings: Schedule_Settings[];
