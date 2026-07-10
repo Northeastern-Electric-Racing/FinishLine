@@ -79,6 +79,30 @@ for sg in $(aws rds describe-db-subnet-groups \
 done
 
 #####################
+# RDS Snapshots
+# sandbox-up creates a fresh prod snapshot (us-east-1) plus its copy
+# (us-east-2) on every run and never deletes either - sweep both by name
+# prefix since neither is tagged.
+#####################
+log "Deleting sandbox prod-snapshot copies (us-east-2)..."
+for snap in $(aws rds describe-db-snapshots \
+    --region "$REGION" \
+    --query "DBSnapshots[?starts_with(DBSnapshotIdentifier,'finishline-prod-presandbox-')].DBSnapshotIdentifier" \
+    --output text 2>/dev/null || true); do
+  log "  Deleting snapshot copy: $snap"
+  aws rds delete-db-snapshot --db-snapshot-identifier "$snap" --region "$REGION" || true
+done
+
+log "Deleting sandbox prod-snapshot originals (us-east-1)..."
+for snap in $(aws rds describe-db-snapshots \
+    --region us-east-1 \
+    --query "DBSnapshots[?starts_with(DBSnapshotIdentifier,'finishline-prod-presandbox-')].DBSnapshotIdentifier" \
+    --output text 2>/dev/null || true); do
+  log "  Deleting snapshot original: $snap"
+  aws rds delete-db-snapshot --db-snapshot-identifier "$snap" --region us-east-1 || true
+done
+
+#####################
 # CloudWatch Log Groups
 #####################
 log "Deleting sandbox CloudWatch log groups..."
