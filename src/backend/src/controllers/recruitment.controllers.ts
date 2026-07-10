@@ -57,12 +57,9 @@ export default class RecruitmentController {
     }
   }
 
-  // TODO rename this method throughout stack
-  // Changed scope of getAllOrganizationFaqs to include part review, so what this call really wants is
-  // recruiting FAQs, but I'll change this as part of actual work not schema changes
   static async getAllOrganizationFaqs(req: Request, res: Response, next: NextFunction) {
     try {
-      const allFaqs = await RecruitmentServices.getRecruitingFaqs(req.organization);
+      const allFaqs = await RecruitmentServices.getAllOrganizationFaqs(req.organization);
       res.status(200).json(allFaqs);
     } catch (error: unknown) {
       next(error);
@@ -89,8 +86,15 @@ export default class RecruitmentController {
 
   static async createOrganizationFaq(req: Request, res: Response, next: NextFunction) {
     try {
-      const { question, answer } = req.body;
-      const faq = await RecruitmentServices.createOrganizationFaq(req.currentUser, question, answer, req.organization);
+      const { question, answer, isOnRecruitingDashboard, isOnNewMemberDashboard } = req.body;
+      const faq = await RecruitmentServices.createOrganizationFaq(
+        req.currentUser,
+        question,
+        answer,
+        isOnRecruitingDashboard,
+        isOnNewMemberDashboard,
+        req.organization
+      );
       res.status(200).json(faq);
     } catch (error: unknown) {
       next(error);
@@ -99,9 +103,17 @@ export default class RecruitmentController {
 
   static async editFAQ(req: Request, res: Response, next: NextFunction) {
     try {
-      const { question, answer } = req.body;
+      const { question, answer, isOnRecruitingDashboard, isOnNewMemberDashboard } = req.body;
       const { faqId } = req.params as Record<string, string>;
-      const editedFAQ = await RecruitmentServices.editFAQ(question, answer, req.currentUser, req.organization, faqId);
+      const editedFAQ = await RecruitmentServices.editFAQ(
+        question,
+        answer,
+        isOnRecruitingDashboard,
+        isOnNewMemberDashboard,
+        req.currentUser,
+        req.organization,
+        faqId
+      );
       res.status(200).json(editedFAQ);
     } catch (error: unknown) {
       next(error);

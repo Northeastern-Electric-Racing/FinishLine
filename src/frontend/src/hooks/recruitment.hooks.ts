@@ -11,8 +11,10 @@ import {
   editGuestDefinition,
   editMilestone,
   getAllFaqs,
+  getRecruitingFaqs,
   getAllGuestDefinitions,
-  getAllMilestones
+  getAllMilestones,
+  getNewMemberFaqs
 } from '../apis/recruitment.api';
 
 export interface MilestonePayload {
@@ -94,6 +96,20 @@ export const useDeleteMilestone = () => {
 export const useAllFaqs = () => {
   return useQuery<FrequentlyAskedQuestion[], Error>(['faqs'], async () => {
     const { data } = await getAllFaqs();
+    return data;
+  });
+};
+
+export const useRecruitingFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['faqs', 'recruiting'], async () => {
+    const { data } = await getRecruitingFaqs();
+    return data;
+  });
+};
+
+export const useNewMemberFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['faqs', 'new-member'], async () => {
+    const { data } = await getNewMemberFaqs();
     return data;
   });
 };

@@ -168,10 +168,19 @@ export default class RecruitmentServices {
    * @param submitter a user who is making this request
    * @param question question to be displayed by the FAQ
    * @param answer answer to the question of the FAQ
+   * @param isOnRecruitingDashboard whether the FAQ should be displayed on the recruiting dashboard
+   * @param isOnNewMemberDashboard whether the FAQ should be displayed on the new member dashboard
    * @param organizationId the organization Id of the FAQ
    * @returns A newly created FAQ
    */
-  static async createOrganizationFaq(submitter: User, question: string, answer: string, organization: Organization) {
+  static async createOrganizationFaq(
+    submitter: User,
+    question: string,
+    answer: string,
+    isOnRecruitingDashboard: boolean,
+    isOnNewMemberDashboard: boolean,
+    organization: Organization
+  ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create an faq');
 
@@ -181,7 +190,8 @@ export default class RecruitmentServices {
         answer,
         organizationId: organization.organizationId,
         userCreatedId: submitter.userId,
-        isOnRecruitingDashboard: true
+        isOnRecruitingDashboard,
+        isOnNewMemberDashboard
       }
     });
 
@@ -191,13 +201,23 @@ export default class RecruitmentServices {
   /**
    * Edits the FAQ
    * @param question the updated question value
-   * @param answer the updated answer value
+   * @param answer the updated answer value,
+   * @param isOnRecruitingDashboard whether the FAQ should be displayed on the recruiting dashboard
+   * @param isOnNewMemberDashboard whether the FAQ should be displayed on the new member dashboard
    * @param faqId the requested FAQ to be edited
    * @param submitter the user editing the FAQ
    * @param organizationId the organization the user is currently in
    * @returns the updated FAQ
    */
-  static async editFAQ(question: string, answer: string, submitter: User, organization: Organization, faqId: string) {
+  static async editFAQ(
+    question: string,
+    answer: string,
+    isOnRecruitingDashboard: boolean,
+    isOnNewMemberDashboard: boolean,
+    submitter: User,
+    organization: Organization,
+    faqId: string
+  ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit frequently asked questions');
 
@@ -211,7 +231,7 @@ export default class RecruitmentServices {
 
     const updatedFAQ = await prisma.frequentlyAskedQuestion.update({
       where: { faqId },
-      data: { question, answer }
+      data: { question, answer, isOnRecruitingDashboard, isOnNewMemberDashboard }
     });
 
     return updatedFAQ;

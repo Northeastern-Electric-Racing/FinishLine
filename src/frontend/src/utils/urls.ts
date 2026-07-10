@@ -399,6 +399,8 @@ const milestoneCreate = () => `${recruitment()}/milestone/create`;
 const milestoneEdit = (id: string) => `${recruitment()}/milestone/${id}/edit`;
 const milestoneDelete = (id: string) => `${recruitment()}/milestone/${id}/delete`;
 const allFaqs = () => `${recruitment()}/faqs`;
+const recruitingFaqs = () => `${recruitment()}/faqs/recruiting`;
+const newMemberFaqs = () => `${recruitment()}/faqs/new-member`;
 const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
@@ -805,6 +807,8 @@ export const apiUrls = {
   milestoneEdit,
   milestoneDelete,
   allFaqs,
+  recruitingFaqs,
+  newMemberFaqs,
   faqCreate,
   faqEdit,
   faqDelete,
