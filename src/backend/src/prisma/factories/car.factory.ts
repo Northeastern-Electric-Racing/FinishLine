@@ -5,9 +5,9 @@ import { DateRange } from '../context.js';
 const CURRENT_YEAR = new Date().getFullYear();
 const CAR_COUNT = 5;
 
-const FROM_MONTH = 1; // April
+const FROM_MONTH = 1; // January
 const FROM_DAY = 1;
-const TO_MONTH = 12; // September
+const TO_MONTH = 12; // December
 const TO_DAY = 30;
 
 export const getCarConfigs = (faker: Faker) => {
