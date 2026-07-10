@@ -24,7 +24,7 @@ import {
   logUserOut,
   getManyUsersWithScheduleSettings,
   getAllOrgUsers,
-  getAllOrgMembers,
+  getAllOrgMembers
 } from '../apis/users.api';
 import {
   User,
