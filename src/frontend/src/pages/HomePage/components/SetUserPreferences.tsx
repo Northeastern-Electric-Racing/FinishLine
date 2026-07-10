@@ -16,7 +16,6 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useUpdateUserSettings } from '../../../hooks/users.hooks';
-import ErrorPage from '../../ErrorPage';
 
 interface SetUserPreferencesProps {
   userSettings: UserSettings;
@@ -24,13 +23,13 @@ interface SetUserPreferencesProps {
 
 const SetUserPreferences: React.FC<SetUserPreferencesProps> = ({ userSettings }) => {
   const toast = useToast();
-  const { mutateAsync, isLoading, isError, error } = useUpdateUserSettings();
+  const { mutateAsync, isLoading } = useUpdateUserSettings();
   const { handleSubmit, control } = useForm<{ slackId: string }>({
     defaultValues: { slackId: userSettings.slackId }
   });
 
   if (isLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
+  //if (isError) return <ErrorPage message={error?.message} />;
 
   const onSubmit = async ({ slackId }: { slackId: string }) => {
     try {

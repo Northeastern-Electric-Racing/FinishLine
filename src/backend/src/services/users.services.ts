@@ -199,6 +199,9 @@ export default class UsersService {
    */
   static async updateUserSettings(user: User, defaultTheme: ThemeName, slackId: string): Promise<User_Settings> {
     if (slackId) {
+      if (!process.env.SLACK_BOT_TOKEN) {
+        throw new HttpException(500, 'Slack integration not configured');
+      }
       const isValid = await validateSlackUserId(slackId);
       if (!isValid) {
         throw new HttpException(400, 'Invalid Slack ID');
