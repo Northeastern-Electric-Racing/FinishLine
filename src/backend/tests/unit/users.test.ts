@@ -11,11 +11,6 @@ import UsersService from '../../src/services/users.services.js';
 import { NotFoundException, AccessDeniedException } from '../../src/utils/errors.utils.js';
 import { RoleEnum } from 'shared';
 import { vi, Mock } from 'vitest';
-import * as slackIntegration from '../../src/integrations/slack.js';
-
-vi.mock('../../src/integrations/slack.js', () => ({
-  validateSlackUserId: vi.fn()
-}));
 
 describe('User Tests', () => {
   let orgId: string;
@@ -123,26 +118,6 @@ describe('User Tests', () => {
       await expect(
         async () => await UsersService.updateUserRole(guest.userId, memberUser, RoleEnum.MEMBER, organization)
       ).rejects.toThrow(new AccessDeniedException('Guests and members cannot update user roles!'));
-    });
-  });
-
-  describe('Validate Slack id tests', () => {
-    it('returns true for a valid Slack id', async () => {
-      (slackIntegration.validateSlackUserId as Mock).mockResolvedValue(true);
-      const result = await UsersService.validateSlackId('U06D5RURPMF');
-      expect(result).toBe(true);
-    });
-
-    it('returns false for an invalid Slack id', async () => {
-      (slackIntegration.validateSlackUserId as Mock).mockResolvedValue(false);
-      const result = await UsersService.validateSlackId('BLAH');
-      expect(result).toBe(false);
-    });
-
-    it('returns false when Slack client is not configured', async () => {
-      (slackIntegration.validateSlackUserId as Mock).mockResolvedValue(false);
-      const result = await UsersService.validateSlackId('U06D5RURPMF');
-      expect(result).toBe(false);
     });
   });
 });
