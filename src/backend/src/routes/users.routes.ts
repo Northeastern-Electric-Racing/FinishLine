@@ -66,6 +66,4 @@ userRouter.post(
   UsersController.getManyUserTasks
 );
 
-userRouter.post('/validate-slack-id', nonEmptyString(body('slackId')), validateInputs, UsersController.validateSlackId);
-
 export default userRouter;

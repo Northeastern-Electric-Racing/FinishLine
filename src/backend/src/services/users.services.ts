@@ -198,6 +198,12 @@ export default class UsersService {
    * @throws if the user does not exist
    */
   static async updateUserSettings(user: User, defaultTheme: ThemeName, slackId: string): Promise<User_Settings> {
+    if (slackId) {
+      const isValid = await validateSlackUserId(slackId);
+      if (!isValid) {
+        throw new HttpException(400, 'Invalid Slack ID');
+      }
+    }
     const { userId } = user;
 
     const updatedSettings = await prisma.user_Settings.upsert({
@@ -622,14 +628,5 @@ export default class UsersService {
     }
 
     return users.map(userWithScheduleSettingsTransformer);
-  }
-
-  /**
-   * Validates a user's slack id
-   * @param slackId the Slack user id to validate
-   * @returns true if the user exists, false otherwise
-   */
-  static async validateSlackId(slackId: string): Promise<boolean> {
-    return validateSlackUserId(slackId);
   }
 }
