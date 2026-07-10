@@ -1,8 +1,8 @@
 import { Faker } from '@faker-js/faker';
 import { Link_Type, Prisma, WBS_Element_Status } from '@prisma/client';
-import dayjs from 'dayjs';
 import { addDaysToDate } from 'shared';
 import { DateRange } from '../context.js';
+import { clampDate, daysBetween } from '../dates.js';
 
 export const PROJECTS_PER_CAR = 30;
 
@@ -190,14 +190,6 @@ const PROJECT_LINK_URL_BY_TYPE: Record<string, (projectSlug: string) => string> 
   'Google Drive': (projectSlug) => `https://drive.google.com/drive/folders/${projectSlug}`
 };
 
-const clampDate = (date: Date, min: Date, max: Date): Date => {
-  if (date < min) return new Date(min);
-  if (date > max) return new Date(max);
-  return date;
-};
-
-const daysBetween = ({ start, end }: DateRange): number => Math.max(0, dayjs(end).diff(dayjs(start), 'day'));
-
 const TARGET_BUDGET_PER_CAR = 80_000;
 
 export const generateProjectBudgets = (
@@ -235,6 +227,18 @@ export const generateProjectBudgets = (
   return budgets;
 };
 
+export const shouldExist = (faker: Faker, dateRange: DateRange): boolean => {
+  // Date is in the past, obviously it should exist
+  if (dateRange.start < new Date()) return true;
+
+  const daysUpcoming = daysBetween({ start: new Date(), end: dateRange.start });
+
+  // inverse exponential: starts at ~80% incomplete chance, drops rapidly toward 0
+  const incompleteChance = 0.8 * Math.exp(-0.02 * daysUpcoming);
+
+  return !faker.datatype.boolean({ probability: 1 - incompleteChance });
+};
+
 export const generateProjectTimeline = (faker: Faker, carDateRange: DateRange): DateRange => {
   const carStart = new Date(carDateRange.start);
   const carEnd = new Date(carDateRange.end);
@@ -256,7 +260,7 @@ export const generateProjectTimeline = (faker: Faker, carDateRange: DateRange): 
     })
   );
 
-  const end = clampDate(addDaysToDate(start, durationDays), carStart, carEnd);
+  const end = clampDate(addDaysToDate(start, durationDays), { start: carStart, end: carEnd });
 
   return { start, end };
 };
