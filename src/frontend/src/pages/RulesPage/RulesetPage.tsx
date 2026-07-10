@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import React from 'react';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCreateRuleset, useDeleteRuleset, useParseRuleset } from '../../hooks/rules.hooks';
-import { RulesActionButton } from './components/RulesActionButton';
+import { NERButton } from '../../components/NERButton';
 import AddNewFileModal from './components/AddNewFileModal';
 import PageLayout from '../../components/PageLayout';
 import { Box } from '@mui/material';
@@ -114,9 +114,13 @@ const RulesetPage: React.FC = () => {
               }}
             >
               {/* Add New File Button */}
-              <RulesActionButton variant="contained" onClick={() => setAddFileModalShow(!AddFileModalShow)}>
+              <NERButton
+                variant="contained"
+                sx={{ color: '#ededed' }}
+                onClick={() => setAddFileModalShow(!AddFileModalShow)}
+              >
                 Add New File
-              </RulesActionButton>
+              </NERButton>
               <AddNewFileModal
                 open={AddFileModalShow}
                 onHide={() => setAddFileModalShow(false)}

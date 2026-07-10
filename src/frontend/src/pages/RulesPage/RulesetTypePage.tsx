@@ -2,7 +2,7 @@ import React from 'react';
 import PageLayout from '../../components/PageLayout';
 import { Box } from '@mui/material';
 import RulesetTypeTable from './components/RulesetTypeTable';
-import { RulesActionButton } from './components/RulesActionButton';
+import { NERButton } from '../../components/NERButton';
 import AddRulesetTypeModal from './components/AddRulesetTypeModal';
 import { useState } from 'react';
 import { useCreateRulesetType } from '../../hooks/rules.hooks';
@@ -54,9 +54,13 @@ const RulesetTypePage: React.FC = () => {
                 pb: 2
               }}
             >
-              <RulesActionButton variant="contained" onClick={() => setAddRulesetTypeModalShow(!addRulesetTypeModalShow)}>
+              <NERButton
+                variant="contained"
+                sx={{ color: '#ededed' }}
+                onClick={() => setAddRulesetTypeModalShow(!addRulesetTypeModalShow)}
+              >
                 Add Ruleset Type
-              </RulesActionButton>
+              </NERButton>
               <AddRulesetTypeModal
                 open={addRulesetTypeModalShow}
                 onHide={handleAddRulesetTypeCancel}

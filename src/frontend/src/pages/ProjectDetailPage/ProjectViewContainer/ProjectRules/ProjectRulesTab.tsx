@@ -38,7 +38,7 @@ import { InfoOutlined } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../../utils/routes';
 import RuleStatusTag from '../../../RulesPage/components/RuleStatusTag';
-import { RulesActionButton } from '../../../RulesPage/components/RulesActionButton';
+import { NERButton } from '../../../../components/NERButton';
 import { compareRuleCodes } from '../../../../utils/rules.utils';
 
 interface ProjectRulesTabProps {
@@ -333,13 +333,14 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       >
         <Box sx={{ borderBottom: `2px solid ${theme.palette.divider}`, mb: 2, ml: '30px' }} />
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 2 }}>
-          <RulesActionButton
+          <NERButton
             variant="contained"
+            sx={{ color: '#ededed' }}
             onClick={() => setAddRuleModalOpen(true)}
             disabled={teamNames.length === 0 || hasNoActiveRuleset}
           >
             Add Rule
-          </RulesActionButton>
+          </NERButton>
         </Box>
       </Box>
 

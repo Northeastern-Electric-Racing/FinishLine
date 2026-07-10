@@ -17,7 +17,7 @@ import AddRuleSectionModal from './components/AddRuleSectionModal';
 import AddRuleModal from './components/AddRuleModal';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
-import { RulesActionButton } from './components/RulesActionButton';
+import { NERButton } from '../../components/NERButton';
 import DeleteRuleModal from './components/DeleteRuleModal';
 import { useDeleteRule, useEditRule, useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
 import { countRulesToDelete, compareRuleCodes } from '../../utils/rules.utils';
@@ -322,14 +322,14 @@ const RulesetEditPage: React.FC = () => {
                     >
                       Cancel
                     </Button>
-                    <RulesActionButton variant="contained" onClick={handleSaveEdit}>
+                    <NERButton variant="contained" sx={{ color: '#ededed' }} onClick={handleSaveEdit}>
                       Save
-                    </RulesActionButton>
+                    </NERButton>
                   </>
                 ) : (
-                  <RulesActionButton variant="contained" onClick={handleAddRuleSection}>
+                  <NERButton variant="contained" sx={{ color: '#ededed' }} onClick={handleAddRuleSection}>
                     Add Rule Section
-                  </RulesActionButton>
+                  </NERButton>
                 )}
               </Box>
             </Box>

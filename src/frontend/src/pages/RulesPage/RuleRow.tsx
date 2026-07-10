@@ -211,6 +211,7 @@ const RuleRow: React.FC<RuleRowProps> = ({
             <TableCell
               align="left"
               className={cardCellClass}
+              onClick={(e) => e.stopPropagation()}
               sx={{
                 ...commonCellStyles,
                 ...cardCellBg,

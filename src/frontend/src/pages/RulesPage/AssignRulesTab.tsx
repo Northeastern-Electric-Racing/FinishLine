@@ -23,14 +23,13 @@ import ErrorPage from '../ErrorPage';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
-import { RulesActionButton } from './components/RulesActionButton';
 import { NERButton } from '../../components/NERButton';
 import NERModal from '../../components/NERModal';
 import WarningIcon from '@mui/icons-material/Warning';
 import RuleRow from './RuleRow';
 import { useBulkToggleRuleTeam } from '../../hooks/rules.hooks';
 import { compareRuleCodes } from '../../utils/rules.utils';
-import { getAncestorIds, getRuleAndDescendantIds } from '../../utils/rules.utils';
+import { getAncestorIds, getRuleAndDescendantIds, getDescendantLeafRules } from '../../utils/rules.utils';
 
 /*
  * Props for the assign rules tab.
@@ -136,7 +135,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
 
   // A rule is considered selected when all of its leaf rules are assigned to the current team.
   const isRuleSelected = (rule: Rule) => {
-    const leafIds = getLeafRuleIds(rule.ruleId, rules);
+    const leafIds = getDescendantLeafRules(rule, rules).map((leaf) => leaf.ruleId);
     return leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
   };
 
@@ -388,9 +387,9 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
           }}
         />
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 2 }}>
-          <RulesActionButton variant="contained" onClick={handleSaveAndExit} disabled={isSaving}>
+          <NERButton variant="contained" sx={{ color: '#ededed' }} onClick={handleSaveAndExit} disabled={isSaving}>
             {isSaving ? 'Saving...' : 'Save & Exit'}
-          </RulesActionButton>
+          </NERButton>
         </Box>
       </Box>
 
