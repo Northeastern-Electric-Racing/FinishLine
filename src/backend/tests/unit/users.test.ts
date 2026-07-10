@@ -138,7 +138,7 @@ describe('User Tests', () => {
       const testUser = await createTestUser(batmanAppAdmin, orgId);
 
       await expect(async () => await UsersService.updateUserSettings(testUser, 'DARK', 'la la la')).rejects.toThrow(
-        'Slack integration is not configured'
+        'Slack integration not configured'
       );
     });
 
