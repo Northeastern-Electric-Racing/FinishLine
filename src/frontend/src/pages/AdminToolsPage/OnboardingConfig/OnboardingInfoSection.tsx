@@ -167,7 +167,7 @@ const OnboardingInfoSection: React.FC = () => {
               marginBottom: '12px'
             }}
           >
-            Milestones
+            Onboarding Milestones
           </Typography>
           <NewMemberMilestoneTable />
         </Box>

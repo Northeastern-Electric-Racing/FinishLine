@@ -31,7 +31,7 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
         </Grid>
         <Grid item xs={12} md={6}>
           <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor="white">
-            Milestones
+            Recruitment Milestones
           </Typography>
           <RecruitingMilestoneTable />
         </Grid>
