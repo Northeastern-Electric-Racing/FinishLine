@@ -249,9 +249,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const [requiredMembers, setRequiredMembers] = useState<Array<{ id: string; label: string }>>([]);
   const [optionalMembers, setOptionalMembers] = useState<Array<{ id: string; label: string }>>([]);
   const [selectedTeams, setSelectedTeams] = useState<Array<{ id: string; label: string }>>([]);
-  const [selectedNotificationChannels, setSelectedNotificationChannels] = useState<Array<{ id: string; label: string }>>(
-    []
-  );
+  const [selectedNotificationChannels, setSelectedNotificationChannels] = useState<Array<{ id: string; label: string }>>([]);
   const [requiredMemberInput, setRequiredMemberInput] = useState('');
   const [optionalMemberInput, setOptionalMemberInput] = useState('');
   const [teamInput, setTeamInput] = useState('');
@@ -1431,9 +1429,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       <Chip
                         key={channel.id}
                         label={channel.label}
-                        onDelete={() =>
-                          setSelectedNotificationChannels((prev) => prev.filter((c) => c.id !== channel.id))
-                        }
+                        onDelete={() => setSelectedNotificationChannels((prev) => prev.filter((c) => c.id !== channel.id))}
                         sx={{ bgcolor: 'grey.700', opacity: 0.7 }}
                       />
                     ))}

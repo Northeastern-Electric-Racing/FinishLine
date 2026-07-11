@@ -306,13 +306,10 @@ export const useNotificationChannels = () => {
 };
 
 export const useAvailableNotificationChannels = () => {
-  return useQuery<NotificationChannelPreview[], Error>(
-    ['organizations', 'notification-channels', 'available'],
-    async () => {
-      const { data } = await getAvailableNotificationChannels();
-      return data;
-    }
-  );
+  return useQuery<NotificationChannelPreview[], Error>(['organizations', 'notification-channels', 'available'], async () => {
+    const { data } = await getAvailableNotificationChannels();
+    return data;
+  });
 };
 
 export const useCreateNotificationChannel = () => {
