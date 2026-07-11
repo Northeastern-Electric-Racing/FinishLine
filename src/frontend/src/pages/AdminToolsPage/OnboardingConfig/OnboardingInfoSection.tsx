@@ -1,6 +1,7 @@
 import { Grid, Typography, List, ListItem, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import UsefulLinksTable from './UsefulLinks/UsefulLinksTable';
+import NewMemberMilestoneTable from '../RecruitmentConfig/NewMemberMilestoneTable';
 import {
   useCurrentOrganization,
   useOrganizationNewMemberImage,
@@ -146,6 +147,29 @@ const OnboardingInfoSection: React.FC = () => {
             Useful Links
           </Typography>
           <UsefulLinksTable />
+        </Box>
+      </Grid>
+      <Grid item>
+        <Box
+          sx={{
+            backgroundColor: (theme) => theme.palette.background.paper,
+            height: '100%',
+            borderRadius: '10px',
+            padding: '16px',
+            width: '100%'
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'white',
+              fontWeight: 'bold',
+              marginBottom: '12px'
+            }}
+          >
+            Milestones
+          </Typography>
+          <NewMemberMilestoneTable />
         </Box>
       </Grid>
       <Grid item>

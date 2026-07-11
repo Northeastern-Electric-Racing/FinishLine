@@ -7,7 +7,6 @@ import { groupChecklists, sortGroupNames } from '../../../utils/onboarding.utils
 import ErrorPage from '../../ErrorPage';
 import { AdminChecklist } from './Checklists/AdminChecklist';
 import OnboardingInfoSection from './OnboardingInfoSection';
-import NewMemberMilestoneTable from '../RecruitmentConfig/NewMemberMilestoneTable';
 import { Checklist } from 'shared';
 
 type GroupedChecklists = Record<string, Checklist[]>; // Change made here
@@ -71,12 +70,6 @@ const AdminToolsOnboardingConfig: React.FC = () => {
         </Grid>
         <Grid item xs={12} md={5} sx={{ width: '100%', mt: 0.5 }}>
           <OnboardingInfoSection />
-        </Grid>
-        <Grid item xs={12}>
-          <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
-            Milestones
-          </Typography>
-          <NewMemberMilestoneTable />
         </Grid>
       </Grid>
     </Box>
