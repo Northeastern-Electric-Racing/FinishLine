@@ -31,6 +31,9 @@ interface RuleRowProps {
   indentRow?: boolean;
   // Amount of indentation per child depth when indentRow is enabled
   indentWidth?: number;
+  // Optional controlled expansion, otherwise each row manages its own open/closed state
+  expandedIds?: Set<string>;
+  onToggleExpand?: (ruleId: string) => void;
 }
 
 /**
@@ -56,9 +59,13 @@ const RuleRow: React.FC<RuleRowProps> = ({
   rightWidth = '10%',
   initiallyExpanded = false,
   indentRow = false,
-  indentWidth = 10
+  indentWidth = 10,
+  expandedIds,
+  onToggleExpand
 }) => {
-  const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
+  const [localExpanded, setLocalExpanded] = useState(initiallyExpanded);
+  // Controlled by the parent when `expandedIds` is provided, otherwise from this row's own state
+  const isExpanded = expandedIds ? expandedIds.has(rule.ruleId) : localExpanded;
 
   // a parent rule whose sub rules aren't in the set (e.g. rule T.1 was assigned to a project but T.1.1 wasn't)
   // will render as a leaf rule but with no expand dropdown
@@ -75,7 +82,14 @@ const RuleRow: React.FC<RuleRowProps> = ({
   const color = typeof textColor === 'function' ? textColor(rule) : textColor;
   const hoverBgColor = typeof hoverColor === 'function' ? hoverColor(rule) : hoverColor;
 
-  const toggleExpand = () => hasSubRules && setIsExpanded(!isExpanded);
+  const toggleExpand = () => {
+    if (!hasSubRules) return;
+    if (onToggleExpand) {
+      onToggleExpand(rule.ruleId);
+    } else {
+      setLocalExpanded((prev) => !prev);
+    }
+  };
 
   const handleChevronClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -144,6 +158,8 @@ const RuleRow: React.FC<RuleRowProps> = ({
   return (
     <>
       <TableRow
+        // id so a parent can scroll to this row
+        id={`rule-row-${rule.ruleId}`}
         sx={{
           borderBottom: '1px solid #7d7d7d',
           backgroundColor: indentRow ? 'transparent' : bgColor,
@@ -228,6 +244,8 @@ const RuleRow: React.FC<RuleRowProps> = ({
             rightWidth={rightWidth}
             indentRow={indentRow}
             indentWidth={indentWidth}
+            expandedIds={expandedIds}
+            onToggleExpand={onToggleExpand}
           />
         ))}
     </>
