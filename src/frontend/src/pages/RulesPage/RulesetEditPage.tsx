@@ -17,9 +17,10 @@ import AddRuleSectionModal from './components/AddRuleSectionModal';
 import AddRuleModal from './components/AddRuleModal';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
+import { NERButton } from '../../components/NERButton';
 import DeleteRuleModal from './components/DeleteRuleModal';
 import { useDeleteRule, useEditRule, useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
-import { countRulesToDelete } from '../../utils/rules.utils';
+import { countRulesToDelete, compareRuleCodes } from '../../utils/rules.utils';
 import { Rule } from 'shared';
 
 /**
@@ -158,8 +159,8 @@ const RulesetEditPage: React.FC = () => {
 
   const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, allRules) : 0;
 
-  // Filter to only show top-level rules
-  const topLevelRules = allRules.filter((rule) => !rule.parentRule);
+  // Filter to only show top-level rules, sorted by rule code for stable numeric order
+  const topLevelRules = allRules.filter((rule) => !rule.parentRule).sort(compareRuleCodes);
 
   return (
     <PageLayout
@@ -188,7 +189,7 @@ const RulesetEditPage: React.FC = () => {
           <Box sx={{ paddingBottom: '100px' }}>
             <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
               <Table sx={{ borderCollapse: 'collapse' }}>
-                <TableBody sx={{ backgroundColor: '#9d9d9d' }}>
+                <TableBody sx={{ backgroundColor: theme.palette.grey[500] }}>
                   {topLevelRules.map((rule) => (
                     <RuleRow
                       key={rule.ruleId}
@@ -209,7 +210,7 @@ const RulesetEditPage: React.FC = () => {
                               sx={{
                                 backgroundColor: theme.palette.grey[100],
                                 '& .MuiOutlinedInput-root': {
-                                  color: '#000000',
+                                  color: theme.palette.common.black,
                                   '& fieldset': {
                                     borderColor: '#dd514c'
                                   },
@@ -225,7 +226,9 @@ const RulesetEditPage: React.FC = () => {
                           );
                         }
                         return (
-                          currentRule.ruleContent && <span style={{ color: '#000000' }}>{currentRule.ruleContent}</span>
+                          currentRule.ruleContent && (
+                            <span style={{ color: theme.palette.common.black }}>{currentRule.ruleContent}</span>
+                          )
                         );
                       }}
                       rightContent={(currentRule) => (
@@ -234,12 +237,14 @@ const RulesetEditPage: React.FC = () => {
                           onAdd={handleOpenAddMenu}
                           onRemove={handleRemoveRule}
                           onEdit={handleEditRule}
-                          iconColor="#000000"
+                          iconColor={theme.palette.common.black}
                         />
                       )}
-                      backgroundColor={(currentRule) => (editingRuleId === currentRule.ruleId ? '#c0c0c0' : '#9d9d9d')}
-                      textColor="#000000"
-                      hoverColor="#5e5e5e"
+                      backgroundColor={(currentRule) =>
+                        editingRuleId === currentRule.ruleId ? theme.palette.grey[400] : theme.palette.grey[500]
+                      }
+                      textColor={theme.palette.common.black}
+                      hoverColor={theme.palette.grey[700]}
                       rowHeight="10px"
                       verticalPadding="5px"
                     />
@@ -290,12 +295,12 @@ const RulesetEditPage: React.FC = () => {
             >
               <Box
                 sx={{
-                  borderBottom: '2px solid white',
+                  borderBottom: `2px solid ${theme.palette.divider}`,
                   mb: 2,
-                  ml: '30px'
+                  ml: '20px'
                 }}
               />
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pr: '30px', pb: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pr: '30px', pb: 2 }}>
                 {editingRuleId ? (
                   <>
                     <Button
@@ -317,44 +322,14 @@ const RulesetEditPage: React.FC = () => {
                     >
                       Cancel
                     </Button>
-                    <Button
-                      variant="contained"
-                      onClick={handleSaveEdit}
-                      sx={{
-                        borderRadius: '8px',
-                        color: '#ededed',
-                        backgroundColor: '#dd514c',
-                        padding: '2px 15px',
-                        fontSize: '16px',
-                        fontWeight: 700,
-                        textTransform: 'none',
-                        '&:hover': {
-                          backgroundColor: '#c74340'
-                        }
-                      }}
-                    >
+                    <NERButton variant="contained" sx={{ color: '#ededed' }} onClick={handleSaveEdit}>
                       Save
-                    </Button>
+                    </NERButton>
                   </>
                 ) : (
-                  <Button
-                    variant="contained"
-                    onClick={handleAddRuleSection}
-                    sx={{
-                      borderRadius: '8px',
-                      color: '#ededed',
-                      backgroundColor: '#dd514c',
-                      padding: '2px 15px',
-                      fontSize: '16px',
-                      fontWeight: 700,
-                      textTransform: 'none',
-                      '&:hover': {
-                        backgroundColor: '#c74340'
-                      }
-                    }}
-                  >
+                  <NERButton variant="contained" sx={{ color: '#ededed' }} onClick={handleAddRuleSection}>
                     Add Rule Section
-                  </Button>
+                  </NERButton>
                 )}
               </Box>
             </Box>

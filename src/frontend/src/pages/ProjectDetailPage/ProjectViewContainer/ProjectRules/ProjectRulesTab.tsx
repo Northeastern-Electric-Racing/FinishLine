@@ -38,6 +38,8 @@ import { InfoOutlined } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../../utils/routes';
 import RuleStatusTag from '../../../RulesPage/components/RuleStatusTag';
+import { NERButton } from '../../../../components/NERButton';
+import { compareRuleCodes } from '../../../../utils/rules.utils';
 
 interface ProjectRulesTabProps {
   project: Project;
@@ -84,16 +86,17 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const teamId = project.teams[0]?.teamId || '';
   const teamNames = project.teams.map((team) => team.teamName);
 
-  // Convert project rules to rules
-  const allRules = useMemo(() => {
+  // Convert project rules to rules for display
+  // Sorted by rule code so both top-level rows and their children render in stable numeric order
+  const projectRuleList = useMemo(() => {
     if (!projectRules) return [];
-    return projectRules.map((pr) => pr.rule);
+    return projectRules.map((pr) => pr.rule).sort(compareRuleCodes);
   }, [projectRules]);
 
   // Get top-level rules (rules without a parent)
   const topLevelRules = useMemo(() => {
-    return allRules.filter((rule) => !rule.parentRule);
-  }, [allRules]);
+    return projectRuleList.filter((rule) => !rule.parentRule);
+  }, [projectRuleList]);
 
   // Handle completion update
   const handleStatusUpdate = async (ruleId: string, isComplete: boolean) => {
@@ -126,7 +129,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
     if (projectRule) {
       // Only allow status updates for leaf rules
-      const hasChildren = allRules.some((r) => r.parentRule?.ruleId === rule.ruleId);
+      const hasChildren = projectRuleList.some((r) => r.parentRule?.ruleId === rule.ruleId);
       if (!hasChildren) {
         setSelectedProjectRule(projectRule);
         setStatusPopoverAnchor(event.currentTarget);
@@ -170,13 +173,13 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   // Right content for rule rows - status badge. Leaf rules are clickable to open
   // the completion popover; parents show an aggregated, read-only status.
   const renderRightContent = (rule: Rule) => {
-    const isLeafRule = !allRules.some((r) => r.parentRule?.ruleId === rule.ruleId);
+    const isLeafRule = !projectRuleList.some((r) => r.parentRule?.ruleId === rule.ruleId);
     const isPopoverOpenForRule = Boolean(statusPopoverAnchor) && selectedProjectRule?.rule.ruleId === rule.ruleId;
 
     return (
       <RuleStatusTag
         rule={rule}
-        allRules={allRules}
+        allRules={projectRuleList}
         popoverOpen={isPopoverOpenForRule}
         onClick={isLeafRule ? (e) => handleStatusClick(e, rule) : undefined}
       />
@@ -300,7 +303,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
                   <RuleRow
                     key={rule.ruleId}
                     rule={rule}
-                    allRules={allRules}
+                    allRules={projectRuleList}
                     rightContent={renderRightContent}
                     backgroundColor={tableBackgroundColor}
                     textColor={tableTextColor}
@@ -329,24 +332,15 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         }}
       >
         <Box sx={{ borderBottom: `2px solid ${theme.palette.divider}`, mb: 2, ml: '30px' }} />
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 1 }}>
-          <Button
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 2 }}>
+          <NERButton
             variant="contained"
+            sx={{ color: '#ededed' }}
             onClick={() => setAddRuleModalOpen(true)}
             disabled={teamNames.length === 0 || hasNoActiveRuleset}
-            sx={{
-              borderRadius: '8px',
-              backgroundColor: '#ef4345',
-              padding: '2px 15px',
-              fontSize: '16px',
-              fontWeight: 700,
-              textTransform: 'none',
-              '&:hover': { backgroundColor: '#b0191a' },
-              '&.Mui-disabled': { backgroundColor: theme.palette.action.disabled, color: theme.palette.text.disabled }
-            }}
           >
             Add Rule
-          </Button>
+          </NERButton>
         </Box>
       </Box>
 

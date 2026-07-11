@@ -28,7 +28,8 @@ import NERModal from '../../components/NERModal';
 import WarningIcon from '@mui/icons-material/Warning';
 import RuleRow from './RuleRow';
 import { useBulkToggleRuleTeam } from '../../hooks/rules.hooks';
-import { getAncestorIds, getRuleAndDescendantIds } from '../../utils/rules.utils';
+import { compareRuleCodes } from '../../utils/rules.utils';
+import { getAncestorIds, getRuleAndDescendantIds, getDescendantLeafRules } from '../../utils/rules.utils';
 
 /*
  * Props for the assign rules tab.
@@ -42,21 +43,23 @@ interface AssignRulesTabProps {
  */
 interface TeamRowProps {
   team: TeamPreview;
-  isSelected: boolean;
+  backgroundColor: string;
+  hoverColor: string;
   onClick: () => void;
 }
 
 /**
  * Row component for displaying a team in the teams table.
  */
-const TeamRow: React.FC<TeamRowProps> = ({ team, isSelected, onClick }) => {
+const TeamRow: React.FC<TeamRowProps> = ({ team, backgroundColor, hoverColor, onClick }) => {
+  const theme = useTheme();
   return (
     <TableRow
       onClick={onClick}
       sx={{
         borderBottom: '1px solid #7d7d7d',
-        backgroundColor: isSelected ? '#b36b6b' : '#CECECE',
-        '&:hover': { backgroundColor: isSelected ? '#a05858' : '#5e5e5e' },
+        backgroundColor,
+        '&:hover': { backgroundColor: hoverColor },
         cursor: 'pointer',
         '&:last-child': { borderBottom: 'none' }
       }}
@@ -67,7 +70,7 @@ const TeamRow: React.FC<TeamRowProps> = ({ team, isSelected, onClick }) => {
           padding: '8px 16px',
           backgroundColor: 'inherit',
           borderBottom: 'none',
-          color: '#000000'
+          color: theme.palette.common.black
         }}
       >
         {team.teamName}
@@ -129,6 +132,16 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     if (!selectedTeamId) return false;
     return assignments.has(`${selectedTeamId}:${ruleId}`);
   };
+
+  // A rule is considered selected when all of its leaf rules are assigned to the current team.
+  const isRuleSelected = (rule: Rule) => {
+    const leafIds = getDescendantLeafRules(rule, rules).map((leaf) => leaf.ruleId);
+    return leafIds.length > 0 && leafIds.every((id) => isRuleAssigned(id));
+  };
+
+  // Shared highlight logic for both the team rows and rule rows.
+  const rowBackgroundColor = (isSelected: boolean) => (isSelected ? '#b36b6b' : theme.palette.grey[500]);
+  const rowHoverColor = (isSelected: boolean) => (isSelected ? '#a05858' : theme.palette.grey[700]);
 
   const getAssignedTeamNames = (ruleId: string): string[] => {
     if (!teams) return [];
@@ -281,14 +294,14 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     return <LoadingIndicator />;
   }
 
-  const topLevelRules = rules.filter((rule) => !rule.parentRule);
+  const topLevelRules = rules.filter((rule) => !rule.parentRule).sort(compareRuleCodes);
 
   return (
     <Box sx={{ paddingBottom: '100px' }}>
       <Box sx={{ display: 'flex', gap: 4 }}>
         {/* Teams Column */}
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h4" sx={{ mb: 2, color: '#ffffff' }}>
+          <Typography variant="h4" sx={{ mb: 2, color: theme.palette.text.primary }}>
             Teams:
           </Typography>
           <TableContainer
@@ -301,12 +314,13 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
             }}
           >
             <Table sx={{ borderCollapse: 'collapse' }}>
-              <TableBody sx={{ backgroundColor: '#CECECE' }}>
+              <TableBody sx={{ backgroundColor: theme.palette.grey[500] }}>
                 {teams?.map((team) => (
                   <TeamRow
                     key={team.teamId}
                     team={team}
-                    isSelected={selectedTeamId === team.teamId}
+                    backgroundColor={rowBackgroundColor(selectedTeamId === team.teamId)}
+                    hoverColor={rowHoverColor(selectedTeamId === team.teamId)}
                     onClick={() => handleTeamSelect(team.teamId)}
                   />
                 ))}
@@ -317,7 +331,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
 
         {/* Rules Column */}
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h4" sx={{ mb: 2, color: '#ffffff' }}>
+          <Typography variant="h4" sx={{ mb: 2, color: theme.palette.text.primary }}>
             Rules:
           </Typography>
           <TableContainer
@@ -330,15 +344,15 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
             }}
           >
             <Table sx={{ borderCollapse: 'collapse' }}>
-              <TableBody sx={{ backgroundColor: '#CECECE' }}>
+              <TableBody sx={{ backgroundColor: theme.palette.grey[500] }}>
                 {topLevelRules.map((rule) => (
                   <RuleRow
                     key={rule.ruleId}
                     rule={rule}
                     allRules={rules}
-                    backgroundColor={(r) => (isRuleAssigned(r.ruleId) ? '#b36b6b' : '#CECECE')}
-                    hoverColor={(r) => (isRuleAssigned(r.ruleId) ? '#a05858' : '#5e5e5e')}
-                    textColor="#000000"
+                    backgroundColor={(r) => rowBackgroundColor(isRuleSelected(r))}
+                    hoverColor={(r) => rowHoverColor(isRuleSelected(r))}
+                    textColor={theme.palette.common.black}
                     onRowClick={(r) => handleRuleToggle(r.ruleId)}
                     middleContent={() => null}
                     rightContent={(r) => renderTeamTags(r.ruleId)}
@@ -367,21 +381,13 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
       >
         <Box
           sx={{
-            borderBottom: '2px solid white',
+            borderBottom: `2px solid ${theme.palette.divider}`,
             mb: 2,
-            ml: '30px'
+            ml: '20px'
           }}
         />
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 1 }}>
-          <NERButton
-            variant="contained"
-            onClick={handleSaveAndExit}
-            disabled={isSaving}
-            sx={{
-              backgroundColor: '#dd514c',
-              '&:hover': { backgroundColor: '#c74340' }
-            }}
-          >
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 2 }}>
+          <NERButton variant="contained" sx={{ color: '#ededed' }} onClick={handleSaveAndExit} disabled={isSaving}>
             {isSaving ? 'Saving...' : 'Save & Exit'}
           </NERButton>
         </Box>

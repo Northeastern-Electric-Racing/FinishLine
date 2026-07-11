@@ -83,3 +83,10 @@ export const getAncestorIds = (ruleId: string, allRules: Rule[]): string[] => {
 
   return ancestorIds;
 };
+
+/**
+ * Comparator that orders rules by their rule code numerically, so codes sort
+ * as F.2 before F.10 rather than alphabetically
+ */
+export const compareRuleCodes = (a: Rule, b: Rule): number =>
+  a.ruleCode.localeCompare(b.ruleCode, undefined, { numeric: true });
