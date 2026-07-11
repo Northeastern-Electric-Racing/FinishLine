@@ -21,6 +21,7 @@ const columns: GridColDef[] = [
 
 const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({ selectedProject, onSelectionChange }) => {
   const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([]);
+  const [isInitialized, setInitialization] = useState<boolean>(false);
   const {
     data: materials,
     isLoading: isLoadingMaterials,
@@ -36,12 +37,13 @@ const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({ selectedP
   } = useGetAssembliesForWbsElement(selectedProject.wbsNum);
 
   useEffect(() => {
-    if (materials) {
+    if (materials && !isInitialized) {
+      setInitialization(true);
       const allIds = materials.map((m) => m.materialId);
       setSelectedMaterialIds(allIds);
       onSelectionChange(allIds);
     }
-  }, [materials, onSelectionChange]);
+  }, [materials, onSelectionChange, isInitialized]);
 
   if (isErrorMaterials) return <ErrorPage message={materialsError?.message} />;
   if (isErrorAssemblies) return <ErrorPage message={assembliesError?.message} />;
