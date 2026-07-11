@@ -41,7 +41,8 @@ import {
   removeDeletedEventDocuments,
   isUserOnEvent,
   buildScheduledTimesOverlap,
-  findMatchingTimeOfDaySlots
+  findMatchingTimeOfDaySlots,
+  validateNotificationChannelIds
 } from '../utils/calendar.utils.js';
 import {
   AccessDeniedAdminOnlyException,
@@ -272,7 +273,8 @@ export default class CalendarService {
     location?: string,
     zoomLink?: string,
     description?: string,
-    mention?: SlackMentionType
+    mention?: SlackMentionType,
+    notificationChannelIds: string[] = []
   ): Promise<Event> {
     if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
     // Validate eventTypeId
@@ -353,6 +355,9 @@ export default class CalendarService {
         throw new NotFoundException('Team', missingIds.join(', '));
       }
     }
+
+    // Validate notificationChannelIds
+    await validateNotificationChannelIds(organization, submitter, notificationChannelIds);
 
     // Validate shopIds
     if (shopIds.length > 0) {
@@ -444,6 +449,7 @@ export default class CalendarService {
         teams: {
           connect: teamIds.map((teamId) => ({ teamId }))
         },
+        notificationChannelIds,
         teamTypeId,
         shops: {
           connect: shopIds.map((shopId) => ({ shopId }))
@@ -549,7 +555,8 @@ export default class CalendarService {
         submitter,
         workPackageNames,
         organization.name,
-        { memberSlackIds: memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id), mention }
+        { memberSlackIds: memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id), mention },
+        newEvent.notificationChannelIds
       );
     }
 
@@ -599,7 +606,8 @@ export default class CalendarService {
     questionDocumentLink?: string,
     location?: string,
     zoomLink?: string,
-    description?: string
+    description?: string,
+    notificationChannelIds: string[] = []
   ): Promise<Event> {
     if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
     // validate eventId
@@ -680,6 +688,9 @@ export default class CalendarService {
         throw new NotFoundException('Team', missingIds.join(', '));
       }
     }
+
+    // Validate notificationChannelIds
+    await validateNotificationChannelIds(organization, submitter, notificationChannelIds);
 
     // Validate shopIds
     if (shopIds.length > 0) {
@@ -772,6 +783,7 @@ export default class CalendarService {
         teams: {
           set: teamIds.map((teamId) => ({ teamId }))
         },
+        notificationChannelIds,
         ...(teamTypeId !== undefined && { teamTypeId }),
         status,
         shops: {

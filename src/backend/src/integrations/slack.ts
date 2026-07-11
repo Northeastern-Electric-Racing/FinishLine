@@ -255,21 +255,29 @@ export const getUsersInChannel = async (channelId: string) => {
 };
 
 /**
- * Given a slack channel id, produces the name of the channel
+ * Given a slack channel id, produces the channel's name and whether it is private
  * @param channelId the id of the slack channel
- * @returns the name of the channel or undefined if it cannot be found
+ * @returns the channel's name and privacy, or undefined if it cannot be found
  */
-export const getChannelName = async (channelId: string) => {
+export const getChannelInfo = async (channelId: string): Promise<{ name?: string; isPrivate: boolean } | undefined> => {
   const client = getSlackClient();
   if (!client) return undefined;
 
   try {
     const channelRes = await client.conversations.info({ channel: channelId });
-    return channelRes.channel?.name;
+    if (!channelRes.channel) return undefined;
+    return { name: channelRes.channel.name, isPrivate: !!channelRes.channel.is_private };
   } catch (error) {
     return undefined;
   }
 };
+
+/**
+ * Given a slack channel id, produces the name of the channel
+ * @param channelId the id of the slack channel
+ * @returns the name of the channel or undefined if it cannot be found
+ */
+export const getChannelName = async (channelId: string) => (await getChannelInfo(channelId))?.name;
 
 /**
  * Checks whether the bot is a member of the given channel

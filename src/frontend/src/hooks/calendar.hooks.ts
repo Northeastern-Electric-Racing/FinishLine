@@ -80,6 +80,7 @@ export interface EventCreateArgs {
   documentIds: string[];
   questionDocument?: string;
   description?: string;
+  notificationChannelIds?: string[];
   initialDateScheduled: Date;
   scheduleSlots: ScheduleSlotCreateArgs[];
   mention?: SlackMentionType;
@@ -100,6 +101,7 @@ export interface EditEventArgs {
   documents: Array<{ name: string; googleFileId: string }>;
   questionDocumentLink?: string;
   description?: string;
+  notificationChannelIds?: string[];
 }
 
 export interface EditScheduleSlotArgs {

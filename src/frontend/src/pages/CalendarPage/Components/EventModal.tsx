@@ -51,6 +51,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
 import { ClearIcon } from '@mui/x-date-pickers';
 import { useAllMachines, useAllShops, usePreviewScheduleSlotRecurringEdits } from '../../../hooks/calendar.hooks';
+import { useAvailableNotificationChannels } from '../../../hooks/organizations.hooks';
 import StoreIcon from '@mui/icons-material/Store';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -77,6 +78,7 @@ export interface EventFormValues {
   documentFiles: EventDocumentUploadArgs[];
   questionDocumentLink?: string;
   description?: string;
+  notificationChannelIds: string[];
   scheduleDate: Date;
   startTime: Date;
   endTime: Date;
@@ -102,6 +104,7 @@ export interface EventPayload {
   documentFiles: EventDocumentUploadArgs[];
   questionDocumentLink?: string;
   description?: string;
+  notificationChannelIds: string[];
   mention: SlackMentionType;
   // If the event type requires confirmation, only intialDateScheduled will be populated. If not,
   // scheduleSlots will be populated based on if the event is being editted or created
@@ -138,6 +141,7 @@ const schema = yup.object().shape({
   documentFiles: yup.array().of(yup.mixed<EventDocumentUploadArgs>().required()).default([]),
   questionDocumentLink: yup.string().optional(),
   description: yup.string().optional(),
+  notificationChannelIds: yup.array().of(yup.string().required()).default([]),
   scheduleDate: yup.date().required('Date is required'),
   startTime: yup.date().required('Start time is required'),
   endTime: yup
@@ -245,9 +249,13 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const [requiredMembers, setRequiredMembers] = useState<Array<{ id: string; label: string }>>([]);
   const [optionalMembers, setOptionalMembers] = useState<Array<{ id: string; label: string }>>([]);
   const [selectedTeams, setSelectedTeams] = useState<Array<{ id: string; label: string }>>([]);
+  const [selectedNotificationChannels, setSelectedNotificationChannels] = useState<Array<{ id: string; label: string }>>(
+    []
+  );
   const [requiredMemberInput, setRequiredMemberInput] = useState('');
   const [optionalMemberInput, setOptionalMemberInput] = useState('');
   const [teamInput, setTeamInput] = useState('');
+  const [notificationChannelInput, setNotificationChannelInput] = useState('');
 
   // State for the series confirmation modal (only used in edit mode when time changes)
   const [showSeriesConfirmModal, setShowSeriesConfirmModal] = useState(false);
@@ -278,6 +286,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   } = useAllWorkPackagesPreview();
   const { isLoading: teamsLoading, isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamPreviews();
   const { isError: teamTypesError, error: teamTypesErrorMsg, data: teamTypes } = useAllTeamTypes();
+  const { data: notificationChannels } = useAvailableNotificationChannels();
 
   // Compute default form values - memo ensures stable reference
   const defaultFormData = useMemo(() => {
@@ -297,6 +306,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       documentFiles: initialValues?.documentFiles ?? [],
       questionDocumentLink: initialValues?.questionDocumentLink,
       description: initialValues?.description,
+      notificationChannelIds: initialValues?.notificationChannelIds ?? [],
       scheduleDate: initialValues?.scheduleDate ?? defaultDate,
       startTime: initialValues?.startTime ?? defaultStartTime ?? defaultTimes.startTime,
       endTime: initialValues?.endTime ?? defaultEndTime ?? defaultTimes.endTime,
@@ -383,11 +393,19 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       setSelectedTeams(teamOptions);
     }
 
+    // Set autocomplete state for notification channels
+    if (initialValues?.notificationChannelIds && notificationChannels) {
+      const notificationChannelOptions = notificationChannels
+        .filter((c) => initialValues.notificationChannelIds?.includes(c.slackChannelId))
+        .map((c) => ({ id: c.slackChannelId, label: c.name ?? c.slackChannelId }));
+      setSelectedNotificationChannels(notificationChannelOptions);
+    }
+
     // Set recurring options visibility
     if (initialValues?.days && initialValues.days.length > 0) {
       setShowRecurringOptions(true);
     }
-  }, [initialValues, users, teams]);
+  }, [initialValues, users, teams, notificationChannels]);
 
   // When creating a new event, autofill personal zoom link from the user's schedule settings
   // made it so it only fills when the field is empty, that way doesn't overwrite a link or anythingi me
@@ -533,6 +551,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       documentFiles: data.documentFiles,
       questionDocumentLink: data.questionDocumentLink,
       description: data.description,
+      notificationChannelIds: selectedNotificationChannels.map((c) => c.id),
       mention: data.mention
     };
 
@@ -659,6 +678,11 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     if (teamsLoading || !teams) return [{ id: 'loading', label: 'Loading teams...' }];
     return teams.map((t) => ({ id: t.teamId, label: t.teamName }));
   }, [teams, teamsLoading]);
+
+  const notificationChannelOptions = useMemo(() => {
+    if (!notificationChannels) return [];
+    return notificationChannels.map((c) => ({ id: c.slackChannelId, label: c.name ?? c.slackChannelId }));
+  }, [notificationChannels]);
 
   const shopOptions = useMemo(() => {
     if (shopsLoading || !shops) return [{ id: 'loading', label: 'Loading shops...' }];
@@ -1202,7 +1226,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 title={
                   !selectedEventType.sendSlackNotifications
                     ? 'Slack notifications are disabled for this event type.'
-                    : selectedTeams.length || workPackageIds.length
+                    : selectedTeams.length || workPackageIds.length || selectedNotificationChannels.length
                       ? 'Slack notifications will be sent for this event.'
                       : ''
                 }
@@ -1211,20 +1235,23 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   <Typography variant="body2" color={'text.disabled'} fontWeight={500}>
                     {selectedEventType.sendSlackNotifications ? 'On' : 'Off'}
                   </Typography>
-                  {selectedEventType.sendSlackNotifications && !selectedTeams.length && !workPackageIds.length && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <WarningAmberIcon sx={{ color: 'error.main', fontSize: 18 }} />
-                      <Typography variant="body2" color="error.main">
-                        Add{' '}
-                        {selectedEventType.teams && selectedEventType.workPackage
-                          ? 'a team or work package'
-                          : selectedEventType.teams
-                            ? 'a team'
-                            : 'a work package'}{' '}
-                        to send notifications
-                      </Typography>
-                    </Box>
-                  )}
+                  {selectedEventType.sendSlackNotifications &&
+                    !selectedTeams.length &&
+                    !workPackageIds.length &&
+                    !selectedNotificationChannels.length && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <WarningAmberIcon sx={{ color: 'error.main', fontSize: 18 }} />
+                        <Typography variant="body2" color="error.main">
+                          Add{' '}
+                          {selectedEventType.teams && selectedEventType.workPackage
+                            ? 'a team, work package,'
+                            : selectedEventType.teams
+                              ? 'a team'
+                              : 'a work package'}{' '}
+                          or notification channel to send notifications
+                        </Typography>
+                      </Box>
+                    )}
                 </Box>
               </Tooltip>
 
@@ -1385,6 +1412,54 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       getOptionLabel={(option) => option.label}
                       renderInput={(params) => (
                         <TextField {...params} variant="standard" placeholder="Add Team" sx={{ minWidth: 120 }} />
+                      )}
+                      sx={{ flex: 1, minWidth: 150 }}
+                    />
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          )}
+          {/* Notification Channels Section */}
+          {selectedEventType?.sendSlackNotifications && (
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <NotificationsIcon sx={{ color: 'text.secondary', mt: 1 }} />
+              <Box sx={{ flex: 1, width: '100%' }}>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                    {selectedNotificationChannels.map((channel) => (
+                      <Chip
+                        key={channel.id}
+                        label={channel.label}
+                        onDelete={() =>
+                          setSelectedNotificationChannels((prev) => prev.filter((c) => c.id !== channel.id))
+                        }
+                        sx={{ bgcolor: 'grey.700', opacity: 0.7 }}
+                      />
+                    ))}
+                    <Autocomplete
+                      options={notificationChannelOptions.filter(
+                        (c) => !selectedNotificationChannels.find((sc) => sc.id === c.id)
+                      )}
+                      value={null}
+                      inputValue={notificationChannelInput}
+                      onInputChange={(_, newInputValue, reason) => {
+                        setNotificationChannelInput(reason === 'input' ? newInputValue : '');
+                      }}
+                      onChange={(_, newValue) => {
+                        if (newValue) {
+                          setSelectedNotificationChannels((prev) => [...prev, newValue]);
+                          setNotificationChannelInput('');
+                        }
+                      }}
+                      getOptionLabel={(option) => option.label}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="standard"
+                          placeholder="Add Notification Channel"
+                          sx={{ minWidth: 150 }}
+                        />
                       )}
                       sx={{ flex: 1, minWidth: 150 }}
                     />

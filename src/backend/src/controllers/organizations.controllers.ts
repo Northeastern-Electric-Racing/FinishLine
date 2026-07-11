@@ -240,6 +240,56 @@ export default class OrganizationsController {
     }
   }
 
+  static async getNotificationChannels(req: Request, res: Response, next: NextFunction) {
+    try {
+      const notificationChannels = await OrganizationsService.getNotificationChannels(
+        req.currentUser,
+        req.organization.organizationId
+      );
+      res.status(200).json(notificationChannels);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAvailableNotificationChannels(req: Request, res: Response, next: NextFunction) {
+    try {
+      const notificationChannels = await OrganizationsService.getAvailableNotificationChannelsForUser(
+        req.currentUser.userId,
+        req.organization.organizationId
+      );
+      res.status(200).json(notificationChannels);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createNotificationChannel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { slackChannelId } = req.body;
+
+      const notificationChannel = await OrganizationsService.createNotificationChannel(
+        req.currentUser,
+        req.organization.organizationId,
+        slackChannelId
+      );
+      res.status(200).json(notificationChannel);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteNotificationChannel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { slackChannelId } = req.body;
+
+      await OrganizationsService.deleteNotificationChannel(req.currentUser, req.organization.organizationId, slackChannelId);
+      res.status(200).json({ slackChannelId });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getFinanceDelegates(req: Request, res: Response, next: NextFunction) {
     try {
       const financeDelegates = await OrganizationsService.getFinanceDelegates(req.organization.organizationId);

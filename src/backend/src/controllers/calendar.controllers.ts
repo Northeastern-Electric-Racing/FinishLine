@@ -276,6 +276,7 @@ export default class CalendarController {
         workPackageIds,
         scheduleSlots,
         initialDateScheduled,
+        notificationChannelIds,
         questionDocumentLink,
         location,
         zoomLink,
@@ -309,7 +310,8 @@ export default class CalendarController {
         location,
         zoomLink,
         description,
-        mention
+        mention,
+        notificationChannelIds ?? []
       );
       res.status(200).json(event);
     } catch (error: unknown) {
@@ -332,6 +334,7 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         documents,
+        notificationChannelIds,
         questionDocumentLink,
         location,
         zoomLink,
@@ -355,7 +358,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        notificationChannelIds ?? []
       );
       res.status(200).json(event);
     } catch (error: unknown) {
