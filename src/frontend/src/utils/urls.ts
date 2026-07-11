@@ -472,6 +472,8 @@ const rulesDeleteProjectRule = (projectRuleId: string) => `${rules()}/projectRul
 const rulesSetRuleCompletion = (ruleId: string) => `${rules()}/rule/${ruleId}/setCompletion`;
 const rulesEdit = (ruleId: string) => `${rules()}/rule/${ruleId}/edit`;
 const rulesDelete = (ruleId: string) => `${rules()}/rule/${ruleId}/delete`;
+const rulesAddReferences = (ruleId: string) => `${rules()}/rule/${ruleId}/references/add`;
+const rulesRemoveReferences = (ruleId: string) => `${rules()}/rule/${ruleId}/references/delete`;
 const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
 const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
 const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
@@ -890,6 +892,8 @@ export const apiUrls = {
   rulesSetRuleCompletion,
   rulesEdit,
   rulesDelete,
+  rulesAddReferences,
+  rulesRemoveReferences,
   rulesetUpdate,
   rulesetDelete,
   rulesetTypeDelete,

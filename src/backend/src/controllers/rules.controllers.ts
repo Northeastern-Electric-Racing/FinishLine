@@ -101,6 +101,30 @@ export default class RulesController {
     }
   }
 
+  static async addRuleReferences(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ruleId } = req.params as Record<string, string>;
+      const { referencedRuleId } = req.body;
+
+      const rule = await RulesService.addRuleReferences(req.currentUser, ruleId, referencedRuleId, req.organization);
+      res.status(200).json(rule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async removeRuleReferences(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ruleId } = req.params as Record<string, string>;
+      const { referencedRuleId } = req.body;
+
+      const rule = await RulesService.removeRuleReferences(req.currentUser, ruleId, referencedRuleId, req.organization);
+      res.status(200).json(rule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllRulesetTypes(req: Request, res: Response, next: NextFunction) {
     try {
       const rulesets = await RulesService.getAllRulesetTypes(req.organization);
