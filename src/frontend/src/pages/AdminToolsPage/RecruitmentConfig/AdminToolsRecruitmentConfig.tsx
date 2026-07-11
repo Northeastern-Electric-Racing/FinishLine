@@ -1,5 +1,5 @@
 import { Box, Grid, Typography } from '@mui/material';
-import MilestoneTable from './MilestoneTable';
+import RecruitingMilestoneTable from './RecruitingMilestoneTable';
 import FAQsTable from './FAQTable';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -33,7 +33,7 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
           <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor="white">
             Milestones
           </Typography>
-          <MilestoneTable />
+          <RecruitingMilestoneTable />
         </Grid>
         <Grid item xs={12} md={6}>
           <ApplicationLinkTable />

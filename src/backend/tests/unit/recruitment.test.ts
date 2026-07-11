@@ -105,6 +105,7 @@ describe('Recruitment Tests', () => {
               'description',
               new Date(),
               false,
+              false,
               organization
             )
         ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a milestone'));
@@ -116,6 +117,7 @@ describe('Recruitment Tests', () => {
           'name',
           'description',
           new Date('11/12/24'),
+          false,
           false,
           organization
         );
@@ -135,7 +137,6 @@ describe('Recruitment Tests', () => {
               'name',
               'description',
               new Date(),
-              false,
               '1',
               organization
             )
@@ -150,7 +151,6 @@ describe('Recruitment Tests', () => {
               'name',
               'description',
               new Date('11/12/24'),
-              false,
               '1',
               organization
             )
@@ -163,6 +163,7 @@ describe('Recruitment Tests', () => {
           'name',
           'description',
           new Date('11/12/24'),
+          false,
           false,
           organization
         );
@@ -180,7 +181,6 @@ describe('Recruitment Tests', () => {
               'name',
               'description',
               new Date('11/12/24'),
-              false,
               milestone.milestoneId,
               organization
             )
@@ -194,6 +194,7 @@ describe('Recruitment Tests', () => {
           'description',
           new Date('11/12/24'),
           false,
+          false,
           organization
         );
 
@@ -202,7 +203,6 @@ describe('Recruitment Tests', () => {
           'new name',
           'new description',
           new Date('11/14/24'),
-          false,
           milestone.milestoneId,
           organization
         );
@@ -221,6 +221,7 @@ describe('Recruitment Tests', () => {
           'description',
           new Date('11/11/24'),
           false,
+          false,
           organization
         );
 
@@ -229,6 +230,7 @@ describe('Recruitment Tests', () => {
           'name2',
           'description2',
           new Date('1/1/1'),
+          false,
           false,
           organization
         );
@@ -526,6 +528,7 @@ describe('Recruitment Tests', () => {
         'description',
         new Date('11/12/24'),
         false,
+        false,
         organization
       );
 
@@ -542,7 +545,6 @@ describe('Recruitment Tests', () => {
             'name',
             'description',
             new Date('11/12/24'),
-            false,
             milestone.milestoneId,
             organization
           )

@@ -1,6 +1,6 @@
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { Checkbox, FormControl, FormControlLabel, FormLabel, FormHelperText } from '@mui/material';
+import { FormControl, FormLabel, FormHelperText } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -22,8 +22,7 @@ interface MilestoneFormModalProps {
 const schema = yup.object().shape({
   name: yup.string().required('Milestone is Required'),
   description: yup.string().required('Description is Required'),
-  dateOfEvent: yup.date().required('Date of Event is Required'),
-  isOnNewMemberDashboard: yup.boolean().required()
+  dateOfEvent: yup.date().required('Date of Event is Required')
 });
 
 const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClose, defaultValues, onSubmit }) => {
@@ -46,8 +45,7 @@ const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClo
     defaultValues: {
       name: defaultValues?.name ?? '',
       description: defaultValues?.description ?? '',
-      dateOfEvent: defaultValues?.dateOfEvent ? new Date(defaultValues.dateOfEvent) : new Date(),
-      isOnNewMemberDashboard: defaultValues?.isOnNewMemberDashboard ?? false
+      dateOfEvent: defaultValues?.dateOfEvent ? new Date(defaultValues.dateOfEvent) : new Date()
     }
   });
 
@@ -62,13 +60,12 @@ const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClo
     reset({
       name: defaultValues?.name ?? '',
       description: defaultValues?.description ?? '',
-      dateOfEvent: defaultValues?.dateOfEvent ?? new Date(),
-      isOnNewMemberDashboard: defaultValues?.isOnNewMemberDashboard ?? false
+      dateOfEvent: defaultValues?.dateOfEvent ?? new Date()
     });
   }, [defaultValues, reset]);
 
   const handleCancel = () => {
-    reset({ name: '', description: '', dateOfEvent: new Date(), isOnNewMemberDashboard: false });
+    reset({ name: '', description: '', dateOfEvent: new Date() });
     sessionStorage.removeItem(formStorageKey);
     handleClose();
   };
@@ -78,7 +75,7 @@ const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClo
       open={open}
       onHide={handleCancel}
       title={defaultValues ? 'Edit Milestone' : 'New Milestone'}
-      reset={() => reset({ name: '', description: '', dateOfEvent: new Date(), isOnNewMemberDashboard: false })}
+      reset={() => reset({ name: '', description: '', dateOfEvent: new Date() })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId="milestone-form"
@@ -130,18 +127,6 @@ const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClo
           placeholder="Add additional information about or related to the milestone here"
         />
         <FormHelperText error>{errors.description?.message}</FormHelperText>
-      </FormControl>
-      <FormControl fullWidth>
-        <Controller
-          control={control}
-          name="isOnNewMemberDashboard"
-          render={({ field: { onChange, value } }) => (
-            <FormControlLabel
-              control={<Checkbox checked={value} onChange={onChange} />}
-              label="Show on new member dashboard"
-            />
-          )}
-        />
       </FormControl>
     </NERFormModal>
   );

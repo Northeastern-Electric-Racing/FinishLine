@@ -34,12 +34,26 @@ export default class RecruitmentServices {
   }
 
   /**
+   * Gets all milestones flagged for the recruiting dashboard, for the given organization
+   * @param organization the organization to get recruiting milestones for
+   * @returns all recruiting-dashboard milestones from the given organization
+   */
+  static async getRecruitingMilestones(organization: Organization) {
+    const recruitingMilestones = await prisma.milestone.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null, isOnRecruitingDashboard: true }
+    });
+
+    return recruitingMilestones;
+  }
+
+  /**
    * Creates a new milestone in the given organization
    * @param submitter a user who is making this request
    * @param name the name of the user
    * @param description description of the milestone
    * @param dateOfEvent date of the event of the milestone
    * @param isOnNewMemberDashboard whether the milestone should show on the new member dashboard
+   * @param isOnRecruitingDashboard whether the milestone should show on the recruiting dashboard
    * @param organizationId the organization Id of the milestone
    * @returns A newly created milestone
    */
@@ -49,6 +63,7 @@ export default class RecruitmentServices {
     description: string,
     dateOfEvent: Date,
     isOnNewMemberDashboard: boolean,
+    isOnRecruitingDashboard: boolean,
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
@@ -60,6 +75,7 @@ export default class RecruitmentServices {
         description,
         dateOfEvent,
         isOnNewMemberDashboard,
+        isOnRecruitingDashboard,
         organizationId: organization.organizationId,
         userCreatedId: submitter.userId
       }
@@ -74,7 +90,6 @@ export default class RecruitmentServices {
    * @param name the name of the user
    * @param description description of the milestone
    * @param dateOfEvent date of the event of the milestone
-   * @param isOnNewMemberDashboard whether the milestone should show on the new member dashboard
    * @param organizationId the organization Id of the milestone
    * @returns the edited milestone
    */
@@ -83,7 +98,6 @@ export default class RecruitmentServices {
     name: string,
     description: string,
     dateOfEvent: Date,
-    isOnNewMemberDashboard: boolean,
     milestoneId: string,
     organization: Organization
   ) {
@@ -112,7 +126,6 @@ export default class RecruitmentServices {
         name,
         description,
         dateOfEvent,
-        isOnNewMemberDashboard,
         organizationId: organization.organizationId
       }
     });

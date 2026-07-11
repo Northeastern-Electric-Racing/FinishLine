@@ -2,18 +2,25 @@ import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typo
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Milestone, formatDateOnly } from 'shared';
+import { UseQueryResult } from 'react-query';
 import CreateMilestoneFormModal from './CreateMilestoneFormModal';
 import EditMilestoneFormModal from './EditMilestoneFormModal';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useHistoryState } from '../../../hooks/misc.hooks';
-import { useAllMilestones, useDeleteMilestone } from '../../../hooks/recruitment.hooks';
+import { useDeleteMilestone } from '../../../hooks/recruitment.hooks';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import NERDeleteModal from '../../../components/NERDeleteModal';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 
-const MilestoneTable = () => {
+interface MilestoneTableProps {
+  useMilestones: () => UseQueryResult<Milestone[], Error>;
+  createDefaults: { isOnNewMemberDashboard: boolean; isOnRecruitingDashboard: boolean };
+  addButtonLabel?: string;
+}
+
+const MilestoneTable = ({ useMilestones, createDefaults, addButtonLabel = 'Add Milestone' }: MilestoneTableProps) => {
   const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
   const [milestoneEditing, setMilestoneEditing] = useHistoryState<Milestone | undefined>('', undefined);
   const {
@@ -21,7 +28,7 @@ const MilestoneTable = () => {
     isError: milestonesIsError,
     error: milestonesError,
     data: milestones
-  } = useAllMilestones();
+  } = useMilestones();
 
   const handleDelete = (id: string) => {
     setMilestoneToDelete(undefined);
@@ -80,7 +87,11 @@ const MilestoneTable = () => {
 
   return (
     <Box>
-      <CreateMilestoneFormModal open={createModalShow} handleClose={() => setCreateModalShow(false)} />
+      <CreateMilestoneFormModal
+        open={createModalShow}
+        handleClose={() => setCreateModalShow(false)}
+        createDefaults={createDefaults}
+      />
       {milestoneEditing && (
         <EditMilestoneFormModal
           open={!!milestoneEditing}
@@ -127,7 +138,7 @@ const MilestoneTable = () => {
             setCreateModalShow(true);
           }}
         >
-          Add Milestone
+          {addButtonLabel}
         </NERButton>
       </Box>
       <NERDeleteModal

@@ -11,9 +11,7 @@ const NewMemberMilestonesWidget: React.FC = () => {
   const { data: milestones, isLoading, isError, error } = useNewMemberMilestones();
 
   const sortedMilestones = useMemo(() => {
-    return [...(milestones ?? [])].sort(
-      (a, b) => new Date(a.dateOfEvent).getTime() - new Date(b.dateOfEvent).getTime()
-    );
+    return [...(milestones ?? [])].sort((a, b) => new Date(a.dateOfEvent).getTime() - new Date(b.dateOfEvent).getTime());
   }, [milestones]);
 
   if (isError) return <ErrorPage message={error?.message} />;
