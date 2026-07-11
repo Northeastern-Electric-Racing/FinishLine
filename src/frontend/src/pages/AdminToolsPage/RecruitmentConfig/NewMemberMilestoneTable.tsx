@@ -21,6 +21,7 @@ import ErrorPage from '../../ErrorPage';
 import NERModal from '../../../components/NERModal';
 import CreateMilestoneFormModal from './CreateMilestoneFormModal';
 import EditMilestoneFormModal from './EditMilestoneFormModal';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const NewMemberMilestoneTable = () => {
   const currentUser = useCurrentUser();
@@ -36,16 +37,25 @@ const NewMemberMilestoneTable = () => {
   const [editingMilestone, setEditingMilestone] = useState<Milestone>();
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
 
-  if (!milestones || milestonesIsLoading) return <LoadingIndicator />;
+  const toast = useToast();
+
   if (milestonesIsError) return <ErrorPage message={milestonesError.message} />;
+  if (!milestones || milestonesIsLoading) return <LoadingIndicator />;
 
   const sortedMilestones = [...milestones].sort(
     (a, b) => new Date(a.dateOfEvent).getTime() - new Date(b.dateOfEvent).getTime()
   );
 
   const handleDelete = (milestone: Milestone) => {
-    deleteMilestone(milestone.milestoneId);
     setMilestoneToDelete(undefined);
+    try {
+      deleteMilestone(milestone.milestoneId);
+      toast.success('Milestone deleted successfully');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
   };
 
   return (

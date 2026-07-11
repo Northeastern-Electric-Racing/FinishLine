@@ -3288,10 +3288,20 @@ const performSeed: () => Promise<void> = async () => {
     { userId: regina.userId, title: 'Chief Electrical Engineer' }
   ]);
 
-  await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', daysAgo(120), false, true, ner);
-  await RecruitmentServices.createMilestone(batman, 'Applications Open', '', daysAgo(70), false, true, ner);
-  await RecruitmentServices.createMilestone(batman, 'Applications Close', '', daysAgo(56), false, true, ner);
-  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', daysAgo(49), false, true, ner);
+  const recruitingDashboardOnly = { isOnNewMemberDashboard: false, isOnRecruitingDashboard: true };
+  const newMemberDashboardOnly = { isOnNewMemberDashboard: true, isOnRecruitingDashboard: false };
+
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Club fair!',
+    'Also meet us at:',
+    daysAgo(120),
+    recruitingDashboardOnly,
+    ner
+  );
+  await RecruitmentServices.createMilestone(batman, 'Applications Open', '', daysAgo(70), recruitingDashboardOnly, ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Close', '', daysAgo(56), recruitingDashboardOnly, ner);
+  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', daysAgo(49), recruitingDashboardOnly, ner);
 
   // new member onboarding milestones
   await RecruitmentServices.createMilestone(
@@ -3299,8 +3309,7 @@ const performSeed: () => Promise<void> = async () => {
     'First Meeting',
     'Attend your first general body meeting',
     daysAgo(14),
-    true,
-    false,
+    newMemberDashboardOnly,
     ner
   );
   await RecruitmentServices.createMilestone(
@@ -3308,8 +3317,7 @@ const performSeed: () => Promise<void> = async () => {
     'First Bay Time',
     'Get hands-on time in the bay with a team lead',
     daysAgo(7),
-    true,
-    false,
+    newMemberDashboardOnly,
     ner
   );
   await RecruitmentServices.createMilestone(
@@ -3317,8 +3325,7 @@ const performSeed: () => Promise<void> = async () => {
     'Safety Training Deadline',
     'Complete required safety training to access the bay unsupervised',
     daysFromNow(14),
-    true,
-    false,
+    newMemberDashboardOnly,
     ner
   );
   await RecruitmentServices.createMilestone(
@@ -3326,8 +3333,7 @@ const performSeed: () => Promise<void> = async () => {
     'Subteam Placement',
     'Officially join a subteam project',
     daysFromNow(30),
-    true,
-    false,
+    newMemberDashboardOnly,
     ner
   );
 

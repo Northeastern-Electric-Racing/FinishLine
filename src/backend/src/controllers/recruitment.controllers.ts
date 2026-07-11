@@ -38,8 +38,7 @@ export default class RecruitmentController {
         name,
         description,
         dateOfEvent,
-        isOnNewMemberDashboard,
-        isOnRecruitingDashboard,
+        { isOnNewMemberDashboard, isOnRecruitingDashboard },
         req.organization
       );
       res.status(200).json(milestone);

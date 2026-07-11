@@ -105,8 +105,7 @@ describe('Recruitment Tests', () => {
               'name',
               'description',
               new Date(),
-              false,
-              false,
+              { isOnNewMemberDashboard: false, isOnRecruitingDashboard: false },
               organization
             )
         ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a milestone'));
@@ -118,8 +117,7 @@ describe('Recruitment Tests', () => {
           'name',
           'description',
           new Date('11/12/24'),
-          false,
-          false,
+          { isOnNewMemberDashboard: false, isOnRecruitingDashboard: false },
           organization
         );
 
@@ -164,8 +162,7 @@ describe('Recruitment Tests', () => {
           'name',
           'description',
           new Date('11/12/24'),
-          false,
-          false,
+          { isOnNewMemberDashboard: false, isOnRecruitingDashboard: false },
           organization
         );
 
@@ -194,8 +191,7 @@ describe('Recruitment Tests', () => {
           'name',
           'description',
           new Date('11/12/24'),
-          false,
-          false,
+          { isOnNewMemberDashboard: false, isOnRecruitingDashboard: false },
           organization
         );
 
@@ -221,8 +217,7 @@ describe('Recruitment Tests', () => {
           'name',
           'description',
           new Date('11/11/24'),
-          false,
-          false,
+          { isOnNewMemberDashboard: false, isOnRecruitingDashboard: false },
           organization
         );
 
@@ -231,12 +226,83 @@ describe('Recruitment Tests', () => {
           'name2',
           'description2',
           new Date('1/1/1'),
-          false,
-          false,
+          { isOnNewMemberDashboard: false, isOnRecruitingDashboard: false },
           organization
         );
         const result = await RecruitmentServices.getAllMilestones(organization);
         expect(result).toStrictEqual([milestone1, milestone2]);
+      });
+    });
+
+    describe('Get New Member Milestones', () => {
+      it('Only returns milestones flagged for the new member dashboard', async () => {
+        const admin = await createTestUser(batmanAppAdmin, orgId);
+
+        const newMemberMilestone = await RecruitmentServices.createMilestone(
+          admin,
+          'new member milestone',
+          'description',
+          new Date('11/11/24'),
+          { isOnNewMemberDashboard: true, isOnRecruitingDashboard: false },
+          organization
+        );
+
+        await RecruitmentServices.createMilestone(
+          admin,
+          'recruiting milestone',
+          'description',
+          new Date('1/1/1'),
+          { isOnNewMemberDashboard: false, isOnRecruitingDashboard: true },
+          organization
+        );
+
+        await RecruitmentServices.createMilestone(
+          admin,
+          'unflagged milestone',
+          'description',
+          new Date('1/1/1'),
+          { isOnNewMemberDashboard: false, isOnRecruitingDashboard: false },
+          organization
+        );
+
+        const result = await RecruitmentServices.getNewMemberMilestones(organization);
+        expect(result).toStrictEqual([newMemberMilestone]);
+      });
+    });
+
+    describe('Get Recruiting Milestones', () => {
+      it('Only returns milestones flagged for the recruiting dashboard', async () => {
+        const admin = await createTestUser(batmanAppAdmin, orgId);
+
+        await RecruitmentServices.createMilestone(
+          admin,
+          'new member milestone',
+          'description',
+          new Date('11/11/24'),
+          { isOnNewMemberDashboard: true, isOnRecruitingDashboard: false },
+          organization
+        );
+
+        const recruitingMilestone = await RecruitmentServices.createMilestone(
+          admin,
+          'recruiting milestone',
+          'description',
+          new Date('1/1/1'),
+          { isOnNewMemberDashboard: false, isOnRecruitingDashboard: true },
+          organization
+        );
+
+        await RecruitmentServices.createMilestone(
+          admin,
+          'unflagged milestone',
+          'description',
+          new Date('1/1/1'),
+          { isOnNewMemberDashboard: false, isOnRecruitingDashboard: false },
+          organization
+        );
+
+        const result = await RecruitmentServices.getRecruitingMilestones(organization);
+        expect(result).toStrictEqual([recruitingMilestone]);
       });
     });
 
