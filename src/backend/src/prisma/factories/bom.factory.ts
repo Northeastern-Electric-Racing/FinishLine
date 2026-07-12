@@ -400,11 +400,37 @@ const MaterialNames: string[] = [];
 
 export const generateMaterialCount = (faker: Faker): number =>
   faker.helpers.weightedArrayElement([
-    { weight: 20, value: 1 },
-    { weight: 30, value: 2 },
-    { weight: 25, value: 3 },
-    { weight: 15, value: 4 },
-    { weight: 10, value: 5 }
+    { weight: 7, value: 0 },
+    { weight: 3, value: 1 },
+    { weight: 4, value: 2 },
+    { weight: 5, value: 3 },
+    { weight: 6, value: 4 },
+    { weight: 7, value: 5 },
+    { weight: 8, value: 6 },
+    { weight: 9, value: 7 },
+    { weight: 10, value: 8 },
+    { weight: 11, value: 9 },
+    { weight: 11, value: 10 },
+    { weight: 10, value: 11 },
+    { weight: 9, value: 12 },
+    { weight: 8, value: 13 },
+    { weight: 7, value: 14 },
+    { weight: 6, value: 15 },
+    { weight: 5, value: 16 },
+    { weight: 4, value: 17 },
+    { weight: 3, value: 18 },
+    { weight: 2, value: 19 },
+    { weight: 2, value: 20 },
+    { weight: 1, value: 21 },
+    { weight: 1, value: 22 },
+    { weight: 1, value: 23 },
+    { weight: 1, value: 24 },
+    { weight: 1, value: 25 },
+    { weight: 1, value: 26 },
+    { weight: 1, value: 27 },
+    { weight: 1, value: 28 },
+    { weight: 1, value: 29 },
+    { weight: 1, value: 30 }
   ]);
 
 export const generateAssemblyName = (faker: Faker): string => {
