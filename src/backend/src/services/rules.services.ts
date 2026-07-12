@@ -1251,6 +1251,7 @@ export default class RulesService {
         parentRuleId: ruleId,
         dateDeleted: null
       },
+      orderBy: { ruleCode: 'asc' },
       ...getRulePreviewQueryArgs()
     });
     return subRules.map((rule) => ruleTransformer(rule));
@@ -1437,6 +1438,7 @@ export default class RulesService {
         },
         dateDeleted: null
       },
+      orderBy: { rule: { ruleCode: 'asc' } },
       ...getProjectRuleQueryArgs()
     });
 
@@ -1479,6 +1481,7 @@ export default class RulesService {
         dateDeleted: null,
         parentRuleId: null
       },
+      orderBy: { ruleCode: 'asc' },
       ...getRulePreviewQueryArgs()
     });
 

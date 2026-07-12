@@ -7,7 +7,7 @@ import RuleContent from './RuleContent';
 import UpdateStatusPopover from '../../ProjectDetailPage/ProjectViewContainer/ProjectRules/UpdateStatusPopover';
 import { useSetRuleCompletion } from '../../../hooks/rules.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { getAncestorIds } from '../../../utils/rules.utils';
+import { compareRuleCodes, getAncestorIds } from '../../../utils/rules.utils';
 
 interface RulesetGeneralViewProps {
   allRules: Rule[];
@@ -35,7 +35,9 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
   // Completion in general view is for the whole ruleset, so no projectId is passed in
   const { mutateAsync: setCompletion } = useSetRuleCompletion(rulesetId, '');
 
-  const topLevelRules = allRules.filter((rule) => !rule.parentRule);
+  // Sort once by rule code so both top-level rows and their children render in a stable numeric order.
+  const sortedRules = useMemo(() => [...allRules].sort(compareRuleCodes), [allRules]);
+  const topLevelRules = useMemo(() => sortedRules.filter((rule) => !rule.parentRule), [sortedRules]);
   const rulesById = useMemo(() => new Map(allRules.map((r) => [r.ruleId, r])), [allRules]);
 
   // Flip a single rule's expanded state
@@ -96,7 +98,7 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
               <RuleRow
                 key={rule.ruleId}
                 rule={rule}
-                allRules={allRules}
+                allRules={sortedRules}
                 expandedIds={expandedIds}
                 onToggleExpand={toggleExpand}
                 middleContent={(r) => (
@@ -105,7 +107,7 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
                 rightContent={(r) => (
                   <RuleStatusTag
                     rule={r}
-                    allRules={allRules}
+                    allRules={sortedRules}
                     popoverOpen={selectedRule?.ruleId === r.ruleId && Boolean(statusPopoverAnchor)}
                     onClick={(e) => {
                       setSelectedRule(r);
