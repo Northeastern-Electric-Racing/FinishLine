@@ -15,7 +15,6 @@ export const AddRuleBox: React.FC<AddRuleBoxProps> = ({ open, anchorEl, onClose,
 
   const optionButtonSx = {
     borderRadius: 0,
-    borderTop: '1px solid black',
     backgroundColor: 'transparent',
     color: theme.palette.common.white,
     lineHeight: 1.1,
@@ -49,11 +48,10 @@ export const AddRuleBox: React.FC<AddRuleBoxProps> = ({ open, anchorEl, onClose,
           minWidth: 'auto'
         }}
       >
-        <Box sx={{ height: 1, backgroundColor: 'rgba(255,255,255,0.18)' }} />
         <NERButton onClick={onAddRule} sx={optionButtonSx}>
           Add Rule
         </NERButton>
-        <NERButton onClick={onAddReferencedRule} sx={optionButtonSx}>
+        <NERButton onClick={onAddReferencedRule} sx={{ ...optionButtonSx, borderTop: '1px solid black' }}>
           Add Referenced Rule
         </NERButton>
       </Box>
