@@ -59,7 +59,6 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
     const { carNumber, projectNumber } = project.wbsElement;
     const workPackageContexts: WorkPackageContext[] = [];
     const usedNames = new Set<string>();
-    const blockedRef: Map<WorkPackage, WorkPackage | undefined> = new Map();
 
     const now = new Date();
 
@@ -119,11 +118,10 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
       });
 
       workPackageContexts.push({ workPackage, timeline: wpTimeline });
-      blockedRef.set(workPackage, effectiveBlocker?.workPackage);
     }
 
     const sorted = [...workPackageContexts].sort((a, b) => a.timeline.start.getTime() - b.timeline.start.getTime());
-    const pastWPs = sorted.filter((wp) => wp.timeline.end < now);
+    const pastWPs = sorted.filter((wp) => wp.timeline.start < now);
 
     if (pastWPs.length > 0) {
       const daysOverdue = daysBetween({ start: timeline.start, end: now });
