@@ -112,7 +112,7 @@ calendarRouter.post(
   body('machineryIds.*').isString(),
   body('workPackageIds').isArray(),
   body('workPackageIds.*').isString(),
-  body('notificationChannelIds').optional().isArray(),
+  body('notificationChannelIds').isArray(),
   body('notificationChannelIds.*').optional().isString(),
   body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),

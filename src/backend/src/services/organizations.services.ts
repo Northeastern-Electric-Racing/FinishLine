@@ -594,8 +594,8 @@ export default class OrganizationsService {
 
   /**
    * Gets the organization's list of Slack channels that events can notify, filtered to only
-   * those the given user can actually use: all public channels, plus private channels the
-   * user's Slack id is a member of. Name and privacy are both resolved live from Slack.
+   * those the given user is actually a member of (public or private). Name and privacy are
+   * both resolved live from Slack.
    * @param userId the user requesting the available channels
    * @param organizationId the organization to get the notification channels for
    * @returns the notification channels available to the user, each with its Slack channel id and current name

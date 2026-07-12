@@ -347,13 +347,13 @@ export const findMatchingTimeOfDaySlots = <T extends { scheduleSlotId: string; s
 
 /**
  * Ensures the given notification channel ids belong to the organization and that the given
- * user can use every private one among them (public channels are always allowed). Privacy is
- * resolved live from Slack.
+ * user is a member of every one of them, public or private. Membership is resolved live from
+ * Slack.
  * @param organization The organization the notification channels must belong to
  * @param submitter The user selecting the notification channels
  * @param notificationChannelIds The notification channel ids to validate
  * @throws NotFoundException if a channel id isn't one of the organization's notification channels
- * @throws AccessDeniedException if the user can't use one of the selected private channels
+ * @throws AccessDeniedException if the user isn't a member of one of the selected channels
  */
 export const validateNotificationChannelIds = async (
   organization: Organization,
@@ -372,6 +372,6 @@ export const validateNotificationChannelIds = async (
   );
 
   if (accessResults.some((result) => !result.hasAccess)) {
-    throw new AccessDeniedException('You are not a member of one or more of the selected private notification channels');
+    throw new AccessDeniedException('You are not a member of one or more of the selected notification channels');
   }
 };

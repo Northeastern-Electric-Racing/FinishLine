@@ -63,18 +63,15 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
   const { mutateAsync: deleteNotificationChannelMutateAsync } = useDeleteNotificationChannel();
   const [newNotificationChannelId, setNewNotificationChannelId] = useState('');
 
-  if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
-
   if (allTeamsIsError) {
     return <ErrorPage message={allTeamsError.message} />;
   }
-
-  if (!notificationChannels || notificationChannelsIsLoading) return <LoadingIndicator />;
-
   if (notificationChannelsIsError) {
     return <ErrorPage message={notificationChannelsError.message} />;
   }
 
+  if (!notificationChannels || notificationChannelsIsLoading) return <LoadingIndicator />;
+  if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
   if (isLoading) return <LoadingIndicator />;
 
   const teamTableRows = allTeams.map((team, index) => (

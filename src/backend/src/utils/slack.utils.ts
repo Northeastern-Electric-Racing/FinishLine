@@ -394,9 +394,9 @@ export const sendAndGetSlackCRNotifications = async (
 };
 
 /**
- * Resolves whether a user can use the given Slack channel as a notification channel: always
- * allowed for public channels, allowed for private channels only if the user's Slack id is a
- * member. Fails closed (denies access) if the channel can't be resolved from Slack.
+ * Resolves whether a user can use the given Slack channel as a notification channel: only
+ * allowed if the user's Slack id is a member of the channel, regardless of whether it's
+ * public or private. Fails closed (denies access) if the channel can't be resolved from Slack.
  * @param userId the user requesting access to the channel
  * @param channelId the Slack channel id to check
  * @returns the channel's info (if it could be resolved) and whether the user has access to it
@@ -407,7 +407,6 @@ export const getNotificationChannelAccessForUser = async (
 ): Promise<{ channelInfo?: { name?: string; isPrivate: boolean }; hasAccess: boolean }> => {
   const channelInfo = await getChannelInfo(channelId);
   if (!channelInfo) return { channelInfo: undefined, hasAccess: false };
-  if (!channelInfo.isPrivate) return { channelInfo, hasAccess: true };
 
   const slackId = await getUserSlackId(userId);
   if (!slackId) return { channelInfo, hasAccess: false };
