@@ -594,8 +594,8 @@ export default class OrganizationsService {
 
   /**
    * Gets the organization's list of Slack channels that events can notify, filtered to only
-   * those the given user is actually a member of (public or private). Name and privacy are
-   * both resolved live from Slack.
+   * those the given user is actually a member of (public or private). Name is resolved live
+   * from Slack.
    * @param userId the user requesting the available channels
    * @param organizationId the organization to get the notification channels for
    * @returns the notification channels available to the user, each with its Slack channel id and current name
@@ -618,12 +618,12 @@ export default class OrganizationsService {
 
     const availableChannels = await Promise.all(
       organization.notificationChannelIds.map(async (slackChannelId) => {
-        const { channelInfo, hasAccess } = await getNotificationChannelAccessForUser(userId, slackChannelId);
-        return hasAccess && channelInfo ? { slackChannelId, name: channelInfo.name } : undefined;
+        const { channelName, hasAccess } = await getNotificationChannelAccessForUser(userId, slackChannelId);
+        return hasAccess && channelName ? { slackChannelId, name: channelName } : undefined;
       })
     );
 
-    return availableChannels.filter((channel): channel is NonNullable<typeof channel> => !!channel);
+    return availableChannels.filter((channel) => !!channel);
   }
 
   /**

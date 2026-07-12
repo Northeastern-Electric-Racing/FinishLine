@@ -13,7 +13,6 @@ import {
 import { Account_Code, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
 import {
   editMessage,
-  getChannelInfo,
   getChannelName,
   getUserName,
   getUsersInChannel,
@@ -399,20 +398,20 @@ export const sendAndGetSlackCRNotifications = async (
  * public or private. Fails closed (denies access) if the channel can't be resolved from Slack.
  * @param userId the user requesting access to the channel
  * @param channelId the Slack channel id to check
- * @returns the channel's info (if it could be resolved) and whether the user has access to it
+ * @returns the channel's name (if it could be resolved) and whether the user has access to it
  */
 export const getNotificationChannelAccessForUser = async (
   userId: string,
   channelId: string
-): Promise<{ channelInfo?: { name?: string; isPrivate: boolean }; hasAccess: boolean }> => {
-  const channelInfo = await getChannelInfo(channelId);
-  if (!channelInfo) return { channelInfo: undefined, hasAccess: false };
+): Promise<{ channelName?: string; hasAccess: boolean }> => {
+  const channelName = await getChannelName(channelId);
+  if (!channelName) return { channelName: undefined, hasAccess: false };
 
   const slackId = await getUserSlackId(userId);
-  if (!slackId) return { channelInfo, hasAccess: false };
+  if (!slackId) return { channelName, hasAccess: false };
 
   const members = await getUsersInChannel(channelId);
-  return { channelInfo, hasAccess: members.includes(slackId) };
+  return { channelName, hasAccess: members.includes(slackId) };
 };
 
 export const buildSlackMentionPrefix = (mention: SlackMentionType, memberSlackIds: string[]): string => {

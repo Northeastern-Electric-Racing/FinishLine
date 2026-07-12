@@ -284,7 +284,12 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   } = useAllWorkPackagesPreview();
   const { isLoading: teamsLoading, isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamPreviews();
   const { isError: teamTypesError, error: teamTypesErrorMsg, data: teamTypes } = useAllTeamTypes();
-  const { data: notificationChannels } = useAvailableNotificationChannels();
+  const {
+    data: notificationChannels,
+    isError: notifChannelIsError,
+    isLoading: notifChannelsIsLoading,
+    error: notifChannelError
+  } = useAvailableNotificationChannels();
 
   // Compute default form values - memo ensures stable reference
   const defaultFormData = useMemo(() => {
@@ -694,7 +699,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   if (shopsError) return <ErrorPage error={shopsErrorMsg} message={shopsErrorMsg?.message} />;
   if (machineryError) return <ErrorPage error={machineryErrorMsg} message={machineryErrorMsg?.message} />;
   if (ssIsError) return <ErrorPage error={ssError} message={ssError?.message} />;
+  if (notifChannelIsError) return <ErrorPage error={notifChannelError} message={notifChannelError?.message} />;
   if (ssIsLoading) return <LoadingIndicator />;
+  if (notifChannelsIsLoading) return <LoadingIndicator />;
 
   const workPackageOptions = workPackagesLoading
     ? [{ id: 'loading', label: 'Loading work packages...' }]
