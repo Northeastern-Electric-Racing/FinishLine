@@ -167,7 +167,7 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
   const formattedCost = `$${(totalCost / 100).toFixed(2)}`; // convert from cents to dollars and cents
 
   const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request for ${formattedCost} at ${vendor.name} (ID#: ${identifier}) 💲`;
-  const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
+  const link = `https://finishlinebyner.com/finance/reimbursement-requests/all-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
   const financeTeam = await prisma.team.findFirst({
@@ -207,7 +207,7 @@ export const sendReimbursementRequestDeniedNotification = async (slackId: string
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
 
   const msg = `Your reimbursement request has been denied.`;
-  const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
+  const link = `https://finishlinebyner.com/finance/reimbursement-requests/all-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
   await sendMessage(slackId, msg, link, linkButtonText);
