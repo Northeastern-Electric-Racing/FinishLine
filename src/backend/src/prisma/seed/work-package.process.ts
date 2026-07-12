@@ -2,7 +2,7 @@ import { SeedProcess } from '../processes/seed-process.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { ProjectOutput, ProjectProcess } from './project.process.js';
-import { WorkPackageContext, ProjectContext, FullUser, WorkPackage } from '../context.js';
+import { WorkPackageContext, ProjectContext, FullUser } from '../context.js';
 import {
   generateWorkPackageCount,
   generateWorkPackageName,
