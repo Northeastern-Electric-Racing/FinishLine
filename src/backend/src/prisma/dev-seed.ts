@@ -30,10 +30,10 @@ await new SeedRunner()
     new ConfigDataProcess(),
     new SchedulingProcess(),
     new TeamProcess(),
-    new TaskProcess(),
     new ShopProcess(),
     new ProjectProcess(),
-    new WorkPackageProcess()
+    new WorkPackageProcess(),
+    new TaskProcess()
   )
   .run();
 

@@ -133,12 +133,12 @@ const randomDateInRange = (faker: Faker, range: DateRange): Date => {
   );
 };
 
-const taskStatusForDueDate = (faker: Faker, dueDate: Date, timeline: DateRange): Task_Status => {
-  const totalDays = Math.max(1, daysBetween(timeline));
-  const daysFromStart = dayjs(dueDate).diff(dayjs(timeline.start), 'day');
-  const timelineProgress = daysFromStart / totalDays;
+const DUE_BUFFER_DAYS = 7;
 
-  if (timelineProgress < 0.4) {
+const taskStatusForDueDate = (faker: Faker, dueDate: Date, now: Date = new Date()): Task_Status => {
+  const daysUntilDue = dayjs(dueDate).diff(dayjs(now), 'day');
+
+  if (daysUntilDue < -DUE_BUFFER_DAYS) {
     return faker.helpers.weightedArrayElement([
       { weight: 80, value: Task_Status.DONE },
       { weight: 15, value: Task_Status.IN_PROGRESS },
@@ -146,7 +146,7 @@ const taskStatusForDueDate = (faker: Faker, dueDate: Date, timeline: DateRange):
     ]);
   }
 
-  if (timelineProgress > 0.65) {
+  if (daysUntilDue > DUE_BUFFER_DAYS) {
     return faker.helpers.weightedArrayElement([
       { weight: 75, value: Task_Status.IN_BACKLOG },
       { weight: 20, value: Task_Status.IN_PROGRESS },
@@ -208,7 +208,7 @@ export const createSeedTask = (
     title: taskTitle(faker),
     notes: faker.helpers.arrayElement(TASK_NOTES),
     priority: randomPriority(faker),
-    status: taskStatusForDueDate(faker, deadline, parent.timeline),
+    status: taskStatusForDueDate(faker, deadline),
     startDate,
     deadline,
     dateCreated,

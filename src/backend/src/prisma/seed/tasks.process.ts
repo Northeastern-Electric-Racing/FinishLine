@@ -2,21 +2,32 @@ import { Task } from '@prisma/client';
 import { SeedProcess } from '../processes/seed-process.js';
 import { ProjectOutput, ProjectProcess } from './project.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
-import { assigneeCountForTask, createSeedTask, taskCountForProject } from '../factories/tasks.factory.js';
+import { WorkPackageOutput, WorkPackageProcess } from './work-package.process.js';
+import { SeedTaskParent, assigneeCountForTask, createSeedTask, taskCountForProject } from '../factories/tasks.factory.js';
 
-type TaskInput = ProjectOutput & UsersOutput;
+type TaskInput = ProjectOutput & UsersOutput & WorkPackageOutput;
 
 export type TaskOutput = {
   tasks: Task[];
   tasksByWbsElementId: Record<string, Task[]>;
 };
 
+const WP_ATTACH_PROBABILITY = 0.4;
+
 export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
   dependencies() {
-    return [ProjectProcess, UsersProcess];
+    return [ProjectProcess, UsersProcess, WorkPackageProcess];
   }
 
-  async run({ projects, members, leadership, heads, admins, appAdmins }: TaskInput): Promise<TaskOutput> {
+  async run({
+    projects,
+    members,
+    leadership,
+    heads,
+    admins,
+    appAdmins,
+    workPackagesByProjectId
+  }: TaskInput): Promise<TaskOutput> {
     if (projects.length === 0) {
       throw new Error('TaskProcess requires at least one project.');
     }
@@ -30,30 +41,37 @@ export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
     const tasks: Task[] = [];
 
     for (const { project, timeline } of projects) {
+      const projectWorkPackages = workPackagesByProjectId[project.projectId] ?? [];
       const taskCount = taskCountForProject(this.faker);
 
-      for (let i = 0; i < taskCount; i++) {
-        const creator = this.faker.helpers.arrayElement(assignableUsers);
+      const projectTasks = await Promise.all(
+        Array.from({ length: taskCount }, () => {
+          // attach to a work package sometimes, but only if the project has any
+          const attachToWorkPackage =
+            projectWorkPackages.length > 0 && this.faker.datatype.boolean({ probability: WP_ATTACH_PROBABILITY });
 
-        const assigneeCount = assigneeCountForTask(this.faker);
-        const assigneeIds = this.faker.helpers
-          .arrayElements(assignableUsers, Math.min(assigneeCount, assignableUsers.length))
-          .map((user) => user.userId);
+          let parent: SeedTaskParent;
+          if (attachToWorkPackage) {
+            const { workPackage, timeline: wpTimeline } = this.faker.helpers.arrayElement(projectWorkPackages);
+            parent = { wbsElementId: workPackage.wbsElement.wbsElementId, timeline: wpTimeline };
+          } else {
+            parent = { wbsElementId: project.wbsElementId, timeline };
+          }
 
-        const task = await this.prisma.task.create({
-          data: createSeedTask(
-            this.faker,
-            {
-              wbsElementId: project.wbsElementId,
-              timeline
-            },
-            creator.userId,
-            assigneeIds
-          )
-        });
+          const creator = this.faker.helpers.arrayElement(assignableUsers);
 
-        tasks.push(task);
-      }
+          const assigneeCount = assigneeCountForTask(this.faker);
+          const assigneeIds = this.faker.helpers
+            .arrayElements(assignableUsers, Math.min(assigneeCount, assignableUsers.length))
+            .map((user) => user.userId);
+
+          return this.prisma.task.create({
+            data: createSeedTask(this.faker, parent, creator.userId, assigneeIds)
+          });
+        })
+      );
+
+      tasks.push(...projectTasks);
     }
 
     const tasksByWbsElementId = tasks.reduce<Record<string, Task[]>>((acc, task) => {
