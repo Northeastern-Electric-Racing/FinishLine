@@ -10,7 +10,7 @@ import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import ErrorPage from '../../../../ErrorPage';
 
 import { useGetAllCars } from '../../../../../hooks/cars.hooks';
-import { useAllProjects } from '../../../../../hooks/projects.hooks';
+import { useAllProjectsCopyBOM } from '../../../../../hooks/projects.hooks';
 import { useGetMaterialsForWbsElement, useGetMaterialsForCar } from '../../../../../hooks/bom.hooks';
 
 type AutocompleteOption = { label: string; id: string };
@@ -54,7 +54,12 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
 
   const { data: cars, isLoading: carsIsLoading, isError: carsIsError, error: carsError } = useGetAllCars();
 
-  const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
+  const {
+    data: projects,
+    isLoading: projectsIsLoading,
+    isError: projectsIsError,
+    error: projectsError
+  } = useAllProjectsCopyBOM();
 
   const allCars = useMemo(() => cars ?? [], [cars]);
   const allProjects = useMemo(() => projects ?? [], [projects]);

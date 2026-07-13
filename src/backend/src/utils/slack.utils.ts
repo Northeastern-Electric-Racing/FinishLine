@@ -167,7 +167,7 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
   const formattedCost = `$${(totalCost / 100).toFixed(2)}`; // convert from cents to dollars and cents
 
   const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request for ${formattedCost} at ${vendor.name} (ID#: ${identifier}) 💲`;
-  const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
+  const link = `https://finishlinebyner.com/finance/reimbursement-requests/all-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
   const financeTeam = await prisma.team.findFirst({
@@ -207,7 +207,7 @@ export const sendReimbursementRequestDeniedNotification = async (slackId: string
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
 
   const msg = `Your reimbursement request has been denied.`;
-  const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
+  const link = `https://finishlinebyner.com/finance/reimbursement-requests/all-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
   await sendMessage(slackId, msg, link, linkButtonText);
@@ -603,6 +603,8 @@ export const sendStandardCRCreatedNotification = async (
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return;
 
+  const reviewerSlackId = requestedReviewerId ? await getUserSlackId(requestedReviewerId) : undefined;
+
   const message =
     wbsElementName !== projectWbsName
       ? `${submitter.firstName} ${submitter.lastName} submitted a change request for ${wbsElementName} in ${projectWbsName}`
@@ -632,8 +634,6 @@ export const sendStandardCRCreatedNotification = async (
     (id): id is string => !!id
   );
 
-  const reviewerSlackId = requestedReviewerId ? await getUserSlackId(requestedReviewerId) : undefined;
-
   // Also include admins
   const admins = await prisma.user.findMany({
     where: {
@@ -649,10 +649,9 @@ export const sendStandardCRCreatedNotification = async (
   const adminSlackIds = admins.map((a) => a.userSettings?.slackId).filter((id): id is string => !!id);
 
   const allSlackIds = new Set([...headSlackIds, ...adminSlackIds, ...(reviewerSlackId ? [reviewerSlackId] : [])]);
-  const allMentions = [...allSlackIds].map((id) => `<@${id}>`).join(' ');
 
-  if (allMentions) {
-    const reviewMsg = `${allMentions} Your review has been requested on CR #${cr.identifier}!`;
+  if (reviewerSlackId) {
+    const reviewMsg = `<@${reviewerSlackId}> Your review has been requested on CR #${cr.identifier}!`;
     const crLink = `https://finishlinebyner.com/cr/${cr.crId}`;
     await Promise.all(
       notifications.map((n) => replyToMessageInThread(n.channelId, n.ts, reviewMsg, crLink, `View CR #${cr.identifier}`))
@@ -681,11 +680,12 @@ export const sendStandardCRCreatedNotification = async (
   ];
 
   await Promise.all(
-    notifications.flatMap((n) =>
-      [...allSlackIds].map((slackId) =>
-        sendEphemeralMessage(n.channelId, n.ts, slackId, `Approve CR #${cr.identifier}?`, approveBlocks)
-      )
-    )
+    notifications.flatMap(async (n) => {
+      const membersInChannel = new Set(await getUsersInChannel(n.channelId));
+      return [...allSlackIds]
+        .filter((slackId) => membersInChannel.has(slackId))
+        .map((slackId) => sendEphemeralMessage(n.channelId, n.ts, slackId, `Approve CR #${cr.identifier}?`, approveBlocks));
+    })
   );
 };
 

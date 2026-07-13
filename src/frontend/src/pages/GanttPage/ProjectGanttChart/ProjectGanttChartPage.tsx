@@ -192,6 +192,11 @@ const ProjectGanttChartPage: FC = () => {
     };
   };
 
+  // Checked = show tasks, so hideTasks is the inverse of the checkbox state
+  const showTasksHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    handleSetGanttFilters({ ...filters, hideTasks: !event.target.checked });
+  };
+
   const teamTypeHandlers: {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -631,6 +636,8 @@ const ProjectGanttChartPage: FC = () => {
         carHandlers={carHandlers}
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
+        showTasks={!(filters.hideTasks ?? false)}
+        showTasksHandler={showTasksHandler}
         resetHandler={resetHandler}
       />
     </Box>

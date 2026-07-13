@@ -1,14 +1,22 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, Work_Package_Stage } from '@prisma/client';
+import { connectOrganization, connectUser } from '../utils/common.factory.js';
+
+type WorkPackageTemplateConfig = {
+  templateName: string;
+  wbsElementName: string;
+  stage: Work_Package_Stage | null;
+  duration: number | null;
+};
+
+type ProjectTemplateConfig = {
+  templateName: string;
+  projectName: string;
+  summary: string;
+  budget: number;
+  workPackageTemplates: WorkPackageTemplateConfig[];
+};
 
 const SEED_CREATED_AT = new Date('2024-01-01T00:00:00.000Z');
-
-const connectOrganization = (organizationId: string) => ({
-  connect: { organizationId }
-});
-
-const connectUser = (userId: string) => ({
-  connect: { userId }
-});
 
 export const teamTypeCreateInputs = (organizationId: string): Prisma.Team_TypeCreateInput[] => [
   {
@@ -39,42 +47,66 @@ export const teamTypeCreateInputs = (organizationId: string): Prisma.Team_TypeCr
 
 export const linkTypeCreateInputs = (creatorId: string, organizationId: string): Prisma.Link_TypeCreateInput[] => [
   {
-    name: 'Confluence',
-    iconName: 'description',
-    required: true,
-    isOnGuestHomePage: false,
-    creator: connectUser(creatorId),
-    organization: connectOrganization(organizationId)
-  },
-  {
-    name: 'Bill of Materials',
-    iconName: 'bar_chart',
-    required: true,
-    isOnGuestHomePage: false,
-    creator: connectUser(creatorId),
-    organization: connectOrganization(organizationId)
-  },
-  {
-    name: 'NER Website',
-    iconName: 'bar_chart',
-    required: true,
-    isOnGuestHomePage: false,
-    creator: connectUser(creatorId),
-    organization: connectOrganization(organizationId)
-  },
-  {
-    name: 'NER Instagram',
-    iconName: 'bar_chart',
-    required: true,
-    isOnGuestHomePage: false,
-    creator: connectUser(creatorId),
-    organization: connectOrganization(organizationId)
-  },
-  {
     name: 'Google Drive',
-    iconName: 'folder',
-    required: true,
+    iconName: 'add_to_drive',
+    required: false,
     isOnGuestHomePage: false,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Confluence',
+    iconName: 'article',
+    required: false,
+    isOnGuestHomePage: false,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Github',
+    iconName: 'code',
+    required: false,
+    isOnGuestHomePage: false,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Altium',
+    iconName: 'electric_bolt',
+    required: false,
+    isOnGuestHomePage: false,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Application',
+    iconName: 'ballot',
+    required: false,
+    isOnGuestHomePage: false,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Sign Ups',
+    iconName: 'ballot',
+    required: false,
+    isOnGuestHomePage: false,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'facebook',
+    iconName: 'facebook',
+    required: false,
+    isOnGuestHomePage: true,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Instagram',
+    iconName: 'Instagram',
+    required: false,
+    isOnGuestHomePage: true,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
   }
@@ -555,3 +587,29 @@ export const eventTypeCreateInput = (
     })
   }
 });
+
+export const projectTemplateConfigs: ProjectTemplateConfig[] = [
+  {
+    templateName: 'Standard Hardware Project',
+    projectName: 'Hardware Project',
+    summary: 'Standard template for hardware projects.',
+    budget: 0,
+    workPackageTemplates: [
+      { templateName: 'Research Phase', wbsElementName: 'Research', stage: Work_Package_Stage.RESEARCH, duration: null },
+      { templateName: 'Design Phase', wbsElementName: 'Design', stage: Work_Package_Stage.DESIGN, duration: null },
+      {
+        templateName: 'Manufacturing Phase',
+        wbsElementName: 'Manufacturing',
+        stage: Work_Package_Stage.MANUFACTURING,
+        duration: null
+      },
+      { templateName: 'Install Phase', wbsElementName: 'Install', stage: Work_Package_Stage.INSTALL, duration: null },
+      { templateName: 'Testing Phase', wbsElementName: 'Testing', stage: Work_Package_Stage.TESTING, duration: null },
+      { templateName: 'Final Testing', wbsElementName: 'Final Testing', stage: Work_Package_Stage.TESTING, duration: null }
+    ]
+  }
+];
+
+export const standaloneWorkPackageTemplateConfigs: WorkPackageTemplateConfig[] = [
+  { templateName: 'Quick Install', wbsElementName: 'Install', stage: null, duration: 1 }
+];
