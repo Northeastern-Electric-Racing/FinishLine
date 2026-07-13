@@ -16,6 +16,7 @@ import {
 type BOMInput = OrganizationOutput & UsersOutput & ConfigDataOutput & ProjectOutput & WorkPackageOutput;
 
 const ASSEMBLY_PROBABILITY = 0.3;
+const BATCH_AMOUNT = 50;
 
 export class BOMProcess extends SeedProcess<BOMInput, Record<string, never>> {
   dependencies() {
@@ -40,11 +41,12 @@ export class BOMProcess extends SeedProcess<BOMInput, Record<string, never>> {
       ...workPackages.map(({ workPackage }) => workPackage.wbsElement)
     ];
 
-    await Promise.all(
-      allWbsElements.map((wbsElement) =>
-        this.generateBOMForWbsElement(wbsElement, creators, materialTypes, manufacturers, units)
-      )
-    );
+    for (let i = 0; i < allWbsElements.length; i += BATCH_AMOUNT) {
+      const batch = allWbsElements.slice(i, i + BATCH_AMOUNT);
+      await Promise.all(
+        batch.map((wbsElement) => this.generateBOMForWbsElement(wbsElement, creators, materialTypes, manufacturers, units))
+      );
+    }
 
     return {};
   }
