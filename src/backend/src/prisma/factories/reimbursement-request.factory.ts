@@ -83,7 +83,14 @@ const INDEX_CODE_NAMES = ['CASH', 'BUDGET'] as const;
 
 const ACCOUNT_CODE_NAMES_BY_INDEX_CODE: Record<(typeof INDEX_CODE_NAMES)[number], string[]> = {
   CASH: ['Subscriptions', 'Travel-Misc', 'Food', 'General Supplies/Tools'],
-  BUDGET: ['Subscriptions', 'Travel-Auto/Van Rental', 'Travel-Misc', 'Competition-Registration', 'Food', 'General Supplies/Tools']
+  BUDGET: [
+    'Subscriptions',
+    'Travel-Auto/Van Rental',
+    'Travel-Misc',
+    'Competition-Registration',
+    'Food',
+    'General Supplies/Tools'
+  ]
 };
 
 export const chooseFundingSource = (
@@ -112,7 +119,11 @@ export type ReimbursementStatusStep = { type: Reimbursement_Status_Type; date: D
  * have elapsed for them to progress; older requests have had time to reach later stages.
  * A request may be denied at a random point instead of continuing to progress.
  */
-export const generateReimbursementStatusHistory = (faker: Faker, dateCreated: Date, now: Date): ReimbursementStatusStep[] => {
+export const generateReimbursementStatusHistory = (
+  faker: Faker,
+  dateCreated: Date,
+  now: Date
+): ReimbursementStatusStep[] => {
   const history: ReimbursementStatusStep[] = [{ type: STAGE_ORDER[0], date: dateCreated }];
 
   const isDenied = faker.datatype.boolean({ probability: DENIED_CHANCE });

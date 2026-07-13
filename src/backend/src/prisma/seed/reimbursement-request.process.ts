@@ -67,7 +67,15 @@ const EXTRA_COMMENT_TEMPLATES = [
 
 export class ReimbursementRequestProcess extends SeedProcess<ReimbursementRequestInput, ReimbursementRequestOutput> {
   dependencies() {
-    return [OrganizationProcess, UsersProcess, ConfigDataProcess, TeamProcess, CarProcess, ProjectProcess, WorkPackageProcess];
+    return [
+      OrganizationProcess,
+      UsersProcess,
+      ConfigDataProcess,
+      TeamProcess,
+      CarProcess,
+      ProjectProcess,
+      WorkPackageProcess
+    ];
   }
 
   async run({
@@ -97,7 +105,8 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
     const headApproverIds = new Set(headApprovers.map((user) => user.userId));
 
     if (recipients.length === 0) throw new Error('ReimbursementRequestProcess requires at least one eligible recipient.');
-    if (headApprovers.length === 0) throw new Error('ReimbursementRequestProcess requires at least one head-level approver.');
+    if (headApprovers.length === 0)
+      throw new Error('ReimbursementRequestProcess requires at least one head-level approver.');
 
     const financeTeamFull = await this.prisma.team.findUniqueOrThrow({
       where: { teamId: financeTeam.teamId },
@@ -105,9 +114,11 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
     });
 
     const financeTeamMemberIds = new Set(
-      [financeTeamFull.headId, ...financeTeamFull.leads.map((u) => u.userId), ...financeTeamFull.members.map((u) => u.userId)].filter(
-        (id): id is string => !!id
-      )
+      [
+        financeTeamFull.headId,
+        ...financeTeamFull.leads.map((u) => u.userId),
+        ...financeTeamFull.members.map((u) => u.userId)
+      ].filter((id): id is string => !!id)
     );
 
     const financePersonnelById = new Map<string, FullUser>();
@@ -116,7 +127,8 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
     );
     const financePersonnel = [...financePersonnelById.values()];
 
-    if (financePersonnel.length === 0) throw new Error('ReimbursementRequestProcess requires at least one finance team member.');
+    if (financePersonnel.length === 0)
+      throw new Error('ReimbursementRequestProcess requires at least one finance team member.');
 
     const indexCodesByName = indexCodes.reduce<Record<string, (typeof indexCodes)[number]>>((acc, indexCode) => {
       acc[indexCode.name] = indexCode;
@@ -139,7 +151,10 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
       const carProjects = (projectsByCarId[car.carId] ?? []).filter((projectContext) => projectContext.timeline.start < now);
       if (carProjects.length === 0) continue;
 
-      const carCreationWindow = { start: dateRange.start, end: clampDate(dateRange.end, { start: dateRange.start, end: now }) };
+      const carCreationWindow = {
+        start: dateRange.start,
+        end: clampDate(dateRange.end, { start: dateRange.start, end: now })
+      };
 
       for (let i = 0; i < REIMBURSEMENT_REQUESTS_PER_CAR; i++) {
         identifier += 1;
