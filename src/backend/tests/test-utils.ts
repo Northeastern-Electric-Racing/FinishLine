@@ -180,6 +180,7 @@ export const resetUsers = async () => {
   await prisma.shop.deleteMany();
   await prisma.description_Bullet.deleteMany();
   await prisma.description_Bullet_Type.deleteMany();
+  await prisma.unit.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
