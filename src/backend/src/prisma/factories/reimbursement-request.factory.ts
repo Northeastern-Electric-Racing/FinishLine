@@ -286,7 +286,7 @@ export const generateDateOfExpense = (
   latestPossibleDate: Date
 ): Date | undefined => {
   if (recipientCanSetAtCreation) {
-    return faker.date.recent({ days: faker.number.int({ min: 0, max: 10 }), refDate: dateCreated });
+    return faker.date.recent({ days: faker.number.int({ min: 1, max: 10 }), refDate: dateCreated });
   }
 
   if (!approvalDate) return undefined;
