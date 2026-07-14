@@ -249,7 +249,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const [requiredMembers, setRequiredMembers] = useState<Array<{ id: string; label: string }>>([]);
   const [optionalMembers, setOptionalMembers] = useState<Array<{ id: string; label: string }>>([]);
   const [selectedTeams, setSelectedTeams] = useState<Array<{ id: string; label: string }>>([]);
-  const [selectedNotificationChannels, setSelectedNotificationChannels] = useState<Array<{ id: string; label: string }>>([]);
+  const [selectedNotificationChannels, setSelectedNotificationChannels] = useState<
+    Array<{ id: string; label: string; hasAccess: boolean }>
+  >([]);
   const [requiredMemberInput, setRequiredMemberInput] = useState('');
   const [optionalMemberInput, setOptionalMemberInput] = useState('');
   const [teamInput, setTeamInput] = useState('');
@@ -396,11 +398,14 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       setSelectedTeams(teamOptions);
     }
 
-    // Set autocomplete state for notification channels
+    // Set autocomplete state for notification channels. Channels the current user doesn't have
+    // access to are still shown (using whatever name we can resolve) so editing an event doesn't
+    // silently drop them - they just can't be removed from the modal.
     if (initialValues?.notificationChannelIds && notificationChannels) {
-      const notificationChannelOptions = notificationChannels
-        .filter((c) => initialValues.notificationChannelIds?.includes(c.slackChannelId))
-        .map((c) => ({ id: c.slackChannelId, label: c.name ?? c.slackChannelId }));
+      const notificationChannelOptions = initialValues.notificationChannelIds.map((id) => {
+        const channel = notificationChannels.find((c) => c.slackChannelId === id);
+        return { id, label: channel?.name ?? id, hasAccess: channel?.hasAccess ?? false };
+      });
       setSelectedNotificationChannels(notificationChannelOptions);
     }
 
@@ -684,7 +689,10 @@ const EventModal: React.FC<BaseEventModalProps> = ({
 
   const notificationChannelOptions = useMemo(() => {
     if (!notificationChannels) return [];
-    return notificationChannels.map((c) => ({ id: c.slackChannelId, label: c.name ?? c.slackChannelId }));
+    // Only channels the current user has access to can be added
+    return notificationChannels
+      .filter((c) => c.hasAccess)
+      .map((c) => ({ id: c.slackChannelId, label: c.name ?? c.slackChannelId }));
   }, [notificationChannels]);
 
   const shopOptions = useMemo(() => {
@@ -1224,7 +1232,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
           {/* Notification Section */}
           {selectedEventType && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <NotificationsIcon sx={{ color: 'text.secondary' }} />
+              <NotificationsIcon sx={{ color: 'text.secondary', flexShrink: 0 }} />
               <Tooltip
                 arrow
                 placement="right"
@@ -1236,16 +1244,16 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       : ''
                 }
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'default' }}>
-                  <Typography variant="body2" color={'text.disabled'} fontWeight={500}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'default', minWidth: 0 }}>
+                  <Typography variant="body2" color={'text.disabled'} fontWeight={500} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
                     {selectedEventType.sendSlackNotifications ? 'On' : 'Off'}
                   </Typography>
                   {selectedEventType.sendSlackNotifications &&
                     !selectedTeams.length &&
                     !workPackageIds.length &&
                     !selectedNotificationChannels.length && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <WarningAmberIcon sx={{ color: 'error.main', fontSize: 18 }} />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+                        <WarningAmberIcon sx={{ color: 'error.main', fontSize: 18, flexShrink: 0 }} />
                         <Typography variant="body2" color="error.main">
                           Add{' '}
                           {selectedEventType.teams && selectedEventType.workPackage
@@ -1433,12 +1441,20 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 <Box sx={{ flex: 1 }}>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                     {selectedNotificationChannels.map((channel) => (
-                      <Chip
+                      <Tooltip
                         key={channel.id}
-                        label={channel.label}
-                        onDelete={() => setSelectedNotificationChannels((prev) => prev.filter((c) => c.id !== channel.id))}
-                        sx={{ bgcolor: 'grey.700', opacity: 0.7 }}
-                      />
+                        title={channel.hasAccess ? '' : "You don't have access to this channel, so it can't be removed here"}
+                      >
+                        <Chip
+                          label={channel.label}
+                          onDelete={
+                            channel.hasAccess
+                              ? () => setSelectedNotificationChannels((prev) => prev.filter((c) => c.id !== channel.id))
+                              : undefined
+                          }
+                          sx={{ bgcolor: 'grey.700', opacity: channel.hasAccess ? 0.7 : 0.5 }}
+                        />
+                      </Tooltip>
                     ))}
                     <Autocomplete
                       options={notificationChannelOptions.filter(
@@ -1451,7 +1467,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       }}
                       onChange={(_, newValue) => {
                         if (newValue) {
-                          setSelectedNotificationChannels((prev) => [...prev, newValue]);
+                          setSelectedNotificationChannels((prev) => [...prev, { ...newValue, hasAccess: true }]);
                           setNotificationChannelInput('');
                         }
                       }}

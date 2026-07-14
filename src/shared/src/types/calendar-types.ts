@@ -41,6 +41,7 @@ export interface TeamWithMembers {
 export interface NotificationChannelPreview {
   slackChannelId: string;
   name?: string;
+  hasAccess?: boolean;
 }
 
 export interface TeamTypeCalendarPreview {

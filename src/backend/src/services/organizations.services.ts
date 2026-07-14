@@ -7,7 +7,8 @@ import {
   RoleEnum,
   isAdmin,
   isAtLeastRank,
-  User
+  User,
+  OrganizationPreview
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -17,7 +18,7 @@ import {
   HttpException,
   NotFoundException
 } from '../utils/errors.utils.js';
-import { userHasPermission } from '../utils/users.utils.js';
+import { getUserSlackId, userHasPermission } from '../utils/users.utils.js';
 import { createUsefulLinks } from '../utils/organizations.utils.js';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
 import { uploadFile } from '../utils/google-integration.utils.js';
@@ -593,12 +594,13 @@ export default class OrganizationsService {
   }
 
   /**
-   * Gets the organization's list of Slack channels that events can notify, filtered to only
-   * those the given user is actually a member of (public or private). Name is resolved live
-   * from Slack.
+   * Gets the organization's full list of Slack channels that events can notify, each annotated
+   * with whether the given user is actually a member of it (public or private), resolved live
+   * from Slack. Channels the user can't access are still included (with hasAccess: false) so
+   * callers can display channels that are already selected on an event without dropping them.
    * @param userId the user requesting the available channels
    * @param organizationId the organization to get the notification channels for
-   * @returns the notification channels available to the user, each with its Slack channel id and current name
+   * @returns every notification channel for the org, each with its Slack channel id, current name, and the user's access
    */
   static async getAvailableNotificationChannelsForUser(
     userId: string,
@@ -616,14 +618,15 @@ export default class OrganizationsService {
       throw new DeletedException('Organization', organizationId);
     }
 
-    const availableChannels = await Promise.all(
-      organization.notificationChannelIds.map(async (slackChannelId) => {
-        const { channelName, hasAccess } = await getNotificationChannelAccessForUser(userId, slackChannelId);
-        return hasAccess && channelName ? { slackChannelId, name: channelName } : undefined;
+    const slackId = await getUserSlackId(userId);
+    const channels = await Promise.all(
+      organization.notificationChannelIds.map(async (slackChannelId): Promise<NotificationChannelPreview | undefined> => {
+        const { channelName, hasAccess } = await getNotificationChannelAccessForUser(slackId, slackChannelId);
+        return channelName ? { slackChannelId, name: channelName, hasAccess } : undefined;
       })
     );
 
-    return availableChannels.filter((channel) => !!channel);
+    return channels.filter((channel): channel is NotificationChannelPreview => !!channel);
   }
 
   /**
@@ -634,7 +637,11 @@ export default class OrganizationsService {
    * @throws AccessDeniedAdminOnlyException if the submitter is not an admin
    * @throws NotFoundException if the channel isn't in the list
    */
-  static async deleteNotificationChannel(submitter: User, organizationId: string, slackChannelId: string): Promise<void> {
+  static async deleteNotificationChannel(
+    submitter: User,
+    organizationId: string,
+    slackChannelId: string
+  ): Promise<OrganizationPreview> {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('delete notification channel');
     }
@@ -655,12 +662,14 @@ export default class OrganizationsService {
       throw new NotFoundException('Notification Channel', slackChannelId);
     }
 
-    await prisma.organization.update({
+    const deletedOrg = await prisma.organization.update({
       where: { organizationId },
       data: {
         notificationChannelIds: { set: organization.notificationChannelIds.filter((id) => id !== slackChannelId) }
       }
     });
+
+    return organizationTransformer(deletedOrg);
   }
 
   /**

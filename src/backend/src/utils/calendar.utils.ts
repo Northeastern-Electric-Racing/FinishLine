@@ -13,6 +13,7 @@ import prisma from '../prisma/prisma.js';
 import { getEventQueryArgs } from '../prisma-query-args/event.query-args.js';
 import { eventTransformer } from '../transformers/calendar.transformer.js';
 import { getNotificationChannelAccessForUser } from './slack.utils.js';
+import { getUserSlackId } from './users.utils.js';
 
 export function buildScheduledTimesOverlap(start?: Date, end?: Date): Prisma.Schedule_SlotListRelationFilter | undefined {
   if (!start && !end) return undefined;
@@ -367,8 +368,9 @@ export const validateNotificationChannelIds = async (
     throw new NotFoundException('Notification Channel', missingIds.join(', '));
   }
 
+  const submitterSlackId = await getUserSlackId(submitter.userId);
   const accessResults = await Promise.all(
-    notificationChannelIds.map((channelId) => getNotificationChannelAccessForUser(submitter.userId, channelId))
+    notificationChannelIds.map((channelId) => getNotificationChannelAccessForUser(submitterSlackId, channelId))
   );
 
   if (accessResults.some((result) => !result.hasAccess)) {

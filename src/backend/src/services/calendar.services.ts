@@ -268,13 +268,13 @@ export default class CalendarService {
     workPackageIds: string[],
     scheduleSlots: ScheduleSlotCreateArgs[],
     initialDateScheduled: Date | undefined,
+    notificationChannelIds: string[],
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
     zoomLink?: string,
     description?: string,
-    mention?: SlackMentionType,
-    notificationChannelIds: string[] = []
+    mention?: SlackMentionType
   ): Promise<Event> {
     if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
     // Validate eventTypeId
@@ -602,12 +602,12 @@ export default class CalendarService {
     machineryIds: string[],
     workPackageIds: string[],
     documents: EventDocumentCreateArgs[],
+    notificationChannelIds: string[],
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
     zoomLink?: string,
-    description?: string,
-    notificationChannelIds: string[] = []
+    description?: string
   ): Promise<Event> {
     if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
     // validate eventId
@@ -689,8 +689,13 @@ export default class CalendarService {
       }
     }
 
-    // Validate notificationChannelIds
-    await validateNotificationChannelIds(organization, submitter, notificationChannelIds);
+    // Validate notificationChannelIds - only newly-added channels need to be validated, since a user
+    // without access to a channel already on the event should still be able to save other changes
+    // without being forced to remove it
+    const addedNotificationChannelIds = notificationChannelIds.filter(
+      (id) => !foundEvent.notificationChannelIds.includes(id)
+    );
+    await validateNotificationChannelIds(organization, submitter, addedNotificationChannelIds);
 
     // Validate shopIds
     if (shopIds.length > 0) {

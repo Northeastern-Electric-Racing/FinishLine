@@ -305,13 +305,13 @@ export default class CalendarController {
         workPackageIds,
         parsedScheduleSlots,
         parsedInitialDateScheduled,
+        notificationChannelIds,
         teamTypeId,
         questionDocumentLink,
         location,
         zoomLink,
         description,
-        mention,
-        notificationChannelIds ?? []
+        mention
       );
       res.status(200).json(event);
     } catch (error: unknown) {
@@ -354,12 +354,12 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         documents,
+        notificationChannelIds,
         teamTypeId,
         questionDocumentLink,
         location,
         zoomLink,
-        description,
-        notificationChannelIds ?? []
+        description
       );
       res.status(200).json(event);
     } catch (error: unknown) {

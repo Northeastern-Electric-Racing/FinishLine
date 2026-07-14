@@ -653,6 +653,7 @@ export const createTestDesignReviewEvent = async () => {
     [testWorkPackage.workPackageId], // workPackageIds
     [], // scheduleSlots - empty for confirmation events
     new Date('2027-03-25T10:00:00'), // initialDateScheduled - required for requiresConfirmation events
+    [], // notificationChannelIds
     teamType.teamTypeId, // team type id
     'https://docs.google.com/document/d/test-design-review-questions', // questionDocument
     'Campus Center Room 101', // location
