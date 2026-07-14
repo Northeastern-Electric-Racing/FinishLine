@@ -105,7 +105,7 @@ describe('Create Rules Tests', () => {
       expect(rule.ruleContent).toBe('The vehicle must have four wheels');
       expect(rule.parentRule).toBeUndefined();
       expect(rule.subRuleIds).toHaveLength(0);
-      expect(rule.referencedRuleIds).toHaveLength(0);
+      expect(rule.referencedRules).toHaveLength(0);
       expect(rule.imageFileIds).toHaveLength(0);
     });
 
@@ -140,9 +140,10 @@ describe('Create Rules Tests', () => {
         [rule1.ruleId, rule2.ruleId]
       );
 
-      expect(rule3.referencedRuleIds).toHaveLength(2);
-      expect(rule3.referencedRuleIds).toContain(rule1.ruleId);
-      expect(rule3.referencedRuleIds).toContain(rule2.ruleId);
+      const referencedIds = rule3.referencedRules.map((ref) => ref.ruleId);
+      expect(referencedIds).toHaveLength(2);
+      expect(referencedIds).toContain(rule1.ruleId);
+      expect(referencedIds).toContain(rule2.ruleId);
     });
 
     it('successfully creates a rule with image file IDs', async () => {

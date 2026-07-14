@@ -35,7 +35,10 @@ export interface Rule {
     ruleCode: string;
   };
   subRuleIds: string[];
-  referencedRuleIds: string[];
+  referencedRules: Array<{
+    ruleId: string;
+    ruleCode: string;
+  }>;
   teams?: Array<{
     teamId: string;
     teamName: string;

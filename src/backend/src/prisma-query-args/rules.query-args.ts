@@ -19,7 +19,8 @@ export const getRulePreviewQueryArgs = () =>
       },
       referencedRule: {
         select: {
-          ruleId: true
+          ruleId: true,
+          ruleCode: true
         }
       },
       teams: {
