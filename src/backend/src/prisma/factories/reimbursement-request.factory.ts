@@ -79,6 +79,8 @@ export const GENERAL_SUPPLY_PRODUCT_NAMES = [
   'Cleaning Solvents'
 ];
 
+export type ReimbursementStatusStep = { type: Reimbursement_Status_Type; date: Date };
+
 const INDEX_CODE_NAMES = ['CASH', 'BUDGET'] as const;
 
 const ACCOUNT_CODE_NAMES_BY_INDEX_CODE: Record<(typeof INDEX_CODE_NAMES)[number], string[]> = {
@@ -111,8 +113,6 @@ export const chooseFundingSource = (
   return { indexCode, accountCode };
 };
 
-export type ReimbursementStatusStep = { type: Reimbursement_Status_Type; date: Date };
-
 /**
  * Generates a chronologically ordered status history for a reimbursement request, bounded by `now`.
  * Requests created more recently naturally stall earlier in the pipeline since fewer days
@@ -127,12 +127,12 @@ export const generateReimbursementStatusHistory = (
   const history: ReimbursementStatusStep[] = [{ type: STAGE_ORDER[0], date: dateCreated }];
 
   const isDenied = faker.datatype.boolean({ probability: DENIED_CHANCE });
-  const deniedAfterStageCount = isDenied ? faker.number.int({ min: 0, max: 2 }) : Infinity;
+  const deniedAfterStageIndex = isDenied ? faker.number.int({ min: 0, max: 2 }) : STAGE_ORDER.length;
 
   let currentDate = dateCreated;
 
   for (let stageIndex = 1; stageIndex < STAGE_ORDER.length; stageIndex++) {
-    if (stageIndex > deniedAfterStageCount) break;
+    if (stageIndex > deniedAfterStageIndex) break;
 
     const nextDate = addDaysToDate(currentDate, faker.number.int({ min: MIN_DAYS_PER_STAGE, max: MAX_DAYS_PER_STAGE }));
     if (nextDate > now) break;
@@ -296,7 +296,7 @@ export const generateDateOfExpense = (
 };
 
 export const systemCommentText = (firstName: string, lastName: string, action: string): string =>
-  `${firstName}  ${lastName} ${action}`;
+  `${firstName} ${lastName} ${action}`;
 
 export const reimbursementRequestCommentCreateInput = (
   reimbursementRequestId: string,
