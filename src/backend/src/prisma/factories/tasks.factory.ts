@@ -1,7 +1,8 @@
 import { Faker } from '@faker-js/faker';
 import { Prisma, Task_Priority, Task_Status } from '@prisma/client';
-import dayjs from 'dayjs';
+import { addDaysToDate } from 'shared';
 import { DateRange } from '../context.js';
+import { clampDate, daysBetween, DAY_MS } from '../dates.js';
 
 export type SeedTaskParent = {
   wbsElementId: string;
@@ -83,6 +84,7 @@ const TASK_TITLE_OBJECTS = [
   'Slack message viewer',
   'recruitment UI'
 ];
+
 const taskTitle = (faker: Faker): string => {
   if (faker.datatype.boolean({ probability: 0.7 })) {
     return faker.helpers.arrayElement(TASK_TITLE_OBJECTS);
@@ -90,6 +92,7 @@ const taskTitle = (faker: Faker): string => {
 
   return `${faker.helpers.arrayElement(TASK_TITLE_VERBS)} ${faker.helpers.arrayElement(TASK_TITLE_OBJECTS)}`;
 };
+
 const TASK_NOTES = [
   'Check packaging, manufacturability, load cases, and interfaces with nearby systems.',
   'Verify assumptions and document any follow-up decisions in Confluence.',
@@ -107,24 +110,10 @@ const TASK_NOTES = [
   'Make sure this still matches the current project scope and timeline.'
 ];
 
-const addDays = (date: Date, days: number): Date => {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-};
-
-const clampDate = (date: Date, min: Date, max: Date): Date => {
-  if (date < min) return new Date(min);
-  if (date > max) return new Date(max);
-  return date;
-};
-
-const daysBetween = ({ start, end }: DateRange): number => Math.max(0, dayjs(end).diff(dayjs(start), 'day'));
-
 const randomDateInRange = (faker: Faker, range: DateRange): Date => {
   const durationDays = daysBetween(range);
 
-  return addDays(
+  return addDaysToDate(
     new Date(range.start),
     faker.number.int({
       min: 0,
@@ -136,7 +125,7 @@ const randomDateInRange = (faker: Faker, range: DateRange): Date => {
 const DUE_BUFFER_DAYS = 7;
 
 const taskStatusForDueDate = (faker: Faker, dueDate: Date, now: Date = new Date()): Task_Status => {
-  const daysUntilDue = dayjs(dueDate).diff(dayjs(now), 'day');
+  const daysUntilDue = Math.floor((dueDate.getTime() - now.getTime()) / DAY_MS);
 
   if (daysUntilDue < -DUE_BUFFER_DAYS) {
     return faker.helpers.weightedArrayElement([
@@ -194,15 +183,17 @@ export const createSeedTask = (
   const deadline = randomDateInRange(faker, parent.timeline);
 
   const startDate = faker.datatype.boolean({ probability: 0.7 })
-    ? clampDate(addDays(deadline, -faker.number.int({ min: 1, max: 21 })), new Date(parent.timeline.start), deadline)
+    ? clampDate(addDaysToDate(deadline, -faker.number.int({ min: 1, max: 21 })), {
+        start: parent.timeline.start,
+        end: deadline
+      })
     : undefined;
 
   const createdDateBase = startDate ?? deadline;
-  const dateCreated = clampDate(
-    addDays(createdDateBase, -faker.number.int({ min: 0, max: 14 })),
-    new Date(parent.timeline.start),
-    createdDateBase
-  );
+  const dateCreated = clampDate(addDaysToDate(createdDateBase, -faker.number.int({ min: 0, max: 14 })), {
+    start: parent.timeline.start,
+    end: createdDateBase
+  });
 
   return {
     title: taskTitle(faker),
