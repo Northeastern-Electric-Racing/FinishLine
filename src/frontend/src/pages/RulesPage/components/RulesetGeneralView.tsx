@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
 import { Rule } from 'shared';
 import RuleRow from '../RuleRow';
@@ -7,7 +7,8 @@ import RuleContent from './RuleContent';
 import UpdateStatusPopover from '../../ProjectDetailPage/ProjectViewContainer/ProjectRules/UpdateStatusPopover';
 import { useSetRuleCompletion } from '../../../hooks/rules.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { compareRuleCodes, getAncestorIds } from '../../../utils/rules.utils';
+import { compareRuleCodes } from '../../../utils/rules.utils';
+import { useRuleTreeNavigation } from '../useRuleTreeNavigation';
 
 interface RulesetGeneralViewProps {
   allRules: Rule[];
@@ -23,10 +24,6 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
   const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
   const [selectedRule, setSelectedRule] = useState<Rule | null>(null);
 
-  // Clicking referenced rule link opens target rule's ancestor chain and scrolls to it
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set()); // the set of ruleIds currently expanded
-  const [pendingScrollId, setPendingScrollId] = useState<string | null>(null); // a rule we want to scroll to
-
   const backgroundColor = theme.palette.background.default;
   const tableBackgroundColor = theme.palette.background.paper;
   const tableTextColor = theme.palette.text.primary;
@@ -38,40 +35,9 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
   // Sort once by rule code so both top-level rows and their children render in a stable numeric order.
   const sortedRules = useMemo(() => [...allRules].sort(compareRuleCodes), [allRules]);
   const topLevelRules = useMemo(() => sortedRules.filter((rule) => !rule.parentRule), [sortedRules]);
-  const rulesById = useMemo(() => new Map(allRules.map((r) => [r.ruleId, r])), [allRules]);
 
-  // Flip a single rule's expanded state
-  const toggleExpand = useCallback((ruleId: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(ruleId)) {
-        next.delete(ruleId);
-      } else {
-        next.add(ruleId);
-      }
-      return next;
-    });
-  }, []);
-
-  // Called when a referenced-rule link is clicked
-  const navigateToRule = useCallback(
-    (targetId: string) => {
-      const ancestors = getAncestorIds(targetId, allRules);
-      setExpandedIds((prev) => new Set([...prev, ...ancestors, targetId]));
-      setPendingScrollId(targetId);
-    },
-    [allRules]
-  );
-
-  // Once reference rule expansion is complete, scroll to it
-  useEffect(() => {
-    if (!pendingScrollId) return;
-    const node = document.getElementById(`rule-row-${pendingScrollId}`);
-    if (node) {
-      node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setPendingScrollId(null);
-    }
-  }, [pendingScrollId, expandedIds]);
+  // Expand ancestors + scroll for referenced rules.
+  const { expandedIds, toggleExpand, navigateToRule } = useRuleTreeNavigation(sortedRules);
 
   const handleStatusClose = () => {
     setStatusPopoverAnchor(null);
@@ -101,9 +67,7 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
                 allRules={sortedRules}
                 expandedIds={expandedIds}
                 onToggleExpand={toggleExpand}
-                middleContent={(r) => (
-                  <RuleContent rule={r} rulesById={rulesById} onReferenceClick={navigateToRule} color={tableTextColor} />
-                )}
+                middleContent={(r) => <RuleContent rule={r} onReferenceClick={navigateToRule} color={tableTextColor} />}
                 rightContent={(r) => (
                   <RuleStatusTag
                     rule={r}

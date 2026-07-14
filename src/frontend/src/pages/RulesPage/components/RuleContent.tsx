@@ -8,19 +8,29 @@ import { Rule } from 'shared';
 
 interface RuleContentProps {
   rule: Rule;
-  rulesById: Map<string, Rule>;
   color?: string;
-  onReferenceClick?: (ruleId: string) => void; // if true, clicking a referenced code navigates to it
-  onReferenceRemove?: (ruleId: string) => void; // if true, referenced code turns red on hover and clicking it starts removal (for edit view)
+  // if set, clicking an interactive referenced code navigates to it
+  onReferenceClick?: (ruleId: string) => void;
+  // if set, referenced rule code turns red on hover and clicking it initiates removal process (for edit view)
+  onReferenceRemove?: (ruleId: string) => void;
+  // sets selected referenced rules as interactable, when omitted every reference is interactive
+  // used in project view since only references in that project will be clickable
+  isReferenceInteractive?: (ruleId: string) => boolean;
 }
 
 /**
- * Renders a rule's content followed by a bracketed underlined list of its referenced rule codes.
+ * Renders a rule's content followed by a bracketed list of its referenced rule codes.
  */
-const RuleContent: React.FC<RuleContentProps> = ({ rule, rulesById, color, onReferenceClick, onReferenceRemove }) => {
+const RuleContent: React.FC<RuleContentProps> = ({
+  rule,
+  color,
+  onReferenceClick,
+  onReferenceRemove,
+  isReferenceInteractive
+}) => {
   const theme = useTheme();
 
-  const referencedRules = rule.referencedRuleIds.map((id) => rulesById.get(id)).filter((r): r is Rule => Boolean(r));
+  const { referencedRules } = rule;
 
   const handleReferenceClick = (referencedRuleId: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -31,7 +41,11 @@ const RuleContent: React.FC<RuleContentProps> = ({ rule, rulesById, color, onRef
     }
   };
 
-  const interactive = Boolean(onReferenceClick || onReferenceRemove);
+  // determines if interaction is possible for this view
+  const interactionEnabled = Boolean(onReferenceClick || onReferenceRemove);
+  // determines if this specific referenced rule is interactable
+  const isReferenceInteractable = (ruleId: string) =>
+    interactionEnabled && (isReferenceInteractive ? isReferenceInteractive(ruleId) : true);
 
   return (
     <span style={{ color }}>
@@ -39,23 +53,26 @@ const RuleContent: React.FC<RuleContentProps> = ({ rule, rulesById, color, onRef
       {referencedRules.length > 0 && (
         <Box component="span" sx={{ ml: 0.5 }}>
           {' [ '}
-          {referencedRules.map((ref, index) => (
-            <Box component="span" key={ref.ruleId}>
-              {index > 0 && ', '}
-              <Box
-                component="span"
-                onClick={interactive ? handleReferenceClick(ref.ruleId) : undefined}
-                sx={{
-                  textDecoration: 'underline',
-                  cursor: interactive ? 'pointer' : 'default',
-                  // In edit view, hovering over a referenced rule code highlights it red to signal removal
-                  ...(onReferenceRemove && { '&:hover': { color: theme.palette.primary.main } })
-                }}
-              >
-                {ref.ruleCode}
+          {referencedRules.map((ref, index) => {
+            const interactive = isReferenceInteractable(ref.ruleId);
+            return (
+              <Box component="span" key={ref.ruleId}>
+                {index > 0 && ', '}
+                <Box
+                  component="span"
+                  onClick={interactive ? handleReferenceClick(ref.ruleId) : undefined}
+                  sx={{
+                    textDecoration: interactive ? 'underline' : 'none',
+                    cursor: interactive ? 'pointer' : 'default',
+                    // for edit view, hovering over a referenced code highlights it red to signal removal
+                    ...(interactive && onReferenceRemove && { '&:hover': { color: theme.palette.primary.main } })
+                  }}
+                >
+                  {ref.ruleCode}
+                </Box>
               </Box>
-            </Box>
-          ))}
+            );
+          })}
           {' ]'}
         </Box>
       )}

@@ -117,7 +117,7 @@ const makeSectionRow = (ruleId: string, ruleCode: string, subRuleIds: string[]):
   imageFileIds: [],
   parentRule: undefined,
   subRuleIds,
-  referencedRuleIds: [],
+  referencedRules: [],
   isComplete: false
 });
 

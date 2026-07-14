@@ -31,7 +31,10 @@ const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({ open, o
 
   // Can attach any rule in the ruleset except the active rule itself and its already-referenced rules
   const options = useMemo<RuleOption[]>(() => {
-    const excluded = new Set<string>([...(activeRule ? [activeRule.ruleId] : []), ...(activeRule?.referencedRuleIds ?? [])]);
+    const excluded = new Set<string>([
+      ...(activeRule ? [activeRule.ruleId] : []),
+      ...(activeRule?.referencedRules ?? []).map((ref) => ref.ruleId)
+    ]);
     return allRules
       .filter((r) => !excluded.has(r.ruleId))
       .sort((a, b) => a.ruleCode.localeCompare(b.ruleCode, undefined, { numeric: true }))
