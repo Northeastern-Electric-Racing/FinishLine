@@ -86,6 +86,21 @@ organizationRouter.post(
   OrganizationsController.setSlackSponsorshipNotificationsSlackId
 );
 
+organizationRouter.get('/notification-channels', OrganizationsController.getNotificationChannels);
+organizationRouter.get('/notification-channels/available', OrganizationsController.getAvailableNotificationChannels);
+organizationRouter.post(
+  '/notification-channels/create',
+  nonEmptyString(body('slackChannelId')),
+  validateInputs,
+  OrganizationsController.createNotificationChannel
+);
+organizationRouter.post(
+  '/notification-channels/delete',
+  nonEmptyString(body('slackChannelId')),
+  validateInputs,
+  OrganizationsController.deleteNotificationChannel
+);
+
 organizationRouter.get('/finance-delegates', OrganizationsController.getFinanceDelegates);
 organizationRouter.post(
   '/finance-delegates/set',
