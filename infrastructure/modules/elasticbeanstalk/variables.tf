@@ -11,10 +11,9 @@ variable "environment" {
 }
 
 variable "solution_stack_name" {
-  description = "Elastic Beanstalk solution stack name"
+  description = "Elastic Beanstalk solution stack name. Leave empty to auto-detect the latest matching Docker stack (see the data source below) - AWS periodically deprecates specific patch versions, so pinning one here will eventually break CreateEnvironment with 'No Solution Stack named ... found' (as v4.11.0 just did)."
   type        = string
-  # Find the latest: aws elasticbeanstalk list-available-solution-stacks
-  default     = "64bit Amazon Linux 2023 v4.11.0 running Docker"
+  default     = ""
 }
 
 variable "vpc_id" {
@@ -93,6 +92,12 @@ variable "log_retention_days" {
   default     = 7
 }
 
+variable "retain_logs_on_terminate" {
+  description = "Keep CloudWatch logs (until log_retention_days expires) after the environment is terminated, instead of deleting them immediately. Needed for post-mortem debugging of a failed deployment after teardown."
+  type        = bool
+  default     = false
+}
+
 variable "environment_variables" {
   description = "Map of environment variables"
   type        = map(string)
@@ -107,6 +112,18 @@ variable "enable_https" {
 
 variable "ssl_certificate_arn" {
   description = "ARN of SSL certificate for HTTPS listener"
+  type        = string
+  default     = ""
+}
+
+variable "cname_prefix" {
+  description = "Fixed CNAME prefix for the environment (e.g. 'finishline-sandbox'). Leave empty to let AWS assign a random one. Set this when a backend ACM cert needs a CNAME known before the environment exists, to avoid a dependency cycle."
+  type        = string
+  default     = ""
+}
+
+variable "ec2_key_name" {
+  description = "Name of the EC2 key pair for SSH access (leave empty to disable SSH)"
   type        = string
   default     = ""
 }
