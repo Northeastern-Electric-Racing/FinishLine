@@ -1245,7 +1245,12 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 }
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'default', minWidth: 0 }}>
-                  <Typography variant="body2" color={'text.disabled'} fontWeight={500} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+                  <Typography
+                    variant="body2"
+                    color={'text.disabled'}
+                    fontWeight={500}
+                    sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
+                  >
                     {selectedEventType.sendSlackNotifications ? 'On' : 'Off'}
                   </Typography>
                   {selectedEventType.sendSlackNotifications &&
