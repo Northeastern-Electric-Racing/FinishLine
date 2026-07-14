@@ -273,7 +273,6 @@ const RulesetEditPage: React.FC = () => {
                           currentRule.ruleContent && (
                             <RuleContent
                               rule={currentRule}
-                              rulesById={rulesById}
                               color={theme.palette.common.black}
                               onReferenceRemove={(refId) => handleRemoveReference(currentRule.ruleId, refId)}
                             />
