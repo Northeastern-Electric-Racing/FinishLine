@@ -11,33 +11,37 @@ import { getAncestorIds } from '../../utils/rules.utils';
  * Controlled expand + click-to-navigate for referenced rules.
  * Clicking a referenced rule link expands its full ancestor path and scrolls to it on the page.
  * @param rules the rules currently rendered on this page
- * @returns 
+ * @returns expansion state + handlers
  */
 export const useRuleTreeNavigation = (rules: Rule[]) => {
+  // set of rule ids currently expanded
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  // rule pending to scroll to
   const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
+  // list of rules in this view to determine if a referenced rule is able to be scrolled to (for project view)
   const ruleIds = useMemo(() => new Set(rules.map((r) => r.ruleId)), [rules]);
 
+  // flips a rule's expanded/collapsed state
   const toggleExpand = useCallback((ruleId: string) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
       if (next.has(ruleId)) {
-        next.delete(ruleId);
+        next.delete(ruleId); // expanded -> collapsed
       } else {
-        next.add(ruleId);
+        next.add(ruleId); // collapsed -> expanded
       }
       return next;
     });
   }, []);
 
-  // Expand the target's full ancestor path and queue a scroll to it. 
-  // The scroll doesnt happen until the newly-expanded ancestor rows are mounted
+  // Expand the target's full ancestor path and queue a scroll to it
+  // Scroll doesnt happen until the newly-expanded ancestor rows complete expansion
   const navigateToRule = useCallback(
     (targetId: string) => {
-      if (!ruleIds.has(targetId)) return;
+      if (!ruleIds.has(targetId)) return; // ensure target rule exists in this view
       const ancestors = getAncestorIds(targetId, rules);
       setExpandedIds((prev) => new Set([...prev, ...ancestors, targetId]));
-      setPendingScrollId(targetId);
+      setPendingScrollId(targetId); // queue the scroll
     },
     [rules, ruleIds]
   );
