@@ -90,7 +90,7 @@ const AddRulesetTypeModal: React.FC<AddRulesetTypeModalProps> = ({ open, onHide,
                 placeholder="Name Ruleset"
                 error={!!errors.name}
                 fullWidth
-                sx={{ minWidth: '400px' }}
+                sx={{ minWidth: '200px' }}
               />
             )}
           />
