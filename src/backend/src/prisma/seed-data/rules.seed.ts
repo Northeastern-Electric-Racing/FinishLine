@@ -153,6 +153,38 @@ export const seedFsaeRules = async (
     }
   });
 
+  const F6Rule = await prisma.rule.create({
+    data: {
+      ruleCode: 'F.6',
+      ruleContent: 'TUBE FRAMES',
+      rulesetId: fsaeRulesetId,
+      createdByUserId: joeShmoe.userId
+    }
+  });
+
+  // referenced by T.1.1.2
+  const F64Rule = await prisma.rule.create({
+    data: {
+      ruleCode: 'F.6.4',
+      ruleContent: 'Side Impact Structure',
+      rulesetId: fsaeRulesetId,
+      parentRuleId: F6Rule.ruleId,
+      createdByUserId: joeShmoe.userId
+    }
+  });
+
+  // referenced by T.1.1.2
+  const F751Rule = await prisma.rule.create({
+    data: {
+      ruleCode: 'F.7.5.1',
+      ruleContent:
+        'Side Impact Zone - the region longitudinally forward of the Main Hoop and aft of the Front Hoop consisting of the combination of a vertical section minimum 290 mm in height from the bottom surface of the floor of the monocoque and half the horizontal floor',
+      rulesetId: fsaeRulesetId,
+      createdByUserId: joeShmoe.userId
+      // add image
+    }
+  });
+
   const T112Rule = await prisma.rule.create({
     data: {
       ruleCode: 'T.1.1.2',
@@ -160,7 +192,10 @@ export const seedFsaeRules = async (
         'The template will be held horizontally, parallel to the ground, and inserted vertically from a height above any Primary Structure or bodywork that is between the Front Hoop and the Main Hoop until it meets the two of: ( refer to F.6.4 and F.7.5.1 )',
       rulesetId: fsaeRulesetId,
       parentRuleId: T11Rule.ruleId,
-      createdByUserId: joeShmoe.userId
+      createdByUserId: joeShmoe.userId,
+      referencedRule: {
+        connect: [{ ruleId: F64Rule.ruleId }, { ruleId: F751Rule.ruleId }]
+      }
     }
   });
 
@@ -292,6 +327,16 @@ export const seedFsaeRules = async (
       ruleContent: 'All fuel vent lines must exit outside the bodywork',
       rulesetId: fsaeRulesetId,
       parentRuleId: IC56Rule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  const IC81Rule = await prisma.rule.create({
+    data: {
+      ruleCode: 'IC.8.1',
+      ruleContent: 'Starter Each vehicle must start the engine using an onboard starter at all times',
+      rulesetId: fsaeRulesetId,
+      parentRuleId: ICRule.ruleId,
       createdByUserId: thomasEmrax.userId
     }
   });
@@ -473,6 +518,20 @@ export const seedFsaeRules = async (
       rulesetId: fsaeRulesetId,
       parentRuleId: D3Rule.ruleId,
       createdByUserId: superman.userId
+    }
+  });
+
+  const D36Rule = await prisma.rule.create({
+    data: {
+      ruleCode: 'D.3.6',
+      ruleContent:
+        'Starting Auxiliary batteries must not be used once a vehicle has moved to the starting line of any event. See IC.8.1',
+      rulesetId: fsaeRulesetId,
+      parentRuleId: D3Rule.ruleId,
+      createdByUserId: batman.userId,
+      referencedRule: {
+        connect: [{ ruleId: IC81Rule.ruleId }]
+      }
     }
   });
 
@@ -704,6 +763,19 @@ export const seedFsaeRules = async (
   for (const rule of [topLevelTechnical, T1Rule, T11Rule, T112Rule, T112ARule]) {
     await RulesService.toggleRuleTeam(rule.ruleId, huskyTeamId, batman, organization);
   }
+
+  // Assign D.3.6 to Husky along with ancestors (D -> D.3 -> D.3.6)
+  for (const rule of [DRule, D3Rule, D36Rule]) {
+    await RulesService.toggleRuleTeam(rule.ruleId, huskyTeamId, batman, organization);
+  }
+  await RulesService.createProjectRule(batman, organization, D36Rule.ruleId, projectId);
+
+  // Assign IC.8.1 to Husky (IC -> IC.8.1)
+  // IC.8.1 referenced by D.3.6 above to test in-project referenced rule
+  await RulesService.toggleRuleTeam(ICRule.ruleId, huskyTeamId, batman, organization);
+  await RulesService.toggleRuleTeam(IC81Rule.ruleId, huskyTeamId, batman, organization);
+  await RulesService.createProjectRule(batman, organization, IC81Rule.ruleId, projectId);
+
   // Add the leaf rule to the bodywork project and mark it complete.
   await RulesService.createProjectRule(batman, organization, T112ARule.ruleId, projectId);
   await RulesService.setRuleCompletion(batman, organization, T112ARule.ruleId, true, projectId);

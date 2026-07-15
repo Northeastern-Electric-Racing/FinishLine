@@ -575,8 +575,9 @@ export default class RulesService {
       throw new HttpException(400, 'A rule cannot reference itself');
     }
 
+    // Referenced rules must be in the same ruleset, which guarantees same org
     const referencedRule = await prisma.rule.findUnique({
-      where: { ruleId: referencedRuleId }
+      where: { ruleId: referencedRuleId, rulesetId: rule.rulesetId }
     });
 
     if (!referencedRule) throw new NotFoundException('Referenced Rule', referencedRuleId);
