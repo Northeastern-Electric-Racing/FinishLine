@@ -15,6 +15,7 @@ import { ShopProcess } from './seed/shop.process.js';
 import { TeamProcess } from './seed/team.process.js';
 import { ProjectProcess } from './seed/project.process.js';
 import { SchedulingProcess } from './seed/scheduling.process.js';
+import { TaskProcess } from './seed/tasks.process.js';
 import { WorkPackageProcess } from './seed/work-package.process.js';
 
 const prisma = new PrismaClient();
@@ -31,7 +32,8 @@ await new SeedRunner()
     new TeamProcess(),
     new ShopProcess(),
     new ProjectProcess(),
-    new WorkPackageProcess()
+    new WorkPackageProcess(),
+    new TaskProcess()
   )
   .run();
 
