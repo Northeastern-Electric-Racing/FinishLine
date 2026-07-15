@@ -4,11 +4,14 @@
  */
 
 import { NERButton } from '../../components/NERButton';
-import { Box, Grid, Link, TableCell, TableRow, TextField, Typography } from '@mui/material';
+import { Box, Grid, IconButton, Link, TableCell, TableRow, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useToast } from '../../hooks/toasts.hooks';
 import {
+  useCreateNotificationChannel,
   useCurrentOrganization,
+  useDeleteNotificationChannel,
+  useNotificationChannels,
   useSetSlackSponsorshipNotificationChannelId,
   useSetWorkspaceId
 } from '../../hooks/organizations.hooks';
@@ -16,6 +19,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { Organization, TeamBase } from 'shared';
 import HelpIcon from '@mui/icons-material/Help';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useAllTeamPreviews } from '../../hooks/teams.hooks';
 import NERTable from '../../components/NERTable';
 import EditTeamSlackIdFormModal from './TeamConfig/EditTeamSlackIdFormModal';
@@ -48,12 +52,26 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
   } = useAllTeamPreviews();
   const [clickedTeam, setClickedTeam] = useState<TeamBase>();
 
-  if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
+  const {
+    data: notificationChannels,
+    isLoading: notificationChannelsIsLoading,
+    isError: notificationChannelsIsError,
+    error: notificationChannelsError
+  } = useNotificationChannels();
+  const { mutateAsync: createNotificationChannelMutateAsync, isLoading: isCreatingNotificationChannel } =
+    useCreateNotificationChannel();
+  const { mutateAsync: deleteNotificationChannelMutateAsync } = useDeleteNotificationChannel();
+  const [newNotificationChannelId, setNewNotificationChannelId] = useState('');
 
   if (allTeamsIsError) {
     return <ErrorPage message={allTeamsError.message} />;
   }
+  if (notificationChannelsIsError) {
+    return <ErrorPage message={notificationChannelsError.message} />;
+  }
 
+  if (!notificationChannels || notificationChannelsIsLoading) return <LoadingIndicator />;
+  if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
   if (isLoading) return <LoadingIndicator />;
 
   const teamTableRows = allTeams.map((team, index) => (
@@ -83,6 +101,31 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
     try {
       await setSponsorshipChannelIdMutateAsync(sponsorshipChannelId);
       toast.success('Successfully updated the sponsorship notification channel ID.');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
+  };
+
+  const handleAddNotificationChannelId = async () => {
+    const trimmedId = newNotificationChannelId.trim();
+    if (!trimmedId) return;
+    try {
+      await createNotificationChannelMutateAsync(trimmedId);
+      setNewNotificationChannelId('');
+      toast.success('Successfully added the notification channel.');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
+  };
+
+  const handleRemoveNotificationChannelId = async (slackChannelId: string) => {
+    try {
+      await deleteNotificationChannelMutateAsync(slackChannelId);
+      toast.success('Successfully removed the notification channel.');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -159,6 +202,51 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
             team={clickedTeam}
           />
         )}
+      </Box>
+      <Box>
+        <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+          Notification Channels
+        </Typography>
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          Slack channels that events can notify in addition to team channels.
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: 500 }}>
+          {notificationChannels.map((channel) => (
+            <Box key={channel.slackChannelId} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography sx={{ flex: 1 }}>
+                {channel.name ? `${channel.name} (${channel.slackChannelId})` : channel.slackChannelId}
+              </Typography>
+              <IconButton
+                size="small"
+                color="error"
+                aria-label="remove notification channel"
+                onClick={() => handleRemoveNotificationChannelId(channel.slackChannelId)}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          ))}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Link
+              color={'#ffffff'}
+              href={'https://help.socialintents.com/article/148-how-to-find-your-slack-team-id-and-slack-channel-id'}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <HelpIcon sx={{ height: 30 }} />
+            </Link>
+            <TextField
+              size="small"
+              label="Slack Channel ID"
+              value={newNotificationChannelId}
+              onChange={(e) => setNewNotificationChannelId(e.target.value)}
+              sx={{ flex: 1 }}
+            />
+            <NERButton variant="contained" disabled={isCreatingNotificationChannel} onClick={handleAddNotificationChannelId}>
+              Add
+            </NERButton>
+          </Box>
+        </Box>
       </Box>
     </Box>
   );

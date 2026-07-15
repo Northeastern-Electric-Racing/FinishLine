@@ -42,6 +42,7 @@ variable "log_retention_days" {
 }
 
 variable "sns_topic_arn" {
-  description = "ARN of the SNS topic for alarm notifications"
+  description = "ARN of the SNS topic for alarm notifications. Leave empty to create alarms without notifications (e.g. for a temporary environment nobody should get paged for)."
   type        = string
+  default     = ""
 }

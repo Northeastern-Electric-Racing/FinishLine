@@ -8,10 +8,12 @@ import {
   Event,
   EventWithMembers
 } from 'shared';
-import { InvalidEventTypeConfigurationException } from './errors.utils.js';
+import { AccessDeniedException, InvalidEventTypeConfigurationException, NotFoundException } from './errors.utils.js';
 import prisma from '../prisma/prisma.js';
 import { getEventQueryArgs } from '../prisma-query-args/event.query-args.js';
 import { eventTransformer } from '../transformers/calendar.transformer.js';
+import { getNotificationChannelAccessForUser } from './slack.utils.js';
+import { getUserSlackId } from './users.utils.js';
 
 export function buildScheduledTimesOverlap(start?: Date, end?: Date): Prisma.Schedule_SlotListRelationFilter | undefined {
   if (!start && !end) return undefined;
@@ -342,4 +344,36 @@ export const findMatchingTimeOfDaySlots = <T extends { scheduleSlotId: string; s
       slot.endTime.getMinutes() === originalEndMinute
     );
   });
+};
+
+/**
+ * Ensures the given notification channel ids belong to the organization and that the given
+ * user is a member of every one of them, public or private. Membership is resolved live from
+ * Slack.
+ * @param organization The organization the notification channels must belong to
+ * @param submitter The user selecting the notification channels
+ * @param notificationChannelIds The notification channel ids to validate
+ * @throws NotFoundException if a channel id isn't one of the organization's notification channels
+ * @throws AccessDeniedException if the user isn't a member of one of the selected channels
+ */
+export const validateNotificationChannelIds = async (
+  organization: Organization,
+  submitter: User,
+  notificationChannelIds: string[]
+) => {
+  if (notificationChannelIds.length === 0) return;
+
+  const missingIds = notificationChannelIds.filter((id) => !organization.notificationChannelIds.includes(id));
+  if (missingIds.length > 0) {
+    throw new NotFoundException('Notification Channel', missingIds.join(', '));
+  }
+
+  const submitterSlackId = await getUserSlackId(submitter.userId);
+  const accessResults = await Promise.all(
+    notificationChannelIds.map((channelId) => getNotificationChannelAccessForUser(submitterSlackId, channelId))
+  );
+
+  if (accessResults.some((result) => !result.hasAccess)) {
+    throw new AccessDeniedException('You are not a member of one or more of the selected notification channels');
+  }
 };

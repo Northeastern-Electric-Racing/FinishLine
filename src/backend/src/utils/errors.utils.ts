@@ -216,4 +216,5 @@ export type ExceptionObjectNames =
   | 'SponsorTier'
   | 'Guest Definition'
   | 'Meeting Attendance'
-  | 'Task Label';
+  | 'Task Label'
+  | 'Notification Channel';

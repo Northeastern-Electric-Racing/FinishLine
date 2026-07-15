@@ -176,9 +176,10 @@ module "elasticbeanstalk" {
   alb_security_group_id      = module.network.alb_security_group_id
 
   # Configuration
-  deployment_policy  = "RollingWithAdditionalBatch"
-  health_check_path  = "/health"
-  log_retention_days = 30
+  deployment_policy        = "RollingWithAdditionalBatch"
+  health_check_path        = "/health"
+  log_retention_days       = 30
+  retain_logs_on_terminate = true
 
   # HTTPS Configuration
   enable_https         = var.enable_https
